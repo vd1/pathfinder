@@ -1,0 +1,91 @@
+"""Corpora: JSONL rows from the arXiv API, e-print sources flattened to one file."""
+from __future__ import annotations
+import gzip, io, json, re, shutil, subprocess, tarfile, time, urllib.parse, urllib.request
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+NS = {"a": "http://www.w3.org/2005/Atom"}
+API = "http://export.arxiv.org/api/query?"
+
+
+def pair_id(i: int, j: int) -> str:
+    return f"Q{i}P{j}"
+
+
+def _clean(s):
+    return re.sub(r"\s+", " ", s or "").strip()
+
+
+def parse_atom(xml: str) -> list[dict]:
+    rows = []
+    for e in ET.fromstring(xml).findall("a:entry", NS):
+        aid = e.findtext("a:id", "", NS).rsplit("/", 1)[-1]
+        aid = re.sub(r"v\d+$", "", aid)
+        rows.append({"id": aid, "title": _clean(e.findtext("a:title", "", NS)),
+                     "abstract": _clean(e.findtext("a:summary", "", NS)),
+                     "authors": [_clean(a.findtext("a:name", "", NS)) for a in e.findall("a:author", NS)],
+                     "date": e.findtext("a:published", "", NS)[:10], "text": None})
+    return rows
+
+
+def fetch(query: str, n: int) -> list[dict]:
+    q = urllib.parse.urlencode({"search_query": f'all:"{query}"', "sortBy": "submittedDate",
+                                "sortOrder": "descending", "max_results": n})
+    with urllib.request.urlopen(API + q, timeout=60) as r:
+        return parse_atom(r.read().decode())
+
+
+def write(rows, path: Path):
+    Path(path).write_text("".join(json.dumps(r) + "\n" for r in rows))
+
+
+def read(path: Path) -> list[dict]:
+    return [json.loads(l) for l in Path(path).read_text().splitlines() if l.strip()]
+
+
+def body(campaign, row: dict, fulltext: bool) -> str:
+    if fulltext and row.get("text"):
+        p = campaign.path(row["text"])
+        if p.exists():
+            return p.read_text(errors="replace")
+    return row["abstract"]
+
+
+def _main_tex(d: Path) -> Path | None:
+    cands = [p for p in d.rglob("*.tex") if "\\documentclass" in p.read_text(errors="replace")]
+    return min(cands, key=lambda p: len(p.parts)) if cands else None
+
+
+def flatten(aid: str, out_dir: Path) -> str:
+    """Download the e-print for aid, flatten to out_dir/aid.tex or .txt; return the relative name."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    req = urllib.request.Request(f"https://arxiv.org/e-print/{aid}", headers={"User-Agent": "pathfinder/0.1"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        blob, ctype = r.read(), r.headers.get("Content-Type", "")
+    work = out_dir / aid; shutil.rmtree(work, ignore_errors=True); work.mkdir()
+    if blob[:4] == b"%PDF" or "pdf" in ctype:
+        (work / "paper.pdf").write_bytes(blob)
+        subprocess.run(["pdftotext", "-layout", str(work / "paper.pdf"), str(out_dir / f"{aid}.txt")], check=True)
+        return f"sources/{aid}.txt"
+    try:
+        with tarfile.open(fileobj=io.BytesIO(blob), mode="r:*") as tf:
+            tf.extractall(work, filter="data")
+    except tarfile.ReadError:
+        (work / "main.tex").write_bytes(gzip.decompress(blob))
+    main = _main_tex(work)
+    if main is None:
+        raise RuntimeError(f"{aid}: no .tex with \\documentclass in e-print")
+    with open(out_dir / f"{aid}.tex", "w") as f:
+        subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, stdout=f, check=True)
+    return f"sources/{aid}.tex"
+
+
+def sources(campaign, side: str):
+    path = campaign.path(f"{side}.jsonl"); rows = read(path)
+    for row in rows:
+        if row.get("text") and campaign.path(row["text"]).exists():
+            continue
+        row["text"] = flatten(row["id"], campaign.path("sources"))
+        print(f"{side} {row['id']}: {row['text']}")
+        write(rows, path)
+        time.sleep(3)
