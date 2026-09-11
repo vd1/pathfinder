@@ -77,9 +77,7 @@ def flatten(aid: str, out_dir: Path) -> str:
         blob, ctype = r.read(), r.headers.get("Content-Type", "")
     work = out_dir / aid; shutil.rmtree(work, ignore_errors=True); work.mkdir()
     if blob[:4] == b"%PDF" or "pdf" in ctype:
-        (work / "paper.pdf").write_bytes(blob)
-        subprocess.run(["pdftotext", "-layout", str(work / "paper.pdf"), str(out_dir / f"{aid}.txt")], check=True)
-        return f"sources/{aid}.txt"
+        return _pdf_text(aid, out_dir, blob)
     try:
         with tarfile.open(fileobj=io.BytesIO(blob), mode="r:*") as tf:
             tf.extractall(work, filter="data")
@@ -88,9 +86,23 @@ def flatten(aid: str, out_dir: Path) -> str:
     main = _main_tex(work)
     if main is None:
         raise RuntimeError(f"{aid}: no .tex with \\documentclass in e-print")
-    with open(out_dir / f"{aid}.tex", "w") as f:
-        subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, stdout=f, check=True)
-    return f"sources/{aid}.tex"
+    try:
+        with open(out_dir / f"{aid}.tex", "w") as f:
+            subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, stdout=f, check=True, timeout=120)
+        return f"sources/{aid}.tex"
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:   # latexpand can crash on odd templates
+        (out_dir / f"{aid}.tex").unlink(missing_ok=True)
+        print(f"{aid}: latexpand failed ({e.__class__.__name__}); using the PDF text instead")
+        req = urllib.request.Request(f"https://arxiv.org/pdf/{aid}", headers={"User-Agent": "pathfinder/0.1"})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            return _pdf_text(aid, out_dir, r.read())
+
+
+def _pdf_text(aid: str, out_dir: Path, blob: bytes) -> str:
+    work = out_dir / aid; work.mkdir(parents=True, exist_ok=True)
+    (work / "paper.pdf").write_bytes(blob)
+    subprocess.run(["pdftotext", "-layout", str(work / "paper.pdf"), str(out_dir / f"{aid}.txt")], check=True)
+    return f"sources/{aid}.txt"
 
 
 def sources(campaign, side: str):
@@ -98,7 +110,10 @@ def sources(campaign, side: str):
     for row in rows:
         if row.get("text") and campaign.path(row["text"]).exists():
             continue
-        row["text"] = flatten(row["id"], campaign.path("sources"))
-        print(f"{side} {row['id']}: {row['text']}")
+        try:
+            row["text"] = flatten(row["id"], campaign.path("sources"))
+            print(f"{side} {row['id']}: {row['text']}")
+        except Exception as e:                       # one bad e-print must not stop the side; the abstract is used
+            print(f"{side} {row['id']}: no source ({e}); the abstract will be used")
         write(rows, path)
         time.sleep(3)

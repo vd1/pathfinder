@@ -1,0 +1,137 @@
+# Building your own Pathfinder
+
+Two ways to run this on your own corpora.
+
+**Route A, use this repository.** Clone it, follow the README, point
+`fetch` at your two queries or drop your own `Q.jsonl` and `P.jsonl` in a
+campaign directory. Nothing below is needed.
+
+**Route B, have an agent build one for you.** Paste the prompt below into
+Claude Code or Codex in an empty directory, fill in the bracketed parts, and
+let it work. It describes what to build, the decisions that matter and the
+things the pilot taught, and it points at this repository for the prompts
+and the spec. The agent may build in any language and tooling you prefer.
+
+---
+
+## The prompt
+
+I want a small pipeline that looks for research connexions between two
+corpora of papers. Build it here, in [language and tooling, e.g. Python 3.12
+with uv, standard library only], for me to run from a terminal with my
+[Claude Code | Codex] subscription. Keep it simple: plain files for all
+state, one process per command, no services, no database, no framework.
+Read the design and the prompts at https://github.com/vd1/pathfinder (the
+spec in `plans/2026-09-11-pathfinder-design.md`, the pilot report in
+`plans/2026-09-11-pilot-report.md`, the six prompts in `prompts/`) and use
+them; you may copy the prompts verbatim. Do not copy the code; write yours.
+
+### What it does
+
+Two corpora, Q and P, each a list of papers with id, title, abstract and,
+where available, the full text. Mine are: [two arXiv queries, or two files
+you already have, or a description of where the papers come from].
+
+1. **Scan.** Score every pair (q, p) with a strong model from titles and
+   abstracts, one call per pair, no tools, using the scan prompt: two axes,
+   feasibility and gain, each 0 to 100, score is their product. Enumerate
+   Q rows in order so the prompt prefix caches. Append every result to one
+   JSONL file so the scan can stop and resume. Keep the top cut (a
+   percentage) or every pair above a threshold as the shortlist, frozen
+   with a digest of the scan file.
+
+2. **Research.** For each shortlisted pair, a thread directory with the two
+   full texts, an append-only ledger, and two peer agents with tools and web
+   search running concurrently on the peer prompt. Peers write ideas,
+   findings, objections, corrections and intentions to the ledger through a
+   small helper command, and declare ready naming the latest entry they
+   read; a new substantive entry reopens readiness. When both are ready or
+   the allowance runs out, the first peer consolidates the ledger into a
+   LaTeX note named after the pair. An independent tool-less verifier reads
+   everything and returns DRAFT, ITERATE or PAUSE. ITERATE loops back to the
+   peers automatically, up to a cap of three rounds, after which the thread
+   ends as PAUSE-ON-ITERATE. An empty ledger ends the thread as PAUSE. The
+   terminal statuses are exactly DRAFT, PAUSE and PAUSE-ON-ITERATE.
+
+3. **Paper.** On a DRAFT thread, an author agent with tools and web search
+   writes a short paper with BibTeX references from the note and ledger,
+   searches for prior work on the specific result, records its queries,
+   verifies every reference against arXiv or a DOI, and builds with
+   latexmk. The pipeline rebuilds, checks that every citation exists and is
+   used and that arXiv titles match the API, and an independent reviewer
+   returns ACCEPT or REVISE with findings by id, up to three rounds.
+
+### The decisions that matter
+
+- **Receipts are the only spend figure.** Every model call appends one line
+  with stage, actor, model, seconds, tokens, cost and error. Spend is the
+  sum. Costs from the CLI are API-equivalent even on a subscription.
+- **A budget guard, soft by design.** Before admitting a thread, spend plus
+  calls in flight times a per-call estimate must stay under the cap;
+  otherwise write a stop marker. It does not interrupt a running thread.
+- **Every stop is a drain.** A stop marker (written by the operator, the
+  guard, or the first Ctrl-C) stops admissions; calls in flight land and
+  write their checkpoints; the runner exits. A second Ctrl-C aborts.
+  Restarting resumes every thread at its recorded stage.
+- **Transport.** One adapter over the agent CLI: prompt on stdin, streaming
+  JSON out, session id parsed from the first event. No session within 60
+  seconds plus a second per 5 KB of prompt is a transport failure: no
+  receipt, thread marked stopped, no retry inside the thread. Two in a row
+  set a health flag; admissions pause until a probe call succeeds. Never
+  fall back to another model or backend.
+- **Stage failures.** A consolidation or verification that times out or
+  returns nothing is rerun once, unless its output already exists. An
+  unreadable verdict blocks the thread. One `reconcile` command inspects a
+  thread and names the one safe action (start, resume peers, run
+  consolidate, run verify, or nothing), and applies it on request.
+- **Locks.** One pid file per thread directory; a dead pid is not a lock.
+- **Monitor.** A local HTTP server on 127.0.0.1 serving one page that polls
+  a state document every few seconds: spend against budget, calls, stop
+  and health flags, the scan as a heat map with the shortlist outlined and
+  labels linking to arXiv, a shortlist table, and a thread panel with the
+  ledger rendered in the page, verdicts, per-stage costs and the note as a
+  PDF compiled on demand. Text files are served as text, not downloads.
+- **Prompts are files** in `prompts/`, overridable per campaign. They are
+  the place to tune behaviour; the code should not need to change for that.
+
+### What the pilot taught, so build it in
+
+- Peer calls with a strong model cost 3 to 5 USD and 5 to 12 minutes; a
+  thread costs 25 to 30 USD. Consolidation needs up to 25 minutes.
+  Defaults: 1800 seconds shared by the peers per round, 2 calls per peer,
+  1800 for consolidation, 900 for verification, cap 60 USD.
+- The Codex workspace sandbox has no network unless you pass
+  `sandbox_workspace_write.network_access=true`; peers and authors need it
+  for search. Codex reports tokens, not cost; keep a price table.
+- APIs refuse some prompts intermittently. Record the error in the receipt
+  and carry on; do not retry in a loop.
+- A peer whose ready declaration stands should wait for its partner, not
+  spend a call.
+- The reviewer of a paper must be shown the author's search record, or it
+  will flag the search as unsupported.
+- The arXiv API rate-limits; back off and retry once or twice.
+- `latexpand` can crash on some templates; fall back to the PDF text and
+  never let one bad e-print stop the side.
+
+### How to test it
+
+Write a fake CLI binary driven by environment variables (what to reply,
+how long to wait before the session line, whether to hang, a shell command
+to run in the working directory before replying) and test every path with
+it: scan resume and retry, the cut, a thread reaching each terminal status,
+the iterate cap, the empty ledger, a stop draining a call in flight, the
+budget guard writing the marker, two transport failures setting the health
+flag and a probe clearing it, both BLOCKED paths and reconcile clearing
+them, a killed runner leaving a dead lock, the paper round trip with a real
+latexmk. Then run a real pilot on two corpora of five papers each with the
+cut at 12 percent and the budget at [60] USD, exercise stop, resume and
+reconcile by hand while it runs, and write a short report of what happened
+and what it cost. Show me the report before running anything larger.
+
+### What I will decide
+
+Backend and models: [claude with claude-opus-5 for research and
+claude-sonnet-5 for the scan | codex with gpt-5.6-sol, through
+[ChatGPT login | a custom provider at URL with key in file]]. Budget: [60]
+USD. Seats: [4]. Ask me anything else you need before you start; do not
+assume.

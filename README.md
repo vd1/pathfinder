@@ -142,4 +142,10 @@ them.
 - The monitor is a live page served from the campaign directory, not a
   static HTML rebuilt on a schedule.
 
+## Building your own
+
+`BUILDER.md` holds a prompt a colleague can paste into Claude Code or Codex
+to have an agent build a pipeline like this one in their own stack, with the
+decisions that matter and what the pilot taught written in.
+
 Licence: MIT.
