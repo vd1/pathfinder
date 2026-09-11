@@ -170,9 +170,9 @@ Q3P3 then ran on Codex from its Opus round 1 ledger, the mixed case: 17
 calls, 13 minutes, 5.14 USD, and PAUSE-ON-ITERATE after three rounds. The
 verifier returned the same ITERATE three times, asking for a test on P's
 data that the peers do not have. Two rounds were spent on an action the
-peers could not take. The verify prompt asks for an action the peers can
-act on; it could also say that a gap needing new data or experiments is a
-PAUSE, not an ITERATE. Left as a proposal.
+peers could not take. The verify prompt now says that a gap needing data,
+experiments or access the peers do not have is a PAUSE with the missing
+input named, and that a repeated unmet ITERATE is not asked again.
 
 The mechanics were identical on both backends: same files, same stages,
 same reconcile behaviour. One operator error on the way: the stop marker
