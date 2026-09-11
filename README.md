@@ -1,0 +1,108 @@
+# Pathfinder
+
+Pathfinder takes two corpora of papers, Q and P, and looks for pairs (q, p) that
+have something to say to each other. It runs in two phases:
+
+1. **Scan.** A strong model scores every pair of the grid from titles and
+   abstracts, on two axes (feasibility, gain). The top cut of the ranking is
+   frozen as the shortlist.
+2. **Research.** For each shortlisted pair, two peer agents with the full
+   sources and a shared append-only ledger look for a publishable connexion.
+   The first peer consolidates the ledger into a LaTeX note, an independent
+   verifier returns DRAFT, ITERATE or PAUSE, and ITERATE loops back to the
+   peers up to a cap.
+
+Every thread ends with a ledger, a note named after the pair (for example
+`Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE` or
+`PAUSE-ON-ITERATE`.
+
+## Requirements
+
+- Python 3.12 and [uv](https://docs.astral.sh/uv/).
+- One of the two agent CLIs, logged in: `claude` (Claude Code) or `codex`.
+- `latexpand` (ships with TeX Live) to flatten arXiv sources, and `pdftotext`
+  for the rare PDF-only e-print.
+
+## Quick start
+
+```bash
+uv sync
+uv run pathfinder fetch --q "mechanism design" --p "agentic cooperation" --n 5
+uv run pathfinder sources
+uv run pathfinder scan
+uv run pathfinder select --cut 12
+uv run pathfinder serve      # in a second terminal: http://localhost:8765/
+uv run pathfinder research
+uv run pathfinder status
+```
+
+Every command takes `--root DIR`; the default is the current directory, which
+is the campaign directory. The repository root is itself a campaign, the
+reference run described in `plans/`.
+
+## Campaign directory
+
+```
+campaign.json      configuration (see below)
+Q.jsonl  P.jsonl   one paper per line: id, title, abstract, authors, date, text
+sources/           flattened e-prints, <id>.tex or <id>.txt (ignored by git)
+scan.jsonl         one row per scored pair, appended as the scan runs
+shortlist.json     the frozen cut, with a digest of scan.jsonl
+receipts.jsonl     one line per model call; the only source of spend figures
+stop.json          present while a stop is requested
+health.json        present while admissions are paused after transport failures
+threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
+                   <pair>.verdict.json, status.json, lock
+```
+
+## campaign.json
+
+- `backend`: `claude` or `codex`. No fallback between them.
+- `model`: model for peers, consolidation and verification.
+- `scan_model`: model for the scan; defaults to `model`.
+- `peer_search`: whether peers may use web search.
+- `seats`: how many threads run at once.
+- `cut`: percentage of scored pairs that make the shortlist.
+- `rounds`: cap on verifier ITERATE loops per thread.
+- `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
+  (per peer per round), `consolidate_seconds`, `verify_seconds`.
+- `budget_usd`: hard cap on receipts plus in-flight estimate.
+- `call_estimate_usd`: what one in-flight call is assumed to cost by the guard.
+- `prices`: per-model prices used when the CLI reports no cost.
+- `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
+  sources instead of abstracts on that side.
+
+## Stops, guard, failures, reconcile
+
+- `pathfinder stop` writes `stop.json`. A running scan finishes its current
+  call and exits; a running research loop stops admitting, lets calls in
+  flight land, writes their checkpoints and exits. `stop --clear` removes the
+  marker; the next `research` resumes every thread at its recorded stage.
+- The budget guard runs before every admission: receipts plus in-flight calls
+  times `call_estimate_usd` must stay under `budget_usd`, otherwise it writes
+  the stop marker itself.
+- A call that produces no session within 60 seconds is a transport failure:
+  no receipt, the thread is marked stopped. Two in a row set `health.json`;
+  admissions pause until a probe call succeeds.
+- Threads are locked by a pid file. `pathfinder reconcile [pair]` names the
+  one safe action for a thread (start, resume peers, run consolidate, run
+  verify, or nothing) and `--apply` performs it.
+
+## Prompts
+
+The four prompts in `prompts/` are the place to tune behaviour: `scan.md`
+(the two-axis judge), `peer.md` (the creative brief), `consolidate.md` and
+`verify.md`. A campaign directory may carry its own `prompts/` to override
+them.
+
+## Departures from the agQSL instance
+
+- One package, standard library only, one loop in one terminal; no
+  supervisors, services or notification files.
+- Receipts are the only spend figure; there is no separate cost model.
+- Stops are always drains; there is no forced kill short of a second Ctrl-C.
+- ITERATE loops automatically up to `rounds`; nothing waits for a human.
+- The monitor is a live page served from the campaign directory, not a
+  static HTML rebuilt on a schedule.
+
+Licence: MIT.
