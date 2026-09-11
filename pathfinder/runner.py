@@ -6,6 +6,9 @@ from pathlib import Path
 from . import research, transport
 
 
+PROBE_INTERVAL = 60
+
+
 def _now():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
@@ -74,7 +77,7 @@ def _probe(campaign) -> bool:
 
 
 def run(campaign, interval: float = 5.0):
-    failures, futures = 0, {}
+    futures = {}
     interrupted = {"n": 0}
 
     def on_int(*_):
@@ -84,35 +87,43 @@ def run(campaign, interval: float = 5.0):
         else:
             os._exit(130)
 
-    signal.signal(signal.SIGINT, on_int)
-    with ThreadPoolExecutor(campaign.seats) as ex:
-        while True:
-            if unhealthy(campaign) and not futures:
-                if _probe(campaign):
-                    campaign.path("health.json").unlink(); failures = 0; print("health restored")
-                else:
-                    time.sleep(60); continue
-            queue = [] if (stopped(campaign) or unhealthy(campaign)) else pending(campaign)
-            for pair_id in queue:
-                if len(futures) >= campaign.seats or pair_id in futures.values():
-                    break
-                if not guard_ok(campaign, inflight=len(futures) + 1):
-                    break
-                futures[ex.submit(_work, campaign, pair_id)] = pair_id
-                print(f"{_now()} admitted {pair_id} ({len(futures)}/{campaign.seats} seats)")
-            if not futures:
-                if stopped(campaign) or not pending(campaign):
-                    print("stopped" if stopped(campaign) else "all threads terminal"); return
-                time.sleep(interval); continue
-            done, _ = wait(list(futures), timeout=interval, return_when=FIRST_COMPLETED)
-            for f in done:
-                pair_id = futures.pop(f)
-                try:
-                    print(f"{_now()} {pair_id}: {f.result()}"); failures = 0
-                except transport.TransportFailed:
-                    failures += 1; print(f"{_now()} {pair_id}: transport failure ({failures})")
-                    if failures >= 2 and not unhealthy(campaign):
-                        campaign.path("health.json").write_text(json.dumps({"at": _now(), "reason": "two consecutive transport failures"}))
-                        print("health flag set: admissions paused until a probe call succeeds")
-                except Exception as e:
-                    print(f"{_now()} {pair_id}: error {e!r}")
+    previous = signal.signal(signal.SIGINT, on_int)
+    try:
+        with ThreadPoolExecutor(campaign.seats) as ex:
+            _loop(campaign, ex, interval, futures)
+    finally:
+        signal.signal(signal.SIGINT, previous)
+
+
+def _loop(campaign, ex, interval, futures):
+    failures = 0
+    while True:
+        if unhealthy(campaign) and not futures:
+            if _probe(campaign):
+                campaign.path("health.json").unlink(); failures = 0; print("health restored")
+            else:
+                time.sleep(PROBE_INTERVAL); continue
+        queue = [] if (stopped(campaign) or unhealthy(campaign)) else pending(campaign)
+        for pair_id in queue:
+            if len(futures) >= campaign.seats or pair_id in futures.values():
+                break
+            if not guard_ok(campaign, inflight=len(futures) + 1):
+                break
+            futures[ex.submit(_work, campaign, pair_id)] = pair_id
+            print(f"{_now()} admitted {pair_id} ({len(futures)}/{campaign.seats} seats)")
+        if not futures:
+            if stopped(campaign) or not pending(campaign):
+                print("stopped" if stopped(campaign) else "all threads terminal"); return
+            time.sleep(interval); continue
+        done, _ = wait(list(futures), timeout=interval, return_when=FIRST_COMPLETED)
+        for f in done:
+            pair_id = futures.pop(f)
+            try:
+                print(f"{_now()} {pair_id}: {f.result()}"); failures = 0
+            except transport.TransportFailed:
+                failures += 1; print(f"{_now()} {pair_id}: transport failure ({failures})")
+                if failures >= 2 and not unhealthy(campaign):
+                    campaign.path("health.json").write_text(json.dumps({"at": _now(), "reason": "two consecutive transport failures"}))
+                    print("health flag set: admissions paused until a probe call succeeds")
+            except Exception as e:
+                print(f"{_now()} {pair_id}: error {e!r}")

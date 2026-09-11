@@ -69,3 +69,53 @@ def test_empty_ledger_pauses_without_note(tmp_path, monkeypatch):
     assert research.run_thread(c, "Q1P1") == "PAUSE"
     assert research.status(c, "Q1P1")["reason"] == "empty ledger"
     assert not (tmp_path / "threads" / "Q1P1" / "Q1P1.tex").exists()
+
+
+def test_blocked_on_unreadable_verdict_and_reconcile_clears_it(tmp_path, monkeypatch):
+    from pathfinder import reconcile
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path)
+    real = transport.call
+    replies = {"verify": "I cannot decide."}
+
+    def fake_call(prompt, **kw):
+        if kw["stage"] == "peers":
+            monkeypatch.setenv("FAKE_RUN", f"{sys.executable} -m pathfinder.ledger --root . --actor {kw['actor']} add --kind idea --text x >/dev/null")
+            monkeypatch.setenv("FAKE_REPLY", "p")
+        elif kw["stage"] == "consolidate":
+            (kw["cwd"] / "Q1P1.tex").write_text("x"); monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "ok")
+        else:
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", replies["verify"])
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "BLOCKED"
+    assert research.status(c, "Q1P1")["reason"].startswith("verify: unreadable")
+    assert reconcile.inspect(c, "Q1P1")["action"] == "run verify"
+    replies["verify"] = '{"decision":"DRAFT","reason":"fine","action":null}'
+    assert reconcile.apply(c, "Q1P1") == "DRAFT"
+
+
+def test_blocked_when_consolidation_writes_nothing(tmp_path, monkeypatch):
+    from pathfinder import reconcile
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path)
+    real = transport.call
+    state = {"write_note": False}
+
+    def fake_call(prompt, **kw):
+        if kw["stage"] == "peers":
+            monkeypatch.setenv("FAKE_RUN", f"{sys.executable} -m pathfinder.ledger --root . --actor {kw['actor']} add --kind idea --text x >/dev/null")
+            monkeypatch.setenv("FAKE_REPLY", "p")
+        elif kw["stage"] == "consolidate":
+            if state["write_note"]:
+                (kw["cwd"] / "Q1P1.tex").write_text("x")
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "")
+        else:
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", '{"decision":"PAUSE","reason":"thin","action":null}')
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "BLOCKED"
+    assert research.status(c, "Q1P1")["reason"].startswith("consolidate:")
+    assert reconcile.inspect(c, "Q1P1")["action"] == "run consolidate"
+    state["write_note"] = True
+    assert reconcile.apply(c, "Q1P1") == "PAUSE"
