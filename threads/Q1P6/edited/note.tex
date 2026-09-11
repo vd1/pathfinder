@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+\emergencystretch=1em
+
+\title{Comparison-Based Credit Assignment Through the Lens of Learning-Augmented Algorithms}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note reads a survey of learning-augmented algorithms alongside MARS-RA, a method that uses multimodal comparisons to assign credit in multi-agent reinforcement learning. We asked whether comparison error could be related to the performance of the trained agents. We found that repeated comparisons can reduce sampling error but not semantic bias, while exact potential-based shaping leaves the underlying objective unchanged when its rewards are defined consistently. The peers repaired an ambiguity caused by changing active coalitions, but neither paper supplies the learner-stability result needed for a finite-training guarantee. The thread therefore ended as a draft with a sound boundary result and a small correctness repair, but without the larger positive theorem.
+\end{abstract}
+
+\section{Introduction}
+
+The survey by Zhao and colleagues, called Q in the research thread, studies algorithms that use predictions without giving up formal guarantees \cite{Q}. It separates the prediction supplied to an algorithm, the way prediction error is measured, robustness to arbitrary predictions, and the final task guarantee. This separation matters when predictions have semantic content or pass through several stages of a system. A good marginal prediction score does not by itself give a bound on the system's final cost.
+
+The paper by Wang and colleagues, called P in the thread, studies credit assignment in cooperative multi-agent reinforcement learning \cite{P}. Its MARS-RA method asks a large multimodal model to compare pairs of agents, aggregates those comparisons with a Bradley--Terry model, and turns the resulting contribution scores into potential-based shaping rewards. The aim is to give agents useful local feedback when the team reward is delayed and when the active set of agents changes.
+
+The proposed connexion was that Q's framework might turn P's comparison accuracy into a curve for downstream performance. The thread soon narrowed this question. Exact potential-based reward shaping does not alter the ordering of policies under its usual conditions. Comparison quality can therefore affect the route taken during training, but not the limiting objective. The useful question became: under what extra conditions can costly and possibly biased comparisons improve finite-training performance?
+
+\section{What was done}
+
+The peers first checked what P's estimator actually estimates. At time $t$, let $\widehat c_t$ be the Bradley--Terry score fitted from sampled comparisons, let $c_t^*$ be the latent preference assumed by that model, and let $v_t^*$ be the intended contribution target, such as an ideal contribution value. Bradley--Terry scores are unchanged by adding the same constant to every coordinate, so the peers fixed that translation freedom before comparing the vectors. They defined the semantic bias
+\[
+  \delta_t=\lVert c_t^*-v_t^*\rVert_2
+\]
+and used the triangle inequality
+\[
+  \lVert\widehat c_t-v_t^*\rVert_2
+  \leq \lVert\widehat c_t-c_t^*\rVert_2+\delta_t.
+\]
+The first term is sampling error around the comparator's latent preference. The second is the gap between that preference and the contribution one meant to recover. More queries may reduce the first term, but they do not force the second to vanish.
+
+The peers next examined P's shaping rule. Let $\gamma$ be the discount factor, let $\psi_t$ be a potential derived from the comparison scores, and define the shaping term at time $t$ by
+\[
+  F_t=\gamma\psi_{t+1}-\psi_t.
+\]
+Over a trajectory of $T$ steps, its discounted sum telescopes:
+\[
+  \sum_{t=0}^{T-1}\gamma^tF_t=-\psi_0+\gamma^T\psi_T.
+\]
+P sets the terminal potential $\psi_T$ to zero. If the initial potential is fixed before the first action, the shaping return is therefore the same offset for every policy. This calculation redirected the work away from asymptotic performance and towards finite-training behaviour.
+
+A local error calculation showed where an eventual finite-training result could begin. If $d_t$ is the score error at time $t$, after fixing the translation freedom, the softmax map is $1/2$-Lipschitz in Euclidean norm. The peers consequently obtained
+\[
+ \lVert \widehat F_t-F_t^*\rVert_2
+ \leq \frac{1}{2}\left(
+ \gamma\lVert d_{t+1}\rVert_2+\lVert d_t\rVert_2
+ \right),
+\]
+where $\widehat F_t$ uses estimated scores and $F_t^*$ uses target scores. This controls a change in the local reward signal. It does not control the policy produced after a finite number of MAPPO updates.
+
+The first verifier round then exposed a typing problem. P writes its score vector in the space of agents active at time $t$. Consecutive vectors can have different lengths when an agent enters or leaves, so their subtraction is not defined as written. P does declare a fixed global population, which makes a repair possible, but it does not state the inactive coordinates or the ownership of rewards at entry and exit.
+
+The peers supplied the requested repair. Let the fixed population contain $n$ agents, and let $I_t$ be the set active at time $t$. They embedded the active softmax scores in a vector $\Phi_t\in\mathbb{R}^n$ by setting
+\[
+ \Phi_t^i={\bf 1}\{i\in I_t\}
+ \operatorname{softmax}_{I_t}(\widehat c_t)^i,
+ \qquad \Phi_T=0.
+\]
+Here $i$ names a member of the fixed population, ${\bf 1}\{i\in I_t\}$ is one when that agent is active and zero otherwise, and $\operatorname{softmax}_{I_t}$ normalises scores over the active set. Inactive agents have null actions, and every agent keeps a reward ledger on every transition. The componentwise shaping reward is
+\[
+ F_t^i=\gamma\Phi_{t+1}^i-\Phi_t^i.
+\]
+This construction made consecutive potentials comparable and allowed the same telescoping argument for every agent.
+
+\section{Results}
+
+Three conclusions hold on the evidence examined. First, P's estimator result concerns concentration around $c_t^*$, the latent Bradley--Terry preference, rather than around $v_t^*$, the desired contribution target. Identifying the two is an extra premise. Ada and Emmy independently checked this distinction against P's propositions, and both obtained the sampling-error plus semantic-bias decomposition above.
+
+Second, exact potential-based shaping is prediction-independent at the objective level when its terms are well defined. With a zero terminal potential and an action-independent initial potential, arbitrary comparison outputs add only a common offset to discounted return. The identity is pathwise, including for a realised sequence of biased or stochastic outputs. If one wants a Markov-game equilibrium statement for history-dependent potentials, the state may need to include the relevant query history or randomness.
+
+Third, the fixed-population reward ledger repairs the changing-coalition problem. For every population member $i$,
+\[
+ \sum_{t=0}^{T-1}\gamma^tF_t^i
+ =-\Phi_0^i+\gamma^T\Phi_T^i=-\Phi_0^i.
+\]
+For a fixed initial augmented state, this shifts each declared per-agent payoff by a constant independent of policy. Unilateral payoff differences, best responses, Nash equilibria, and the ordering of team policies are unchanged. Emmy proposed this construction and Ada checked its algebra against P. It is a repair developed in the thread, not a theorem stated by P.
+
+These results also set a limit. Comparison accuracy alone cannot imply a non-trivial finite-training return bound. Different learners may react differently to exactly the same shaped signal, and neither Q nor P gives a stability, regret, or convergence condition that links a reward perturbation to the policy returned after finite training. The local Lipschitz bound is therefore not an end-to-end guarantee.
+
+\section{What did not hold}
+
+The original plan to transfer Q's vocabulary directly to P did not hold. P's concentration around a modelled preference is not robustness in Q's sense, which requires a downstream bound that survives arbitrary predictions. Nor does pairwise accuracy alone determine which errors occur in frequently visited or important states. The peers agreed that relabelling P's result would hide these distinctions rather than produce a new guarantee.
+
+P's Bradley--Terry concentration claim was also judged unready for use in a larger proof. The peers reported inconsistent dependence on population size between the proposition and appendix, insufficient assumptions for uniform curvature, possible divergence of an unregularised maximum-likelihood estimate under separated outcomes, and an approximate Taylor step inside the proof. No corrected rate was derived during the thread. Any query-count trade-off would first need such a rate under P's actual sampling and regularisation.
+
+The changing dimension objection was partly settled. P's fixed population permits the $\mathbb{R}^n$ embedding above, and the all-agent ledger makes the algebra valid. It did not settle how P's implementation treats an inactive agent. If rewards are kept only during an active interval, entry and exit leave boundary terms that can depend on policy. Transition ownership or compensating transfers would then have to be defined.
+
+A further objection concerned the meaning of the reward. P begins with a scalar team reward but adds a vector shaping term. The repair can declare per-agent payoffs and use the componentwise result. Alternatively, it can use a scalar team potential. Simply summing P's softmax credits, however, gives a potential equal to one for every non-empty, non-terminal coalition, so the scalar signal contains no comparison information. The comparisons can matter only through redistributed per-agent signals during finite training, which makes the missing payoff and learner specifications central.
+
+The thread did not assess novelty against work outside Q and P, and the ledger cited no outside sources. The material is therefore thin beyond the boundary result, the fixed-space repair, and the list of conditions still needed for a positive theorem.
+
+\section{Why the thread stopped}
+
+The final verifier decision was DRAFT. In the verifier's view, the thread had established a non-obvious boundary and a valid repair: an all-agent fixed-population ledger makes changing-coalition shaping well typed and preserves payoff differences, while active-only rewards may leave policy-dependent boundary terms. It had also separated sampling error from semantic bias and explained why comparison accuracy cannot by itself guarantee finite-training performance. These points were sound, but they did not amount to the intended cost-aware finite-training theorem.
+
+The smallest step that would restart the work is to determine whether P's implementation records shaping rewards for inactive agents. If it does not, the next task is to define the smallest entry and exit transfers that reproduce the full fixed-ledger sum and to check that algebra. A later, larger step would be to add a valid Bradley--Terry rate and an explicit learner-stability condition before relating query cost to finite-training return.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

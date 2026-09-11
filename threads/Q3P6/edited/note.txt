@@ -1,0 +1,171 @@
+When Repeated Comparisons Preserve the
+Wrong Preference:
+A Paused Connexion Between Q and P
+
+Abstract
+Q studies language-model traders in a double auction, while P uses
+multimodal pairwise comparisons to assign credit among cooperating agents.
+We looked for a shared failure mode in which repeated comparisons remove
+random variation but preserve a context-dependent bias. The papers and
+peer checks establish that this can happen mathematically under structured comparator drift, and they identify a separate possible credit jump
+when P’s active set changes. They do not show that Q’s trading behaviour
+transfers to P’s multimodal referee, or that either possible failure occurs
+in P’s experiments. The thread therefore paused because the requested
+frozen-state comparator test was refined but never run.
+
+1
+
+Introduction
+
+Q asks whether language-model agents can trade efficiently in a continuous
+double auction, where buyers and sellers may revise visible offers and a crossing
+offer makes a trade [1]. Its markets converge more slowly, or not at all, compared
+with the human benchmark. Behaviour differs across models and between buyer
+and seller roles. Visible opening offers also act as anchors. For one model,
+Gemini Large, language about urgency and execution is associated with closing
+the spread, while language about strategy and optimisation is associated with
+smaller price changes. Q treats this last result cautiously: it is correlational,
+covers one model, and relies on reasoning traces that may not reveal the cause
+of a decision.
+P addresses credit assignment in embodied multi-agent cooperation [2]. Its
+method, MARS-RA, asks a large multimodal model to compare two active
+agents from their ordered egocentric images and a task prompt. It aggregates
+the answers with a Bradley–Terry model, turns the inferred contribution scores
+into a softmax potential, and uses changes in that potential as a shaping reward.
+Its benchmark permits agents to leave when their energy is depleted and later
+return. P reports that more comparison queries improve average task success.
+The connexion pursued was a robustness question. Q suggests that a model’s
+decisions can vary with role, order, visible anchors, and task phase. P’s con1
+
+vergence result assumes that repeated comparisons at one state are samples
+from one stable preference. The thread asked whether repetition could make a
+context-dependent preference more precise without making it a better measure
+of contribution. Q provides reasons to test this question, but it does not itself
+provide evidence about P’s multimodal referee.
+
+2
+
+What was done
+
+The work began with a broad concern about noisy model judgements. The peers
+narrowed it after checking both papers. P already studies comparison noise,
+and Q does not study a pairwise judge. The useful question was therefore not
+whether model answers are noisy, but whether their errors change systematically
+with context while P treats them as samples from one preference.
+The peers next checked the scope of P’s guarantee. At a fixed state, P
+assumes a latent preference score for each active agent and Bradley–Terry comparison outcomes. It shows convergence to that latent model preference as the
+number of queries grows. The guarantee does not say that the preference equals
+true contribution. P’s pooled agreement with dense reward and its prompt reversal check do not test whether the preference remains stable under controlled
+context changes.
+To make the concern precise, the peers used the following model. Let Yij =
+1 mean that the referee prefers agent i to agent j. Let ci and cj be their
+contribution scores, let z denote the comparison context, and let dij (z) be a
+context-dependent distortion. Then
+Pr(Yij = 1 | z) =
+
+1
+.
+1 + exp[−(ci − cj + dij (z))]
+
+(1)
+
+If the persistent distortion is dij = bi − bj , where bi and bj are agent-specific
+biases, repeated queries recover scores proportional to c + b. Sampling variation can disappear while bias remains. If the distortion cannot be written as
+differences between agent scores, it can instead produce comparison cycles or
+poor Bradley–Terry fit. This is a derivation and a testable possibility, not an
+observed failure in P.
+The work then considered P’s changing active set. P constructs a comparison matrix for the full population, but states its score fit and softmax potential
+over the agents active at that time. The peers first suspected a dimension error
+across entry and exit. A cross-check corrected that claim: fixed identities or
+padding can make the subtraction well defined, although the paper does not
+state the alignment clearly. A narrower issue remains. If the raw score of every surviving agent stays fixed, adding or removing another agent changes the
+softmax denominator and therefore changes every survivor’s normalised potential. The resulting shaping reward can contain a boundary impulse caused by
+membership alone.
+Finally, the peers checked what the referee can actually see. P supplies
+two ordered egocentric images and a task prompt. The images show an energy
+2
+
+icon, and energy depletion governs removal and return, so proximity to exit
+may be inferable. The remaining horizon and the full active set are not stated
+inputs. The proposed study was therefore split into two independent stages: a
+frozen-state comparator test, followed only if justified by a replay of membership
+boundaries under alternative potential definitions.
+
+3
+
+Results
+
+Three results hold within the available material.
+First, P’s theoretical result concerns convergence to a stable latent referee
+preference, not convergence to true contribution. This follows directly from P’s
+stated Bradley–Terry assumption and was independently checked by both peers.
+Equation 1 shows why the distinction matters: more queries reduce sampling
+variation, but a persistent score-like distortion changes the score to which the
+estimate converges.
+Second, P’s reported improvement with more queries does not settle the proposed question. It is an average downstream result. The paper does not report
+conditional calibration, cycle rates, reversal consistency, or held-out Bradley–
+Terry fit under frozen evidence and changed context. P therefore supports the
+value of repetition on average, while leaving open whether a conditional bias
+floor coexists with that gain.
+Third, active-set softmax normalisation is composition-dependent. Holding survivor scores fixed while changing the set in the denominator changes
+their normalised values. Ada first derived this boundary effect, and Emmy
+checked and narrowed it after inspecting P’s fixed population comparison matrix. The conclusion is about credit validity and possible learning variance. It
+is not, by itself, a proof that the learned policy is biased, because a well-defined
+Markov potential can retain the usual policy-invariance property of potentialbased shaping.
+These are analytical qualifications and experiment designs. The material
+contains no result from the proposed frozen-state test, no measured boundary
+impulse, and no downstream comparison of alternative potentials.
+
+4
+
+What did not hold
+
+Several stronger claims were rejected. Q does not prove generic judge unreliability. It studies autonomous text-based traders, not multimodal referees. Its
+urgency finding is associated with a change in trading phase, is limited to Gemini Large, and is not a causal result. Reasoning traces may also be unfaithful
+to the computation that produced the action.
+Temporal change alone does not contradict P. P permits a different latent
+preference at each state. A valid challenge must hold the task evidence fixed
+within a state and vary only a nominated part of the comparison context. Image
+order and identity are direct conditions. Masking or randomising visible energy
+
+3
+
+changes an input that P actually uses. Horizon or coalition text would be an
+added-context intervention and must be labelled as such.
+The alleged raw dimension mismatch in P did not survive checking. The
+comparison matrix has a fixed population size, and an implementation may
+preserve fixed identities when membership changes. The text remains unclear
+about that alignment, but lack of detail is not evidence of an error. Likewise, a
+change in softmax potential at a membership boundary is not automatically an
+invalid shaping reward or a policy-bias theorem.
+The reference used to judge contribution also remains unsettled. P’s dense
+per-agent reward is useful for operational comparison, but the peers noted that
+it may not measure delayed causal contribution. The thread proposed controlled
+synthetic labels or counterfactual checks as additional references, but produced
+neither. It also did not inspect P’s code to determine whether fixed identity
+alignment is already implemented.
+
+5
+
+Why the thread stopped
+
+After the first review, the verifier asked for a frozen-state comparator test across
+increasing query counts. The next round improved the controls and clarified
+the referee’s inputs, but supplied no test results. The final decision was therefore PAUSE: the central connexion remains unsupported because Q’s contextsensitive trader behaviour has not been demonstrated in P’s multimodal comparator.
+The smallest step that would restart the thread is to choose one saved P
+state, keep its task evidence fixed, and repeat the same pairwise judgement as
+the query count increases. The test should vary image order, identity, and visible
+energy separately; added horizon or coalition cues should be reported as separate
+added-context conditions. Label flips, reversal consistency, comparison cycles,
+held-out Bradley–Terry negative log likelihood, and calibration to the chosen
+contribution reference would show whether a conditional bias floor remains. A
+null result would end the proposed Q–P connexion; a persistent floor would
+justify the separate membership-boundary replay.
+
+References
+[1] Pawel Struski, Jakub Swistak, Inez Okulska, and Przemyslaw Biecek. Competitive market behavior of LLMs, 2026.
+[2] Dawei Wang, Di Zhao, Xinyuan Liu, Marci Chi Ma, Xiaoyang Liu, Chengming Zhou, Gary Ushaw, and Richard Davison. MARS-RA: Rank aggregation for credit assignment via multimodal comparisons in embodied multiagent cooperation, 2026.
+
+4
+
+

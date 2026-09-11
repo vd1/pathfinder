@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path
-from . import config, corpus, edit, monitor, paper, reconcile, research, runner, scan, select
+from . import config, corpus, edit, monitor, paper, reconcile, research, runner, scan, select, transport
 
 
 def main(argv=None):
@@ -71,13 +71,19 @@ def main(argv=None):
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
                                            and paper.status(c, p["pair_id"]).get("status") != "accepted"]
         for pid in pairs:
-            print(f"{pid}: {paper.run(c, pid, stop=lambda: runner.stopped(c))}")
+            try:
+                print(f"{pid}: {paper.run(c, pid, stop=lambda: runner.stopped(c))}")
+            except transport.TransportFailed:
+                print(f"{pid}: transport failure; run again later")
     elif ns.cmd == "edit":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") in research.TERMINAL
                                            and edit.status(c, p["pair_id"]).get("status") != "done"]
         for pid in pairs:
-            print(f"{pid}: {edit.run(c, pid, stop=lambda: runner.stopped(c))}")
+            try:
+                print(f"{pid}: {edit.run(c, pid, stop=lambda: runner.stopped(c))}")
+            except transport.TransportFailed:
+                print(f"{pid}: transport failure; run again later")
     elif ns.cmd == "reconcile":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for pid in pairs:
