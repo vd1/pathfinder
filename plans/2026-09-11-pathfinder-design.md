@@ -88,7 +88,8 @@ Stages of a thread:
    are ready against the latest substantive entry or the allowance is spent.
 2. Consolidate. Ada writes `<pair_id>.tex` from the ledger as it stands,
    whether or not readiness was reached. A thin note that says what stayed
-   open is valid. Unresolved survives only on an empty ledger.
+   open is valid. An empty ledger skips consolidation and verification and
+   ends the thread as PAUSE with reason `empty ledger`.
 3. Verify. A fresh tool-less call reads the inputs, the ledger and the note
    and returns DRAFT, ITERATE or PAUSE with a reason and, for ITERATE, one
    action. ITERATE appends a review entry, clears readiness and returns to
