@@ -303,8 +303,8 @@ What Pathfinder took from it today:
 
 Left for V, because they decided the opposite today: automatic ITERATE
 rounds without an owner veto, and web search for peers as the default.
-Recommended outright: REVISE as a fourth verdict word routed to
-consolidation only, capped at one repair. Noted for the test suite: the
+REVISE as a fourth verdict word, routed to consolidation only and capped
+at one repair, was adopted on V's decision the same evening. Noted for the test suite: the
 fake CLI should write everything a real call writes.
 
 ## Decisions taken on the way

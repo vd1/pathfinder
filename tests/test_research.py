@@ -119,3 +119,29 @@ def test_blocked_when_consolidation_writes_nothing(tmp_path, monkeypatch):
     assert reconcile.inspect(c, "Q1P1")["action"] == "run consolidate"
     state["write_note"] = True
     assert reconcile.apply(c, "Q1P1") == "PAUSE"
+
+
+def test_revise_repairs_the_note_once_then_caps(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path, rounds=3); c.raw = {"repairs": 1}
+    real = transport.call
+    seen = {"consolidate": 0, "verify": 0, "prompts": []}
+
+    def fake_call(prompt, **kw):
+        if kw["stage"] == "peers":
+            monkeypatch.setenv("FAKE_RUN", f"{sys.executable} -m pathfinder.ledger --root . --actor {kw['actor']} add --kind idea --text x >/dev/null")
+            monkeypatch.setenv("FAKE_REPLY", "p")
+        elif kw["stage"] == "consolidate":
+            seen["consolidate"] += 1; seen["prompts"].append(prompt)
+            (kw["cwd"] / "Q1P1.tex").write_text(f"note v{seen['consolidate']}"); monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "ok")
+        else:
+            seen["verify"] += 1; monkeypatch.setenv("FAKE_RUN", "true")
+            monkeypatch.setenv("FAKE_REPLY", '{"decision":"REVISE","reason":"overclaims","action":"soften the claim"}')
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "PAUSE-ON-ITERATE"
+    s = research.status(c, "Q1P1")
+    assert s["round"] == 1 and s["repairs"] == 1 and s["reason"].startswith("repair cap")
+    assert seen["consolidate"] == 2 and seen["verify"] == 2 and "This is a repair" in seen["prompts"][1]
+    hist = json.loads((tmp_path / "threads" / "Q1P1" / "Q1P1.verdict.json").read_text())
+    assert [h["decision"] for h in hist] == ["REVISE", "REVISE"] and hist[0]["note_sha256"] != hist[1]["note_sha256"]

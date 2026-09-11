@@ -4,6 +4,10 @@ Read {{Q_INPUT}}, {{P_INPUT}}, ledger.jsonl and {{NOTE}}.
 Decide one of:
   DRAFT    the note contains a supported, non-obvious result about the
            pair that would justify writing it up as a paper section
+  REVISE   the ledger supports a result but the note misstates it: a
+           dropped result, an overclaimed sentence, a framing error, a
+           missing attribution; the consolidating peer can fix it from the
+           ledger without new research; list the corrections
   ITERATE  there is a promising line but a specific gap, error or missing
            check stands in the way, and the peers can close it with the
            material they have: the two papers, the ledger, their own
@@ -19,5 +23,5 @@ the peers could not supply it, do not ask again: decide PAUSE and name
 the missing input.
 Check that every claim in the note traces to the ledger and that the
 ledger's arguments hold. Output exactly one JSON object and nothing else:
-{"decision": "DRAFT|ITERATE|PAUSE", "reason": "three sentences at most",
- "action": "for ITERATE, the one thing to do next; else null"}
+{"decision": "DRAFT|REVISE|ITERATE|PAUSE", "reason": "three sentences at most",
+ "action": "for REVISE, the corrections to make; for ITERATE, the one thing to do next; else null"}

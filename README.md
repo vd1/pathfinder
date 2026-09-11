@@ -9,8 +9,9 @@ have something to say to each other. It runs in two phases:
 2. **Research.** For each shortlisted pair, two peer agents with the full
    sources and a shared append-only ledger look for a publishable connexion.
    The first peer consolidates the ledger into a LaTeX note, an independent
-   verifier returns DRAFT, ITERATE or PAUSE, and ITERATE loops back to the
-   peers up to a cap.
+   verifier returns DRAFT, REVISE, ITERATE or PAUSE; REVISE sends the note
+   back to the consolidating peer for one repair without new research, and
+   ITERATE loops back to the peers up to a cap.
 
 Every thread ends with a ledger, a note named after the pair (for example
 `Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE` or
@@ -93,6 +94,7 @@ threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
 - `seats`: how many threads run at once.
 - `cut`: percentage of scored pairs that make the shortlist.
 - `rounds`: cap on verifier ITERATE loops per thread.
+- `repairs`: cap on REVISE repair passes per thread (default 1).
 - `paper_rounds`: cap on author and review rounds in the paper stage.
 - `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
   (per peer per round), `consolidate_seconds`, `verify_seconds`,
