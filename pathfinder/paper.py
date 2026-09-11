@@ -1,6 +1,6 @@
 """After DRAFT: an author writes a paper with BibTeX references, an independent reviewer accepts or returns it."""
 from __future__ import annotations
-import json, re, shutil, subprocess, time, urllib.parse, urllib.request
+import json, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import corpus, research, transport
@@ -91,9 +91,15 @@ def check_references(tex: str, bib: str, fetch=None) -> list[str]:
 
 def _arxiv_titles(ids: list[str]) -> dict:
     q = urllib.parse.urlencode({"id_list": ",".join(ids), "max_results": len(ids)})
-    with urllib.request.urlopen(corpus.API + q, timeout=60) as r:
-        rows = corpus.parse_atom(r.read().decode())
-    return {r["id"]: r["title"] for r in rows}
+    for attempt in range(3):                       # the arXiv API rate-limits; back off and retry
+        try:
+            with urllib.request.urlopen(corpus.API + q, timeout=60) as r:
+                rows = corpus.parse_atom(r.read().decode())
+            return {r["id"]: r["title"] for r in rows}
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or attempt == 2:
+                raise
+            time.sleep(10 * (attempt + 1))
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
@@ -128,6 +134,7 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         q = _prompt(campaign, "review")
         q += "\n\n## paper.tex\n\n" + tex + "\n\n## references.bib\n\n" + bib
         q += "\n\n## reference checks\n\n" + ("\n".join(checks) or "no findings")
+        q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")
         q += "\n\n## " + pair_id + ".tex\n\n" + (d / f"{pair_id}.tex").read_text(errors="replace")
         q += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
         for side in "QP":

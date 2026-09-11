@@ -45,6 +45,8 @@ def _command(campaign, model, tools, search, cwd):
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
             "--sandbox", "workspace-write" if tools else "read-only",
             "-c", f'web_search="{"live" if (tools and search) else "disabled"}"']
+    if tools and search:                           # the workspace sandbox has no network unless asked
+        cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     prov = (campaign.raw or {}).get("codex") or {}
     if prov.get("base_url"):                       # a custom OpenAI-compatible provider, e.g. a university proxy
         name = prov.get("name", "custom")

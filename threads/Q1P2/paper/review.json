@@ -1,0 +1,35 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T17:44:02Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 429: Unknown Error"
+  ],
+  "decision": "REVISE",
+  "summary": "The core conformal coverage and deterministic gate-transfer argument is sound and the scope limitations are mostly careful. Revision is needed because the claimed search record is unsupported and contradicts the supplied note, while several mathematical domains and terms are left undefined.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Related work and novelty status",
+    "issue": "The paper says a targeted search is recorded in search.md, but no such record is supplied, the only reference check reports a failed arXiv lookup, and the consolidated note explicitly says no outside literature search was used.",
+    "fix": "Remove the unsupported search.md statement and say that no completed external search is recorded; retain novelty only relative to Q, P, and the supplied thread."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Calibrated selective gate, equations (6)\u2013(8)",
+    "issue": "The conformal theorem does not specify n as a positive integer or \u03b1 in (0,1), and it does not state the measurability and finiteness conditions for the Hausdorff scores. The +\u221e convention also invokes extended-real arithmetic in the gate inequalities without defining it.",
+    "fix": "State n\u22651, 0<\u03b1<1, and measurable finite scores for ordinary operation; handle k>n separately by declaring that the certificate abstains everywhere rather than substituting +\u221e into the displayed inequalities."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Calibrated selective gate, paragraph after deterministic margin transfer",
+    "issue": "The claim that the binary gate is not globally Lipschitz refers to \u201cmembership error\u201d without defining a metric on gate decisions or on collections of points, so the statement is not mathematically well-formed as written.",
+    "fix": "Either define the input and output metrics and prove the Lipschitz claim, or replace it with the already-supported pointwise instability statement that arbitrarily small wall displacement can flip a threshold-near decision."
+   }
+  ]
+ }
+]

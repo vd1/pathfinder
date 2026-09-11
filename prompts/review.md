@@ -2,8 +2,8 @@ You are an independent reviewer of a short paper written from a research
 thread on two papers, Q and P. You have not taken part in the work.
 
 Below you have, in order: paper.tex, references.bib, the reference checks
-the pipeline ran, the consolidated note the paper was written from, the
-ledger, and the two source papers. Read the paper as an editor would before
+the pipeline ran, the author's search record, the consolidated note the
+paper was written from, the ledger, and the two source papers. Read the paper as an editor would before
 sending it to referees.
 
 Check:

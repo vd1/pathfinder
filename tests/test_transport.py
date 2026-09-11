@@ -57,3 +57,9 @@ def test_codex_custom_provider_flags_and_key(tmp_path):
     cmd = transport._command(c, "m", tools=True, search=False, cwd=tmp_path)
     assert 'model_provider="elm"' in cmd and 'model_providers.elm.base_url="https://example.org/api/v1"' in cmd and cmd[-1] == "-"
     assert transport._env(c)["MY_KEY"] == "secret"
+
+
+def test_codex_search_opens_the_sandbox_network(tmp_path):
+    c = campaign(tmp_path, "codex")
+    assert "sandbox_workspace_write.network_access=true" in transport._command(c, "m", tools=True, search=True, cwd=tmp_path)
+    assert "sandbox_workspace_write.network_access=true" not in transport._command(c, "m", tools=True, search=False, cwd=tmp_path)
