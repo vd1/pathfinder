@@ -98,6 +98,8 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
         _kill(proc); error = "timeout"
     t.join(5)
     text, session, inp, out, cost, err = _parse(campaign, model, lines)
+    if error == "timeout" and not (inp or out):
+        cost = campaign.call_estimate_usd          # usage unknown after a kill: charge the estimate
     if proc.returncode not in (0, None) and not error and not err:
         err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
     r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "input_tokens": inp,

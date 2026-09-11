@@ -50,8 +50,10 @@ Q's score table: q(H,H) = 7/9, q(H,L) = 1/9, q(L,H) = 1, q(L,L) = -1. If the par
 with probability p regardless of type, reporting H earns 1/9 + 2p/3 and reporting L earns 2p - 1.
 These are equal at p* = 5/6. Both types mixing 5/6 on H is a symmetric equilibrium: on-path
 utilities cancel and the -infinity penalty keeps obedience. Reports are uninformative and the
-human gets 1/2 instead of 1. Pure pooling is not an equilibrium: under "always H", deviating
-to L gives 1 > 7/9; under "always L", deviating to H gives 1/9 > -1.
+human gets 1/2 instead of 1. Symmetric pure pooling is not an equilibrium: under "always H",
+deviating to L gives 1 > 7/9; under "always L", deviating to H gives 1/9 > -1. Correction
+(emmy, ledger #13): asymmetric pure pooling (agent 1 always H, agent 2 always L) is an
+equilibrium, since 1/9 > -1 and 1 > 7/9.
 
 Contrast with P: P's inner loop rewards agreement absolutely, since it terminates on AGREE.
 Q's proper score rewards agreement only as far as the agent's own type predicts the partner's
@@ -104,3 +106,40 @@ multi-agent revelation principle needs only monotone input menus, not transfers,
 protocol with response rules replicates any richer exchange with the same evidence structure. This
 is conditional on citations being checked and on R obeying the response rules. AGREE and C's added
 bugs carry no certificate (emmy #2), so the order constrains only one channel.
+
+## 7. Contrarian escape: affine form, stability, unknown ratio, and a selection caveat
+
+Checks: `uv run --with sympy --with numpy python ada/check_ratio.py` (also confirms the identity
+in emmy/general_rewards.md sec 1 and emmy's example in sec 2).
+
+D-only quadratic rewards, c_i = 1/(1 + kappa_i), b_C = k b_R. R's equilibrium output is
+
+    x_R = A b_R + (1 - A) b_C,   A = c_R / (c_R + c_C - c_R c_C),
+
+an affine combination with a weight fixed by the design; A can take any real value. The error is
+zero only at A* = k/(k - 1), so de-biasing needs the bias ratio and, for same-sign biases,
+extrapolation (A outside [0, 1]).
+
+- Stability. For 0 < k < 1 (C less biased, same direction), A* < 0. A < 0 iff
+  (c_R - 1)(c_C - 1) > 1, and with rho_i = 1 - c_i this is rho_R rho_C > 1: alternating best
+  responses diverge. Every exact de-biasing design with 0 < k < 1 has an unstable equilibrium
+  (random search found none stable; emmy's example reaches 1e19 in 40 rounds). For k > 1
+  (C more biased) stable designs exist: C states its bliss point (kappa_C = 0) and R plays
+  a_R = c_R t_R + (1 - c_R) t_C with c_R = k/(k - 1); for k = 2 this is a_R = 2 t_R - t_C.
+- Unknown ratio. A design tuned to k0 leaves beta_R(k) = (k - k0)/(1 - k0). All designs pass
+  through beta_R = 1 at k = 1. Over k in [k_lo, k_hi] with k_hi < 1 the best worst case is
+  (k_hi - k_lo)/((1 - k_lo) + (1 - k_hi)): 0.96 for [0.5, 0.99], 0.6 for [0.8, 0.95], 1/3 for
+  [-2, -0.5]. R alone has 1.
+- Any state-independent mechanism, unknown ratio. Types (b, k) in [0, B] x [k_lo, k_hi] contain
+  (B (1 - k_hi)/(1 - k_lo), k_lo) and (B, k_hi), which share (t_R, t_C) and whose states differ
+  by B (k_hi - k_lo)/(1 - k_lo). This extends emmy's k = 1 argument continuously.
+
+Selection caveat (applies to the last bullet and to emmy/general_rewards.md sec 3). Identical
+preference profiles give identical games, so the bound holds for full implementation and for any
+equilibrium selection that depends only on the game. It does not hold under Q's standard, partial
+implementation (Q footnote at line 543: "an equilibrium, not necessarily the unique one"). With
+clones, a report-matching device (action = common report m, mismatch penalty -infinity) has every
+common m as an equilibrium in every state, m = theta included. Both agents strictly prefer
+m = t (payoff 0) to m = theta (payoff -b^2 each), so the agent-preferred equilibrium is the
+biased consensus. For clones the question is which equilibrium the models select, which ties
+this to sec 3 and ledger #13.

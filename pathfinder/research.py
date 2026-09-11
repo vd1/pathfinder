@@ -114,15 +114,15 @@ def _peers(campaign, pair_id, stop):
             f.result()
 
 
-def _stage_call(campaign, pair_id, stage, prompt, tools, seconds):
-    """Run consolidate or verify; rerun once on timeout or empty reply."""
+def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
+    """Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists."""
     d = campaign.thread_dir(pair_id)
     for attempt in range(2):
         r = transport.call(prompt, campaign=campaign, model=campaign.model, tools=tools, search=False, cwd=d,
                            timeout=seconds, thread=pair_id, stage=stage, actor="ada" if stage == "consolidate" else "verifier")
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
-        if r["text"] or r["error"] is None:
+        if r["text"] or r["error"] is None or done():
             return r
     return r
 
@@ -146,7 +146,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 _check(stop)
                 why = "" if L.ready(list(PEERS)) else " because the allowance ran out before both peers declared ready"
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                _prompt(campaign, "consolidate", ACTOR="ada", WHY=why, NOTE=note.name), True, A["consolidate_seconds"])
+                                _prompt(campaign, "consolidate", ACTOR="ada", WHY=why, NOTE=note.name), True, A["consolidate_seconds"],
+                                done=note.exists)
                 if not note.exists():
                     if r["text"].strip():
                         note.write_text(r["text"])
