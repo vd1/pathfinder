@@ -222,9 +222,15 @@ none above 2100. The second page of "agentic cooperation" was closer to
 the query's meaning (commitment to cooperation with self-negotiated
 contracts, an energy-society simulation, dynamic multi-agent oversight,
 rank aggregation for credit assignment), which is the corpus effect the
-pilot report predicted. The runner admitted the top new pair, Q4P10
-(alignment mechanism design against dynamic multi-agent oversight), on
-Codex under the remaining budget; the guard holds the other eight.
+pilot report predicted. The runner then admitted the new pairs in rank
+order on Codex under the remaining budget: Q4P10 (alignment mechanism
+design against dynamic multi-agent oversight) ended PAUSE in one round,
+and Q3P9 (LLM market behaviour against commitment with self-negotiated
+contracts) ended PAUSE after an ITERATE, both for a few dollars and a few
+minutes each; then the guard refused the third at 98.59 USD against the
+cap of 100 and wrote the stop marker. Seven admitted pairs wait behind it.
+Both PAUSE reasons name what is missing (an experiment, evidence neither
+paper supplies), which is the form the revised verify prompt asks for.
 
 ## Conversation with the E-prime agent
 

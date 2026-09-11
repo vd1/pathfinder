@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Q and P: Executable Commitments in LLM Exchange}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies LLM traders in a continuous double auction and reports slow or absent convergence, incremental price changes, and allocative efficiencies of $0.36$--$0.67$ for GPT Large; execution is associated with urgency rather than continued margin optimization (ledger entries 1 and 6). P studies delayed-reciprocity cooperation in a two-player spatial game and finds that programmatic contracts can improve outcomes, while natural-language contracts can suppress residual trade and completion (entries 4 and 6).
+
+\section*{The connexion pursued}
+The peers asked whether Q's failure to complete beneficial trades and P's sensitivity to contract representation share a mechanism: a salient natural-language commitment may become an anchor, whereas a complete executable policy may turn a late intention to execute into action (entries 3, 6, and 8). The proposed connexion is a hypothesis about representation, completeness, and execution, not a claim that P's contracts already repair Q (entries 4 and 9).
+
+\section*{What was found}
+The initial bridge was empirical. In Q, GPT Large continues making $0.01$ spread improvements until time expires, with only $2.2$--$3.8$ trades per round and low efficiency; Q's trace analysis associates crossing with urgency and execution language (entries 1, 6, and 12). In P, natural-language and programmatic contracts cover roughly the same number of moves, yet natural-language contracts leave fewer residual trades. P also reports both-finish rates of $46\%$ for natural-language contracts, $61\%$ without contracts, and $79\%$ for programmatic tile contracts (entries 6, 11, and 12). These comparisons support testing an implementation gap, but do not identify semantic anchoring by themselves (entry 11).
+
+The ledger then uncovered a confound in Q. The mechanism fixes $T=300$, but the prompt does not state $T$ or the remaining budget. Order histories reveal iteration numbers, so elapsed progress is partly inferable; the corrected claim is that the horizon and the fraction remaining are hidden, not that current iteration is wholly absent (entries 12, 15, and 19). The methods describe termination at $T$, while the prompt also says the round ends when no improving order can be posted (entries 17 and 19). A later audit of the current released code found that an active LLM round does not trigger the computable deadlock test: it reaches the cap unless fewer than two agents remain active (entries 23 and 28). Thus the prompt is imprecise for current LLM runs, although Q does not pin the historical experimental commit, so the audit cannot establish which logic produced the reported results (entries 24 and 29).
+
+The resulting design keeps Q's decentralized auction, private reservation values, order book, and matched activation sequences. It crosses horizon information (vague cap versus explicit $T$ and remaining budget) with action interface (baseline, a standardized nonbinding natural-language limit-on-close intention, or a mechanically executable reservation-safe limit-on-close rule) (entries 16 and 20). The executable rule crosses only an individually rational standing quote and does not disclose the reservation value (entries 7 and 12). Surplus efficiency and price dispersion $\alpha$ are primary outcomes; time, volume, spread crossing, and concession size are secondary, because automatic execution can raise volume without improving allocation (entries 7, 9, and 20).
+
+The derivation of the tests is direct. If horizon disclosure alone closes the gap, Q mainly measured horizon opacity and the Q--P commitment bridge weakens. If executable authorization beats wording-matched natural language under an explicit clock, the result supports an implementation or commitment gap consistent with P. If natural language performs worse than baseline or a hidden-text control, that supports transport of P's anchoring account. Strategic waiting, lower surplus, or worse $\alpha$ would count against the repair (entries 16 and 20).
+
+\section*{Objections and resolutions}
+P concerns delayed reciprocity, whereas Q's crossing trade executes immediately; bilateral negotiation could also destroy the decentralization and price discovery central to Q (entry 4). This was resolved at the design level by replacing bilateral contracts with unilateral executable concession policies over the unchanged auction (entries 8 and 13). The peers also corrected the overstatement that Q hides current iteration, narrowing the confound to undisclosed $T$ and remaining time (entries 15 and 19).
+
+Other objections remain. P changes runtime interpretation as well as surface representation, its game and models differ from Q's, and Q's lexical evidence is correlational and model-specific (entries 9 and 11). Policy completeness and authorship must be standardized or yoked; automatic crossing may merely relocate bargaining, induce waiting, reveal information through quotes, or trade price discovery for completion (entries 7, 9, and 13). The current released-code stopping rule has been audited, resolving the verifier's immediate objection, but historical code and data provenance remain unpinned (entries 22--24 and 28--29).
+
+\section*{Sources outside Q and P}
+The peers inspected the current released source code for Q's market simulator at commit \texttt{af6f792} on GitHub to determine the stopping behavior (entries 23 and 28). No outside prior-work search was conducted; the ledger states that novelty was not checked on the web (entry 13).
+
+\section*{What remains open}
+The material is thin: it motivates an experiment but contains no experiment on the combined hypothesis. Open points are historical code and data provenance, transport across games and models, policy authorship and yoking, horizon sensitivity, strategic endgame waiting, and whether welfare gains can occur without degrading $\alpha$ (entries 9, 13, 20, 24, and 25).
+
+\section*{Smallest next step}
+Pin the code commit and data provenance for Q's reported runs, then verify that their stopping logic matches the audited current behavior (entries 24, 25, and 29). This is the smallest next step because it settles whether horizon opacity is a valid interpretation of Q's existing results before the proposed horizon-information by action-interface experiment is run; it does not by itself settle the broader Q--P hypothesis.
+
+\end{document}
