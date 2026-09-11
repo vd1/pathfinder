@@ -48,3 +48,12 @@ def test_timeout_after_session_is_an_error_not_transport(tmp_path, monkeypatch):
     r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
                        timeout=1, thread="T", stage="scan", actor="judge")
     assert r["error"] == "timeout" and not r["transport_failed"]
+
+
+def test_codex_custom_provider_flags_and_key(tmp_path):
+    (tmp_path / "keys.env").write_text("OTHER=1\nMY_KEY='secret'\n")
+    c = campaign(tmp_path, "codex")
+    c.raw = {"codex": {"name": "elm", "base_url": "https://example.org/api/v1", "env_key": "MY_KEY", "key_file": "keys.env"}}
+    cmd = transport._command(c, "m", tools=True, search=False, cwd=tmp_path)
+    assert 'model_provider="elm"' in cmd and 'model_providers.elm.base_url="https://example.org/api/v1"' in cmd and cmd[-1] == "-"
+    assert transport._env(c)["MY_KEY"] == "secret"

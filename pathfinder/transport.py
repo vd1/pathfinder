@@ -13,8 +13,21 @@ class TransportFailed(Exception):
     """Raised by callers when a call never reached a model session."""
 
 
-def _env():
-    return {k: v for k, v in os.environ.items() if not any(s in k for s in SCRUB)}
+def _env(campaign):
+    env = {k: v for k, v in os.environ.items() if not any(s in k for s in SCRUB)}
+    prov = (campaign.raw or {}).get("codex") or {}
+    if campaign.backend == "codex" and prov.get("key_file"):
+        env[prov["env_key"]] = _key_from_file(campaign.path(prov["key_file"]), prov["env_key"])
+    return env
+
+
+def _key_from_file(path, name):
+    """Read NAME=value from a dotenv-style file; the value goes to the child environment only."""
+    for line in Path(path).read_text().splitlines():
+        k, _, v = line.strip().partition("=")
+        if k == name:
+            return v.strip().strip("'\"")
+    raise RuntimeError(f"{name} not found in {path}")
 
 
 def _command(campaign, model, tools, search, cwd):
@@ -31,8 +44,15 @@ def _command(campaign, model, tools, search, cwd):
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
             "--sandbox", "workspace-write" if tools else "read-only",
-            "-c", f'web_search="{"live" if (tools and search) else "disabled"}"', "-"]
-    return cmd
+            "-c", f'web_search="{"live" if (tools and search) else "disabled"}"']
+    prov = (campaign.raw or {}).get("codex") or {}
+    if prov.get("base_url"):                       # a custom OpenAI-compatible provider, e.g. a university proxy
+        name = prov.get("name", "custom")
+        cmd += ["-c", f'model_provider="{name}"', "-c", f'model_providers.{name}.name="{name}"',
+                "-c", f'model_providers.{name}.base_url="{prov["base_url"]}"',
+                "-c", f'model_providers.{name}.env_key="{prov["env_key"]}"',
+                "-c", f'model_providers.{name}.wire_api="{prov.get("wire_api", "responses")}"']
+    return cmd + ["-"]
 
 
 def _parse(campaign, model, lines):
@@ -70,7 +90,7 @@ def _parse(campaign, model, lines):
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
-    proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(),
+    proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                             text=True, start_new_session=True)
     lines, session_seen = [], threading.Event()
