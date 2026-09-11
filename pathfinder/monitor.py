@@ -23,6 +23,8 @@ def state(campaign) -> dict:
              if corpus.pair_id(i, j) in by_id else None for j in range(1, len(P) + 1)] for i in range(1, len(Q) + 1)]
     receipts = transport.receipts(campaign); rc = {}
     for r in receipts:
+        if r.get("stage") == "scan":
+            continue
         t = rc.setdefault(r.get("thread"), {"spend": 0.0, "seconds": 0.0, "calls": 0})
         t["spend"] += r.get("cost") or 0; t["seconds"] += r.get("seconds") or 0; t["calls"] += 1
     sl = json.loads(campaign.path("shortlist.json").read_text()) if campaign.path("shortlist.json").exists() else {"pairs": []}
@@ -66,7 +68,7 @@ def status_text(campaign) -> str:
 PAGE = Path(__file__).parent / "monitor.html"
 
 
-def serve(campaign, port: int = 8765):
+def serve(campaign, port: int = 8790):
     root = campaign.root
 
     class H(SimpleHTTPRequestHandler):

@@ -31,7 +31,7 @@ uv run pathfinder fetch --q "mechanism design" --p "agentic cooperation" --n 5
 uv run pathfinder sources
 uv run pathfinder scan
 uv run pathfinder select --cut 12
-uv run pathfinder serve      # in a second terminal: http://localhost:8765/
+uv run pathfinder serve      # in a second terminal: http://localhost:8790/
 uv run pathfinder research
 uv run pathfinder status
 ```

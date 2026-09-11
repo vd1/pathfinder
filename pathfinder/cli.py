@@ -16,7 +16,7 @@ def main(argv=None):
     sub.add_parser("research", help="run the shortlisted threads")
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
     sub.add_parser("status", help="print campaign and shortlist state")
-    sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8765)
+    sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     ns = ap.parse_args(argv); c = config.load(Path(ns.root))
