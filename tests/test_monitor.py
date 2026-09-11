@@ -18,3 +18,16 @@ def test_state_and_status_text(tmp_path):
     assert s["scan"]["done"] == 1 and s["scan"]["total"] == 2 and s["scan"]["grid"][0][0] == 4000
     assert s["threads"]["Q1P1"]["entries"] == 1 and s["shortlist"][0]["spend"] == 2.5
     assert "Q1P1" in monitor.status_text(c)
+
+
+def test_pdf_compiles_a_note(tmp_path):
+    import shutil, pytest
+    if not shutil.which("pdflatex"):
+        pytest.skip("pdflatex not installed")
+    tex = tmp_path / "Q1P1.tex"
+    tex.write_text("\\documentclass{article}\\begin{document}hello\\end{document}\n")
+    data, log = monitor.pdf(tex)
+    assert data[:4] == b"%PDF" and "Output written" in log
+    tex.write_text("\\documentclass{article}\\begin{document}\\undefinedmacro\\end{document}\n")
+    data, log = monitor.pdf(tex)
+    assert data == b"" and "Undefined control sequence" in log

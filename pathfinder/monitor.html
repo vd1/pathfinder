@@ -5,27 +5,40 @@
 <title>Pathfinder monitor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root { --bg:#fafafa; --fg:#222; --muted:#666; --line:#ddd; --card:#fff; --accent:#2a6fdb; --warn:#c0392b; --ok:#1e8449; }
-@media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#e6e6e6; --muted:#999; --line:#333; --card:#1e1e1e; --accent:#6ea8ff; --warn:#ff7b6b; --ok:#5fd38d; } }
-body { margin:0; padding:16px 24px; font:14px/1.45 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
-h1 { font-size:18px; margin:0 0 12px; } h2 { font-size:15px; margin:20px 0 8px; }
+:root { --bg:#f7f7f5; --fg:#222; --muted:#6b6b6b; --line:#ddd; --card:#fff; --accent:#2a6fdb; --warn:#c0392b; --ok:#1e8449; --soft:rgba(42,111,219,.10); }
+@media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#e6e6e6; --muted:#9a9a9a; --line:#333; --card:#1d1d1d; --accent:#6ea8ff; --warn:#ff7b6b; --ok:#5fd38d; --soft:rgba(110,168,255,.14); } }
+* { box-sizing:border-box; }
+body { margin:0; padding:16px 24px 40px; font:14px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+h1 { font-size:18px; margin:0 0 12px; display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
+h2 { font-size:15px; margin:22px 0 8px; } h3 { font-size:13px; margin:14px 0 6px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
 .tiles { display:flex; flex-wrap:wrap; gap:10px; }
-.tile { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:8px 12px; min-width:110px; }
-.tile b { display:block; font-size:18px; } .tile span { color:var(--muted); font-size:12px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:8px 12px; min-width:120px; }
+.tile b { display:block; font-size:18px; font-weight:600; } .tile span { color:var(--muted); font-size:12px; }
 .flag { color:var(--warn); font-weight:600; } .good { color:var(--ok); }
-table { border-collapse:collapse; background:var(--card); } td, th { border:1px solid var(--line); padding:4px 8px; text-align:left; vertical-align:top; }
+table { border-collapse:collapse; background:var(--card); width:100%; } td, th { border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
 th { color:var(--muted); font-weight:500; font-size:12px; }
-.heat td.cell { width:44px; text-align:center; font-variant-numeric:tabular-nums; }
+.heat { width:auto; } .heat td.cell { width:46px; text-align:center; font-variant-numeric:tabular-nums; cursor:default; }
 .heat td.short { outline:2px solid var(--accent); outline-offset:-2px; font-weight:600; }
-.heat th.rot { max-width:120px; font-size:11px; white-space:normal; }
-.bars { display:flex; align-items:flex-end; gap:2px; height:60px; margin-top:6px; }
-.bar { width:8px; background:var(--muted); } .bar.in { background:var(--accent); }
-tr.pair { cursor:pointer; } tr.pair:hover { background:rgba(128,128,128,.08); } tr.sel { background:rgba(42,111,219,.12); }
+.bars { display:flex; align-items:flex-end; gap:2px; height:56px; margin-top:8px; }
+.bar { width:8px; background:var(--muted); opacity:.6; } .bar.in { background:var(--accent); opacity:1; }
+tr.pair { cursor:pointer; } tr.pair:hover { background:var(--soft); } tr.sel { background:var(--soft); }
+.st { display:inline-block; padding:0 7px; border-radius:10px; font-size:12px; font-weight:600; }
+.st-DRAFT { background:var(--ok); color:#fff; } .st-PAUSE, .st-PAUSE-ON-ITERATE { background:var(--muted); color:#fff; }
+.st-running { background:var(--accent); color:#fff; } .st-stopped, .st-new { border:1px solid var(--line); } .st-BLOCKED { background:var(--warn); color:#fff; }
 .badge { display:inline-block; padding:0 6px; border-radius:10px; font-size:11px; border:1px solid var(--line); margin-right:4px; }
-.ada { border-color:#c47dd8; } .emmy { border-color:#5bb; } .verifier { border-color:#e0a030; }
-.entry { border-bottom:1px solid var(--line); padding:6px 0; } .entry .t { white-space:pre-wrap; margin-top:2px; }
-.muted { color:var(--muted); } a { color:var(--accent); }
-.two { display:grid; grid-template-columns: 1fr 1fr; gap:24px; } @media (max-width: 1000px) { .two { grid-template-columns:1fr; } }
+.ada { border-color:#c47dd8; color:#a04fc0; } .emmy { border-color:#3aa; color:#288; } .verifier { border-color:#e0a030; color:#b07a10; }
+.k-finding { background:var(--soft); } .k-objection { border-color:var(--warn); color:var(--warn); } .k-correction { border-color:var(--warn); }
+.k-ready { background:var(--ok); color:#fff; border-color:var(--ok); }
+.entry { border-bottom:1px solid var(--line); padding:8px 0; } .entry .t { white-space:pre-wrap; margin-top:3px; overflow-wrap:anywhere; }
+.entry .t.clip { max-height:7.5em; overflow:hidden; position:relative; }
+.more { color:var(--accent); cursor:pointer; font-size:12px; }
+.verdict { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:4px; padding:8px 10px; margin:6px 0; }
+.verdict.DRAFT { border-left-color:var(--ok); } .verdict.PAUSE { border-left-color:var(--muted); }
+.muted { color:var(--muted); } a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.links a { margin-right:8px; }
+.two { display:grid; grid-template-columns: minmax(0,5fr) minmax(0,6fr); gap:28px; } @media (max-width: 1100px) { .two { grid-template-columns:1fr; } }
+.card { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:10px 14px; }
+.files { columns:2; font-size:12px; } .files a { display:block; }
 </style>
 </head>
 <body>
@@ -44,58 +57,75 @@ tr.pair { cursor:pointer; } tr.pair:hover { background:rgba(128,128,128,.08); } 
 </div>
 </div>
 <script>
-let selected = null, last = null;
+let selected = null, last = null; const open = new Set();
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = (n, d=2) => (n ?? 0).toFixed(d);
+const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)}h ${Math.round((s%3600)/60)}m` : `${Math.round(s/60)}m`; };
 function tile(label, value, cls="") { return `<div class="tile"><b class="${cls}">${value}</b><span>${label}</span></div>`; }
 function heat(v, max) { if (v == null) return "background:transparent;color:var(--muted)";
-  const a = max ? Math.min(1, v / max) : 0; return `background:rgba(42,111,219,${(0.08 + 0.75*a).toFixed(2)});color:${a > 0.55 ? "#fff" : "inherit"}`; }
+  const a = max ? Math.min(1, v / max) : 0; return `background:rgba(42,111,219,${(0.06 + 0.8*a).toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}`; }
+function stat(s) { return `<span class="st st-${esc(s ?? "new")}">${esc(s ?? "new")}</span>`; }
+function elapsed(c) { if (!c.first_call || !c.last_call) return "";
+  return mins((new Date(c.last_call) - new Date(c.first_call)) / 1000); }
 function render(s) {
   last = s; const c = s.campaign;
   document.getElementById("phase").textContent = "phase: " + c.phase;
   document.getElementById("gen").textContent = "updated " + s.generated;
-  const by = Object.entries(c.by_status).map(([k, v]) => `${k} ${v}`).join(", ") || "none";
+  const by = Object.entries(c.by_status).map(([k, v]) => `${stat(k)} ${v}`).join(" ") || "none";
   document.getElementById("tiles").innerHTML =
-    tile("spend / budget USD", `${fmt(c.spend)} / ${fmt(c.budget)}`, c.spend > c.budget ? "flag" : "") +
-    tile("model calls", c.calls) + tile("model minutes", Math.round(c.seconds / 60)) +
-    tile("seats", c.seats) + tile("backend / model", `${esc(c.backend)}<br><small>${esc(c.model)}</small>`) +
+    tile("spend / budget, USD", `${fmt(c.spend)} / ${fmt(c.budget)}`, c.spend > c.budget ? "flag" : "") +
+    tile("model calls (errors)", `${c.calls} <small class="muted">(${c.errors})</small>`) + tile("model time", mins(c.seconds)) +
+    tile("wall time, first to last call", elapsed(c)) + tile("seats", c.seats) +
+    tile("backend / model", `${esc(c.backend)}<br><small>${esc(c.model)}</small>`) +
     tile("stop", c.stop ? `<span class="flag">${esc(c.stop.reason)}</span>` : "<span class='good'>no</span>") +
     tile("health", c.health ? `<span class="flag">${esc(c.health.reason)}</span>` : "<span class='good'>ok</span>") +
     tile("threads", by);
   const sc = s.scan, short = new Set(s.shortlist.map(p => p.pair_id));
   const max = Math.max(1, ...sc.scores);
-  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `, cut ${sc.cut}% selects ${sc.n_selected}` : ""}</p>`;
+  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `; cut ${sc.cut}% selects ${sc.n_selected}` : ""}. Score = feasibility x gain. Outlined cells are shortlisted; hover for titles.</p>`;
   if (sc.q.length && sc.p.length) {
-    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th class="rot" title="${esc(t)}">P${j+1}</th>`).join("")}</tr>`;
+    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th title="${esc(t)}">P${j+1}</th>`).join("")}</tr>`;
     sc.grid.forEach((row, i) => { h += `<tr><th title="${esc(sc.q[i])}">Q${i+1}</th>` + row.map((v, j) => {
-      const id = `Q${i+1}P${j+1}`; return `<td class="cell ${short.has(id) ? "short" : ""}" style="${heat(v, max)}" title="${id}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
+      const id = `Q${i+1}P${j+1}`; return `<td class="cell ${short.has(id) ? "short" : ""}" style="${heat(v, max)}" title="${id}: ${esc(sc.q[i])} x ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
     h += "</table></div>";
-    h += `<div class="bars">${sc.scores.map((v, i) => `<div class="bar ${i < sc.n_selected ? "in" : ""}" style="height:${Math.max(2, 60*v/max)}px" title="${v}"></div>`).join("")}</div>`;
+    h += `<div class="bars">${sc.scores.map((v, i) => `<div class="bar ${i < sc.n_selected ? "in" : ""}" style="height:${Math.max(2, 56*v/max)}px" title="${v}"></div>`).join("")}</div>`;
+    h += `<div class="muted" style="font-size:12px">all scores, sorted; blue ones made the cut</div>`;
   }
   document.getElementById("scan").innerHTML = h;
-  let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>min</th><th>USD</th><th>files</th></tr>`;
+  let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>time</th><th>USD</th><th>open</th></tr>`;
   for (const p of s.shortlist) {
     const th = s.threads[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
-    const files = [th.entries ? `<a href="${base}ledger.jsonl">ledger</a>` : "", th.note ? `<a href="${base}${th.note}">note</a>` : "",
-      (th.verdicts || []).length ? `<a href="${base}${p.pair_id}.verdict.json">verdict</a>` : ""].filter(Boolean).join(" ");
-    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td>${p.pair_id}</td><td>${p.score ?? ""}</td><td>${esc(p.status ?? "new")}</td><td>${p.round ?? 0}</td><td>${esc(p.stage ?? "")}</td><td>${p.calls}</td><td>${Math.round(p.seconds/60)}</td><td>${fmt(p.spend)}</td><td>${files}</td></tr>`;
+    const links = [th.entries ? `<a href="#" data-show="${p.pair_id}" data-to="ledger">ledger</a>` : "",
+      th.note ? `<a href="${base}${p.pair_id}.pdf" target="_blank">note (pdf)</a> <a href="${base}${p.pair_id}.tex" target="_blank">tex</a>` : "",
+      (th.verdicts || []).length ? `<a href="#" data-show="${p.pair_id}" data-to="verdicts">verdict</a>` : ""].filter(Boolean).join(" ");
+    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td>${p.score ?? ""}</td><td>${stat(p.status)}</td><td>${p.round ?? 0}</td><td>${esc(p.stage ?? "")}</td><td>${p.calls}</td><td>${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="links">${links}</td></tr>`;
   }
   document.getElementById("shortlist").innerHTML = t + "</table>";
-  document.querySelectorAll("tr.pair").forEach(r => r.onclick = () => { selected = r.dataset.id; render(last); });
+  document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.tagName === "A") return; selected = r.dataset.id; render(last); });
+  document.querySelectorAll("a[data-show]").forEach(a => a.onclick = e => { e.preventDefault(); selected = a.dataset.show; render(last);
+    const el = document.getElementById(a.dataset.to); if (el) el.scrollIntoView({behavior: "smooth", block: "start"}); });
   renderThread();
 }
 function renderThread() {
   const el = document.getElementById("thread"), th = last && last.threads[selected];
   document.getElementById("thread-title").textContent = selected ? `Thread ${selected}` : "Thread";
   if (!th) { el.innerHTML = '<span class="muted">Click a pair in the shortlist.</span>'; return; }
-  const st = th.status || {};
-  let h = `<p><b>${esc(st.status)}</b> at ${esc(st.stage)} round ${st.round ?? 0}${st.reason ? `: ${esc(st.reason)}` : ""}</p>`;
-  h += `<p class="muted">${th.entries} entries; by kind ${esc(JSON.stringify(th.by_kind))}; by actor ${esc(JSON.stringify(th.by_actor))}</p>`;
-  if (th.verdicts.length) h += "<h3 style='font-size:13px'>Verdicts</h3>" + th.verdicts.map(v => `<div class="entry"><span class="badge">round ${v.round}</span><b>${esc(v.decision)}</b> ${esc(v.reason)}${v.action ? `<div class="muted">next: ${esc(v.action)}</div>` : ""}</div>`).join("");
-  h += "<h3 style='font-size:13px'>Ledger</h3>" + (th.ledger.map(e =>
-    `<div class="entry"><span class="badge ${esc(e.actor)}">${esc(e.actor)}</span><span class="badge">${esc(e.kind)}</span><span class="muted">#${e.seq} ${esc(e.at)}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` seen #${e.seen}` : ""}</span><div class="t">${esc(e.text)}</div></div>`).join("") || '<span class="muted">empty</span>');
-  h += `<p class="muted">files: ${th.files.map(f => `<a href="/threads/${selected}/${f}">${esc(f)}</a>`).join(", ")}</p>`;
+  const st = th.status || {}, base = `/threads/${selected}/`;
+  let h = `<div class="card"><div>${stat(st.status)} at <b>${esc(st.stage)}</b>, round ${st.round ?? 0}${st.reason ? `<div class="muted" style="margin-top:4px">${esc(st.reason)}</div>` : ""}</div>`;
+  h += `<div style="margin-top:8px"><b>Q</b> ${esc(th.q_title)}<br><b>P</b> ${esc(th.p_title)}</div>`;
+  if (th.connexion) h += `<div class="muted" style="margin-top:6px"><b>scan said:</b> ${esc(th.connexion)}</div>`;
+  const stg = Object.entries(th.by_stage || {});
+  if (stg.length) h += `<table style="margin-top:8px;width:auto"><tr><th>stage</th><th>calls</th><th>time</th><th>USD</th><th>errors</th></tr>` +
+    stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
+  h += `<div class="links" style="margin-top:8px">${th.note ? `<a href="${base}${selected}.pdf" target="_blank">open the note as PDF</a> <a href="${base}${selected}.tex" target="_blank">tex source</a>` : "<span class='muted'>no note yet</span>"}</div></div>`;
+  h += `<h3 id="verdicts">Verdicts</h3>` + (th.verdicts.length ? th.verdicts.map(v =>
+    `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted">${esc(v.at)}</span><div style="margin-top:4px">${esc(v.reason)}</div>${v.action ? `<div class="muted" style="margin-top:4px"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : '<span class="muted">none yet</span>');
+  h += `<h3 id="ledger">Ledger, ${th.entries} entries <span style="text-transform:none;letter-spacing:0">(${Object.entries(th.by_kind).map(([k, v]) => `${k} ${v}`).join(", ")}; ${Object.entries(th.by_actor).map(([k, v]) => `${k} ${v}`).join(", ")}) <a href="${base}ledger.jsonl" target="_blank">raw</a></span></h3>`;
+  h += th.ledger.map(e => { const long = (e.text || "").length > 600, id = `${selected}#${e.seq}`, isOpen = open.has(id);
+    return `<div class="entry"><span class="badge ${esc(e.actor)}">${esc(e.actor)}</span><span class="badge k-${esc(e.kind)}">${esc(e.kind)}</span><span class="muted">#${e.seq} ${esc(e.at)}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` seen #${e.seen}` : ""}</span><div class="t ${long && !isOpen ? "clip" : ""}">${esc(e.text)}</div>${long ? `<span class="more" data-id="${id}">${isOpen ? "less" : "more"}</span>` : ""}</div>`; }).join("") || '<span class="muted">empty</span>';
+  h += `<h3>Files</h3><div class="files">${th.files.map(f => `<a href="${base}${f}" target="_blank">${esc(f)}</a>`).join("")}</div>`;
   el.innerHTML = h;
+  el.querySelectorAll(".more").forEach(m => m.onclick = () => { open.has(m.dataset.id) ? open.delete(m.dataset.id) : open.add(m.dataset.id); renderThread(); });
 }
 async function tick() { try { render(await (await fetch("/state")).json()); } catch (e) { document.getElementById("gen").textContent = "state unavailable: " + e; } }
 tick(); setInterval(tick, 5000);
