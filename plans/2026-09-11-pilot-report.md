@@ -315,6 +315,11 @@ fake CLI should write everything a real call writes.
 - Monitor default port moved to 8790.
 - The reference campaign file goes back to the Claude backend after the
   Codex thread; the `codex` block stays in it as a worked example.
+- An idea artefact between scan and research (E-prime's point 7) is not
+  built; instead the round cap goes from three to four, on the view that
+  the peer prompt and the verifier already ask for the connexion clearly
+  and that, with unmeetable gaps now ending as PAUSE and note repairs as
+  REVISE, a fourth round is only spent where it can pay.
 
 ## What would come next
 
