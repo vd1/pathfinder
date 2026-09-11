@@ -82,10 +82,11 @@ function render(s) {
     tile("threads", by);
   const sc = s.scan, short = new Set(s.shortlist.map(p => p.pair_id));
   const max = Math.max(1, ...sc.scores);
-  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `; cut ${sc.cut}% selects ${sc.n_selected}` : ""}. Score = feasibility x gain. Outlined cells are shortlisted; hover for titles.</p>`;
+  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `; cut ${sc.cut}% selects ${sc.n_selected}` : ""}. Score = feasibility x gain. Outlined cells are shortlisted; hover for titles, click a row or column label for the arXiv abstract.</p>`;
   if (sc.q.length && sc.p.length) {
-    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th title="${esc(t)}">P${j+1}</th>`).join("")}</tr>`;
-    sc.grid.forEach((row, i) => { h += `<tr><th title="${esc(sc.q[i])}">Q${i+1}</th>` + row.map((v, j) => {
+    const abs = id => id ? `https://arxiv.org/abs/${id}` : "#";
+    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${j+1}</a></th>`).join("")}</tr>`;
+    sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${i+1}</a></th>` + row.map((v, j) => {
       const id = `Q${i+1}P${j+1}`; return `<td class="cell ${short.has(id) ? "short" : ""}" style="${heat(v, max)}" title="${id}: ${esc(sc.q[i])} x ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
     h += "</table></div>";
     h += `<div class="bars">${sc.scores.map((v, i) => `<div class="bar ${i < sc.n_selected ? "in" : ""}" style="height:${Math.max(2, 56*v/max)}px" title="${v}"></div>`).join("")}</div>`;
@@ -97,7 +98,8 @@ function render(s) {
     const th = s.threads[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
     const links = [th.entries ? `<a href="#" data-show="${p.pair_id}" data-to="ledger">ledger</a>` : "",
       th.note ? `<a href="${base}${p.pair_id}.pdf" target="_blank">note (pdf)</a> <a href="${base}${p.pair_id}.tex" target="_blank">tex</a>` : "",
-      (th.verdicts || []).length ? `<a href="#" data-show="${p.pair_id}" data-to="verdicts">verdict</a>` : ""].filter(Boolean).join(" ");
+      (th.verdicts || []).length ? `<a href="#" data-show="${p.pair_id}" data-to="verdicts">verdict</a>` : "",
+      th.paper ? `<a href="${base}paper/paper.pdf" target="_blank">paper (${esc(th.paper.status)})</a>` : ""].filter(Boolean).join(" ");
     t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td>${p.score ?? ""}</td><td>${stat(p.status)}</td><td>${p.round ?? 0}</td><td>${esc(p.stage ?? "")}</td><td>${p.calls}</td><td>${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="links">${links}</td></tr>`;
   }
   document.getElementById("shortlist").innerHTML = t + "</table>";
@@ -112,12 +114,14 @@ function renderThread() {
   if (!th) { el.innerHTML = '<span class="muted">Click a pair in the shortlist.</span>'; return; }
   const st = th.status || {}, base = `/threads/${selected}/`;
   let h = `<div class="card"><div>${stat(st.status)} at <b>${esc(st.stage)}</b>, round ${st.round ?? 0}${st.reason ? `<div class="muted" style="margin-top:4px">${esc(st.reason)}</div>` : ""}</div>`;
-  h += `<div style="margin-top:8px"><b>Q</b> ${esc(th.q_title)}<br><b>P</b> ${esc(th.p_title)}</div>`;
+  const sl = last.shortlist.find(p => p.pair_id === selected) || {};
+  h += `<div style="margin-top:8px"><b>Q</b> <a href="https://arxiv.org/abs/${esc(sl.q)}" target="_blank">${esc(th.q_title)}</a><br><b>P</b> <a href="https://arxiv.org/abs/${esc(sl.p)}" target="_blank">${esc(th.p_title)}</a></div>`;
   if (th.connexion) h += `<div class="muted" style="margin-top:6px"><b>scan said:</b> ${esc(th.connexion)}</div>`;
   const stg = Object.entries(th.by_stage || {});
   if (stg.length) h += `<table style="margin-top:8px;width:auto"><tr><th>stage</th><th>calls</th><th>time</th><th>USD</th><th>errors</th></tr>` +
     stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
   h += `<div class="links" style="margin-top:8px">${th.note ? `<a href="${base}${selected}.pdf" target="_blank">open the note as PDF</a> <a href="${base}${selected}.tex" target="_blank">tex source</a>` : "<span class='muted'>no note yet</span>"}</div></div>`;
+  if (th.paper) h += `<h3>Paper</h3><div class="verdict ${th.paper.status === "accepted" ? "DRAFT" : ""}"><b>${esc(th.paper.status)}</b>, round ${th.paper.round}${th.paper.reason ? `<div style="margin-top:4px">${esc(th.paper.reason)}</div>` : ""}<div class="links" style="margin-top:4px"><a href="${base}paper/paper.pdf" target="_blank">pdf</a> <a href="${base}paper/paper.tex" target="_blank">tex</a> <a href="${base}paper/references.bib" target="_blank">bib</a> <a href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
   h += `<h3 id="verdicts">Verdicts</h3>` + (th.verdicts.length ? th.verdicts.map(v =>
     `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted">${esc(v.at)}</span><div style="margin-top:4px">${esc(v.reason)}</div>${v.action ? `<div class="muted" style="margin-top:4px"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : '<span class="muted">none yet</span>');
   h += `<h3 id="ledger">Ledger, ${th.entries} entries <span style="text-transform:none;letter-spacing:0">(${Object.entries(th.by_kind).map(([k, v]) => `${k} ${v}`).join(", ")}; ${Object.entries(th.by_actor).map(([k, v]) => `${k} ${v}`).join(", ")}) <a href="${base}ledger.jsonl" target="_blank">raw</a></span></h3>`;

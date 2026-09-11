@@ -4,7 +4,7 @@ import json, mimetypes, re, shutil, subprocess, tempfile, time
 from collections import Counter
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from . import corpus, research, transport
+from . import corpus, paper, research, transport
 
 
 def _jsonl(p: Path):
@@ -41,6 +41,7 @@ def state(campaign) -> dict:
                         "by_actor": dict(Counter(e["actor"] for e in led)), "ledger": led, "verdicts": verd,
                         "note": f"{pid}.tex" if (d / f"{pid}.tex").exists() else None, "files": files,
                         "by_stage": stages.get(pid, {}), "connexion": by_id.get(pid, {}).get("connexion"),
+                        "paper": paper.status(campaign, pid) if (d / "paper").exists() else None,
                         "q_title": Q[int(pid[1:].split("P")[0]) - 1].get("title") if Q else None,
                         "p_title": P[int(pid.split("P")[1]) - 1].get("title") if P else None}
         shortlist.append({**p, "status": s.get("status"), "round": s.get("round"), "stage": s.get("stage"),
@@ -56,7 +57,7 @@ def state(campaign) -> dict:
                          "health": _jsonl_one(campaign.path("health.json")), "by_status": dict(statuses), "backend": campaign.backend,
                          "model": campaign.model},
             "scan": {"done": len(scan), "total": len(Q) * len(P), "grid": grid, "q": [q.get("title") for q in Q],
-                     "p": [p.get("title") for p in P], "cost": round(sum(r.get("cost") or 0 for r in scan), 4),
+                     "p": [p.get("title") for p in P], "q_ids": [q.get("id") for q in Q], "p_ids": [p.get("id") for p in P], "cost": round(sum(r.get("cost") or 0 for r in scan), 4),
                      "scores": sorted((r["feasibility"] * r["gain"] for r in scan if r.get("feasibility") is not None), reverse=True),
                      "cut": sl.get("cut"), "n_selected": len(sl["pairs"])},
             "shortlist": shortlist, "threads": threads}
@@ -74,7 +75,7 @@ def status_text(campaign) -> str:
 
 
 PAGE = Path(__file__).parent / "monitor.html"
-TEXT = {".jsonl", ".json", ".md", ".py", ".tex", ".txt", ".out", ".log", ".csv"}
+TEXT = {".jsonl", ".json", ".md", ".py", ".tex", ".bib", ".txt", ".out", ".log", ".csv"}
 _pdf_cache: dict = {}
 
 

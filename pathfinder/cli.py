@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path
-from . import config, corpus, monitor, reconcile, runner, scan, select
+from . import config, corpus, monitor, paper, reconcile, research, runner, scan, select
 
 
 def main(argv=None):
@@ -17,6 +17,8 @@ def main(argv=None):
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
     sub.add_parser("status", help="print campaign and shortlist state")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
+    w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
+    w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     ns = ap.parse_args(argv); c = config.load(Path(ns.root))
@@ -46,6 +48,12 @@ def main(argv=None):
         print(monitor.status_text(c))
     elif ns.cmd == "serve":
         monitor.serve(c, ns.port)
+    elif ns.cmd == "paper":
+        pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
+                                           if research.status(c, p["pair_id"]).get("status") == "DRAFT"
+                                           and paper.status(c, p["pair_id"]).get("status") != "accepted"]
+        for pid in pairs:
+            print(f"{pid}: {paper.run(c, pid, stop=lambda: runner.stopped(c))}")
     elif ns.cmd == "reconcile":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for pid in pairs:
