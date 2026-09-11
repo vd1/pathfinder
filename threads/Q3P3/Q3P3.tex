@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Q and P: Agents, Institutions, and Terminal Actions}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies LLM traders in a continuous double auction and finds inefficient, model-dependent convergence relative to human markets. P studies an adversarial code-review protocol and finds that agents can reach unsupported agreement, while evidence-gating disagreement improves its reported review score.
+
+\section*{The connexion pursued}
+The peers asked how much apparent multi-agent performance comes from agent information, rather than from the institution's stopping rule and admissible messages. A zero-intelligence reference is the proposed separator: Q supplies exact surplus ground truth and P supplies a concrete intervention on terminal messages, but neither paper reports the controls needed for this causal comparison (ledger entries 14, 16, and 18).
+
+\section*{What was found}
+The firm result is on Q. Two independent implementations of Q's stated mechanism give zero-intelligence-constrained (ZI-C) efficiency between $0.956$ and $0.961$, with about $5.8$--$5.9$ trades per round; every reported LLM cell in Q lies between $0.36$ and $0.91$ (ledger entries 3 and 5). Robustness checks varied the quote range and obtained efficiencies from $0.943$ to $0.957$ (ledger entry 5). On a finer horizon grid, ZI-C reaches the mean efficiencies of GPT Large, Gemini Large, and GPT Small after approximately $53$, $80$, and $131$ draws, respectively, although Q gives the LLMs $300$ draws (ledger entry 8).
+
+The surplus calculation also identifies two kinds of error. With efficient quantity $q^*$ and maximum surplus $\mathrm{MAXS}$,
+\begin{equation*}
+  1-\mathrm{efficiency}
+  = \frac{\mathrm{omission}+\mathrm{commission}}{\mathrm{MAXS}},
+\end{equation*}
+where omission is surplus lost when intramarginal traders remain untraded and commission is surplus lost when extramarginal traders trade. This is an exact accounting identity in the simulated market (ledger entry 4). It parallels recall and precision loss in P's Cases B and A. The direction is model-dependent: GPT Large and Gemini Large are omission-dominated, while GPT Small in round 5 and unreported Gemini notebook runs also exhibit commission (ledger entries 7 and 13).
+
+The proposed explanation based on terminal actions is supported only by stylised agents. Making acceptance the default raises volume but moves loss from omission to commission: two implementations find efficiency around $0.71$--$0.82$, commission around $0.10$--$0.17$, and substantially higher price dispersion, still short of ZI-C (ledger entries 4 and 12). Creeper simulations show that a coarser enforced tick can improve convergence, but Q does not enforce a tick for LLM agents; its cent-sized moves are a model convention, not an exchange rule (ledger entries 8, 9, and 13).
+
+The P evidence is thinner. Single-reviewer and Two-reviewers edit once, while MARS and AR re-review revised code; only the latter methods rise above the $75$--$77\%$ cluster. Therefore P changes interaction and post-edit stopping together and cannot identify the value of reviewer--critic information (ledger entries 11, 16, and 18). A toy model shows that iteration until approval alone can add $0.3$--$9.1$ percentage points, with a median of $2.6$, but it has four free parameters and is illustrative rather than evidence about P's tasks (ledger entry 12).
+
+\section*{Objections and resolutions}
+The initial claim that LLMs fail in the opposite direction from ZI-C was narrowed: it holds for some reported models, not in general, because other model runs include extramarginal trades (ledger entries 7 and 13). The proposed tick experiment was also corrected after code inspection: Q uses strict floating-point improvement and applies its cent increment only in a deadlock check, so any tick intervention must both enforce and state the grid (ledger entries 9 and 13).
+
+A deeper objection remains unresolved. Q's exchange does not enforce reservation constraints, although its prompt tells LLMs never to violate them; ZI-C does enforce them. The logged but unreported LLM violation rate is therefore required before the $0.96$ result can be treated as a like-for-like constrained-strategy floor (ledger entries 13, 16, 18, and 20). P also reports MARS as $82\%$ in its table but as $85\%$ in its prose, reinforcing the need for per-task results and uncertainty estimates (ledger entries 16, 18, and 20).
+
+\section*{Outside sources}
+The peers used Gode and Sunder (1993) for the ZI-C benchmark and inspected Q's public repository, including unreported ZI-C and Gemini configurations and notebooks (ledger entries 3, 4, and 6). A prior-work search found BAZAAR, a sealed-bid double auction where ZI-family agents rank poorly on individual profit; it reports no market efficiency and therefore neither establishes nor contradicts the present result (ledger entry 14). No novelty claim was established by these searches.
+
+\section*{What remains open}
+No peer ran the proposed LLM intervention. P supplies no per-task uncertainty analysis, the contribution of its critic remains confounded with re-review, Q's LLM reservation-violation rate is unknown, and the difference between two author ZI-C price-dispersion batches remains unexplained (ledger entries 14, 18, and 20). The material is therefore strong for the Q simulation baseline, but thin for any transfer claim from P to markets.
+
+\section*{Smallest settling step}
+For P, run an R-only outer loop that re-reviews until first-pass clean, alongside AR and an AR critic whose verdict is random but matched to the LLM critic's disagreement rate. This smallest factorial control separates the value of critic information from the value of stopping and extra revision; report per-task outcomes and intervals (ledger entries 11, 16, and 20). Only after that identification should Q test a typed \texttt{ACCEPT/IMPROVE/PASS} menu, with omission and commission reported separately.
+
+\end{document}

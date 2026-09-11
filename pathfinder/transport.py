@@ -109,7 +109,7 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
     except BrokenPipeError:
         pass
     started = time.time()
-    if not session_seen.wait(SESSION_GRACE):
+    if not session_seen.wait(SESSION_GRACE + len(prompt) // 5000):      # a long prompt takes longer to open
         _kill(proc)
         return {"text": "", "session": None, "seconds": round(time.time() - started, 1), "input_tokens": 0,
                 "output_tokens": 0, "cost": 0.0, "error": "no session", "transport_failed": True}

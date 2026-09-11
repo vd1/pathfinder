@@ -1,27 +1,45 @@
-# Related-work search record
+# Prior-work search record
 
-Search date: 11 September 2026.
+Searches were run on 11 September 2026. OpenAlex was used for broad discovery, then the arXiv API and arXiv abstract pages were used to verify metadata. The relevant papers were downloaded and read, with attention to their assumptions, calibration unit, downstream transfer, and stated scope.
 
-The search targeted the paper's specific result: a split-conformal upper bound on room-level Hausdorff wall-set error transferred through the distance-to-set inequality to simultaneous correctness of non-abstained decisions at a hard wall-distance gate.
+## Queries and results
 
-## Queries and returns
+1. OpenAlex: `conformal prediction Hausdorff distance point cloud`
 
-1. arXiv API query: `all:"Hausdorff distance" AND all:"conformal"`
+   The leading results concerned conformal geometry in the unrelated mathematical sense, point-cloud compression, completion, and reconstruction. No result used split conformal prediction with a Hausdorff wall-set score or a thresholded wall-distance gate.
 
-   Return: no results could be retrieved. The request to `https://export.arxiv.org/api/query` failed because the sandbox could not resolve the host.
+2. OpenAlex: `conformal prediction robotic perception abstention geometry`
 
-2. Local full-text query across Q and P: `conformal|hausdorff|set distance|distance-to-set|abstain|selective`
+   The results included a survey of run-time monitoring for robotic perception but no exact Hausdorff-to-wall-gate certificate. The broad query was too noisy to establish novelty.
 
-   Return: Q discusses split conformal under exchangeability and warns that marginal coverage does not automatically bound downstream cost. P contains the wall-distance gate but no conformal calibration or Hausdorff coverage result. No occurrence in either paper states the combined coverage-to-gate reduction.
+3. OpenAlex: `split conformal simultaneous point cloud`
 
-3. Local peer-record query across `ledger.jsonl`, `ada/`, and `emmy/` for the same terms and for `first gate`, `union bound`, and `dependency region`.
+   The results were unrelated to conformal prediction. No exact match was found.
 
-   Return: the peer derivations establish the combined result and independently cross-check it. They also identify its scope: simultaneous first-gate agreement without a pointwise union bound, marginal rather than conditional coverage, and regional rather than pointwise fallback.
+4. OpenAlex: `selective perception conformal robotics wall detection`
 
-4. Metadata check for Q and P against `inputs/Q.json`, `inputs/P.json`, and the title and author blocks in `inputs/Q.tex` and `inputs/P.tex`.
+   The results concerned haptics, soft sensors, semantic mapping, and unrelated perception topics. No exact match was found.
 
-   Return: titles, author lists, dates, and arXiv identifiers agree within the supplied records. Live arXiv abstract pages could not be reached from the sandbox.
+5. arXiv API: `all:"conformal prediction" AND all:robotics`
+
+   This returned *Sample-Efficient Safety Assurances using Conformal Prediction* (arXiv:2109.14082) among other robotics papers. Reading it showed finite-sample conformal calibration of warning systems, explicit exchangeability assumptions, and marginal rather than joint guarantees across test cases. It does not use wall sets, Hausdorff scores, or P's gate.
+
+6. arXiv API: `all:"conformal prediction" AND all:perception`
+
+   This returned *Safe Perception-Based Control under Stochastic Sensor Uncertainty using Conformal Prediction* (arXiv:2304.00194) and *Perceive With Confidence: Statistical Safety Assurances for Navigation with Learning-Based Perception* (arXiv:2403.08185). The first calibrates state-estimation regions and feeds them to a measurement-robust controller. The second calibrates learned object detection and scene completion for safe navigation, including a treatment of planner-induced state shift. Both establish that conformal calibration can be coupled to a downstream robotics mechanism. Neither gives the room-level Hausdorff-to-distance reduction or simultaneous first-wall-gate statement here.
+
+7. arXiv API: `all:"conformal prediction" AND all:Hausdorff`
+
+   The returned papers did not concern robotic wall estimation or the claimed gate transfer. No exact match was found.
+
+8. arXiv API: `all:"selective prediction" AND all:robot perception`
+
+   The results included work on adaptive abstention in autonomous perception but no room-level wall-set calibration or matching hard gate.
+
+9. arXiv API: `all:"Hausdorff" AND all:"conformal prediction"`
+
+   A round-3 rerun returned *Common-Center Geometry and Certified Radial Reconstruction for Energy-Form Full Conformal Regions* (arXiv:2608.24964). Its use of Hausdorff geometry concerns the shape and reconstruction of full conformal prediction regions, not wall-set error, robotic perception, or threshold-gate decisions. It therefore does not publish the result claimed here.
 
 ## Effect on the paper
 
-No additional bibliographic entry was added because no external candidate could be checked against an arXiv abstract page or DOI landing page. The related-work section therefore makes no literature-wide priority claim. It states only that the reduction is not present in Q or P and records incomplete external novelty verification as a limitation and open task.
+The search rules out a broad novelty claim for conformal calibration in robotics. That pattern is already published. The paper therefore claims only the specific reduction supported by the Q-P ledger: calibrating a room-level Hausdorff score and using the distance-to-set inequality to obtain simultaneous correctness of all non-abstained decisions at P's first wall-distance gate. No exact prior publication of that result was located by these searches. The related-work section says this directly and cites only records whose title, authors, year, URL, and arXiv identifier were verified against the arXiv API and abstract records. Metadata for all five cited arXiv papers was rechecked in round 3.

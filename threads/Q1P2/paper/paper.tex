@@ -2,14 +2,16 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{url}
+\setlength{\emergencystretch}{2em}
 
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}
 \newtheorem{remark}{Remark}
+\DeclareMathOperator{\dist}{dist}
 
-\title{A Calibrated Selective Certificate for a Wall-Constrained Perception Gate}
+\title{Calibrated Selective Constraint Propagation for a Concept-Guided Wall Gate}
 \author{Anonymous}
 \date{}
 
@@ -17,169 +19,145 @@
 \maketitle
 
 \begin{abstract}
-Concept-guided robot perception can use an estimated room to restrict later door detection, but a hard geometric threshold can turn a small wall error into a changed decision. We isolate the first wall-distance gate of the concept-guided exploration system of Zapata et al. and connect it to the interface and calibration requirements identified by Zhao et al. % Ledger: 8, 12, 30
-For a frozen room fitter, exchangeable ground-truthed calibration episodes give a split-conformal upper radius for Hausdorff wall-set error. % Ledger: 23, 25, 34
-On the resulting room-level coverage event, the distance-to-set inequality certifies, simultaneously, every first-gate decision outside an explicit ambiguity band. % Ledger: 23, 25, 26, 34
-The probability statement is marginal over rooms, applies only to the first gate, and does not certify later door detection, fallback accuracy, or robot motion. % Ledger: 24, 31, 35
-No episode-level calibration data are available in the source papers, so this is a theorem and validation protocol rather than a demonstrated calibrated robot system. % Ledger: 35
+Concept-guided exploration uses an estimated room boundary to restrict later door processing, but a hard geometric threshold can turn a small wall error into a different downstream decision. We isolate the first wall-distance gate of the concept-guided system of Zapata et al. and give it a finite-sample selective certificate. A split-conformal order statistic calibrates a room-level Hausdorff radius from exchangeable, ground-truthed episodes. On the resulting wall-coverage event, every accepted or rejected scan-point decision outside an uncertainty band agrees simultaneously with the decision based on reference walls. This is a marginal guarantee for one interface, not conditional room safety or a certificate for doors, topology, fallback accuracy, or robot motion. The available source papers contain no episode-level wall pairs, so the contribution is a theorem and validation protocol rather than an empirically calibrated system.
+% Ledger: 23, 25, 26, 30, 31, 34, 35.
 \end{abstract}
 
 \section{Introduction}
 
-Learning-augmented algorithms distinguish performance with useful and arbitrary predictions and require explicit accounting when guarantees pass between components \cite{zhao2026laa}. % Ledger: 5, 6, 30
-Concept-guided exploration supplies a concrete, discontinuous interface: an estimated room wall set constrains a later door detector \cite{zapata2026concept}. % Ledger: 8, 30
-The detector retains a scan point $p$ when
+Zapata et al. propose a concept-first exploration architecture in which an instantiated room and its walls constrain later door detection \cite{zapata2026concept}. Their implemented detector first retains a scan point $p$ when
 \begin{equation}
-  \operatorname{dist}(p,W)\leq\delta, \qquad \delta=0.15\,\mathrm{m},
+  \dist(p,W) \leq \delta, \qquad \delta=0.15\,\mathrm{m},
   \label{eq:gate}
 \end{equation}
-before constructing a polar scan, differentiating it, and pairing peaks. % Ledger: 8, 13, 30
-Zapata et al. report that noise can lead to accepted incorrect room models, while revision of accepted models is left for future work. % Ledger: 5, 6, 22, 30
+and only then constructs and differentiates a polar scan and pairs peaks. The authors report that high noise can lead to acceptance of an incorrect room model, while revision of accepted models remains future work. They also state that the intended efficiency and robustness gains of hierarchical constraint propagation are not yet quantitatively demonstrated.
+% Ledger: 5, 6, 8, 13, 22, 30.
 
-This paper asks a deliberately narrower question: can the first gate in \eqref{eq:gate} abstain selectively with a finite-sample statistical certificate? % Ledger: 21, 30
-Our new result is a reduction from marginal, room-level Hausdorff coverage to simultaneous correctness of every non-abstained first-gate decision in a new exchangeable room. % Ledger: 23, 25, 26, 34
-The reduction combines a standard split-conformal rank argument with the distance-to-set inequality; neither source paper states this problem-specific chain. % Ledger: 25, 26, 30
-The claim is weaker than full selective safety for door perception: later processing couples scan points and remains uncertified. % Ledger: 13, 14, 31
+Zhao et al. survey learning-augmented algorithms and emphasise that component guarantees do not compose without explicit relations between interface errors, sensitivity, and downstream objectives \cite{zhao2026learning}. They also require prediction, monitoring, and fallback costs to be accounted for, and discuss split conformal calibration under exchangeability while warning that marginal coverage alone does not control downstream cost.
+% Ledger: 6, 8, 12, 21, 26, 30.
 
-The paper keeps four categories separate. Section~\ref{sec:sources} records what the two source papers establish. Section~\ref{sec:result} gives the new result. Section~\ref{sec:interpretation} offers interpretation and a validation protocol, not further theorems. Sections~\ref{sec:limitations} and~\ref{sec:open} state limitations and open questions.
+This paper connects those observations at one discontinuous interface. The new result is a finite-sample, room-level guarantee: a conformally calibrated Hausdorff radius, combined with a distance-to-set margin, makes all non-abstained decisions of the gate in \eqref{eq:gate} simultaneously agree with a reference-wall gate with marginal probability at least $1-\alpha$. No union bound over scan points is required. The result is deliberately weaker than its possible informal reading: ``simultaneously'' applies only to the first binary gate within a covered new room, and ``probability'' is marginal over an exchangeable new episode.
+% Ledger: 23, 25, 26, 30, 31, 34.
 
-\section{Results supplied by Q and P}
-\label{sec:sources}
+Our contribution is therefore the problem-specific coverage-to-interface reduction, not conformal prediction itself and not conformal calibration for robotics. Prior work has calibrated robotic warning systems \cite{luo2021sample}, perception error regions for control \cite{yang2023safe}, and learned perception for navigation \cite{mei2024perceive}. Those papers establish the broader pattern of calibrating an uncertain component and transferring its output to a downstream safety mechanism. We did not locate the specific use of a room-level Hausdorff score to certify every non-abstained decision of a wall-distance gate. This narrower distinction is the novelty claim made here.
+% Ledger basis for the narrowed contribution: 25, 26, 30, 34. External-work comparison was established by the searches recorded in search.md.
 
-Zhao et al. survey prediction cost, consistency and robustness, and the conditions needed to compose guarantees across interfaces \cite{zhao2026laa}. % Ledger: 5, 6, 30
-In particular, their composition discussion requires a sensitivity or perturbation relation at an interface, and their calibration discussion warns that exchangeable split-conformal coverage is marginal and does not by itself control downstream cost. % Ledger: 8, 12, 26, 30
-These statements motivate the proof obligation here, but Q does not give an accept, defer, or revision theorem for P's robot system. % Ledger: 5
+\section{Setting and source claims}
 
-Zapata et al. implement asynchronous room and door concept agents that build a persistent scene graph, with estimated room walls constraining door detection \cite{zapata2026concept}. % Ledger: 1, 3, 6, 30
-Their first door-processing step is exactly \eqref{eq:gate}. % Ledger: 8, 12, 30
-Filtering occurs before polar resampling, differentiation, thresholding, and peak pairing, so downstream candidates are not independent pointwise decisions. % Ledger: 13, 14, 18, 30
-P supplies neither a Hausdorff-error coverage radius for its estimated walls nor episode-level wall estimates paired with reference walls. % Ledger: 20, 22, 35
-Its pose-graph covariance is not, without an additional argument, such a radius. % Ledger: 20, 22
+Let $W^*$ be a nonempty compact reference wall set and $\widehat W$ the nonempty compact wall set returned by a frozen version of the room-fitting pipeline, both in the same finite-dimensional Euclidean space. These assumptions make the distances below finite. Both sets must use the same convention for wall centre-lines or surfaces, observed or complete extent, and reference frame. For a point $p$, write $\dist(p,W)=\inf_{w\in W}\lVert p-w\rVert$. The finite Hausdorff distance is denoted by $d_H$.
+% Ledger: 23, 28, 30, 34.
 
-\section{Calibrated selective gate}
-\label{sec:result}
+The source system supplies neither a valid Hausdorff-error radius nor episode-level pairs from which one can compute such a radius. In particular, its pose-graph covariance cannot simply be read as a Hausdorff guarantee. This absence motivated replacing a deterministic per-run assumption by a marginal calibration statement.
+% Ledger: 20, 22, 24, 35.
 
-Let $W^*$ and $\widehat W$ be non-empty wall sets in the same metric space, using the same convention for wall centreline or surface, spatial extent, and reference frame. % Ledger: 28, 31, 34
-Write
-\[
-  d_H(\widehat W,W^*)
-\]
-for their Hausdorff distance. For every point $p$,
+\begin{proposition}[First-gate margin]
+If $d_H(\widehat W,W^*)\leq\varepsilon$, then, for every $p$,
 \begin{equation}
- \left|\operatorname{dist}(p,\widehat W)-\operatorname{dist}(p,W^*)\right|
- \leq d_H(\widehat W,W^*).
- \label{eq:setdistance}
+ \left|\dist(p,\widehat W)-\dist(p,W^*)\right|\leq\varepsilon.
+ \label{eq:distance}
 \end{equation}
-% Ledger: 8, 12, 23, 25
-
-\begin{proposition}[Deterministic margin transfer]
-If $d_H(\widehat W,W^*)\leq\varepsilon$, then
-\begin{align}
- \operatorname{dist}(p,\widehat W)+\varepsilon\leq\delta
- &\quad\Longrightarrow\quad \operatorname{dist}(p,W^*)\leq\delta, \label{eq:accept}\\
- \operatorname{dist}(p,\widehat W)-\varepsilon>\delta
- &\quad\Longrightarrow\quad \operatorname{dist}(p,W^*)>\delta. \label{eq:reject}
-\end{align}
-Points satisfying neither antecedent are called ambiguous.
+Consequently, $\dist(p,\widehat W)+\varepsilon\leq\delta$ certifies acceptance by the reference-wall gate, whereas $\dist(p,\widehat W)-\varepsilon>\delta$ certifies rejection. If neither inequality holds, the point is ambiguous.
+% Ledger: 8, 12, 23, 25.
 \end{proposition}
-% Ledger: 8, 12, 23, 25
 
 \begin{proof}
-Both implications follow directly from \eqref{eq:setdistance}. The weak inequality in \eqref{eq:accept} and strict inequality in \eqref{eq:reject} match P's acceptance convention in \eqref{eq:gate}.
+For any point of one wall set, the Hausdorff bound supplies a point of the other set within $\varepsilon$. Applying the triangle inequality in both directions and taking infima proves \eqref{eq:distance}. If $\dist(p,\widehat W)+\varepsilon\leq\delta$, then \eqref{eq:distance} gives $\dist(p,W^*)\leq\delta$, so the reference gate accepts under its weak inequality. If $\dist(p,\widehat W)-\varepsilon>\delta$, then \eqref{eq:distance} gives $\dist(p,W^*)>\delta$, so the reference gate rejects under the strict complementary condition.
+% Ledger: 8, 12, 34.
 \end{proof}
-% Ledger: 12
 
-Without a positive margin from the threshold, gate membership is unstable under arbitrarily small wall displacement. % Ledger: 8, 12
-For any positive displacement, a point can be placed sufficiently close to the threshold so that translating a wall by no more than that displacement flips the binary gate value. % Ledger: 8
-Thus the binary gate is not globally Lipschitz as a map from Hausdorff wall error to membership error. % Ledger: 8, 12
+Without a margin, the binary gate is not globally Lipschitz with respect to Hausdorff perturbations: an arbitrarily small wall translation can move a point across the threshold. This statement concerns membership at the first gate. It does not by itself show that a particular door or topology edge changes.
+% Ledger: 8, 12. The final sentence makes explicit the weaker supported reading in entries 9 and 13.
 
-The deterministic statement is not operational until $\varepsilon$ is obtained. Freeze the complete room fitter independently of calibration. % Ledger: 25, 34
-For $n$ exchangeable, ground-truthed calibration episodes, define
+\section{Calibrated selective certificate}
+
+Fix a positive integer $n$ and a target miscoverage level $0<\alpha<1$. Freeze the complete room fitter independently of calibration. Let
+$(\widehat W_i,W_i^*)$, $i=1,\ldots,n$, be calibration episodes and define
 \begin{equation}
  R_i=d_H(\widehat W_i,W_i^*), \qquad
- k=\left\lceil(n+1)(1-\alpha)\right\rceil .
+ k=\left\lceil(n+1)(1-\alpha)\right\rceil.
  \label{eq:scores}
 \end{equation}
-% Ledger: 23, 25, 34
-Let $\varepsilon_\alpha$ be the $k$th order statistic of $R_1,\ldots,R_n$, with $\varepsilon_\alpha=+\infty$ if $k>n$. % Ledger: 23, 25, 34
+Let $\varepsilon_\alpha$ be the $k$th order statistic of $R_1,\ldots,R_n$, with $\varepsilon_\alpha=+\infty$ when $k>n$. Calibration and the new episode are assumed exchangeable at the episode level.
+% Ledger: 23, 25, 26, 30, 34.
 
-\begin{theorem}[Marginal simultaneous first-gate certificate]
-Suppose the frozen fitter is applied to calibration episodes and one new episode such that their scores are exchangeable. Then
+\begin{theorem}[Marginal simultaneous correctness of the first gate]
+Under the assumptions above,
 \begin{equation}
  \Pr\!\left\{d_H(\widehat W_{\mathrm{new}},W^*_{\mathrm{new}})
  \leq\varepsilon_\alpha\right\}\geq 1-\alpha.
  \label{eq:coverage}
 \end{equation}
-On the event inside \eqref{eq:coverage}, every new-room point certified by \eqref{eq:accept} or \eqref{eq:reject}, using $\varepsilon_\alpha$, receives the same first-gate decision as it would under $W^*_{\mathrm{new}}$. Consequently,
+For the new room, certify acceptance when
+$\dist(p,\widehat W_{\mathrm{new}})+\varepsilon_\alpha\leq\delta$, certify rejection when
+$\dist(p,\widehat W_{\mathrm{new}})-\varepsilon_\alpha>\delta$, and abstain otherwise. Then
 \begin{equation}
- \Pr\!\left\{\substack{\text{all non-ambiguous first-gate decisions agree}\\
- \text{with the reference-wall gate}}\right\}
- \geq 1-\alpha.
- \label{eq:simultaneous}
+ \begin{aligned}
+ \Pr\!\{&\text{all non-abstained first-gate decisions agree}\\
+         &\text{with the reference-wall gate}\}\geq 1-\alpha.
+ \end{aligned}
+ \label{eq:transfer}
 \end{equation}
+% Ledger: 23, 25, 26, 30, 34.
 \end{theorem}
-% Ledger: 23, 25, 26, 34
 
 \begin{proof}
-Exchangeability makes the new score's rank among the $n+1$ scores uniform up to conservative handling of ties. The order-statistic choice in \eqref{eq:scores}, including the infinite-radius convention, gives \eqref{eq:coverage}. On that single room-level event, \eqref{eq:setdistance} holds for every scan point. The deterministic margin transfer then proves all certified decisions simultaneously. No union bound over scan points is used.
+Break ties among the $n+1$ exchangeable scores using independent continuous random variables. The resulting randomized rank of the new score is uniform on $\{1,\ldots,n+1\}$, so the choice of $k$ gives the conformal coverage bound. Replacing randomized tie-breaking by the non-randomized weak event in \eqref{eq:coverage} can only make coverage conservative. The infinity convention covers unattainable finite quantiles. On the single event in \eqref{eq:coverage}, Proposition 1 applies to every scan point. Each non-abstained decision consequently matches its reference-wall counterpart. Because one room-level event covers all points, there is no pointwise union bound.
+% Ledger: 23, 25, 26, 34.
 \end{proof}
-% Ledger: 23, 25, 26, 34
 
-Equation~\eqref{eq:simultaneous} is marginal over exchangeable episodes. It is not conditional coverage for a given room, geometry class, or noise regime. % Ledger: 24, 26, 31
+The theorem is selective: it permits abstention, and it does not bound how often abstention occurs. Its probability is marginal across exchangeable rooms or trajectory clusters, rather than conditional on a particular room, geometry, or noise regime. Correlated scan points or frames must not be counted as independent calibration episodes.
+% Ledger: 24, 26, 28, 31, 35.
 
-\section{Related work and novelty status}
+\section{Fallback and cost interpretation}
 
-Q discusses split conformal as a possible distribution-free wrapper under exchangeability, while stressing that marginal coverage alone does not imply a downstream guarantee \cite{zhao2026laa}. % Ledger: 21, 25, 26, 30
-P studies concept-guided room and door perception but does not calibrate wall-set Hausdorff error or prove a selective gate certificate \cite{zapata2026concept}. % Ledger: 20, 22, 35
-Our specific contribution is the intervening geometric reduction from one room-level coverage event to simultaneous agreement of non-abstained first-gate decisions. % Ledger: 23, 25, 26, 34
+An ambiguous point cannot safely be routed in isolation. Filtering changes the samples used to construct the polar scan, and hence can alter angular adjacency, derivatives, peaks, and peak pairs. A declared fallback must therefore cover the whole scan or a dependency region equipped with a fixed-grid, interpolation, and boundary contract. This is an interface requirement, not a proved fallback algorithm.
+% Ledger: 13, 14, 15, 18, 30, 31.
 
-The targeted search record is reported in \texttt{search.md}. Network name resolution was unavailable in this round, so arXiv and DOI landing pages for additional candidates could not be read or verified. The paper therefore makes no claim that the reduction is absent from the external literature. This limitation changes the novelty status: the contribution is established relative to Q and P and the supplied peer record, not as a priority claim over all prior work.
+For completeness, we state a separate compute-only observation in a self-contained model. Let $I$ be a fixed perception instance, namely the current observable scene, and let $h$ be the room hypothesis used as structural advice. Algorithm $A$ searches the wall-constrained regions specified by $h$; algorithm $B$ searches the declared instance class independently of $h$ and is complete on that class. Let $C_A(I,h)$ and $C_B(I)$ be the amounts of one common divisible compute resource that the respective algorithms require to return a result passing the same independent validity check; $C_A$ may be infinite, while completeness makes $C_B$ finite. Both algorithms are assumed preemptible and to preserve their state between resource slices. The mixed execution allocates resource shares $1-\lambda$ and $\lambda$, where $0<\lambda<1$, to $A$ and $B$, respectively, and stops when either result passes the validity check. If $C_{\mathrm{mix}}(I,h)$ denotes the total common-resource work consumed by that execution before it stops, then
+% Ledger: 3, 4, 10, 18.
+\begin{equation}
+ C_{\mathrm{mix}}(I,h)\leq
+ \min\left\{\frac{C_A(I,h)}{1-\lambda},
+             \frac{C_B(I)}{\lambda}\right\}.
+ \label{eq:dovetail}
+\end{equation}
+This is the standard time-sharing argument. Neither source paper supplies the required complete baseline or independent validator, so \eqref{eq:dovetail} is not an implemented-system guarantee and says nothing about policy-dependent motion.
+% Ledger: 3, 4, 10, 15, 18, 31.
 
-\section{Interpretation and validation protocol}
-\label{sec:interpretation}
+\section{Validation protocol}
 
-The theorem suggests an interface contract rather than an end-to-end robot guarantee. Outside the ambiguity band, estimated-wall processing agrees with the reference-wall first gate on the covered room event. Inside the band, a system must abstain or invoke a separately justified procedure. % Ledger: 12, 15, 30
-This is an interpretation of the theorem, not evidence that any particular fallback is accurate or efficient. % Ledger: 9, 31
+The smallest empirical test fixes a deployment population and wall-set convention, freezes the fitter, and collects disjoint ground-truthed calibration and test rooms in the source system's simulator. It should report room-level coverage, $\varepsilon_\alpha/\delta$, the fraction of scan dependency regions sent to fallback, and first-gate disagreement against reference walls. Door recall, topology error, compute, and motion should be reported separately, without treating them as consequences of the theorem.
+% Ledger: 24, 26, 28, 30, 31, 35.
 
-Pointwise fallback is not supported. Removing a point changes the polar scan's adjacency and can alter derivatives and peak pairs, so a fallback must cover a whole scan or a declared dependency region with fixed grid, interpolation, and boundary rules. % Ledger: 14, 15, 18, 30
-No such regional contract is implemented or evaluated in the supplied material. % Ledger: 31, 35
+The study should include the source paper's planned noise variation and accepted-wrong-room failure modes, as well as near-threshold layouts. A held-out change of building, sensor, or noise distribution should be labelled as distribution shift rather than covered by \eqref{eq:coverage}. If $\varepsilon_\alpha\geq0.15\,\mathrm{m}$ or dependency expansion yields nearly total fallback, the certificate can remain valid while being operationally uninformative; that outcome should be reported as negative.
+% Ledger: 13, 24, 28, 30, 31, 35.
 
-The smallest informative experiment is to predeclare a deployment population and wall-set convention, freeze P's fitter, and collect disjoint ground-truthed calibration and test rooms in its simulator. % Ledger: 26, 30, 34, 35
-It should report test-room coverage, $\varepsilon_\alpha/\delta$, and the fraction of declared dependency regions sent to fallback, alongside compute and motion as separate quantities, door recall, and topology error. % Ledger: 24, 28, 30, 35
-An outcome with $\varepsilon_\alpha\geq0.15\,\mathrm{m}$ or near-total regional fallback is a valid but operationally negative result. % Ledger: 24, 28, 35
+\section{Limitations and open questions}
 
-\section{Limitations}
-\label{sec:limitations}
+First, exchangeability is a substantive sampling assumption. Distribution shift and dependent adaptive sampling invalidate the stated rank guarantee, and the theorem supplies no conditional coverage for rare room types.
+% Ledger: 24, 26, 31, 34.
 
-The theorem has the following boundaries.
-\begin{itemize}
- \item Exchangeability is essential. Distribution shift, a new building or sensor regime, and dependent adaptive sampling are not covered. % Ledger: 24, 31
- \item Coverage is marginal over rooms, not conditional safety for an individual room or rare layout. % Ledger: 24, 26, 31
- \item Estimated and reference walls must share a wall-set convention, extent, and frame. Otherwise the calibration score is not the claimed quantity. % Ledger: 28, 31, 34
- \item Only the first distance gate is certified. Derivative, peak-pair, width, segment, final door, and topology decisions are not certified. % Ledger: 9, 13, 31, 35
- \item The result does not establish fallback correctness or cost, and it does not establish a competitive guarantee for policy-dependent robot motion. % Ledger: 4, 9, 31
- \item The source material contains no calibration episodes. Thus the radius,
- achieved coverage, and abstention cost cannot be computed here. % Ledger: 35
- \item The external prior-work search could not be completed because scholarly landing pages were unreachable, so literature-level novelty remains unresolved.
-\end{itemize}
+Second, wall-set conventions and frames must match. A score between a centre-line estimate and a surface reference, or between observed and complete extents, does not instantiate the theorem's intended quantity.
+% Ledger: 28, 31, 34.
 
-These limitations prevent the phrases ``safe door detector'' and ``calibrated robot system'' from being justified by the present result. % Ledger: 31, 35
+The source system is restricted to structured indoor environments: it models rectangular rooms with orthogonal walls under a Manhattan-world assumption, and its detector thresholds were tuned empirically for its particular setup. The theorem's distance-to-set statement is geometric, but the proposed experiment, calibration population, and any operational conclusion necessarily inherit the chosen detector and deployment population. They should not be read as evidence for non-rectangular or otherwise unrepresented environments.
+% Ledger: 15, 24, 26, 30, 31, 35.
 
-\section{Open questions}
-\label{sec:open}
+Third, the certificate stops at the first wall-distance gate. It does not certify polar resampling, derivative thresholds, peak pairing, width tests, segment tests, final doors, graph topology, fallback accuracy, or active robot motion. The downstream dependency can also turn a narrow pointwise ambiguity band into broad regional fallback.
+% Ledger: 9, 13, 14, 18, 24, 28, 31, 35.
 
-The first open question is whether a defensible deployment population and independent episode unit can be specified for P's active exploration process. % Ledger: 26, 31
-The second is empirical non-vacuity: Q and P do not show whether the calibrated radius is below the gate threshold or whether dependency expansion forces nearly total fallback. % Ledger: 28, 35
-The third is how to define and validate a regional fallback whose own accuracy and work are independently characterised. % Ledger: 9, 14, 18, 31
-The fourth is whether later discontinuities admit compatible margin conditions without strengthening the present first-gate theorem. % Ledger: 13, 31
-Finally, a complete external literature search is needed to determine whether the geometric coverage-to-gate reduction or its main proof step has already been published.
+Fourth, the source material contains no calibration data, so neither the radius, achieved coverage, nor abstention cost is known. Practical non-vacuity remains an empirical question.
+% Ledger: 28, 35.
+
+Open questions are whether a defensible deployment population can be specified, whether useful coverage and regional abstention can coexist at $\delta=0.15\,\mathrm{m}$, and whether later detector stages admit compatible interface margins. A separate open problem is to specify and validate a complete fallback before extending the compute observation to active sensing.
+% Ledger: 15, 26, 28, 31, 35.
 
 \section{Conclusion}
 
-The hard wall gate in P does not automatically preserve small geometric errors, but it admits a precise selective certificate. % Ledger: 8, 12
-Under a frozen fitter, exchangeable calibration, and a fixed wall-set convention, a split-conformal Hausdorff radius gives marginal room-level coverage; on that event, the distance-to-set inequality transfers coverage simultaneously to every non-abstained first-gate decision. % Ledger: 23, 25, 26, 34
-This is a first-interface theorem and validation protocol, not a claim about complete door perception or robot safety. % Ledger: 31, 35
+The paired reading yields a precise but limited result. Split-conformal room-level coverage of a Hausdorff wall error transfers, through the distance-to-set inequality, to simultaneous correctness of every non-abstained decision at a concept-guided detector's first wall gate. Existing robotics work already establishes conformal calibration as a safety tool; the contribution here is this interface-specific transfer and its explicit abstention contract. Whether it is useful cannot be decided from the two source papers and requires the stated calibration experiment.
+% Ledger: 23, 25, 26, 30, 34, 35.
 
 \bibliographystyle{plain}
 \bibliography{references}
+
 \end{document}

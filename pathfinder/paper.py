@@ -112,18 +112,22 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
     for rnd in range(len(reviews) + 1, rounds + 1):
         if stop():
             _set(campaign, pair_id, status="stopped", round=rnd); return "stopped"
-        _set(campaign, pair_id, status="writing", round=rnd)
+        s = status(campaign, pair_id)
+        resume_review = s.get("round") == rnd and s.get("status") in ("reviewing", "stopped") and (pd / "paper.tex").exists()
+        if not resume_review:
+            _set(campaign, pair_id, status="writing", round=rnd, reason=None)
         findings = ""
         if reviews:
             findings = ("The previous review returned the paper with these findings; address each and say what you did:\n"
                         + json.dumps(reviews[-1].get("findings", []), indent=1))
         p = _prompt(campaign, "author", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=f"{pair_id}.tex",
                     NOTE_STEM=pair_id, ROUND=rnd, FINDINGS=findings)
-        r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=True, cwd=d,
-                           timeout=A.get("paper_seconds", 1800), thread=pair_id, stage="author", actor="author")
-        if r["transport_failed"]:
-            _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
-        (pd / f"author-round-{rnd}.md").write_text(r["text"] or "")
+        if not resume_review:
+            r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=True, cwd=d,
+                               timeout=A.get("paper_seconds", 1800), thread=pair_id, stage="author", actor="author")
+            if r["transport_failed"]:
+                _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
+            (pd / f"author-round-{rnd}.md").write_text(r["text"] or "")
         if not (pd / "paper.tex").exists() or not (pd / "references.bib").exists():
             _set(campaign, pair_id, status="blocked", reason="author wrote no paper.tex or references.bib"); return "blocked"
         ok, log = build(pd)
