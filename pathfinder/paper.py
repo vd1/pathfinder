@@ -20,18 +20,19 @@ def _set(campaign, pair_id, **kw):
     return s
 
 
-def build(d: Path) -> tuple[bool, str]:
-    """latexmk in a scratch copy; on success copy paper.pdf back. Returns (ok, log tail)."""
+def build(d: Path, main: str = "paper.tex") -> tuple[bool, str]:
+    """latexmk in a scratch copy; on success copy the PDF back. Returns (ok, log tail)."""
+    stem = Path(main).stem
     scratch = d / ".build"; shutil.rmtree(scratch, ignore_errors=True); scratch.mkdir()
     for f in d.glob("*"):
-        if f.suffix in (".tex", ".bib", ".bst", ".sty", ".png", ".pdf") and f.name != "paper.pdf":
+        if f.suffix in (".tex", ".bib", ".bst", ".sty", ".png", ".pdf") and f.name != f"{stem}.pdf":
             shutil.copy(f, scratch)
-    r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", "paper.tex"], cwd=scratch,
+    r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", main], cwd=scratch,
                        capture_output=True, text=True, timeout=300)
-    log = (scratch / "paper.log").read_text(errors="replace") if (scratch / "paper.log").exists() else r.stdout + r.stderr
-    ok = r.returncode == 0 and (scratch / "paper.pdf").exists()
+    log = (scratch / f"{stem}.log").read_text(errors="replace") if (scratch / f"{stem}.log").exists() else r.stdout + r.stderr
+    ok = r.returncode == 0 and (scratch / f"{stem}.pdf").exists()
     if ok:
-        shutil.copy(scratch / "paper.pdf", d / "paper.pdf")
+        shutil.copy(scratch / f"{stem}.pdf", d / f"{stem}.pdf")
     tail = "\n".join(l for l in log.splitlines() if l.startswith("!") or "undefined" in l.lower() or "Warning" in l)[-3000:]
     shutil.rmtree(scratch, ignore_errors=True)
     return ok, tail or log[-1500:]

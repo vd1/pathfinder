@@ -99,6 +99,7 @@ function render(s) {
     const links = [th.entries ? `<a href="#" data-show="${p.pair_id}" data-to="ledger">ledger</a>` : "",
       th.note ? `<a href="${base}${p.pair_id}.pdf" target="_blank">note (pdf)</a> <a href="${base}${p.pair_id}.tex" target="_blank">tex</a>` : "",
       (th.verdicts || []).length ? `<a href="#" data-show="${p.pair_id}" data-to="verdicts">verdict</a>` : "",
+      th.edited && th.edited.status === "done" ? `<a href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
       th.paper ? `<a href="${base}paper/paper.pdf" target="_blank">paper (${esc(th.paper.status)})</a>` : ""].filter(Boolean).join(" ");
     t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td>${p.score ?? ""}</td><td>${stat(p.status)}</td><td>${p.round ?? 0}</td><td>${esc(p.stage ?? "")}</td><td>${p.calls}</td><td>${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="links">${links}</td></tr>`;
   }
@@ -120,7 +121,7 @@ function renderThread() {
   const stg = Object.entries(th.by_stage || {});
   if (stg.length) h += `<table style="margin-top:8px;width:auto"><tr><th>stage</th><th>calls</th><th>time</th><th>USD</th><th>errors</th></tr>` +
     stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
-  h += `<div class="links" style="margin-top:8px">${th.note ? `<a href="${base}${selected}.pdf" target="_blank">open the note as PDF</a> <a href="${base}${selected}.tex" target="_blank">tex source</a>` : "<span class='muted'>no note yet</span>"}</div></div>`;
+  h += `<div class="links" style="margin-top:8px">${th.note ? `<a href="${base}${selected}.pdf" target="_blank">open the note as PDF</a> <a href="${base}${selected}.tex" target="_blank">tex source</a>` : "<span class='muted'>no note yet</span>"}${th.edited ? ` <span class="muted">readable account: ${esc(th.edited.status)}</span>${th.edited.status === "done" ? ` <a href="${base}edited/note.pdf" target="_blank">pdf</a> <a href="${base}edited/note.tex" target="_blank">tex</a>` : ""}` : ""}</div></div>`;
   if (th.paper) h += `<h3>Paper</h3><div class="verdict ${th.paper.status === "accepted" ? "DRAFT" : ""}"><b>${esc(th.paper.status)}</b>, round ${th.paper.round}${th.paper.reason ? `<div style="margin-top:4px">${esc(th.paper.reason)}</div>` : ""}<div class="links" style="margin-top:4px"><a href="${base}paper/paper.pdf" target="_blank">pdf</a> <a href="${base}paper/paper.tex" target="_blank">tex</a> <a href="${base}paper/references.bib" target="_blank">bib</a> <a href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
   h += `<h3 id="verdicts">Verdicts</h3>` + (th.verdicts.length ? th.verdicts.map(v =>
     `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted">${esc(v.at)}</span><div style="margin-top:4px">${esc(v.reason)}</div>${v.action ? `<div class="muted" style="margin-top:4px"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : '<span class="muted">none yet</span>');

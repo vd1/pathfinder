@@ -67,7 +67,14 @@ def pending(campaign) -> list[str]:
 
 def _work(campaign, pair_id):
     with Lock(campaign.thread_dir(pair_id)):
-        return research.run_thread(campaign, pair_id, stop=lambda: stopped(campaign))
+        result = research.run_thread(campaign, pair_id, stop=lambda: stopped(campaign))
+        if result in research.TERMINAL and not stopped(campaign):
+            from . import edit                      # the readable account, written once the verdict is final
+            try:
+                edit.run(campaign, pair_id, stop=lambda: stopped(campaign))
+            except transport.TransportFailed:
+                print(f"{_now()} {pair_id}: editor transport failure; run `pathfinder edit {pair_id}` later")
+        return result
 
 
 def _probe(campaign) -> bool:

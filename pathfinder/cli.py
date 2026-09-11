@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path
-from . import config, corpus, monitor, paper, reconcile, research, runner, scan, select
+from . import config, corpus, edit, monitor, paper, reconcile, research, runner, scan, select
 
 
 def main(argv=None):
@@ -25,6 +25,8 @@ def main(argv=None):
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
     w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
+    e = sub.add_parser("edit", help="after a terminal verdict: rewrite the note as a readable short paper with references")
+    e.add_argument("pair", nargs="?", help="default: every terminal thread without an edited note")
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     ns = ap.parse_args(argv); c = config.load(Path(ns.root))
@@ -70,6 +72,12 @@ def main(argv=None):
                                            and paper.status(c, p["pair_id"]).get("status") != "accepted"]
         for pid in pairs:
             print(f"{pid}: {paper.run(c, pid, stop=lambda: runner.stopped(c))}")
+    elif ns.cmd == "edit":
+        pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
+                                           if research.status(c, p["pair_id"]).get("status") in research.TERMINAL
+                                           and edit.status(c, p["pair_id"]).get("status") != "done"]
+        for pid in pairs:
+            print(f"{pid}: {edit.run(c, pid, stop=lambda: runner.stopped(c))}")
     elif ns.cmd == "reconcile":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for pid in pairs:

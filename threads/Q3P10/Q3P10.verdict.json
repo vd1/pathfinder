@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T21:29:08Z",
+  "note_sha256": "9ee79eb90d014f2130624bf32db1a8e48e4db0ab8976d48d241d031c0b7b5cf5",
+  "decision": "ITERATE",
+  "reason": "The pair supports a non-obvious, well-controlled hypothesis, but the note contains only an experimental design and no result establishing that inference pricing changes auction behavior or welfare. The proposed fee-only arm can close this gap with existing code and materials.",
+  "action": "Run the prompt-matched zero-price versus visible-fee pilot with exit disabled, measuring crossing latency and size, gross surplus, and net surplus."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T21:33:19Z",
+  "note_sha256": "34ed4f74a56cbdafd4fc7c7a2d7115d330f769f847c65704676073d3488ee22f",
+  "decision": "PAUSE",
+  "reason": "The note accurately reports a credible experimental design, but no treated market run supports a result about the connexion. A previous ITERATE requested the decisive visible-fee pilot, and the peers could not run it because the fee treatment is unimplemented and provider credentials are unavailable. Further progress requires a modified auction harness and credentialed replicated LLM runs.",
+  "action": null
+ }
+]

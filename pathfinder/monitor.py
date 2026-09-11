@@ -4,7 +4,7 @@ import json, mimetypes, re, shutil, subprocess, tempfile, time
 from collections import Counter
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from . import corpus, paper, research, transport
+from . import corpus, edit, paper, research, transport
 
 
 def _jsonl(p: Path):
@@ -42,6 +42,7 @@ def state(campaign) -> dict:
                         "note": f"{pid}.tex" if (d / f"{pid}.tex").exists() else None, "files": files,
                         "by_stage": stages.get(pid, {}), "connexion": by_id.get(pid, {}).get("connexion"),
                         "paper": paper.status(campaign, pid) if (d / "paper").exists() else None,
+                        "edited": edit.status(campaign, pid) if (d / "edited").exists() else None,
                         "q_title": Q[int(pid[1:].split("P")[0]) - 1].get("title") if Q else None,
                         "p_title": P[int(pid.split("P")[1]) - 1].get("title") if P else None}
         shortlist.append({**p, "status": s.get("status"), "round": s.get("round"), "stage": s.get("stage"),
