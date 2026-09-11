@@ -82,6 +82,12 @@ def _peers(campaign, pair_id, stop):
                 left = A["peer_seconds"] - used["seconds"]
             if left <= 0 or L.ready(list(PEERS)):
                 return
+            while L.ready([actor]) and not done[peer]:      # my word stands; wait for my partner
+                time.sleep(15)
+                if L.ready(list(PEERS)):
+                    return
+            if L.ready(list(PEERS)):
+                return
             _check(stop)
             p = _prompt(campaign, "peer", ACTOR=actor, PEER=peer, Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
                         LEDGER=f"{helper} --actor {actor}", SECONDS=int(min(left, 1200)),
@@ -95,8 +101,16 @@ def _peers(campaign, pair_id, stop):
             if r["transport_failed"]:
                 raise transport.TransportFailed(pair_id)
 
+    done = {a: False for a in PEERS}
+
+    def guarded(actor):
+        try:
+            one(actor)
+        finally:
+            done[actor] = True
+
     with ThreadPoolExecutor(2) as ex:
-        for f in [ex.submit(one, a) for a in PEERS]:
+        for f in [ex.submit(guarded, a) for a in PEERS]:
             f.result()
 
 

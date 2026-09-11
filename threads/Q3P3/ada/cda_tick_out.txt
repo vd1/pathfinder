@@ -1,0 +1,35 @@
+(1) ZI-C efficiency vs horizon T (cents grid)
+   T= 30: trades=1.67 eff=0.328
+   T= 40: trades=2.21 eff=0.424
+   T= 50: trades=2.66 eff=0.510
+   T= 60: trades=3.09 eff=0.582
+   T= 70: trades=3.48 eff=0.654
+   T= 80: trades=3.79 eff=0.700
+   T= 90: trades=4.08 eff=0.748
+   T=100: trades=4.38 eff=0.786
+   T=125: trades=4.84 eff=0.858
+   T=150: trades=5.17 eff=0.896
+   T=175: trades=5.40 eff=0.921
+   T=200: trades=5.59 eff=0.933
+   T=250: trades=5.76 eff=0.949
+   T=300: trades=5.84 eff=0.958
+   ZI-equivalent horizon for GPT Large (mean eff 0.53): T~53
+   ZI-equivalent horizon for Gemini Large (mean eff 0.698): T~80
+   ZI-equivalent horizon for GPT Small (mean eff 0.868): T~131
+
+(2) creeper agents, T=300, by tick size
+   res2=False tick=0.01: trades=0.98 eff=0.189
+   res2=False tick=0.02: trades=1.99 eff=0.369
+   res2=False tick=0.05: trades=4.39 eff=0.743
+   res2=False tick=0.10: trades=6.08 eff=0.946
+   res2=False tick=0.25: trades=6.67 eff=0.926
+   res2=True  tick=0.01: trades=1.60 eff=0.282
+   res2=True  tick=0.02: trades=3.00 eff=0.517
+   res2=True  tick=0.05: trades=5.31 eff=0.835
+   res2=True  tick=0.10: trades=6.37 eff=0.934
+   res2=True  tick=0.25: trades=6.86 eff=0.898
+
+   ZI-C by tick size, T=300 (control: random traders should be tick-insensitive)
+   tick=0.01: trades=5.84 eff=0.958
+   tick=0.05: trades=5.90 eff=0.955
+   tick=0.25: trades=6.22 eff=0.941
