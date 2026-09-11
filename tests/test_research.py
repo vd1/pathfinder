@@ -1,0 +1,71 @@
+import json, sys
+from pathlib import Path
+from pathfinder import research, transport
+from pathfinder.config import Campaign
+
+FAKE = f"{sys.executable} {Path(__file__).parent / 'fake_cli.py'}"
+
+
+def make(tmp_path, rounds=3):
+    (tmp_path / "campaign.json").write_text("{}")
+    c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=False, seats=1, cut=1,
+                 rounds=rounds, allowances={"peer_seconds": 100, "peer_calls": 2, "consolidate_seconds": 10, "verify_seconds": 10},
+                 budget_usd=99, prices={}, scan_fulltext=None)
+    (tmp_path / "Q.jsonl").write_text('{"id":"a","title":"A","abstract":"aa","text":null}\n')
+    (tmp_path / "P.jsonl").write_text('{"id":"b","title":"B","abstract":"bb","text":null}\n')
+    return c
+
+
+def test_thread_reaches_draft(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path)
+    helper = f"{sys.executable} -m pathfinder.ledger --root . "
+    # peers: each call adds an idea then declares ready at the latest entry
+    monkeypatch.setenv("FAKE_RUN", helper + "--actor $FAKE_ACTOR add --kind idea --text hi >/dev/null; "
+                       + helper + "--actor $FAKE_ACTOR ready --seen $(" + helper + "--actor x read | grep -c '^#')")
+    real = transport.call
+
+    def fake_call(prompt, **kw):
+        monkeypatch.setenv("FAKE_ACTOR", kw["actor"])
+        if kw["stage"] == "consolidate":
+            (kw["cwd"] / "Q1P1.tex").write_text("\\documentclass{article}\\begin{document}x\\end{document}")
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "wrote it")
+        elif kw["stage"] == "verify":
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", '{"decision":"DRAFT","reason":"fine","action":null}')
+        else:
+            monkeypatch.setenv("FAKE_REPLY", "peer")
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    s = research.status(c, "Q1P1")
+    assert s["status"] == "DRAFT" and s["round"] == 1
+    v = json.loads((tmp_path / "threads" / "Q1P1" / "Q1P1.verdict.json").read_text())
+    assert v[0]["decision"] == "DRAFT"
+
+
+def test_iterate_cap_becomes_pause_on_iterate(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path, rounds=2)
+    real = transport.call
+
+    def fake_call(prompt, **kw):
+        if kw["stage"] == "peers":
+            monkeypatch.setenv("FAKE_RUN", f"{sys.executable} -m pathfinder.ledger --root . --actor {kw['actor']} add --kind idea --text x >/dev/null")
+            monkeypatch.setenv("FAKE_REPLY", "p")
+        elif kw["stage"] == "consolidate":
+            (kw["cwd"] / "Q1P1.tex").write_text("x"); monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "ok")
+        else:
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", '{"decision":"ITERATE","reason":"more","action":"check"}')
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "PAUSE-ON-ITERATE"
+    assert research.status(c, "Q1P1")["round"] == 2
+
+
+def test_empty_ledger_pauses_without_note(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    monkeypatch.setenv("FAKE_REPLY", "nothing"); monkeypatch.setenv("FAKE_RUN", "true")
+    c = make(tmp_path)
+    assert research.run_thread(c, "Q1P1") == "PAUSE"
+    assert research.status(c, "Q1P1")["reason"] == "empty ledger"
+    assert not (tmp_path / "threads" / "Q1P1" / "Q1P1.tex").exists()

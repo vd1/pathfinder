@@ -42,6 +42,8 @@ def _parse(campaign, model, lines):
             row = json.loads(line)
         except json.JSONDecodeError:
             continue
+        if not isinstance(row, dict):
+            continue
         t = row.get("type")
         if t == "system" and row.get("session_id"):
             session = row["session_id"]
