@@ -71,6 +71,11 @@ threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
 - `prices`: per-model prices used when the CLI reports no cost.
 - `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
   sources instead of abstracts on that side.
+- `codex`: optional, for the Codex backend through a custom OpenAI-compatible
+  provider such as a university proxy: `name`, `base_url`, `env_key` (the
+  variable Codex reads the key from), `key_file` (a dotenv file holding
+  `env_key=value`, read into the child environment only) and `wire_api`.
+  Leave it out to use the ChatGPT login.
 
 ## Stops, guard, failures, reconcile
 
