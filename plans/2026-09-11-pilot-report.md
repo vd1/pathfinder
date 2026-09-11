@@ -17,10 +17,10 @@ the cut to 16%, run on gpt-5.6-sol through the Codex CLI and the ELM proxy.
 | --- | --- | --- | --- | --- | --- | --- |
 | Q4P3 | claude, opus | PAUSE | 2 | 27 | 15 | 29.73 |
 | Q1P1 | claude, opus | PAUSE | 1 | 28 | 8 | 27.16 |
-| Q3P3 | claude, opus | stopped at peers, held by the guard | 1 | 15 | 2 | 8.88 |
+| Q3P3 | opus round 1, then codex via ELM | PAUSE-ON-ITERATE | 3 | 39 | 19 | 8.88 + 5.14 |
 | Q1P2 | codex, gpt-5.6-sol via ELM | DRAFT | 2 | 36 | 12 | 7.43 |
 
-Scan: 25 pairs, 0.82 USD. Claude total: 66.58 USD API-equivalent; Codex thread 7.43 USD from the price table.
+Scan: 25 pairs, 0.82 USD. Claude total: 66.58 USD API-equivalent; Codex 20.0 USD from the price table (two threads and the paper stage). Campaign total 87.53 USD over 92 calls.
 
 ## Harness lessons
 
@@ -72,7 +72,13 @@ Scan: 25 pairs, 0.82 USD. Claude total: 66.58 USD API-equivalent; Codex thread 7
    one state document, thread files served from the campaign directory,
    nothing rebuilt on a schedule. Not visually checked in this session.
 
-9. **Test coverage after the pilot.** Exercised for real: fetch, flatten,
+9. **Long prompts need a longer opening.** The verify and review prompts
+   inline both sources, the ledger and the note, 280 KB on Q1P2. Through
+   Codex that sometimes takes more than a minute before the first event,
+   which the fixed 60-second grace read as a dead transport. The grace now
+   scales with prompt size. The Claude CLI never showed the delay.
+
+10. **Test coverage after the pilot.** Exercised for real: fetch, flatten,
    scan with retry, select, concurrent and sequential admission, peers,
    consolidate, verify, ITERATE into a second round, PAUSE, operator drain,
    resume, killed runner and reconcile, budget guard, stage timeout, API
@@ -160,11 +166,51 @@ Three things to weigh before reading the DRAFT as a win:
   time. For a campaign of a hundred threads the difference is a day and a
   few hundred dollars against a week and a few thousand.
 
+Q3P3 then ran on Codex from its Opus round 1 ledger, the mixed case: 17
+calls, 13 minutes, 5.14 USD, and PAUSE-ON-ITERATE after three rounds. The
+verifier returned the same ITERATE three times, asking for a test on P's
+data that the peers do not have. Two rounds were spent on an action the
+peers could not take. The verify prompt asks for an action the peers can
+act on; it could also say that a gap needing new data or experiments is a
+PAUSE, not an ITERATE. Left as a proposal.
+
 The mechanics were identical on both backends: same files, same stages,
 same reconcile behaviour. One operator error on the way: the stop marker
 left by the budget guard made the first `reconcile --apply` end as
 `stopped` at once; `stop --clear` fixed it. A stale stop marker is easy to
 leave behind and the CLI could say so when a command starts.
+
+## Paper stage
+
+Added after the pilot on request, from the Julien edition's author-note and
+final-review prompts with the packaging left out. On a DRAFT thread,
+`pathfinder paper` runs an author agent with tools and web search that
+writes `paper/paper.tex` and `paper/references.bib`, searches for prior
+work on the specific result, verifies every reference against arXiv or a
+DOI, and builds with latexmk. The pipeline rebuilds in a scratch copy and
+checks citations, uncited entries, missing identifiers and arXiv titles
+against the API, then an independent tool-less reviewer returns ACCEPT or
+REVISE with findings by id, up to `paper_rounds`.
+
+On Q1P2 through Codex and ELM, the paper reached ACCEPT in round 3: six
+pages, five references with verified metadata, 8.36 USD over the stage's
+runs. What the first attempts taught:
+
+- The Codex workspace sandbox has no network unless asked. The first
+  author could not reach arXiv, wrote a search record saying so, and cited
+  only Q and P. The transport now opens network access when search is on.
+  The second author ran six queries over OpenAlex and the arXiv API, read
+  three related papers and cited them.
+- The reviewer must see the search record. The first reviewer flagged as
+  unsupported a record it had never been shown. It is now in the prompt.
+- Two review calls on a 280 KB prompt produced no session within 60
+  seconds through Codex; the session grace now grows with prompt size,
+  and the stage resumes at the review rather than paying for the author
+  again.
+- The reviewer's findings went from "search record unsupported, symbols
+  undefined" to "n is not declared a positive integer" over three rounds,
+  which is the shape of a review converging. The arXiv API rate-limited
+  the pipeline's own title check once; it now backs off and retries.
 
 ## Decisions taken on the way
 

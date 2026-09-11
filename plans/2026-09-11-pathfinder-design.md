@@ -250,7 +250,7 @@ Research, as it ended:
 | --- | --- | --- | --- | --- | --- | --- |
 | Q4P3 | PAUSE | 2 | 27 | 15 | 112 | 29.73 |
 | Q1P1 | PAUSE | 1 | 28 | 8 | 88 | 27.16 |
-| Q3P3 | stopped at peers | 1 | 15 | 2 | 32 | 8.88 |
+| Q3P3 | PAUSE-ON-ITERATE (Opus round 1, then Codex via ELM) | 3 | 39 | 19 | 47 | 14.02 |
 | Q1P2 | DRAFT (Codex, gpt-5.6-sol via ELM, added later at cut 16) | 2 | 36 | 12 | 13 | 7.43 |
 
 Total spend 66.58 USD over 52 receipts; wall time from the first scan call
@@ -309,7 +309,9 @@ What had to change on the way:
 
 Added afterwards: the cut widened to 16% to admit Q1P2, run on the Codex
 backend through the ELM proxy; it ended DRAFT after two rounds in six
-minutes of wall time. The health flag, the interrupt drain, both BLOCKED
+minutes of wall time, and its paper stage reached ACCEPT in three rounds
+for 8.36 USD. Q3P3 resumed on Codex from its Opus ledger and ended
+PAUSE-ON-ITERATE after three rounds. The health flag, the interrupt drain, both BLOCKED
 paths and prompt override are covered by tests with the fake CLI. Not
 exercised: `scan.fulltext` and the PDF-only path. The pilot report,
 `2026-09-11-pilot-report.md`, holds the lessons.

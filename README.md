@@ -16,6 +16,11 @@ Every thread ends with a ledger, a note named after the pair (for example
 `Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE` or
 `PAUSE-ON-ITERATE`.
 
+3. **Paper.** On a DRAFT thread, an author agent writes a short paper with
+   BibTeX references, searching for prior work and verifying every
+   reference; the pipeline builds it and checks the citations; an
+   independent reviewer accepts or returns it, up to a round cap.
+
 ## Requirements
 
 - Python 3.12 and [uv](https://docs.astral.sh/uv/).
@@ -34,6 +39,7 @@ uv run pathfinder select --cut 12
 uv run pathfinder serve      # in a second terminal: http://localhost:8790/
 uv run pathfinder research
 uv run pathfinder status
+uv run pathfinder paper         # for every DRAFT thread
 ```
 
 Every command takes `--root DIR`; the default is the current directory, which
@@ -53,6 +59,8 @@ stop.json          present while a stop is requested
 health.json        present while admissions are paused after transport failures
 threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
                    <pair>.verdict.json, status.json, lock
+threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
+                   review.json, paper.json (accepted, returned, blocked)
 ```
 
 ## campaign.json
@@ -64,8 +72,10 @@ threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
 - `seats`: how many threads run at once.
 - `cut`: percentage of scored pairs that make the shortlist.
 - `rounds`: cap on verifier ITERATE loops per thread.
+- `paper_rounds`: cap on author and review rounds in the paper stage.
 - `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
-  (per peer per round), `consolidate_seconds`, `verify_seconds`.
+  (per peer per round), `consolidate_seconds`, `verify_seconds`,
+  `paper_seconds`, `review_seconds`.
 - `budget_usd`: hard cap on receipts plus in-flight estimate.
 - `call_estimate_usd`: what one in-flight call is assumed to cost by the guard.
 - `prices`: per-model prices used when the CLI reports no cost.
@@ -86,7 +96,8 @@ threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
 - The budget guard runs before every admission: receipts plus in-flight calls
   times `call_estimate_usd` must stay under `budget_usd`, otherwise it writes
   the stop marker itself.
-- A call that produces no session within 60 seconds is a transport failure:
+- A call that produces no session within 60 seconds, plus a second per
+  5 KB of prompt, is a transport failure:
   no receipt, the thread is marked stopped. Two in a row set `health.json`;
   admissions pause until a probe call succeeds.
 - Threads are locked by a pid file. `pathfinder reconcile [pair]` names the
@@ -95,9 +106,9 @@ threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
 
 ## Prompts
 
-The four prompts in `prompts/` are the place to tune behaviour: `scan.md`
-(the two-axis judge), `peer.md` (the creative brief), `consolidate.md` and
-`verify.md`. A campaign directory may carry its own `prompts/` to override
+The six prompts in `prompts/` are the place to tune behaviour: `scan.md`
+(the two-axis judge), `peer.md` (the creative brief), `consolidate.md`,
+`verify.md`, `author.md` and `review.md`. A campaign directory may carry its own `prompts/` to override
 them.
 
 ## Departures from the agQSL instance
