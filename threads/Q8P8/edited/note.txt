@@ -1,0 +1,170 @@
+Compliant Grasping and Causal Frame Selection:
+A Conditional Boundary Between Aero Hand
+Open and DynaMAC
+
+Abstract
+This note relates Aero Hand Open, a compliant tendon-driven robot
+hand, to DynaMAC, a method for coordinating manipulation through
+moving reference frames. We asked whether DynaMAC’s test for a rigid
+link can identify causal attachment when a compliant grasp allows relative motion. The papers together make a possible mismatch clear, and
+the peers designed a controlled test of it, but no experiment was run.
+The thread therefore paused because the workspace lacked an integrated
+simulator and an agreed definition of attachment.
+
+1
+
+Introduction
+
+Aero Hand Open is an anthropomorphic robot hand with 16 joints and seven
+motors [4]. Cables let one motor move several joints. Springs and silicone contacts make the hand compliant, so the mechanics and the object help determine
+which joints move during closure. The hand senses its seven motor encoders.
+Its released learning example concerns fixed-base rotation of a cube, and its
+policy sends seven tendon targets. The paper also provides a simulation model,
+an identified map between motor and simulated commands, and a deployment
+stack.
+DynaMAC addresses dynamic and two-arm manipulation [3]. It represents
+actions relative to several reference frames, such as an object or the other arm’s
+end effector. Each stream predicts an absolute end-effector pose, and streams
+with lower predictive uncertainty receive greater weight. DynaMAC adds a
+binary test for a kinematic link. When a frame appears rigidly attached, the
+method masks the stream whose frame has become an effect of the robot’s
+action. DynaMAC disregards gripper actions, and DynaBench tests arm endeffector motion rather than dexterous hand control.
+The connexion pursued was narrower than mounting Aero hands on a DynaBench system. A grasp can be causal in the sense that the hand controls the
+object, yet non-rigid in the sense that the object can slip or move within compliant contacts. The peers asked whether DynaMAC’s rigid-motion test then
+selects the right streams. They also asked whether a test based on the object’s
+1
+
+response to small wrist and tendon interventions would do better. This is a
+question about identifying attachment, not a claim that Aero makes DynaMAC
+fail.
+
+2
+
+What Was Done
+
+The work began with a broad proposal to replace standard grippers with Aero
+hands. The peers rejected a direct comparison as ambiguous. DynaMAC controls a six-dimensional arm pose and omits gripper actions, whereas the Aero
+example controls seven tendon targets in a fixed-base task. A failed combined
+system could therefore reflect hand control, mounting, sensing, collision modelling, or task design rather than causal frame selection.
+The peers then isolated the common issue. The arm’s wrist pose remains
+known from forward kinematics. What the wrist pose does not fully describe is
+the position and strength of compliant finger contacts. Aero is a useful counterregime because a cable can drive several joints, the mechanics choose the order
+of joint motion, and contact pads deform. Thus a known wrist pose and tendon
+command need not determine a rigid object pose.
+Next, the peers examined DynaMAC’s link rule. Let M be the geometric mean of the standard deviations of relative pose, including translation and
+rotation. DynaMAC declares a link when
+M < τM ,
+
+(1)
+
+where τM = 0.001. The paper interprets this threshold as about 1 mm or
+0.001 rad. It is an operational test motivated by rigid grasping. DynaMAC also
+notes brief false positives before a grasp.
+An early proposal replaced this binary decision with a continuous covariance
+weight. The peers withdrew it. DynaMAC’s underlying product of experts already weights streams by predictive precision, so another covariance weight
+would repeat an existing mechanism. More importantly, variance alone cannot distinguish an external object from an attached object that slips or makes
+intermittent contact.
+The revised proposal separated attachment from predictive precision. Let
+zt denote whether the object is attached at time t. The proposed estimator
+would apply matched, small wrist and tendon interventions and ask whether
+the object or contact frame responds. It would use the estimated probability
+that zt is attached to gate a stream, while leaving ordinary covariance weighting
+unchanged. This was a design only. No estimator, label, or experimental result
+was produced.
+Finally, the peers specified a simulation-first comparison. Grasp control
+would be frozen or identical for every method. A model would vary from rigid
+coupling through compliant slip to intermittent contact. The comparison would
+include ordinary precision weighting, binary DynaMAC, a gate given an independently defined attachment label, and a learned response-based gate. The
+
+2
+
+two main outcomes would be agreement with the attachment label and success
+when policies learned from static demonstrations face dynamic perturbations.
+
+3
+
+Results
+
+Three careful conclusions hold on the supplied evidence.
+First, Aero provides a plausible setting in which causal control and rigid
+co-motion separate. Its underactuation, mechanically staged closure, compliant contacts, and limited actor observations support that possibility. They do
+not establish that the separation occurs in DynaBench or that it changes task
+success.
+Second, DynaMAC uses near-constant relative pose as a practical sign of
+a kinematic link. Therefore its binary proxy may miss an attachment that
+transmits control while allowing relative motion. It may also give a false positive
+during intermittent or pre-grasp contact. These are conditional failure modes,
+not a proved defect. Compliance could instead keep a stream’s uncertainty finite
+and prevent the excessive precision that masking was introduced to correct.
+Third, response-based attachment inference is conceptually different from
+DynaMAC’s variance test and from ordinary precision weighting. It asks whether
+a controlled change in the hand produces a change in the object. The peers’
+cross-checks support this distinction, but only as an experimental hypothesis.
+The supplied ada/ and emmy/ directories contain no additional files, so the ledger
+is the only available record of those checks.
+The proposed experiment has clear interpretations. If the binary rule and
+the independent attachment label agree, the concern is refuted in the tested
+regime. If they disagree but task success is unchanged, the distinction has little
+demonstrated consequence. If they disagree and the independently labelled or
+learned gate improves transfer, the proposed boundary becomes consequential.
+
+4
+
+What Did Not Hold
+
+The broad hardware-swap claim did not hold up. A direct replacement would
+mix arm coordination with a new seven-channel hand controller. Holding grasp
+control fixed, or giving every method the same tendon controller, settles that
+objection for the proposed causal-frame test. It does not establish dexterous
+two-arm policy learning or DynaMAC’s sample efficiency with Aero hands.
+The continuous covariance proposal also did not hold up because ordinary
+product-of-experts weighting already uses predictive covariance. The responsebased variable zt removed that duplication in principle. It did not settle how
+attachment should be defined during intermittent contact involving several fingers.
+The peers also corrected an overstatement about observability. The wrist
+is observable. The missing information concerns contact geometry and force
+
+3
+
+transmission. On hardware, a response-based test would need external object
+or contact tracking because Aero exposes only motor encoders.
+No evidence showed that DynaMAC’s threshold disagrees with an independent attachment label or that any disagreement harms transfer. Neither paper
+performs the proposed combined test. No literature search was conducted, so
+the thread supports no claim that the proposal is new beyond these two papers.
+
+5
+
+Why the Thread Stopped
+
+After the first review, the verifier requested the rigid-to-compliant ablation. The
+peers then checked the workspace and found no Aero or DynaMAC codebase,
+demonstrations, trained policies, task assets, or integrated Aero–DynaBench
+environment. The Aero project points to a public code repository [1], and
+DynaMAC points to a project release [2], but those links do not supply a ready
+combined experiment in this workspace. The verifier therefore changed the
+status from iterate to pause: the idea was testable, but the decisive evidence
+could not be produced from the supplied material.
+The smallest step that would restart the thread is to obtain the released code
+and build a single integrated simulation case with fixed grasp control. Before
+running it, the researchers must define an attachment label for rigid, slipping,
+and intermittent contact. They can then compare binary DynaMAC with the
+independently labelled gate on label agreement and transfer success. Testing
+the learned response-based gate is needed only if that first comparison shows a
+consequential disagreement.
+
+References
+[1] TetherIA. Aero hand open source code. https://github.com/TetherIA/
+aero-hand-open, 2026.
+[2] Jan Ole von Hartz, Abhinav Valada, and Joschka Boedecker. DynaMAC
+project release. https://dynamac.cs.uni-freiburg.de, 2026.
+[3] Jan Ole von Hartz, Abhinav Valada, and Joschka Boedecker. One hand
+watches the other: Dynamic multi-agent cooperation for sample-efficient
+bimanual manipulation in dynamic environments. arXiv preprint, July 2026.
+arXiv:2607.22119.
+[4] Nan Wang, Mohit Yadav, Jonathan Wulff, Aidan Rosenbaum, Kezhou
+Chen, Yuvan Sharma, Xu Dong, and Yiwei Tao. Aero hand open: A
+simulation-ready tendon-driven hand for dexterous manipulation learning.
+arXiv preprint, August 2026. arXiv:2608.28578.
+
+4
+
+

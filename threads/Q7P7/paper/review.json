@@ -1,0 +1,92 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T22:13:15Z",
+  "build_ok": true,
+  "checks": [
+   "radovanovic2022: arXiv 2022.31732 not found",
+   "gorka2025: arXiv 9240.37345 not found"
+  ],
+  "paper_sha256": "d3726321d0d068c83c0cc6622362219e7054f259e7a5583a3f127e0ee6bc6d09",
+  "decision": "REVISE",
+  "summary": "The synthesis is well bounded and the main certificate is correct, but the implementation theorem currently omits a normalization required by Q. Two notation and scaling corrections are also needed before referee review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Voluntary migration model, Eq. (4), and Conditional implementation theorem",
+    "issue": "The paper asserts V_o(0)=0 although the displayed definition gives V_o(0)=-C_o(0); no assumption states C_o(0)=0. Q requires this normalization for its individual-rationality result, so the claimed equilibrium properties do not follow as written.",
+    "fix": "Assume explicitly that C_o(0)=0, or replace C_o(f_o) by C_o(f_o)-C_o(0), and carry that normalization into the theorem."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Voluntary migration model, Eq. (4)",
+    "issue": "The origin conversion factor phi_o is used but only destination factors phi_j are defined.",
+    "fix": "Define a positive incremental electrical-demand factor for every origin and destination node, including phi_o."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Forecast-error survival certificate, paragraph after the proposition",
+    "issue": "The regret bound omits the carbon weight rho if the shared objective is private cost plus rho times emissions, as in Eq. (4).",
+    "fix": "State the objectives explicitly and give the bound as rho D||e-hat e||_* when rho is present, or define the weighted coefficient vector before stating the bound."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T22:14:36Z",
+  "build_ok": true,
+  "checks": [
+   "radovanovic2022: arXiv 2022.31732 not found",
+   "gorka2025: arXiv 9240.37345 not found"
+  ],
+  "paper_sha256": "99124d61a3804cf7bebd02a442f9593a4e7864ef72aec6e1201a4e06fe1067f1",
+  "decision": "REVISE",
+  "summary": "The synthesis is careful, mathematically sound in its main results, and fairly distinguishes the new construction from Q and P. A few local definitions and assumptions must be tightened before referee review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Voluntary migration model, Eq. (3) and Theorem 1",
+    "issue": "The meaning of c_{jt} is ambiguous because existing baseline electrical demand is not included in the shared constraint.",
+    "fix": "Define c_{jt} explicitly as residual capacity available for migrated workload, or subtract fixed baseline demand from total capacity."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Voluntary migration model",
+    "issue": "The destination index does not exclude j=o, so a variable described as migrated work may represent work retained at its origin.",
+    "fix": "State j\\ne o or explain how self-destination coordinates are treated."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Conditional implementation theorem",
+    "issue": "Invoking all equilibrium properties of Q also requires Q's mechanism-specific conditions, including a valid multi-agent setting and feasible payment/LMI construction, not merely the displayed local-set and valuation conditions.",
+    "fix": "Explicitly condition the theorem on every mechanism-design hypothesis of Q, including N\\geq2 and feasibility of its payment-parameter conditions."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "where": "Forecast-error survival certificate, final paragraph",
+    "issue": "The aggregate cost C(x) and feasible schedule set X appear without definitions connecting them to the earlier owner costs and flow variables.",
+    "fix": "Define C(x)=\\sum_o[C_o(f_o(x))-C_o(0)] and define X before stating the regret bound."
+   }
+  ]
+ },
+ {
+  "round": 3,
+  "at": "2026-09-11T22:15:57Z",
+  "build_ok": true,
+  "checks": [
+   "radovanovic2022: arXiv 2022.31732 not found",
+   "gorka2025: arXiv 9240.37345 not found"
+  ],
+  "paper_sha256": "06d346b12ccb54e4a02dc1e651345bcf91ee520f154c820394ee60baed43a842",
+  "decision": "ACCEPT",
+  "summary": "The paper is mathematically coherent, traceable to the note and ledger, and appropriately limits its new result to a conditional voluntary-migration model. It represents Q and P fairly, states the relevant limitations, and supports its cautious related-work claim with recorded searches. All bibliography entries are cited and have verified identifiers or URLs.",
+  "findings": []
+ }
+]

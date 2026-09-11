@@ -1,0 +1,177 @@
+Resource-Constrained Peer Discipline in the
+Energy Society
+
+Abstract
+The first paper studies mechanisms for AI agents whose preferences
+and capabilities are unknown, while the second studies language-model
+agents that spend energy to reason, communicate, and remain active.
+We asked whether the second setting could test the first paper’s method
+of using peer reports to induce truthful reports and obedient actions.
+The work recovered a threshold for the particular scoring rule in the first
+paper and a separate necessary condition for obedience when rewards are
+bounded. The existing experiments in the second paper do not test either
+claim, so the thread paused pending a small experiment with planted
+private signals and explicitly funded scores.
+
+1
+
+Introduction
+
+Bergemann, Koh, and Morris study how a designer can direct AI agents without
+knowing their preferences or their capabilities [1]. An agent may hide what it
+can do, report strategically, or disobey after making a report. The paper develops mechanisms meant to reward both truthful reporting and obedience. In
+its multi-agent peer-discipline example, correlated private types let one agent’s
+report carry information about the types of other agents. A proper score based
+on peer reports can then make truth-telling attractive. This example is a benchmark: rewards are free and unbounded, and off-path disobedience can receive a
+reward of minus infinity.
+Hansen, Torrielli, Tonini, and Poech introduce the Energy Society, a simulation in which language-model agents spend energy when they generate tokens
+and become inactive when their energy reaches zero [2]. They can recover energy by completing jobs or receiving donations. Before acting, they exchange
+public, non-binding recommendations, and this discussion itself costs energy.
+The experiments suggest that discussion helps agents avoid job collisions, but
+competitive agents sometimes make recommendations that appear self-serving.
+Energy is therefore both an incentive instrument and the resource needed to
+keep acting.
+The connexion pursued was to place peer discipline inside this survival economy. The question was whether correlated reports can still discipline reports
+
+1
+
+and actions when scores must be paid from the same finite stock that supports communication and activity. Neither paper answers that question. The
+work therefore treated the Energy Society as a possible modified testbed for the
+mechanism in Q, not as existing evidence for or against it.
+
+2
+
+What was done
+
+The peers first identified the common problem. Q offers peer scoring when
+ground truth is unavailable. P offers a setting in which communication has
+allocation value, strategic recommendations are possible, and incentives have a
+direct resource cost. This suggested testing whether peer scoring could improve
+job allocation after accounting for the energy spent on messages and rewards.
+They next extracted the reporting calculation from Q’s proof. For each possible report, Q associates a probability distribution over the other agents’ types.
+Let δ > 0 be the smallest squared distance between the distributions associated
+with any two distinct supported reports. Let M be the largest remaining gain an
+agent can obtain from a supported false report, including any report-dependent
+communication cost and continuation value. Finally, let Λ > 0 be the multiplier
+on Q’s quadratic peer score. A false report loses Λδ in expected score. Q’s
+construction therefore deters every such false report when
+Λδ ≥ M,
+
+or equivalently
+
+Λ≥
+
+M
+.
+δ
+
+(1)
+
+This is a reading of Q’s construction, not a bound on all possible mechanisms
+[1].
+The peers then separated truthful reporting from obedience. Q uses minusinfinity rewards away from the prescribed action path, but this instrument is
+unavailable in a limited-liability energy economy. At a fixed history h, for a fixed
+private signal or type and a fixed prescribed action, let D(h) be the greatest
+gain from disobeying, including later consequences. Let B(h) be the greatest
+feasible difference between outcome-contingent transfers, also including later
+consequences, under the chosen funding rule. Any reward scheme that induces
+obedience at that point must satisfy
+B(h) ≥ D(h).
+
+(2)
+
+Emmy checked that both quantities must be conditioned on the same history,
+signal, and action. She also corrected an earlier claim that budget balance alone
+ties the score scale to the reporting agent’s wealth. With self-funded escrow,
+B(h) depends on that agent’s energy. With a common pool, it depends on group
+wealth and the rules for paying into and drawing from the pool. Externally
+created scores need not face either restriction.
+Finally, the peers designed a discriminating experiment rather than reinterpreting P’s existing logs. The proposed modification gives agents correlated
+private signals about a hidden job state and asks for probabilistic reports. It
+varies the score multiplier, starting wealth, and signal separation. It compares
+2
+
+unscored discussion, survival-funded scoring, externally funded scoring, an oracle score based on the realised job outcome, and central allocation without
+reports. The proposed outcomes are truthful reporting, obedience, collisions,
+deactivation, and total energy after communication and scoring costs. This
+design was proposed but not run.
+
+3
+
+Results
+
+The first result is the construction-specific guarantee in equation 1. Greater
+separation between the beliefs induced by distinct reports makes a lie easier
+to detect through peer reports. A greater residual benefit from lying requires a
+larger score. Ada derived this directly from Q’s proof, and Emmy independently
+checked the interpretation. The result says only when Q’s quadratic construction is guaranteed to work. If the feasible score multiplier falls below M/δ, Q’s
+proof no longer supplies a guarantee. That failure of the proof is not itself an
+impossibility result.
+The second result is the necessary one-shot obedience condition in equation 2. If the best deviation is worth more than the largest feasible transfer difference, no transfer schedule within that funding rule can make the prescribed
+action optimal at that history. Ada stated the condition and Emmy checked its
+funding-rule qualification. The statement is necessary and local. The peers did
+not prove a dynamic impossibility theorem.
+The pair also supports an empirical motivation. P reports that removing
+discussion substantially increases collisions and changes job choice, so messages
+can help allocation [2]. It also reports more collision recommendations and some
+requests for donations in the competitive condition, which suggests that public
+recommendations can be used in self-serving ways [2]. These observations make
+incentive-aware communication relevant. They do not show that peer scoring
+works, because P does not elicit Q’s private types or peer-belief distributions.
+Communication cost has two distinct roles. If every allowed report costs
+the same amount, that cost does not by itself change the comparison between
+truthful and false reports. If costs differ by report, the difference belongs in M .
+In either case, all communication cost belongs in the welfare calculation. This
+distinction was part of Ada’s correction to the original proposal.
+
+4
+
+What did not hold and the objections
+
+The strongest rejected claim was that P’s existing experiments test Q’s mechanism. P asks for public action recommendations, not private type reports. Its
+answer tasks can also reveal ground truth after the event. Model identity is not
+the same thing as a private type. The peers settled this objection by requiring
+planted correlated signals within a fixed model identity and by describing the
+work as a new experiment.
+A second rejected claim was that any budget-balanced score is capped by the
+
+3
+
+reporting agent’s current wealth. Limited liability restricts losses, but positive
+prizes may come from peers or a common pool. The peers replaced that claim
+with B(h), defined for an exact funding rule. This leaves self-funded, pooled,
+and externally funded rewards as distinct cases rather than treating them as
+one constraint.
+Several objections remain open. Q establishes the existence of a truthful and
+obedient equilibrium, not that agents select it or that it survives pooling and
+coordinated false reports [1]. An oracle-score control and audits for pooling and
+collusion could reveal these problems, but would not settle them in theory. The
+peers also did not establish that planted signals represent natural languagemodel preferences or capabilities. Nor did they estimate δ, M , D(h), or the
+feasible transfer spread in a working Energy Society mechanism. The material
+is therefore too thin to support a pair-specific empirical finding.
+
+5
+
+Why the thread stopped
+
+The verifier paused the thread because it produced a promising experiment but
+no new supported result about the pair beyond Q’s existing threshold and the
+general incentive inequality. Current P logs do not test peer discipline, and the
+equilibrium-selection concern remains unresolved. The smallest restart step is
+to specify a one-round self-escrow mechanism, including its score normalisation,
+and run a paired pilot with planted correlated signals at two starting-wealth
+levels over a range of Λ. An otherwise identical externally funded arm would
+show whether any failure comes from the funding constraint. The pilot would
+ask only whether behaviour changes near the threshold in equation 1 when that
+score is feasible.
+
+References
+[1] Dirk Bergemann, Andrew Koh, and Stephen Morris. Mechanism design for
+alignment and control, 2026.
+[2] Lucas Bergholdt Hansen, Federico Torrielli, Filippo Tonini, and Lukas Galke
+Poech. The energy society: A simulation environment for studying agent
+cooperation under survival pressure, 2026.
+
+4
+
+

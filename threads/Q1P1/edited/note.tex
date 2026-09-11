@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\CVaR}{\operatorname{CVaR}}
+
+\title{Finite-sample error in distributed zeroth-order CVaR:\\
+a correction, a lifted method, and the limited role of learning augmentation}
+\author{Research thread Q1P1}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The pair consists of a survey of learning-augmented algorithms and a paper on distributed, gradient-free optimisation of conditional value at risk. We looked for a useful consistency and robustness guarantee when predictions are added to the optimisation method. The main finding was instead a correction to the optimisation paper: its finite-sample error is of order $e_s$, not $e_s/\delta_{\min}$. A related method that optimises the risk threshold directly has an error of order $L\delta$ with one sample per query, while predicted baselines can reduce variance without changing the limiting bias. The thread was paused because these are results about the optimisation paper and its line of work, whereas the survey supplies useful tests and language but no essential theorem.
+\end{abstract}
+
+\section{Introduction}
+
+Zhao et al. survey learning-augmented algorithms, which use predictions but retain guarantees when those predictions fail \cite{Q}. They separate the mechanism that uses a prediction from the form of the guarantee. In particular, they ask for both consistency with a good prediction and robustness to a bad one. They also warn that a portfolio of predictors helps only when its loss can be related to the algorithm's actual cost and its state can be shared or moved.
+
+Wang et al. study a network of agents that jointly minimise the average of their local conditional values at risk, or CVaRs \cite{P}. CVaR measures loss in the worst $\alpha$ fraction of outcomes, where $\alpha\in(0,1]$ is the tail probability. Each agent sees sampled loss values, not gradients. It therefore probes the loss at a random nearby point, estimates CVaR from a fresh batch, and communicates its decision to its neighbours. The paper bounds the eventual expected error by a term of order $\delta_{\max}+e_s/\delta_{\min}$, where $\delta_i$ is agent $i$'s probing radius and $e_s$ is proportional to the inverse square root of the batch size.
+
+The thread first asked whether a predicted CVaR threshold or a predicted objective value could enter this method with the consistency and robustness pattern described by Zhao et al. That question exposed two separate channels. Finite batches change the mean direction of the update, while a poor objective-value prediction changes its variance. Checking the first channel led to the strongest result. The prediction question then became a secondary use of the survey rather than a result that depends on it.
+
+\section{What was done}
+
+The peers first re-examined the proof of the finite-sample term. Both independently found that the paper treats a difference between two convex functions as if it were an arbitrary error in a gradient. This introduces the factor $1/\delta$. They instead used the surrogate function whose gradient is exactly the expected random update. The fresh sample batch and random direction are independent, so this identity is already available in the proof of Wang et al.
+
+They next tested a direct optimisation of the threshold in the Rockafellar--Uryasev formula. For a loss $J(x,\xi)$ at decision $x$ and random outcome $\xi$, define
+\begin{equation}
+ \phi(x,\tau,\xi)=\tau+\frac{1}{\alpha}\bigl(J(x,\xi)-\tau\bigr)_+,
+ \qquad
+ \CVaR_\alpha[J(x,\xi)]=\min_\tau \E_\xi\phi(x,\tau,\xi).
+ \label{eq:ru}
+\end{equation}
+Here $(a)_+=\max(a,0)$ and $\tau$ is a candidate tail threshold. Each agent was given its own private $\tau$, while only $x$ was communicated. Early tests smoothed both $x$ and $\tau$. Atomic losses showed that this can create an error of order $L\delta/\alpha$. The peers therefore changed to smoothing only $x$. They derived a two-query estimator and a one-query likelihood-ratio estimator whose expected updates are subgradients of one convex objective.
+
+In parallel, they subtracted a predicted baseline from the one-point estimate. If $u$ is a random unit direction, $d$ is the dimension, $\widehat C_s$ is empirical CVaR from $s$ samples, and $b$ is chosen before the query, the update is
+\begin{equation}
+ g^b=\frac d\delta\bigl(\widehat C_s(y+\delta u)-b\bigr)u.
+ \label{eq:baseline}
+\end{equation}
+Since $\E u=0$, the baseline does not change the mean update. It changes only the second moment. The peers then considered exponential aggregation over several baselines, including $b=0$. The squared loss of every candidate is visible after the same query, so the portfolio does not require counterfactual runs or movement between states. This is the precise point at which the checklist of Zhao et al. was useful.
+
+Finally, the peers compared the average of local CVaRs with the CVaR of the average network loss. This tested the survey's condition for composing local guarantees into a system guarantee. They also ran the supplied checks on one-dimensional atomic examples, a four-agent ring, and the sensor example from Wang et al. The numerical work was used as illustration and as a check on fixed points, not as evidence for an upper bound.
+
+\section{Results}
+
+\subsection{The corrected finite-sample term}
+
+Let $C(x)$ be the true CVaR objective. Let $\overline C_s(x)=\E\widehat C_s(x)$ be the expected empirical CVaR and let $\widetilde C_s$ be its smoothing over the probing ball. Let $C_\delta$ be the same smoothing of $C$. Wang et al.'s estimation lemma and the Dvoretzky--Kiefer--Wolfowitz inequality give
+\begin{equation}
+ \sup_x|\overline C_s(x)-C(x)|\leq
+ \beta_s:=\frac U\alpha\sqrt{\frac{2\pi}{s}},
+ \label{eq:beta}
+\end{equation}
+where $|J|\leq U$. Empirical CVaR is the minimum of a sample average over $\tau$, so its expectation is biased downwards. Thus $\widetilde C_s-C_\delta$ lies between $-\beta_s$ and zero.
+
+For a current point $y$ and comparator $z$, convexity now gives
+\begin{equation}
+ \E\langle g,y-z\rangle
+ =\langle\nabla\widetilde C_s(y),y-z\rangle
+ \geq C_\delta(y)-C_\delta(z)-\beta_s.
+ \label{eq:key}
+\end{equation}
+The original proof instead bounded the norm of a gradient error, which multiplied $\beta_s$ by $dD_x/\delta$. Here $D_x$ is the diameter of the decision set. Replacing that step and leaving the rest of the recursion unchanged gives a limiting expected gap of order $\delta_{\max}+e_s$. The term of order $1/\delta_{\min}^2$ in the finite-time transient remains because the random direction still has large variance when $\delta$ is small.
+
+This conclusion is supported in two ways. The independent derivations are in \texttt{emmy/F1\_bias\_artifact.md} and Section F1 of \texttt{ada/derivations.md}. Atomic examples attain errors of order $s^{-1/2}$ and $\delta$ for this algorithm, so the corrected order is tight for the algorithm on the class studied by Wang et al. This is not a minimax lower bound.
+
+The same function-value step applies in expectation to Algorithm 1 of the earlier zeroth-order CVaR work of Wang, Shen and Zavlanos, which also uses residual feedback \cite{wang2022risk}. The peers also traced the same proof pattern in two later papers, but did not complete the high-probability argument or all auxiliary terms. Those extensions should therefore be read as checked expectation calculations, not as corrected versions of the published theorems.
+
+\subsection{A lifted method}
+
+The $x$-only-smoothed form of \eqref{eq:ru} gives a jointly convex objective. If $J$ is $L$-Lipschitz in $x$, its minimum over $\tau$ lies between $C_\delta(x)$ and $C(x)+L\delta$. The distributed recursion derived in \texttt{emmy/F6\_distributed\_lift.md} was checked step by step in Section F7 of \texttt{ada/derivations.md}. It keeps the communication pattern of Wang et al., since each threshold remains private. Its limiting expected gap is of order $L\delta$, with no $e_s$ term and no sampling condition, even with one sample per query. Dependence on $1/\alpha$ remains in transient constants.
+
+For a decreasing radius, ada further derived exact convergence in expectation with one sample per query when the step sizes $\eta_k$ and radii $\delta_k$ satisfy
+\begin{equation}
+ \delta_k\longrightarrow0,\qquad
+ \sum_k\eta_k=\infty,\qquad
+ \frac{\sum_{k<T}\eta_k^2/\delta_k^2}{\sum_{k<T}\eta_k}\longrightarrow0.
+ \label{eq:diminishing}
+\end{equation}
+Here $k$ is the iteration number. This diminishing-radius result and the associated sample-complexity calculation were checked only by ada because the peer phase ended before emmy reviewed the final entries. No last-iterate or high-probability result was obtained.
+
+The four-agent simulation supports the derived fixed points. With batch size 16, the original plug-in method ended on the wrong side in all 100 runs. Both lifted estimators used one sample and ended on the correct side in all 100 runs, with final disagreement at most 0.001. The complete figures are in \path{emmy/check_dist_lift.out}. The quadrature checks are in \path{emmy/check_dist_lift_fixedpoint.out}. These examples do not show that the $L\delta$ upper bound is tight.
+
+\subsection{What the prediction contract establishes}
+
+For every baseline $b$ chosen before the query, \eqref{eq:baseline} has the same conditional mean. A good prediction can therefore reduce the transient variance, while an arbitrary prediction cannot alter the corrected limiting bias. A bad clipped prediction can still be much worse than the unmodified method on a particular run. Robustness instead comes from aggregating a finite set of candidates that includes $b=0$. The peers derived a one-time regret cost proportional to
+\begin{equation}
+ (dU/\delta)^2\eta_0^2\log M,
+\end{equation}
+where $M$ is the number of candidate baselines and $\eta_0$ is the first step size. This compares with the unmodified baseline on the aggregated trajectory, not with a separate run of the original algorithm.
+
+The sensor experiment used only three seeds. At the paper's step size, a residual baseline reduced final squared error from about $0.33$ to $0.038$. Adding a constant 100 to every loss, which does not change the minimiser, raised the original method's error to about $17.2$, while the residual version gave about $0.11$. These are qualitative checks. Subtracting the previous observation is already known as residual feedback \cite{zhang2022residual}, and distributed residual feedback also exists \cite{distributedresidual}. The device itself is therefore not a new consequence of the survey.
+
+\subsection{Local risk does not determine network risk}
+
+For a common tail probability, let
+\begin{equation}
+ A(x)=\frac1m\sum_{i=1}^m\CVaR_\alpha[J^i(x)]
+ \quad\hbox{and}\quad
+ S(x)=\CVaR_\alpha\left[\frac1m\sum_{i=1}^mJ^i(x)\right].
+\end{equation}
+Subadditivity gives $S(x)\leq A(x)$, so control of $A$ gives a one-sided certificate for $S$ at the same decision. It need not give a useful approximation to the minimum of $S$. The peers checked a two-agent linear example in which $A$ is minimised at one end of the interval, $S$ at the other, and the optimum of $S$ is zero while the decision chosen for $A$ has positive system risk. Offsetting losses across agents causes the failure. Thus the positive comparison constant required by the composition proposition of Zhao et al. can be zero here. A distributed method for $S$ would need shared scenarios and was not analysed.
+
+\section{What did not hold and how objections were handled}
+
+The first threshold lift smoothed both the decision and the threshold. It did not have the claimed $L\delta$ bias. Atomic tests exposed a factor $1/\alpha$, and the construction was replaced by $x$-only smoothing. A hybrid estimator performed well but combined gradients of two different smoothings, so it had no single convex potential and was discarded.
+
+Clipping a predicted baseline did not provide useful instance-wise robustness. A deliberately poor clipped baseline was catastrophic in the sensor test. Aggregation over candidates containing zero settled this objection at the level of the realised squared-gradient term. The proof for the lifted distributed method also replaced a pathwise gradient bound by an expectation bound, as required by an early objection.
+
+Several limits remain. The tight examples apply to the plug-in algorithm, not to all possible algorithms. The baseline experiment is small, the lifted method was not tested on the sensor problem, and there is no lower bound for its $L\delta$ error. The claimed reach to high-probability theorems was not established. The final diminishing-radius and sample-complexity entries received only one peer's check.
+
+The composition exercise also corrected an overstatement in Wang et al.: equality in CVaR subadditivity does not require losses to move together in every state. A common worst-tail set can be enough. This point was checked by both peers, but it does not supply an algorithm for network-level CVaR.
+
+\section{Why the thread stopped}
+
+The verifier accepted the two main supported conclusions: the factor $e_s/\delta_{\min}$ is a proof artefact, and the $x$-only-smoothed threshold lift has an $O(L\delta)$ expected limit. The verifier nevertheless paused the thread because both conclusions concern Wang et al. and related zeroth-order CVaR work. The pair-level contribution is only a predicted-baseline contract and a composition warning. Residual baselines are prior art, the aggregation guarantee is measured on the aggregated trajectory, and Zhao et al. contribute vocabulary and proof obligations rather than a theorem needed by the results.
+
+The smallest step that would restart useful work is a written high-probability version of the corrected finite-sample argument for Algorithm 1 of Wang, Shen and Zavlanos \cite{wang2022risk}. It must control the martingale formed by the difference between each sampled update and its conditional mean while preserving the corrected rate. Success would extend the correction beyond an expectation result. Failure would confine that extension to expectation. This step would restart the P-side correction, not by itself strengthen the case for the pair.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

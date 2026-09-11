@@ -24,6 +24,12 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         raise SystemExit(f"{pair_id} is not terminal ({st})")
     d = campaign.thread_dir(pair_id); ed = d / "edited"; ed.mkdir(exist_ok=True)
     inp = _inputs(d); retry = ""
+    if (ed / "note.tex").exists() and (ed / "references.bib").exists():   # an earlier attempt: accept it or ask for fixes
+        ok, log = build(ed, main="note.tex")
+        checks = check_references((ed / "note.tex").read_text(errors="replace"), (ed / "references.bib").read_text(errors="replace"))
+        if ok and _clean(checks):
+            _set(campaign, pair_id, status="done", build_ok=True, checks=checks); return "done"
+        retry = _retry(checks, ok, log)
     for attempt in range(2):
         if stop():
             _set(campaign, pair_id, status="stopped"); return "stopped"
@@ -40,8 +46,18 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         ok, log = build(ed, main="note.tex")
         checks = check_references((ed / "note.tex").read_text(errors="replace"), (ed / "references.bib").read_text(errors="replace"))
         (ed / f"checks-{attempt + 1}.txt").write_text("\n".join(checks) or "no findings")
-        if ok and not any(c.startswith("cited key not in") for c in checks):
+        if ok and _clean(checks):
             _set(campaign, pair_id, status="done", build_ok=True, checks=checks); return "done"
-        retry = ("\n\nThe previous attempt did not build cleanly or had citation problems. Fix these and build again:\n"
-                 + ("\n".join(checks) or "") + ("\n" + log if not ok else ""))
+        retry = _retry(checks, ok, log)
     _set(campaign, pair_id, status="blocked", build_ok=ok, checks=checks, reason="build or citations failed twice"); return "blocked"
+
+
+def _clean(checks) -> bool:
+    """Uncited entries are tolerable; a missing key, a wrong title or an unknown arXiv id is not."""
+    return not any(c.startswith("cited key not in") or "does not match" in c or "not found" in c for c in checks)
+
+
+def _retry(checks, ok, log) -> str:
+    return ("\n\nThe previous attempt is in edited/ already. Do not start over: fix exactly these problems in place and"
+            " build again. Where a check gives the arXiv title, use that title verbatim.\n"
+            + ("\n".join(checks) or "") + ("\n" + log if not ok else ""))

@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q8P8: Compliant Grasping and Causal Frame Selection}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q presents Aero Hand Open, an underactuated tendon-driven hand with 16 joints, seven motors, compliant contacts, motor-encoder proprioception, a simulation model, and an identified actuation map (ledger entries 1, 4, and 7). P presents DynaMAC, which coordinates dynamic and bimanual manipulation through end-effector reference frames, absolute end-effector-pose actions, precision-weighted streams, and a binary kinematic-link test, while disregarding gripper actions (entries 1, 4, 9, and 20).
+
+\section*{The connexion pursued}
+The peers replaced a generic proposal to put Aero hands on DynaBench with a narrower question: when a compliant, underactuated grasp is causally endogenous but does not exhibit rigid co-motion, can response-based attachment inference choose streams better than DynaMAC's variance threshold and preserve static-to-dynamic transfer (entries 3, 13, 18, and 23)? The material supports this as a testable connexion, but it is thin: it contains analysis and an experimental proposal, not results from an integration (entries 12 and 17).
+
+\section*{What was found}
+DynaMAC operationally declares a kinematic link when the geometric mean of relative-pose standard deviations satisfies
+\begin{equation}
+  M < \tau_M,
+\end{equation}
+with $\tau_M=0.001$, interpreted as approximately 1~mm or 0.001~rad; it then masks the frame treated as endogenous (entries 5, 9, and 26). Its ordinary product of experts already weights streams by predictive precision, so a new weight based only on covariance would duplicate rather than extend that mechanism (entries 16 and 20).
+
+Q supplies a diagnostic counter-regime. One cable can drive several joints, mechanics determine which joint moves during staged closure, contacts are compliant, and the actor lacks joint and fingertip state even though such quantities appear as privileged critic signals (entries 4, 5, 7, and 22). Consequently, the wrist pose remains exactly observable from arm forward kinematics, but it need not summarize the spatial locus or strength of grasp contact (entries 7 and 15). A causally attached object may slip or move relative to a fixed wrist or tendon command, so attachment need not imply $M<\tau_M$ (entries 5, 9, and 21). Conversely, compliance may keep stream variance finite and thereby prevent the precision collapse that motivates masking, so the sign of the effect cannot be inferred in advance (entries 5 and 9).
+
+The resulting argument is an identifiability boundary, not a theorem: P's threshold is an operational proxy motivated by rigid grasping, and P itself notes transient pre-grasp false positives (entry 26). The proposed distinct alternative introduces an attachment variable $z_t$ inferred from controlled response to wrist and tendon interventions, while leaving predictive covariance to the ordinary product-of-experts weighting (entries 16, 20, and 21). The suggested comparison is vanilla precision weighting, binary DynaMAC, an oracle attachment gate, and a learned response-based gate across rigid, compliant, slipping, and intermittent-contact regimes, with transfer success and link-label calibration as outcomes (entries 21, 23, and 27).
+
+\section*{Objections and their status}
+A direct gripper replacement would be ambiguous because P omits gripper actions whereas Q's released policy uses seven-dimensional tendon targets for fixed-base in-hand rotation (entries 2, 8, and 11). The proposed resolution is to freeze grasp control or give every method the same tendon-action module, and to include a rigidized or standard-gripper limit (entries 8, 10, and 27). This isolates the causal-frame question, but it does not establish dexterous bimanual policy learning or DynaMAC sample efficiency (entry 11).
+
+The first proposed continuous covariance weight was withdrawn because vanilla precision weighting already supplies it (entries 16 and 20). The response-based attachment variable resolves that duplication conceptually, but its labels do not come ready-made: Q supports controlled tendon inputs and an editable simulation construction, not a shipped slack control or attachment ground truth (entry 25). Defining attachment during intermittent multicontact remains unresolved (entries 13, 18, 25, and 27).
+
+\section*{Outside sources}
+No sources outside Q and P were used, and no web or literature search was performed. The ledger therefore supports no novelty claim beyond the conceptual opportunity identified within the pair (entries 12, 18, and 27).
+
+\section*{What remains open}
+Open questions are whether the released simulation permits realistic compliance and slack sweeps; how causal attachment should be labeled during intermittent multicontact; whether a response-based estimator is observable without fingertip or force sensing; whether five demonstrations span the sweep; whether two arms and two hands are available; and whether prior literature already addresses the idea (entries 13, 18, 23, 25, and 27). Hardware would additionally require external object or contact tracking because Q exposes only seven motor encoders (entry 25).
+
+\section*{Smallest settling step}
+Run a simulation-only ablation with identical static demonstrations and frozen or equal grasp control, varying a model from rigid attachment to compliant slip. Compare binary DynaMAC against an oracle attachment gate first, and record dynamic-transfer success and agreement with an explicitly defined attachment label (entries 23 and 27). If the oracle does not outperform or differ systematically from the threshold, the proposed identifiability concern is not consequential in that sweep; if it does, the next smallest step is to test the learned intervention-response gate (entries 18, 21, and 26).
+
+\section*{Round-two disposition after verification}
+The verifier agreed that the note identifies a promising boundary, but returned \textsc{iterate} because the ledger contains no evidence that compliant attachment makes DynaMAC's threshold fail in a way that changes transfer performance (entry 29). Both peers then checked the supplied workspace and found only the two papers and metadata, this report, and the ledger: it contains no Aero or DynaMAC codebase, demonstrations, trained policies, task assets, or integrated Aero--DynaBench environment (entries 30, 34, 39, and 42). Although Q and P point to external releases, those pointers do not make the combined ablation runnable here (entries 30, 34, and 39). Thus the material is thin, and the present verdict is a promising, falsifiable proposal rather than a demonstrated advance (entries 31, 32, 35, 38, 40, and 43).
+
+This round also fixes the strength of the central claim. Q makes causal but non-rigid attachment plausible; it does not show that such attachment occurs in DynaBench, disagrees with $M<\tau_M$, or harms transfer, and neither paper measures that disagreement (entries 31, 35, 38, 42, and 43). The proxy may be unnecessary for some compliant attachments or misleading during intermittent contact, but failure remains conditional (entries 31, 35, and 43). No objection from the verifier was empirically resolved: the peers accepted the requested test as decisive but could not perform it with the supplied artifacts (entries 29, 30, 34, and 39).
+
+The smallest next step toward settlement is therefore to obtain the released code and construct one minimal integrated simulation case with fixed grasp control and an explicit attachment label. The settling measurement remains the verifier's two-way comparison: test whether binary DynaMAC and an oracle attachment gate disagree in label calibration and whether that disagreement changes transfer success across a rigid-to-compliant sweep (entries 29, 32, 36, 39, and 44). Label disagreement without a task consequence would leave a weak contribution; no disagreement would refute the concern in the tested regime; consequential disagreement would justify testing the learned response-based gate (entries 32, 36, and 43).
+
+\end{document}

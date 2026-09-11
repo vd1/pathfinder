@@ -1,0 +1,1 @@
+The account explains the conditional bridge from truthful peer reports to contribution rankings. It states the unresolved incentive and robustness limits. [note.tex](/Users/v/Code_2026/pathfinder/threads/Q4P6/edited/note.tex) built successfully into a checked five-page PDF with no undefined citations or errors.

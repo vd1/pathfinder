@@ -1,0 +1,1 @@
+The account explains the proposed resource-constrained link between Q and P, the two incentive conditions, and their limits. It concludes that existing P evidence does not test Q, so a funded planted-signal pilot is needed. The four-page PDF built successfully with no errors or undefined citations and passed visual and style checks.

@@ -1,0 +1,1 @@
+The account explains the proved CVaR surrogate bound, its consequences, and the unresolved mechanism and domain issues. It is in [note.tex](/Users/v/Code_2026/pathfinder/threads/Q7P1/edited/note.tex) with [references.bib](/Users/v/Code_2026/pathfinder/threads/Q7P1/edited/references.bib). The four-page PDF built cleanly, passed style checks, and was visually inspected.

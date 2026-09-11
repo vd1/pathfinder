@@ -1,0 +1,1 @@
+The account explains the Q-compatible voluntary DDC construction and its forecast-error certificate. It carefully excludes P’s native DDC model, binary MESS scheduler, and unstated grid constraints. [note.tex](/Users/v/Code_2026/pathfinder/threads/Q7P7/edited/note.tex) built successfully into a visually checked five-page PDF with no errors or undefined citations.

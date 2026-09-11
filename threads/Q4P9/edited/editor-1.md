@@ -1,0 +1,1 @@
+The account rejects the counterfeit-commitment link and presents the narrower attainable-value benchmark. It explains why P does not test that benchmark and identifies the smallest restart experiment. [note.tex](/Users/v/Code_2026/pathfinder/threads/Q4P9/edited/note.tex) built successfully into a visually checked four-page PDF with all citations resolved.

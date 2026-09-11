@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{A Selective Safety Check for Concept-Guided Robot Perception}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q surveys algorithms that use fallible predictions while retaining formal guarantees, and paper P describes a robot that uses an estimated room to guide door detection. We looked for a precise way to stop errors in the room estimate from passing silently into the door detector. The resulting proposal calibrates a bound on wall error and uses it to accept only the first filtering decisions that are separated from P's hard threshold. Under stated sampling assumptions, all such accepted decisions in a new room are correct at once with a chosen marginal probability. The thread ended as a draft because the theorem is supported, but neither paper supplies the calibration experiment needed to show that the method is useful in practice.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q surveys learning-augmented algorithms \cite{Q}. These algorithms use a prediction to improve performance when the prediction is good, while seeking a fallback guarantee when it is bad. Q stresses that a useful claim must state the prediction interface, the error measure, the cost of obtaining or checking predictions, and the conditions under which guarantees pass from one component to the next. It also discusses split-conformal calibration, while warning that marginal coverage alone does not control downstream cost.
+
+Paper P describes concept-guided exploration by a mobile robot \cite{P}. Its room and door processes build a shared scene graph. Once the robot has estimated a room, the estimated walls restrict which scan points are considered during door detection. P reports that noise can lead to an incorrect room model being accepted, and it leaves continuous model revision mainly as future work.
+
+The thread asked whether Q's rules for error propagation and costed fallback could make this room-to-door connection selectively safe. The initial aim was a broad, robust life cycle for room and door concepts. The work later narrowed to the first hard filter in P's door detector, where a precise statement could be proved.
+
+\section{What was done}
+
+The first proposal treated P's room estimate as advice. It considered running the wall-constrained detector alongside a complete detector that does not depend on the room estimate. If the two computations can be paused, resumed, and given fixed shares of the same resource, a simple time-sharing bound follows. This observation was kept as a secondary result because P does not provide the required complete detector or an independent test of its answers, and robot motion does not satisfy the same simple assumptions.
+
+The peers then examined P's first wall-distance filter. Let $p$ be a scan point, let $W$ be a set of wall points, and let $\operatorname{dist}(p,W)$ be the shortest distance from $p$ to that set. P retains $p$ when
+\begin{equation}
+  \operatorname{dist}(p,W) \leq \delta,
+  \qquad \delta=0.15\ \mathrm{m}.
+\end{equation}
+After this filter, P builds and differentiates a polar scan and pairs peaks. The peers showed that the hard filter can change its answer after an arbitrarily small movement of a wall when a point lies close to the threshold. Thus small wall error alone does not imply a small change in the later, discrete result.
+
+They next introduced a margin. Let $W^*$ be the reference wall set, let $\widehat W$ be the estimated wall set, and let $d_H(\widehat W,W^*)$ be their Hausdorff distance, meaning the largest nearest-set discrepancy between the two wall sets. If this discrepancy is at most $\varepsilon$, then
+\begin{equation}
+  \left|\operatorname{dist}(p,\widehat W)
+  -\operatorname{dist}(p,W^*)\right| \leq \varepsilon.
+  \label{eq:distance}
+\end{equation}
+This inequality gives a safe band around the threshold. A point is certified as retained when
+$\operatorname{dist}(p,\widehat W)+\varepsilon\leq\delta$, and certified as rejected when
+$\operatorname{dist}(p,\widehat W)-\varepsilon>\delta$. All other cases are ambiguous.
+
+The verifier's first review identified the main gap: P gives no valid value of $\varepsilon$, and pose-graph covariance is not a Hausdorff-error bound. The peers therefore replaced the assumed radius with a split-conformal calibration. They proposed freezing the room-fitting procedure and using $n$ ground-truthed calibration episodes. For episode $i$, define
+\begin{equation}
+  R_i=d_H(\widehat W_i,W_i^*).
+\end{equation}
+For a target error probability $\alpha$, set
+\begin{equation}
+  k=\left\lceil(n+1)(1-\alpha)\right\rceil
+\end{equation}
+and let $\varepsilon_\alpha$ be the $k$th smallest value among the $R_i$. If $k>n$, set $\varepsilon_\alpha=+\infty$, which gives no informative decisions.
+
+\section{Results}
+
+Assume that the fitted procedure was fixed without using the calibration data, and that the calibration episodes and the new episode are exchangeable. Also assume that estimated and reference walls use the same definition, extent, and coordinate frame. The split-conformal rank argument then gives
+\begin{equation}
+  \Pr\!\left\{d_H(\widehat W_{\mathrm{new}},W^*_{\mathrm{new}})
+  \leq\varepsilon_\alpha\right\}\geq 1-\alpha.
+  \label{eq:coverage}
+\end{equation}
+Here $\alpha$ is the chosen marginal failure probability, and ``new'' denotes the next exchangeable room episode.
+
+On the single event inside Equation~\eqref{eq:coverage}, Equation~\eqref{eq:distance} holds for every scan point. It follows that every point certified as retained or rejected by the margin rules agrees with the decision that the reference walls would produce. This agreement holds simultaneously for all certified points in the room, so no separate probability bound over scan points is needed. Ada and Emmy derived this result independently and cross-checked the quantile, the infinite-radius convention, and the strict and weak threshold inequalities in their calibration and margin checks.
+
+A separate compute-only statement also holds under stronger assumptions. Let $A$ be the constrained computation and $B$ a complete prediction-independent computation. Let their required work be $C_A$ and $C_B$, and give them resource shares $1-\lambda$ and $\lambda$, where $0<\lambda<1$. If state is preserved and either answer must pass an independent validity check, the mixed computation uses at most
+\begin{equation}
+  C_{\mathrm{mix}}\leq
+  \min\left\{\frac{C_A}{1-\lambda},\frac{C_B}{\lambda}\right\}.
+\end{equation}
+Ada derived this by observing when each computation must have received enough work, and Emmy checked the argument. This is not an end-to-end bound for the robot because P does not establish the baseline, the validator, or an equivalent model for active motion.
+
+\section{What did not hold and how objections were handled}
+
+The broad claim that monitoring and fallback make P robust did not hold. Q does not provide such a theorem, and P presents graduated responses and model revision as future work. The peers therefore restricted the formal claim to the first wall filter.
+
+The first margin argument also depended on an unsupported Hausdorff radius. The verifier rejected that step in the first round. The conformal construction settled the mathematical objection conditionally by replacing the assumed radius with a finite-sample marginal guarantee. It did not supply measurements, because Q and P contain no episode-level pairs of estimated and reference walls.
+
+Pointwise fallback did not hold as a safe design. Removing a point changes the adjacency of P's polar scan and can alter derivatives and peak pairs. Any fallback must therefore cover a whole scan or a declared dependency region, with a fixed grid, interpolation rule, and boundary convention. No such fallback is implemented or proved in the available material.
+
+Several limits remain unsettled. Coverage is marginal over exchangeable episodes, not conditional for a particular room or noise regime. Distribution shift and dependent adaptive sampling fall outside the stated guarantee. If $\varepsilon_\alpha\geq\delta$, or if ambiguity spreads across large dependency regions, the certificate can be correct but send almost everything to fallback. The result does not certify P's later derivative, peak-pair, width, or wall-segment tests, nor the final door graph, fallback accuracy, or policy-dependent motion.
+
+\section{Why the thread stopped}
+
+In the final round, the verifier judged the selective-safety result sound and suitable for a paper section. The remaining gap concerns practical value rather than the rank proof. There are no calibration records from which to calculate $\varepsilon_\alpha$, achieved coverage, or the fraction of work deferred to fallback, so the work remains a draft rather than a demonstrated calibrated robot system.
+
+The smallest step that would restart the thread is a single calibration study in P's simulator. It should define one deployment population and one wall-set convention, freeze the fitter, and use separate ground-truthed calibration and test rooms. It should report test coverage, $\varepsilon_\alpha/\delta$, and the fraction of scan dependency regions sent to fallback. A radius at least as large as $0.15\ \mathrm{m}$, or almost complete fallback, should be recorded as a negative result.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

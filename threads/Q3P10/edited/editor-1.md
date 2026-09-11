@@ -1,0 +1,1 @@
+The account presents a credible experiment, but no treated-market result. It explains the PAUSE and the smallest restart step. [PDF](/Users/v/Code_2026/pathfinder/threads/Q3P10/edited/note.pdf) built successfully with all citations resolved and visual checks passed.

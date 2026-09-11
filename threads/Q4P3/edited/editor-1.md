@@ -1,0 +1,1 @@
+The account explains why agreement incentives can preserve shared bias, while the proposed link to adversarial review remains untested. All eight arXiv titles are corrected verbatim. The six-page PDF rebuilt successfully with no errors or undefined citations.

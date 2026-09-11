@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Contracts in Code and in Prose: What Can Be Learned from Q and P?}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q develops a theory of incentives for agents whose preferences and capabilities are hidden, while P studies contracts negotiated by language-model agents in a two-player game. We looked for a precise link between Q's theory and P's different results for contracts shown as structured data or natural language. The initial link through concealed or counterfeit capabilities did not hold. A narrower result did hold: under strong fixed conditions, a full transcript offers at least the attainable expected value of a faithful compiled contract. The thread paused because P does not hold those conditions fixed, so testing this result now requires a new controlled experiment with repeated runs.
+\end{abstract}
+
+\section{Introduction}
+
+Q asks how a designer can guide an artificial-intelligence agent when the agent's preferences and capabilities are private. A capability includes the actions the agent can take and the information it can obtain. The designer commits to rewards that depend on what the agent reports and does. Q studies two demands on such a system: the agent should report its type truthfully, and it should follow the recommended action. Its model allows a capable agent to hide evidence of a capability, but not to invent a capability it lacks. Q then characterises which policies can be supported by rewards under this one-sided constraint \cite{Q}.
+
+P studies cooperation between language-model agents in a version of Colored Trails. Two players cross a coloured board and need chips held by the other player. They can negotiate trades and contracts. In the programmatic treatment, a judge turns an accepted agreement into a JSON object, which is then enforced by code. In the natural-language treatment, the full negotiation remains available and a judge decides at each move whether the agreement covers it. P reports that contracts can improve cooperation, but that results depend on the form of the contract \cite{P}.
+
+The thread first asked whether P's natural-language contracts resemble Q's rule that a capability may be concealed but not counterfeited. That connection was rejected. P's agents do not produce capability certificates and do not choose how to interpret a contract after accepting it. An external judge interprets the retained negotiation and any covered transfer happens automatically. The work therefore turned to a narrower question: if two displays express the same obligations, can the display alone change the value that an agent can attain? Q's treatment of information and obedience supplies a benchmark for that question, while P supplies the setting and the motivating difference in behaviour.
+
+\section{What was done}
+
+The peers first checked the proposed verification analogy against the mechanisms in both papers. They found that the strategic objects differ. Q restricts which types an agent can claim to have. P instead asks a judge to apply an already accepted agreement. This settled the first question against the proposed connection.
+
+They next described the contract treatments in a common way. Let $T$ denote the full negotiation transcript. Let $c$ denote a compilation procedure, and let
+\[
+  J=c(T)
+\]
+denote the compiled contract shown in structured form. Here ``faithful'' means that $T$ and $J$ state the same action-dependent obligations. The peers considered a comparison in which the board, available actions, accepted terms, scoring rule, beliefs, information, and enforcement are all fixed. They also assumed that the agent can apply $c$ without cost.
+
+Under those assumptions, they compared the policies available after seeing each display. A policy is a rule for choosing an action from what the agent observes. Any policy used after seeing $J$ can also be used after seeing $T$: the agent computes $c(T)$ and then follows the policy for $J$. If $u$ is the agent's score, $\sigma_T$ is a policy used after seeing $T$, and $\sigma_J$ is a policy used after seeing $J$, this gives
+\[
+  \max_{\sigma_T} \operatorname{E}[u\mid T,\sigma_T]
+  \geq
+  \max_{\sigma_J} \operatorname{E}[u\mid J,\sigma_J].
+\]
+The expression $\operatorname{E}$ denotes expected value. This argument compares the best attainable expected scores, not the particular moves in a single run.
+
+The peers then checked whether P already tests this comparison. They found that it does not. Its programmatic and natural-language treatments can differ in accepted terms, visible material, enforcement, and sampled play. In addition, most model and board combinations in the comparison have only one run. The observed outcome gap is therefore motivation for a controlled test, not evidence that equivalent displays cause different results.
+
+Finally, the peers considered Q's obedience inequalities as a diagnostic. For a fixed advertised utility made up of game score and transfers, a profitable cycle of alternative actions over matched histories would show that the observed policy cannot be explained by that utility alone. They judged this test secondary. Q's condition uses a deterministic policy and known posterior utility, whereas language-model play is stochastic and its internal beliefs and utility are not observed. Repeated matched runs would be needed.
+
+\section{Results}
+
+The main result is conditional. A full transcript has at least the attainable expected value of its faithful compilation when processing is free and all payoff-relevant features are fixed. The proof is the policy imitation argument above. Ada checked that the result orders attainable values rather than realised paths. Emmy independently derived the same ordering and described it as a semantic-compression benchmark. Both peer notes also agree that this is a simple consequence of the maintained decision model, not a new theorem about either paper.
+
+P provides a clear reason to test the benchmark. On mutually dependent boards, both agents finish in 46 per cent of natural-language-contract games and 79 per cent of programmatic-contract games. The two treatments cover a similar number of tiles, about 2.60 per game. Yet the natural-language treatment produces fewer proposals and acceptances for the remaining trades. When agents refuse a trade, they cite an insufficient contract in 94 per cent of natural-language cases and 74 per cent of programmatic cases. P describes this pattern as over-anchoring on the contract \cite{P}.
+
+These figures do not establish a representation effect. P's programmatic JSON is itself produced from dialogue by a judge, while the natural-language treatment uses a judge during play. Terms and trajectories can also vary. The peers therefore concluded only that P contains a possible reversal worth testing: the shorter compiled display performs better even though the full transcript contains enough material to reconstruct it.
+
+Q's within-report obedience condition remains a possible check. With repeated observations at matched game histories, researchers could ask whether choices are consistent with the declared score and contract transfers. A detected failure would show that this maintained utility does not rationalise the policy. It would not show by itself whether the cause is attention, information processing, a changed effective preference, or optimisation error.
+
+\section{What did not hold}
+
+The first proposed explanation was that P displays counterfeit commitment of the kind ruled out in Q. Both peers rejected it. Q concerns evidence for a type report before a committed mechanism acts. P's agent does not fabricate such evidence or select an interpretation after agreement. The judge interprets the contract and executes covered transfers.
+
+The judge's reported error count did not rescue a claim of equal enforcement. P reports three false positives among 1,155 approved moves. That denominator says nothing about false negatives among denied moves. The number therefore cannot establish that the two enforcement systems are equivalent.
+
+Simple behavioural invariance did not hold as a prediction either. Even when two displays allow the same maximum value, different best replies or stochastic language-model outputs can produce different paths at the same value. The careful claim concerns attainable expected value only.
+
+Nor can a controlled advantage for $J$ identify a single cause. It would reject the joint assumptions of costless processing, stable preferences and information, and faithful compilation. Q does not model limited attention, prompt-dependent preferences, or optimisation failure. Further experimental arms and comprehension checks would be needed to separate those possibilities.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the surviving result is a straightforward conditional information argument, while P does not provide the controls needed to test it. The published comparison changes display, accepted terms, enforcement, and stochastic play together. A substantive result about the pair therefore depends on new evidence rather than more interpretation of the existing papers.
+
+The smallest restart step is to take one negotiated contract and create an independently validated table of its transfers. The agents should accept the same terms, and the same deterministic enforcement should be used in every run. Researchers should then repeat matched runs while changing only the display between canonical JSON and a controlled natural-language rendering. The primary outcome should be the residual trades needed after the contract. A difference would establish a display-dependent implementation gap for that matched case; no difference would reject display alone as its explanation.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,26 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T21:37:11Z",
+  "note_sha256": "009b972d554e7807c72e95634c9ca4e267bafe4b11cb38708782190563a2279b",
+  "decision": "ITERATE",
+  "reason": "The two-layer robustness result is promising, but its quantitative welfare, allocation, and approximate-IR claims depend on an unproved uniform CVaR surrogate-error bound. The ledger explicitly flags the constants and assumptions for that bound as unresolved.",
+  "action": "Prove the one-agent uniform bound between the true CVaR valuation and P's expected empirical-smoothed surrogate, with explicit constants under P's assumptions."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T21:41:14Z",
+  "note_sha256": "c167c141c639fb26c1e8a6db9c5f1e6ae06f7efe6e72743c4726f5b735a846e2",
+  "decision": "REVISE",
+  "reason": "The ledger supports a non-obvious surrogate-robustness result, but the note mixes proved bounds with an unproved nonsmooth extension of Q. It also inconsistently uses normalized valuation error: \u03b5_n=2b_n would give welfare loss 2\u03a3 \u03b5_n=4B, whereas the sharper 2B bound applies directly to unnormalized costs.",
+  "action": "Present the nonsmooth Q mechanism and common-LMI feasibility as open; state the proved cost bound as b_n, welfare loss \u22642\u03a3b_n, allocation error \u22642\u221a(\u03a3b_n/\u03c1), and true-IR deficit \u22642b_n; qualify exact budget balance by surrogate KKT/LMI feasibility and retain the X_\u03b4 domain caveat."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T21:43:00Z",
+  "note_sha256": "e019d0cf09717ef43f4605aeb8758df74448bb2e204b0fe957aed973ddc20b17",
+  "decision": "DRAFT",
+  "reason": "The note accurately presents the supported, non-obvious uniform surrogate-error bound and its welfare, allocation, and conditional individual-rationality consequences. It clearly separates these proved results from the open nonsmooth mechanism extension and preserves the domain and LMI-feasibility caveats.",
+  "action": null
+ }
+]

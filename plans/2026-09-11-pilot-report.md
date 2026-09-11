@@ -232,6 +232,60 @@ cap of 100 and wrote the stop marker. Seven admitted pairs wait behind it.
 Both PAUSE reasons name what is missing (an experiment, evidence neither
 paper supplies), which is the form the revised verify prompt asks for.
 
+## The explore batch on Codex, evening of 11 September
+
+With the cap raised to 200 USD and two seats, under the day's new
+settings (four rounds, a single repair, the scan's connexion in the peer
+prompt and the append rule on later consolidations), the eight pairs the guard had held ran on gpt-5.6-sol
+through ELM in about 35 minutes of wall time, 5 to 13 USD each:
+
+| pair | score | status | rounds | repairs | ledger | paper |
+| --- | --- | --- | --- | --- | --- | --- |
+| Q4P6 | 3150 | DRAFT | 2 | 0 | 43 | accepted, round 3 |
+| Q7P1 | 2200 | DRAFT | 2 | 1 | 30 | accepted, round 2 |
+| Q7P7 | 1650 | DRAFT | 3 | 0 | 49 | accepted, round 3 |
+| Q1P6 | 1500 | DRAFT | 2 | 0 | 34 | returned at the cap, minor findings |
+| Q3P10 | 3000 | PAUSE | 2 | 0 | 35 | |
+| Q4P9 | 1800 | PAUSE | 1 | 0 | 24 | |
+| Q8P8 | 1650 | PAUSE | 2 | 0 | 45 | |
+| Q3P6 | 1575 | PAUSE | 2 | 0 | 33 | |
+
+Four DRAFTs from eight, against one from the first five; the scan score
+did not predict which (3150, 2200, 1650, 1500 drafted; 3000 and 1800
+paused). Three things showed for the first time:
+
+- REVISE worked as intended on Q7P1: the verifier found the ledger
+  supported the result but the note mixed proved and unproved claims,
+  the consolidator repaired it without a peer round, and the next
+  verdict was DRAFT.
+- The "do not ask twice" rule fired on Q3P6: the verifier noted that a
+  previous ITERATE had asked for a comparator test the ledger then showed
+  the peers could not supply, and returned PAUSE naming it.
+- The fourth round was never needed; Q7P7 drafted in round 3.
+
+The four papers cost 2 to 4 USD each and reached ACCEPT in two or three
+rounds, or in Q1P6's case a REVISE with minor findings at the cap. On
+Q4P6 the author's search found prior work containing the main
+calibration step and narrowed the novelty claim accordingly, which the
+reviewer then accepted.
+
+Campaign total at the end of the day: 172 USD API-equivalent over 322
+calls; 14 threads terminal, 5 DRAFT, 8 PAUSE, 1 PAUSE-ON-ITERATE, 4
+papers accepted.
+
+## The editor
+
+Added the same evening: after a terminal verdict, an editor call rewrites
+the consolidated note as a short readable paper with BibTeX for a reader
+without the ledger. It ran on every terminal thread, 4 to 6 pages each,
+about 1 USD each on Codex. The pipeline's reference check caught the
+editor inventing placeholder titles for outside sources the ledger cited
+by URL only; the check now refuses a wrong title, tells the editor the
+arXiv title verbatim, and has it fix the note in place. Operator error
+of the evening: two editor runs were started on the same threads and
+raced on one directory; one call was wasted and one had to be redone.
+A per-stage lock like the thread lock would prevent it.
+
 ## Conversation with the E-prime agent
 
 At V's request Scout (this session) compared notes with the Fable session

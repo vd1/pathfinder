@@ -1,0 +1,79 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Pricing Deliberation in an LLM Double Auction:\\An Account of a Paused Research Thread}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies large language model traders in a continuous double auction, while paper P studies agents whose language-model inference consumes a limited energy budget.  The thread asked whether charging Q's traders for inference would curb slow, one-cent changes to their quotes or instead make the market worse by consuming resources and driving traders out.  The papers and the peers' checks support a controlled experimental design and a separation between gross trading efficiency, computational cost, and market thinning.  They do not show that an inference fee changes trading behaviour, because no treated market was run.  The thread therefore paused until Q's auction software can be modified and used for replicated language-model runs with the required credentials.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q, \emph{Competitive Market Behavior of LLMs}, places large language model agents in a continuous double auction \cite{struski2026competitive}.  Buyers and sellers submit and revise offers in a shared order book.  The market is meant to match buyers who value a good highly with sellers willing to accept less.  Q reports slower or absent convergence to equilibrium than in the human experiments it replicates.  A recurring problem is that agents improve a quote by only one cent and are reluctant to cross the gap between the best buying and selling offers.  Q also associates actual execution with words about urgency, but treats this language evidence as correlational rather than causal.
+
+Paper P, \emph{The Energy Society}, studies cooperation and competition when inference itself uses an induced resource \cite{hansen2026energy}.  Agents spend energy when they generate tokens, regain energy through jobs or donations, and deactivate when their balance reaches zero.  P calls this a constructed survival analogy, not literal survival.  Its job-selection setting has no natural strategic seller, so importing Q's auction into P would add a market institution without a clear role.  What transfers cleanly is P's accounting for the cost of inference.
+
+The thread therefore pursued the opposite connexion: keep Q's auction and make cognition costly within it.  The question was whether a visible inference charge would make delay costly enough to prompt earlier agreement, or whether computation and eventual exit would reduce welfare and thin the market.  This is a question about induced incentives in both papers, not about replacing artificial stakes with real ones.
+
+\section{What was done}
+
+The peers first corrected the proposed framing.  They rejected any claim that P supplies literal survival, and they rejected placing a seller side inside P's job economy.  They retained Q's auction, its reservation values, and its benchmark for the maximum gains from trade.  They then proposed adding P's inference-cost accounting to each market call.
+
+P writes the cost of a call as
+\begin{equation}
+ C = k T S^{\alpha}.
+\end{equation}
+Here $C$ is the energy cost, $k$ is a scale factor, $T$ is the number of reasoning and output tokens, $S$ is model size, and $\alpha$ controls how strongly size affects cost.  The peers did not choose values for these quantities.  Instead, they used the formula to define what must be metered and noted that a conversion between trading profit and energy would have to be declared and tested for sensitivity.
+
+The proposed comparison developed in stages.  An initial baseline, soft-cost, and hard-budget design was refined after an objection that merely mentioning tokens might itself change the agents' words or actions.  The final design has a prompt-matched meter with a token price of zero, a visible positive fee with no exit, and the same fee with a hard budget and exit at zero.  Fee and budget levels would be varied.  Initial budgets and fees would be independent of reservation values, or balanced across buyers and sellers, so that the design did not remove valuable traders mechanically from one side.
+
+The zero-price and positive-price prompts must both tell agents what is metered.  In the fee condition, agents must also be told to maximise terminal trading profit after the fee.  The fee-only comparison then tests the response of continuing traders.  The hard-budget comparison adds the effect of deactivation and a thinner market.  Crossing latency, meaning the delay before an offer accepts or passes the best offer on the other side, and crossing size, meaning how far it passes that offer, were chosen as the main mechanism measures.  Trade count, price dispersion, calls and tokens per trade, active traders by role, and exits were added as outcomes.  Changes in the agents' language remained secondary.
+
+After the verifier requested a pilot, both peers checked whether it could be run from the supplied material.  Emmy found no auction checkout or provider credentials in the thread.  Ada inspected Q's public implementation \cite{competitiveMarketRepo}.  That implementation records provider token counts, but it has no inference-fee utility, cumulative fee balance, or prompt that makes net profit the objective.  Its no-key zero-intelligence baseline cannot test the proposed response because those agents neither read a fee prompt nor optimise net payoff.
+
+\section{Results}
+
+The first result is a supported experimental bridge, not a measured treatment effect.  Q supplies a market with a fixed maximum gain from trade and documents stalls associated with one-cent quote improvements and failure to cross the spread.  P supplies an operational way to count inference as a resource cost.  Together they support asking whether a market that allocates goods well still performs well when the cost of its agents' cognition is included.
+
+The second result is a necessary separation of welfare measures.  Q's gross allocative efficiency is
+\begin{equation}
+ E_{\mathrm{gross}}=
+ \frac{\text{realised buyer surplus}+\text{realised seller surplus}}
+      {\text{maximum gains from trade}}.
+\end{equation}
+The symbol $E_{\mathrm{gross}}$ denotes gross allocative efficiency.  This ratio should be preserved.  Net surplus should be reported separately by subtracting inference cost after converting it into the same payoff units.  A fee could improve agreement and gross efficiency while still lowering net surplus because the market requires many costly calls.
+
+The third result is an identification claim checked by both peers.  Subtracting token costs from old results can change net-welfare accounting, but it cannot show a behavioural response.  Q's agents are asked to maximise gross trading profit.  A behavioural treatment therefore requires a visible price and a net-profit objective.  Comparing the prompt-matched zero-price meter with the visible fee, while exit is disabled, is the smallest clean test of whether costly delay changes a trader's conduct.
+
+The fourth result concerns deactivation.  Fee-only and hard-budget conditions answer different questions.  Their comparison can separate a response by active traders from changes caused by exit and market thinning.  P's condition without a size penalty does not by itself prove an urgency effect: it also changes deactivation and the number of active job attempts.  The peers therefore recommended reporting outcomes both without adjustment and relative to active buyer-seller opportunities.
+
+These conclusions were supported by Ada's ledger derivations and Emmy's independent cross-check.  No separate Ada note is present in the supplied directory, but Ada's findings and corrections remain recorded in the ledger.  Emmy's peer note confirms the proposed conditions, the gross-versus-net distinction, and the requirement that the fee affect the agents' stated objective.
+
+\section{What did not hold, and remaining objections}
+
+Several stronger claims did not survive review.  P does not validate stronger real-world stakes, since its energy, rewards, and deactivation rules are induced.  Its job economy also does not provide a natural home for Q's buyer-seller institution.  The claim that weaker survival pressure causes worse coordination was not established because P's relevant comparison changes several features at once.
+
+The proposed direction of the fee effect also remains open.  A moderate fee might discourage small quote changes and hasten crossing.  A large fee might suppress participation, and a hard budget might remove traders before useful trades occur.  A finding that the fee changes behaviour but not gross efficiency would also be possible.  If there is no pre-exit change in crossing latency or size, the suggested reading of Q's urgency language as sensitivity to consequential delay would be weakened.
+
+The language evidence carries further limits.  Q's trace analysis is associational, covers one model in the relevant analysis, and warns that a trace may not reveal the computation that caused an action.  Mentioning cost in a prompt may itself induce cost or urgency words.  Prompt matching and behavioural endpoints reduce this problem, but they do not turn word counts into causal evidence.
+
+Other matters were left unresolved because the experiment was not implemented.  These include the profit-to-energy conversion, starting budgets, comparable token metering across providers, statistical power under stochastic runs, access to comparable reasoning traces, and the need for a human benchmark with costly deliberation.  The available material does not settle them, and it contains no treated observations from which to do so.
+
+\section{Why the thread stopped}
+
+The first verification round asked for a direct comparison between a visible meter priced at zero and a visible positive fee, with exit disabled.  The second round paused the thread because that comparison had still not been run.  The obstacle was practical and evidential: the fee treatment was absent from the auction software, the supplied thread had no runnable checkout, and the required provider credentials were unavailable.  More discussion of the existing papers could refine the design, but it could not supply the missing market evidence.
+
+The smallest restart step is to add a cumulative per-agent token fee to Q's state and net-payoff prompt, expose the meter and balance, and create matched zero-price and positive-price settings.  Replicated credentialled language-model markets should then be run with exit disabled.  They should record crossing latency and size, gross surplus, and net surplus.  A fee effect would support the proposed behavioural bridge, while a precise null would give a clear reason to weaken it; hard budgets should be tested only after this first comparison.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

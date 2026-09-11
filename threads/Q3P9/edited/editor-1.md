@@ -1,0 +1,1 @@
+The account explains the proposed executable-commitment test and why evidence remains insufficient. Files: [note.tex](/Users/v/Code_2026/pathfinder/threads/Q3P9/edited/note.tex) and [references.bib](/Users/v/Code_2026/pathfinder/threads/Q3P9/edited/references.bib). The build passed with resolved citations, producing a visually checked four-page PDF.

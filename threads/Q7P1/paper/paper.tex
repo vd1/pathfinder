@@ -1,0 +1,209 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{url}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{remark}{Remark}
+\DeclareMathOperator{\CVaR}{CVaR}
+
+\title{Static Robustness of an Expected Empirical-Smoothed CVaR Surrogate}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q develops quadratic payments and a variable-sample proximal best-response method for stochastic resource allocation, while paper P develops zeroth-order distributed optimisation of conditional value at risk (CVaR).  % Ledger: 1, 2
+Their algorithms cannot be joined by inserting P's estimator into Q's update.  % Ledger: 1, 2, 6
+We instead prove a static robustness result for the objective targeted by P.  For bounded, Lipschitz losses, the deterministic expected empirical-smoothed CVaR surrogate is uniformly within
+$L_n\delta_n+(U_n/\alpha_n)\sqrt{2\pi/s_n}$ of agent $n$'s true CVaR on P's shrunken feasible set.  % Ledger: 25, 26
+On a common feasible set this yields a true-cost loss of at most twice the sum of these errors and, under strong convexity, an explicit allocation bound.  % Ledger: 25, 26
+A conditional application of Q's outside-option argument gives a true individual-rationality deficit of at most twice the one-agent error.  % Ledger: 27, 30
+The mechanism extension, common-LMI feasibility, and the error caused by shrinking the feasible set are not proved here.  % Ledger: 22, 25, 26, 30
+\end{abstract}
+
+\section{Introduction}
+
+Q studies a stochastic resource-allocation mechanism with quadratic payments selected through a linear matrix inequality (LMI).  Under Q's assumptions, the induced game has a unique Nash equilibrium at the welfare optimum, with budget balance and individual rationality; Q also proposes a variable-sample proximal best-response iteration.  % Ledger: 1, 5, 7
+P studies distributed CVaR minimisation for a shared decision and uses one-point estimates of a smoothed empirical CVaR objective in projected consensus descent.  % Ledger: 1, 2
+We refer to these papers as Q and P and cite them by their bibliographic identities \cite{Q,P}.
+
+The apparently natural algorithmic composition is invalid: Q's update solves a sample-average proximal best-response problem, whereas P supplies a gradient estimate within a projected consensus update.  % Ledger: 1, 2, 6
+A composition would require a new inexact best-response solver and convergence analysis.  % Ledger: 2, 6
+Moreover, fixed smoothing and batch sizes in P target a surrogate rather than the true CVaR objective.  % Ledger: 1, 5, 8
+
+The contribution here is narrower.  We identify P's deterministic expected surrogate and give an explicit uniform objective error.  % Ledger: 25, 26
+The result has no $1/\delta_n$ factor, although such a factor remains in P's gradient-error analysis.  % Ledger: 20, 22, 26
+We then derive static cost and allocation consequences and state precisely the additional premise needed for Q's individual-rationality argument.  % Ledger: 25, 26, 27, 30
+
+\section{Relation to prior work}
+
+The empirical-CVaR concentration step is not new.  Prashanth and Bhat develop Wasserstein-based concentration bounds for empirical risk estimates, explicitly including CVaR, and relate CVaR estimation error to the Wasserstein distance between empirical and population laws \cite{prashanth2019}.  Their paper also records earlier CVaR concentration results.  Thus our main probabilistic step belongs to published prior work rather than constituting an independent concentration theorem.  The result here is the particular combination of that step with P's pointwise batch expectation and smoothing construction, followed by deterministic optimiser perturbation consequences.  % Ledger: 15, 25, 26
+
+We found no paper in the recorded searches that states this exact expected empirical-smoothed surrogate bound together with the welfare, allocation, and Q-style conditional individual-rationality consequences.  This is a search outcome, not a priority claim.
+
+\section{Setting}
+
+For agent $n$, let
+\[
+ C_n(x)=\CVaR_{\alpha_n}(J_n(x,\xi)),
+\]
+where $\alpha_n\in(0,1)$ uses P's tail convention.  Assume, as in the relevant part of P, that
+\[
+ |J_n(x,\xi)|\leq U_n
+ \quad\text{and}\quad
+ |J_n(x,\xi)-J_n(y,\xi)|\leq L_n\|x-y\|
+\]
+on the feasible set $X$.  % Ledger: 25, 26
+For a batch of $s_n$ samples, write $\widehat C_{n,s_n}(z)$ for empirical CVaR at $z$.  P's deterministic surrogate is
+\[
+ \widetilde C_n(x)=
+ \mathbb E_{\nu,\mathcal B}\!\left[
+   \widehat C_{n,s_n}(x+\delta_n\nu)
+ \right],
+ \qquad x\in X_\delta,
+\]
+where $\nu$ is uniform on the unit ball and the shrunken set $X_\delta$ ensures $x+\delta_n\nu\in X$.  % Ledger: 25, 26
+The expectation over the batch is part of the definition.  Consequently, the theorem below concerns a deterministic function and not one realised empirical objective.  % Ledger: 25, 26
+Each batch consists of $s_n$ independent and identically distributed draws
+$\xi_{n,1},\ldots,\xi_{n,s_n}$ from the distribution of $\xi$, and the batch
+is independent of the smoothing perturbation $\nu$.  % Ledger: 25, 26
+
+Define
+\[
+ b_n=L_n\delta_n+\frac{U_n}{\alpha_n}
+       \sqrt{\frac{2\pi}{s_n}}.
+\]
+
+\section{Uniform surrogate error}
+
+\begin{theorem}\label{thm:uniform}
+For every agent $n$ under the assumptions above,
+\[
+ \sup_{x\in X_\delta}
+ |\widetilde C_n(x)-C_n(x)|\leq b_n.
+\]
+\end{theorem}
+% Ledger: 25, 26
+
+\begin{proof}
+Fix $n$ and a point $z\in X$.  Let $F_z$ and $\widehat F_{z,s_n}$ be the population and empirical distribution functions of the loss.  CVaR stability gives
+\[
+ |\widehat C_{n,s_n}(z)-C_n(z)|
+ \leq \frac{1}{\alpha_n}
+ W_1(\widehat F_{z,s_n},F_z).
+\]
+% Ledger: 25, 26
+Both laws are supported on $[-U_n,U_n]$, and hence
+\[
+ W_1(\widehat F_{z,s_n},F_z)
+ \leq 2U_n D_{s_n},
+ \qquad
+ D_{s_n}=\sup_t|\widehat F_{z,s_n}(t)-F_z(t)|.
+\]
+% Ledger: 25, 26
+The Dvoretzky--Kiefer--Wolfowitz inequality and integration of its tail yield
+\[
+ \mathbb E D_{s_n}
+ \leq \int_0^\infty 2e^{-2s_nq^2}\,dq
+ =\sqrt{\frac{\pi}{2s_n}}.
+\]
+% Ledger: 25, 26
+Therefore
+\[
+ \mathbb E_{\mathcal B}
+ |\widehat C_{n,s_n}(z)-C_n(z)|
+ \leq \frac{U_n}{\alpha_n}\sqrt{\frac{2\pi}{s_n}}.
+\]
+% Ledger: 25, 26
+This bound is independent of $z$.  Jensen's inequality, followed by P's smoothing estimate, gives for every $x\in X_\delta$
+\begin{align*}
+ |\widetilde C_n(x)-C_n(x)|
+ &\leq \mathbb E_\nu
+ \left|\mathbb E_{\mathcal B}\widehat C_{n,s_n}(x+\delta_n\nu)
+       -C_n(x+\delta_n\nu)\right| \\
+ &\quad+
+ \left|\mathbb E_\nu C_n(x+\delta_n\nu)-C_n(x)\right| \\
+ &\leq \frac{U_n}{\alpha_n}\sqrt{\frac{2\pi}{s_n}}
+       +L_n\delta_n=b_n.
+\end{align*}
+% Ledger: 25, 26
+Taking the supremum proves the claim.
+\end{proof}
+
+The order $s_n^{-1/2}$ and the Wasserstein route are established in the empirical-CVaR literature \cite{prashanth2019}.  What matters for uniformity here is that P takes the batch expectation pointwise before the supremum and the fixed-point bound is independent of $z$.  No uniform empirical-process claim over the decision class is made.  % Ledger: 25, 26
+
+\section{Static consequences}
+
+Let $B=\sum_n b_n$.  Suppose $x^*$ minimises
+$C(x)=\sum_nC_n(x)$ and $\widetilde x$ minimises
+$\widetilde C(x)=\sum_n\widetilde C_n(x)$ on the same nonempty convex feasible
+set, namely $X_\delta$ or a convex subset of $X_\delta$.  Then
+\begin{equation}\label{eq:welfare}
+ C(\widetilde x)-C(x^*)\leq 2B.
+\end{equation}
+% Ledger: 25, 26, 30
+Indeed, insert $\widetilde C$ between the two true costs and use surrogate optimality.  % Ledger: 25, 26
+If $C$ is $\rho$-strongly convex on that set, constrained first-order
+optimality at $x^*$ supplies $g\in\partial C(x^*)$ such that
+$\langle g,x-x^*\rangle\geq0$ for every feasible $x$.  Strong convexity,
+with $x=\widetilde x$, therefore gives
+\[
+ C(\widetilde x)-C(x^*)\geq
+ \frac{\rho}{2}\|\widetilde x-x^*\|^2.
+\]
+% Ledger: 25, 26, 30
+Together with \eqref{eq:welfare}, this yields
+\begin{equation}\label{eq:allocation}
+ \|\widetilde x-x^*\|\leq 2\sqrt{B/\rho}.
+\end{equation}
+% Ledger: 25, 26, 30
+These are cost-level statements.  In particular, the sharper constant in \eqref{eq:welfare} does not follow by applying a generic welfare argument to normalised valuations.  % Ledger: 27, 30
+
+For the following conditional individual-rationality statement, assume also
+that $0\in X_\delta$, as follows from P's assumption that $X$ contains a ball
+centred at the origin and its definition of $X_\delta$ by positive scaling.
+% Ledger: 25, 26, 27, 30
+For Q's outside-option normalisation, define
+\[
+ V_n(x)=-C_n(x)+C_n(0),\qquad
+ \widetilde V_n(x)=-\widetilde C_n(x)+\widetilde C_n(0).
+\]
+Theorem~\ref{thm:uniform} gives
+$\sup_x|V_n(x)-\widetilde V_n(x)|\leq2b_n$, not $b_n$.  % Ledger: 27, 30
+Assume additionally that a feasible surrogate mechanism exists for which Q's deviation-to-zero argument proves nonnegative surrogate utility at its equilibrium.  Only the realised normalised valuation then needs to be transferred between the games because both outside options equal zero.  The true utility at that allocation is therefore at least $-2b_n$.  % Ledger: 27, 30
+This is a conditional approximate individual-rationality statement, not a mechanism-existence theorem.  % Ledger: 19, 22, 27, 30
+
+Exact budget balance at a surrogate equilibrium is likewise only conditional on extending Q's KKT construction to the surrogate and finding a feasible common LMI.  % Ledger: 19, 22, 27, 30
+
+\section{Interpretation}
+
+The static objective comparison avoids the $1/\delta_n$ amplification that occurs when an objective error is converted into an error for a one-point gradient estimator.  % Ledger: 20, 22, 26
+This does not improve P's dynamic oracle bound or supply a learning algorithm for Q.  It says only that if the expected surrogate is minimised, its true-CVaR performance is controlled as in \eqref{eq:welfare} and \eqref{eq:allocation}.  % Ledger: 2, 6, 25, 26
+
+There is also a structural observation that does not enter the theorem.  If every sample loss is $\rho_n$-strongly convex, the CVaR risk-envelope representation makes $C_n$ $\rho_n$-strongly convex and $V_n$ $\rho_n$-strongly concave, possibly nonsmooth.  % Ledger: 3, 9, 22
+This assumption is stronger than Q's strong concavity after expectation and P's samplewise convexity.  % Ledger: 9, 22
+It motivates, but does not prove, a nonsmooth extension of Q.  % Ledger: 22, 30
+
+\section{Limitations and open questions}
+
+The common-feasible-set premise is substantive.  P minimises on $X_\delta$, whereas Q's original optimum is posed on $X$.  Equations~\eqref{eq:welfare} and \eqref{eq:allocation} apply to Q's original optimiser only if $x^*\in X_\delta$; otherwise a domain-shrinkage error is missing.  % Ledger: 25, 26, 30
+
+We have not proved the nonsmooth KKT or strongly monotone variational-inequality extension of Q, nor feasibility of a common LMI.  % Ledger: 22, 30
+We have not given a player-wise oracle and outer-loop complexity theorem.  % Ledger: 22, 30
+Exact convergence to the true CVaR equilibrium would require vanishing smoothing, growing batches, summable inexactness, and a corrected convergence proof.  % Ledger: 6, 12, 22
+
+There is a separate issue in Q's published convergence argument.  It applies global nonexpansiveness componentwise, which does not follow from the stated assumption.  % Ledger: 7, 13, 20
+Its residual-to-iterate inference is omitted but can be repaired on a compact domain with a continuous map and a unique fixed point.  Thus the recorded proof is incomplete, not shown false.  % Ledger: 11, 13
+
+The immediate open question is to bound the loss caused by replacing $X$ with $X_\delta$, or to identify conditions ensuring $x^*\in X_\delta$.  % Ledger: 25, 26, 30
+Resolving it would not by itself prove the open mechanism extension.  % Ledger: 22, 30
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

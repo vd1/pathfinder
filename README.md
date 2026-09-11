@@ -22,6 +22,10 @@ Every thread ends with a ledger, a note named after the pair (for example
    reference; the pipeline builds it and checks the citations; an
    independent reviewer accepts or returns it, up to a round cap.
 
+On every terminal thread an editor also rewrites the consolidated note as
+a short readable paper with references, for a reader without the ledger
+(`pathfinder edit`, or automatically from the runner).
+
 ## Requirements
 
 - Python 3.12 and [uv](https://docs.astral.sh/uv/).
@@ -83,6 +87,7 @@ threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
                    <pair>.verdict.json, status.json, lock
 threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
                    review.json, paper.json (accepted, returned, blocked)
+threads/<pair>/edited/  note.tex, references.bib, note.pdf, edit.json
 ```
 
 ## campaign.json
@@ -98,7 +103,7 @@ threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
 - `paper_rounds`: cap on author and review rounds in the paper stage.
 - `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
   (per peer per round), `consolidate_seconds`, `verify_seconds`,
-  `paper_seconds`, `review_seconds`.
+  `paper_seconds`, `review_seconds`, `edit_seconds`.
 - `budget_usd`: hard cap on receipts plus in-flight estimate.
 - `call_estimate_usd`: what one in-flight call is assumed to cost by the guard.
 - `prices`: per-model prices used when the CLI reports no cost.
@@ -129,9 +134,9 @@ threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
 
 ## Prompts
 
-The six prompts in `prompts/` are the place to tune behaviour: `scan.md`
+The seven prompts in `prompts/` are the place to tune behaviour: `scan.md`
 (the two-axis judge), `peer.md` (the creative brief), `consolidate.md`,
-`verify.md`, `author.md` and `review.md`. A campaign directory may carry its own `prompts/` to override
+`verify.md`, `author.md`, `review.md` and `editor.md`. A campaign directory may carry its own `prompts/` to override
 them.
 
 ## Departures from the agQSL instance

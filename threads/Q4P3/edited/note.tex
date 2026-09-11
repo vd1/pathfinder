@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\emergencystretch=2em
+
+\title{When agreement is not evidence:\\coupled rewards and adversarial review}
+\author{}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies how to design rewards for AI agents with unknown aims and abilities, while paper P studies a reviewer and critic that debate code-review findings. We asked whether P's false consensus is the failure that Q warns can arise when rewards favour agreement. The peers proved a converse in Q's two-agent model: when the agents' biases move together, rewards based on their action difference cannot uniquely force both agents close to the correct action. For P, however, the proposed link remains an analogy because no experiment measured whether its same-model critic shares or corrects the reviewer's errors. The thread therefore paused after the theory was checked but the empirical premise remained untested.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Mechanism Design for Alignment and Control}, treats an AI agent's preferences and capabilities as private information \cite{Q}. It asks how a human can induce truthful reports and obedient action when an agent can hide an ability but cannot pretend to have an ability it lacks. Among its examples are peer scoring and coupled rewards for two biased agents. In the latter, rewarding similar actions can produce agreement without producing the action the human wants.
+
+P, \emph{Adversarial Review}, presents a code-review protocol called Adversarial Review \cite{P}. A main coding agent receives a review from a reviewer, while a critic challenges that review until the reviewer and critic agree or the protocol stops. P reports results on coding and code-review benchmarks. It also reports false consensus: the two roles can agree without enough evidence. Its revised prompt asks for explicit, evidence-grounded disagreement.
+
+The thread pursued a possible connexion between these claims. Q gives a small mathematical model of agreement incentives. P gives a practical case in which agreement may be wrong. The reviewer and critic in P use the same model, Claude Sonnet 4.5, so the peers asked what happens in Q's model when the two agents' biases tend to move in the same direction. They also read P's prompts and published scores to see whether this mathematical condition was visible in P's evidence.
+
+\section{What was done}
+
+The work began with Q's coupled-reward example. There are two agents, a true state $\theta$, and actions $a_1$ and $a_2$. Agent $i$ would, without an added reward, prefer $a_i=\theta+b_i$, where $b_i$ is that agent's bias. The human instead wants both actions to equal $\theta$. The added rewards depend only on the difference
+\[
+D=a_2-a_1.
+\]
+Q assumes that the two biases move in opposite directions across types and constructs rewards that approach the human's preferred outcome.
+
+The peers first replaced Q's reward with a simple disagreement penalty. Agent $i$ received a penalty proportional to $-D^2$. They solved the equilibrium, checked the formula in \texttt{ada/check\_ratio.py}, and then generalised the calculation. Emmy proved that any symmetric, differentiable reward based on $D$ leaves the sum of the two errors equal to the sum of the biases. Ada checked the exact monotonicity inequality used in the more general proof. Emmy's \texttt{consensus\_theorem.md} and \texttt{check\_consensus.py} then treated rewards that need not be smooth.
+
+The work next considered all state-independent quadratic rewards with a unique equilibrium. Emmy derived an identity for the agents' responses; Ada checked it symbolically in \texttt{check\_lq\_agreement.py}, and Emmy checked it in \texttt{check\_general.py}. This exposed a possible escape: a reviewer paid to disagree can sometimes cancel a known common bias by moving away from an exaggerating critic. The peers checked when this procedure is stable and how it fails when the ratio between the biases is unknown.
+
+The P side was then examined without model calls. Ada and Emmy compared the reviewer and critic prompts, P's case studies, and its SWE-PRBench scores. They separated additions made by the critic from deletions made by the reviewer. They also compared Q's peer score with P's rule that ends the inner loop on agreement.
+
+After the first verifier review, the peers withdrew a proposed matched-versus-mismatched-diff audit. A review from one code change mentions files and lines absent from another, so the critic could reject it merely as off-topic. They designed a same-diff false-flag test instead. No such test was run, because no model spending was authorised.
+
+\section{Results}
+
+\subsection{Agreement penalties preserve common bias}
+
+Let the reviewer be agent R and the critic be agent C. Give them disagreement penalties $-\kappa_R D^2$ and $-\kappa_C D^2$, where each $\kappa$ is greater than $-1$. Their equilibrium errors are
+\begin{align*}
+a_R-\theta&=\frac{(1+\kappa_C)b_R+\kappa_R b_C}
+{1+\kappa_R+\kappa_C},\\
+D&=\frac{b_C-b_R}{1+\kappa_R+\kappa_C}.
+\end{align*}
+Here $b_R$ and $b_C$ are the reviewer's and critic's biases. If both agreement penalties become very large, the agents agree at $\theta+(b_R+b_C)/2$. Agreement therefore need not reduce error. If R has no agreement penalty, C does not change R's output at all. The closed form and its limiting cases were checked by Ada.
+
+More generally, suppose both agents receive the same differentiable reward $\rho(D)$. Their first-order conditions imply
+\[
+(a_1-\theta)+(a_2-\theta)=b_1+b_2.
+\]
+The joint squared error is therefore at least $(b_1+b_2)^2/2$. This is the simple reason a difference reward cannot remove a bias shared by both agents.
+
+\subsection{A converse to Q's construction}
+
+The strongest result concerns a family of types. Let $b_1$ vary over an interval of length $L$, and let $b_2=k b_1$, where $k>0$. Thus the biases move together. Suppose rewards depend only on $D$ and every type has an equilibrium in which both errors are at most $\varepsilon$ in absolute value. If
+\[
+L>12\varepsilon\max(1,1/k),
+\]
+then the equilibrium value of $D$ must be the same for every type. The extreme type also has equilibria in which both actions shift together by a substantial amount. Consequently the reward scheme supports biased consensus as well as any near-correct outcome.
+
+The argument compares the choices of two types. Each agent's optimality gives a monotonicity inequality for $D$. Near the correct action, agent 1 requires $D$ to fall as $b_1$ rises, while agent 2 requires it to rise. For sufficiently separated types both requirements can hold only if $D$ is constant. Once the difference is pooled, both actions can move together without changing either reward. Emmy wrote the proof in \texttt{emmy/consensus\_theorem.md}; Ada checked its key inequality, and the verifier checked the proof and the common-shift step.
+
+The relevant condition is co-movement, not whether the two biases have the same sign. Emmy gave an example in which the biases have opposite signs at every type but rise together, and the same argument applies. Q's construction works because its biases move in opposite directions across types.
+
+This theorem is about full implementation, meaning that all equilibria must be good. Q uses the weaker requirement of partial implementation, meaning that at least one good equilibrium exists. A hard agreement device can support the correct common action and biased common actions at once. Under Q's standard, the theorem therefore establishes multiplicity, not the impossibility of a good equilibrium.
+
+\subsection{Finite conformity and a contrarian escape}
+
+For state-independent quadratic rewards with a unique equilibrium, the selection issue disappears. The peer derivations show that an agreement-seeking R produces a weighted average of its own bias and C's bias. With same-direction biases, R's result cannot be less biased than the less biased agent acting alone. The verifier checked this bound.
+
+A contrarian design can cancel the bias when the relation $b_C=k b_R$ is known. R must be rewarded for disagreement and must extrapolate away from C. This escape is fragile. For $0<k<1$, the alternating responses used by a debate loop diverge; for $k>1$, a stable one-round form can exist. A design tuned to one value of $k$ leaves an error when the true ratio differs, and exact clones, for which $k=1$, cannot be distinguished from a shifted state without an independent state measure. The formulas and numerical examples were checked in the peers' scripts. No message mechanism for the general case was built.
+
+\subsection{What P's published evidence shows}
+
+P reports SWE-PRBench F1 scores of $0.495$ for one reviewer, $0.457$ for naive Adversarial Review, and $0.533$ for the revised prompt. The first draft in naive Adversarial Review uses the same model and prompt as the single reviewer. Subject to an unresolved formatting difference, the fall from $0.495$ to $0.457$ must therefore come from later edits.
+
+Those edits have more than one possible cause. The critic may confirm a doubtful flag or add a speculative one, which resembles the co-moving-bias story. Alternatively, the reviewer may delete a true flag while converging or after the critic raises doubt. The revised prompt explicitly tells the reviewer not to make these deletions. P gives neither precision and recall nor comments per code change, so the aggregate F1 score cannot separate the two channels. P also does not say whether F1 is micro- or macro-averaged. Emmy's decomposition is in \texttt{emmy/table2\_decomposition.md}; the relevant passages in P were reread for the consolidated note.
+
+One of P's case studies does not explain the deficit against a single reviewer. In that case the reviewer initially approves, the critic raises a real concern, and the critic later yields. The final result is the reviewer's original draft, so the failure is relative to a method that found the bug, not relative to the single-reviewer baseline. This correction was made in Emmy's final check and accepted in the edited account.
+
+Outside work cited during the thread discusses expert advice and two-agent implementation \cite{krishnaMorgan,duttaSen,mooreRepullo}, peer prediction \cite{peerPredictionSurvey}, model conformity \cite{conformity1,conformity2}, correlated model errors \cite{correlatedProviders,correlatedErrors}, and self-critique or cross-model critique \cite{selfCorrection,deltaBench,codeSelfRepair}. The SWE-PRBench dataset was also identified as a possible source of public diffs \cite{sweprbench}. These sources suggest useful comparisons, but none measures P's Sonnet 4.5 reviewer-critic pair. None enters the proof above.
+
+\section{What did not hold, and remaining objections}
+
+The broad claim that P demonstrates Q's bad equilibrium did not hold. P has discrete verdicts and free-text findings, while Q has a scalar action. P reports no signed error for reviewer and critic across tasks. Its false consensus can also be a failure to distinguish a sound claim from a confident rebuttal, which Q's scalar bias model cannot express.
+
+The claim that a hard agreement rule cannot produce the correct action was also too strong. Under partial implementation the correct action may be one equilibrium among many. The peers accepted the verifier's objection. The finite-conformity bound remains valid because that calculation has a unique equilibrium, but whether finite conformity or a hard rule better describes P is itself empirical.
+
+The first proposed audit did not hold up because mismatching reviews and diffs changes their subject matter. The replacement test also has a limit. Appending a false flag from the same model and observing whether C detects it measures detection, but poor detection may reflect general weakness rather than co-moving errors. Separating those explanations requires false flags from both the same and another model family, crossed with critics from both families. With only 100 diffs, the peers estimated a 95 per cent interval half-width near $0.2$ for that contrast, so hundreds of human-verified flags would probably be needed.
+
+Several smaller objections remain open. P may apply a formatting step only to Adversarial Review. Its LiveCodeBench comparison may combine interaction with different iteration and acceptance rules. Its judge matches model comments to human comments, so an unmatched comment is not necessarily false. The revised prompt was tested on the benchmark used to develop it. These limits prevent a causal reading of the reported score differences.
+
+The material is therefore thin on P. There were no new model calls, no access to P's logs, no direct estimate of error co-movement, and no test of which equilibrium its loop selects. The final verifier described the work as a checked result about Q plus an unanchored analogy about P.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the mathematical side was complete enough to check, while the fact needed to connect it to P was still missing. The cheap two-arm test would show only whether the critic detects a plausible false flag. It would not tell whether a low rate comes from same-model co-movement or from weak detection in general. The full crossover is large for a premise whose direction is already suggested, but not established for P, by outside work.
+
+The smallest step that would restart the thread is to measure P's critic on the same diff. For each public SWE-PRBench diff, obtain a first-round Sonnet 4.5 review, append a plausible false flag that Sonnet 4.5 produced and a person verified, and run P's baseline critic prompt in a fresh context. Record whether the critic names the injected flag as false, not merely whether its final verdict changes. This step would establish whether truth is focal enough to reject the model's own errors. A later cross-family crossover would be required to identify co-movement itself. Asking P's authors for precision, recall, comment counts, formatting details, and iteration caps could settle benchmark confounds, but would not replace this measurement.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

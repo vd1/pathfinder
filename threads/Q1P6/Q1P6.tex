@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{amsmath}
+\emergencystretch=1em
+
+\title{The Pair Q and P}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q surveys learning-augmented algorithms and insists that prediction interfaces, error measures, robustness, and downstream guarantees be kept distinct. P uses multimodal pairwise comparisons, Bradley--Terry rank aggregation, and potential-based reward shaping to assign credit in cooperative multi-agent reinforcement learning.
+
+\section*{The connexion pursued}
+The initial connexion asked whether P could inherit from Q a curve relating comparison error to downstream performance.  The ledger replaces that question with a narrower one: when can costly and possibly biased comparisons improve finite-training performance, given that exact potential-based reward shaping leaves the limiting objective invariant (entries 2, 13, and 17)?  The material is thin on the positive part because neither paper supplies a finite-time learner-stability theorem (entries 4, 7, and 15).
+
+\section*{What was found}
+P's estimator result concerns concentration around a latent Bradley--Terry preference $c_t^*$, not a true contribution target $v_t^*$; the identification $c_t^*=v_t^*$ is an additional premise.  Thus repeated queries can reduce sampling error while leaving systematic semantic bias unchanged (entries 1, 3, and 19).  After fixing the translation gauge, the notes propose
+\[
+ \delta_t=\lVert c_t^*-v_t^*\rVert_2,
+ \qquad
+ \lVert \widehat c_t-v_t^*\rVert_2
+ \leq \lVert \widehat c_t-c_t^*\rVert_2+\delta_t,
+\]
+which is just the triangle inequality and separates estimation from semantics (entry 5).
+
+There is a prediction-independent statement at the objective level.  With
+$F_t=\gamma\psi_{t+1}-\psi_t$,
+\begin{align*}
+ \sum_{t=0}^{T-1}\gamma^tF_t
+ &=\sum_{t=0}^{T-1}
+   \left(\gamma^{t+1}\psi_{t+1}-\gamma^t\psi_t\right)\\
+ &=-\psi_0+\gamma^T\psi_T.
+\end{align*}
+Under P's terminal convention $\psi_T=0$ and with an action-independent initial potential, this is a common offset, so arbitrary comparison outputs do not alter policy ordering by exact discounted return.  The identity is pathwise, but an equilibrium claim for stochastic or history-dependent potentials may require an augmented state (entries 4, 7, and 12).
+
+The local signal is controllable without yielding a trained-policy guarantee.  Since softmax is $1/2$-Lipschitz in Euclidean norm, for score errors $d_t$ the notes derive
+\[
+ \lVert \widehat F_t-F_t^*\rVert_2
+ \leq \frac12\left(
+ \gamma\lVert d_{t+1}\rVert_2+\lVert d_t\rVert_2
+ \right).
+\]
+No bound on MAPPO's finite-training return follows unless one adds a stability, regret, or convergence contract for the learner (entries 5 and 7).
+
+The round after the verifier's review supplies a proposed fixed-space repair.  Let the fixed population have size $n$, let $I_t$ be the active coalition, and embed the active softmax credits in $\Phi_t\in\mathbf{R}^n$ by
+\[
+ \Phi_t^i={\bf 1}\{i\in I_t\}
+ \operatorname{softmax}_{I_t}(\widehat c_t)^i,
+ \qquad \Phi_T=0.
+\]
+Inactive agents have null actions, and every population member retains a reward ledger on every transition.  With
+\[
+ F_t^i=\gamma\Phi_{t+1}^i-\Phi_t^i,
+\]
+the earlier telescoping calculation now applies componentwise:
+\[
+ \sum_{t=0}^{T-1}\gamma^tF_t^i
+ =-\Phi_0^i+\gamma^T\Phi_T^i=-\Phi_0^i.
+\]
+For a fixed initial augmented state, adding these terms to declared per-agent payoffs shifts each player's payoff by a policy-independent constant.  Unilateral payoff differences, best responses, Nash equilibria, and team-policy ordering are therefore preserved for arbitrary comparison outputs.  This is a construction proposed by the notes, not a theorem stated by P (entries 24 and 27).
+
+The construction also clarifies its limits.  If rewards are recorded only while an agent is active, an active interval leaves entry and exit boundary terms, which can depend on policy; transition ownership or compensating transfers must then be specified (entries 24, 25, and 27).  Moreover, P starts from a scalar team reward but adds a vector shaping term.  One may instead declare per-agent payoffs and use the componentwise theorem, or use a scalar team potential.  Simply summing P's softmax credits gives potential $1$ on every nonempty nonterminal coalition, erasing all comparison information.  Thus P's comparisons can matter only through redistributed per-agent finite-training signals (entries 30 and 33).
+
+\section*{Objections and their status}
+First, P's concentration theorem is not ready for composition: the ledger reports inconsistent dependence on population size, insufficient curvature assumptions, possible divergence of an unregularized MLE under separation, and an approximate Taylor step inside the proof.  This objection remains unresolved and calls for a corrected estimator theorem (entry 8).
+
+Second, P writes credits in the active-coalition space and subtracts potentials at consecutive times, although coalition sizes may differ (entry 10).  A later check qualifies the objection: P has a fixed global population, so padding is available, but inactive coordinates, entry and exit potentials, and per-agent shaped rewards are not defined (entry 21).  The fixed-population ledger above resolves the typing and telescoping objection as a proposed construction (entries 24 and 27), but P's own active-only reward handling and scalar-versus-vector payoff semantics remain unresolved (entries 25, 30, and 33).
+
+Third, a simple relabeling of P with Q's vocabulary was rejected.  The comparison accuracy alone cannot determine finite-training return because learners with the same shaped signal can have different sensitivities and outcomes (entries 9, 13, and 15).  This objection is resolved only at the objective level by telescoping; it remains open for optimization dynamics.
+
+\section*{Sources outside Q and P}
+None were used.  The consolidation relies only on Q, P, the ledger, and the two peer notes.
+
+\section*{What remains open}
+Open points are a valid Bradley--Terry rate under P's actual sampling and regularization; whether inactive-agent ledger rewards are retained or replaced by compensating entry and exit transfers; the intended scalar or per-agent payoff semantics; conditions for equilibrium invariance with augmented state or history; a useful finite-time stability theorem for MAPPO; and common units for pricing multimodal-model queries against return or sample efficiency (entries 25, 28, 30, and 31).  Prior-work novelty was not assessed in the notes.  The material is thin beyond the fixed-space correctness repair and the negative boundary result.
+
+\section*{Smallest next step}
+Specify whether P's implementation records rewards for inactive agents.  If it does not, define the smallest compensating entry and exit transfers and check algebraically that they reproduce the fixed-ledger sum.  This would settle the remaining implementation-level invariance question; the next research step would then be a learner-stability contract for a finite-training bound (entries 25, 27, 28, and 31).
+
+\end{document}

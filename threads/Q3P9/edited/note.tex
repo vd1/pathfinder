@@ -1,0 +1,72 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{From Promises to Trades: A Proposed Test in LLM Markets}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+One paper studies large language model traders in a continuous double auction, while the other studies contracts between two language-model agents in a spatial cooperation game.  The thread asked whether an executable commitment could help auction agents complete useful trades without turning a natural-language promise into another fixed point for their bargaining.  The papers provide a suggestive contrast: auction agents often fail to close, and programmatic contracts work better than natural-language contracts in the cooperation game.  The thread also found that the auction agents are not told the exact trading horizon, which could explain some of their delay.  Work paused because these observations motivate a controlled experiment but do not show that the proposed mechanism works or that the contract effect carries from one setting to the other.
+\end{abstract}
+
+\section{Introduction}
+
+\subsection{The auction paper}
+
+Struski and colleagues place language-model agents in a continuous double auction, where buyers and sellers post prices and may accept one another's standing offers \cite{Q}.  Each agent has a private reservation value, so a trade is useful only when buyer and seller values leave room for a gain.  The paper asks whether a market design that works well with people also produces efficient allocations with these agents.  It reports slow or absent convergence.  For the model called GPT Large, allocative efficiency ranges from 0.36 to 0.67, and only 2.2 to 3.8 trades occur per round.  The agents often improve a price by only \$0.01 and continue until time runs out.  In the available reasoning traces, crossing the spread is associated with words about urgency and execution rather than continued attention to margin.
+
+\subsection{The contracts paper}
+
+Wyse and colleagues study two agents that bargain and move through a spatial game \cite{P}.  Cooperation is difficult because one agent may pay a cost before receiving a later benefit.  The paper compares ordinary trading with several forms of self-negotiated contract.  Programmatic contracts compile obligations into code, while natural-language contracts must be interpreted at run time.  On mutually dependent boards, the two contract forms cover about the same number of moves, but natural-language contracts leave fewer residual trades.  In the main Pay-for-Partner results, both agents finish in 46 per cent of games with natural-language contracts, 61 per cent without contracts, and 79 per cent with programmatic tile contracts.
+
+\subsection{The connexion pursued}
+
+The thread asked whether these results point to a shared problem of implementation.  The auction agents express increasing urgency but still haggle in small steps.  The cooperation agents sometimes treat an incomplete natural-language contract as a reason not to make a later trade.  This suggests, but does not establish, that a salient promise may anchor behaviour while a complete executable policy may turn an intention into action.  The proposed test therefore keeps the auction intact and adds a unilateral rule, rather than replacing decentralised trade with bilateral contracting.
+
+\section{What was done}
+
+The work began with a broad comparison of bargaining failure in the two papers.  The peers first proposed natural-language and machine-checkable commitments in the auction.  They then objected that contracts in the cooperation game address delayed reciprocity, whereas a trade in the auction executes immediately.  A separate negotiation stage could also disclose information or damage the price discovery that the auction is meant to study.
+
+To meet that objection, the peers replaced a bilateral contract with a unilateral limit-on-close policy.  Under this policy, an unfilled trader authorises the system to accept an opposite standing quote at a chosen late time, but only if the price respects that trader's private reservation value.  The rule does not reveal the reservation value.  It preserves the order book and the auction's decentralised form.
+
+The peers next found a time-information problem in the auction design.  Let $T$ be the final iteration and $t$ the current iteration.  The mechanism fixes $T=300$, but the agent prompt states only that a cap exists.  Order histories show iteration numbers, so an agent can infer some information about $t$.  It is not explicitly told $T$, the remaining iterations $T-t$, or the elapsed fraction $t/T$.  The claim was therefore narrowed: the exact horizon and the remaining budget are hidden, not the current iteration in every sense.
+
+The paper's mechanism description says that a round ends at $T$, while the prompt also says that it ends when no improving order can be posted.  After the first verifier round, both peers inspected the released simulator at commit \texttt{af6f792} \cite{Qcode}.  They found that its deadlock check returns false when an active strategy is an LLM or a zero-intelligence unconstrained agent.  In that released code, an active LLM round reaches the cap unless fewer than two agents remain active.  The paper does not identify the commit used for its reported experiments, so this audit does not prove that the historical runs used the same logic.
+
+These checks led to a proposed two-factor experiment.  The first factor is horizon information: the existing vague cap or an explicit value of $T$ together with the remaining budget.  The second is the action interface: the baseline auction, a standard nonbinding natural-language limit-on-close intention, or a mechanically executable reservation-safe version of the same intention.  Conditions would use matched activation sequences and otherwise keep the auction, order book, and private values unchanged.
+
+\section{Results}
+
+The thread established a qualified empirical motivation, not a new experimental result.  In the auction paper, low efficiency, few completed trades, repeated small concessions, and execution language in the traces all support studying completion failure \cite{Q}.  In the contracts paper, the contrast between natural-language and programmatic contracts supports studying how a commitment is represented and carried out \cite{P}.  Similar numbers of contract-covered moves but different amounts of later trade make a pure difference in negotiation volume less plausible.  They do not isolate semantic anchoring, because the two contract forms also differ in how they are interpreted at run time.
+
+The thread also established a confound in the interpretation of the auction results.  The agents lack an explicit value of $T$ and a remaining-time signal.  Exact horizon disclosure could therefore change their willingness to cross the spread even without any commitment.  The peers' independent code checks agree on the stopping behaviour of the current released simulator \cite{Qcode}.  Historical provenance remains unpinned.
+
+The proposed experiment separates three explanations.  If horizon disclosure alone improves performance, then horizon opacity explains much of the observed delay and the cross-paper connexion weakens.  If the executable rule beats wording-matched natural language under an explicit clock, that supports an implementation or commitment gap consistent with the contracts paper.  If visible natural language performs worse than the baseline or a hidden-text control, that supports, but still does not by itself prove, transport of the anchoring account.
+
+Allocative efficiency and price dispersion, denoted by $\alpha$ in the auction paper, are the primary outcomes.  Time to trade, trade count, spread crossing, and concession size are secondary.  This ordering matters because automatic execution can increase volume while producing poor allocations or poor prices.
+
+\section{What did not hold, and remaining objections}
+
+The initial idea that contracts from the cooperation game could simply repair the auction did not hold.  The games have different strategic problems, numbers of agents, and model populations.  The cooperation paper does not test an auction, and the auction paper does not test executable commitments.  The auction's lexical evidence is correlational and covers one model.  These limits were settled by treating the connexion as a hypothesis and by preserving the auction in the proposed design.
+
+The claim that auction agents cannot see their current iteration was also too strong.  Iteration labels in the order history reveal elapsed progress after recorded actions.  The peers corrected the claim to the absence of the total horizon and an explicit remaining-budget signal.
+
+Several objections remain open.  Policy wording, completeness, and authorship must be standardised or yoked across conditions.  An automatic close may move bargaining earlier, cause strategic waiting, or reveal information through quotes.  It may increase completion while worsening surplus or $\alpha$.  A hidden-text control may be needed to separate semantic salience from enforcement.  No prior-work search was conducted, and the available material contains no result from the combined experiment.
+
+\section{Why the thread stopped}
+
+The first verifier round asked for the stopping-rule audit because the mismatch between the mechanism and the prompt blocked interpretation.  The peers completed that audit for the current released code.  The final verifier nevertheless set the status to PAUSE: neither paper nor the thread supplies causal evidence that executable commitments improve this auction, or that the natural-language anchoring account carries between the two games.  Pinning the historical code and data would improve reproducibility, but it would not close that causal gap.
+
+The smallest step that would restart the thread is a controlled horizon-information by action-interface experiment in the unchanged auction.  At minimum it must compare the vague and explicit clocks across the baseline, wording-matched natural-language intention, and executable reservation-safe rule.  A useful positive result must improve surplus and completion beyond clock disclosure without materially worsening $\alpha$; strategic waiting, lower surplus, or worse dispersion would count against the proposed repair.
+
+\enlargethispage{3\baselineskip}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

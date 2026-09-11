@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Mechanism Design for Forecast-Based Carbon Scheduling:\\What Papers Q and P Can Support Together}
+\author{}
+\date{}
+
+\begin{document}
+\emergencystretch=2em
+\maketitle
+
+\begin{abstract}
+Paper Q gives a mechanism for allocating continuous resources among strategic agents, while paper P forecasts nodal carbon intensity and uses the forecast to schedule data centres and mobile storage.  We asked whether Q's mechanism could make private owners carry out P's low-carbon schedule.  It cannot cover P's full scheduler, chiefly because the mobile-storage decisions are binary and P does not specify private preferences.  A narrower construction does fit Q: workload owners may voluntarily move divisible data-centre work from a baseline, subject to additive destination capacities, and a simple forecast-error test can certify a realised carbon reduction under a price-taking assumption.  The thread ended as a draft because this construction is supported, but it is not equivalent to P's native model and P gives no grid constraints with which to test a broader claim.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q studies a manager who allocates limited resources among self-interested agents \cite{garjani2026}.  Each agent has private constraints and a private value for an allocation.  Under convex and compact local feasible sets, smooth strongly concave values, and componentwise additive capacity limits, Q constructs quadratic payments that make the welfare-maximising allocation the unique Nash outcome.  It also gives a stochastic learning scheme that converges under further assumptions.  Its guarantees include individual rationality and budget balance at equilibrium.
+
+Paper P studies a different problem \cite{cai2026}.  It forecasts day-ahead nodal carbon intensity, meaning the emissions attributed to an extra unit of electricity at a bus and hour.  It then uses those forecasts to move work among distributed data centres (DDCs) and to schedule mobile energy storage systems (MESSs).  The data-centre variables are continuous, but the full mobile-storage model has binary variables for parking, travel, arrival, and departure.  P minimises predicted emissions and reports simulation results; it does not model strategic owners, payments, private costs, or an outside option.
+
+The pursued connexion was to place Q's mechanism around P's forecast-based dispatch.  Private owners would then be induced to choose the low-carbon schedule.  The first checks showed that this statement was too broad.  The work therefore moved to a smaller question: can Q implement voluntary, baseline-relative DDC migration, and when does its forecasted carbon benefit survive forecast error?
+
+\section{What was done}
+
+The first step compared the domains of the two papers.  Q requires non-negative continuous resource requests, convex compact local sets, twice differentiable strongly concave valuations, and shared constraints of the form
+\begin{equation}
+  \sum_o x_o \leq c,
+\end{equation}
+where $x_o$ is owner $o$'s resource vector and $c$ is the vector of available capacities.  P's binary MESS schedules violate convexity, and its linear carbon objective does not supply strong concavity.  The peers also noted that P's language-model ``agents'' forecast and evaluate data.  They are not the self-interested agents of Q.
+
+The next step separated forecast error from strategic implementation.  Let $g(x)$ be the vector of electricity withdrawals at all buses and hours under schedule $x$.  Let $\widehat e$ be forecast nodal carbon intensity, $e$ realised nodal carbon intensity, $x_0$ a fixed baseline schedule, and $\widehat x$ the schedule chosen from the forecast.  The predicted carbon margin is
+\begin{equation}
+  \widehat M=\widehat e^{\mathsf T}\bigl(g(x_0)-g(\widehat x)\bigr).
+\end{equation}
+The realised margin $M$ obeys
+\begin{equation}
+  M=\widehat M+(e-\widehat e)^{\mathsf T}
+       \bigl(g(x_0)-g(\widehat x)\bigr).
+  \label{eq:identity}
+\end{equation}
+The peers first proposed a looser regret bound, then corrected it.  If forecasted and realised welfare objectives have the same private-cost term and the feasible withdrawal set has diameter $D$, forecast optimality gives realised-objective regret no greater than $D\lVert e-\widehat e\rVert_*$, where $\lVert\cdot\rVert_*$ is the norm dual to the norm used to define $D$.  This is a welfare bound, not by itself a carbon guarantee.
+
+The verifier then asked for an explicit continuous DDC model.  The peers introduced non-negative origin-to-destination flows.  For origin $o$, destination $j$, and hour $t$, let $f_{ojt}$ be the amount of divisible workload voluntarily moved from its baseline.  If $w_{ot}$ is the workload available at the origin, then
+\begin{equation}
+  f_{ojt}\geq 0,
+  \qquad \sum_j f_{ojt}\leq w_{ot}.
+  \label{eq:flow}
+\end{equation}
+Work not moved stays at its origin, so the zero-flow choice is feasible.  Let $\phi_j>0$ be destination $j$'s electrical use per unit of workload and define the electrical resource coordinate $x_{ojt}=\phi_j f_{ojt}$.  A destination limit is then exactly additive:
+\begin{equation}
+  \sum_o x_{ojt}\leq c_{jt},
+  \label{eq:capacity}
+\end{equation}
+where $c_{jt}$ is the receiving capacity of destination $j$ at hour $t$.  Eligibility, delay, and origin-availability conditions stay within an owner's local feasible set.
+
+The peers added the private preference that P lacks.  Let $f_o$ collect all flows chosen by owner $o$, let $C_o(f_o)$ be that owner's migration cost, let $\rho$ be the chosen weight on carbon, and let $\phi_o$ be the origin's electrical use per workload unit.  They used the baseline-relative valuation
+\begin{equation}
+  V_o(f_o)=-C_o(f_o)-\rho\sum_{j,t}
+  \bigl(\widehat e_{jt}\phi_j-\widehat e_{ot}\phi_o\bigr)f_{ojt},
+  \qquad V_o(0)=0.
+  \label{eq:value}
+\end{equation}
+If $C_o$ is twice differentiable and strongly convex, $V_o$ is strongly concave.  In electrical coordinates, the carbon coefficient is
+$\rho[\widehat e_{jt}-\widehat e_{ot}\phi_o/\phi_j]$; it reduces to a simple intensity difference only when the two conversion factors agree.
+
+Finally, the peers audited the DDC constraints printed in P.  P's carbon objective is separable and linear once the forecast is fixed.  Its load accounting is local.  Its receiving and sending bounds can be represented by additive destination capacity and local origin availability in the new flow construction.  Its fixed server and cooling formulas provide conversion and bound parameters.  P's native weighted conservation equality, however, uses signed aggregate regulation variables and is not one of Q's allowed shared constraints.  The new flows make conservation automatic by keeping residual work at the origin, but no equivalence between the two formulations was proved.
+
+\section{Results}
+
+The supported positive result is conditional.  Consider strategic workload owners who may move divisible DDC work from a fixed baseline.  Suppose their local constraints have the form in \eqref{eq:flow}, their destination use has the additive form in \eqref{eq:capacity}, and all remaining restrictions are local.  Suppose also that each private cost $C_o$ has the smoothness and curvature required above and that Q's other assumptions hold.  Then the feasible sets are convex, compact, and contain zero; the valuations in \eqref{eq:value} are strongly concave; and destination capacities have Q's required additive form.  Q's published mechanism can therefore implement the forecast-conditioned welfare optimum for this refined model.  This conclusion follows from the peers' explicit formulation and their correction of the electrical scaling.
+
+There is also a schedule-specific carbon certificate.  H\"older's inequality applied to \eqref{eq:identity} gives
+\begin{equation}
+  M\geq \widehat M-\lVert e-\widehat e\rVert_*
+  \lVert g(x_0)-g(\widehat x)\rVert.
+\end{equation}
+Hence the implemented schedule has lower realised emissions than the baseline whenever
+\begin{equation}
+  \widehat M>
+  \lVert e-\widehat e\rVert_*
+  \lVert g(x_0)-g(\widehat x)\rVert.
+  \label{eq:certificate}
+\end{equation}
+This statement assumes that the realised intensity vector $e$ does not change when the strategic schedule changes.  It is therefore a price-taking or small-DDC result.  Q supplies implementation only after its assumptions have been established, while P supplies the forecast, baseline, and load-conversion data.
+
+The negative boundary is also clear.  A MESS choosing between two indivisible locations has two isolated feasible schedules.  Its feasible set is nonconvex, and a linear carbon objective is not strongly concave.  Q's optimality, unique-equilibrium, and learning arguments therefore do not apply to P's full MESS scheduler.  Fractional relaxation or rounding may change feasibility, emissions, incentives, and equilibrium uniqueness, so it does not establish the missing result.
+
+\section{What did not hold}
+
+The original claim that Q directly wraps all of P did not hold.  Besides the binary MESS problem, P minimises emissions rather than welfare and supplies none of the private costs or strategic channels required by Q.  A carbon weight and explicit owner costs must be stated, and welfare and emissions must be kept distinct.
+
+An early objection said that even continuous DDC scheduling necessarily needed an extension of Q for affine coupling.  The voluntary-flow construction partly settled this objection.  Residual work at the origin turns conservation into a local fact, and electrical scaling turns destination limits into additive capacities.  It does not settle mandatory full-workload assignment, because Q's participation argument uses zero as a feasible outside option.  Nor does it settle strategic DDC suppliers, who would require consistency between sent and accepted flows.
+
+The audit did not show that the new formulation is equivalent to P's native signed regulation model.  Such a proof would need routing, eligibility, and matching-bound assumptions that P does not state.  It also did not establish grid feasibility.  P names a modified IEEE 33-bus simulation, but its displayed DDC dispatch model contains no voltage, branch-flow, nodal-balance, generator, or loss constraints.  There was therefore no stated grid model to classify.
+
+Two operational objections remain.  Q proves budget balance at equilibrium, not necessarily during learning, and its convergence result does not ensure that every intermediate schedule is physically feasible.  Further, if intensity depends on dispatch, so that $e=e(g)$, neither paper bounds the extra response caused by the moved load.  In that case \eqref{eq:certificate} does not certify a system-wide emissions reduction.
+
+\section{Why the thread stopped}
+
+The verifier accepted the exact-Q construction for voluntary baseline-relative migration and the forecast-error certificate under an explicit price-taking assumption.  The status remained \emph{DRAFT} because the accepted result is deliberately narrow.  It excludes P's native signed DDC formulation, P's binary MESS scheduler, and any grid constraints that P does not display.  The material also assumes rather than measures the curvature of owners' private costs.
+
+The smallest step that would restart the thread is to specify one numerical voluntary-migration instance with an explicit grid model.  Each voltage, flow, balance, and loss constraint could then be classified as local, additive in the electrical coordinates, or outside Q.  That check would show whether the present construction extends beyond P's price-taking DDC abstraction or needs a new coupling mechanism.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

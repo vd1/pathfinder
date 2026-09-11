@@ -1,0 +1,44 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T22:08:32Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "7674d9353dbc4f0d7b6d03c09e5efc87b4cc119d7b7aa1e0265065a7f4efd4e0",
+  "decision": "REVISE",
+  "summary": "The core surrogate bound and its constants are correct, the references are consistent, and the novelty language matches the recorded searches. The theorem and allocation consequence need missing assumptions stated explicitly before referee review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Setting and proof of Theorem 1",
+    "issue": "The DKW step requires the empirical batch to consist of independent identically distributed samples from the loss distribution, but this sampling assumption is not stated in the theorem's setting.",
+    "fix": "Explicitly assume that each batch contains s_n i.i.d. samples drawn from the distribution of \u03be, independently of the smoothing perturbation."
+   },
+   {
+    "id": "F2",
+    "severity": "major",
+    "where": "Static consequences, allocation bound (4)",
+    "issue": "Strong convexity alone does not imply the stated quadratic-growth bound at a constrained minimizer on an unspecified feasible set. The argument also needs the common feasible set to be convex, as P's X_delta is.",
+    "fix": "State that both minimisations are over the same nonempty convex set, specifically X_delta or a convex subset, and then invoke constrained first-order optimality with strong convexity."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Static consequences, outside-option normalisation",
+    "issue": "The quantities tilde C_n(0) and tilde V_n(0) are used without stating that 0 belongs to X_delta, although the surrogate was defined only on X_delta.",
+    "fix": "State 0\u2208X_delta for the conditional individual-rationality result, as follows from P's geometric feasible-set assumptions."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T22:10:24Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "e4e40e933ee53bb9d3e0109705231e7e54ae970f79b0186daa99850f3cce4634",
+  "decision": "ACCEPT",
+  "summary": "The paper is mathematically coherent, accurately distinguishes its static result from Q and P, and stays within the note and ledger. Its references and qualified related-work statement are adequately supported, and its limitations cover the unproved mechanism, feasibility, dynamics, and domain-shrinkage issues.",
+  "findings": []
+ }
+]

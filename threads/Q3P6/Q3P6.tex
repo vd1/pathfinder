@@ -1,0 +1,122 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Q and P: Structured Comparator Drift and Dynamic Credit}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies LLM traders in a double auction and reports differences by model and
+role, anchoring on visible offers, and an associational shift toward urgency when
+one model closes the spread (ledger entries 2 and 7). P uses repeated multimodal
+pairwise comparisons, Bradley--Terry rank aggregation, and an active-set
+potential to assign credit in embodied multi-agent cooperation (entries 2, 3,
+and 10).
+
+\section*{The connexion pursued}
+The proposed connexion is a robustness question: can P's repeated comparisons
+remove noise when the comparator's preference changes systematically with order,
+role, horizon cues, or coalition context? Q motivates those conditions as
+diagnostics, but does not establish that they transfer from text-based traders
+to multimodal referees (entries 7, 8, and 12). The final version separates
+comparator drift from membership normalization because P shows visible energy
+but does not clearly show horizon or the full active set to its comparator
+(entries 18, 23, and 26).
+
+\section*{What was found}
+P's guarantee is narrower than convergence to true contribution. At a fixed
+state it assumes comparisons are draws from one latent Bradley--Terry preference
+and shows convergence to that LMM preference as the query count $K$ grows
+(entries 2, 3, and 7). P reports pooled agreement with dense reward, while
+prompt reversal addresses position bias; these checks do not establish
+conditional stability across context interventions (entries 2 and 12).
+
+The second round adds an input-level qualification. P's comparator receives two
+ordered egocentric images and a task prompt; the images contain a visible energy
+icon, and energy depletion governs removal and respawn. Exit proximity may
+therefore be inferable, although remaining horizon and the full coalition are
+not stated inputs (entries 23, 26, and 29). P also reports that increasing $K$
+improves average downstream success. Hence the proposed study is not a generic
+query-count ablation: it asks whether those pooled gains coexist with a
+conditional bias floor (entry 32).
+
+The notes formalize structured drift as
+\begin{equation*}
+ \Pr(Y_{ij}=1\mid z)=\frac{1}{1+\exp[-(c_i-c_j+d_{ij}(z))]}.
+\end{equation*}
+If a persistent distortion has the form $d_{ij}=b_i-b_j$, repeated queries
+recover scores proportional to $c+b$: sampling variance can vanish while bias
+remains. If $d_{ij}$ is not representable by score differences, cycles or
+Bradley--Terry misfit can result (entry 11). Thus a larger $K$ may make credit
+more repeatable without making it more valid; this is a derivation and testable
+possibility, not an observed failure in P.
+
+There is also a separate membership-boundary issue. P fixes its comparison
+matrix at population size but defines scores and softmax over active agents
+(entry 10). If survivor scores remain fixed, adding or removing a peer changes
+the softmax denominator and therefore every survivor's normalized potential.
+Successive potential differences can consequently contain a membership-boundary
+impulse. The paper's identity alignment is underspecified, but the matrix
+construction means a raw dimension error was not established (entries 10 and
+14).
+
+\section*{Objections and resolutions}
+The peers rejected the broad claim that Q proves generic judge noise or causal
+urgency: Q concerns autonomous traders, its urgency result is associational and
+limited to one model, and its reasoning traces may be unfaithful (entries 2, 7,
+and 12). They also corrected the claim that P necessarily has a dimension
+mismatch and agreed that a well-defined Markov potential may retain standard
+policy-invariance properties. The remaining concern is credit validity and
+learning variance, not a theorem of policy bias (entries 10 and 14). Finally,
+temporal variation alone does not contradict P because P permits a different
+latent preference at each state; a valid test must hold task evidence fixed
+while manipulating context within the comparisons for that state (entries 7
+and 12).
+
+The verifier accepted the connexion as promising but unverified and returned
+ITERATE because no evidence transfers Q's trader behavior to P's multimodal
+comparator (entry 22). The peers resolved how to phrase the energy observation:
+masking or randomizing visible energy intervenes on an actual input, whereas
+horizon or coalition text is added context. Neither may be called evidence of
+membership-conditioned drift unless the frozen-state test shows it (entries 26,
+29, and 30).
+
+\section*{Outside sources}
+No sources outside Q and P were used. The ledger and the two peer notes interpret only those papers.
+
+\section*{What remains open}
+The material is thin on outcomes. It is unknown whether P's code already aligns
+fixed identities, whether membership information is present or inferable in the
+LMM input, whether Q's context sensitivity generalizes to P's referee, whether
+dense reward is an adequate contribution oracle, and whether any boundary
+impulse changes learned policies (entries 16 and 18). Without a
+context-conditioned bias floor, a downstream effect, and a remedy, the result
+would be at most a robustness note (entries 11, 12, and 16).
+
+The material remains thin: this round produced sharper controls but no test
+result. Stage A is now a gate for the Q--P connexion; if it is null, Q supplies
+no demonstrated mechanism. The normalization mechanism is independently gated
+by a boundary impulse and downstream learning cost, and the mechanisms must not
+be combined without evidence of interaction (entries 24, 27, and 30).
+
+\section*{Smallest next step}
+Freeze the pairwise task evidence at sampled P states and randomize only order,
+identity, and an explicit horizon or coalition cue while crossing $K$. Measure
+label flips, reversal consistency, cycles, held-out Bradley--Terry negative log
+likelihood, and calibration to the chosen contribution reference. Separately
+replay one matched removal or respawn transition through active-set and
+entry/exit-invariant potentials and measure the boundary reward impulse
+(entries 18 and 19). This small two-stage stress test settles whether either
+proposed mechanism is present before a downstream training study is warranted.
+
+The smallest immediate next step, as required by the verifier, is only stage A:
+at one frozen P state, repeat comparisons across increasing $K$ while varying
+image order, identity, and visible energy, with horizon or coalition cues kept
+as separately labelled added-context conditions. A persistent conditional bias
+floor would justify proceeding to the boundary replay; its absence would fail
+the proposed Q--P connexion (entries 22, 26, 29, and 30).
+
+\end{document}

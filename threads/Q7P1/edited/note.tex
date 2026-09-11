@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{From a Risk-Averse Oracle to a Robustness Bound:\\An Account of Papers Q and P}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q gives a payment mechanism and a learning rule for stochastic resource allocation, while paper P gives a distributed method for minimising conditional value at risk (CVaR).  The thread asked whether P's risk-averse oracle could serve as the learning part of Q's mechanism.  It found that the algorithms do not fit together directly, but proved a uniform bound between P's expected empirical, smoothed objective and the true CVaR objective.  This bound gives careful welfare, allocation, and individual-rationality guarantees under stated conditions.  The thread ended as a draft because the bound survived verification, but the mechanism extension and a mismatch between the papers' feasible sets remain open.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q studies how to allocate a shared resource among strategic agents whose satisfaction is uncertain and private \cite{Q}.  It proposes quadratic payments chosen through a linear matrix inequality (LMI).  Under its assumptions, the resulting game has a unique Nash equilibrium at the welfare-maximising allocation, with balanced payments and individual rationality.  Q also proposes a variable-sample proximal best-response iteration, in which each agent repeatedly solves a sample-average optimisation problem.
+
+Paper P studies agents who cooperate over a changing network to minimise CVaR using only noisy evaluations of their local losses \cite{P}.  CVaR is a measure of loss in the adverse tail of a distribution.  P smooths an empirical CVaR objective, estimates its gradient from one-point evaluations, and combines projected descent with consensus.  With fixed smoothing and batch sizes, the method approaches the optimiser of an expected empirical, smoothed surrogate rather than the exact CVaR objective.
+
+The thread first asked whether P's oracle could be inserted into Q's learning rule.  That direct connexion failed because Q asks each player for a proximal best response, while P supplies a gradient estimate for a projected consensus step.  The work therefore shifted to a narrower question: how far can the solution of P's fixed surrogate be from the true risk-averse solution relevant to Q?
+
+\section{What was done}
+
+The peers first compared the two update rules and rejected the proposed direct substitution.  They then considered a static extension of Q in which an agent values an allocation by the negative CVaR of its loss.  They observed that if every sampled loss is strongly convex, its CVaR is strongly convex through the CVaR risk-envelope representation.  The corresponding negative-CVaR valuation is therefore strongly concave, though it may not be differentiable.  This observation suggested a subgradient or variational-inequality version of Q, but the peers did not complete that proof.
+
+Attention then moved from the learning dynamics to the objective that P actually optimises.  For agent $n$, let
+\[
+ C_n(x)=\operatorname{CVaR}_{\alpha_n}(J_n(x,\xi))
+\]
+be the true risk of allocation $x$.  Here $J_n(x,\xi)$ is the random loss, $\xi$ is its source of randomness, and $\alpha_n\in(0,1)$ is the tail-risk level.  Let
+\[
+ \widetilde C_n(x)=\mathbb{E}_{\nu,\mathcal B}
+ [\widehat C_{n,s_n}(x+\delta_n\nu)]
+\]
+be P's deterministic surrogate.  In this expression, $\widehat C_{n,s_n}$ is empirical CVaR from a batch $\mathcal B$ of $s_n$ samples, $\delta_n$ is the smoothing radius, and $\nu$ is uniform on the unit ball.  P restricts $x$ to a shrunken set $X_\delta$ so that every perturbed point $x+\delta_n\nu$ remains feasible.
+
+The first verifier round asked for a proof of the claimed uniform approximation.  Ada and Emmy supplied independent derivations in their accompanying checks on the uniform CVaR surrogate bound.  The second verifier round corrected the distinction between errors in unnormalised costs and errors in normalised valuations.  The consolidated result below incorporates both corrections.
+
+\section{Results}
+
+Assume P's relevant boundedness and Lipschitz conditions.  Thus $U_n$ bounds the absolute loss, and the loss is $L_n$-Lipschitz in $x$.  Define
+\[
+ b_n=L_n\delta_n+\frac{U_n}{\alpha_n}
+ \sqrt{\frac{2\pi}{s_n}}.
+\]
+Then the peers proved
+\begin{equation}
+ \sup_{x\in X_\delta}|\widetilde C_n(x)-C_n(x)|\leq b_n.
+ \label{eq:uniform}
+\end{equation}
+This is a bound for the deterministic expected surrogate.  It is not a uniform claim about one realised empirical objective.
+
+The proof is short.  For any fixed feasible point $z$, CVaR stability and bounded support reduce the empirical CVaR error to the largest difference between the empirical and population distribution functions.  Integrating the Dvoretzky--Kiefer--Wolfowitz tail bound gives
+\[
+ \mathbb{E}_{\mathcal B}
+ |\widehat C_{n,s_n}(z)-C_n(z)|
+ \leq \frac{U_n}{\alpha_n}\sqrt{\frac{2\pi}{s_n}}.
+\]
+The right-hand side does not depend on $z$.  Jensen's inequality then transfers this estimate through the batch expectation, and P's smoothing estimate adds at most $L_n\delta_n$.  This proves equation~\eqref{eq:uniform}.  Both peer checks give the same constant and argument.
+
+Let $B=\sum_n b_n$.  Suppose that the true total cost and the surrogate total cost are minimised on the same feasible set.  If $x^*$ minimises $\sum_n C_n(x)$ and $\widetilde x$ minimises $\sum_n\widetilde C_n(x)$, their optimality and equation~\eqref{eq:uniform} give
+\[
+ \sum_n C_n(\widetilde x)-\sum_n C_n(x^*)\leq 2B.
+\]
+If the true total cost is also $\rho$-strongly convex, where $\rho>0$ is its curvature constant, then
+\[
+ \|\widetilde x-x^*\|\leq 2\sqrt{B/\rho}.
+\]
+
+For Q's outside-option normalisation, define the true and surrogate valuations by
+\[
+ V_n(x)=-C_n(x)+C_n(0),\qquad
+ \widetilde V_n(x)=-\widetilde C_n(x)+\widetilde C_n(0).
+\]
+The symbol $0$ denotes the zero-allocation outside option.  Equation~\eqref{eq:uniform} gives a valuation error of at most $2b_n$.  If a feasible surrogate mechanism permits Q's deviation-to-zero argument, the true utility at its surrogate equilibrium is at least $-2b_n$.  Thus the true individual-rationality deficit is at most $2b_n$.  Exact budget balance at that equilibrium is only conditional on extending Q's KKT construction to the surrogate and finding a feasible common LMI.
+
+\section{What did not hold}
+
+The original plug-in claim did not hold.  P's one-point gradient estimate is not Q's proximal best response, so a new inexact best-response method and a new convergence argument would be needed.  Fixed smoothing and fixed batches also leave persistent bias.  They cannot establish exact convergence to the true CVaR equilibrium.
+
+Several stronger static claims were also withdrawn.  Samplewise strong convexity does imply strong convexity of CVaR and strong concavity of negative CVaR, but Q's differentiable mechanism proof was not extended rigorously to this possibly nonsmooth setting.  The required subgradient KKT or strongly monotone variational-inequality proof remains open, as does feasibility of one common LMI.  Budget balance must therefore remain conditional.
+
+The peers corrected two quantitative overstatements.  Normalising a valuation at zero doubles its uniform error from $b_n$ to $2b_n$.  A generic welfare calculation with that normalised error would give $4B$, but the sharper proved bound is $2B$ because it works directly with unnormalised costs.  Q's convergence proof also applies a global nonexpansiveness assumption component by component, which the assumption does not justify.  Its later move from residual convergence to iterate convergence is omitted but can be repaired on a compact domain when the map is continuous and has a unique fixed point.  The recorded proof is incomplete, not shown false.
+
+Finally, P works on $X_\delta$, while Q's original optimum lies in the larger set $X$.  The welfare and allocation bounds above compare the papers' objectives only when $x^*\in X_\delta$, or when both optima are otherwise taken over the same set.  No domain-shrinkage error was derived.
+
+\section{Why the thread stopped}
+
+The final verifier marked the thread DRAFT because the uniform surrogate bound and its stated consequences were supported, non-obvious, and correctly separated from the open claims.  Verification did not turn the proposed connexion into a full mechanism theorem.  In particular, the nonsmooth extension, common-LMI feasibility, and feasible-set caveat were still unresolved, and no player-wise oracle plus outer-loop complexity result was proved.
+
+The smallest step that would restart the thread is to settle the feasible-set caveat.  One can either verify that the true optimiser $x^*$ belongs to $X_\delta$ or derive the missing error caused by shrinking $X$ to $X_\delta$.  This step would determine whether the proved robustness bounds apply to Q's original feasible set, though it would not complete the mechanism extension.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

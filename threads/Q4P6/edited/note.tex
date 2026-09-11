@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{From Peer Reports to Contribution Rankings:\\A Conditional Link Between Q and P}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies how a designer can obtain truthful information and obedient action from AI agents, while paper P turns pairwise comparisons of agents into individual credit scores.  The thread asked whether Q already explains why P is robust to strategic agents, and then looked for a sound way to join their methods.  It found that the direct claim is false, but proved a conditional population result in which repeated reports about the same comparison identify both observer reliability and a common contribution ranking without labelled answers.  The result needs restrictive assumptions and does not provide a proved finite-sample error bound or a complete incentive mechanism.  The thread therefore ended as a draft: it contains a useful identification argument, but the empirical test and the main robustness theorem remain to be done.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q, \emph{Mechanism Design for Alignment and Control}, treats an AI system as an agent whose preferences, abilities, and information may be private \cite{Q}.  It asks how a designer can make such an agent reveal its type and follow a chosen action.  One of its tools is peer scoring.  An agent's report is compared with the reports expected from other agents, and a sufficiently large payment can make a false report unattractive.  This guarantee assumes finite supported types, known conditional beliefs about peer reports, and enough separation between the report laws of different types.
+
+Paper P, \emph{MARS-RA}, studies credit assignment in cooperative multi-agent reinforcement learning \cite{P}.  Its acting agents receive partial views, and an external large multimodal model compares pairs of those views.  A Bradley--Terry estimator turns the comparisons into relative contribution scores.  These scores are then used as a potential-based shaping reward, intended to guide learning even when feedback is sparse and the active set of agents changes.  P proves recovery of a stable comparator preference under its statistical model; interpreting that preference as true contribution requires an additional assumption.
+
+The first proposed connexion was that Q's revelation result might explain strategic robustness in P.  The peers rejected it after checking the information flow in both papers.  P asks no acting agent to report a type or contribution, whereas Q scores an agent's own type report against a known law of peer reports.  The work then pursued a different connexion: replace P's trusted external comparator with privately informed peer observers, elicit their comparisons using a Q-style score, and aggregate the reports using P's ranking method.  This change makes the missing link precise.  Truthful but different partial views do not, by themselves, reveal one common contribution ranking.
+
+\section{What was done}
+
+The thread first tested whether agents could improve their return by taking actions that look useful to P's visual comparator.  That idea was narrowed after both peers checked P's shaping formula.  Let $t$ denote a time step, let $\gamma$ be the discount factor, and let $\psi_t$ be the potential assigned at time $t$.  P adds the shaping term
+\begin{equation}
+F_t=\gamma\psi_{t+1}-\psi_t.
+\end{equation}
+For an episode ending at time $T$, with $\psi_T=0$, the discounted sum is
+\begin{equation}
+\sum_{t=0}^{T-1}\gamma^t F_t=-\psi_0.
+\end{equation}
+If the initial term $\psi_0$ is the same for the alternatives being compared, shaping leaves their return difference unchanged.  It may alter learning, but it cannot repair an existing incentive to lie or disobey.  If a new report changes $\psi_0$, the boundary term itself becomes a report-dependent transfer, so this conclusion no longer applies unchanged.
+
+The peers next considered adding Q's peer-scoring transfer before P's rank aggregation.  Their checks showed that this was not yet a theorem.  Q can make a supported finite type report truthful when the designer knows distinct conditional laws of peer reports and makes the loss from lying larger than any other gain.  P can recover a Bradley--Terry score vector when comparisons share that model and the comparison graph is connected.  Neither fact shows that heterogeneous observers with partial views generate comparisons from a common score vector.
+
+The final line of work supplied a conditional identification argument for this gap.  Consider a pair of agents $i$ and $j$, called an edge $e=(i,j)$.  Let $c_i$ and $c_j$ be their unknown contribution scores.  A latent comparison $X_e$ takes the value $+1$ when the realised comparison favours $i$ and $-1$ when it favours $j$, with
+\begin{equation}
+\Pr(X_e=+1)=\sigma(c_i-c_j),
+\qquad
+\sigma(z)=\frac{1}{1+\exp(-z)}.
+\end{equation}
+Several observers judge the same realised value of $X_e$.  Observer $r$ reports $Y_{er}\in\{-1,+1\}$ and has reliability $a_r>0$, defined by
+\begin{equation}
+\mathbb{E}[Y_{er}\mid X_e]=a_rX_e.
+\end{equation}
+The model assumes that observers' errors are independent once $X_e$ is fixed, symmetric between the two labels, and governed by a reliability that does not depend on the edge.
+
+Emmy derived the moment identities, and Ada checked the algebra and its limits.  They then separated the proved population claim from a proposed finite-sample bound.  They also identified a circularity: Q needs the conditional peer-report law before it can reward truthfulness, while the proposed calibration learns relevant report laws from reports whose truthfulness has not yet been secured.
+
+\section{Results}
+
+\subsection{Potential shaping does not create truthful behaviour}
+
+The telescoping calculation above holds for P's finite-episode, terminal-zero potential.  When the boundary term is common, every return difference and every profitable deviation is preserved.  P's shaping reward therefore provides learning guidance, not a mechanism that elicits truthful reports or enforces obedience.  This result also settles the early visual-gaming objection at the level of ideal strategic returns: any observed effect of that kind would concern training, non-stationarity, or a failure of the potential assumptions rather than a changed finite-episode optimum.
+
+\subsection{Conditional label-free identification}
+
+Under the shared-comparison model, the latent ranking is identified at the population level.  For two distinct observers $r$ and $s$ judging the same realised comparison, conditional independence gives
+\begin{equation}
+q_{rs}:=\mathbb{E}[Y_{er}Y_{es}]=a_ra_s.
+\end{equation}
+If three observers $r$, $s$, and $u$ overlap on such items, their positive reliabilities satisfy
+\begin{equation}
+a_r=\sqrt{\frac{q_{rs}q_{ru}}{q_{su}}}.
+\end{equation}
+The positive sign fixes the otherwise possible reversal of all labels.  Overlapping triples, connected through a network of shared observations, propagate this calibration to the remaining observers.
+
+Now define $m_e=\mathbb{E}[X_e]$.  The mean report obeys
+\begin{equation}
+\mathbb{E}[Y_{er}]=a_rm_e.
+\end{equation}
+Once $a_r$ is known, this equation identifies $m_e$, and hence the edge probability $p_e=(1+m_e)/2$.  The Bradley--Terry relation then gives
+\begin{equation}
+\log\!\left(\frac{p_e}{1-p_e}\right)=c_i-c_j.
+\end{equation}
+If the graph of compared agents is connected, these differences identify all scores $c_i$ up to adding the same constant to every score.  Thus the ordering is identified.  This rank-one moment argument is the substantive bridge supplied by the peer derivation; it is not a result stated in either Q or P.
+
+The conclusion is deliberately limited.  It establishes identification from exact population moments, not an estimator with a proved finite-sample rate.  The peer notes sketched the needed route through concentration of empirical moments and inversion of two graph systems, but they did not track the minimum samples or the separate condition numbers of the observer-overlap graph and the agent-comparison graph.  No quantitative robustness claim is therefore made here.
+
+\section{What did not hold}
+
+The original claim that Q certifies P against strategic misreporting did not hold because P contains no such report channel.  The proposed direct composition also did not hold.  Q's score concerns known and separated conditional distributions of epistemic types; it does not make arbitrary pairwise labels truthful.  P's estimator learns the stable preference of its comparator, not true contribution unless that equality is assumed.
+
+Several objections were settled only by narrowing the claim.  The moment factorisation requires observers to judge the same realised latent comparison.  If each observer receives an independent draw for the same edge, then the cross-product also contains $m_e^2$, so reliability and edge strength are not separated.  Correlated errors, asymmetric mistakes, or unrestricted edge-dependent reliability also break the factorisation.  These cases remain outside the result.
+
+The incentive side remains incomplete.  Q does not select truthful reporting as the unique equilibrium and does not rule out collusion.  The peer sketch of approximate reporting considered only one observer deviating while all peers remained truthful, so it gives no result for coordinated deviations.  Large penalties and a designer-known conditional belief map may also be impractical.  Most importantly, calibration cannot be used to create its own truthful seed data without a further argument.  Anchored labels, a trusted initial phase, or a joint mechanism-and-learning theorem may be needed.
+
+Dynamic participation is another open point.  Q's model is static and does not directly cover entry and exit during an episode.  Churn can remove the three-way observer overlap needed for calibration or disconnect the agent-comparison graph.  In either case the present identification argument fails.  The thread also did not establish that the assumptions of symmetric, independent, edge-invariant errors hold in P's benchmark.
+
+\section{Why the thread stopped}
+
+The verifier accepted the population argument as a non-obvious conditional interface between the papers.  The decision remained \emph{DRAFT} because the result was properly separated from Q's incentive guarantee and because the record clearly marked the missing pieces: no proved finite-sample rate, no solution to the truthful-data bootstrap, no protection against collusion, and no dynamic guarantee under churn.  The available material is thin beyond the conditional identification theorem, so it does not yet support a practical composition of Q and P.
+
+The smallest step that would restart the work is a go/no-go data test.  Collect repeated judgements by several observers of the same realised comparison items, then test whether each cross-observer moment is stable across edges and whether the resulting moment matrices have the required rank-one form $q_{rs}=a_ra_s$.  A pass would justify proving a finite-sample theorem with both graph condition numbers.  A failure would show that the present label-free model is unsuitable and that anchors or a model of correlated or asymmetric errors is required.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

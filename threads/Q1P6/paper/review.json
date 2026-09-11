@@ -1,0 +1,70 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T22:18:34Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "20817b9967c2951c6e783b1c6204d211dcb98e34e5588eddfb58049ddd953d52",
+  "decision": "REVISE",
+  "summary": "The central ledger repair and telescoping argument are sound and fairly scoped, and the references and prior-work claim pass the supplied checks. Several notation and payoff-semantics qualifications should be made explicit before referee review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Fixed-population formulation, theorem",
+    "issue": "The team-policy statement calls the sum of per-agent payoffs \u201cthe team objective\u201d without requiring that this sum equal the original scalar team reward.",
+    "fix": "Define the repaired team objective as the sum of declared per-agent payoffs, or require that the payoff allocation satisfies sum_i r_t^i equal to the original team reward."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Estimation, semantics, and local signal sensitivity, Eq. (7)",
+    "issue": "The quantities d_t, F_t^*, and the embedding used to compare score and shaping vectors are not formally defined; the bound also implicitly requires estimated and target scores to use the same active coalition at each time.",
+    "fix": "Define d_t explicitly, define the target potentials and F_t^* in the fixed population space, and state the common-coalition assumption."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Fixed-population formulation and Limitations",
+    "issue": "The construction is undefined for an empty active coalition, but this unresolved case is not carried into the limitations list.",
+    "fix": "Add the need for an explicit empty-coalition potential convention to the limitations."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T22:20:13Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "e87bb09f19bd32679c17889118fba3edf09c3fae44aeb8216ae71426fed30517",
+  "decision": "REVISE",
+  "summary": "The paper is well scoped, source-faithful, and its main ledger argument is correct. One endpoint notation defect should be corrected before review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Estimation, semantics, and local signal sensitivity, equation (8)",
+    "issue": "The bound is asserted for one-step signals through the terminal transition, but its right-hand side uses d_{t+1}; d_T is never defined, while only Phi_T and Phi_T^* are defined as zero.",
+    "fix": "Define d_T=0 by convention, or state the bound separately for t<T-1 and give the terminal-step bound using only d_{T-1}."
+   }
+  ]
+ },
+ {
+  "round": 3,
+  "at": "2026-09-11T22:21:39Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "e6a78d6d6585cf30968b8bea1c9a0eda68a53dd192cb4164245700de7e325965",
+  "decision": "REVISE",
+  "summary": "The fixed-population theorem and boundary diagnosis are mathematically sound and appropriately distinguished from prior work. One interpretive claim about scalar shaping is broader than the argument supports.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "The active-only boundary, final paragraph; Conclusion",
+    "issue": "Only coordinate-sum scalarisation is shown to erase comparison information because the embedded softmax coordinates sum to one. Other scalar functions of the credit vector can remain comparison-dependent while still defining a scalar potential, so the claim that any comparison-dependent effect must use redistributed per-agent signals is too strong.",
+    "fix": "Restrict the conclusion explicitly to coordinate-sum scalarisation and remove the broader assertion excluding comparison-dependent scalar team potentials."
+   }
+  ]
+ }
+]

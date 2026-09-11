@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q and P: Consolidated Assessment}
+\author{}
+\date{}
+
+\begin{document}
+\emergencystretch=1em
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies a quadratic-payment mechanism that implements a separable, strongly concave welfare optimum over convex compact local sets with additive capacity coupling, and gives a stochastic proximal best-response convergence result. P forecasts nodal carbon intensity (NCI) and uses it to schedule distributed data centers (DDCs) and mobile energy storage systems (MESSs), with binary travel and location logic in the full MESS model (ledger entries 1 and 4).
+
+\section*{Connexion pursued}
+The proposed connexion was to use Q's mechanism as a strategic wrapper for P's forecast-driven dispatch, so that private owners would implement P's emissions-reducing schedule. Both peers rejected that blanket claim; after the verifier requested an explicit flow formulation and then a complete constraint audit (entries 19 and 35), they narrowed the question to whether Q can implement voluntary, baseline-relative DDC migration and whether its predicted carbon gain survives NCI error (entries 26, 31, and 45).
+
+\section*{What was found}
+The direct wrapper fails on its mathematical domain. Q requires convex compact action sets, twice differentiable strongly concave valuations, and componentwise aggregate capacity constraints; its uniqueness and implementation arguments use KKT conditions and an LMI construction (entries 1 and 4). P's full MESS scheduler has binary parking, travel, arrival, and departure variables with intertemporal continuity, so its feasible set is nonconvex and Q's KKT, unique-equilibrium, and learning results do not apply (entries 1 and 4). P also minimizes predicted emissions rather than welfare and specifies no private utility, cost, outside option, payment channel, or strategic message model (entry 5).
+
+A conditional positive result was identified. Let $g(x)$ be the nodal-hourly withdrawal vector, $\widehat e$ forecast NCI, $e$ realized NCI, $x_0$ a baseline, and $\widehat x$ the forecast-conditioned implemented schedule. With
+\[
+ \widehat M=\widehat e^{\mathsf T}\bigl(g(x_0)-g(\widehat x)\bigr),
+\]
+the realized emissions margin is
+\begin{align*}
+ M
+ &=e^{\mathsf T}\bigl(g(x_0)-g(\widehat x)\bigr)\\
+ &=\widehat M+(e-\widehat e)^{\mathsf T}
+     \bigl(g(x_0)-g(\widehat x)\bigr).
+\end{align*}
+H\"older's inequality therefore gives
+\[
+ M\geq \widehat M-\lVert e-\widehat e\rVert_*
+ \lVert g(x_0)-g(\widehat x)\rVert.
+\]
+Thus $\widehat M$ larger than the error term certifies lower realized emissions than the baseline, provided Q's assumptions have first been re-established for the chosen continuous layer (entries 10, 13, and 14). If forecasted and realized objectives share the same private-cost term and the feasible withdrawal set has diameter $D$, forecast optimality yields realized-objective regret at most $D\lVert e-\widehat e\rVert_*$; entry 8 corrected the earlier factor of two in entry 2, and entry 13 accepted that correction.
+
+The verifier's requested continuous DDC check produced a more concrete positive construction (entries 19, 24, 29, 30, and 33). For origin $o$, destination $j$, and hour $t$, let $f_{ojt}\geq0$ be workload voluntarily migrated from the baseline, with
+\[
+ \sum_j f_{ojt}\leq w_{ot};
+\]
+unmigrated work remains at $o$, so zero is feasible. If $\phi_j>0$ is destination power per workload unit, use Q's resource coordinate $x_{ojt}=\phi_j f_{ojt}$. The local constraints
+\[
+ x_{ojt}\geq0,
+ \qquad
+ \sum_j\frac{x_{ojt}}{\phi_j}\leq w_{ot}
+\]
+are convex, compact after the stated workload bound, and contain zero, while destination limits become exactly Q's additive constraints
+\[
+ \sum_o x_{ojt}\leq c_{jt}.
+\]
+Eligibility, delay, and origin-availability restrictions remain local (entries 24 and 29).
+
+With carbon weight $\rho$ and a twice differentiable strongly convex private migration cost $C_o$, the baseline-relative valuation in workload coordinates is
+\[
+ V_o(f_o)=-C_o(f_o)-\rho\sum_{j,t}
+ \bigl(\widehat e_{jt}\phi_j-\widehat e_{ot}\phi_o\bigr)f_{ojt},
+ \qquad V_o(0)=0.
+\]
+It is strongly concave, and its carbon coefficient in electrical coordinates is $\rho[\widehat e_{jt}-\widehat e_{ot}\phi_o/\phi_j]$, not merely $\rho(\widehat e_{jt}-\widehat e_{ot})$ unless the conversion factors agree (entries 24, 30, and 33). Consequently Q's published mechanism plausibly applies without an affine-coupling or mandatory-service extension to this voluntary workload-owner model, provided the remaining Q assumptions hold. This is not a result about P's full scheduler or strategic DDC suppliers (entries 25 and 31).
+
+The second verifier review asked whether a complete P-style DDC instance lies in Q's domain (entry 35). The resulting audit is necessarily limited to the model P actually displays. Its carbon objective (26) is separable and linear once forecast NCI is fixed; its load definition (27) is local affine accounting; bounds (29)--(30) become, respectively, an additive destination capacity and a local origin-availability bound after the electrical scaling above; delay eligibility is local; and formulas (31)--(34) supply fixed conversion and bound parameters (entries 36 and 40). In contrast, P's native weighted conservation equality (28), written in signed aggregate regulation variables, is outside Q. Conservation becomes automatic only in the new origin-destination refinement because residual work stays at the origin. Equivalence between this refinement and every point of P's native feasible set would require routing, eligibility, and matching-bound assumptions that P does not state (entries 37 and 42).
+
+Nor does this audit establish grid feasibility. P names a modified IEEE 33-bus simulation but displays no voltage, branch-flow, nodal-balance, generator, loss, or other optimal-power-flow constraints in the DDC dispatch model. Such constraints therefore cannot be classified from the available material and remain outside the exact-Q claim (entries 36, 41, and 48). The strongest supported statement is that Q can implement the new strategic refinement of P's displayed, price-taking DDC abstraction after the assumed private cost is added, not that Q embeds P's native signed formulation or a grid-constrained DDC scheduler (entries 44 and 45).
+
+The applicability boundary can itself be demonstrated: a MESS choosing between two indivisible locations has two isolated feasible schedules, so the action set is nonconvex and a linear carbon objective is not strongly concave. A fractional relaxation would require physical commitment or rounding, which can alter feasibility, emissions, incentives, and equilibrium uniqueness (entries 7, 11, and 14).
+
+\section*{Objections and resolutions}
+The shared word ``agent'' supplies no bridge: P's LLM agents support forecasting rather than represent self-interested asset owners (entry 6). The emissions-only target also cannot silently absorb private costs; a carbon price or an explicit constrained tradeoff is required, and emissions and welfare must be reported separately (entries 5 and 10). The earlier objection that continuous DDC scheduling necessarily requires an affine-coupling extension (entry 9) was partly resolved by the voluntary-flow construction: conservation is local because unmigrated work remains at its origin, and destination capacity is additive after scaling (entries 24, 29, and 30). Mandatory assignment still fails Q's zero-action participation argument (entry 23), strategic DDC suppliers still need bilateral consistency, and general grid-flow constraints with signed sensitivities may still require an extension or conservative resource encoding (entries 25 and 29).
+
+Two further objections remain unresolved. Q establishes budget balance at equilibrium, not necessarily during learning, while an operational schedule needs physical feasibility at every implemented iterate (entry 6). Also, the error certificate treats NCI as fixed with respect to dispatch; if dispatch changes generation or network flows, one must assume price-taking behavior or model endogenous $e(x)$ and bound the added response term (entry 17). The latest round made this condition explicit: the certificate conditions on a realized NCI field $e$ invariant to the strategic schedule, as a price-taking or small-DDC approximation. If instead $e=e(g)$, P and Q supply no bound for the dispatch-induced response term, so the certificate does not establish a system-emissions improvement (entry 38).
+
+\section*{Outside sources}
+No sources outside Q and P were used. The ledger and Emmy's assessment derive their claims from those two papers.
+
+\section*{What remains open}
+Destination DDC capacities now have an exact Q-compatible formulation for voluntary migration, but the material remains thin beyond that construction. The ledger does not establish equivalence to P's native net-regulation feasible set, and P supplies no displayed grid constraints with which to prove a grid-feasible embedding. It also remains unknown whether the assumed private costs have the needed curvature, how strategic DDC suppliers should be modeled, how intermediate feasibility and budget balance should be enforced, and whether endogenous NCI can be controlled (entries 42, 46, and 48). Mandatory full-workload assignment retains an individual-rationality gap because zero is infeasible (entry 23).
+
+\section*{Smallest next step}
+The verifier's requested audit has classified every DDC constraint that P displays, while also showing that P provides no grid constraints to audit (entries 35, 36, and 41). The smallest next step is therefore to specify one explicit grid model for a numerical voluntary-migration instance and classify each added voltage, flow, balance, and loss constraint as local, additive in the scaled $x$ coordinates, or outside Q. That single model would settle whether the construction extends beyond P's displayed DDC abstraction or needs a grid-coupling extension; without it, the broader claim cannot be decided (entries 46 and 48).
+
+\end{document}

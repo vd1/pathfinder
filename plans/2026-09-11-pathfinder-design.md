@@ -312,9 +312,11 @@ backend through the ELM proxy; it ended DRAFT after two rounds in six
 minutes of wall time, and its paper stage reached ACCEPT in three rounds
 for 8.36 USD. Q3P3 resumed on Codex from its Opus ledger and ended
 PAUSE-ON-ITERATE after three rounds. One explore pass then grew the grid
-to 10 by 10 and a threshold of 1500 admitted nine more pairs, of which
-Q4P10 and Q3P9 ran on Codex to PAUSE before the guard stopped admissions
-at the 100 USD cap. The health flag, the interrupt drain, both BLOCKED
+to 10 by 10 and a threshold of 1500 admitted nine more pairs. All ran on
+Codex: four DRAFT (Q4P6, Q7P1, Q7P7, Q1P6), five PAUSE. Four papers were
+accepted in all, and every terminal thread carries an edited readable
+note. The pilot report holds the batch tables and the day's decisions:
+REVISE as a fourth verdict, four rounds, the editor stage. The health flag, the interrupt drain, both BLOCKED
 paths and prompt override are covered by tests with the fake CLI. Not
 exercised: `scan.fulltext` and the PDF-only path. The pilot report,
 `2026-09-11-pilot-report.md`, holds the lessons.

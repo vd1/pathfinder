@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm,hyperref,url}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\title{Strategic Voluntary Workload Migration under Forecast Nodal Carbon Intensity}
+\author{}
+\date{}
+
+\begin{document}
+\emergencystretch=1em
+\maketitle
+
+\begin{abstract}
+We connect a quadratic-payment resource-allocation mechanism with forecast-driven carbon scheduling. The connection is exact only for a new, narrow model: strategic workload owners may voluntarily migrate divisible work away from a fixed baseline, destination electrical capacities are additive, and private migration costs are smooth and strongly convex. Under these conditions, the published mechanism implements the forecast-conditioned welfare optimum. We also give a schedule-specific dual-norm test under which its predicted emissions improvement survives nodal-carbon-intensity forecast error. The result does not cover the native signed data-centre formulation, binary mobile-storage scheduler, or undisclosed grid constraints of the forecasting paper.
+% Ledger: 31, 33, 38, 44, 45, 48.
+\end{abstract}
+
+\section{Introduction}
+
+Forecast carbon intensity can guide flexible computing towards cleaner places and times. Cai et al. forecast day-ahead nodal carbon intensity (NCI) and optimise geographically dispatchable loads, including distributed data centres (DDCs) and mobile energy storage systems (MESSs) \cite{cai2026}. Garjani et al. study a different problem: strategic agents request divisible resources, and a family of quadratic payments implements a separable welfare optimum at the unique Nash equilibrium under convexity, smoothness, and additive capacity assumptions \cite{garjani2026}.
+% Ledger: 1, 4, 5.
+
+It is tempting to place the latter mechanism around the former scheduler. That statement is false for the full model. The MESS decisions in Cai et al. include binary parking, travel, arrival, and departure logic, whereas the mechanism theorem requires convex compact local sets and twice differentiable strongly concave valuations. Cai et al. also minimise predicted emissions and do not specify private costs, payments, outside options, or strategic messages.
+% Ledger: 1, 4, 5, 6.
+
+Our contribution is deliberately narrower. We define optional, baseline-relative origin-to-destination workload flows. Residual work stays at its origin, so zero migration is feasible; destination power limits become the componentwise additive capacities required by Garjani et al. after an electrical-coordinate scaling. Adding an assumed smooth strongly convex private migration cost produces the required strongly concave valuation. We then derive an exact identity and a dual-norm sufficient condition for the realised carbon advantage over the baseline. The latter requires realised NCI to be invariant to the migration schedule, as in a price-taking or small-DDC approximation.
+% Ledger: 24, 29, 30, 31, 33, 38, 45.
+
+The construction is new relative to the two source papers, but modest: it is an application-level specialisation of the mechanism theorem, not a new mechanism theorem. The forecast-error identity is elementary. Its value is to identify the directional error relevant to the implemented load shift, rather than a generic forecast metric.
+% Ledger: 10, 13, 31, 45.
+
+\section{What the source papers establish}
+
+Garjani et al. maximise a separable sum of private valuations subject to componentwise aggregate capacities. Their result assumes nonnegative resource requests, convex compact local action sets, and twice differentiable strongly concave expected valuations. Their quadratic-payment construction strongly implements the welfare solution and provides equilibrium budget balance and individual rationality. Their stochastic proximal best-response result requires additional regularity and convergence assumptions.
+% Ledger: 1, 4, 6.
+
+Cai et al. forecast NCI and use the forecast as a linear coefficient in an emissions-minimising scheduling problem. Their displayed DDC model contains signed load regulation, a weighted conservation equality, regulation bounds, and fixed conversion parameters. Their full MESS model adds binary and intertemporal travel logic. The paper reports simulation outcomes, not guarantees for strategic owners.
+% Ledger: 1, 4, 5, 36, 40.
+
+These statements must not be conflated. In particular, equilibrium implementation of a welfare objective containing private costs is not the same as minimising emissions alone.
+% Ledger: 5, 8, 10.
+
+\section{Voluntary migration model}
+
+Let $o$ index workload owners, $j$ destinations distinct from $o$, and $t$ hours. Owner $o$ has baseline workload $w_{ot}\geq 0$ processed at origin $o$. The variable $f_{ojt}\geq0$, defined only for $j\ne o$, is the amount voluntarily migrated to $j$. Unmigrated work remains at the origin and has no self-destination coordinate. Thus
+\begin{equation}
+  \sum_j f_{ojt}\leq w_{ot}.
+  \label{eq:availability}
+\end{equation}
+Eligibility and delay restrictions remove coordinates or impose further local linear bounds. Thus the local set is convex and compact and contains the zero vector.
+% Ledger: 24, 29, 30.
+
+For every origin or destination node $k$, let $\phi_k>0$ be its incremental electrical demand per unit workload. Define the resource coordinate
+\begin{equation}
+  x_{ojt}=\phi_j f_{ojt}.
+\end{equation}
+Then \eqref{eq:availability} becomes $\sum_j x_{ojt}/\phi_j\leq w_{ot}$. Let $\bar c_{jt}$ be destination $j$'s total electrical capacity and let $b_{jt}$ be its fixed baseline electrical demand. We assume $b_{jt}\leq\bar c_{jt}$ and define the residual capacity available for incoming migrated workload as $c_{jt}=\bar c_{jt}-b_{jt}$. Each destination limit is therefore
+\begin{equation}
+  \sum_o x_{ojt}\leq c_{jt}.
+  \label{eq:capacity}
+\end{equation}
+Equation \eqref{eq:capacity} has exactly the additive form used by Garjani et al.
+% Ledger: 29, 33.
+
+Write $\widehat e_{jt}$ for forecast NCI, $\rho\geq0$ for a carbon weight, and $C_o(f_o)$ for owner $o$'s private migration cost. We normalise private cost relative to no migration by subtracting $C_o(0)$. Relative to the baseline, define
+\begin{equation}
+ V_o(f_o)=-[C_o(f_o)-C_o(0)]-\rho\sum_{j,t}
+ (\widehat e_{jt}\phi_j-\widehat e_{ot}\phi_o)f_{ojt},
+ \qquad V_o(0)=0.
+ \label{eq:valuation}
+\end{equation}
+In electrical coordinates, the carbon coefficient is
+$\rho[\widehat e_{jt}-\widehat e_{ot}\phi_o/\phi_j]$; replacing it by
+$\rho(\widehat e_{jt}-\widehat e_{ot})$ would silently assume equal conversion factors.
+% Ledger: 24, 30, 33, 44.
+
+\begin{theorem}[Conditional implementation]
+Suppose there are at least two agents and every hypothesis of the mechanism-design results of Garjani et al. holds. In particular, suppose each local migration set described above satisfies their local-set assumptions, each $C_o$ is twice differentiable and strongly convex with sufficient curvature after the coordinate change, private cost is baseline-normalised as in \eqref{eq:valuation}, the only shared constraints are \eqref{eq:capacity}, and the required payment parameters and linear matrix inequalities are feasible. Then the mechanism of Garjani et al., applied in the $x$ coordinates with valuations \eqref{eq:valuation}, implements the forecast-conditioned welfare-optimal voluntary migration at its unique Nash equilibrium, with the equilibrium properties proved there, including individual rationality relative to zero migration.
+% Ledger: 1, 4, 24, 29, 30, 33, 45.
+\end{theorem}
+
+\begin{proof}
+The coordinate-scaled local sets are convex, compact, and contain zero. Strong convexity of the transformed private cost makes the negative cost plus the linear carbon term strongly concave. The shared constraints are componentwise additive capacities. Together with the expressly assumed multi-agent and payment-parameter conditions, these permit invocation of the mechanism result of Garjani et al.; no claim is made beyond its hypotheses.
+% Ledger: 1, 4, 24, 29, 30, 33, 45.
+\end{proof}
+
+This theorem is conditional because Cai et al. do not supply private migration costs or their curvature. It concerns strategic workload owners, not strategic DDC suppliers.
+% Ledger: 25, 31, 46.
+
+\section{A forecast-error survival certificate}
+
+Let $g(x)$ be the nodal-hourly withdrawal vector, $x_0$ the fixed baseline, and $\widehat x$ the forecast-conditioned equilibrium schedule. Define the predicted and realised emissions margins by
+\begin{align}
+ \widehat M&=\widehat e^{\mathsf T}[g(x_0)-g(\widehat x)],\\
+ M&=e^{\mathsf T}[g(x_0)-g(\widehat x)].
+\end{align}
+
+\begin{proposition}[Directional survival test]
+Condition on a realised NCI field $e$ that is invariant to the strategic schedule. For any norm and its dual,
+\begin{equation}
+ M=\widehat M+(e-\widehat e)^{\mathsf T}[g(x_0)-g(\widehat x)]
+ \geq \widehat M-\lVert e-\widehat e\rVert_*
+ \lVert g(x_0)-g(\widehat x)\rVert.
+ \label{eq:certificate}
+\end{equation}
+Consequently, $\widehat M>\lVert e-\widehat e\rVert_*\lVert g(x_0)-g(\widehat x)\rVert$ certifies strictly lower realised emissions than the baseline.
+% Ledger: 10, 13, 31, 38, 45.
+\end{proposition}
+
+\begin{proof}
+Add and subtract the forecast coefficient in the definition of $M$, then apply H\"older's inequality to the error term.
+% Ledger: 10, 13, 31, 38.
+\end{proof}
+
+For this bound, let $X$ be the set of feasible joint electrical-coordinate schedules satisfying all local constraints and \eqref{eq:capacity}; for $x\in X$, let $f_o(x)$ denote owner $o$'s flow recovered by $f_{ojt}=x_{ojt}/\phi_j$. Define the aggregate baseline-relative private cost
+$C(x)=\sum_o[C_o(f_o(x))-C_o(0)]$. Let the forecasted and realised minimisation objectives be
+$\widehat F(x)=C(x)+\rho\widehat e^{\mathsf T}g(x)$ and
+$F(x)=C(x)+\rho e^{\mathsf T}g(x)$, respectively, with the same aggregate private-cost term $C$. If the feasible withdrawal set $g(X)$ has diameter $D$, forecast optimality gives realised-objective regret at most
+$\rho D\lVert e-\widehat e\rVert_*$. This is a welfare or carbon-price objective bound, not an emissions-only guarantee.
+% Ledger: 8, 13, 24, 29, 33.
+
+\section{Relation to specific prior work}
+
+Carbon-aware data-centre scheduling already uses next-day intensity forecasts and risk-aware optimisation \cite{radovanovic2022}. Receding-horizon studies have examined how grid signals affect data-centre operations \cite{zhang2022}, and empirical work has documented limits of temporal and spatial workload shifting \cite{sukprasert2023}. Gorka et al. show that the choice of carbon-intensity signal materially changes assessed load-shifting reductions \cite{gorka2025}. These works make forecast-conditioned shifting and signal sensitivity established ideas.
+
+A particularly close 2026 preprint evaluates forecast-to-realised dispatch for geographically distributed AI data centres with constrained workload migration and reports regret and carbon outcomes under forecast errors \cite{cai2026ssrn}. It substantially overlaps the scheduling and evaluation setting. Based on the verified abstract, it does not state the strategic quadratic-payment construction or the schedule-specific dual-norm certificate above. Our contribution is therefore not forecast-to-realised evaluation itself; it is the exact-domain strategic specialisation and its explicit sufficient margin test.
+
+We found no verified publication combining voluntary baseline-relative origin-to-destination migration, the mechanism of Garjani et al., and condition \eqref{eq:certificate}. This is a search result, not a proof of novelty.
+
+\section{Applicability boundary}
+
+The native DDC conservation equality of Cai et al., written in signed aggregate regulation variables, is outside the mechanism's shared-constraint form. Conservation becomes local in our model only because we replace that abstraction by origin-to-destination voluntary flows and leave residual work at the origin. Equivalence to every point of the native feasible set would require routing, eligibility, and matching-bound assumptions that Cai et al. do not state.
+% Ledger: 36, 37, 40, 42, 44, 48.
+
+The binary MESS scheduler is also outside the result. A MESS choosing between two indivisible locations has two isolated feasible schedules, hence a nonconvex action set; a linear carbon objective is not strongly concave. Fractional relaxation or rounding can alter feasibility, emissions, incentives, and equilibrium uniqueness.
+% Ledger: 7, 11, 14, 45.
+
+Cai et al. name a modified IEEE 33-bus simulation, but their displayed DDC dispatch contains no voltage, branch-flow, nodal-balance, generator, or loss constraints. Accordingly, the theorem above is about their displayed price-taking DDC abstraction, not a grid-feasible optimal-power-flow scheduler.
+% Ledger: 36, 41, 46, 48.
+
+\section{Interpretation}
+
+The model gives a precise way to separate participation from mandatory service: zero migration is the outside option, while baseline computation continues. The carbon coefficient prices the change from origin processing to destination processing, including heterogeneous electrical conversion. The certificate says that forecast quality should be evaluated in the direction of the implemented load change. A small generic error metric alone need not protect the claimed carbon margin.
+% Ledger: 10, 24, 33, 45.
+
+These observations do not show that owners possess the assumed costs, that a carbon weight has the right policy interpretation, or that the resulting welfare optimum reproduces the emissions minimum of Cai et al.
+% Ledger: 5, 10, 25, 46.
+
+\section{Limitations and open questions}
+
+The exact claim excludes P's native signed DDC formulation, binary MESS decisions, and any grid constraints not displayed by P. It assumes divisible workload, linear incremental electrical demand, smooth strongly convex private migration costs, workload owners as the strategic agents, and only additive destination capacities. None of the private-cost assumptions is established by P.
+% Ledger: 25, 36, 41, 42, 45, 46, 48.
+
+The NCI certificate assumes that realised $e$ is unaffected by the schedule. If $e=e(g)$, dispatch induces an additional response that neither source paper bounds, so \eqref{eq:certificate} does not establish a system-emissions improvement. Further, Garjani et al. establish budget balance at equilibrium, not necessarily during learning, and operational feasibility at every learning iterate is not supplied by their convergence result.
+% Ledger: 6, 17, 38, 46.
+
+Open questions are whether the flow refinement can be related to the native signed feasible set under explicit routing assumptions; how private costs can be calibrated; how strategic DDC suppliers and bilateral consistency should be modelled; how network physics and endogenous NCI can be included; and whether off-equilibrium feasibility, budget balance, or discrete MESS decisions can be handled without losing the implementation guarantees.
+% Ledger: 42, 46, 48.
+
+\section{Conclusion}
+
+The two source papers support a narrow synthesis. Voluntary baseline-relative DDC migration can be placed exactly within the published quadratic-payment mechanism after electrical scaling and an explicit private-cost assumption. A directional dual-norm condition then certifies when the forecasted carbon advantage survives realised NCI error under price-taking NCI. Broader claims about the native DDC model, MESS, or grid feasibility are unsupported and remain outside the result.
+% Ledger: 31, 38, 44, 45, 48.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

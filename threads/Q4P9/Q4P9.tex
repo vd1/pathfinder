@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{The Pair Q and P: Contract Representation and Behavioral Invariance}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies mechanism design when agents have hidden information capabilities, with types described by feasible actions, utility, beliefs, and information experiments, and with obedience expressed through deviation inequalities (ledger entries 5, 7, and 16). P studies self-negotiated contracts between language-model agents in a Colored Trails environment and reports different outcomes under programmatic and natural-language contract treatments (entries 4, 7, and 22).
+
+\section*{The connexion pursued}
+The initial connexion treated P's natural-language contracts as an instance of Q's ``conceal but do not counterfeit'' verification order. Both peers rejected that analogy: Q concerns feasible type reports supported by evidence, whereas in P an external judge interprets the retained negotiation and automatically executes covered transfers, so an agent does not choose an ex-post interpretation or fabricate a capability certificate (entries 1, 3, and 22).
+
+The narrower connexion asks whether two displays of the same action-contingent obligations should produce the same attainable value when the contract, enforcement, feasible actions, utility, beliefs, and information are fixed. It also asks whether Q's within-report obedience conditions can diagnose failures of that benchmark (entries 7, 9, 12, and 22).
+
+\section*{What was found}
+Let $T$ be a full negotiation transcript and let $J=c(T)$ be a faithful compiled contract. If computing $c$ is costless and both displays preserve the same obligations and enforcement, every policy available after observing $J$ can be imitated after observing $T$: observe $T$, compute $c(T)$, and apply the $J$-policy. Consequently,
+\[
+  \max_{\sigma_T} \mathrm{E}[u\mid T,\sigma_T]
+  \geq
+  \max_{\sigma_J} \mathrm{E}[u\mid J,\sigma_J].
+\]
+This is a conditional attainable-value ordering, not a claim that realized trajectories must coincide; multiple best responses and stochastic decoding can change behavior at equal value (entries 12, 16, 21, and 22).
+
+P motivates, but does not test, a violation. On mutually dependent boards, both agents finish in 46 percent of natural-language-contract games and 79 percent of programmatic-contract games; contract-covered quantities are similar, while the natural-language treatment has fewer residual trade proposals and acceptances and more contract-citing refusals (entries 4 and 22). P's treatments also vary accepted terms, display, enforcement, and sampled trajectory, and most model-board cells have one run, so the reported gap does not identify a representation effect (entries 7, 10, 14, and 22).
+
+Q's within-report obedience inequalities supply a secondary check. For a fixed advertised score-plus-transfer utility, profitable action cycles over matched histories would show failure to rationalize the observed policy under that maintained utility. Because Q's condition assumes a deterministic policy and known posterior utility, stochastic language-model rollouts require repetition and the check cannot identify a unique internal cause (entries 18, 21, and 22).
+
+\section*{Objections and their status}
+The chief objection, that P shows counterfeit commitment, was resolved against the claim (entries 1, 3, and 22). The judge's three false positives among 1,155 approved moves do not establish equivalent enforcement because that denominator cannot measure false-negative denials (entries 7, 10, and 15). Reusing P's programmatic JSON would also confound the experiment because that JSON is itself synthesized from dialogue by a judge; canonical obligations must instead be independently validated (entries 17 and 21).
+
+A remaining objection is identification. A controlled advantage for $J$ would reject the joint assumptions of costless processing, stable type, and faithful compilation, but it would not distinguish limited attention, a changed effective information experiment, prompt-dependent preferences, or optimization error (entries 14, 18, and 22).
+
+\section*{Sources outside Q and P}
+None were used. The consolidation relies only on Q, P, the ledger, and the two peer notes.
+
+\section*{What remains open}
+The material is thin: it establishes a conditional benchmark and a confounded empirical motivation, not a demonstrated connexion. It remains unknown whether P's performance gap survives when accepted obligations and enforcement are fixed, and whether any surviving gap is due to display, adjudication, or another unmodelled feature (entries 14, 17, 21, and 22).
+
+\section*{Smallest next step}
+Take one negotiated contract, convert it into an independently validated canonical transfer table, require identical acceptance, and replay repeated matched rollouts under deterministic enforcement while randomizing only the display between canonical JSON and a controlled natural-language rendering. Measure residual trades as the primary outcome. A difference would establish a semantic implementation gap; no difference would reject display alone as the explanation for that matched case (entries 8, 13, 17, and 22).
+
+\end{document}

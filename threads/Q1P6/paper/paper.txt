@@ -1,0 +1,302 @@
+Potential Shaping with Changing Coalitions:
+A Fixed-Population Ledger Repair
+
+Abstract
+MARS-RA uses multimodal pairwise comparisons, Bradley–Terry aggregation, and potential-based reward shaping for cooperative multi-agent
+reinforcement learning with changing active coalitions. Its comparison
+scores and potentials live in the current coalition space, so consecutive
+vector potentials need not have the same dimension; it also combines a
+scalar team reward with a vector shaping term without declaring payoff semantics. We give a narrow repair. Active credits are embedded
+in a fixed population space, inactive agents take null actions, and every
+population member retains a reward ledger on every transition. Componentwise telescoping then shifts each declared per-agent payoff by a
+policy-independent constant, preserving best responses and Nash equilibria for arbitrary comparison outputs. If shaping rewards are retained
+only while an agent is active, entry and exit boundary terms remain and
+may depend on policy. The general Nash-invariance principle for potential
+shaping is prior work; the contribution here is its typed ledger formulation for changing coalitions and the associated boundary diagnosis. We
+also separate Bradley–Terry sampling error from semantic bias and explain why neither comparison accuracy nor a local signal bound yields a
+finite-training guarantee without a learner-stability premise.
+
+1
+
+Introduction
+
+Learning-augmented algorithms require a declared prediction interface, an error measure, and a theorem connecting prediction quality to downstream performance. They distinguish consistency and error-sensitive guarantees from
+prediction-independent robustness, and warn that semantic predictions do not
+automatically compose into system guarantees [3]. MARS-RA instead uses multimodal pairwise comparisons to fit Bradley–Terry contribution scores and converts their softmax into a potential-based shaping signal for cooperative multiagent reinforcement learning [2].
+The tempting question is how comparison error degrades the limiting return. That question is misplaced under exact potential shaping: the discounted
+shaping terms telescope, so their total is a common initial offset under the usual
+terminal and initial-potential conditions. The comparisons may affect optimisation, exploration, or sample efficiency, but comparison accuracy alone cannot
+1
+
+control finite-training return without a stability, regret, or convergence contract
+for the learner.
+Our result is narrower. MARS-RA defines a fixed population but places
+each score in the current active-coalition space, then subtracts consecutive vector potentials. This expression is not typed when coalition sizes change. A
+fixed-population embedding is readily available, but inactive coordinates, transition ownership, and per-agent payoffs must be declared. We provide that
+construction and show exactly where an active-only implementation fails to
+telescope.
+The main Nash-invariance step is not new. Lu, Schwartz, and Givigi prove
+that potential-based shaping preserves Nash equilibria in general-sum stochastic
+games [1]. Our contribution is the fixed-population reward-ledger formulation
+for changing coalitions, together with the observation that omitting inactiveagent ledger entries leaves potentially policy-dependent boundary terms. We
+do not claim a new general reward-transformation theorem.
+
+2
+
+What the two papers establish
+
+The survey of Zhao et al. provides a vocabulary and discipline for prediction interfaces, robustness, error propagation, and prediction cost; it does not analyse
+MARS-RA or prove a MARL learner-stability theorem [3]. Wang et al. define MARS-RA over a fixed population with a changing active coalition. They
+obtain pairwise multimodal comparisons, aggregate them through a Bradley–
+Terry estimator, apply softmax, and use the resulting vector in potential-based
+reward shaping [2].
+Their estimator statement concerns concentration around a latent Bradley–
+Terry preference c∗t , not a true contribution target vt∗ . The identification c∗t = vt∗
+is an additional premise. Thus repeated queries can reduce sampling error
+while systematic semantic bias remains. Moreover, the supplied checks report
+that the stated estimator rate is not ready for composition: its populationsize dependence is inconsistent across statements, connectedness alone does not
+supply uniform curvature, an unregularised maximum-likelihood estimate may
+diverge under separation, and the proof contains an approximate Taylor step.
+We therefore use no numerical Bradley–Terry rate.
+
+3
+
+Fixed-population formulation
+
+Let the population be N = {1, . . . , n} and let It ⊆ N be the active coalition.
+Let cbt be any realised score vector indexed by It . We permit biased, stochastic, or history-dependent scores. Any information needed to make the realised
+potential a state function may be included in an augmented state. This qualification is necessary for a standard stochastic-game equilibrium interpretation,
+although the algebra below is pathwise.
+
+2
+
+For nonterminal t with It ̸= ∅, define Φt ∈ Rn by
+Φit = 1{i ∈ It } softmaxIt (b
+ct )i ,
+
+i ∈ N,
+
+(1)
+
+and set ΦT = 0. A complete model must separately declare a fallback for an
+empty coalition; nothing below supplies one. Give inactive agents null actions
+and maintain a payoff ledger for every i ∈ N on every transition. For declared
+per-agent environmental payoff rti , define the repaired team reward and objective
+by
+"T −1
+#
+X
+X
+team
+i
+team
+t team
+rt
+=
+rt ,
+J
+(π) = Eπ
+γ rt
+.
+(2)
+t=0
+
+i∈N
+
+If these payoffs allocate MARS-RA’s original scalar team reward, this definition
+additionally requires their sum to equal that reward on each transition. Define
+Fti = γΦit+1 − Φit ,
+
+reti = rti + ρFti .
+
+(3)
+
+Theorem 1 (fixed-population ledger invariance). For a fixed initial augmented
+state and terminal potential ΦT = 0, the construction in (1)–(3) shifts player i’s
+discounted payoff by −ρΦi0 . Consequently, it preserves every unilateral payoff
+difference, best-response correspondence, and Nash equilibrium. It also preserves
+the ordering of joint policies under the repaired team objective J team in (2).
+These conclusions hold for arbitrary realised comparison outputs on a common
+pathwise realisation.
+Proof. For each i ∈ N ,
+T
+−1
+X
+
+γ t Fti =
+
+t=0
+
+T
+−1
+X
+
+γ t+1 Φit+1 − γ t Φit
+
+
+
+t=0
+
+= −Φi0 + γ T ΦiT = −Φi0 .
+The initial augmented state is fixed, so the final quantity is independent of every
+player’s policy. Adding a constant to player i’s payoff preserves all unilateral
+payoff differences and hence its best responses. Applying this to every player
+preserves Nash equilibria. Summing the componentwise identities gives the
+team-policy statement.
+This theorem is a proposed repair, not a theorem stated by MARS-RA. Its
+general equilibrium-invariance logic is an instance of the established potentialshaping result for stochastic games [1]; what is specific here is the fixed index
+space and the all-population transition ledger.
+
+4
+
+The active-only boundary
+
+Suppose instead that player i retains shaping payments only during an active
+interval [a, b). Direct summation gives boundary terms of the form
+b−1
+X
+
+γ t Fti = −γ a Φia + γ b Φib ,
+
+t=a
+
+3
+
+(4)
+
+with the second term adjusted according to ownership of the exit transition.
+Entry, exit, and coalition changes can depend on earlier actions, so (4) need
+not be policy-independent. Active-only equivalence therefore requires explicit
+transition ownership or compensating transfers that reproduce the fixed ledger
+sum. The inputs do not specify those transfers, so we leave their design open.
+There is a second interface boundary. MARS-RA begins from a scalar team
+reward but adds a vector shaping term. One coherent repair declares per-agent
+payoffs and applies the componentwise theorem. Another uses a scalar
+P team
+potential. However, summing the embedded softmax credits gives i Φit = 1
+for every nonempty nonterminal coalition, so this direct scalarisation erases
+all comparison information. Any comparison-dependent effect must therefore
+occur through redistributed per-agent finite-training signals, not an added team
+return.
+
+5
+
+Estimation, semantics, and local signal sensitivity
+
+After fixing the translation gauge of Bradley–Terry scores, define semantic bias
+δt = ∥c∗t − vt∗ ∥2 .
+
+(5)
+
+∥b
+ct − vt∗ ∥2 ≤ ∥b
+ct − c∗t ∥2 + δt .
+
+(6)
+
+Then
+Equation (6) is only the triangle inequality. It separates sampling error about
+the comparator’s latent preference from semantic error to the declared contribution target; it does not validate that target or repair the estimator theorem.
+For this local comparison, assume that the estimated and target scores at
+each time are indexed by the same nonempty active coalition It . Let
+dt = cbt − vt∗ ∈ R|It | ,
+
+(7)
+
+after fixing a common translation gauge. When it appears in the shaping-signal
+bound below, regard dt as zero-coordinate embedded in Rn , and set dT = 0 ∈ Rn
+by convention. Embed the target credits in the same fixed population space by
+(Φ∗t )i = 1{i ∈ It } softmaxIt (vt∗ )i ,
+
+Φ∗T = 0,
+
+(8)
+
+and define the vector shaping signals
+Ft∗ = γΦ∗t+1 − Φ∗t .
+
+Fbt = γΦt+1 − Φt ,
+
+(9)
+
+The zero-coordinate embeddings preserve Euclidean distances on their common
+active coalition. Since softmax is 1/2-Lipschitz in Euclidean norm, these onestep shaping signals satisfy
+∥Fbt − Ft∗ ∥2 ≤
+
+1
+(γ∥dt+1 ∥2 + ∥dt ∥2 ) .
+2
+4
+
+(10)
+
+This is a local reward-signal bound only. It does not bound the return of a
+policy produced by MAPPO after finitely many updates. Learners can react
+differently to the same shaped signal, and neither source paper provides the
+missing stability, regret, or convergence premise.
+
+6
+
+Related work
+
+Lu, Schwartz, and Givigi extend potential-based shaping to multi-player generalsum stochastic games and prove preservation of Nash equilibria [1]. Their paper
+also reports similar contemporaneous work by Devlin and Kudenko. Accordingly, the telescoping and general Nash-invariance argument is already published
+and is not a contribution of this paper. Our literature search did not locate a verified publication that states the particular fixed-population, inactive-coordinate,
+all-transition ledger construction for changing active coalitions. This is a search
+result, not a novelty proof.
+The two focal papers supply the remaining context. Zhao et al. insist on
+typed semantic interfaces and explicit downstream composition [3]; Wang et al.
+supply the changing-coalition comparison and shaping mechanism to which the
+interface audit applies [2].
+
+7
+
+Interpretation
+
+The repair makes objective-level robustness prediction-independent: once payoff semantics and ledger ownership are fixed, even inaccurate comparisons preserve payoff differences. This should not be read as evidence that comparisons
+help learning. Rather, it identifies the only supported location of any benefit:
+the finite-training optimisation path induced by redistributed per-agent signals.
+Better estimation can reduce one component of signal error while sharpening a
+semantically biased target.
+
+8
+
+Limitations and open questions
+
+The result is algebraic and conditional on declared per-agent payoffs, a fixed
+initial augmented state, a terminal zero potential, null inactive actions, and an
+all-population transition ledger. It is undefined when It = ∅ unless the model
+adds an explicit empty-coalition potential convention. It does not establish
+that the published MARS-RA implementation uses this ledger. It does not
+give compensating entry or exit transfers for active-only storage. For stochastic
+or history-dependent comparison outputs, an equilibrium theorem may require
+state augmentation beyond the pathwise identity.
+We do not provide a corrected Bradley–Terry concentration rate, a MAPPO
+stability theorem, a finite-training return bound, or a query-cost trade-off.
+These remain open, as do common units for pricing multimodal-model queries
+against return or sample efficiency. The fixed-space theorem is a correctness
+5
+
+layer, not evidence of a positive performance gain and not a general theory of
+open Markov games.
+
+9
+
+Conclusion
+
+Changing coalitions expose a typing and accounting requirement hidden by the
+usual potential-shaping notation. A fixed-population all-transition ledger restores componentwise telescoping and preserves payoff differences for arbitrary
+comparison outputs. Active-only accounting leaves boundary terms, while direct scalarisation removes the comparison signal. These conclusions narrow the
+contribution of comparison-based shaping: its supported role is in per-agent
+finite-training dynamics, for which a learner contract is still missing.
+
+References
+[1] Xiaosong Lu, Howard M. Schwartz, and Sidney N. Givigi Jr. Policy invariance under reward transformations for general-sum stochastic games.
+Journal of Artificial Intelligence Research, 41:397–406, 2011.
+[2] Dawei Wang, Di Zhao, Xinyuan Liu, Marci Chi Ma, Xiaoyang Liu, Chengming Zhou, Gary Ushaw, and Richard Davison. MARS-RA: Rank aggregation for credit assignment via multimodal comparisons in embodied multiagent cooperation. arXiv preprint arXiv:2607.27967, 2026.
+[3] Hailiang Zhao, Xueyan Tang, Peng Chen, Zenong Ye, Tianjun Zhu, Jianwei Yin, and Shuiguang Deng. Learning-augmented algorithms: Guarantees, construction mechanisms, and system-level implications. arXiv preprint
+arXiv:2609.04787, 2026.
+
+6
+
+

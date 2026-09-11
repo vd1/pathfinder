@@ -1,0 +1,1 @@
+The account presents a plausible but unproved mismatch between compliant attachment and DynaMAC’s rigid-link test. It explains why the thread paused and identifies the smallest restarting experiment. [note.tex](/Users/v/Code_2026/pathfinder/threads/Q8P8/edited/note.tex) built successfully into a visually checked four-page PDF with no undefined citations or errors.
