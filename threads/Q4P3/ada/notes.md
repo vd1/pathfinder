@@ -143,3 +143,45 @@ common m as an equilibrium in every state, m = theta included. Both agents stric
 m = t (payoff 0) to m = theta (payoff -b^2 each), so the agent-preferred equilibrium is the
 biased consensus. For clones the question is which equilibrium the models select, which ties
 this to sec 3 and ledger #13.
+
+## 8. A P-side anchor without model spend, and what outside work measures (round 2)
+
+Responds to the verifier (#20) and to emmy/same_diff_test.md (#21). No model calls were made:
+there is no API key in this shell, and nobody has authorised spending.
+
+P's published numbers. P reports F1 only (P lines 294-312): no precision, recall or comments per
+PR. The two case studies have opposite signatures.
+
+| mechanism | P passage | precision vs Single-reviewer | recall vs Single-reviewer |
+|---|---|---|---|
+| Case A: C confirms R's hedges and adds flags (co-moving over-flagging) | lines 317-326 | lower | same or higher |
+| Case B: C yields to a rebuttal that cites no code | lines 328-336 | about the same | lower |
+| text constraint: R must cite or drop on DISAGREE_CONCERN | lines 351-356 | higher, capped by C's added flags | about the same |
+
+P's judge already labels each comment (line 321: "marks 3 of 5 comments as fabricated"), so the
+split needs P's logs and no new calls. The logs are not public (line 728). SWE-PRBench itself is
+public under CC BY 4.0, with diffs and human comments but no model reviews
+(https://huggingface.co/datasets/foundry-ai/swe-prbench).
+
+Two effects in the outside work.
+
+- Ownership (content fixed, role varied). arXiv 2606.05976 injects one false claim into a
+  model's own thought block. Relabeling it as a user, tool or memory message raises explicit
+  correction by 23 to 93 percentage points in 10 of 12 settings (9 models, math and logic).
+  P's C always receives R's review as another agent's message, so this effect is absent in P.
+- Disposition (the model's own kind of error, shown as external input). DeltaBench
+  (arXiv 2502.19361): self-critique is below cross-model critique for three reasoning models,
+  and 36% below for DeepSeek-R1. arXiv 2408.10495: GPT-3.5 and GPT-4 repair other LLMs'
+  insecure code at 33.2 to 59.6% but do poorly on their own. Both are confounded by source
+  (own outputs differ in difficulty), and neither covers code review or Sonnet 4.5. Emmy's
+  crossover contrast I removes that confound.
+- Kim et al. (arXiv 2506.07962): errors are more correlated within a provider. This is
+  co-movement of correctness across items, not of flagging. arXiv 2605.21537 tests self-review
+  only, so it cannot separate the two effects.
+
+Extra arm for #21: show the same own-model false flag to C once inside R's review (P's
+condition) and once as C's own earlier draft. The gap between the two is ownership. The
+own-versus-other gap inside the external arm is disposition, and only disposition bears on P.
+Supply of candidate flags: SWE-PRBench (arXiv 2603.26130) reports single-pass hallucination
+rates of 0.19 to 0.42 on diff-only (0.227 for Sonnet 4.6), so most diffs should have some.
+A person still has to confirm that each flag is false.

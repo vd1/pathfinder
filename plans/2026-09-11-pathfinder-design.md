@@ -220,3 +220,91 @@ prompt with web search allowed, the verify prompt returns one of three words.
 
 Mixed corpora (patents, reports), row synthesis, publishing state to a
 remote page, multiple campaigns per checkout, the builder prompt (step 2).
+
+## Reference run, 11 September 2026
+
+Campaign: `backend` claude, `model` claude-opus-5, `scan_model`
+claude-sonnet-5, `cut` 12, `rounds` 3, `budget_usd` 60. Corpora fetched
+with `pathfinder fetch --q "mechanism design" --p "agentic cooperation" --n 5`;
+the arXiv `all:` query is loose, so both sides are a mixed bag, which is what
+the functionality test wanted.
+
+Q: 2609.04787, 2609.02872, 2609.02580, 2609.01595, 2608.30499.
+P: 2609.04460, 2608.23650, 2608.18167, 2608.08330, 2607.28002.
+All ten e-prints were TeX and flattened with `latexpand`; none needed
+`pdftotext`.
+
+Scan: 25 pairs, 27 calls (two replies were unparseable and retried), 0.82
+USD, 256 model seconds. Scores (feasibility times gain) ranged from 0 to
+2100; the cut at 12% took three pairs:
+
+| pair | Q | P | feasibility | gain | score |
+| --- | --- | --- | --- | --- | --- |
+| Q4P3 | 2609.01595 Mechanism Design for Alignment and Control | 2608.18167 Adversarial Review | 60 | 35 | 2100 |
+| Q1P1 | 2609.04787 Learning-Augmented Algorithms | 2609.04460 Distributed risk-averse optimization via CVaR | 55 | 35 | 1925 |
+| Q3P3 | 2609.02580 Competitive Market Behavior of LLMs | 2608.18167 Adversarial Review | 55 | 35 | 1925 |
+
+Research, as it ended:
+
+| pair | status | rounds | ledger entries | calls | model minutes | USD |
+| --- | --- | --- | --- | --- | --- | --- |
+| Q4P3 | PAUSE | 2 | 27 | 15 | 112 | 29.73 |
+| Q1P1 | PAUSE | 1 | 28 | 8 | 88 | 27.16 |
+| Q3P3 | stopped at peers | 1 | 15 | 2 | 32 | 8.88 |
+
+Total spend 66.58 USD over 52 receipts; wall time from the first scan call
+to the last verify call 2 h 38 min, of which about 1 h was the operator
+drain and restarts described below. Both notes compile clean under
+`pdflatex` with article class and amsmath only (11 and 13 pages). The
+verifier's reasons are in each `<pair>.verdict.json`; both PAUSE verdicts
+say the same thing in different words: the peers proved things about one
+paper and connected them to the other by analogy, so the pair itself does
+not yet carry a result.
+
+What the run exercised, in order:
+
+1. Three threads admitted at once on four seats; six peer calls in flight.
+2. `pathfinder stop` after 25 seconds: no new admission, all six calls
+   landed over the next 19 minutes (each 5 to 12 minutes, 3.5 to 5.4 USD),
+   every thread checkpointed as `stopped` at the peers stage, locks
+   released, runner exited.
+3. `stop --clear` and `research` again: `reconcile` named `resume peers` for
+   all three; the runner resumed Q4P3 at its recorded stage.
+4. The first consolidation of Q4P3 timed out at 600 seconds with no note.
+   The runner was then killed by hand (SIGKILL, plus its model process)
+   during the retry. `reconcile` saw the dead lock and named
+   `run consolidate`; `reconcile Q4P3 --apply` finished the thread through
+   ITERATE, a second peer round, a second consolidation and a PAUSE.
+5. `research` again admitted Q1P1, which ended PAUSE in one round, then
+   refused Q3P3: spend 66.58 plus one call estimate of 5 projected 71.58
+   against the cap of 60, so the guard wrote `stop.json` and the runner
+   exited. Q3P3 stays at `stopped at peers` until someone raises the budget
+   and runs `research` or `reconcile Q3P3 --apply`.
+
+What had to change on the way:
+
+- Port 8765 was taken on this machine; the monitor default moved to 8790.
+- Peer calls cost about 5 USD, not 2: `call_estimate_usd` went to 5,
+  `peer_calls` to 2 and `seats` to 1 for the resume so the guard could bite
+  between threads. The guard is admission-time only, by design, which is
+  why the total overshot the cap by 6.58 within the last admitted thread.
+- `consolidate_seconds` went from 600 to 1800 and `verify_seconds` from
+  600 to 900: consolidations took 895 and 1344 seconds.
+- A timed-out call reports no usage; it is now charged at
+  `call_estimate_usd` so the guard does not undercount.
+- A consolidation that timed out after writing its note is no longer rerun.
+- A peer whose ready declaration stands now waits for its partner instead
+  of spending a call.
+- `reconcile --apply` now consults the budget guard.
+- Three resumed peer calls were refused by an API safeguard
+  (`reasoning_extraction`), each in 2 to 3 seconds for 0.05 USD; the
+  refusals were intermittent and the threads carried on with the other
+  peer. The one sentence those calls add, the resume line, was reworded.
+- The peer allowance is per runner invocation, not per round: a resumed
+  thread starts its peers with a fresh `peer_calls` and `peer_seconds`. Left
+  as is; it is simple and the guard bounds it.
+- Scan receipts are excluded from the per-thread spend shown by the
+  monitor.
+
+Not exercised: the Codex backend beyond the unit tests, the health flag
+(no transport failure occurred), `scan.fulltext`, and the PDF-only path.
