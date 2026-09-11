@@ -1,6 +1,6 @@
 """One research thread: peers on a shared ledger, consolidate, verify, up to `rounds` rounds."""
 from __future__ import annotations
-import json, shutil, sys, threading, time
+import hashlib, json, shutil, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from . import corpus, transport
@@ -69,9 +69,18 @@ def _check(stop):
         raise Stopped()
 
 
+def _scan_row(campaign, pair_id) -> dict:
+    p = campaign.path("scan.jsonl")
+    if p.exists():
+        for line in p.read_text().splitlines():
+            if line.strip() and json.loads(line).get("pair_id") == pair_id:
+                return json.loads(line)
+    return {}
+
+
 def _peers(campaign, pair_id, stop):
     d, L = campaign.thread_dir(pair_id), Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
-    A = campaign.allowances; inp = _inputs(d)
+    A = campaign.allowances; inp = _inputs(d); row = _scan_row(campaign, pair_id)
     helper = f"{sys.executable} -m pathfinder.ledger --root ."
     used = {"seconds": 0.0}; lock = threading.Lock()
 
@@ -91,7 +100,9 @@ def _peers(campaign, pair_id, stop):
             _check(stop)
             p = _prompt(campaign, "peer", ACTOR=actor, PEER=peer, Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
                         LEDGER=f"{helper} --actor {actor}", SECONDS=int(min(left, 1200)),
-                        CALLS_LEFT=A["peer_calls"] - call_no - 1)
+                        CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
+                        GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
+                        RATIONALE=row.get("rationale") or "none recorded.")
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=campaign.peer_search,
@@ -145,9 +156,12 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
             elif s["stage"] == "consolidate":
                 _check(stop)
                 why = "" if L.ready(list(PEERS)) else " because the allowance ran out before both peers declared ready"
+                prior = (f" A previous round wrote {note.name} and the verifier returned ITERATE on it; keep every result"
+                         " of that note that still stands and append this round's work to it, rather than rewriting from"
+                         " scratch. The verifier's review is the latest review entry in the ledger.") if note.exists() else ""
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                _prompt(campaign, "consolidate", ACTOR="ada", WHY=why, NOTE=note.name), True, A["consolidate_seconds"],
-                                done=note.exists)
+                                _prompt(campaign, "consolidate", ACTOR="ada", WHY=why, NOTE=note.name, PRIOR=prior), True,
+                                A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():
                         note.write_text(r["text"])
@@ -168,7 +182,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 except Exception as e:
                     _set(campaign, pair_id, status="BLOCKED", reason=f"verify: unreadable decision ({e})"); return "BLOCKED"
                 hist = json.loads(verdicts.read_text()) if verdicts.exists() else []
-                hist.append({"round": s["round"], "at": _now(), **v}); verdicts.write_text(json.dumps(hist, indent=1))
+                hist.append({"round": s["round"], "at": _now(), "note_sha256": hashlib.sha256(note.read_bytes()).hexdigest(), **v})
+                verdicts.write_text(json.dumps(hist, indent=1))
                 if dec == "ITERATE" and s["round"] < campaign.rounds:
                     L.add("verifier", "review", f"ITERATE: {v.get('reason')} Action: {v.get('action')}")
                     _set(campaign, pair_id, stage="peers", round=s["round"] + 1, reason=v.get("reason"))

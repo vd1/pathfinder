@@ -1,6 +1,6 @@
 """After DRAFT: an author writes a paper with BibTeX references, an independent reviewer accepts or returns it."""
 from __future__ import annotations
-import json, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
+import hashlib, json, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import corpus, research, transport
@@ -151,7 +151,8 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
             v = parse_json(r["text"]); dec = v["decision"].upper(); assert dec in ("ACCEPT", "REVISE")
         except Exception as e:
             _set(campaign, pair_id, status="blocked", reason=f"review: unreadable decision ({e})"); return "blocked"
-        reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks, **v})
+        reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks,
+                        "paper_sha256": hashlib.sha256(tex.encode()).hexdigest(), **v})
         (pd / "review.json").write_text(json.dumps(reviews, indent=1))
         if dec == "ACCEPT" and ok:
             _set(campaign, pair_id, status="accepted", round=rnd, reason=v.get("summary")); return "accepted"

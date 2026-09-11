@@ -212,6 +212,95 @@ runs. What the first attempts taught:
   which is the shape of a review converging. The arXiv API rate-limited
   the pipeline's own title check once; it now backs off and retries.
 
+## Open-ended mode, first pass
+
+`explore --min-score 1500 --page 5 --passes 1` appended five older papers
+per side (one e-print crashed latexpand; the PDF text was used), scanned
+the 75 new pairs for 2.52 USD and rewrote the shortlist at the threshold:
+thirteen pairs, nine of them new, four above 3000 where the first page had
+none above 2100. The second page of "agentic cooperation" was closer to
+the query's meaning (commitment to cooperation with self-negotiated
+contracts, an energy-society simulation, dynamic multi-agent oversight,
+rank aggregation for credit assignment), which is the corpus effect the
+pilot report predicted. The runner admitted the top new pair, Q4P10
+(alignment mechanism design against dynamic multi-agent oversight), on
+Codex under the remaining budget; the guard holds the other eight.
+
+## Conversation with the E-prime agent
+
+At V's request Scout (this session) compared notes with the Fable session
+running the agQSL E-prime campaigns unattended (29 of 59 Julien pairs
+closed at the time). Their side, condensed:
+
+- **Monitoring.** E-prime has no live monitor: a static watchboard is
+  regenerated every ten minutes by replaying both campaign ledgers (17 s
+  and 7 s), pgrep for liveness and list prices; the ELM counter lags by an
+  hour. A polling watcher bolted on for unattended running woke them four
+  times on stale reports before its rules were right. Their first change:
+  the coordinator writes one state document from the state it holds and
+  the page polls it; nothing about monitoring replays a ledger. Second: an
+  owner-event queue (grant wanted, cap reached, parked, refusal, note
+  ready, closed) the coordinator appends to, with wanted options, evidence
+  and a resolution that is also written to the pair's ledger. Fields their
+  campaigns would need beyond Pathfinder's state: an owner stage beside the
+  runtime status, checkpoint id and imported flag, waiting and held
+  reasons, per-call failure kind and retry allowance, per-peer attempts and
+  seconds used, per-service last tick and last import.
+- **Failure recovery.** Nine distinct failure kinds in two days on 90
+  threads is why they have a reconcile command; four threads in a pilot do
+  not meet them. What they have that Pathfinder lacks: collecting a review
+  never applied, retrying a refused call once the capacity retries are
+  spent, acknowledging a peer excluded by the content filter so the other
+  peer's ledger still becomes a note, numbered checkpoints, an explicit
+  repair pass. What Pathfinder has that they lack and are taking: fail-fast
+  transport with the prompt-size term (their refused calls burnt the full
+  600 or 900 s allowance), a graceful stop (a restart orphaned two
+  workers), a single ledger per pair (most of their stale-report incidents
+  come from an owner ledger and a runtime ledger joined by checkpoint
+  import), receipts as the only spend figure, the served state page.
+- **Allowances and rounds after 59 pairs.** Research calls take 200 to
+  450 s, consolidation 100 to 300 s, review 70 to 140 s on their models;
+  they would cut research to 600 s per peer and give consolidation more.
+  Every pair that reached round three asked for a fourth, and three of
+  four asks were repairs of the note, not research; a repair pass
+  (consolidate against the review, then review, a tenth of a round) took
+  all three to PAUSE or DRAFT. Their recommendation: a fourth verdict
+  word, REVISE, routed to consolidation only, research rounds capped at
+  three and repairs at one. Continuation notes kept dropping accepted
+  results; the continuation should append to the prior note.
+- **What is wrong rather than lean, in their words.** No idea artefact
+  between scan and research: asking the peers to discover the link inside
+  the most expensive stage puts the hardest step in the wrong place; on
+  the vanilla side a Phase B judge with full text on both sides produced a
+  300-word derived idea with line locators into the sources, and it was
+  the one input reviewers cited. Automatic rounds with no owner veto are
+  where the budget goes. Web search for peers should be an explicit,
+  per-thread, logged policy: source-only authority is what lets a reviewer
+  check every claim against a fixed corpus; with search, novelty claims
+  become claims about the open literature.
+- **Their worst bug today** was a repaired note inheriting the review of
+  the version it replaced; it passed 69 tests because the fake calls did
+  not write the files real calls write. Their fix, both layers: record the
+  note's digest in every review and refuse to apply a review whose digest
+  is not the current note's; and fakes must produce a call directory that
+  the collector cannot tell from a real one.
+
+What Pathfinder took from it today:
+
+- The peer prompt now carries what the scan saw: the connexion sentence,
+  the rationale and the two scores, as a first hypothesis to confirm,
+  sharpen or replace.
+- A consolidation after ITERATE is told to keep the prior note's results
+  that still stand and append, not rewrite.
+- Every verdict records the note's digest and every paper review records
+  the paper's digest.
+
+Left for V, because they decided the opposite today: automatic ITERATE
+rounds without an owner veto, and web search for peers as the default.
+Recommended outright: REVISE as a fourth verdict word routed to
+consolidation only, capped at one repair. Noted for the test suite: the
+fake CLI should write everything a real call writes.
+
 ## Decisions taken on the way
 
 - Soft budget control stays; no per-stage in-flight estimate.

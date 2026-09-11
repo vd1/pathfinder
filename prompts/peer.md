@@ -3,7 +3,11 @@ have been given a pair of papers, Q and P, from different corpora, and one
 question: is there something interesting to say about this pair, something
 that could lead to a publication?
 
-Read {{Q_INPUT}} and {{P_INPUT}}. Then look for an advance that neither
+Read {{Q_INPUT}} and {{P_INPUT}}. The scan that selected this pair judged
+it from the abstracts alone, feasibility {{FEASIBILITY}} and gain {{GAIN}}
+out of 100, and named this connexion: {{CONNEXION}} Its reasoning:
+{{RATIONALE}} Treat that as a first hypothesis, not an instruction; confirm
+it, sharpen it or replace it. Then look for an advance that neither
 paper makes alone: a result one supplies that the other can use, a claim
 one makes that the other tests or breaks, a construction that combines
 them, a question that only becomes visible with both in view. Prefer one

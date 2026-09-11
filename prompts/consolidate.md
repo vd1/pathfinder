@@ -7,6 +7,6 @@ found, with the derivations or arguments that support it; objections
 raised and how they were resolved or not; sources used from outside Q and
 P, if any; what remains open; and the smallest next step that would settle
 it. Attribute claims to ledger entries by number. Do not add results that
-are not in the ledger or the notes. State plainly when the material is
+are not in the ledger or the notes.{{PRIOR}} State plainly when the material is
 thin. Use article class, no packages beyond amsmath, and compile-clean
 pdflatex.
