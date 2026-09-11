@@ -28,6 +28,8 @@ def apply(campaign, pair_id: str) -> str:
     info = inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
+    if not runner.guard_ok(campaign, inflight=1):
+        return "nothing: budget guard refused (stop marker written)"
     if info["action"] == "run consolidate":
         research._set(campaign, pair_id, stage="consolidate", status="running", reason=None)
     elif info["status"] == "BLOCKED":

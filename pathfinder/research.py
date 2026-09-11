@@ -93,7 +93,7 @@ def _peers(campaign, pair_id, stop):
                         LEDGER=f"{helper} --actor {actor}", SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1)
             if call_no or L.count():
-                p += "\n\nThis is a resumed call on the same thread. Read the ledger first; do not repeat work.\n"
+                p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=campaign.peer_search,
                                cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id, stage="peers", actor=actor)
             with lock:
