@@ -32,3 +32,14 @@ def test_select_by_threshold_ignores_completeness(tmp_path):
     (tmp_path / "scan.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
     out = select.run(c, min_score=1500)
     assert out["n_selected"] == 1 and out["pairs"][0]["pair_id"] == "Q1P1" and out["cut"] is None and out["min_score"] == 1500
+
+
+def test_select_keeps_pairs_whose_thread_started(tmp_path):
+    c = make(tmp_path)
+    (tmp_path / "P.jsonl").write_text('{"id":"p1"}\n{"id":"p2"}\n')
+    rows = [{"pair_id": "Q1P1", "q": "q1", "p": "p1", "feasibility": 50, "gain": 40},
+            {"pair_id": "Q2P1", "q": "q2", "p": "p1", "feasibility": 10, "gain": 10}]
+    (tmp_path / "scan.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    (tmp_path / "threads" / "Q2P1").mkdir(parents=True); (tmp_path / "threads" / "Q2P1" / "status.json").write_text("{}")
+    out = select.run(c, min_score=1500)
+    assert [p["pair_id"] for p in out["pairs"]] == ["Q1P1", "Q2P1"]

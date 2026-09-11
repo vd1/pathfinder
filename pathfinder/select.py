@@ -25,6 +25,8 @@ def run(campaign, cut: float | None = None, force: bool = False, min_score: floa
         if len(rows) < expected and not force:
             raise SystemExit(f"scan incomplete: {len(rows)} of {expected} pairs; use --force to select anyway")
         chosen = ranked[:math.ceil(len(ranked) * cut / 100)]
+    started = {r["pair_id"] for r in ranked if (campaign.thread_dir(r["pair_id"]) / "status.json").exists()}
+    chosen += [r for r in ranked if r["pair_id"] in started and r not in chosen]   # a thread once started stays listed
     out = {"cut": cut, "min_score": min_score, "n_scored": len(ranked), "n_selected": len(chosen),
            "digest": hashlib.sha256(raw).hexdigest(),
            "pairs": [{k2: r[k2] for k2 in ("pair_id", "q", "p", "score", "feasibility", "gain")} for r in chosen]}
