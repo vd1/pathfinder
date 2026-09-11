@@ -59,7 +59,7 @@ def state(campaign) -> dict:
             "scan": {"done": len(scan), "total": len(Q) * len(P), "grid": grid, "q": [q.get("title") for q in Q],
                      "p": [p.get("title") for p in P], "q_ids": [q.get("id") for q in Q], "p_ids": [p.get("id") for p in P], "cost": round(sum(r.get("cost") or 0 for r in scan), 4),
                      "scores": sorted((r["feasibility"] * r["gain"] for r in scan if r.get("feasibility") is not None), reverse=True),
-                     "cut": sl.get("cut"), "n_selected": len(sl["pairs"])},
+                     "cut": sl.get("cut"), "min_score": sl.get("min_score"), "n_selected": len(sl["pairs"])},
             "shortlist": shortlist, "threads": threads}
 
 

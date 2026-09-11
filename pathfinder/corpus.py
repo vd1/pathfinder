@@ -28,11 +28,24 @@ def parse_atom(xml: str) -> list[dict]:
     return rows
 
 
-def fetch(query: str, n: int) -> list[dict]:
+def fetch(query: str, n: int, start: int = 0) -> list[dict]:
+    """The n most recent papers matching query, skipping the first `start` (older pages have larger start)."""
     q = urllib.parse.urlencode({"search_query": f'all:"{query}"', "sortBy": "submittedDate",
-                                "sortOrder": "descending", "max_results": n})
+                                "sortOrder": "descending", "max_results": n, "start": start})
     with urllib.request.urlopen(API + q, timeout=60) as r:
         return parse_atom(r.read().decode())
+
+
+def more(campaign, side: str, n: int, fetch_fn=fetch) -> list[dict]:
+    """Append the next n older papers for one side, never reordering or dropping existing rows."""
+    queries = json.loads(campaign.path("fetch.json").read_text())
+    path = campaign.path(f"{side}.jsonl"); rows = read(path) if path.exists() else []
+    have = {r["id"] for r in rows}
+    new = [r for r in fetch_fn(queries[side.lower()], n, start=queries.get(f"{side.lower()}_start", len(rows))) if r["id"] not in have]
+    write(rows + new, path)
+    queries[f"{side.lower()}_start"] = queries.get(f"{side.lower()}_start", len(rows)) + n
+    campaign.path("fetch.json").write_text(json.dumps(queries, indent=1))
+    return new
 
 
 def write(rows, path: Path):

@@ -82,7 +82,7 @@ function render(s) {
     tile("threads", by);
   const sc = s.scan, short = new Set(s.shortlist.map(p => p.pair_id));
   const max = Math.max(1, ...sc.scores);
-  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `; cut ${sc.cut}% selects ${sc.n_selected}` : ""}. Score = feasibility x gain. Outlined cells are shortlisted; hover for titles, click a row or column label for the arXiv abstract.</p>`;
+  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `; cut ${sc.cut}% selects ${sc.n_selected}` : sc.min_score != null ? `; score >= ${sc.min_score} selects ${sc.n_selected}` : ""}. Score = feasibility x gain. Outlined cells are shortlisted; hover for titles, click a row or column label for the arXiv abstract.</p>`;
   if (sc.q.length && sc.p.length) {
     const abs = id => id ? `https://arxiv.org/abs/${id}` : "#";
     h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${j+1}</a></th>`).join("")}</tr>`;

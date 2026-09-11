@@ -46,10 +46,31 @@ Every command takes `--root DIR`; the default is the current directory, which
 is the campaign directory. The repository root is itself a campaign, the
 reference run described in `plans/`.
 
+## Open-ended mode
+
+Instead of a fixed grid and a percentage cut, a campaign can grow: page the
+same arXiv queries backwards in time, scan only the new pairs, and admit a
+pair to the shortlist when its score crosses a threshold.
+
+```bash
+uv run pathfinder fetch --q "..." --p "..." --n 5      # the first page, as above
+uv run pathfinder explore --min-score 1500 --page 5 --passes 3
+uv run pathfinder research                             # in another terminal, admits as the shortlist grows
+```
+
+Each pass appends the next `--page` older papers per side (never reordering
+what is there, so pair ids stay valid), flattens them, scans the new pairs
+and rewrites `shortlist.json` with every pair at or above `--min-score`.
+`--passes 0` runs until `pathfinder stop`. `fetch --more N` and
+`select --min-score T` are the two steps on their own. In the pilot, scores
+of 1925 and above gave the threads that ran and 600 was the next; the scan
+costs about three cents a pair.
+
 ## Campaign directory
 
 ```
 campaign.json      configuration (see below)
+fetch.json         the two queries and how far each side has been paged
 Q.jsonl  P.jsonl   one paper per line: id, title, abstract, authors, date, text
 sources/           flattened e-prints, <id>.tex or <id>.txt (ignored by git)
 scan.jsonl         one row per scored pair, appended as the scan runs
