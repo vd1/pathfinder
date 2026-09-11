@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pathfinder monitor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { --bg:#fafafa; --fg:#222; --muted:#666; --line:#ddd; --card:#fff; --accent:#2a6fdb; --warn:#c0392b; --ok:#1e8449; }
+@media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#e6e6e6; --muted:#999; --line:#333; --card:#1e1e1e; --accent:#6ea8ff; --warn:#ff7b6b; --ok:#5fd38d; } }
+body { margin:0; padding:16px 24px; font:14px/1.45 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
+h1 { font-size:18px; margin:0 0 12px; } h2 { font-size:15px; margin:20px 0 8px; }
+.tiles { display:flex; flex-wrap:wrap; gap:10px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:8px 12px; min-width:110px; }
+.tile b { display:block; font-size:18px; } .tile span { color:var(--muted); font-size:12px; }
+.flag { color:var(--warn); font-weight:600; } .good { color:var(--ok); }
+table { border-collapse:collapse; background:var(--card); } td, th { border:1px solid var(--line); padding:4px 8px; text-align:left; vertical-align:top; }
+th { color:var(--muted); font-weight:500; font-size:12px; }
+.heat td.cell { width:44px; text-align:center; font-variant-numeric:tabular-nums; }
+.heat td.short { outline:2px solid var(--accent); outline-offset:-2px; font-weight:600; }
+.heat th.rot { max-width:120px; font-size:11px; white-space:normal; }
+.bars { display:flex; align-items:flex-end; gap:2px; height:60px; margin-top:6px; }
+.bar { width:8px; background:var(--muted); } .bar.in { background:var(--accent); }
+tr.pair { cursor:pointer; } tr.pair:hover { background:rgba(128,128,128,.08); } tr.sel { background:rgba(42,111,219,.12); }
+.badge { display:inline-block; padding:0 6px; border-radius:10px; font-size:11px; border:1px solid var(--line); margin-right:4px; }
+.ada { border-color:#c47dd8; } .emmy { border-color:#5bb; } .verifier { border-color:#e0a030; }
+.entry { border-bottom:1px solid var(--line); padding:6px 0; } .entry .t { white-space:pre-wrap; margin-top:2px; }
+.muted { color:var(--muted); } a { color:var(--accent); }
+.two { display:grid; grid-template-columns: 1fr 1fr; gap:24px; } @media (max-width: 1000px) { .two { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<h1>Pathfinder <span id="phase" class="muted"></span> <span id="gen" class="muted" style="font-size:12px"></span></h1>
+<div class="tiles" id="tiles"></div>
+<div class="two">
+<div>
+<h2>Scan</h2>
+<div id="scan"></div>
+<h2>Shortlist</h2>
+<div id="shortlist"></div>
+</div>
+<div>
+<h2 id="thread-title">Thread</h2>
+<div id="thread" class="muted">Click a pair in the shortlist.</div>
+</div>
+</div>
+<script>
+let selected = null, last = null;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = (n, d=2) => (n ?? 0).toFixed(d);
+function tile(label, value, cls="") { return `<div class="tile"><b class="${cls}">${value}</b><span>${label}</span></div>`; }
+function heat(v, max) { if (v == null) return "background:transparent;color:var(--muted)";
+  const a = max ? Math.min(1, v / max) : 0; return `background:rgba(42,111,219,${(0.08 + 0.75*a).toFixed(2)});color:${a > 0.55 ? "#fff" : "inherit"}`; }
+function render(s) {
+  last = s; const c = s.campaign;
+  document.getElementById("phase").textContent = "phase: " + c.phase;
+  document.getElementById("gen").textContent = "updated " + s.generated;
+  const by = Object.entries(c.by_status).map(([k, v]) => `${k} ${v}`).join(", ") || "none";
+  document.getElementById("tiles").innerHTML =
+    tile("spend / budget USD", `${fmt(c.spend)} / ${fmt(c.budget)}`, c.spend > c.budget ? "flag" : "") +
+    tile("model calls", c.calls) + tile("model minutes", Math.round(c.seconds / 60)) +
+    tile("seats", c.seats) + tile("backend / model", `${esc(c.backend)}<br><small>${esc(c.model)}</small>`) +
+    tile("stop", c.stop ? `<span class="flag">${esc(c.stop.reason)}</span>` : "<span class='good'>no</span>") +
+    tile("health", c.health ? `<span class="flag">${esc(c.health.reason)}</span>` : "<span class='good'>ok</span>") +
+    tile("threads", by);
+  const sc = s.scan, short = new Set(s.shortlist.map(p => p.pair_id));
+  const max = Math.max(1, ...sc.scores);
+  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `, cut ${sc.cut}% selects ${sc.n_selected}` : ""}</p>`;
+  if (sc.q.length && sc.p.length) {
+    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th class="rot" title="${esc(t)}">P${j+1}</th>`).join("")}</tr>`;
+    sc.grid.forEach((row, i) => { h += `<tr><th title="${esc(sc.q[i])}">Q${i+1}</th>` + row.map((v, j) => {
+      const id = `Q${i+1}P${j+1}`; return `<td class="cell ${short.has(id) ? "short" : ""}" style="${heat(v, max)}" title="${id}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
+    h += "</table></div>";
+    h += `<div class="bars">${sc.scores.map((v, i) => `<div class="bar ${i < sc.n_selected ? "in" : ""}" style="height:${Math.max(2, 60*v/max)}px" title="${v}"></div>`).join("")}</div>`;
+  }
+  document.getElementById("scan").innerHTML = h;
+  let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>min</th><th>USD</th><th>files</th></tr>`;
+  for (const p of s.shortlist) {
+    const th = s.threads[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
+    const files = [th.entries ? `<a href="${base}ledger.jsonl">ledger</a>` : "", th.note ? `<a href="${base}${th.note}">note</a>` : "",
+      (th.verdicts || []).length ? `<a href="${base}${p.pair_id}.verdict.json">verdict</a>` : ""].filter(Boolean).join(" ");
+    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td>${p.pair_id}</td><td>${p.score ?? ""}</td><td>${esc(p.status ?? "new")}</td><td>${p.round ?? 0}</td><td>${esc(p.stage ?? "")}</td><td>${p.calls}</td><td>${Math.round(p.seconds/60)}</td><td>${fmt(p.spend)}</td><td>${files}</td></tr>`;
+  }
+  document.getElementById("shortlist").innerHTML = t + "</table>";
+  document.querySelectorAll("tr.pair").forEach(r => r.onclick = () => { selected = r.dataset.id; render(last); });
+  renderThread();
+}
+function renderThread() {
+  const el = document.getElementById("thread"), th = last && last.threads[selected];
+  document.getElementById("thread-title").textContent = selected ? `Thread ${selected}` : "Thread";
+  if (!th) { el.innerHTML = '<span class="muted">Click a pair in the shortlist.</span>'; return; }
+  const st = th.status || {};
+  let h = `<p><b>${esc(st.status)}</b> at ${esc(st.stage)} round ${st.round ?? 0}${st.reason ? `: ${esc(st.reason)}` : ""}</p>`;
+  h += `<p class="muted">${th.entries} entries; by kind ${esc(JSON.stringify(th.by_kind))}; by actor ${esc(JSON.stringify(th.by_actor))}</p>`;
+  if (th.verdicts.length) h += "<h3 style='font-size:13px'>Verdicts</h3>" + th.verdicts.map(v => `<div class="entry"><span class="badge">round ${v.round}</span><b>${esc(v.decision)}</b> ${esc(v.reason)}${v.action ? `<div class="muted">next: ${esc(v.action)}</div>` : ""}</div>`).join("");
+  h += "<h3 style='font-size:13px'>Ledger</h3>" + (th.ledger.map(e =>
+    `<div class="entry"><span class="badge ${esc(e.actor)}">${esc(e.actor)}</span><span class="badge">${esc(e.kind)}</span><span class="muted">#${e.seq} ${esc(e.at)}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` seen #${e.seen}` : ""}</span><div class="t">${esc(e.text)}</div></div>`).join("") || '<span class="muted">empty</span>');
+  h += `<p class="muted">files: ${th.files.map(f => `<a href="/threads/${selected}/${f}">${esc(f)}</a>`).join(", ")}</p>`;
+  el.innerHTML = h;
+}
+async function tick() { try { render(await (await fetch("/state")).json()); } catch (e) { document.getElementById("gen").textContent = "state unavailable: " + e; } }
+tick(); setInterval(tick, 5000);
+</script>
+</body>
+</html>
