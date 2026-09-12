@@ -4,7 +4,7 @@ import json, mimetypes, re, shutil, subprocess, tempfile, time
 from collections import Counter
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from . import corpus, edit, paper, research, transport
+from . import corpus, edit, paper, reconcile, research, transport
 
 
 def _jsonl(p: Path):
@@ -51,6 +51,22 @@ def state(campaign) -> dict:
         shortlist.append({**p, "status": s.get("status"), "round": s.get("round"), "stage": s.get("stage"),
                           **rc.get(pid, {"spend": 0.0, "seconds": 0.0, "calls": 0})})
     statuses = Counter(t["status"].get("status", "new") for t in threads.values())
+    attention = []                                   # what an owner would act on: reason, age, the one safe action
+    for p in sl["pairs"]:
+        pid = p["pair_id"]; s = threads[pid]["status"]; st = s.get("status", "new")
+        if st not in research.TERMINAL and st not in ("running",) and st != "new":
+            info = reconcile.inspect(campaign, pid)
+            attention.append({"pair": pid, "kind": st, "reason": s.get("reason"), "since": s.get("updated"), "action": info["action"]})
+        pp = threads[pid].get("paper")
+        if pp and pp.get("status") in ("returned", "blocked", "stopped"):
+            attention.append({"pair": pid, "kind": f"paper {pp['status']}", "reason": pp.get("reason"), "since": pp.get("updated"), "action": "pathfinder paper " + pid + " after raising paper_rounds, or leave"})
+        ee = threads[pid].get("edited")
+        if ee and ee.get("status") in ("blocked", "stopped"):
+            attention.append({"pair": pid, "kind": f"edit {ee['status']}", "reason": ee.get("reason"), "since": ee.get("updated"), "action": "pathfinder edit " + pid})
+    waiting = [p["pair_id"] for p in sl["pairs"] if threads[p["pair_id"]]["status"].get("status", "new") == "new"]
+    if waiting and _jsonl_one(campaign.path("stop.json")):
+        attention.append({"pair": ", ".join(waiting), "kind": "held by the stop marker", "reason": _jsonl_one(campaign.path("stop.json")).get("reason"),
+                          "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "pathfinder stop --clear, then research (raise budget_usd first if the guard wrote it)"})
     phase = ("research" if sl["pairs"] else "select" if scan and len(scan) >= len(Q) * len(P) and Q else "scan" if Q else "fetch")
     return {"generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "campaign": {"name": campaign.root.name, "phase": phase, "spend": round(sum(r.get("cost") or 0 for r in receipts), 4), "budget": campaign.budget_usd,
@@ -64,7 +80,7 @@ def state(campaign) -> dict:
                      "p": [p.get("title") for p in P], "q_ids": [q.get("id") for q in Q], "p_ids": [p.get("id") for p in P], "cost": round(sum(r.get("cost") or 0 for r in scan), 4),
                      "scores": sorted((r["feasibility"] * r["gain"] for r in scan if r.get("feasibility") is not None), reverse=True),
                      "cut": sl.get("cut"), "min_score": sl.get("min_score"), "n_selected": len(sl["pairs"])},
-            "shortlist": shortlist, "threads": threads}
+            "shortlist": shortlist, "threads": threads, "attention": attention}
 
 
 def status_text(campaign) -> str:

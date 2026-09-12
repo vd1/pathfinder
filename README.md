@@ -45,6 +45,7 @@ uv run pathfinder serve      # in a second terminal: http://localhost:8790/
 uv run pathfinder research
 uv run pathfinder status
 uv run pathfinder paper         # for every DRAFT thread
+uv run pathfinder export report --zip   # a self-contained snapshot of the page and every document
 ```
 
 Every command takes `--root DIR`; the default is the current directory, which
@@ -147,7 +148,11 @@ them.
 - Stops are always drains; there is no forced kill short of a second Ctrl-C.
 - ITERATE loops automatically up to `rounds`; nothing waits for a human.
 - The monitor is a live page served from the campaign directory, not a
-  static HTML rebuilt on a schedule. It renders TeX mathematics in ledger
+  static HTML rebuilt on a schedule; `export` writes the same page with
+  the state inline and every thread's documents beside it, so a campaign
+  can be handed over as one zip. A "needs the owner" table at the top
+  lists every thread or stage waiting on a person, with reason, age and
+  the one safe action. It renders TeX mathematics in ledger
   entries and verdicts written with `\(...\)`, `\[...\]` or `$$...$$`
   through KaTeX from a CDN when online; plain text otherwise.
 

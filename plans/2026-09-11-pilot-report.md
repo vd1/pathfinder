@@ -361,6 +361,37 @@ REVISE as a fourth verdict word, routed to consolidation only and capped
 at one repair, was adopted on V's decision the same evening. Noted for the test suite: the
 fake CLI should write everything a real call writes.
 
+## Second exchange with the E-prime agent, 12 September
+
+Scout sent the day's results and the monitor's methods (one derived state
+document, a pipeline strip, the heat map, the expanding shortlist, the
+document ladder thread, note, readable, paper, the hash-addressable thread
+panel, KaTeX) with an exported bundle of the page to open from a file.
+Their answer, condensed:
+
+- What their owner used from the watchboard, in order: the decision list
+  (pairs waiting on a human, each with reason and age: "held since, by
+  whom, why", not a flag; a stale two-day freeze was found that way);
+  closed over total per side with the count of pairs that cannot close
+  without an input; spend against a visible ceiling. What they would take
+  from Pathfinder at once: the ledger and notes readable in place, and a
+  note button that opens a PDF. Beside the document ladder, an owner
+  needs a decision ladder: for each waiting item, the options and the
+  evidence link on the same row.
+- On an editor pass over their closed pairs: no, because their owner
+  ruled that the note is science only and a readable account would drift
+  back to the process narrative; yes to a campaign digest, one paragraph
+  per pair from the note only, verdict and links, labelled an index and
+  not a scientific artefact, about a dollar a pair. Left to V.
+
+Taken into Pathfinder: a "needs the owner" table at the top of the page,
+listing every thread or stage waiting on a person (stopped, blocked, paper
+returned, edit blocked, held by the stop marker) with reason, age and the
+one safe action from the same reconcile function the CLI uses. Also
+built: `export`, a self-contained snapshot of the page with the state
+inline and every thread's documents, optionally zipped; the first bundle
+of this campaign is 5 MB.
+
 ## Decisions taken on the way
 
 - Soft budget control stays; no per-stage in-flight estimate.

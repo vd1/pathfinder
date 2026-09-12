@@ -65,6 +65,7 @@ tr.sub td { background:var(--bg); padding:10px 14px 12px 28px; font-size:12px; }
 td.caret { width:18px; color:var(--muted); font-size:11px; padding-right:0; }
 .files { columns:2; font-size:12px; column-gap:20px; } .files a { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .empty { color:var(--muted); padding:20px; text-align:center; }
+code { font:12px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--grey-soft); padding:1px 5px; border-radius:4px; }
 </style>
 </head>
 <body>
@@ -72,6 +73,7 @@ td.caret { width:18px; color:var(--muted); font-size:11px; padding-right:0; }
 <div class="wrap">
   <div class="pipeline" id="pipeline"></div>
   <div class="card budget" id="budget"></div>
+  <div id="attention"></div>
   <div class="cols">
     <div>
       <h2>Scan</h2><div class="card" id="scan"></div>
@@ -111,6 +113,9 @@ function render(s) {
   const pct = Math.min(100, 100 * c.spend / (c.budget || 1));
   document.getElementById("budget").innerHTML = `<div><div class="small" style="display:flex;justify-content:space-between"><span><b>${fmt(c.spend)}</b> of ${fmt(c.budget)} USD${c.spend > c.budget ? ' <span style="color:var(--bad)">over the cap</span>' : ""}</span><span class="muted">API-equivalent</span></div><div class="bar" style="margin-top:6px"><i class="${c.spend > c.budget ? "over" : ""}" style="width:${pct}%"></i></div></div>`
     + `<div class="kv"><b>${c.calls}</b><span>model calls${c.errors ? `, ${c.errors} with errors` : ""}</span></div><div class="kv"><b>${mins(c.seconds)}</b><span>model time</span></div><div class="kv"><b>${elapsed(c)}</b><span>wall time, first to last call</span></div><div class="kv"><b>${esc(c.backend)}</b><span>${esc(c.model)}, ${c.seats} seats</span></div>`;
+  const age = t => { if (!t) return ""; const h = (Date.now() - new Date(t)) / 3600000; return h < 1 ? `${Math.round(h * 60)} min` : h < 48 ? `${Math.round(h)} h` : `${Math.round(h / 24)} d`; };
+  document.getElementById("attention").innerHTML = (s.attention || []).length ? `<h2>Needs the owner</h2><div class="card" style="padding:0"><table><tr><th>pair</th><th>what</th><th>why</th><th>for</th><th>the one safe action</th></tr>`
+    + s.attention.map(a => `<tr><td class="nw"><b>${esc(a.pair)}</b></td><td class="nw">${pill(a.kind.split(" ")[0])}${a.kind.includes(" ") ? ` <span class="muted small">${esc(a.kind.split(" ").slice(1).join(" "))}</span>` : ""}</td><td class="small">${esc(a.reason || "")}</td><td class="nw muted">${age(a.since)}</td><td class="small"><code>${esc(a.action)}</code></td></tr>`).join("") + `</table></div>` : "";
   const short = new Map(s.shortlist.map(p => [p.pair_id, p])), max = Math.max(1, ...sc.scores);
   let h = "";
   if (sc.q.length && sc.p.length) {
