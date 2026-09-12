@@ -61,8 +61,8 @@ def guard_ok(campaign, inflight: int) -> bool:
 
 def pending(campaign) -> list[str]:
     pairs = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]]
-    return [p for p in pairs if research.status(campaign, p).get("status") not in research.TERMINAL
-            and not Lock.holder(campaign.thread_dir(p))]
+    return [p for p in pairs if research.status(campaign, p).get("status") not in research.TERMINAL | {"BLOCKED"}
+            and not Lock.holder(campaign.thread_dir(p))]          # BLOCKED waits for reconcile, never re-admission
 
 
 def _work(campaign, pair_id):

@@ -88,3 +88,10 @@ def test_two_transport_failures_set_health_and_probe_clears_it(tmp_path, monkeyp
     runner.run(c, interval=0.05)
     assert seen["health"] and not (tmp_path / "health.json").exists()
     assert {research.status(c, p)["status"] for p in ("Q1P1", "Q1P2")} == {"PAUSE"}
+
+
+def test_blocked_threads_are_not_readmitted(tmp_path):
+    c = make(tmp_path)
+    d = c.thread_dir("Q1P1"); d.mkdir(parents=True)
+    (d / "status.json").write_text(json.dumps({"pair_id": "Q1P1", "round": 1, "stage": "verify", "status": "BLOCKED"}))
+    assert "Q1P1" not in runner.pending(c) and "Q1P2" in runner.pending(c)

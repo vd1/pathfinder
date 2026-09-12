@@ -18,10 +18,15 @@ def render(campaign, q: dict, p: dict) -> str:
 
 
 def parse_json(text: str) -> dict:
+    """The first JSON object in a reply. TeX in string values, such as \\( x \\), is not valid JSON escaping;
+    a second attempt doubles every backslash that does not start a JSON escape."""
     m = re.search(r"\{.*\}", text, re.S)
     if not m:
         raise ValueError("no JSON object in reply")
-    return json.loads(m.group(0))
+    try:
+        return json.loads(m.group(0))
+    except json.JSONDecodeError:
+        return json.loads(re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", m.group(0)))
 
 
 def done(campaign) -> set[str]:

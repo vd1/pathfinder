@@ -17,3 +17,8 @@ def test_scan_is_resumable_and_parses(tmp_path, monkeypatch):
     scan.run(c)
     rows = [json.loads(l) for l in (tmp_path / "scan.jsonl").read_text().splitlines()]
     assert [r["pair_id"] for r in rows] == ["Q1P1", "Q1P2"] and rows[1]["feasibility"] == 70
+
+
+def test_parse_json_tolerates_tex_backslashes():
+    assert scan.parse_json('{"decision": "PAUSE", "reason": "the bound \\( e_s/\\delta \\) fails", "action": null}')["reason"].startswith("the bound")
+    assert scan.parse_json('{"a": "line\\nbreak", "b": 1}') == {"a": "line\nbreak", "b": 1}
