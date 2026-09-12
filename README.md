@@ -14,8 +14,10 @@ have something to say to each other. It runs in two phases:
    ITERATE loops back to the peers up to a cap.
 
 Every thread ends with a ledger, a note named after the pair (for example
-`Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE` or
-`PAUSE-ON-ITERATE`.
+`Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE`,
+`PAUSE-ON-ITERATE` or `PAUSE-ON-REVISE`. The whole pipeline as a state
+machine, with every transition's agent, prompt, visibility and budget, is
+in `plans/2026-09-12-state-machine.md`.
 
 3. **Paper.** On a DRAFT thread, an author agent writes a short paper with
    BibTeX references, searching for prior work and verifying every

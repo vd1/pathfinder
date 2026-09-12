@@ -39,7 +39,7 @@ td { padding:7px 7px; border-bottom:1px solid var(--line); vertical-align:middle
 .heat td.short { box-shadow:inset 0 0 0 2px var(--accent); font-weight:700; } .heat td.term { cursor:pointer; }
 .legend { display:flex; gap:14px; align-items:center; color:var(--muted); font-size:12px; margin-top:8px; flex-wrap:wrap; }
 .pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; font-weight:650; letter-spacing:.02em; white-space:nowrap; }
-.s-DRAFT { background:var(--ok-soft); color:var(--ok); } .s-PAUSE { background:var(--grey-soft); color:var(--muted); } .s-PAUSE-ON-ITERATE { background:var(--warn-soft); color:var(--warn); }
+.s-DRAFT { background:var(--ok-soft); color:var(--ok); } .s-PAUSE { background:var(--grey-soft); color:var(--muted); } .s-PAUSE-ON-ITERATE, .s-PAUSE-ON-REVISE { background:var(--warn-soft); color:var(--warn); }
 .s-running { background:var(--accent-soft); color:var(--accent); } .s-stopped, .s-new { border:1px solid var(--line); color:var(--muted); } .s-BLOCKED { background:var(--bad-soft); color:var(--bad); }
 .s-ACCEPTED { background:var(--ok-soft); color:var(--ok); } .s-PAUSE-ON-AMEND, .s-writing, .s-reviewing { background:var(--warn-soft); color:var(--warn); }
 tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } tr.sel td { background:var(--accent-soft); }
@@ -92,7 +92,7 @@ const fmt = (n, d=2) => (Number(n) || 0).toFixed(d);
 const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)} h ${Math.round((s%3600)/60)} min` : `${Math.round(s/60)} min`; };
 const pill = s => `<span class="pill s-${esc(s ?? "new")}">${esc(s ?? "new")}</span>`;
 const abs = id => `https://arxiv.org/abs/${id}`;
-const TERMINAL = new Set(["DRAFT", "PAUSE", "PAUSE-ON-ITERATE"]);
+const TERMINAL = new Set(["DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"]);
 function heat(v, max) { if (v == null) return "background:transparent;color:var(--muted)"; const a = max ? Math.min(1, v / max) : 0;
   return `background:rgba(47,111,237,${(0.05 + 0.85 * a).toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}`; }
 function elapsed(c) { return c.first_call && c.last_call ? mins((new Date(c.last_call) - new Date(c.first_call)) / 1000) : ""; }

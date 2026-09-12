@@ -399,13 +399,17 @@ the thread's, so a pill says where a pair stands without a legend:
 
 | stage | decisions | endings |
 | --- | --- | --- |
-| research thread | DRAFT, REVISE, ITERATE, PAUSE | DRAFT, PAUSE, PAUSE-ON-ITERATE |
+| research thread | DRAFT, REVISE, ITERATE, PAUSE | DRAFT, PAUSE, PAUSE-ON-ITERATE, PAUSE-ON-REVISE |
 | paper | ACCEPT, AMEND | ACCEPTED, PAUSE-ON-AMEND, blocked |
 | editor | none | done, blocked |
 
 The paper reviewer's second word was REVISE until today; it became AMEND
 because REVISE already belongs to the research verifier. Older files that
-say `accepted` or `returned` are read as ACCEPTED and PAUSE-ON-AMEND.
+say `accepted` or `returned` are read as ACCEPTED and PAUSE-ON-AMEND. The
+repair cap used to end as PAUSE-ON-ITERATE with a "repair cap" reason; it
+now ends as PAUSE-ON-REVISE, so every loop has its own PAUSE-ON word. The
+pipeline as a state machine, with what each agent sees and writes and the
+budget of each loop, is `2026-09-12-state-machine.md`.
 
 ## Decisions taken on the way
 

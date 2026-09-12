@@ -21,10 +21,13 @@ corpora of papers. Build it here, in [language and tooling, e.g. Python 3.12
 with uv, standard library only], for me to run from a terminal with my
 [Claude Code | Codex] subscription. Keep it simple: plain files for all
 state, one process per command, no services, no database, no framework.
-Read the design and the prompts at https://github.com/vd1/pathfinder (the
-spec in `plans/2026-09-11-pathfinder-design.md`, the pilot report in
-`plans/2026-09-11-pilot-report.md`, the six prompts in `prompts/`) and use
-them; you may copy the prompts verbatim. Do not copy the code; write yours.
+Read the design and the prompts at https://github.com/vd1/pathfinder: the
+state machine in `plans/2026-09-12-state-machine.md` is the shape to
+build, with every state, transition, agent, prompt, what each agent sees
+and writes, and the budget of each loop; the spec in
+`plans/2026-09-11-pathfinder-design.md` and the pilot report in
+`plans/2026-09-11-pilot-report.md` carry the reasons; the seven prompts in
+`prompts/` may be copied verbatim. Do not copy the code; write yours.
 
 ### What it does
 
@@ -56,9 +59,12 @@ you already have, or a description of where the papers come from].
    of four rounds; PAUSE otherwise, including when the gap needs data or
    experiments the peers do not have, with the missing input named, and
    when a previous ITERATE asked for the same thing and it was not
-   supplied. After the cap the thread ends as PAUSE-ON-ITERATE. An empty
-   ledger ends the thread as PAUSE. The terminal statuses are exactly
-   DRAFT, PAUSE and PAUSE-ON-ITERATE. The peers receive the scan judge's
+   supplied. At the round cap the thread ends as PAUSE-ON-ITERATE, at the
+   repair cap as PAUSE-ON-REVISE. An empty ledger ends the thread as
+   PAUSE. The terminal statuses are exactly DRAFT, PAUSE, PAUSE-ON-ITERATE
+   and PAUSE-ON-REVISE; every PAUSE-ON-X means the loop named X ran out of
+   its budget with the judge still asking, and a human can raise the
+   budget and resume. The peers receive the scan judge's
    connexion sentence and rationale as a first hypothesis; a consolidation
    after ITERATE keeps the prior note's results and appends; every verdict
    records the digest of the note it judged.

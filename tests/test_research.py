@@ -139,9 +139,9 @@ def test_revise_repairs_the_note_once_then_caps(tmp_path, monkeypatch):
             monkeypatch.setenv("FAKE_REPLY", '{"decision":"REVISE","reason":"overclaims","action":"soften the claim"}')
         return real(prompt, **kw)
     monkeypatch.setattr(research.transport, "call", fake_call)
-    assert research.run_thread(c, "Q1P1") == "PAUSE-ON-ITERATE"
+    assert research.run_thread(c, "Q1P1") == "PAUSE-ON-REVISE"
     s = research.status(c, "Q1P1")
-    assert s["round"] == 1 and s["repairs"] == 1 and s["reason"].startswith("repair cap")
+    assert s["round"] == 1 and s["repairs"] == 1
     assert seen["consolidate"] == 2 and seen["verify"] == 2 and "This is a repair" in seen["prompts"][1]
     hist = json.loads((tmp_path / "threads" / "Q1P1" / "Q1P1.verdict.json").read_text())
     assert [h["decision"] for h in hist] == ["REVISE", "REVISE"] and hist[0]["note_sha256"] != hist[1]["note_sha256"]

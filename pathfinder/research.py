@@ -8,7 +8,7 @@ from .ledger import Ledger
 from .scan import prompts_dir, parse_json
 
 PEERS = ("ada", "emmy")
-TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE"}
+TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"}
 
 
 class Stopped(Exception):
@@ -200,9 +200,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     L.add("verifier", "review", f"ITERATE: {v.get('reason')} Action: {v.get('action')}")
                     _set(campaign, pair_id, stage="peers", round=s["round"] + 1, reason=v.get("reason"))
                 else:
-                    final = "PAUSE-ON-ITERATE" if dec in ("ITERATE", "REVISE") else dec
-                    reason = ("repair cap: " if dec == "REVISE" else "") + str(v.get("reason"))
-                    _set(campaign, pair_id, stage="done", status=final, reason=reason); return final
+                    final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
+                    _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); return final
     except Stopped:
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:
