@@ -127,8 +127,8 @@ function render(s) {
       x.paper ? `<a class="btn b-paper ${x.paper.status === "accepted" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
     t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td class="caret">${isOpen ? "&#9660;" : "&#9654;"}</td><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td>${pill(p.status)}</td><td class="nw" title="stage ${esc(p.stage ?? "")}">${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs}r</span>` : ""}${!TERMINAL.has(p.status) && p.stage ? `<span class="muted"> ${esc(p.stage)}</span>` : ""}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
     if (isOpen) t += `<tr class="sub"><td colspan="9"><div class="titles"><b>Q</b> <a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
-      + (st.reason ? `<div class="why">${esc(st.reason)}</div>` : "") + (x.paper && x.paper.reason ? `<div class="why"><b>paper ${esc(x.paper.status)}:</b> ${esc(x.paper.reason)}</div>` : "")
-      + `<a class="btn b-thread" href="#" data-show="${p.pair_id}">thread</a>` + links + `</td></tr>`;
+      + (st.reason ? `<div class="why"><b>verdict, round ${p.round ?? 0}:</b> ${esc(st.reason)}</div>` : "") + (x.paper && x.paper.reason ? `<div class="why"><b>paper review, ${esc(x.paper.status)}:</b> ${esc(x.paper.reason)}</div>` : "")
+      + `<a class="btn b-thread" href="#" data-show="${p.pair_id}">thread</a></td></tr>`;
   }
   document.getElementById("shortlist").innerHTML = s.shortlist.length ? t + "</table>" : `<div class="empty">no shortlist yet</div>`;
   document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.closest("a")) return; const id = r.dataset.id; expanded.has(id) ? expanded.delete(id) : expanded.add(id); select(id); });
