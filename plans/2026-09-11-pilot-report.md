@@ -392,6 +392,74 @@ built: `export`, a self-contained snapshot of the page with the state
 inline and every thread's documents, optionally zipped; the first bundle
 of this campaign is 5 MB.
 
+## Three peers against two, 12 September
+
+Question from V: with a third peer on the same ledger, do we get more
+diverse results, more quality, or just more babble? Experiment: the eight
+explore pairs, run again from scratch in a sibling campaign with three
+peers (ada, emmy, grace), everything else equal to the two-peer run of the
+previous evening: Codex on gpt-5.6-sol through ELM, two seats, four
+rounds, one repair, the same prompts. Research stage only, per pair:
+
+| pair | peers | ending | rounds | ledger | findings | objections and corrections | words | cross-refs | files | USD |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Q4P6 | 2 | DRAFT | 2 | 43 | 10 | 14 | 2650 | 24 | 7 | 7.25 |
+| | 3 | PAUSE | 1 | 29 | 7 | 9 | 2016 | 3 | 1 | 5.66 |
+| Q3P10 | 2 | PAUSE | 2 | 35 | 9 | 10 | 2105 | 12 | 2 | 5.38 |
+| | 3 | PAUSE | 2 | 52 | 9 | 18 | 3601 | 37 | 1 | 9.64 |
+| Q7P1 | 2 | DRAFT | 2 + 1 repair | 30 | 8 | 10 | 1952 | 11 | 6 | 7.09 |
+| | 3 | DRAFT | 1 | 38 | 11 | 8 | 2853 | 12 | 2 | 6.98 |
+| Q4P9 | 2 | PAUSE | 1 | 24 | 6 | 8 | 1473 | 3 | 3 | 4.71 |
+| | 3 | PAUSE | 1 | 37 | 9 | 14 | 2432 | 13 | 3 | 5.74 |
+| Q7P7 | 2 | DRAFT | 3 | 49 | 18 | 13 | 2934 | 24 | 6 | 8.67 |
+| | 3 | DRAFT | 2 | 73 | 19 | 20 | 5249 | 77 | 2 | 10.75 |
+| Q8P8 | 2 | PAUSE | 2 | 45 | 11 | 12 | 3102 | 19 | 1 | 4.85 |
+| | 3 | PAUSE | 2 | 61 | 14 | 20 | 3974 | 21 | 4 | 8.58 |
+| Q3P6 | 2 | PAUSE | 2 | 33 | 10 | 10 | 1673 | 9 | 3 | 5.25 |
+| | 3 | PAUSE | 2 | 53 | 17 | 16 | 3173 | 17 | 1 | 7.98 |
+| Q1P6 | 2 | DRAFT | 2 | 34 | 13 | 7 | 1815 | 7 | 7 | 6.58 |
+| | 3 | DRAFT | 1 | 35 | 11 | 9 | 2394 | 4 | 0 | 7.40 |
+| total | 2 | 4 DRAFT | 16 | 293 | 85 | 84 | 17704 | 109 | 35 | 49.8 |
+| | 3 | 3 DRAFT | 12 | 378 | 97 | 114 | 25692 | 184 | 14 | 62.7 |
+
+"Cross-refs" counts references to other entries by number inside
+substantive entries, a proxy for peers building on or contesting each
+other; "files" counts scripts and derivations written in the peers' own
+directories. Note lengths were the same in both runs (about 990 words on
+average).
+
+What the numbers say:
+
+- **Outcomes agreed on seven pairs of eight.** The same three pairs
+  drafted both times (Q7P1, Q7P7, Q1P6) and the same four paused. Q4P6
+  flipped: two peers drafted it in round 2, three peers paused it in
+  round 1, with the verifier calling the result "standard PBRS algebra
+  rather than a supported non-obvious result". The two-peer run's own
+  round 1 verdict had said much the same before a second round produced
+  the identification result; the three-peer run never got that round.
+- **Three peers converge faster on the pairs that draft.** All three
+  DRAFTs came a round earlier, Q7P1 without the repair it needed with two
+  peers; twelve rounds in all against sixteen.
+- **More interaction, not just more text.** Entries up 29%, words up 45%,
+  objections and corrections up 36%, cross-references up 69%. The third
+  peer was not a passenger: on every thread grace filed findings,
+  objections and corrections in the same proportion as the other two, and
+  on Q7P7 grace's retraction of its own claim after ada's exact lift is
+  the turn that carried the thread to DRAFT.
+- **Less written outside the ledger.** Scripts and derivation files fell
+  from 35 to 14; with three voices the work moved into the ledger and the
+  peers ran fewer simulations.
+- **Cost up 26%, time up 22%.** The extra peer costs less than a third
+  more because rounds are fewer.
+
+Reading: three peers is not babble, and it is not obviously more quality
+either. It buys faster convergence and more mutual checking on the pairs
+that have something in them, at about a quarter more cost, and it changes
+no verdict except one that was marginal both times. The verifier's
+standard, not the number of voices, sets the outcome. Two peers remain the
+default; three is a reasonable choice when a campaign values fewer rounds
+and a denser ledger over cheaper threads.
+
 ## Vocabulary, settled 12 September
 
 Each stage has its own words, and the endings of the later stages mirror
