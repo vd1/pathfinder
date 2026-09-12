@@ -84,6 +84,7 @@ td.caret { width:18px; color:var(--muted); font-size:11px; padding-right:0; }
 </div>
 <script>
 let selected = null, last = null; const open = new Set(), expanded = new Set(); let actorFilter = "all";
+const ROOT = window.STATIC ? "" : "/";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = (n, d=2) => (Number(n) || 0).toFixed(d);
 const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)} h ${Math.round((s%3600)/60)} min` : `${Math.round(s/60)} min`; };
@@ -121,7 +122,7 @@ function render(s) {
   document.getElementById("scan").innerHTML = h;
   let t = `<table><tr><th></th><th>pair</th><th>score</th><th>status</th><th>round</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
   for (const p of s.shortlist) {
-    const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`, st = x.status || {}, isOpen = expanded.has(p.pair_id);
+    const x = th[p.pair_id] || {}, base = `${ROOT}threads/${p.pair_id}/`, st = x.status || {}, isOpen = expanded.has(p.pair_id);
     const links = [x.note ? `<a class="btn b-note" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "",
       x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
       x.paper ? `<a class="btn b-paper ${x.paper.status === "accepted" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
@@ -140,7 +141,7 @@ function renderThread() {
   const el = document.getElementById("thread"), x = last && last.threads[selected];
   document.getElementById("thread-title").textContent = selected ? `Thread ${selected}` : "Thread";
   if (!x) { el.innerHTML = `<div class="empty">Select a pair in the shortlist or the scan.</div>`; return; }
-  const st = x.status || {}, base = `/threads/${selected}/`, sl = last.shortlist.find(p => p.pair_id === selected) || {};
+  const st = x.status || {}, base = `${ROOT}threads/${selected}/`, sl = last.shortlist.find(p => p.pair_id === selected) || {};
   let h = `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${pill(st.status)}<span class="muted small">stage ${esc(st.stage)}, round ${st.round ?? 0}${st.repairs ? `, ${st.repairs} repair` : ""}</span></div>`;
   if (st.reason) h += `<div class="small" style="margin-top:6px">${esc(st.reason)}</div>`;
   h += `<div class="titles" style="margin-top:10px"><b>Q</b> <a href="${abs(sl.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(sl.p)}" target="_blank">${esc(x.p_title)}</a></div>`;
@@ -169,7 +170,8 @@ function renderThread() {
 }
 if (location.hash.length > 1) { selected = location.hash.slice(1); expanded.add(selected); }
 async function tick() { try { render(await (await fetch("/state")).json()); } catch (e) { document.getElementById("gen").textContent = "state unavailable: " + e; } }
-tick(); setInterval(tick, 5000);
+if (window.STATE) { render(window.STATE); document.getElementById("gen").textContent = "exported " + window.STATE.generated.replace("T", " ").replace("Z", " UTC"); }
+else { tick(); setInterval(tick, 5000); }
 </script>
 </body>
 </html>

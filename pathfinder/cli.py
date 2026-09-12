@@ -27,6 +27,9 @@ def main(argv=None):
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     e = sub.add_parser("edit", help="after a terminal verdict: rewrite the note as a readable short paper with references")
     e.add_argument("pair", nargs="?", help="default: every terminal thread without an edited note")
+    xp = sub.add_parser("export", help="write a self-contained snapshot of the monitor page and every thread's documents")
+    xp.add_argument("dir"); xp.add_argument("--with-sources", action="store_true", help="include the copied arXiv sources under inputs/")
+    xp.add_argument("--zip", action="store_true", help="also zip the directory")
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     ns = ap.parse_args(argv); c = config.load(Path(ns.root))
@@ -84,6 +87,8 @@ def main(argv=None):
                 print(f"{pid}: {edit.run(c, pid, stop=lambda: runner.stopped(c))}")
             except transport.TransportFailed:
                 print(f"{pid}: transport failure; run again later")
+    elif ns.cmd == "export":
+        print(monitor.export(c, Path(ns.dir), ns.with_sources, ns.zip))
     elif ns.cmd == "reconcile":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for pid in pairs:

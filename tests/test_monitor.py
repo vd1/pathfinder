@@ -31,3 +31,22 @@ def test_pdf_compiles_a_note(tmp_path):
     tex.write_text("\\documentclass{article}\\begin{document}\\undefinedmacro\\end{document}\n")
     data, log = monitor.pdf(tex)
     assert data == b"" and "Undefined control sequence" in log
+
+
+def test_export_writes_a_static_page_and_thread_files(tmp_path):
+    c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=True, seats=2, cut=50,
+                 rounds=3, allowances={}, budget_usd=10, prices={}, scan_fulltext=None)
+    (tmp_path / "Q.jsonl").write_text('{"id":"a","title":"A"}\n'); (tmp_path / "P.jsonl").write_text('{"id":"b","title":"B"}\n')
+    (tmp_path / "shortlist.json").write_text(json.dumps({"cut": 50, "pairs": [{"pair_id": "Q1P1", "q": "a", "p": "b", "score": 1}]}))
+    d = tmp_path / "threads" / "Q1P1"; (d / "inputs").mkdir(parents=True); (d / "edited").mkdir()
+    (d / "status.json").write_text(json.dumps({"pair_id": "Q1P1", "round": 1, "stage": "done", "status": "PAUSE"}))
+    (d / "ledger.jsonl").write_text(json.dumps({"seq": 1, "actor": "ada", "kind": "idea", "text": "x", "at": "t"}) + "\n")
+    (d / "inputs" / "Q.tex").write_text("source"); (d / "inputs" / "Q.json").write_text("{}")
+    (d / "edited" / "note.pdf").write_bytes(b"%PDF-fake"); (d / "Q1P1.aux").write_text("noise")
+    out = monitor.export(c, tmp_path / "bundle")
+    page = (out / "index.html").read_text()
+    assert "window.STATIC = true" in page and '"pair_id": "Q1P1"' in page
+    assert (out / "threads" / "Q1P1" / "edited" / "note.pdf").exists() and (out / "threads" / "Q1P1" / "inputs" / "Q.json").exists()
+    assert not (out / "threads" / "Q1P1" / "inputs" / "Q.tex").exists() and not (out / "threads" / "Q1P1" / "Q1P1.aux").exists()
+    z = monitor.export(c, tmp_path / "bundle2", zip_it=True)
+    assert z.suffix == ".zip" and z.exists()

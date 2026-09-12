@@ -136,3 +136,38 @@ def serve(campaign, port: int = 8790):
 
     print(f"monitor at http://localhost:{port}/  (state at /state, thread files under /threads/)")
     HTTPServer(("127.0.0.1", port), H).serve_forever()
+
+
+KEEP = {".tex", ".bib", ".pdf", ".json", ".jsonl", ".md", ".txt", ".py", ".out", ".csv"}
+
+
+def export(campaign, out: Path, with_sources: bool = False, zip_it: bool = False) -> Path:
+    """Write a self-contained snapshot of the campaign page: index.html with the state inline, and every
+    thread's documents (notes compiled to PDF). Returns the directory, or the zip when asked."""
+    out = Path(out); shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True)
+    st = state(campaign)
+    page = PAGE.read_text()
+    page = page.replace("<script>\nlet selected", "<script>window.STATIC = true; window.STATE = " + json.dumps(st) + ";</script>\n<script>\nlet selected", 1)
+    (out / "index.html").write_text(page)
+    for name in ("campaign.json", "Q.jsonl", "P.jsonl", "scan.jsonl", "shortlist.json", "receipts.jsonl"):
+        if campaign.path(name).exists():
+            shutil.copy(campaign.path(name), out / name)
+    for p in st["shortlist"]:
+        pid = p["pair_id"]; src = campaign.thread_dir(pid); dst = out / "threads" / pid
+        if not src.exists():
+            continue
+        for f in src.rglob("*"):
+            rel = f.relative_to(src)
+            if not f.is_file() or "__pycache__" in rel.parts or ".build" in rel.parts or f.suffix not in KEEP:
+                continue
+            if rel.parts[0] == "inputs" and f.suffix != ".json" and not with_sources:
+                continue
+            (dst / rel).parent.mkdir(parents=True, exist_ok=True); shutil.copy(f, dst / rel)
+        tex = src / f"{pid}.tex"
+        if tex.exists():
+            data, _ = pdf(tex)
+            if data:
+                (dst / f"{pid}.pdf").write_bytes(data)
+    if zip_it:
+        return Path(shutil.make_archive(str(out), "zip", root_dir=out.parent, base_dir=out.name))
+    return out
