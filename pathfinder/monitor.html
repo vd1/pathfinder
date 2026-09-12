@@ -117,16 +117,16 @@ function render(s) {
   let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
   for (const p of s.shortlist) {
     const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`, st = x.status || {};
-    const links = [x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
-      x.paper ? `<a class="btn ${x.paper.status === "accepted" ? "primary" : ""}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : "",
-      x.note ? `<a class="btn" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : ""].join("");
+    const links = [x.note ? `<a class="btn" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "",
+      x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
+      x.paper ? `<a class="btn ${x.paper.status === "accepted" ? "primary" : ""}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
     t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td>${pill(p.status)}</td><td>${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs} repair</span>` : ""}</td><td class="muted">${esc(p.stage ?? "")}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
   }
   document.getElementById("shortlist").innerHTML = s.shortlist.length ? t + "</table>" : `<div class="empty">no shortlist yet</div>`;
   const outs = s.shortlist.filter(p => TERMINAL.has(p.status)).map(p => { const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
     return `<div class="card out"><div class="h"><b>${p.pair_id}</b>${pill(p.status)}${x.paper ? pill("paper " + x.paper.status) : ""}</div><div class="titles"><a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><span class="muted">with</span> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
-      + (x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper && x.paper.status === "accepted" ? `<a class="btn primary" href="${base}paper/paper.pdf" target="_blank">paper</a>` : "")
-      + (x.note ? `<a class="btn" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "") + `<a class="btn" href="#" data-show="${p.pair_id}">thread</a></div>`; });
+      + `<a class="btn" href="#" data-show="${p.pair_id}">thread</a>` + (x.note ? `<a class="btn" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "")
+      + (x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper && x.paper.status === "accepted" ? `<a class="btn primary" href="${base}paper/paper.pdf" target="_blank">paper</a>` : "") + `</div>`; });
   document.getElementById("outputs").innerHTML = outs.join("") || `<div class="card empty">no finished thread yet</div>`;
   document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.closest("a")) return; select(r.dataset.id); });
   document.querySelectorAll("td.term").forEach(r => r.onclick = () => select(r.dataset.id));
@@ -142,8 +142,9 @@ function renderThread() {
   if (st.reason) h += `<div class="small" style="margin-top:6px">${esc(st.reason)}</div>`;
   h += `<div class="titles" style="margin-top:10px"><b>Q</b> <a href="${abs(sl.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(sl.p)}" target="_blank">${esc(x.p_title)}</a></div>`;
   if (x.connexion) h += `<div class="muted small" style="margin-top:8px"><b>the scan saw:</b> ${esc(x.connexion)}</div>`;
-  h += `<div style="margin-top:10px">` + (x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper ? `<a class="btn ${x.paper.status === "accepted" ? "primary" : ""}" href="${base}paper/paper.pdf" target="_blank">paper (${esc(x.paper.status)})</a>` : "")
-    + (x.note ? `<a class="btn" href="${base}${selected}.pdf" target="_blank">note</a><a class="btn" href="${base}${selected}.tex" target="_blank">tex</a>` : `<span class="muted small">no note yet</span>`) + `<a class="btn" href="${base}ledger.jsonl" target="_blank">raw ledger</a></div>`;
+  h += `<div style="margin-top:10px"><a class="btn" href="${base}ledger.jsonl" target="_blank">raw ledger</a>`
+    + (x.note ? `<a class="btn" href="${base}${selected}.pdf" target="_blank">note</a><a class="btn" href="${base}${selected}.tex" target="_blank">tex</a>` : `<span class="muted small">no note yet</span>`)
+    + (x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper ? `<a class="btn ${x.paper.status === "accepted" ? "primary" : ""}" href="${base}paper/paper.pdf" target="_blank">paper (${esc(x.paper.status)})</a>` : "") + `</div>`;
   const stg = Object.entries(x.by_stage || {});
   if (stg.length) h += `<h3>Calls by stage</h3><table><tr><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>errors</th></tr>` + stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
   h += `<h3>Verdicts</h3>` + (x.verdicts.length ? x.verdicts.map(v => `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted small">${esc((v.at || "").slice(11, 16))} UTC</span><div class="small" style="margin-top:3px">${esc(v.reason)}</div>${v.action ? `<div class="next"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : `<div class="muted small">none yet</div>`);
