@@ -35,8 +35,9 @@ def state(campaign) -> dict:
         pid = p["pair_id"]; s = research.status(campaign, pid); d = campaign.thread_dir(pid)
         led = _jsonl(d / "ledger.jsonl")
         verd = json.loads((d / f"{pid}.verdict.json").read_text()) if (d / f"{pid}.verdict.json").exists() else []
+        noise = {".aux", ".log", ".out", ".fls", ".fdb_latexmk", ".blg", ".bbl", ".pdf", ".synctex.gz", ".toc"}
         files = sorted(str(x.relative_to(d)) for x in d.rglob("*") if x.is_file() and "__pycache__" not in x.parts
-                       and x.name not in ("lock", "ledger.lock")) if d.exists() else []
+                       and ".build" not in x.parts and x.suffix not in noise and x.name not in ("lock", "ledger.lock")) if d.exists() else []
         threads[pid] = {"status": s, "entries": len(led), "by_kind": dict(Counter(e["kind"] for e in led)),
                         "by_actor": dict(Counter(e["actor"] for e in led)), "ledger": led, "verdicts": verd,
                         "note": f"{pid}.tex" if (d / f"{pid}.tex").exists() else None, "files": files,
