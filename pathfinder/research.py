@@ -190,6 +190,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     v = parse_json(r["text"]); dec = v["decision"].upper()
                     assert dec in ("DRAFT", "REVISE", "ITERATE", "PAUSE")
                 except Exception as e:
+                    (d / "verify-unreadable.txt").write_text(r["text"] or "")     # keep the paid reply for inspection
                     _set(campaign, pair_id, status="BLOCKED", reason=f"verify: unreadable decision ({e})"); return "BLOCKED"
                 hist = json.loads(verdicts.read_text()) if verdicts.exists() else []
                 hist.append({"round": s["round"], "at": _now(), "note_sha256": hashlib.sha256(note.read_bytes()).hexdigest(), **v})

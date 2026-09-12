@@ -26,7 +26,8 @@ def parse_json(text: str) -> dict:
     try:
         return json.loads(m.group(0))
     except json.JSONDecodeError:
-        return json.loads(re.sub(r'\\(?!["\\/bfnrtu])', r"\\\\", m.group(0)))
+        # treat every backslash as literal TeX except an escaped quote or backslash; \beta must not become a backspace
+        return json.loads(re.sub(r'\\(?!["\\])', r"\\\\", m.group(0)))
 
 
 def done(campaign) -> set[str]:

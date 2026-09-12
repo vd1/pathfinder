@@ -22,3 +22,5 @@ def test_scan_is_resumable_and_parses(tmp_path, monkeypatch):
 def test_parse_json_tolerates_tex_backslashes():
     assert scan.parse_json('{"decision": "PAUSE", "reason": "the bound \\( e_s/\\delta \\) fails", "action": null}')["reason"].startswith("the bound")
     assert scan.parse_json('{"a": "line\\nbreak", "b": 1}') == {"a": "line\nbreak", "b": 1}
+    v = scan.parse_json('{"decision": "ITERATE", "reason": "needs \\beta and \\upsilon and \\frac{1}{2}", "action": "x"}')
+    assert v["reason"] == "needs \\beta and \\upsilon and \\frac{1}{2}"
