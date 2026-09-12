@@ -33,7 +33,7 @@ h3 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(-
 .cols { display:grid; grid-template-columns:minmax(0, 11fr) minmax(0, 9fr); gap:24px; align-items:start; } @media (max-width:1150px) { .cols { grid-template-columns:1fr; } }
 .sticky { position:sticky; top:72px; max-height:calc(100vh - 88px); overflow:auto; }
 table { border-collapse:collapse; width:100%; font-size:13px; } th { text-align:left; color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.05em; padding:6px 8px; border-bottom:1px solid var(--line); }
-td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle; } td.nw { white-space:nowrap; } tr:last-child td { border-bottom:0; }
+td { padding:7px 7px; border-bottom:1px solid var(--line); vertical-align:middle; } td.nw { white-space:nowrap; } tr:last-child td { border-bottom:0; }
 .heat { width:auto; } .heat th, .heat td { border:0; padding:2px; } .heat th a { color:var(--muted); font-size:11px; font-weight:600; padding:0 4px; }
 .heat td.cell { width:42px; height:30px; text-align:center; font-size:11px; border-radius:5px; cursor:default; }
 .heat td.short { box-shadow:inset 0 0 0 2px var(--accent); font-weight:700; } .heat td.term { cursor:pointer; }
@@ -44,7 +44,7 @@ td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle
 .s-accepted { background:var(--ok-soft); color:var(--ok); } .s-returned, .s-writing, .s-reviewing { background:var(--warn-soft); color:var(--warn); }
 tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } tr.sel td { background:var(--accent-soft); }
 .score { display:flex; align-items:center; gap:6px; } .score i { display:inline-block; height:6px; background:var(--accent); border-radius:3px; opacity:.7; }
-.btn { display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:6px; font-size:11px; color:var(--fg); background:var(--card); margin-right:4px; white-space:nowrap; } .btn:hover { border-color:var(--accent); text-decoration:none; color:var(--accent); }
+.btn { display:inline-block; padding:2px 7px; border:1px solid var(--line); border-radius:6px; font-size:11px; color:var(--fg); background:var(--card); margin-right:4px; white-space:nowrap; } .btn:hover { border-color:var(--accent); text-decoration:none; color:var(--accent); }
 .b-thread { background:rgba(80,120,200,.10); border-color:rgba(80,120,200,.45); color:#3b6bc4; }
 .b-note { background:rgba(60,160,150,.12); border-color:rgba(60,160,150,.5); color:#1f8a7d; }
 .b-readable { background:rgba(230,150,40,.14); border-color:rgba(230,150,40,.55); color:#b8730f; }
@@ -60,8 +60,8 @@ tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } 
 .verdict { border-left:3px solid var(--muted); padding:8px 12px; margin:8px 0; background:var(--bg); border-radius:0 8px 8px 0; } .verdict.DRAFT { border-color:var(--ok); } .verdict.ITERATE, .verdict.REVISE { border-color:var(--warn); } .verdict.PAUSE { border-color:var(--muted); }
 .verdict .next { color:var(--muted); font-size:12px; margin-top:4px; }
 .muted { color:var(--muted); } .small { font-size:12px; } .titles a { color:var(--fg); } .titles a:hover { color:var(--accent); }
-.outputs { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:12px; }
-.out { padding:12px 14px; } .out .h { display:flex; align-items:center; gap:8px; margin-bottom:6px; } .out .h b { font-size:14px; } .out .titles { font-size:12px; line-height:1.4; margin-bottom:8px; }
+tr.sub td { background:var(--bg); padding:10px 14px 12px 28px; font-size:12px; } tr.sub .titles { line-height:1.45; margin-bottom:6px; } tr.sub .why { color:var(--muted); margin-bottom:8px; }
+td.caret { width:18px; color:var(--muted); font-size:11px; padding-right:0; }
 .files { columns:2; font-size:12px; column-gap:20px; } .files a { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .empty { color:var(--muted); padding:20px; text-align:center; }
 </style>
@@ -75,7 +75,6 @@ tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } 
     <div>
       <h2>Scan</h2><div class="card" id="scan"></div>
       <h2>Shortlist</h2><div class="card" style="padding:0 0 4px;overflow:auto" id="shortlist"></div>
-      <h2>Outputs</h2><div class="outputs" id="outputs"></div>
     </div>
     <div class="sticky">
       <h2 id="thread-title">Thread</h2><div class="card" id="thread"><div class="empty">Select a pair in the shortlist or the scan.</div></div>
@@ -83,7 +82,7 @@ tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } 
   </div>
 </div>
 <script>
-let selected = null, last = null; const open = new Set(); let actorFilter = "all";
+let selected = null, last = null; const open = new Set(), expanded = new Set(); let actorFilter = "all";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = (n, d=2) => (Number(n) || 0).toFixed(d);
 const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)} h ${Math.round((s%3600)/60)} min` : `${Math.round(s/60)} min`; };
@@ -119,21 +118,19 @@ function render(s) {
     h += `</table></div><div class="legend"><span>score = feasibility x gain, 0 to 10,000</span><span>outlined: shortlisted, click to open</span><span>row and column labels open the arXiv abstract</span></div>`;
   } else h = `<div class="empty">no corpora yet</div>`;
   document.getElementById("scan").innerHTML = h;
-  let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
+  let t = `<table><tr><th></th><th>pair</th><th>score</th><th>status</th><th>round</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
   for (const p of s.shortlist) {
-    const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`, st = x.status || {};
+    const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`, st = x.status || {}, isOpen = expanded.has(p.pair_id);
     const links = [x.note ? `<a class="btn b-note" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "",
       x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
       x.paper ? `<a class="btn b-paper ${x.paper.status === "accepted" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
-    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td>${pill(p.status)}</td><td>${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs} repair</span>` : ""}</td><td class="muted">${esc(p.stage ?? "")}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
+    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td class="caret">${isOpen ? "&#9660;" : "&#9654;"}</td><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td>${pill(p.status)}</td><td class="nw" title="stage ${esc(p.stage ?? "")}">${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs}r</span>` : ""}${!TERMINAL.has(p.status) && p.stage ? `<span class="muted"> ${esc(p.stage)}</span>` : ""}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
+    if (isOpen) t += `<tr class="sub"><td colspan="9"><div class="titles"><b>Q</b> <a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
+      + (st.reason ? `<div class="why">${esc(st.reason)}</div>` : "") + (x.paper && x.paper.reason ? `<div class="why"><b>paper ${esc(x.paper.status)}:</b> ${esc(x.paper.reason)}</div>` : "")
+      + `<a class="btn b-thread" href="#" data-show="${p.pair_id}">thread</a>` + links + `</td></tr>`;
   }
   document.getElementById("shortlist").innerHTML = s.shortlist.length ? t + "</table>" : `<div class="empty">no shortlist yet</div>`;
-  const outs = s.shortlist.filter(p => TERMINAL.has(p.status)).map(p => { const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
-    return `<div class="card out"><div class="h"><b>${p.pair_id}</b>${pill(p.status)}${x.paper ? pill("paper " + x.paper.status) : ""}</div><div class="titles"><a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><span class="muted">with</span> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
-      + `<a class="btn b-thread" href="#" data-show="${p.pair_id}">thread</a>` + (x.note ? `<a class="btn b-note" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "")
-      + (x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper && x.paper.status === "accepted" ? `<a class="btn b-paper" href="${base}paper/paper.pdf" target="_blank">paper</a>` : "") + `</div>`; });
-  document.getElementById("outputs").innerHTML = outs.join("") || `<div class="card empty">no finished thread yet</div>`;
-  document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.closest("a")) return; select(r.dataset.id); });
+  document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.closest("a")) return; const id = r.dataset.id; expanded.has(id) ? expanded.delete(id) : expanded.add(id); select(id); });
   document.querySelectorAll("td.term").forEach(r => r.onclick = () => select(r.dataset.id));
   document.querySelectorAll("a[data-show]").forEach(a => a.onclick = e => { e.preventDefault(); select(a.dataset.show); document.getElementById("thread-title").scrollIntoView({behavior: "smooth"}); });
   renderThread();
@@ -166,7 +163,7 @@ function renderThread() {
   el.querySelectorAll(".more").forEach(m => m.onclick = () => { open.has(m.dataset.id) ? open.delete(m.dataset.id) : open.add(m.dataset.id); renderThread(); });
   el.querySelectorAll(".chip").forEach(ch => ch.onclick = () => { actorFilter = ch.dataset.actor; renderThread(); });
 }
-if (location.hash.length > 1) selected = location.hash.slice(1);
+if (location.hash.length > 1) { selected = location.hash.slice(1); expanded.add(selected); }
 async function tick() { try { render(await (await fetch("/state")).json()); } catch (e) { document.getElementById("gen").textContent = "state unavailable: " + e; } }
 tick(); setInterval(tick, 5000);
 </script>
