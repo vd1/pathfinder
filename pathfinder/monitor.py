@@ -56,17 +56,21 @@ def state(campaign) -> dict:
         pid = p["pair_id"]; s = threads[pid]["status"]; st = s.get("status", "new")
         if st not in research.TERMINAL and st not in ("running",) and st != "new":
             info = reconcile.inspect(campaign, pid)
-            attention.append({"pair": pid, "kind": st, "reason": s.get("reason"), "since": s.get("updated"), "action": info["action"]})
+            words = {"start": "Start the thread.", "resume peers": "Resume the peers where they stopped.", "run consolidate": "Run the consolidation again.",
+                     "run verify": "Run the verification again."}
+            attention.append({"pair": pid, "kind": st, "reason": s.get("reason"), "since": s.get("updated"),
+                              "action": words.get(info["action"], info["action"]) + " Reconcile does this."})
         pp = threads[pid].get("paper")
         if pp and pp.get("status") in ("returned", "blocked", "stopped"):
-            attention.append({"pair": pid, "kind": f"paper {pp['status']}", "reason": pp.get("reason"), "since": pp.get("updated"), "action": "pathfinder paper " + pid + " after raising paper_rounds, or leave"})
+            attention.append({"pair": pid, "kind": f"paper {pp['status']}", "reason": pp.get("reason"), "since": pp.get("updated"),
+                              "action": "Read the paper and its review. To try another round, raise paper_rounds in campaign.json and run the paper stage for this pair again; or leave it as returned."})
         ee = threads[pid].get("edited")
         if ee and ee.get("status") in ("blocked", "stopped"):
-            attention.append({"pair": pid, "kind": f"edit {ee['status']}", "reason": ee.get("reason"), "since": ee.get("updated"), "action": "pathfinder edit " + pid})
+            attention.append({"pair": pid, "kind": f"edit {ee['status']}", "reason": ee.get("reason"), "since": ee.get("updated"), "action": "Run the editor for this pair again."})
     waiting = [p["pair_id"] for p in sl["pairs"] if threads[p["pair_id"]]["status"].get("status", "new") == "new"]
     if waiting and _jsonl_one(campaign.path("stop.json")):
         attention.append({"pair": ", ".join(waiting), "kind": "held by the stop marker", "reason": _jsonl_one(campaign.path("stop.json")).get("reason"),
-                          "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "pathfinder stop --clear, then research (raise budget_usd first if the guard wrote it)"})
+                          "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "Clear the stop marker and start the runner again; raise budget_usd first if the guard wrote the marker."})
     phase = ("research" if sl["pairs"] else "select" if scan and len(scan) >= len(Q) * len(P) and Q else "scan" if Q else "fetch")
     return {"generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "campaign": {"name": campaign.root.name, "phase": phase, "spend": round(sum(r.get("cost") or 0 for r in receipts), 4), "budget": campaign.budget_usd,
