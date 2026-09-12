@@ -45,7 +45,9 @@ def state(campaign) -> dict:
                         "paper": paper.status(campaign, pid) if (d / "paper").exists() else None,
                         "edited": edit.status(campaign, pid) if (d / "edited").exists() else None,
                         "q_title": Q[int(pid[1:].split("P")[0]) - 1].get("title") if Q else None,
-                        "p_title": P[int(pid.split("P")[1]) - 1].get("title") if P else None}
+                        "p_title": P[int(pid.split("P")[1]) - 1].get("title") if P else None,
+                        "q_abstract": Q[int(pid[1:].split("P")[0]) - 1].get("abstract") if Q else None,
+                        "p_abstract": P[int(pid.split("P")[1]) - 1].get("abstract") if P else None}
         shortlist.append({**p, "status": s.get("status"), "round": s.get("round"), "stage": s.get("stage"),
                           **rc.get(pid, {"spend": 0.0, "seconds": 0.0, "calls": 0})})
     statuses = Counter(t["status"].get("status", "new") for t in threads.values())

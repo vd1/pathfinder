@@ -59,6 +59,7 @@ tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } 
 .entry .t.clip { max-height:6.5em; overflow:hidden; -webkit-mask-image:linear-gradient(#000 70%, transparent); mask-image:linear-gradient(#000 70%, transparent); } .more { color:var(--accent); cursor:pointer; font-size:12px; }
 .verdict { border-left:3px solid var(--muted); padding:8px 12px; margin:8px 0; background:var(--bg); border-radius:0 8px 8px 0; } .verdict.DRAFT { border-color:var(--ok); } .verdict.ITERATE, .verdict.REVISE { border-color:var(--warn); } .verdict.PAUSE { border-color:var(--muted); }
 .verdict .next { color:var(--muted); font-size:12px; margin-top:4px; }
+.abs { margin-top:6px; } .abs summary { cursor:pointer; } .abs div { margin-top:6px; line-height:1.5; }
 .muted { color:var(--muted); } .small { font-size:12px; } .titles a { color:var(--fg); } .titles a:hover { color:var(--accent); }
 tr.sub td { background:var(--bg); padding:10px 14px 12px 28px; font-size:12px; } tr.sub .titles { line-height:1.45; margin-bottom:6px; } tr.sub .why { color:var(--muted); margin-bottom:8px; }
 td.caret { width:18px; color:var(--muted); font-size:11px; padding-right:0; }
@@ -143,6 +144,7 @@ function renderThread() {
   let h = `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${pill(st.status)}<span class="muted small">stage ${esc(st.stage)}, round ${st.round ?? 0}${st.repairs ? `, ${st.repairs} repair` : ""}</span></div>`;
   if (st.reason) h += `<div class="small" style="margin-top:6px">${esc(st.reason)}</div>`;
   h += `<div class="titles" style="margin-top:10px"><b>Q</b> <a href="${abs(sl.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(sl.p)}" target="_blank">${esc(x.p_title)}</a></div>`;
+  h += `<details class="abs"><summary class="muted small">abstracts</summary><div class="small tex-dollar"><b>Q.</b> ${esc(x.q_abstract)}</div><div class="small tex-dollar" style="margin-top:6px"><b>P.</b> ${esc(x.p_abstract)}</div></details>`;
   if (x.connexion) h += `<div class="muted small" style="margin-top:8px"><b>the scan saw:</b> ${esc(x.connexion)}</div>`;
   h += `<div style="margin-top:10px"><a class="btn" href="${base}ledger.jsonl" target="_blank">raw ledger</a>`
     + (x.note ? `<a class="btn b-note" href="${base}${selected}.pdf" target="_blank">note</a><a class="btn" href="${base}${selected}.tex" target="_blank">tex</a>` : `<span class="muted small">no note yet</span>`)
@@ -157,6 +159,8 @@ function renderThread() {
     return `<div class="entry"><span class="badge a-${esc(e.actor)}">${esc(e.actor)}</span><span class="badge k k-${esc(e.kind)}">${esc(e.kind)}</span><span class="meta">#${e.seq} ${esc((e.at || "").slice(11, 16))}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` read to #${e.seen}` : ""}</span><div class="t ${long && !isOpen ? "clip" : ""}">${esc(e.text)}</div>${long ? `<span class="more" data-id="${id}">${isOpen ? "show less" : "show more"}</span>` : ""}</div>`; }).join("") || `<div class="muted small">empty</div>`;
   h += `<h3>Files</h3><div class="files">${x.files.map(f => `<a href="${base}${f}" target="_blank" title="${esc(f)}">${esc(f)}</a>`).join("")}</div>`;
   el.innerHTML = h;
+  if (window.renderMathInElement) el.querySelectorAll(".tex-dollar").forEach(a => renderMathInElement(a, { throwOnError: false,
+    delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}] }));
   if (window.renderMathInElement) renderMathInElement(el, { throwOnError: false, delimiters: [
     {left: "$$", right: "$$", display: true}, {left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}],
     ignoredTags: ["script", "style", "textarea", "pre", "code", "a"] });
