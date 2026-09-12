@@ -460,6 +460,66 @@ standard, not the number of voices, sets the outcome. Two peers remain the
 default; three is a reasonable choice when a campaign values fewer rounds
 and a denser ledger over cheaper threads.
 
+### How the notes read, side by side
+
+Numbers aside, V asked how the outputs compare when read. I read the
+edited notes of four pairs in both runs: Q7P7 and Q7P1 (DRAFT both
+times), Q4P6 (the flip) and Q3P10 (PAUSE both times).
+
+| pair | two peers found | three peers found | reads better |
+| --- | --- | --- | --- |
+| Q7P7 | a narrower voluntary-migration construction; admits no equivalence with P's own model | an exact change of variables putting P's balance equality into Q's capacity form, and a balanced carbon charge that keeps budget balance | three |
+| Q7P1 | a positive theorem: a uniform bound on P's CVaR surrogate with an explicit constant, and its welfare consequences | no positive theorem; crisp obstructions instead: a two-point example where CVaR removes the curvature Q needs, and an identifiability example for aggregate CVaR | different, equal |
+| Q4P6 | observer reliabilities and a ranking identified from cross-observer moments without labels | the standard potential-shaping telescoping and an exit-accounting caveat, paused in round 1 | two |
+| Q3P10 | an experimental design with a visible zero-price meter as control against a visible fee | a factorial design with concrete rates and less insight | two, slightly |
+
+What the reading adds to the numbers:
+
+- **Style is a wash.** The three-peer notes are shorter by a tenth to a
+  fifth and more declarative; the two-peer notes narrate more of the
+  attempts. Much of that is editor variance. Both read well.
+- **Faster convergence cuts both ways.** On Q4P6 the three peers paused
+  in round 1 because the verifier rightly called their result standard
+  algebra. With two peers the same round 1 verdict was followed by a
+  round 2 that produced the identification result. The extra round, not
+  the extra voice, made that thread.
+- **The three-peer run audits itself more.** The Q7P1 note states that no
+  novelty search appears in the ledger and so makes no novelty claim; the
+  two-peer notes never say so. This matches the denser objection count.
+- **Q7P1 is the striking case.** Same papers, prompts and model, and one
+  run proves a bound while the other proves the bound cannot be used the
+  way it was proposed. Both are defensible; a referee would want both in
+  the same paper.
+
+Reading: the two runs differ more in what they found than in how well
+they read, and the run-to-run spread on a single pair is at least as
+large as the two-versus-three difference. The pipeline is a sampler. For
+the pairs that draft, the cheaper lever is a second independent run of
+the same pair followed by a consolidation of the two notes, rather than
+a third voice on every thread. That would have merged Q7P1's theorem
+with its counterexample and Q7P7's narrow construction with its exact
+lift. Not built; recorded here as the next experiment after the
+two-verifier replay.
+
+### Two verifiers, parked
+
+V also asked whether two verifiers on the same ledger would help. The
+verify stage is the cheapest in the pipeline (13.06 USD over 28 calls in
+the reference campaign, about 9% of the research stage; 2.70 USD over 14
+calls on ELM) and the only point where a thread's fate is decided, so a
+second reader costs little. It would help only if decorrelated from the
+first: a different model, or a different role (one reader checks that
+every claim traces to the ledger and the mathematics holds, the other
+judges novelty with web search on, which today nobody does before the
+paper reviewer). Readers must be blind to each other or the second
+anchors on the first; both verdicts go to the ledger as review entries so
+the peers see two gap lists. Merge rule proposed: agreement stands,
+REVISE against DRAFT resolves to REVISE, any other disagreement calls a
+third reader of another model and the majority wins. Before building any
+of it, the measurement is a blind replay of a second verifier over the
+existing final notes of both campaigns, to learn how often one verifier
+disagrees with another on the same note. Parked at V's request.
+
 ## Vocabulary, settled 12 September
 
 Each stage has its own words, and the endings of the later stages mirror
