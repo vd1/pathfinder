@@ -145,3 +145,26 @@ def test_revise_repairs_the_note_once_then_caps(tmp_path, monkeypatch):
     assert seen["consolidate"] == 2 and seen["verify"] == 2 and "This is a repair" in seen["prompts"][1]
     hist = json.loads((tmp_path / "threads" / "Q1P1" / "Q1P1.verdict.json").read_text())
     assert [h["decision"] for h in hist] == ["REVISE", "REVISE"] and hist[0]["note_sha256"] != hist[1]["note_sha256"]
+
+
+def test_three_peers_share_the_ledger(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path); c.peers = ("ada", "emmy", "grace"); c.allowances["peer_calls"] = 1
+    real = transport.call
+    actors = []
+
+    def fake_call(prompt, **kw):
+        if kw["stage"] == "peers":
+            actors.append(kw["actor"]); assert "partner of" in prompt
+            monkeypatch.setenv("FAKE_RUN", f"{sys.executable} -m pathfinder.ledger --root . --actor {kw['actor']} add --kind idea --text x >/dev/null")
+            monkeypatch.setenv("FAKE_REPLY", "p")
+        elif kw["stage"] == "consolidate":
+            (kw["cwd"] / "Q1P1.tex").write_text("x"); monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "ok")
+        else:
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", '{"decision":"PAUSE","reason":"thin","action":null}')
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "PAUSE"
+    assert sorted(actors) == ["ada", "emmy", "grace"] and (tmp_path / "threads" / "Q1P1" / "grace").is_dir()
+    from pathfinder.ledger import Ledger
+    assert Ledger(tmp_path / "threads" / "Q1P1" / "ledger.jsonl").count() == 3

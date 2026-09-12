@@ -21,6 +21,7 @@ class Campaign:
     scan_fulltext: str | None
     call_estimate_usd: float = 2.0
     raw: dict = field(default_factory=dict)
+    peers: tuple = ("ada", "emmy")
 
     def path(self, name: str) -> Path:
         return self.root / name
@@ -45,4 +46,5 @@ def load(root: Path) -> Campaign:
         cut=raw.get("cut", 1), rounds=raw.get("rounds", 3), allowances=raw["allowances"],
         budget_usd=raw["budget_usd"], prices=raw.get("prices", {}),
         scan_fulltext=(raw.get("scan") or {}).get("fulltext"),
-        call_estimate_usd=raw.get("call_estimate_usd", 2.0), raw=raw)
+        call_estimate_usd=raw.get("call_estimate_usd", 2.0), raw=raw,
+        peers=tuple(raw.get("peers") or ("ada", "emmy")))

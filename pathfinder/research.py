@@ -7,7 +7,7 @@ from . import corpus, transport
 from .ledger import Ledger
 from .scan import prompts_dir, parse_json
 
-PEERS = ("ada", "emmy")
+PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json
 TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"}
 
 
@@ -47,7 +47,7 @@ def prepare(campaign, pair_id: str) -> Path:
         else:
             (d / "inputs" / f"{side}.txt").write_text(f"Title: {row['title']}\n\nAbstract: {row['abstract']}\n")
         (d / "inputs" / f"{side}.json").write_text(json.dumps(row, indent=1))
-    for a in PEERS:
+    for a in campaign.peers:
         (d / a).mkdir(exist_ok=True)
     _set(campaign, pair_id, round=1, stage="peers", status="running", reason=None, started=_now())
     return d
@@ -84,21 +84,23 @@ def _peers(campaign, pair_id, stop):
     helper = f"{sys.executable} -m pathfinder.ledger --root ."
     used = {"seconds": 0.0}; lock = threading.Lock()
 
+    peers = list(campaign.peers)
+
     def one(actor):
-        peer = PEERS[1 - PEERS.index(actor)]
+        others = [a for a in peers if a != actor]
         for call_no in range(A["peer_calls"]):
             with lock:
                 left = A["peer_seconds"] - used["seconds"]
-            if left <= 0 or L.ready(list(PEERS)):
+            if left <= 0 or L.ready(peers):
                 return
-            while L.ready([actor]) and not done[peer]:      # my word stands; wait for my partner
+            while L.ready([actor]) and not all(done[o] for o in others):   # my word stands; wait for my partners
                 time.sleep(15)
-                if L.ready(list(PEERS)):
+                if L.ready(peers):
                     return
-            if L.ready(list(PEERS)):
+            if L.ready(peers):
                 return
             _check(stop)
-            p = _prompt(campaign, "peer", ACTOR=actor, PEER=peer, Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
+            p = _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
                         LEDGER=f"{helper} --actor {actor}", SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
@@ -112,7 +114,7 @@ def _peers(campaign, pair_id, stop):
             if r["transport_failed"]:
                 raise transport.TransportFailed(pair_id)
 
-    done = {a: False for a in PEERS}
+    done = {a: False for a in peers}
 
     def guarded(actor):
         try:
@@ -120,8 +122,8 @@ def _peers(campaign, pair_id, stop):
         finally:
             done[actor] = True
 
-    with ThreadPoolExecutor(2) as ex:
-        for f in [ex.submit(guarded, a) for a in PEERS]:
+    with ThreadPoolExecutor(len(peers)) as ex:
+        for f in [ex.submit(guarded, a) for a in peers]:
             f.result()
 
 
@@ -130,7 +132,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     d = campaign.thread_dir(pair_id)
     for attempt in range(2):
         r = transport.call(prompt, campaign=campaign, model=campaign.model, tools=tools, search=False, cwd=d,
-                           timeout=seconds, thread=pair_id, stage=stage, actor="ada" if stage == "consolidate" else "verifier")
+                           timeout=seconds, thread=pair_id, stage=stage, actor=campaign.peers[0] if stage == "consolidate" else "verifier")
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
         if r["text"] or r["error"] is None or done():
@@ -155,7 +157,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 _set(campaign, pair_id, stage="consolidate")
             elif s["stage"] == "consolidate":
                 _check(stop)
-                why = "" if L.ready(list(PEERS)) else " because the allowance ran out before both peers declared ready"
+                why = "" if L.ready(list(campaign.peers)) else " because the allowance ran out before every peer declared ready"
                 repair = s.get("repair")
                 if repair:
                     prior = (f" This is a repair of the existing {note.name}, not new research. An independent verifier found"
@@ -168,7 +170,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                _prompt(campaign, "consolidate", ACTOR="ada", WHY=why, NOTE=note.name, PRIOR=prior), True,
+                                _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, PRIOR=prior), True,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():
