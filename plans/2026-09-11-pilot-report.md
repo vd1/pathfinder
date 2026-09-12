@@ -384,7 +384,7 @@ Their answer, condensed:
   per pair from the note only, verdict and links, labelled an index and
   not a scientific artefact, about a dollar a pair. Left to V.
 
-Taken into Pathfinder: a "needs the owner" table at the top of the page,
+Taken into Pathfinder: a "decision queue" table at the top of the page,
 listing every thread or stage waiting on a person (stopped, blocked, paper
 returned, edit blocked, held by the stop marker) with reason, age and the
 one safe action from the same reconcile function the CLI uses. Also

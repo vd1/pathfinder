@@ -150,7 +150,7 @@ them.
 - The monitor is a live page served from the campaign directory, not a
   static HTML rebuilt on a schedule; `export` writes the same page with
   the state inline and every thread's documents beside it, so a campaign
-  can be handed over as one zip. A "needs the owner" table at the top
+  can be handed over as one zip. A "decision queue" table at the top
   lists every thread or stage waiting on a person, with reason, age and
   the one safe action. It renders TeX mathematics in ledger
   entries and verdicts written with `\(...\)`, `\[...\]` or `$$...$$`
