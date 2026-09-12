@@ -5,133 +5,158 @@
 <title>Pathfinder monitor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-:root { --bg:#f7f7f5; --fg:#222; --muted:#6b6b6b; --line:#ddd; --card:#fff; --accent:#2a6fdb; --warn:#c0392b; --ok:#1e8449; --soft:rgba(42,111,219,.10); }
-@media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#e6e6e6; --muted:#9a9a9a; --line:#333; --card:#1d1d1d; --accent:#6ea8ff; --warn:#ff7b6b; --ok:#5fd38d; --soft:rgba(110,168,255,.14); } }
+:root { --bg:#f4f5f7; --fg:#1c1e21; --muted:#6b7280; --line:#e3e5e8; --card:#ffffff; --accent:#2f6fed; --accent-soft:rgba(47,111,237,.10);
+  --ok:#1a7f4b; --ok-soft:rgba(26,127,75,.12); --warn:#b7791f; --warn-soft:rgba(183,121,31,.14); --bad:#c0392b; --bad-soft:rgba(192,57,43,.12);
+  --grey-soft:rgba(107,114,128,.14); --radius:10px; --shadow:0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04); }
+@media (prefers-color-scheme: dark) { :root { --bg:#111214; --fg:#e7e8ea; --muted:#9aa0a6; --line:#2a2d31; --card:#1a1c1f; --accent:#7aa2ff; --accent-soft:rgba(122,162,255,.16);
+  --ok:#5fd38d; --ok-soft:rgba(95,211,141,.16); --warn:#e6b45c; --warn-soft:rgba(230,180,92,.18); --bad:#ff7b6b; --bad-soft:rgba(255,123,107,.16); --grey-soft:rgba(154,160,166,.18); --shadow:none; } }
 * { box-sizing:border-box; }
-body { margin:0; padding:16px 24px 40px; font:14px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--fg); }
-h1 { font-size:18px; margin:0 0 12px; display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; }
-h2 { font-size:15px; margin:22px 0 8px; } h3 { font-size:13px; margin:14px 0 6px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-.tiles { display:flex; flex-wrap:wrap; gap:10px; }
-.tile { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:8px 12px; min-width:120px; }
-.tile b { display:block; font-size:18px; font-weight:600; } .tile span { color:var(--muted); font-size:12px; }
-.flag { color:var(--warn); font-weight:600; } .good { color:var(--ok); }
-table { border-collapse:collapse; background:var(--card); width:100%; } td, th { border:1px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; }
-th { color:var(--muted); font-weight:500; font-size:12px; }
-.heat { width:auto; } .heat td.cell { width:46px; text-align:center; font-variant-numeric:tabular-nums; cursor:default; }
-.heat td.short { outline:2px solid var(--accent); outline-offset:-2px; font-weight:600; }
-.bars { display:flex; align-items:flex-end; gap:2px; height:56px; margin-top:8px; }
-.bar { width:8px; background:var(--muted); opacity:.6; } .bar.in { background:var(--accent); opacity:1; }
-tr.pair { cursor:pointer; } tr.pair:hover { background:var(--soft); } tr.sel { background:var(--soft); }
-.st { display:inline-block; padding:0 7px; border-radius:10px; font-size:12px; font-weight:600; }
-.st-DRAFT { background:var(--ok); color:#fff; } .st-PAUSE, .st-PAUSE-ON-ITERATE { background:var(--muted); color:#fff; }
-.st-running { background:var(--accent); color:#fff; } .st-stopped, .st-new { border:1px solid var(--line); } .st-BLOCKED { background:var(--warn); color:#fff; }
-.badge { display:inline-block; padding:0 6px; border-radius:10px; font-size:11px; border:1px solid var(--line); margin-right:4px; }
-.ada { border-color:#c47dd8; color:#a04fc0; } .emmy { border-color:#3aa; color:#288; } .verifier { border-color:#e0a030; color:#b07a10; }
-.k-finding { background:var(--soft); } .k-objection { border-color:var(--warn); color:var(--warn); } .k-correction { border-color:var(--warn); }
-.k-ready { background:var(--ok); color:#fff; border-color:var(--ok); }
-.entry { border-bottom:1px solid var(--line); padding:8px 0; } .entry .t { white-space:pre-wrap; margin-top:3px; overflow-wrap:anywhere; }
-.entry .t.clip { max-height:7.5em; overflow:hidden; position:relative; }
-.more { color:var(--accent); cursor:pointer; font-size:12px; }
-.verdict { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:4px; padding:8px 10px; margin:6px 0; }
-.verdict.DRAFT { border-left-color:var(--ok); } .verdict.PAUSE { border-left-color:var(--muted); }
-.muted { color:var(--muted); } a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
-.links a { margin-right:8px; }
-.two { display:grid; grid-template-columns: minmax(0,5fr) minmax(0,6fr); gap:28px; } @media (max-width: 1100px) { .two { grid-template-columns:1fr; } }
-.card { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:10px 14px; }
-.files { columns:2; font-size:12px; } .files a { display:block; }
+body { margin:0; padding:0 0 48px; font:14px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif; background:var(--bg); color:var(--fg); font-variant-numeric:tabular-nums; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.wrap { max-width:1500px; margin:0 auto; padding:0 28px; }
+header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); box-shadow:var(--shadow); }
+header .wrap { display:flex; align-items:center; gap:18px; height:56px; }
+header h1 { font-size:17px; margin:0; font-weight:650; letter-spacing:-.01em; } header h1 small { color:var(--muted); font-weight:400; margin-left:8px; }
+.spacer { flex:1; } .upd { color:var(--muted); font-size:12px; }
+.alert { padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; } .alert.stop { background:var(--warn-soft); color:var(--warn); } .alert.health { background:var(--bad-soft); color:var(--bad); }
+h2 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:28px 0 10px; font-weight:600; }
+h3 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:18px 0 8px; font-weight:600; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px 16px; }
+.pipeline { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-top:20px; }
+.step { position:relative; } .step b { display:block; font-size:26px; font-weight:650; line-height:1.1; } .step span { color:var(--muted); font-size:12px; } .step small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+.budget { margin-top:12px; display:grid; grid-template-columns: 2fr repeat(4, 1fr); gap:12px; align-items:center; }
+.bar { height:8px; background:var(--grey-soft); border-radius:999px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--accent); border-radius:999px; } .bar i.over { background:var(--bad); }
+.kv b { display:block; font-size:16px; font-weight:600; } .kv span { color:var(--muted); font-size:12px; }
+.cols { display:grid; grid-template-columns:minmax(0, 11fr) minmax(0, 9fr); gap:24px; align-items:start; } @media (max-width:1150px) { .cols { grid-template-columns:1fr; } }
+.sticky { position:sticky; top:72px; max-height:calc(100vh - 88px); overflow:auto; }
+table { border-collapse:collapse; width:100%; font-size:13px; } th { text-align:left; color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.05em; padding:6px 8px; border-bottom:1px solid var(--line); }
+td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle; } td.nw { white-space:nowrap; } tr:last-child td { border-bottom:0; }
+.heat { width:auto; } .heat th, .heat td { border:0; padding:2px; } .heat th a { color:var(--muted); font-size:11px; font-weight:600; padding:0 4px; }
+.heat td.cell { width:42px; height:30px; text-align:center; font-size:11px; border-radius:5px; cursor:default; }
+.heat td.short { box-shadow:inset 0 0 0 2px var(--accent); font-weight:700; } .heat td.term { cursor:pointer; }
+.legend { display:flex; gap:14px; align-items:center; color:var(--muted); font-size:12px; margin-top:8px; flex-wrap:wrap; }
+.bars { display:flex; align-items:flex-end; gap:2px; height:44px; margin-top:6px; } .bars i { flex:1; max-width:10px; background:var(--grey-soft); border-radius:2px 2px 0 0; } .bars i.in { background:var(--accent); }
+.pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; font-weight:650; letter-spacing:.02em; white-space:nowrap; }
+.s-DRAFT { background:var(--ok-soft); color:var(--ok); } .s-PAUSE { background:var(--grey-soft); color:var(--muted); } .s-PAUSE-ON-ITERATE { background:var(--warn-soft); color:var(--warn); }
+.s-running { background:var(--accent-soft); color:var(--accent); } .s-stopped, .s-new { border:1px solid var(--line); color:var(--muted); } .s-BLOCKED { background:var(--bad-soft); color:var(--bad); }
+.s-accepted { background:var(--ok-soft); color:var(--ok); } .s-returned, .s-writing, .s-reviewing { background:var(--warn-soft); color:var(--warn); }
+tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } tr.sel td { background:var(--accent-soft); }
+.score { display:flex; align-items:center; gap:6px; } .score i { display:inline-block; height:6px; background:var(--accent); border-radius:3px; opacity:.7; }
+.btn { display:inline-block; padding:2px 8px; border:1px solid var(--line); border-radius:6px; font-size:11px; color:var(--fg); background:var(--card); margin-right:4px; white-space:nowrap; } .btn:hover { border-color:var(--accent); text-decoration:none; color:var(--accent); }
+.btn.primary { border-color:var(--ok); color:var(--ok); }
+.chips { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 10px; } .chip { padding:2px 9px; border-radius:999px; border:1px solid var(--line); font-size:11px; cursor:pointer; color:var(--muted); background:var(--card); } .chip.on { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+.badge { display:inline-block; padding:0 7px; border-radius:999px; font-size:11px; font-weight:600; margin-right:5px; }
+.a-ada { background:rgba(160,79,192,.14); color:#a04fc0; } .a-emmy { background:rgba(40,136,136,.14); color:#288888; } .a-verifier { background:var(--warn-soft); color:var(--warn); }
+.k { border:1px solid var(--line); color:var(--muted); font-weight:500; } .k-finding { border-color:var(--accent); color:var(--accent); } .k-objection, .k-correction { border-color:var(--bad); color:var(--bad); } .k-ready { border-color:var(--ok); color:var(--ok); }
+.entry { padding:10px 0; border-bottom:1px solid var(--line); } .entry .meta { color:var(--muted); font-size:11px; } .entry .t { white-space:pre-wrap; overflow-wrap:anywhere; margin-top:4px; font-size:13px; }
+.entry .t.clip { max-height:6.5em; overflow:hidden; -webkit-mask-image:linear-gradient(#000 70%, transparent); mask-image:linear-gradient(#000 70%, transparent); } .more { color:var(--accent); cursor:pointer; font-size:12px; }
+.verdict { border-left:3px solid var(--muted); padding:8px 12px; margin:8px 0; background:var(--bg); border-radius:0 8px 8px 0; } .verdict.DRAFT { border-color:var(--ok); } .verdict.ITERATE, .verdict.REVISE { border-color:var(--warn); } .verdict.PAUSE { border-color:var(--muted); }
+.verdict .next { color:var(--muted); font-size:12px; margin-top:4px; }
+.muted { color:var(--muted); } .small { font-size:12px; } .titles a { color:var(--fg); } .titles a:hover { color:var(--accent); }
+.outputs { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:12px; }
+.out { padding:12px 14px; } .out .h { display:flex; align-items:center; gap:8px; margin-bottom:6px; } .out .h b { font-size:14px; } .out .titles { font-size:12px; line-height:1.4; margin-bottom:8px; }
+.files { columns:2; font-size:12px; column-gap:20px; } .files a { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.empty { color:var(--muted); padding:20px; text-align:center; }
 </style>
 </head>
 <body>
-<h1>Pathfinder <span id="phase" class="muted"></span> <span id="gen" class="muted" style="font-size:12px"></span></h1>
-<div class="tiles" id="tiles"></div>
-<div class="two">
-<div>
-<h2>Scan</h2>
-<div id="scan"></div>
-<h2>Shortlist</h2>
-<div id="shortlist"></div>
-</div>
-<div>
-<h2 id="thread-title">Thread</h2>
-<div id="thread" class="muted">Click a pair in the shortlist.</div>
-</div>
+<header><div class="wrap"><h1>Pathfinder <small id="name"></small></h1><span class="pill" id="phase"></span><span id="flags"></span><span class="spacer"></span><span class="upd" id="gen"></span></div></header>
+<div class="wrap">
+  <div class="pipeline" id="pipeline"></div>
+  <div class="card budget" id="budget"></div>
+  <div class="cols">
+    <div>
+      <h2>Scan</h2><div class="card" id="scan"></div>
+      <h2>Shortlist</h2><div class="card" style="padding:0 0 4px;overflow:auto" id="shortlist"></div>
+      <h2>Outputs</h2><div class="outputs" id="outputs"></div>
+    </div>
+    <div class="sticky">
+      <h2 id="thread-title">Thread</h2><div class="card" id="thread"><div class="empty">Select a pair in the shortlist or the scan.</div></div>
+    </div>
+  </div>
 </div>
 <script>
-let selected = null, last = null; const open = new Set();
+let selected = null, last = null; const open = new Set(); let actorFilter = "all";
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt = (n, d=2) => (n ?? 0).toFixed(d);
-const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)}h ${Math.round((s%3600)/60)}m` : `${Math.round(s/60)}m`; };
-function tile(label, value, cls="") { return `<div class="tile"><b class="${cls}">${value}</b><span>${label}</span></div>`; }
-function heat(v, max) { if (v == null) return "background:transparent;color:var(--muted)";
-  const a = max ? Math.min(1, v / max) : 0; return `background:rgba(42,111,219,${(0.06 + 0.8*a).toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}`; }
-function stat(s) { return `<span class="st st-${esc(s ?? "new")}">${esc(s ?? "new")}</span>`; }
-function elapsed(c) { if (!c.first_call || !c.last_call) return "";
-  return mins((new Date(c.last_call) - new Date(c.first_call)) / 1000); }
+const fmt = (n, d=2) => (Number(n) || 0).toFixed(d);
+const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)} h ${Math.round((s%3600)/60)} min` : `${Math.round(s/60)} min`; };
+const pill = s => `<span class="pill s-${esc(s ?? "new")}">${esc(s ?? "new")}</span>`;
+const abs = id => `https://arxiv.org/abs/${id}`;
+const TERMINAL = new Set(["DRAFT", "PAUSE", "PAUSE-ON-ITERATE"]);
+function heat(v, max) { if (v == null) return "background:transparent;color:var(--muted)"; const a = max ? Math.min(1, v / max) : 0;
+  return `background:rgba(47,111,237,${(0.05 + 0.85 * a).toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}`; }
+function elapsed(c) { return c.first_call && c.last_call ? mins((new Date(c.last_call) - new Date(c.first_call)) / 1000) : ""; }
+function select(id) { selected = id; try { history.replaceState(null, "", "#" + id); } catch (e) {} render(last); }
 function render(s) {
-  last = s; const c = s.campaign;
-  document.getElementById("phase").textContent = "phase: " + c.phase;
-  document.getElementById("gen").textContent = "updated " + s.generated;
-  const by = Object.entries(c.by_status).map(([k, v]) => `${stat(k)} ${v}`).join(" ") || "none";
-  document.getElementById("tiles").innerHTML =
-    tile("spend / budget, USD", `${fmt(c.spend)} / ${fmt(c.budget)}`, c.spend > c.budget ? "flag" : "") +
-    tile("model calls (errors)", `${c.calls} <small class="muted">(${c.errors})</small>`) + tile("model time", mins(c.seconds)) +
-    tile("wall time, first to last call", elapsed(c)) + tile("seats", c.seats) +
-    tile("backend / model", `${esc(c.backend)}<br><small>${esc(c.model)}</small>`) +
-    tile("stop", c.stop ? `<span class="flag">${esc(c.stop.reason)}</span>` : "<span class='good'>no</span>") +
-    tile("health", c.health ? `<span class="flag">${esc(c.health.reason)}</span>` : "<span class='good'>ok</span>") +
-    tile("threads", by);
-  const sc = s.scan, short = new Set(s.shortlist.map(p => p.pair_id));
-  const max = Math.max(1, ...sc.scores);
-  let h = `<p class="muted">${sc.done} of ${sc.total} pairs scored, ${fmt(sc.cost)} USD${sc.cut != null ? `; cut ${sc.cut}% selects ${sc.n_selected}` : sc.min_score != null ? `; score >= ${sc.min_score} selects ${sc.n_selected}` : ""}. Score = feasibility x gain. Outlined cells are shortlisted; hover for titles, click a row or column label for the arXiv abstract.</p>`;
+  last = s; const c = s.campaign, sc = s.scan, th = s.threads;
+  document.getElementById("name").textContent = c.name || "";
+  document.getElementById("phase").textContent = c.phase; document.getElementById("phase").className = "pill s-running";
+  document.getElementById("gen").textContent = "updated " + s.generated.replace("T", " ").replace("Z", " UTC");
+  document.getElementById("flags").innerHTML = (c.stop ? `<span class="alert stop">stop: ${esc(c.stop.reason)}</span> ` : "") + (c.health ? `<span class="alert health">health: ${esc(c.health.reason)}</span>` : "");
+  const terminal = s.shortlist.filter(p => TERMINAL.has(p.status)).length, drafts = s.shortlist.filter(p => p.status === "DRAFT").length;
+  const papers = Object.values(th).filter(t => t.paper && t.paper.status === "accepted").length, readable = Object.values(th).filter(t => t.edited && t.edited.status === "done").length;
+  const step = (n, label, sub) => `<div class="card step"><b>${n}</b><span>${label}</span><small>${sub || ""}</small></div>`;
+  document.getElementById("pipeline").innerHTML = step(`${sc.done}<span class="muted" style="font-size:16px"> / ${sc.total}</span>`, "pairs scanned", `${fmt(sc.cost)} USD`)
+    + step(s.shortlist.length, "shortlisted", sc.cut != null ? `top ${sc.cut}%` : sc.min_score != null ? `score at or above ${sc.min_score}` : "")
+    + step(`${terminal}<span class="muted" style="font-size:16px"> / ${s.shortlist.length}</span>`, "threads finished", Object.entries(c.by_status).map(([k, v]) => `${k} ${v}`).join(", "))
+    + step(drafts, "drafts", `${readable} readable notes`) + step(papers, "papers accepted", "");
+  const pct = Math.min(100, 100 * c.spend / (c.budget || 1));
+  document.getElementById("budget").innerHTML = `<div><div class="small" style="display:flex;justify-content:space-between"><span><b>${fmt(c.spend)}</b> of ${fmt(c.budget)} USD${c.spend > c.budget ? ' <span style="color:var(--bad)">over the cap</span>' : ""}</span><span class="muted">API-equivalent</span></div><div class="bar" style="margin-top:6px"><i class="${c.spend > c.budget ? "over" : ""}" style="width:${pct}%"></i></div></div>`
+    + `<div class="kv"><b>${c.calls}</b><span>model calls${c.errors ? `, ${c.errors} with errors` : ""}</span></div><div class="kv"><b>${mins(c.seconds)}</b><span>model time</span></div><div class="kv"><b>${elapsed(c)}</b><span>wall time, first to last call</span></div><div class="kv"><b>${esc(c.backend)}</b><span>${esc(c.model)}, ${c.seats} seats</span></div>`;
+  const short = new Map(s.shortlist.map(p => [p.pair_id, p])), max = Math.max(1, ...sc.scores);
+  let h = "";
   if (sc.q.length && sc.p.length) {
-    const abs = id => id ? `https://arxiv.org/abs/${id}` : "#";
     h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${j+1}</a></th>`).join("")}</tr>`;
     sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${i+1}</a></th>` + row.map((v, j) => {
-      const id = `Q${i+1}P${j+1}`; return `<td class="cell ${short.has(id) ? "short" : ""}" style="${heat(v, max)}" title="${id}: ${esc(sc.q[i])} x ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
-    h += "</table></div>";
-    h += `<div class="bars">${sc.scores.map((v, i) => `<div class="bar ${i < sc.n_selected ? "in" : ""}" style="height:${Math.max(2, 56*v/max)}px" title="${v}"></div>`).join("")}</div>`;
-    h += `<div class="muted" style="font-size:12px">all scores, sorted; blue ones made the cut</div>`;
-  }
+      const id = `Q${i+1}P${j+1}`, p = short.get(id); return `<td class="cell ${p ? "short term" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
+    h += `</table></div><div class="legend"><span>score = feasibility x gain, 0 to 10,000</span><span>outlined: shortlisted, click to open</span><span>row and column labels open the arXiv abstract</span></div>`;
+    h += `<div class="bars">${sc.scores.map((v, i) => `<i class="${i < s.shortlist.length ? "in" : ""}" style="height:${Math.max(2, 44 * v / max)}px" title="${v}"></i>`).join("")}</div><div class="muted small">all scores, sorted; blue made the shortlist</div>`;
+  } else h = `<div class="empty">no corpora yet</div>`;
   document.getElementById("scan").innerHTML = h;
-  let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>time</th><th>USD</th><th>open</th></tr>`;
+  let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
   for (const p of s.shortlist) {
-    const th = s.threads[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
-    const links = [th.entries ? `<a href="#" data-show="${p.pair_id}" data-to="ledger">ledger</a>` : "",
-      th.note ? `<a href="${base}${p.pair_id}.pdf" target="_blank">note (pdf)</a> <a href="${base}${p.pair_id}.tex" target="_blank">tex</a>` : "",
-      (th.verdicts || []).length ? `<a href="#" data-show="${p.pair_id}" data-to="verdicts">verdict</a>` : "",
-      th.edited && th.edited.status === "done" ? `<a href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
-      th.paper ? `<a href="${base}paper/paper.pdf" target="_blank">paper (${esc(th.paper.status)})</a>` : ""].filter(Boolean).join(" ");
-    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td>${p.score ?? ""}</td><td>${stat(p.status)}</td><td>${p.round ?? 0}</td><td>${esc(p.stage ?? "")}</td><td>${p.calls}</td><td>${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="links">${links}</td></tr>`;
+    const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`, st = x.status || {};
+    const links = [x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
+      x.paper ? `<a class="btn ${x.paper.status === "accepted" ? "primary" : ""}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : "",
+      x.note ? `<a class="btn" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : ""].join("");
+    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td>${pill(p.status)}</td><td>${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs} repair</span>` : ""}</td><td class="muted">${esc(p.stage ?? "")}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
   }
-  document.getElementById("shortlist").innerHTML = t + "</table>";
-  document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.tagName === "A") return; selected = r.dataset.id; render(last); });
-  document.querySelectorAll("a[data-show]").forEach(a => a.onclick = e => { e.preventDefault(); selected = a.dataset.show; render(last);
-    const el = document.getElementById(a.dataset.to); if (el) el.scrollIntoView({behavior: "smooth", block: "start"}); });
+  document.getElementById("shortlist").innerHTML = s.shortlist.length ? t + "</table>" : `<div class="empty">no shortlist yet</div>`;
+  const outs = s.shortlist.filter(p => TERMINAL.has(p.status)).map(p => { const x = th[p.pair_id] || {}, base = `/threads/${p.pair_id}/`;
+    return `<div class="card out"><div class="h"><b>${p.pair_id}</b>${pill(p.status)}${x.paper ? pill("paper " + x.paper.status) : ""}</div><div class="titles"><a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><span class="muted">with</span> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
+      + (x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable note</a>` : "") + (x.paper && x.paper.status === "accepted" ? `<a class="btn primary" href="${base}paper/paper.pdf" target="_blank">paper</a>` : "")
+      + (x.note ? `<a class="btn" href="${base}${p.pair_id}.pdf" target="_blank">verified note</a>` : "") + `<a class="btn" href="#" data-show="${p.pair_id}">thread</a></div>`; });
+  document.getElementById("outputs").innerHTML = outs.join("") || `<div class="card empty">no finished thread yet</div>`;
+  document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.closest("a")) return; select(r.dataset.id); });
+  document.querySelectorAll("td.term").forEach(r => r.onclick = () => select(r.dataset.id));
+  document.querySelectorAll("a[data-show]").forEach(a => a.onclick = e => { e.preventDefault(); select(a.dataset.show); document.getElementById("thread-title").scrollIntoView({behavior: "smooth"}); });
   renderThread();
 }
 function renderThread() {
-  const el = document.getElementById("thread"), th = last && last.threads[selected];
+  const el = document.getElementById("thread"), x = last && last.threads[selected];
   document.getElementById("thread-title").textContent = selected ? `Thread ${selected}` : "Thread";
-  if (!th) { el.innerHTML = '<span class="muted">Click a pair in the shortlist.</span>'; return; }
-  const st = th.status || {}, base = `/threads/${selected}/`;
-  let h = `<div class="card"><div>${stat(st.status)} at <b>${esc(st.stage)}</b>, round ${st.round ?? 0}${st.reason ? `<div class="muted" style="margin-top:4px">${esc(st.reason)}</div>` : ""}</div>`;
-  const sl = last.shortlist.find(p => p.pair_id === selected) || {};
-  h += `<div style="margin-top:8px"><b>Q</b> <a href="https://arxiv.org/abs/${esc(sl.q)}" target="_blank">${esc(th.q_title)}</a><br><b>P</b> <a href="https://arxiv.org/abs/${esc(sl.p)}" target="_blank">${esc(th.p_title)}</a></div>`;
-  if (th.connexion) h += `<div class="muted" style="margin-top:6px"><b>scan said:</b> ${esc(th.connexion)}</div>`;
-  const stg = Object.entries(th.by_stage || {});
-  if (stg.length) h += `<table style="margin-top:8px;width:auto"><tr><th>stage</th><th>calls</th><th>time</th><th>USD</th><th>errors</th></tr>` +
-    stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
-  h += `<div class="links" style="margin-top:8px">${th.note ? `<a href="${base}${selected}.pdf" target="_blank">open the note as PDF</a> <a href="${base}${selected}.tex" target="_blank">tex source</a>` : "<span class='muted'>no note yet</span>"}${th.edited ? ` <span class="muted">readable account: ${esc(th.edited.status)}</span>${th.edited.status === "done" ? ` <a href="${base}edited/note.pdf" target="_blank">pdf</a> <a href="${base}edited/note.tex" target="_blank">tex</a>` : ""}` : ""}</div></div>`;
-  if (th.paper) h += `<h3>Paper</h3><div class="verdict ${th.paper.status === "accepted" ? "DRAFT" : ""}"><b>${esc(th.paper.status)}</b>, round ${th.paper.round}${th.paper.reason ? `<div style="margin-top:4px">${esc(th.paper.reason)}</div>` : ""}<div class="links" style="margin-top:4px"><a href="${base}paper/paper.pdf" target="_blank">pdf</a> <a href="${base}paper/paper.tex" target="_blank">tex</a> <a href="${base}paper/references.bib" target="_blank">bib</a> <a href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
-  h += `<h3 id="verdicts">Verdicts</h3>` + (th.verdicts.length ? th.verdicts.map(v =>
-    `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted">${esc(v.at)}</span><div style="margin-top:4px">${esc(v.reason)}</div>${v.action ? `<div class="muted" style="margin-top:4px"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : '<span class="muted">none yet</span>');
-  h += `<h3 id="ledger">Ledger, ${th.entries} entries <span style="text-transform:none;letter-spacing:0">(${Object.entries(th.by_kind).map(([k, v]) => `${k} ${v}`).join(", ")}; ${Object.entries(th.by_actor).map(([k, v]) => `${k} ${v}`).join(", ")}) <a href="${base}ledger.jsonl" target="_blank">raw</a></span></h3>`;
-  h += th.ledger.map(e => { const long = (e.text || "").length > 600, id = `${selected}#${e.seq}`, isOpen = open.has(id);
-    return `<div class="entry"><span class="badge ${esc(e.actor)}">${esc(e.actor)}</span><span class="badge k-${esc(e.kind)}">${esc(e.kind)}</span><span class="muted">#${e.seq} ${esc(e.at)}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` seen #${e.seen}` : ""}</span><div class="t ${long && !isOpen ? "clip" : ""}">${esc(e.text)}</div>${long ? `<span class="more" data-id="${id}">${isOpen ? "less" : "more"}</span>` : ""}</div>`; }).join("") || '<span class="muted">empty</span>';
-  h += `<h3>Files</h3><div class="files">${th.files.map(f => `<a href="${base}${f}" target="_blank">${esc(f)}</a>`).join("")}</div>`;
+  if (!x) { el.innerHTML = `<div class="empty">Select a pair in the shortlist or the scan.</div>`; return; }
+  const st = x.status || {}, base = `/threads/${selected}/`, sl = last.shortlist.find(p => p.pair_id === selected) || {};
+  let h = `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${pill(st.status)}<span class="muted small">stage ${esc(st.stage)}, round ${st.round ?? 0}${st.repairs ? `, ${st.repairs} repair` : ""}</span></div>`;
+  if (st.reason) h += `<div class="small" style="margin-top:6px">${esc(st.reason)}</div>`;
+  h += `<div class="titles" style="margin-top:10px"><b>Q</b> <a href="${abs(sl.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(sl.p)}" target="_blank">${esc(x.p_title)}</a></div>`;
+  if (x.connexion) h += `<div class="muted small" style="margin-top:8px"><b>the scan saw:</b> ${esc(x.connexion)}</div>`;
+  h += `<div style="margin-top:10px">` + (x.edited && x.edited.status === "done" ? `<a class="btn primary" href="${base}edited/note.pdf" target="_blank">readable note</a>` : "") + (x.paper ? `<a class="btn ${x.paper.status === "accepted" ? "primary" : ""}" href="${base}paper/paper.pdf" target="_blank">paper (${esc(x.paper.status)})</a>` : "")
+    + (x.note ? `<a class="btn" href="${base}${selected}.pdf" target="_blank">verified note</a><a class="btn" href="${base}${selected}.tex" target="_blank">tex</a>` : `<span class="muted small">no note yet</span>`) + `<a class="btn" href="${base}ledger.jsonl" target="_blank">raw ledger</a></div>`;
+  const stg = Object.entries(x.by_stage || {});
+  if (stg.length) h += `<h3>Calls by stage</h3><table><tr><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>errors</th></tr>` + stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
+  h += `<h3>Verdicts</h3>` + (x.verdicts.length ? x.verdicts.map(v => `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted small">${esc((v.at || "").slice(11, 16))} UTC</span><div class="small" style="margin-top:3px">${esc(v.reason)}</div>${v.action ? `<div class="next"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : `<div class="muted small">none yet</div>`);
+  if (x.paper && x.paper.reason) h += `<h3>Paper review</h3><div class="verdict ${x.paper.status === "accepted" ? "DRAFT" : "REVISE"}"><b>${esc(x.paper.status)}, round ${x.paper.round}</b><div class="small" style="margin-top:3px">${esc(x.paper.reason)}</div><div style="margin-top:6px"><a class="btn" href="${base}paper/paper.tex" target="_blank">tex</a><a class="btn" href="${base}paper/references.bib" target="_blank">bib</a><a class="btn" href="${base}paper/search.md" target="_blank">searches</a><a class="btn" href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
+  const actors = ["all", ...Object.keys(x.by_actor)];
+  h += `<h3>Ledger, ${x.entries} entries</h3><div class="chips">${actors.map(a => `<span class="chip ${actorFilter === a ? "on" : ""}" data-actor="${esc(a)}">${esc(a)}${a !== "all" ? ` ${x.by_actor[a]}` : ""}</span>`).join("")}<span class="muted small" style="align-self:center">${Object.entries(x.by_kind).map(([k, v]) => `${k} ${v}`).join(", ")}</span></div>`;
+  h += x.ledger.filter(e => actorFilter === "all" || e.actor === actorFilter).map(e => { const long = (e.text || "").length > 500, id = `${selected}#${e.seq}`, isOpen = open.has(id);
+    return `<div class="entry"><span class="badge a-${esc(e.actor)}">${esc(e.actor)}</span><span class="badge k k-${esc(e.kind)}">${esc(e.kind)}</span><span class="meta">#${e.seq} ${esc((e.at || "").slice(11, 16))}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` read to #${e.seen}` : ""}</span><div class="t ${long && !isOpen ? "clip" : ""}">${esc(e.text)}</div>${long ? `<span class="more" data-id="${id}">${isOpen ? "show less" : "show more"}</span>` : ""}</div>`; }).join("") || `<div class="muted small">empty</div>`;
+  h += `<h3>Files</h3><div class="files">${x.files.map(f => `<a href="${base}${f}" target="_blank" title="${esc(f)}">${esc(f)}</a>`).join("")}</div>`;
   el.innerHTML = h;
   el.querySelectorAll(".more").forEach(m => m.onclick = () => { open.has(m.dataset.id) ? open.delete(m.dataset.id) : open.add(m.dataset.id); renderThread(); });
+  el.querySelectorAll(".chip").forEach(ch => ch.onclick = () => { actorFilter = ch.dataset.actor; renderThread(); });
 }
+if (location.hash.length > 1) selected = location.hash.slice(1);
 async function tick() { try { render(await (await fetch("/state")).json()); } catch (e) { document.getElementById("gen").textContent = "state unavailable: " + e; } }
 tick(); setInterval(tick, 5000);
 </script>

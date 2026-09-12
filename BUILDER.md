@@ -48,18 +48,45 @@ you already have, or a description of where the papers come from].
    read; a new substantive entry reopens readiness. When both are ready or
    the allowance runs out, the first peer consolidates the ledger into a
    LaTeX note named after the pair. An independent tool-less verifier reads
-   everything and returns DRAFT, ITERATE or PAUSE. ITERATE loops back to the
-   peers automatically, up to a cap of three rounds, after which the thread
-   ends as PAUSE-ON-ITERATE. An empty ledger ends the thread as PAUSE. The
-   terminal statuses are exactly DRAFT, PAUSE and PAUSE-ON-ITERATE.
+   everything and returns one of four words: DRAFT; REVISE when the ledger
+   supports the result but the note misstates it, which sends the note back
+   to the consolidating peer for one repair without a peer round; ITERATE
+   when a specific gap stands in the way and the peers can close it with
+   what they have, which loops back to the peers automatically up to a cap
+   of four rounds; PAUSE otherwise, including when the gap needs data or
+   experiments the peers do not have, with the missing input named, and
+   when a previous ITERATE asked for the same thing and it was not
+   supplied. After the cap the thread ends as PAUSE-ON-ITERATE. An empty
+   ledger ends the thread as PAUSE. The terminal statuses are exactly
+   DRAFT, PAUSE and PAUSE-ON-ITERATE. The peers receive the scan judge's
+   connexion sentence and rationale as a first hypothesis; a consolidation
+   after ITERATE keeps the prior note's results and appends; every verdict
+   records the digest of the note it judged.
+
+   After any terminal verdict, an editor call rewrites the consolidated
+   note as a short readable paper with BibTeX for a reader without the
+   ledger: title, abstract, the two papers in plain words, what was done,
+   results, what did not hold, why the thread stopped, references limited
+   to Q, P and the sources the ledger cites. The pipeline builds it and
+   refuses a wrong reference title, telling the editor the right one.
 
 3. **Paper.** On a DRAFT thread, an author agent with tools and web search
    writes a short paper with BibTeX references from the note and ledger,
    searches for prior work on the specific result, records its queries,
    verifies every reference against arXiv or a DOI, and builds with
    latexmk. The pipeline rebuilds, checks that every citation exists and is
-   used and that arXiv titles match the API, and an independent reviewer
-   returns ACCEPT or REVISE with findings by id, up to three rounds.
+   used and that arXiv titles match the API, and an independent reviewer,
+   shown the author's search record, returns ACCEPT or REVISE with
+   findings by id, up to three rounds; every review records the paper's
+   digest.
+
+4. **Open-ended mode.** Instead of a fixed grid and a percentage cut, the
+   campaign can grow: page the same queries backwards in time appending
+   older papers without reordering (so positional pair ids stay valid),
+   flatten and scan only the new pairs, and rewrite the shortlist as every
+   pair at or above a score threshold, keeping any pair whose thread has
+   started. One `explore` command does a pass; the runner in another
+   terminal admits as the shortlist grows.
 
 ### The decisions that matter
 
@@ -86,11 +113,17 @@ you already have, or a description of where the papers come from].
   consolidate, run verify, or nothing), and applies it on request.
 - **Locks.** One pid file per thread directory; a dead pid is not a lock.
 - **Monitor.** A local HTTP server on 127.0.0.1 serving one page that polls
-  a state document every few seconds: spend against budget, calls, stop
-  and health flags, the scan as a heat map with the shortlist outlined and
-  labels linking to arXiv, a shortlist table, and a thread panel with the
-  ledger rendered in the page, verdicts, per-stage costs and the note as a
-  PDF compiled on demand. Text files are served as text, not downloads.
+  a state document every few seconds. A pipeline strip (pairs scanned,
+  shortlisted, threads finished, drafts, papers accepted) and a budget bar;
+  the scan as a heat map with the shortlist outlined and labels linking to
+  arXiv; a shortlist table with status pills and buttons for the readable
+  note, the paper and the verified note as PDFs; an outputs grid of the
+  finished threads; and a thread panel, addressable by URL hash, with the
+  ledger rendered in the page and filterable by actor, verdict cards, the
+  paper review, calls by stage and every file. Notes compile to PDF on
+  demand; text files are served as text, not downloads. Nothing about
+  monitoring replays a ledger: the server derives the state document from
+  the files the pipeline already writes.
 - **Prompts are files** in `prompts/`, overridable per campaign. They are
   the place to tune behaviour; the code should not need to change for that.
 
@@ -112,6 +145,15 @@ you already have, or a description of where the papers come from].
 - The arXiv API rate-limits; back off and retry once or twice.
 - `latexpand` can crash on some templates; fall back to the PDF text and
   never let one bad e-print stop the side.
+- Long inline prompts through Codex can take more than a minute to open a
+  session; scale the transport grace with prompt size.
+- A verifier asked the same unmeetable ITERATE three times before the
+  PAUSE rule existed; three of four capped threads on the sister campaign
+  needed a note repair, not research, which is why REVISE exists.
+- Two editor runs started by hand on the same threads raced on a
+  directory; give every stage the same per-thread lock the runner uses.
+- A loop over threads (edit, paper) must continue past one transport
+  failure and report it, not abort.
 
 ### How to test it
 
@@ -119,11 +161,14 @@ Write a fake CLI binary driven by environment variables (what to reply,
 how long to wait before the session line, whether to hang, a shell command
 to run in the working directory before replying) and test every path with
 it: scan resume and retry, the cut, a thread reaching each terminal status,
-the iterate cap, the empty ledger, a stop draining a call in flight, the
-budget guard writing the marker, two transport failures setting the health
-flag and a probe clearing it, both BLOCKED paths and reconcile clearing
-them, a killed runner leaving a dead lock, the paper round trip with a real
-latexmk. Then run a real pilot on two corpora of five papers each with the
+the iterate cap, REVISE repairing once then capping, the empty ledger, a
+stop draining a call in flight, the budget guard writing the marker, two
+transport failures setting the health flag and a probe clearing it, both
+BLOCKED paths and reconcile clearing them, a killed runner leaving a dead
+lock, threshold selection keeping started threads, append-only paging,
+the paper and editor round trips with a real latexmk. Make the fake write
+every file a real call writes, or a branch real calls never take will
+pass. Then run a real pilot on two corpora of five papers each with the
 cut at 12 percent and the budget at [60] USD, exercise stop, resume and
 reconcile by hand while it runs, and write a short report of what happened
 and what it cost. Show me the report before running anything larger.
