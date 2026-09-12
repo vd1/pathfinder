@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <title>Pathfinder monitor</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
 <style>
 :root { --bg:#f4f5f7; --fg:#1c1e21; --muted:#6b7280; --line:#e3e5e8; --card:#ffffff; --accent:#2f6fed; --accent-soft:rgba(47,111,237,.10);
   --ok:#1a7f4b; --ok-soft:rgba(26,127,75,.12); --warn:#b7791f; --warn-soft:rgba(183,121,31,.14); --bad:#c0392b; --bad-soft:rgba(192,57,43,.12);
@@ -35,7 +38,6 @@ td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:middle
 .heat td.cell { width:42px; height:30px; text-align:center; font-size:11px; border-radius:5px; cursor:default; }
 .heat td.short { box-shadow:inset 0 0 0 2px var(--accent); font-weight:700; } .heat td.term { cursor:pointer; }
 .legend { display:flex; gap:14px; align-items:center; color:var(--muted); font-size:12px; margin-top:8px; flex-wrap:wrap; }
-.bars { display:flex; align-items:flex-end; gap:2px; height:44px; margin-top:6px; } .bars i { flex:1; max-width:10px; background:var(--grey-soft); border-radius:2px 2px 0 0; } .bars i.in { background:var(--accent); }
 .pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; font-weight:650; letter-spacing:.02em; white-space:nowrap; }
 .s-DRAFT { background:var(--ok-soft); color:var(--ok); } .s-PAUSE { background:var(--grey-soft); color:var(--muted); } .s-PAUSE-ON-ITERATE { background:var(--warn-soft); color:var(--warn); }
 .s-running { background:var(--accent-soft); color:var(--accent); } .s-stopped, .s-new { border:1px solid var(--line); color:var(--muted); } .s-BLOCKED { background:var(--bad-soft); color:var(--bad); }
@@ -110,7 +112,6 @@ function render(s) {
     sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${i+1}</a></th>` + row.map((v, j) => {
       const id = `Q${i+1}P${j+1}`, p = short.get(id); return `<td class="cell ${p ? "short term" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
     h += `</table></div><div class="legend"><span>score = feasibility x gain, 0 to 10,000</span><span>outlined: shortlisted, click to open</span><span>row and column labels open the arXiv abstract</span></div>`;
-    h += `<div class="bars">${sc.scores.map((v, i) => `<i class="${i < s.shortlist.length ? "in" : ""}" style="height:${Math.max(2, 44 * v / max)}px" title="${v}"></i>`).join("")}</div><div class="muted small">all scores, sorted; blue made the shortlist</div>`;
   } else h = `<div class="empty">no corpora yet</div>`;
   document.getElementById("scan").innerHTML = h;
   let t = `<table><tr><th>pair</th><th>score</th><th>status</th><th>round</th><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
@@ -153,6 +154,9 @@ function renderThread() {
     return `<div class="entry"><span class="badge a-${esc(e.actor)}">${esc(e.actor)}</span><span class="badge k k-${esc(e.kind)}">${esc(e.kind)}</span><span class="meta">#${e.seq} ${esc((e.at || "").slice(11, 16))}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` read to #${e.seen}` : ""}</span><div class="t ${long && !isOpen ? "clip" : ""}">${esc(e.text)}</div>${long ? `<span class="more" data-id="${id}">${isOpen ? "show less" : "show more"}</span>` : ""}</div>`; }).join("") || `<div class="muted small">empty</div>`;
   h += `<h3>Files</h3><div class="files">${x.files.map(f => `<a href="${base}${f}" target="_blank" title="${esc(f)}">${esc(f)}</a>`).join("")}</div>`;
   el.innerHTML = h;
+  if (window.renderMathInElement) renderMathInElement(el, { throwOnError: false, delimiters: [
+    {left: "$$", right: "$$", display: true}, {left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}],
+    ignoredTags: ["script", "style", "textarea", "pre", "code", "a"] });
   el.querySelectorAll(".more").forEach(m => m.onclick = () => { open.has(m.dataset.id) ? open.delete(m.dataset.id) : open.add(m.dataset.id); renderThread(); });
   el.querySelectorAll(".chip").forEach(ch => ch.onclick = () => { actorFilter = ch.dataset.actor; renderThread(); });
 }

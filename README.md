@@ -147,7 +147,9 @@ them.
 - Stops are always drains; there is no forced kill short of a second Ctrl-C.
 - ITERATE loops automatically up to `rounds`; nothing waits for a human.
 - The monitor is a live page served from the campaign directory, not a
-  static HTML rebuilt on a schedule.
+  static HTML rebuilt on a schedule. It renders TeX mathematics in ledger
+  entries and verdicts written with `\(...\)`, `\[...\]` or `$$...$$`
+  through KaTeX from a CDN when online; plain text otherwise.
 
 ## Building your own
 
