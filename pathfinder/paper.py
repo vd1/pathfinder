@@ -8,9 +8,15 @@ from .research import _inputs, _prompt, _now
 from .scan import parse_json
 
 
+LEGACY = {"accepted": "ACCEPTED", "returned": "PAUSE-ON-AMEND"}
+TERMINAL = {"ACCEPTED", "PAUSE-ON-AMEND", "blocked"}
+
+
 def status(campaign, pair_id) -> dict:
     p = campaign.thread_dir(pair_id) / "paper" / "paper.json"
-    return json.loads(p.read_text()) if p.exists() else {"status": "none", "round": 0}
+    s = json.loads(p.read_text()) if p.exists() else {"status": "none", "round": 0}
+    s["status"] = LEGACY.get(s.get("status"), s.get("status"))
+    return s
 
 
 def _set(campaign, pair_id, **kw):
@@ -149,12 +155,13 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         if r["transport_failed"]:
             _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
         try:
-            v = parse_json(r["text"]); dec = v["decision"].upper(); assert dec in ("ACCEPT", "REVISE")
+            v = parse_json(r["text"]); dec = {"REVISE": "AMEND"}.get(v["decision"].upper(), v["decision"].upper()); v["decision"] = dec
+            assert dec in ("ACCEPT", "AMEND")
         except Exception as e:
             _set(campaign, pair_id, status="blocked", reason=f"review: unreadable decision ({e})"); return "blocked"
         reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks,
                         "paper_sha256": hashlib.sha256(tex.encode()).hexdigest(), **v})
         (pd / "review.json").write_text(json.dumps(reviews, indent=1))
         if dec == "ACCEPT" and ok:
-            _set(campaign, pair_id, status="accepted", round=rnd, reason=v.get("summary")); return "accepted"
-    _set(campaign, pair_id, status="returned", round=rounds, reason=reviews[-1].get("summary")); return "returned"
+            _set(campaign, pair_id, status="ACCEPTED", round=rnd, reason=v.get("summary")); return "ACCEPTED"
+    _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rounds, reason=reviews[-1].get("summary")); return "PAUSE-ON-AMEND"

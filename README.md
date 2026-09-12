@@ -20,7 +20,10 @@ Every thread ends with a ledger, a note named after the pair (for example
 3. **Paper.** On a DRAFT thread, an author agent writes a short paper with
    BibTeX references, searching for prior work and verifying every
    reference; the pipeline builds it and checks the citations; an
-   independent reviewer accepts or returns it, up to a round cap.
+   independent reviewer answers ACCEPT or AMEND, and AMEND sends it back to
+   the author, up to a round cap. The paper ends ACCEPTED, or
+   PAUSE-ON-AMEND when the cap is reached with amendments still asked for,
+   the same shape as the thread's PAUSE-ON-ITERATE.
 
 On every terminal thread an editor also rewrites the consolidated note as
 a short readable paper with references, for a reader without the ledger
@@ -87,7 +90,7 @@ health.json        present while admissions are paused after transport failures
 threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
                    <pair>.verdict.json, status.json, lock
 threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
-                   review.json, paper.json (accepted, returned, blocked)
+                   review.json, paper.json (ACCEPTED, PAUSE-ON-AMEND, blocked)
 threads/<pair>/edited/  note.tex, references.bib, note.pdf, edit.json
 ```
 

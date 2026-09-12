@@ -72,7 +72,7 @@ def main(argv=None):
     elif ns.cmd == "paper":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
-                                           and paper.status(c, p["pair_id"]).get("status") != "accepted"]
+                                           and paper.status(c, p["pair_id"]).get("status") != "ACCEPTED"]
         for pid in pairs:
             try:
                 print(f"{pid}: {paper.run(c, pid, stop=lambda: runner.stopped(c))}")

@@ -61,9 +61,9 @@ def state(campaign) -> dict:
             attention.append({"pair": pid, "kind": st, "reason": s.get("reason"), "since": s.get("updated"),
                               "action": words.get(info["action"], info["action"]) + " Reconcile does this."})
         pp = threads[pid].get("paper")
-        if pp and pp.get("status") in ("returned", "blocked", "stopped"):
+        if pp and pp.get("status") in ("PAUSE-ON-AMEND", "blocked", "stopped"):
             attention.append({"pair": pid, "kind": f"paper {pp['status']}", "reason": pp.get("reason"), "since": pp.get("updated"),
-                              "action": "Read the paper and its review. To try another round, raise paper_rounds in campaign.json and run the paper stage for this pair again; or leave it as returned."})
+                              "action": "The reviewer still asked for amendments when the round cap was reached. Read the paper and its last review; to try another round, raise paper_rounds in campaign.json and run the paper stage for this pair again, or leave it."})
         ee = threads[pid].get("edited")
         if ee and ee.get("status") in ("blocked", "stopped"):
             attention.append({"pair": pid, "kind": f"edit {ee['status']}", "reason": ee.get("reason"), "since": ee.get("updated"), "action": "Run the editor for this pair again."})

@@ -392,6 +392,21 @@ built: `export`, a self-contained snapshot of the page with the state
 inline and every thread's documents, optionally zipped; the first bundle
 of this campaign is 5 MB.
 
+## Vocabulary, settled 12 September
+
+Each stage has its own words, and the endings of the later stages mirror
+the thread's, so a pill says where a pair stands without a legend:
+
+| stage | decisions | endings |
+| --- | --- | --- |
+| research thread | DRAFT, REVISE, ITERATE, PAUSE | DRAFT, PAUSE, PAUSE-ON-ITERATE |
+| paper | ACCEPT, AMEND | ACCEPTED, PAUSE-ON-AMEND, blocked |
+| editor | none | done, blocked |
+
+The paper reviewer's second word was REVISE until today; it became AMEND
+because REVISE already belongs to the research verifier. Older files that
+say `accepted` or `returned` are read as ACCEPTED and PAUSE-ON-AMEND.
+
 ## Decisions taken on the way
 
 - Soft budget control stays; no per-stage in-flight estimate.

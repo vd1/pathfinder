@@ -21,10 +21,10 @@ Check:
    novelty claim without a search is a finding.
 
 Decide ACCEPT when the paper is fit to send to referees within its stated
-scope, or REVISE when specific corrections are needed that the author can
+scope, or AMEND when specific corrections are needed that the author can
 make from the existing material. Do not ask for new research.
 
 Output exactly one JSON object and nothing else:
-{"decision": "ACCEPT|REVISE", "summary": "three sentences at most",
+{"decision": "ACCEPT|AMEND", "summary": "three sentences at most",
  "findings": [{"id": "F1", "severity": "major|minor", "where": "section or line",
                "issue": "what is wrong", "fix": "what would resolve it"}]}

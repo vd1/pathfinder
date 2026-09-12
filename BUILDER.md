@@ -76,8 +76,9 @@ you already have, or a description of where the papers come from].
    verifies every reference against arXiv or a DOI, and builds with
    latexmk. The pipeline rebuilds, checks that every citation exists and is
    used and that arXiv titles match the API, and an independent reviewer,
-   shown the author's search record, returns ACCEPT or REVISE with
-   findings by id, up to three rounds; every review records the paper's
+   shown the author's search record, returns ACCEPT or AMEND with findings
+   by id, up to three rounds; the paper ends ACCEPTED or PAUSE-ON-AMEND,
+   mirroring the thread's endings; every review records the paper's
    digest.
 
 4. **Open-ended mode.** Instead of a fixed grid and a percentage cut, the

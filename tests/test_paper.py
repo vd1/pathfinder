@@ -42,7 +42,7 @@ def test_paper_round_trip_accepts(tmp_path, monkeypatch):
         return real(prompt, **kw)
     monkeypatch.setattr(paper.transport, "call", fake_call)
     monkeypatch.setattr(paper, "_arxiv_titles", lambda ids: {})
-    assert paper.run(c, "Q1P1") == "accepted"
+    assert paper.run(c, "Q1P1") == "ACCEPTED"
     s = paper.status(c, "Q1P1")
-    assert s["status"] == "accepted" and s["build_ok"] and (d / "paper" / "paper.pdf").exists()
+    assert s["status"] == "ACCEPTED" and s["build_ok"] and (d / "paper" / "paper.pdf").exists()
     assert json.loads((d / "paper" / "review.json").read_text())[0]["decision"] == "ACCEPT"
