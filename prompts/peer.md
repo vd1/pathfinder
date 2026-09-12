@@ -27,6 +27,9 @@ Ledger commands, run from this directory:
     {{LEDGER}} read
     {{LEDGER}} add --kind idea|finding|objection|correction|intention --text '...'
     {{LEDGER}} ready --seen N
+Write mathematics in TeX wherever it appears, in ledger entries and in
+your files: inline as \( ... \), displayed as \[ ... \], never with
+dollar signs, so it renders on the monitor and pastes into the note.
 Keep longer derivations in {{ACTOR}}/ and point to them from the ledger.
 Do not edit your partner's directory, the inputs, or the ledger file
 directly.

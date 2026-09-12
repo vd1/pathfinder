@@ -33,7 +33,8 @@ Content rules:
   cited at least once.
 
 Form: article class; amsmath, amssymb, amsthm, hyperref and url are
-allowed, nothing else; \bibliographystyle{plain} and
+allowed, nothing else; inline mathematics as \( ... \), displayed as
+\[ ... \] or an amsmath environment, never dollar signs; \bibliographystyle{plain} and
 \bibliography{references}; British English; no em dash character. Build
 it yourself with
 

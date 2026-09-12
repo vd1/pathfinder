@@ -22,6 +22,7 @@ If the ledger shows that a previous ITERATE asked for the same thing and
 the peers could not supply it, do not ask again: decide PAUSE and name
 the missing input.
 Check that every claim in the note traces to the ledger and that the
-ledger's arguments hold. Output exactly one JSON object and nothing else:
+ledger's arguments hold. Write any mathematics in your reason and action
+as \( ... \), not with dollar signs. Output exactly one JSON object and nothing else:
 {"decision": "DRAFT|REVISE|ITERATE|PAUSE", "reason": "three sentences at most",
  "action": "for REVISE, the corrections to make; for ITERATE, the one thing to do next; else null"}

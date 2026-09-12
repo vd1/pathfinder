@@ -27,7 +27,9 @@ Write into edited/: note.tex and references.bib. Structure, as for a paper:
 - References.
 
 Rules: add nothing that is not in the note, the ledger or the peers'
-files; if the material is thin, say so rather than fill. Prefer short
+files; if the material is thin, say so rather than fill. Write inline
+mathematics as \( ... \) and displayed mathematics as \[ ... \] or an
+amsmath environment, never with dollar signs. Prefer short
 sentences and ordinary words; define every symbol you keep. Use the
 present tense for what the papers say and the past tense for what the
 peers did. British English; no em dash character.
