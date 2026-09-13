@@ -9,26 +9,127 @@
 \setlength{\parskip}{4pt}
 \newcommand{\st}[1]{\textsc{#1}}
 \newcommand{\file}[1]{\texttt{#1}}
-\title{Pathfinder as a state machine}
+\title{The Pathfinder engine}
 \author{Pathfinder, \file{github.com/vd1/pathfinder}}
 \date{12 September 2026, revised 13 September}
 \begin{document}
 \maketitle
 
-\section*{What, why, how}
+\begin{abstract}
+  
+\end{abstract}
 
-\paragraph{What.} Pathfinder takes two corpora of papers, $Q$ and $P$, and looks
-for pairs $(q, p)$ in $Q\times P$ with enough of an interesting connexion
-to elaborate it as a publication (with the usual constraints of novelty, relevance,
-readability, and exposition of related work in the literature).
+\section{Introduction}
 
-For every pair it keeps, it produces a record in increasing order of readability
-and decreasing dependence on the process that made it: the \emph{thread} (a
-ledger of everything the agents said to each other), the \emph{note} (what the
-agents agreed and a judge accepted), the \emph{readable note} (the same,
-rewritten for a reader who never saw the ledger), and, when the judge said the
-result would carry a paper, the \emph{paper} (written with a literature search
-and reviewed).
+\paragraph{The pathfinder program.} Pathfinder takes two corpora of scientific
+papers (concretely arxiv deposits), $Q$ and $P$, and, using agentic methods, looks for
+pairs $(q, p)$ in $Q\times P$ with enough of an interesting connexion to try and
+elaborate it as a pre-publication. Ideally, the pre-publication satisfies the
+usual constraints of correctness, novelty, relevance, readability, and
+exposition of related work in the literature. 
+
+In some cases, the input tuple may be supplemented with a seed note (provided by
+the agent that scanned and scored the pair in the first place) that is a
+paragraph describing the putative connexion.
+
+This type of task is commonly carried out by human experts. It happens through
+seminars that the seed of an idea is provided by someone in the audience, and
+such connexions are made, and, in favourable circumstances, further pursued all
+the way to a publication. However, by using modern agents (which are competent
+experts on every corpus, and always ``willing'' to contribute), one can do it
+faster, cheaper, and, therefore, at a larger scale. We have ran it on sets of 
+paper of size about a hundred each for a reasonable token budget.
+
+A small epistemologic aside: Pathfinder is about scientific creativity,
+(cite Swanson, Cedric Lions, and other refs on creativity by analogy) 
+less about closing conjectures, a task at which modern agents have become so good.
+Whether this particular attempt at generative creative input is enough or at all capable
+of creating new accumulative knowledge remains to be seen.
+
+\paragraph{Object of this note.}
+This note purports to describe in implementable terms
+a simple agentic process whereby an input tuple
+is progressively elaborated and in the favourable cases a pre-publication is
+generated. 
+
+As we will see below, the process recruits various agents in various
+roles: researchers, verifiers, editors, etc. It consists broadly in two
+phases.
+\begin{enumerate}
+\item The research phase: 
+researcher agents collaborate and produce a draft paper via
+rounds of interactions with a verifier agent. This is the creative
+part of the process which can end on paused thread, or a draft. 
+In fact, running this phase again may lead to a different
+outcome, possibly a draft expounding on a different idea. 
+(The next paragraph gives an example.)
+\item The editing phase: 
+an author agent produces via rounds of
+interactions with a reviewer agent, a final version of the draft.
+The final draft can put on pause or accepted as a pre-publication 
+by the reviewer.
+\end{enumerate}
+
+\paragraph{An example, and why reruns differ.}
+Consider the following $(q,p,c)$ input triplet (where $c$ was written by the scanning agent):
+
+\begin{quote}
+$q=\texttt{arXiv:2608.29130}$ ``A Systematic Approach to Mechanism Design with Stochastic Dynamic
+Stability'', which designs quadratic payments so
+that self-interested agents settle at the welfare-maximising allocation and
+learns that equilibrium from sampled feedback
+
+$p=\texttt{arXiv:2609.04460}$ ``Distributed
+risk-averse optimization via CVaR'', which minimises
+conditional value-at-risk over a network from noisy function values. 
+
+The seed $c$ is: 
+replace $q$'s expected-value objectives with
+CVaR and use $p$'s gradient estimator inside $q$'s learning loop; does the
+payment mechanism still work?
+\end{quote}
+
+The thread was run twice on $(q,p,c)$. Both runs quickly rejected the
+literal splice ($q$ needs a best response, $p$ supplies a gradient step) and
+both ended as \textsc{draft}, but with different results. The first run
+proved a positive statement: a uniform bound
+\(
+\sup_x |\widetilde C_n(x) - C_n(x)| \le L_n\delta_n + (U_n/\alpha_n)(2\pi/s_n)^{1/2}
+\)
+between $p$'s smoothed, sampled surrogate and the true CVaR objective, and
+drew from it welfare and individual-rationality guarantees for the
+risk-averse mechanism. The second run proved obstructions instead: a
+two-point example in which the expected objective is strongly concave but
+its CVaR is constant, so the curvature $q$'s uniqueness proof needs can
+vanish under the substitution, and a coupling example showing that the
+local risk oracles both papers use cannot determine system-wide tail risk.
+Each note is correct, each was accepted by a verifier that had not taken
+part.
+
+Thus, the research phase is a sampler. The same input, rerun, may
+elicit a different response. Arguably, in the example above, 
+a referee would want both responses in one paper.
+
+\paragraph{The various stages of the process}
+The process produces the following sequence of file outputs:
+\begin{enumerate}
+\item 
+a conversation \emph{thread} recorded on a ledger of everything the researcher 
+agents said to each other
+\item a \emph{note} consigning to paper form what the researcher agents and verifier 
+agreed on (together with a \emph{readable note} of the same, rewritten for a reader 
+who never saw the ledger), and,
+\item
+when accepted by the reviewer, a \emph{paper} 
+% (written
+% with a literature search and reviewed)
+\end{enumerate}
+The outputs above are arranged in increasing order of readability by humans, and 
+decreasing dependence on the history of the generation process.
+
+The readable note presents the research phase’s final outcome for expert assessment,
+including unsuccessful or inconclusive outcomes.
+
 
 \paragraph{Why a state machine.} The work is done by model calls that cost money, take minutes,
 fail, and disagree. Writing the pipeline as a machine with explicit states, transitions and
@@ -110,26 +211,24 @@ group rather than a set of monologues:
   pause/.style={state, fill=orange!14},
   edge/.style={-{Stealth[length=2mm]}, semithick},
   lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt}]
-  \node[state] (scan) at (0.8,0) {\st{scanned}};
-  \node[state] (new) at (3.4,0) {\st{new}};
-  \node[state] (peers) at (6.2,0) {\st{peers}};
+  \node[align=center] (input) at (2.4,0) {incoming message $(p,q,c)$\\$c$: optional seed connexion};
+  \node[state] (peers) at (6.2,0) {\st{research}};
   \node[state] (cons) at (11.4,0) {\st{consolidate}};
   \node[state] (ver) at (15.6,0) {\st{verify}};
-  \node[pause] (poi) at (4.6,-3.2) {\st{pause-on-iterate}};
-  \node[pause] (por) at (9.6,-3.2) {\st{pause-on-revise}};
-  \node[pause] (pause) at (13.4,-3.2) {\st{pause}};
-  \node[term] (draft) at (16.6,-3.2) {\st{draft}};
-  \draw[edge] (scan) -- node[lab, above] {select} (new);
-  \draw[edge] (new) -- node[lab, above] {admit} (peers);
-  \draw[edge] (peers) -- node[lab, above] {all ready, or allowance out} (cons);
+  \node[pause] (poi) at (21,1.6) {\st{pause-on-iterate}};
+  \node[pause] (por) at (21,0) {\st{pause-on-revise}};
+  \node[pause] (pause) at (21,-1.6) {\st{pause}};
+  \node[term] (draft) at (21,-3.2) {\st{draft}};
+  \draw[edge] (input) -- (peers);
+  \draw[edge] (peers) -- node[lab, above, align=center] {ledger converged} (cons);
   \draw[edge] (cons) -- node[lab, above] {note written} (ver);
-  \draw[edge] (ver) to[out=120, in=60, looseness=0.7] node[lab, above] {\st{iterate}, rounds left: another peer round} (peers);
-  \draw[edge] (ver) to[out=135, in=45, looseness=1.0] node[lab, above] {\st{revise}, repairs left: repair the note} (cons);
-  \draw[edge] (ver.south) -- node[lab, sloped, above, pos=0.5] {\st{draft}} (draft.north);
-  \draw[edge] (ver.south) -- node[lab, sloped, below, pos=0.5] {\st{pause}} (pause.north);
-  \draw[edge] (ver.south) -- node[lab, sloped, above, pos=0.7] {\st{revise}, repairs out} (por.north);
-  \draw[edge] (ver.south) -- node[lab, sloped, below, pos=0.8] {\st{iterate}, rounds out} (poi.north);
-  \draw[edge] (peers.south) -- ++(0,-4.4) -| node[lab, pos=0.25, below] {empty ledger} (pause.south);
+  \draw[edge] (ver) to[out=120, in=60, looseness=0.7] node[lab, above] {\st{iterate}: another research round} (peers);
+  \draw[edge] (ver) to[out=225, in=315, looseness=1.0] node[lab, below] {\st{revise}: another repair round} (cons);
+  \draw[edge] (ver.east) -- node[lab, sloped, below, pos=0.6] {\st{draft}} (draft.west);
+  \draw[edge] (ver.east) -- node[lab, sloped, below, pos=0.6] {\st{pause}} (pause.west);
+  \draw[edge] (ver.east) -- node[lab, above, pos=0.6] {\st{revise}, repairs out} (por.west);
+  \draw[edge] (ver.east) -- node[lab, sloped, above, pos=0.6] {\st{iterate}, rounds out} (poi.west);
+  \draw[edge] (peers.south) -- (6.2,-4.4) -- node[lab, below] {empty ledger} (23.4,-4.4) |- (pause.east);
 \end{tikzpicture}}
 
 \medskip
@@ -312,4 +411,91 @@ of receipts, never against an estimate alone. A call that times out with no usag
     stage from two concurrent commands on the same pair; that is an operator error the code
     does not yet catch.
 \end{itemize}
+
+\appendix
+\section{Agent resources against human resources, per pair}
+\label{app:resources}
+
+\paragraph{The campaign.} The reference campaign ran on September 11-13 2026.
+The two corpora were the ten most recent arXiv papers for the queries
+``mechanism design'' ($Q$, dated 28 August to 4 September) and ``agentic
+cooperation'' ($P$, 16 July to 3 September). A Claude Sonnet judge scanned all
+100 pairs from titles and abstracts, giving each a feasibility and a gain on a
+scale of 0 to 100 and a one-paragraph connexion that serves as a seed; the score
+is their product, and the 14 pairs at or above 1500 were selected. Each thread
+ran two Opus 5 researcher agents with web search. The caps were \file{rounds} 4,
+\file{repairs} 1 and \file{paper\_rounds} 3, under a campaign budget of 200~USD.
+Outcomes: 5 threads ended \textsc{draft}, 8 \textsc{pause} and 1
+\textsc{pause-on-iterate}; the 5 drafts became papers, 4 accepted by the
+reviewer within the run and 1 after the owner's edits; all 14 threads got a
+readable note. Total: 330 model calls and 187~USD at API prices.
+
+Agent figures are taken from the receipts of that campaign, as medians
+over threads. Means are dragged up by three threads that hit time-outs and
+by one paper whose seven review rounds were spread over two days. Human
+figures are estimates for a postdoc-level researcher at a fully loaded cost
+of about 60~USD per hour, stated so that they can be rescaled.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}lrrrX@{}}
+\toprule
+agent, per pair & calls & USD & wall time & notes \\
+\midrule
+scan & 1 & 0.03 & 11 s & 100 pairs for 3.34 USD \\
+research (peers, consolidate, verify) & 12 & 6.8 & 8 min & mean 9.8 USD and 51 min; worst thread 30 USD and 6 h \\
+paper (author, review) & 4 to 11 & 3.5 & 5 min per round & 5 pairs; the worst took 14.7 USD over 7 rounds \\
+readable note (editor) & 1 & 1.0 & 2 min & \\
+\midrule
+pair to reviewed paper & about 20 & about 12 & about 20 min & about 8 USD and 10 min for a pair that pauses \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+A second run of eight pairs with three peers on the Codex model gave a
+research stage of 7.8 USD and 7 minutes per pair: the model choice moves
+the cost little, the peer count moves the time.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}Xrrl@{}}
+\toprule
+human, per pair, same deliverables & hours & USD & calendar \\
+\midrule
+scan two abstracts and decide & 0.25 & 15 & minutes \\
+read both papers, derive, write the note & 25 to 40 & 1,500 to 2,400 & 3 to 5 days \\
+a colleague verifies the note & 2 to 4 & 120 to 240 & when free \\
+paper with literature search & 60 to 80 & 3,600 to 4,800 & 2 weeks \\
+a referee's review & 4 to 8 & 240 to 480 & weeks of latency \\
+readable write-up for outsiders & 4 & 240 & half a day \\
+\midrule
+pair to reviewed paper & about 100 & about 6,000 & 3 to 4 weeks \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Per pair the agent pipeline is therefore roughly 500 times cheaper and 100
+times faster on the calendar. At the scale of a campaign the gap is what
+makes the method exist at all: scanning 100 pairs costs 3~USD against 25
+human hours, and the 14 threads and 5 papers of the reference campaign cost
+175~USD, about three loaded postdoc days, against something like a working
+year.
+
+Three caveats keep the comparison fair.
+\begin{itemize}\setlength{\itemsep}{1pt}
+  \item \emph{Not the same quality.} The accepted papers are correct
+    technical remarks, the kind a good student writes in a week, not the
+    pair a senior researcher would choose nor the paper they would write.
+    A human would also never look at 100 pairs; taste replaces breadth.
+  \item \emph{Human time does not go to zero.} The owner still reads the
+    readable notes, clears the decision queue and settles the paused
+    pairs: on this campaign of the order of 10 to 20 minutes per pair, plus
+    an hour of attention and about 12~USD for the one paper that was
+    rescued by hand. The pipeline moves human effort from producing to
+    choosing and reading.
+  \item \emph{Wall time is set by the slowest call, not by the sum.} Peers
+    run concurrently, so a thread's clock is its longest call and its
+    time-outs; the 8-minute median hides a 6-hour worst case.
+\end{itemize}
+
 \end{document}

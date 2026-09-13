@@ -1,0 +1,47 @@
+{
+  "id": "Q3P9-1789297358083497000-f3bd8bda",
+  "pair": "Q3P9",
+  "started": 1789297358.083523,
+  "command": [
+    "codex",
+    "exec",
+    "-c",
+    "model_reasoning_effort=\"medium\"",
+    "-c",
+    "model_provider=\"openai\"",
+    "-c",
+    "forced_login_method=\"chatgpt\"",
+    "--json",
+    "--ephemeral",
+    "--ignore-user-config",
+    "--skip-git-repo-check",
+    "--cd",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-13-astra-medium-top2/threads/Q3P9",
+    "--model",
+    "gpt-6-astra",
+    "-c",
+    "approval_policy=\"never\"",
+    "--sandbox",
+    "read-only",
+    "-c",
+    "web_search=\"disabled\"",
+    "-"
+  ],
+  "model": "gpt-6-astra",
+  "reasoning_effort": "medium",
+  "auth": "chatgpt",
+  "service_tier_override": null,
+  "events_file": "Q3P9-1789297358083497000-f3bd8bda.jsonl",
+  "thread_id": "01a09a6e-f56d-7521-b0be-ff34595dc09f",
+  "exit_code": 0,
+  "elapsed_seconds": 16.73,
+  "usages": [
+    {
+      "input_tokens": 133331,
+      "cached_input_tokens": 70016,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 318,
+      "reasoning_output_tokens": 129
+    }
+  ]
+}
