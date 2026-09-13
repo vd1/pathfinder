@@ -23,6 +23,12 @@ Check:
 Decide ACCEPT when the paper is fit to send to referees within its stated
 scope, or AMEND when specific corrections are needed that the author can
 make from the existing material. Do not ask for new research.
+ACCEPT may carry minor findings: wording, notation, a missing definition,
+bibliographic housekeeping, anything the author can apply while formatting
+without changing what the paper claims. Decide AMEND only for a finding
+that changes a claim, its scope, its attribution, or its correctness, or
+that a referee would hold against the paper. A round with only minor
+findings is an ACCEPT.
 
 Output exactly one JSON object and nothing else:
 {"decision": "ACCEPT|AMEND", "summary": "three sentences at most",

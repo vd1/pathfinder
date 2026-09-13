@@ -23,9 +23,14 @@ in `plans/2026-09-12-state-machine.pdf`.
    BibTeX references, searching for prior work and verifying every
    reference; the pipeline builds it and checks the citations; an
    independent reviewer answers ACCEPT or AMEND, and AMEND sends it back to
-   the author, up to a round cap. The paper ends ACCEPTED, or
-   PAUSE-ON-AMEND when the cap is reached with amendments still asked for,
-   the same shape as the thread's PAUSE-ON-ITERATE.
+   the author, up to a round cap. ACCEPT may carry minor findings, the kind
+   an author applies while formatting; AMEND is for a finding that changes
+   a claim, its scope, its attribution or its correctness. The paper ends
+   ACCEPTED, or PAUSE-ON-AMEND when the cap is reached with amendments still
+   asked for, the same shape as the thread's PAUSE-ON-ITERATE. A paper the
+   owner has edited by hand gets one reviewer round without an author call
+   through `pathfinder paper PAIR --review`; it counts as the next round and
+   is not budgeted.
 
 On every terminal thread an editor also rewrites the consolidated note as
 a short readable paper with references, for a reader without the ledger
@@ -50,6 +55,7 @@ uv run pathfinder serve      # in a second terminal: http://localhost:8790/
 uv run pathfinder research
 uv run pathfinder status
 uv run pathfinder paper         # for every DRAFT thread
+uv run pathfinder paper Q1P6 --review   # one reviewer round on a paper you edited by hand
 uv run pathfinder export report --zip   # a self-contained snapshot of the page and every document
 ```
 

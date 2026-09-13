@@ -85,7 +85,12 @@ you already have, or a description of where the papers come from].
    shown the author's search record, returns ACCEPT or AMEND with findings
    by id, up to three rounds; the paper ends ACCEPTED or PAUSE-ON-AMEND,
    mirroring the thread's endings; every review records the paper's
-   digest.
+   digest. Tell the reviewer that ACCEPT may carry minor findings and that
+   AMEND is only for a finding that changes a claim, its scope, its
+   attribution or its correctness: a reviewer asked for a paper with no
+   findings at all never converges, since every revision opens new minor
+   points. Give the owner a review-only round (`paper PAIR --review`) for
+   a paper they have edited by hand, outside the round budget.
 
 4. **Open-ended mode.** Instead of a fixed grid and a percentage cut, the
    campaign can grow: page the same queries backwards in time appending

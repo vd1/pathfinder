@@ -270,13 +270,42 @@ calibration step and narrowed the novelty claim accordingly, which the
 reviewer then accepted.
 
 Q1P6 was given a fourth paper round on 13 September (paper_rounds raised
-from 3 to 4, cost 5.3 USD). The author addressed the one minor finding
-of round 3; the round 4 reviewer then raised a new major finding, an
+from 3 to 4, 5.3 USD). The author addressed the one minor finding of
+round 3; the round 4 reviewer then raised a new major finding, an
 inconsistency between the paper's boundary display and its own
 embedding, plus nine minor ones, and the paper ended again at
-PAUSE-ON-AMEND. A revision can open as many findings as it closes, so
-the review loop does not converge by adding rounds. Q1P6 stays a note
-with an unaccepted paper; a human, not another round, decides it.
+PAUSE-ON-AMEND. The major finding was right: under the embedding an
+inactive agent's potential is zero, so the displayed exit term vanishes
+whenever the exit transition is paid, and the paper's headline claim
+about entry and exit terms rested on a case it never wrote down.
+
+V then asked for the paper to be read and fixed by hand. The owner
+(this session) rewrote the boundary section as a case split over the two
+payment conventions, verified the two AAMAS records through the White
+Rose and Kent repositories and OpenAlex and added them to the
+bibliography, switched to a bibliography style that prints URLs, and
+applied the nine minor findings. To review a hand-edited paper without
+an author call, the pipeline gained `paper PAIR --review`: one reviewer
+round on the paper as it stands, counted as the next round, outside the
+budget. Three such rounds followed:
+
+| round | decision | findings | what it caught |
+| --- | --- | --- | --- |
+| 5 | AMEND | 1 major, 9 minor | the owner's own new sentence claimed that a first-entry player's best responses survive, which holds under one convention only |
+| 6 | AMEND | 10 minor | a sign error ("exactly a dropped payment" should be "the negative of"), the exact-shaping claims missing the ledger condition, an inaccurate paraphrase of P's Proposition 2 |
+| 7 | ACCEPT | 7 minor | gauge unspecified in the bias definition, the shaped team objective never written down, bibliography housekeeping |
+
+Each round cost about 2 USD and seven minutes. Round 7 was accepted
+under a changed review prompt: ACCEPT may carry minor findings, the kind
+an author applies while formatting, and AMEND is reserved for a finding
+that changes a claim, its scope, its attribution or its correctness.
+Without that rule the loop cannot converge, because a careful reviewer
+always finds something and every revision opens new minor points; rounds
+5 and 6 showed that. The round 7 minors were applied after acceptance
+as copy-edits and noted in the paper source. Two lessons: the reviewer
+is good, every major it raised was correct including the one against
+the owner's own edit; and the acceptance rule, not the round budget, is
+what decides whether a paper loop ends.
 
 Campaign total at the end of the day: 172 USD API-equivalent over 322
 calls; 14 threads terminal, 5 DRAFT, 8 PAUSE, 1 PAUSE-ON-ITERATE, 4

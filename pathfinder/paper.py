@@ -137,31 +137,58 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
             (pd / f"author-round-{rnd}.md").write_text(r["text"] or "")
         if not (pd / "paper.tex").exists() or not (pd / "references.bib").exists():
             _set(campaign, pair_id, status="blocked", reason="author wrote no paper.tex or references.bib"); return "blocked"
-        ok, log = build(pd)
-        tex, bib = (pd / "paper.tex").read_text(errors="replace"), (pd / "references.bib").read_text(errors="replace")
-        checks = check_references(tex, bib) + ([] if ok else ["the pipeline's own latexmk build failed:\n" + log])
-        (pd / f"checks-round-{rnd}.txt").write_text("\n".join(checks) or "no findings")
-        _set(campaign, pair_id, status="reviewing", round=rnd, build_ok=ok)
-        q = _prompt(campaign, "review")
-        q += "\n\n## paper.tex\n\n" + tex + "\n\n## references.bib\n\n" + bib
-        q += "\n\n## reference checks\n\n" + ("\n".join(checks) or "no findings")
-        q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")
-        q += "\n\n## " + pair_id + ".tex\n\n" + (d / f"{pair_id}.tex").read_text(errors="replace")
-        q += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
-        for side in "QP":
-            q += "\n\n## " + inp[side] + "\n\n" + (d / "inputs" / inp[side]).read_text(errors="replace")
-        r = transport.call(q, campaign=campaign, model=campaign.model, tools=False, search=False, cwd=d,
-                           timeout=A.get("review_seconds", 900), thread=pair_id, stage="review", actor="reviewer")
-        if r["transport_failed"]:
-            _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
-        try:
-            v = parse_json(r["text"]); dec = {"REVISE": "AMEND"}.get(v["decision"].upper(), v["decision"].upper()); v["decision"] = dec
-            assert dec in ("ACCEPT", "AMEND")
-        except Exception as e:
-            _set(campaign, pair_id, status="blocked", reason=f"review: unreadable decision ({e})"); return "blocked"
-        reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks,
-                        "paper_sha256": hashlib.sha256(tex.encode()).hexdigest(), **v})
-        (pd / "review.json").write_text(json.dumps(reviews, indent=1))
-        if dec == "ACCEPT" and ok:
-            _set(campaign, pair_id, status="ACCEPTED", round=rnd, reason=v.get("summary")); return "ACCEPTED"
+        result = _review_round(campaign, pair_id, rnd, reviews)
+        if result in ("ACCEPTED", "blocked"):
+            return result
     _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rounds, reason=reviews[-1].get("summary")); return "PAUSE-ON-AMEND"
+
+
+def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
+    """Build and check the paper as it stands, then one reviewer call. Appends to reviews.
+    Returns ACCEPTED, blocked, or AMEND (the caller decides whether another round follows)."""
+    d = campaign.thread_dir(pair_id); pd = d / "paper"
+    A, inp = campaign.allowances, _inputs(d)
+    ok, log = build(pd)
+    tex, bib = (pd / "paper.tex").read_text(errors="replace"), (pd / "references.bib").read_text(errors="replace")
+    checks = check_references(tex, bib) + ([] if ok else ["the pipeline's own latexmk build failed:\n" + log])
+    (pd / f"checks-round-{rnd}.txt").write_text("\n".join(checks) or "no findings")
+    _set(campaign, pair_id, status="reviewing", round=rnd, build_ok=ok)
+    q = _prompt(campaign, "review")
+    q += "\n\n## paper.tex\n\n" + tex + "\n\n## references.bib\n\n" + bib
+    q += "\n\n## reference checks\n\n" + ("\n".join(checks) or "no findings")
+    q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")
+    q += "\n\n## " + pair_id + ".tex\n\n" + (d / f"{pair_id}.tex").read_text(errors="replace")
+    q += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
+    for side in "QP":
+        q += "\n\n## " + inp[side] + "\n\n" + (d / "inputs" / inp[side]).read_text(errors="replace")
+    r = transport.call(q, campaign=campaign, model=campaign.model, tools=False, search=False, cwd=d,
+                       timeout=A.get("review_seconds", 900), thread=pair_id, stage="review", actor="reviewer")
+    if r["transport_failed"]:
+        _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
+    try:
+        v = parse_json(r["text"]); dec = {"REVISE": "AMEND"}.get(v["decision"].upper(), v["decision"].upper()); v["decision"] = dec
+        assert dec in ("ACCEPT", "AMEND")
+    except Exception as e:
+        _set(campaign, pair_id, status="blocked", reason=f"review: unreadable decision ({e})"); return "blocked"
+    reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks,
+                    "paper_sha256": hashlib.sha256(tex.encode()).hexdigest(), **v})
+    (pd / "review.json").write_text(json.dumps(reviews, indent=1))
+    if dec == "ACCEPT" and ok:
+        _set(campaign, pair_id, status="ACCEPTED", round=rnd, reason=v.get("summary")); return "ACCEPTED"
+    return "AMEND"
+
+
+def review(campaign, pair_id: str) -> str:
+    """One reviewer round on the paper as it stands, without an author call: for a paper the owner
+    has edited by hand. Counts as the next round and ends ACCEPTED or PAUSE-ON-AMEND regardless of paper_rounds."""
+    if research.status(campaign, pair_id).get("status") != "DRAFT":
+        raise SystemExit(f"{pair_id} is not DRAFT")
+    pd = campaign.thread_dir(pair_id) / "paper"
+    if not (pd / "paper.tex").exists() or not (pd / "references.bib").exists():
+        raise SystemExit(f"{pair_id}: no paper.tex and references.bib to review")
+    reviews = json.loads((pd / "review.json").read_text()) if (pd / "review.json").exists() else []
+    rnd = len(reviews) + 1
+    result = _review_round(campaign, pair_id, rnd, reviews)
+    if result == "AMEND":
+        _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rnd, reason=reviews[-1].get("summary")); return "PAUSE-ON-AMEND"
+    return result

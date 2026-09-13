@@ -98,6 +98,7 @@ per pair.
   \draw[edge] (review) -- node[lab, above] {\st{accept}} (acc);
   \draw[edge] (review) to[out=140, in=40, looseness=0.9] node[lab, above] {\st{amend}, rounds left} (author);
   \draw[edge] (review) -- node[lab, right] {\st{amend}, rounds out} (poa);
+  \draw[edge] (poa) to[out=180, in=270] node[lab, left] {owner edits, \file{--review}} (review);
   \node[font=\scriptsize, text width=34mm, align=center, below=2mm of edit] {every terminal thread, whatever its ending, then goes through the editor once};
 \end{tikzpicture}
 \end{center}
@@ -132,7 +133,8 @@ corpus $\to$ \st{scanned} & judge, \file{scan.md}, no tools & Q and P titles and
 \st{verify} $\to$ \st{peers} & verdict \st{iterate} & & \file{round} $+1$ & \file{rounds} (4); at the cap \st{pause-on-iterate} \\
 \st{verify} $\to$ \st{consolidate} & verdict \st{revise} & the consolidator also sees the corrections & \file{repairs} $+1$ & \file{repairs} (1); at the cap \st{pause-on-revise} \\
 \st{draft} $\to$ \st{review} & author, \file{author.md}, tools and web search & everything in the thread, the web, the previous review's findings if any & \file{paper/} & \file{paper\_seconds} per call \\
-\st{review} $\to$ next & reviewer, \file{review.md}, no tools & paper, bib, the pipeline's reference checks, the search record, note, ledger, inputs, all inline & \file{paper/review.json}, \file{paper.json} & \file{review\_seconds}; \file{paper\_rounds} (3); at the cap \st{pause-on-amend} \\
+\st{review} $\to$ next & reviewer, \file{review.md}, no tools & paper, bib, the pipeline's reference checks, the search record, note, ledger, inputs, all inline & \file{paper/review.json}, \file{paper.json} & \file{review\_seconds}; \file{paper\_rounds} (3); at the cap \st{pause-on-amend}; \st{accept} may carry minor findings \\
+\st{pause-on-amend} $\to$ \st{review} & the owner edits the paper, then \file{paper PAIR --review} & the paper as it stands & one more review, counted as the next round & none: an owner round is outside the budget \\
 terminal $\to$ \st{edit} & editor, \file{editor.md}, tools, no search & inputs and metadata, note, verdicts, ledger, all directories, the build and reference checks on retry & \file{edited/} & \file{edit\_seconds}; two attempts, then \file{blocked} \\
 \bottomrule
 \end{tabularx}

@@ -46,3 +46,32 @@ def test_paper_round_trip_accepts(tmp_path, monkeypatch):
     s = paper.status(c, "Q1P1")
     assert s["status"] == "ACCEPTED" and s["build_ok"] and (d / "paper" / "paper.pdf").exists()
     assert json.loads((d / "paper" / "review.json").read_text())[0]["decision"] == "ACCEPT"
+
+
+@pytest.mark.skipif(not shutil.which("latexmk"), reason="latexmk not installed")
+def test_review_only_round_on_hand_edited_paper(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    (tmp_path / "campaign.json").write_text("{}")
+    c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=False, seats=1, cut=1, rounds=1,
+                 allowances={"review_seconds": 60}, budget_usd=9, prices={}, scan_fulltext=None, raw={"paper_rounds": 1})
+    (tmp_path / "Q.jsonl").write_text('{"id":"a","title":"A","abstract":"aa","text":null}\n')
+    (tmp_path / "P.jsonl").write_text('{"id":"b","title":"B","abstract":"bb","text":null}\n')
+    d = research.prepare(c, "Q1P1"); (d / "ledger.jsonl").write_text(json.dumps({"seq": 1, "actor": "ada", "kind": "finding", "text": "x", "at": "t"}) + "\n")
+    (d / "Q1P1.tex").write_text("note"); research._set(c, "Q1P1", status="DRAFT", stage="done")
+    pd = d / "paper"; pd.mkdir()
+    (pd / "paper.tex").write_text("\\documentclass{article}\\usepackage{url}\\begin{document}Edited by hand \\cite{q}.\\bibliographystyle{plain}\\bibliography{references}\\end{document}")
+    (pd / "references.bib").write_text("@misc{q, title={T}, author={A}, year={2024}, howpublished={\\url{https://x.org}}}")
+    (pd / "review.json").write_text(json.dumps([{"round": 1, "decision": "AMEND", "summary": "old", "findings": []}]))
+    paper._set(c, "Q1P1", status="PAUSE-ON-AMEND", round=1)
+    monkeypatch.setattr(paper, "_arxiv_titles", lambda ids: {})
+    calls = []
+    real = transport.call
+
+    def fake_call(prompt, **kw):
+        calls.append(kw["stage"]); monkeypatch.setenv("FAKE_REPLY", '{"decision":"ACCEPT","summary":"fine now","findings":[]}')
+        return real(prompt, **kw)
+    monkeypatch.setattr(paper.transport, "call", fake_call)
+    assert paper.review(c, "Q1P1") == "ACCEPTED"          # beyond paper_rounds: the owner's round is not budgeted
+    assert calls == ["review"]                            # no author call
+    s = paper.status(c, "Q1P1"); assert s["status"] == "ACCEPTED" and s["round"] == 2
+    assert [r["round"] for r in json.loads((pd / "review.json").read_text())] == [1, 2]

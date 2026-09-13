@@ -149,5 +149,233 @@
     "fix": "Switch to a style that prints DOI and URL (for example plainnat or plainurl) and confirm the identifiers appear in the .bbl. Cite P either as the arXiv preprint or as the ACL 2026 long paper with its DOI, not both. Remove the duplicate note field. Rerun the reference check before sending."
    }
   ]
+ },
+ {
+  "round": 5,
+  "at": "2026-09-13T06:57:29Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 429: Too Many Requests"
+  ],
+  "paper_sha256": "26c9ef01338c6b075341f037195a1f79471e906ff4e394106bdbf0041c9ad467",
+  "decision": "AMEND",
+  "summary": "The fixed-population ledger theorem, the softmax signal bound, the reading of P's Proposition 1 and the positioning against Lu et al., Devlin and Kudenko and Grze\u015b are correct and trace to the ledger and the search record; all five references are cited, carry URLs, and have metadata consistent with the recorded verifications, although this round's automated arXiv check returned HTTP 429 and confirmed nothing. The main correction is in Section 4: a first-entry equilibrium claim goes beyond ledger entries 24, 25 and 27 and is stated without the conditions it needs, and the payment-convention case split is presented as a headline result while the only admission that it goes beyond the inputs is a LaTeX comment. The remaining findings concern wording, theorem hypotheses and record details that the author can fix from the existing material.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Section 4 (The active-only boundary), sentence beginning 'For a first entry'",
+    "issue": "This sentence adds an equilibrium result that neither the note nor the ledger contains. Entries 24, 25 and 27 say only that active-only accounting leaves entry and exit boundary terms that can depend on policy, and the source comment concedes that the case analysis 'is not a result of the inputs'. The sentence is also imprecise. Player i's best responses survive only under the convention of eq:boundary-a, where no exit term remains, and only when the player has a single participation interval. Under eq:boundary-b the exit term \u03b3^(b\u22121)\u03a6_(b\u22121)^i depends on the player's own actions. The phrase 'the joint-policy ordering under the team objective does not' asserts a failure that the argument supports only as a possibility.",
+    "fix": "Delete the sentence, or reduce it to the ledger-level statement that the entry term can depend on other players' actions and the exit term on the player's own. If any version is kept, state the payment convention and the single-interval condition explicitly, and replace 'does not' with 'need not'."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Abstract; Section 4; Related work, second paragraph; Conclusion",
+    "issue": "The split into two payment conventions goes further than the ledger. It says an entry term appears under either natural convention, and an exit term appears only when the exit transition is unpaid. This is the author's elaboration of entries 24 and 27, not a result stated there. The algebra in eq:full, eq:boundary-a and eq:boundary-b is correct. However, the abstract and conclusion present the convention dependence as a finding, and 'either natural payment convention' implies that exactly two conventions are natural. The only disclosure is a comment that does not appear in the PDF.",
+    "fix": "In the abstract and conclusion, state the ledger-level result: dropped entry and exit payments leave boundary terms that can depend on policy. In Section 4, label the two conventions as a worked illustration of that statement, in the visible text."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Introduction, contribution paragraph ('reappear as policy-dependent terms')",
+    "issue": "The introduction says the dropped boundary payments 'reappear as policy-dependent terms'. The abstract and ledger entries 24 and 27 say only that they can depend on policy.",
+    "fix": "Write 'reappear as boundary terms that can depend on policy'."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "where": "Section 2, second paragraph ('v_t^* denotes the Shapley-value vector ..., defined up to translation')",
+    "issue": "Shapley values of a given game are unique. The translation ambiguity belongs to the Bradley\u2013Terry scores, which P's Proposition 2 matches to Shapley values only up to a translation constant.",
+    "fix": "Say that c_t^* is identified only up to translation, and that P's Proposition 2 compares it with the Shapley vector v_t^* up to a translation constant."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "where": "Section 3 and Theorem 1",
+    "issue": "The theorem relies on eq:embedding, which is defined only for nonterminal t with I_t \u2260 \u2205. The proof also uses \u03b3^T \u03a6_T^i = 0 for a termination time T that may depend on actions. Neither I_t \u2260 \u2205 nor finiteness of T (or \u03b3 < 1) appears among the hypotheses. The 'augmented state' is used in the hypotheses but never defined. The model and policy class in which best responses and Nash equilibria are taken are not stated.",
+    "fix": "Add to the theorem that I_t \u2260 \u2205 for every nonterminal t and that T is almost surely finite (or that \u03b3 < 1 with bounded potentials). Define the augmented state, for example x_t = (s_t, I_t, h_t) as in ledger entry 24. State that equilibria are taken over the players' policies in P's open Dec-POMDP with the declared per-agent payoffs."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "where": "Related work, first paragraph ('which is their AAMAS 2011 paper')",
+    "issue": "The paper identifies the contemporaneous work mentioned by Lu et al. as Devlin and Kudenko's AAMAS 2011 paper and names that paper without a bibliography entry. The search record says only that Lu et al. mention similar work by Devlin and Kudenko that appeared while their paper was under review. It lists the AAMAS 2011 paper only as a search hit, not as the item Lu et al. reference.",
+    "fix": "Either drop the identification and write 'similar contemporaneous work by Devlin and Kudenko', or check Lu et al.'s reference list against the downloaded JAIR PDF and add a verified bibliography entry."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "where": "Related work, second paragraph, last sentence",
+    "issue": "The paper says the AAMAS records were 'verified against the repository and proceedings pages listed in the bibliography'. The bibliography lists only the White Rose and Kent repository URLs. For Grze\u015b, the IFAAMAS contents page gives only the first page, 565; the range 565 to 573 comes from OpenAlex W2620974420. The round 5 record says the owner did this verification outside the pipeline.",
+    "fix": "Rephrase the sentence to match the round 5 record, naming the White Rose record, the IFAAMAS 2017 contents page and the OpenAlex record. Alternatively, delete the sentence as process detail."
+   },
+   {
+    "id": "F8",
+    "severity": "minor",
+    "where": "Section 5, softmax Lipschitz argument and the definition of F\u0302_t",
+    "issue": "The text says 'the mean value theorem gives the constant', but the mean value equality does not hold for vector-valued maps. The bound follows from the mean value inequality, \u2016f(x) \u2212 f(y)\u2016 \u2264 sup\u2016J\u2016 \u00b7 \u2016x \u2212 y\u2016 along the segment. Separately, F\u0302_t = \u03b3\u03a6_(t+1) \u2212 \u03a6_t is the same vector as F_t from eq:shaping under a second name.",
+    "fix": "Write 'the mean value inequality'. Either reuse F_t, or state that F\u0302_t equals the vector F_t from eq:shaping."
+   },
+   {
+    "id": "F9",
+    "severity": "minor",
+    "where": "Limitations and open questions",
+    "issue": "Ledger entry 25 lists as unresolved how MAPPO consumes ledger rewards for inactive agents. Under the ledger, an agent taking null actions still receives \u03b3\u03a6_a^i on its entry transition. The limitations mention whether P's implementation keeps the ledger, but not how a learner uses rewards paid to agents that have no actions.",
+    "fix": "Add one sentence stating that the paper does not address how MAPPO, or any learner, consumes shaping rewards paid to inactive agents on boundary transitions."
+   },
+   {
+    "id": "F10",
+    "severity": "minor",
+    "where": "Section 2, source comment after the Proposition 1 paragraph",
+    "issue": "The audit comment cites 'Proposition 1 and Section 4.1' and 'Steps 2 and 4' in P. In the provided source, Proposition 1 is in Section 6.1, and the appendix proof has Steps 1 to 3 followed by a Final Assembly, with no Step 4. The rendered text, which cites Step 2 and the final assembly, is correct.",
+    "fix": "Correct the comment to read Section 6.1, and Appendix proof of Proposition 1, Step 2 and Final Assembly."
+   }
+  ]
+ },
+ {
+  "round": 6,
+  "at": "2026-09-13T07:07:24Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 429: Unknown Error"
+  ],
+  "paper_sha256": "f39f4bfbc5e18f8e218de2c3c148bf126697a5d43065ab0cd75fcb70284938f1",
+  "decision": "AMEND",
+  "summary": "The paper is a narrowly scoped repair: its theorem, the softmax Lipschitz argument and the boundary-term algebra are correct, and its prior-work attributions and bibliography match the search record. Corrections are needed where the text overstates or misdescribes: the exact-shaping conclusions leave out the all-population ledger condition that Section 4 shows is essential, one sentence gives the wrong sign for the boundary terms, and MARS-RA's Proposition 2 is paraphrased inaccurately. The remaining items are wording, an undefined acronym, a missing partial-observability limitation, and bibliographic housekeeping for Q and P.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Introduction, paragraph 2; Interpretation; Conclusion, last sentence",
+    "issue": "Three passages say comparison error cannot affect the limiting objective under exact potential shaping, or that any benefit of comparisons lies only in finite-training dynamics. None of them states the all-population ledger condition. Section 4 shows that under active-only accounting the entry-time score \u03a6_a^i enters the recorded return, so comparison outputs can then reach the objective. Ledger entry 31 makes the claim only under a well-typed repair.",
+    "fix": "Qualify each passage with 'under the fixed-population all-transition ledger', or define 'exact shaping' once so that it includes that ledger, zero terminal potential and a fixed initial augmented state."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Section 4, sentence 'Each surviving term is exactly a dropped boundary payment'",
+    "issue": "The recorded sum equals the ledger sum (0) minus the discounted dropped payments, so the sign is wrong. The entry term \u2212\u03b3^a\u03a6_a^i is the negative of the dropped discounted payment \u03b3^(a\u22121)F_(a\u22121)^i = \u03b3^a\u03a6_a^i. The exit term \u03b3^(b\u22121)\u03a6_(b\u22121)^i is the negative of \u03b3^(b\u22121)F_(b\u22121)^i = \u2212\u03b3^(b\u22121)\u03a6_(b\u22121)^i.",
+    "fix": "Write 'Each surviving term is the negative of a discounted dropped boundary payment'."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Section 4, opening sentence and 'An active-only implementation differs from the ledger only in which of the two boundary transitions it pays'",
+    "issue": "'Inactive before time a' reads as never active before a, yet the paragraph later treats re-entry. 'Pays player i nothing while it is inactive except on the two boundary transitions' counts the exit transition, which starts from a time when i is active. The 'only' sentence holds for accounting that pays the embedded potentials of (1) on a subset of transitions, not for every active-only implementation.",
+    "fix": "State the interval as i\u2209I_(a\u22121), i\u2208I_t for a\u2264t<b, and i\u2209I_b. Say the ledger pays zero on transitions where i is inactive at both ends. Restrict the 'only' sentence to active-only accounting of the embedded potentials."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "where": "Section 4, 'each can depend on policy: the entry time a and the score at entry depend on the actions of the other players before a'",
+    "issue": "Dependence that runs only through other players' actions leaves player i's unilateral payoff differences unchanged; it bears on the team ordering. Only dependence on i's own actions (the re-entry and exit terms) bears on i's best responses. As written, a reader can take every surviving term as a threat to Nash invariance, which the section does not show.",
+    "fix": "State which kind of dependence bears on which invariance. Alternatively, say 'can depend on the joint policy' and avoid implying that equilibria change."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "where": "Section 2, paragraph 2, 'which its Proposition 2 compares with c_t^* up to a translation constant'",
+    "issue": "MARS-RA's Proposition 2 assumes c_t^* = v_t^* exactly. It concludes that \u0109_t estimates v_t^* consistently up to a translation constant, and its proof gives \u0109_t = c_t^* + C. The translation is therefore between the estimator and the target, not between c_t^* and v_t^*.",
+    "fix": "Reword as: Proposition 2 assumes c_t^* = v_t^* and concludes that \u0109_t is a consistent estimator of v_t^* up to a translation constant."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "where": "Section 5, final paragraph; Limitations",
+    "issue": "MAPPO is used without definition or attribution, so a reader without P cannot tell that it is MARS-RA's backbone learner.",
+    "fix": "At first use, identify MAPPO as the multi-agent PPO learner that MARS-RA uses as its backbone, citing P."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "where": "Section 3, augmented-state paragraph; Limitations",
+    "issue": "P models the task as an open Dec-POMDP in which agents act on partial observations. The paper states best responses and Nash equilibria in a fully observed stochastic game on an augmented state and never mentions this difference from the source model.",
+    "fix": "Note P's partial observability. Either observe that the proof's constant payoff shift is pathwise and does not use the policy class, or list the difference as a limitation."
+   },
+   {
+    "id": "F8",
+    "severity": "minor",
+    "where": "Related work, paragraph 1, 'which we do not identify further and which is not the 2012 paper'",
+    "issue": "The contemporaneous Devlin and Kudenko work is left unidentified, although search rounds 1 and 4 both surfaced a 2011 Devlin and Kudenko AAMAS paper on theoretical considerations of multi-agent potential shaping. The claim that it is not the 2012 paper is given no source.",
+    "fix": "Say the search surfaced that 2011 AAMAS paper, which was not read and is not cited, or cite it after checking the Crossref record already returned. Justify 'not the 2012 paper' from the 2011 publication of Lu et al., or drop the clause."
+   },
+   {
+    "id": "F9",
+    "severity": "minor",
+    "where": "Related work, paragraph 2, last sentence",
+    "issue": "The sentence describing how the AAMAS records were checked 'as the search record states' refers to an internal pipeline document that referees will not have.",
+    "fix": "Remove the sentence from the body; the bibliography URLs already identify the records."
+   },
+   {
+    "id": "F10",
+    "severity": "minor",
+    "where": "references.bib, zhao2026learning and wang2026marsra",
+    "issue": "This round's automated check failed (arXiv HTTP 429), so the Q and P entries rest on the round-1 identifier lookup. Their titles and author lists do match the source files. Round 1 also recorded DOI 10.18653/v1/2026.acl-long.1349 for P, which is an ACL camera-ready paper, but round 5 cut the entry back to an arXiv preprint without giving a reason.",
+    "fix": "Rerun the arXiv lookup. Then either add the ACL DOI once it resolves, or record in the search log why P is cited as a preprint only."
+   }
+  ]
+ },
+ {
+  "round": 7,
+  "at": "2026-09-13T07:19:33Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 429: Unknown Error"
+  ],
+  "paper_sha256": "a9980916e6a808e842a5efb8da8569fb1160533a700750876d1bc7ace881b12e",
+  "decision": "ACCEPT",
+  "summary": "The paper stays within the note and ledger. It credits Nash invariance, time-varying potentials and nonzero terminal potentials to Lu et al., Devlin and Kudenko, and Grze\u015b as the search record supports, and its telescoping, entry and exit boundary terms and softmax Lipschitz calculations are correct as written. What remains is minor: an unspecified gauge in the semantic-bias definition, two conditions missing from Limitations, an unflagged elaboration in Section 4, and bibliographic housekeeping; the automated arXiv check returned HTTP 429, so reference verification rests on the round 1 identifier lookup and the round 5 repository records, which agree with the entries.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Section 5, definition of \u03b4_t and eq:bias; Section 2, 'so c_t^* is a translation class'",
+    "issue": "The translation gauge is never specified. \u03b4_t = \u2016c_t^* \u2212 v_t^*\u2016\u2082 depends on which representative of c_t^* is chosen, so under Proposition 2's own hypothesis (c_t^* = v_t^* up to translation) \u03b4_t can be positive purely because of a translation. The triangle inequality also needs \u0109_t and c_t^* in the same gauge. Separately, Section 2 presents 'c_t^* is a translation class' as a description of P, whereas P defines c_t^* as a vector in \u211d^{|I^t|}.",
+    "fix": "State the gauge: for example, take the representatives of \u0109_t and c_t^* whose coordinate mean on I_t equals that of v_t^*. This is equivalent to defining \u03b4_t as the minimum over translations. Note that eq:local holds in any common gauge because softmax is translation invariant. Phrase the Section 2 remark as the paper's reading, e.g. 'we treat c_t^* as identified only up to translation'."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Section 3, Theorem 1 hypotheses; Limitations, first paragraph",
+    "issue": "The construction needs a defined score vector, or at least a simplex-valued credit on I_t, at every nonterminal step. Section 2 itself notes that the displayed unregularised MLE may diverge under separation. P's single query per ordered comparison makes separation easy to reach: with two agents, two agreeing ordered comparisons already separate. Limitations name the empty-coalition gap but not this one. They also omit almost surely finite termination, which the theorem assumes.",
+    "fix": "Add to Limitations that \u03a6_t is undefined when the score estimate does not exist unless the model declares a fallback. Note that the theorem needs only some declared simplex-valued credit on I_t. List almost surely finite T among the stated conditions."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Section 4, sentences from 'The two kinds of dependence bear on different invariances' to 'bears on the player's best responses'",
+    "issue": "The paper separates two kinds of dependence. First-entry dependence involves only other players, so it leaves unilateral differences intact but can change team ordering. Re-entry and exit dependence bears on best responses. This split goes beyond ledger 24 and 27, which say only that boundary terms can depend on policy, yet the disclaimer sentence covers only the case split. 'depend on' is also stated as a certainty where 'can depend on' is what is supported. The first-entry argument silently uses i \u2209 I_t for all t < a together with null inactive actions.",
+    "fix": "Extend the 'our elaboration, not a result of the source material' sentence to cover this invariance discussion. Write 'can depend on'. State that for a first entry the player is inactive at every t < a, so under null inactive actions the distribution of (a, \u03a6_a^i) does not depend on player i's policy."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "where": "Section 4, 'The entry term has no counterpart in that analysis'",
+    "issue": "In Grze\u015b's decomposition U_\u03a6 = U + \u03b3^N \u03a6(s_N) \u2212 \u03a6(s_0), the initial-potential term is the structural counterpart of the entry term. What is absent there is action dependence, not the term itself.",
+    "fix": "Say that the entry term corresponds to Grze\u015b's initial-potential term. There it is fixed by the start state; here the entry time and entry state can depend on actions."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "where": "Section 3, Theorem 1, final sentence, and proof",
+    "issue": "The shaped team objective is never written down, so the object being compared with J^team is left implicit.",
+    "fix": "Define J\u0303^team(\u03c0) = E_\u03c0[\u03a3_{t=0}^{T\u22121} \u03b3^t \u03a3_{i\u2208N} r\u0303_t^i]. State that it equals J^team(\u03c0) \u2212 \u03c1 for a nonterminal initial state, using \u03a3_i \u03a6_0^i = 1 on a nonempty coalition."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "where": "Section 6, first paragraph",
+    "issue": "The paragraph names a 2011 AAMAS paper by Devlin and Kudenko that was neither read nor cited. It then infers from publication years alone that this, not the 2012 paper, is the work Lu et al. mention. The search record supports only that Lu et al. mention similar work that appeared while their paper was under review. The aside is process narration, and the inference is not established.",
+    "fix": "State only what Lu et al. report, e.g. 'Lu et al. note similar work by Devlin and Kudenko that appeared while their paper was under review', and drop the date inference and the unread-paper aside. Alternatively, cite the 2011 paper using the round 1 Crossref record and attribute to it only what Lu et al. say."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "where": "references.bib: lu2011policy, zhao2026learning, wang2026marsra",
+    "issue": "The author string 'Sidney N. Givigi Jr.' makes BibTeX parse 'Jr.' as the surname, which affects name formatting and sorting. The two arXiv entries carry the identifier in both the journal field and the eprint field, so plainurl may print it twice alongside the URL.",
+    "fix": "Write the author as 'Givigi, Jr., Sidney N.'. Give the identifier once in each arXiv entry, e.g. journal = 'arXiv preprint' plus eprint. Check the rendered bibliography."
+   }
+  ]
  }
 ]

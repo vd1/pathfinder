@@ -25,6 +25,7 @@ def main(argv=None):
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
     w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
+    w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
     e = sub.add_parser("edit", help="after a terminal verdict: rewrite the note as a readable short paper with references")
     e.add_argument("pair", nargs="?", help="default: every terminal thread without an edited note")
     xp = sub.add_parser("export", help="write a self-contained snapshot of the monitor page and every thread's documents")
@@ -69,6 +70,13 @@ def main(argv=None):
         print(monitor.status_text(c))
     elif ns.cmd == "serve":
         monitor.serve(c, ns.port)
+    elif ns.cmd == "paper" and ns.review:
+        if not ns.pair:
+            raise SystemExit("--review needs a pair")
+        try:
+            print(f"{ns.pair}: {paper.review(c, ns.pair)}")
+        except transport.TransportFailed:
+            print(f"{ns.pair}: transport failure; run again later")
     elif ns.cmd == "paper":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
