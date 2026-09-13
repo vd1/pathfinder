@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Participation Boundaries in Rank-Based Reward Shaping}
+\author{}
+\date{12 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note studies a proposed connection between a mechanism-design paper about privately informed AI agents and a multi-agent learning paper that assigns credit from pairwise visual comparisons.  The thread first asked whether the mechanism-design results could make the credit system robust to strategic reports.  It found that the learning system asks agents for no such reports, but that its changing set of active agents raises a narrower question about rewards at exit and re-entry.  Complete accounting preserves incentives, whereas accounting that stops at a participation boundary can leave an extra payment and change a best response.  The thread paused because the supplied material does not include the implementation needed to tell which accounting rule is used, and because the positive result is standard potential-shaping algebra.
+\end{abstract}
+
+\section{Introduction}
+
+\emph{Mechanism Design for Alignment and Control}, called Q here, studies a designer who does not know an AI agent's preferences, abilities, actions, or information.  The designer must induce the agent both to describe its type truthfully and to follow a recommended action.  A more capable agent may hide an ability but a less capable one cannot invent an ability it lacks.  Q therefore tests a report and the action that follows it together, and gives conditions for mechanisms that make truthfulness and obedience optimal \cite{Q}.
+
+\emph{MARS-RA}, called P here, studies credit assignment in teams of embodied agents.  An external large multimodal model compares pairs of agents using their egocentric visual observations.  A Bradley--Terry rank model turns these comparisons into scores for the currently active agents.  A softmax transformation then supplies a potential used to shape the agents' learning rewards.  P also introduces MARS-Bench, where actions use battery charge and an agent with an empty battery leaves temporarily before returning \cite{P}.
+
+The initial connection was strategic reporting: perhaps Q could show that P's rank-based credit was incentive compatible.  This was the wrong interface.  P's agents do not report their contribution, since the external model compares their observations.  The relevant choice is instead whether an agent can change its actions or visible trajectory to affect its score.  This led to a narrower question: does P's potential preserve incentives when the active team changes, or can exit and re-entry leave an unsettled reward?
+
+\section{What was done}
+
+The peers first checked who supplies information in P.  They found that the comparison entries come from an external model, not from agent reports.  They also separated P's statistical claim from an incentive claim.  P bounds the error of a Bradley--Terry estimate around a stable latent preference vector.  This does not show that the vector measures true contribution or that an agent cannot alter the observations on which comparison depends.  P's comparison with Shapley values assumes the required identification rather than proving it.
+
+The peers next considered whether an agent could gain merely by looking useful to the comparator.  They rejected that broad claim after checking the reward-shaping sum.  Under the usual conditions, the shaping terms cancel over a complete episode, so a higher intermediate score alone does not increase the total shaped return.
+
+Attention then moved to the changing active team.  P keeps a fixed population of identities and starts with an \(n\)-by-\(n\) comparison matrix, where \(n\) is the population size.  Later, however, it estimates a score vector whose length is the number of active agents, applies softmax to that vector, and subtracts potentials at consecutive times.  If the active set changes, those two vectors need not have the same coordinates or length.  The peers checked P's text for a padding rule, an inactive-agent potential, or a settlement rule at entry and exit, but found none.  They then derived the complete-accounting result and a boundary counterexample.  Ada recorded the derivation in \url{../ada/participation_boundary.tex}, and the other peer checks independently confirmed the relevant definitions in P.
+
+\section{Results}
+
+The first result is negative but clear: P's rank aggregation does not by itself provide Q's notion of incentive compatibility.  Statistical concentration says that repeated comparisons recover the comparator's latent ranking under the assumed model.  It does not identify that ranking with actual contribution.  Q, by contrast, asks whether every feasible combination of a false report and a disobedient action is unattractive.  Its revelation and peer-scoring results require reports, separated beliefs about other agents, and mechanism-dependent transfers.  P supplies none of these objects.  Q therefore contributes a way to frame an incentive audit, not a truthfulness theorem for P.
+
+The positive result requires complete accounting.  Let \(i\) denote one persistent agent identity.  Let \(x_t\) be the full state at time \(t\), including which agents are active, and let \(\Phi_i(x_t)\) be agent \(i\)'s scalar potential.  Let \(\gamma\) be the discount factor, let \(T\) be the terminal time, and define the shaping payment on every transition by
+\[
+F_{i,t}=\gamma\Phi_i(x_{t+1})-\Phi_i(x_t).
+\]
+Then the discounted shaping return is
+\begin{align*}
+\sum_{t=0}^{T-1}\gamma^t F_{i,t}
+&=\sum_{t=0}^{T-1}\left(\gamma^{t+1}\Phi_i(x_{t+1})-\gamma^t\Phi_i(x_t)\right)\\
+&=-\Phi_i(x_0)+\gamma^T\Phi_i(x_T).
+\end{align*}
+For a fixed initial state and zero terminal potential, this value does not depend on the actions between them.  The shaping return therefore cannot alter the ordering of agent \(i\)'s best responses.  Applying the same argument to every identity preserves Nash equilibria.  This conclusion covers endogenous entry and exit only if each identity has a potential in inactive states and receives the payment for every boundary transition.
+
+The second result describes what goes wrong when accounting ends early.  Suppose agent \(i\)'s recorded return stops at an action-dependent removal time \(\tau_i\), before the transition to an inactive potential is settled.  Its recorded shaping return is then
+\[
+\sum_{t=0}^{\tau_i-1}\gamma^t F_{i,t}
+=-\Phi_i(x_0)+\gamma^{\tau_i}\Phi_i(x_{\tau_i}).
+\]
+The last term is an exit payment that can depend on the action and the time of exit.  To see the effect, compare two initial actions with the same environmental reward.  One action keeps the agent active.  The other uses the remaining battery and produces a final active-state potential \(\Phi_i(x_1)=h\), where \(h>0\).  If accounting stops before the inactive-state settlement, the exit action receives an extra \(\gamma h\).  The shaped game then prefers exit although the environmental game is indifferent.  Re-entry can create a boundary term with the opposite sign.
+
+These claims are conditional.  They show that persistent identities and full settlement are sufficient, and that a particular incomplete rule can change incentives.  They do not show that the MARS-RA implementation uses the incomplete rule.
+
+\section{What did not hold and the objections}
+
+The first proposed claim, that rank aggregation makes P robust to strategic misreporting, did not hold.  The agents make no contribution reports, and recovery of a latent comparator score is not truthfulness.  The thread settled this objection by dropping the claim and examining action choices instead.
+
+A second proposal said that an agent might gain by making later observations look more useful.  The complete-episode calculation above defeated that proposal in its general form.  The peers therefore confined the concern to failures of the cancellation conditions, especially missing payments at participation boundaries.
+
+The principal unresolved objection is that P's code may already align each active score with a fixed identity and settle every entry and exit transition.  The fixed \(n\)-by-\(n\) comparison matrix makes such an implementation plausible.  No implementation is included in the supplied material, so the peers could not settle this objection.  The result is a precise ambiguity in the paper's formula and a conditional counterexample, not evidence of an implemented defect.
+
+There is also a limit to the role of Q.  Its insistence on feasible concealment and joint report-action deviations is useful language for the audit.  Its revelation principle and peer-scoring construction do not yield the cancellation theorem, which follows directly from standard potential-based reward shaping.  The material is also too thin to establish that extending this calculation to open decentralised partially observable Markov decision processes is a new theoretical contribution.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because its secure result was the standard cancellation calculation, while its pair-specific concern remained undecidable from the available evidence.  Q supplied an audit vocabulary but not the theorem, and P's missing interface rule could be only a gap in exposition.  The smallest step that would restart the work is to inspect one battery-depletion and respawn trace in P's implementation.  That trace should record, for the same identity, the potential and shaping payment immediately before removal, during inactivity, and at re-entry.  It would show whether boundary settlement is present or whether the conditional exit payment can arise.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

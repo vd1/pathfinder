@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q4P9: Revelation and Contract Representation}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{The pair in two sentences}
+Q studies mechanism design for agents with unknown preferences, feasible actions,
+and information, and proves revelation principles that require truthful reporting
+and obedience. P studies self-negotiated contracts between LLM agents and reports
+a large performance difference between programmatic and natural-language contract
+treatments, despite similar average use of contract-covered moves (ledger entries
+6, 8, and 36).
+
+\section{The connexion pursued}
+The initial connexion claimed that natural language lets an agent reinterpret, and
+thus counterfeit, a commitment. The peers rejected that claim and instead asked
+whether two losslessly equivalent displays of one contract can induce different
+planning behavior in an LLM agent, thereby testing the optimization and
+strategy-copying abstraction used in Q's revelation construction (ledger entries
+15, 32, 33, and 36).
+
+\section{What was found}
+Q's construction replaces equilibrium play in an indirect mechanism with a direct
+recommendation of the induced contingent action plan. A deviation available after
+the direct recommendation can be copied in the indirect mechanism, so the indirect
+equilibrium blocks it; conversely, a direct incentive-compatible mechanism is
+itself an indirect mechanism. Hence, under Q's assumptions, a bijective relabeling
+that preserves feasible actions, information, and payoff consequences preserves
+the equilibrium outcome set (ledger entries 8, 12, and 15).
+
+P supplies suggestive behavioral evidence. On mutually dependent boards, both
+agents finish in \(79\%\) of programmatic-contract games and \(46\%\) of
+natural-language-contract games. Contract-covered movement is similar, about
+\(2.60\) tiles per game, but natural-language games have fewer supplemental
+proposals, \(1.4\) rather than \(3.0\), and agents cite the insufficient contract
+in \(94\%\) rather than \(74\%\) of trade refusals (ledger entries 6 and 8).
+The notes interpret this pattern as possible representation-dependent planning or
+over-anchoring, not weaker enforcement.
+
+The proposed derivation is therefore conditional. Freeze a canonical obligation
+map \(c\), render the same fields and contingencies losslessly as canonical JSON
+or canonical prose, and enforce both with the same exact program. At preregistered
+decision nodes, compare strictly suboptimal refusals, or regret against an exact
+planner. A display-dependent difference there would challenge the empirical
+adequacy of unrestricted optimization and strategy copying for these agents
+without refuting Q's theorem (ledger entries 23, 29, 32, and 35).
+
+\section{Objections and their status}
+The original claim fails because Q's no-counterfeiting condition concerns hard
+evidence about physical execution or information capability: a certificate may
+be hidden but not fabricated. In P, an external judge interprets the retained
+negotiation and automatically enforces covered transfers; it makes
+\(3/1155=0.26\%\) errors, all false positives. P therefore shows no
+agent-controlled ex-post reinterpretation channel (ledger entries 1, 2, 33,
+and 36).
+
+The existing programmatic and natural-language treatments are not known to be
+extensionally identical. They use separately generated negotiations and differ
+in presentation, acceptance, retained history, and enforcement, while similar
+mean coverage does not prove matched obligations (ledger entries 7, 11, 18,
+and 32). Also, Q establishes equality of equilibrium outcome sets, not equality
+of a particular selected outcome, so the completion-rate gap alone is not
+decisive (ledger entries 21, 23, and 29). Finally, defining an
+interface-dependent strategy set after observing failure would be circular; a
+resource bound or decoding model must be specified or estimated independently
+(ledger entries 18, 26, 32, and 35). These objections remain unresolved by the
+current data and shape the proposed test.
+
+\section{Outside sources}
+No source outside Q and P was used to establish the connexion. The ledger and
+the two peer notes only interpret results and arguments contained in Q and P.
+
+\section{What remains open}
+It remains unknown whether a representation effect survives matched semantics
+and common enforcement. It is also open whether any surviving effect is
+specific to incomplete contracts, whether it reflects context or syntax, and
+whether an independently specified bounded decoder-policy model predicts it.
+The material is thin on these points because no matched intervention has yet
+been run (ledger entries 12, 14, 32, and 35).
+
+\section{Smallest next step}
+Compile one accepted obligation map into losslessly equivalent canonical JSON
+and canonical prose, show each rendering under identical programmatic
+enforcement on the same board and model, and test preregistered nodes where a
+supplemental trade is strictly payoff-improving under every relevant
+continuation. A representation-dependent difference in refusal or exact-planner
+regret would establish the proposed behavioral gap; no difference would locate
+P's original contrast in unmatched content, enforcement, or sampling rather
+than representation (ledger entries 15, 23, 32, and 35).
+
+\end{document}

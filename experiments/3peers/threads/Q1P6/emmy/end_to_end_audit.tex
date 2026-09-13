@@ -1,0 +1,88 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\section*{End-to-end audit of MARS-RA through Q's interface framework}
+
+\paragraph{Claim boundary.}
+P's Proposition 1 controls estimation around an assumed Bradley--Terry latent
+preference vector:
+\[
+  \varepsilon_{K,t}:=\frac{1}{\sqrt n}
+  \lVert \widehat{\mathbf c}_t-\mathbf c_t^*\rVert_2
+  \leq C_0\sqrt{\frac{n\log n}{K}}.
+\]
+It does not control semantic bias
+\[
+  b_t:=\frac{1}{\sqrt n}
+  \inf_{a\in\mathbb R}
+  \lVert \mathbf c_t^*-(\mathbf v_t^*+a\mathbf 1)\rVert_2,
+\]
+where the infimum respects Bradley--Terry's translation invariance.  P's
+Shapley proposition sets this term to zero as a premise.  Consequently, even
+under correct specification and a fixed gauge,
+\[
+  \frac{1}{\sqrt n}\inf_{a\in\mathbb R}
+  \lVert\widehat{\mathbf c}_t-(\mathbf v_t^*+a\mathbf 1)\rVert_2
+  \leq \varepsilon_{K,t}+b_t.
+\]
+Increasing the query count removes only the first term.  Systematic visual
+ambiguity, prompt bias, Bradley--Terry misspecification, and nonstationarity
+can remain in the second.  P lines 361--389 establish the two premises; P
+lines 550--552 empirically relate raw comparison agreement and query count to
+success.  Q lines 260--265, 345--350, and 1172--1179 require a task object,
+task-defined loss, and adapter analysis, so Q identifies exactly why the first
+bound is not an end-to-end guarantee.
+
+\paragraph{Propagation through the potential is mathematically bounded but
+does not give the desired policy theorem.}
+Let \(S(\mathbf x)=\operatorname{softmax}(\mathbf x)\).  Since the spectral
+norm of its Jacobian is at most \(1/2\),
+\[
+  \lVert S(\widehat{\mathbf c}_t)-S(\mathbf v_t^*)\rVert_2
+  \leq \frac{1}{2}\inf_{a\in\mathbb R}
+  \lVert\widehat{\mathbf c}_t-(\mathbf v_t^*+a\mathbf 1)\rVert_2.
+\]
+Thus one can propagate estimation plus semantic error to each shaping reward
+by a triangle inequality.  But for a fixed, consistently indexed coalition
+and terminal potential zero, discounted potential shaping telescopes:
+\[
+  \sum_{t=0}^{T-1}\gamma^t
+  \bigl(\gamma\psi_{t+1}-\psi_t\bigr)
+  =-\psi_0+\gamma^T\psi_T=-\psi_0.
+\]
+The term is policy independent for a fixed initial state.  Therefore, under
+exact optimization, every LMM comparison quality yields the same optimal
+policy.  P's empirical dependence on model accuracy, query count, and
+\(\rho\) (lines 550--552 and 785--838) concerns finite-time learning dynamics,
+not optimal-policy consistency or robustness.  A useful theorem must analyze
+optimization or sample efficiency, rather than only final return.
+
+There is also an unresolved open-team interface: P defines
+\(\widehat{\mathbf c}_t\in\mathbb R^{|I^t|}\) (lines 316--329), so its vector
+potential changes dimension as agents enter and leave.  Telescoping per-agent
+potentials requires a persistent population-indexed padding convention and a
+definition of potential at entry and exit.  P does not state that convention.
+
+\paragraph{Concrete publication question.}
+Replace the broad question by: ``Can an open-team, finite-training MARS-RA
+variant obtain a query-cost-aware performance bound that separates comparator
+sampling error, semantic credit bias, and optimizer sensitivity?''  A credible
+paper would (i) define persistent agent-indexed potentials, (ii) use a
+task-grounded pairwise loss rather than raw average accuracy, (iii) prove a
+finite-training bound of schematic form
+\[
+  \operatorname{Gap}_N
+  \leq G_N\!\left(\rho,
+  b+ C_0\sqrt{\frac{n\log n}{K}},\lambda_2\right),
+\]
+and (iv) optimize or budget the total LMM calls, which scale with active pairs
+and repeated queries.  Q lines 936--954 and 1242--1258 motivate query pricing;
+P lines 285--300 and 946--1023 supply the all-pairs, \(K\)-query design to test
+against adaptive or sparse querying.
+
+The derivation does not itself provide \(G_N\).  Without assumptions on MAPPO,
+function approximation, and policy-dependent observations, Q's composition
+warning at lines 1026--1109 says the component bound cannot be transferred.
+That unresolved learning-dynamics edge is the main technical risk and the
+source of possible novelty.
+\end{document}

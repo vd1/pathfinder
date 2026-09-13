@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Paying for Reasoning in an LLM Double Auction}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The pair joins a study of large language models trading in a double auction with a study of language-model agents that pay an energy cost for generating tokens.  The thread asked whether charging for inference would repair or damage the auction's efficiency.  It found an exact welfare benchmark and a causal experimental design that keeps the auction fixed while varying charges for quotes and tokens.  It did not find an empirical effect, because the proposed experiment was not run.  The thread therefore paused when the verifier judged that new model access, calibration, and adequately replicated runs were needed.
+\end{abstract}
+
+\section{Introduction}
+
+Struski and colleagues study whether markets designed for people still work when large language models act as traders \cite{struski2026competitive}.  Their agents buy and sell in a double auction, where buyers and sellers can submit prices and accept one another's offers.  The markets converge more slowly than human markets, or do not converge, and their allocations are less efficient.  Behaviour differs across models and market roles.  Some agents repeatedly improve a quote by only one cent until the round ends.  The paper also associates trading rather than further price adjustment with more urgent language in one model's reasoning traces, but it does not claim that this language causes the change in action.
+
+Hansen and colleagues introduce the Energy Society, a simulated economy in which language-model agents spend energy when they generate tokens, recover energy by completing jobs or receiving donations, and become inactive when their balance reaches zero \cite{hansen2026energy}.  The token cost depends on token use and model size.  Larger models generally use more energy than they gain, while cooperative objectives change donations and job allocation.  The paper treats ``survival'' as an analogy for budget exhaustion in an agent system, not as literal survival.
+
+The thread pursued a connection between Q's market benchmark and P's accounting for inference.  Its first idea was to put Q's auction into P's varied job economy.  The peers rejected this because it would change the institution, tasks, incentives, and measurements together.  They instead proposed leaving Q's auction unchanged and adding only a visible cost ledger.  The resulting question was whether a price on repeated quoting, a price on generated tokens, or both would improve or reduce market efficiency.
+
+\section{What was done}
+
+The peers first isolated what each paper could contribute.  Q provides fixed buyer and seller values, a persistent order book, random activation of traders, a finite round, and a measure of trading surplus.  It also provides a possible failure mechanism: small price improvements can consume the available time.  P provides a rule that makes inference costly.  In P, the cost for agent \(i\) in period \(t\) is
+\[
+ C_{i,t}=kT_{i,t}S_i^{\alpha},
+\]
+where \(T_{i,t}\) is the number of generated tokens, \(S_i\) is model size, \(k\) is the token-price scale, and \(\alpha\) controls how strongly model size affects cost.
+
+They then checked Q's welfare benchmark.  Matching the highest buyer values with the lowest seller costs gives gains of
+\[
+ 2.50,\quad 2.00,\quad 1.50,\quad 1.00,\quad 0.50,\quad 0.
+\]
+The greatest possible surplus in a round is therefore \(G^{\star}=7.50\).  Ada and Emmy checked this calculation independently.  The sixth efficient trade has zero gain, so the number of trades and the total surplus describe different features of an outcome.
+
+The peers distinguished gross allocation from the resources used to reach it.  If \(G\) is realised trading surplus and \(C\) is inference cost, ordinary allocative efficiency is
+\[
+ \eta_{\mathrm{alloc}}=\frac{G}{G^{\star}}.
+\]
+A net measure, \(\eta_{\mathrm{net}}=(G-C)/G^{\star}\), is meaningful only when \(C\) has a preregistered conversion into the same units as trading surplus.  Without that conversion, the peers proposed reporting the trade-off between surplus and compute use, measured in tokens, API cost, or joules.
+
+The first experimental proposal compared free inference, a nonbinding displayed token ledger, a fixed charge for each quote, and a charge for each token.  The first verifier round objected that the last two conditions changed both marginal incentives and total charges.  Matching their expected cost in a pilot would not remove this problem.  The peers accepted the objection and replaced those conditions with a randomised \(2\times2\) design.
+
+In the corrected design, the charge is
+\[
+ C=fN+\lambda T,
+\]
+where \(N\) is the number of quote actions, \(T\) is observable billed token use, \(f\) is the price per quote, and \(\lambda\) is the price per token.  The design crosses \(f\in\{0,f_1\}\) with \(\lambda\in\{0,\lambda_1\}\).  Here \(f_1\) and \(\lambda_1\) are positive rates chosen in a pilot as preregistered fractions of \(G^{\star}\), then held fixed.  Every cell shows an accumulating ledger, but charges are settled between rounds so that the set of active buyers and sellers does not change within a round.
+
+For any measured outcome \(Y\), comparing a positive token price with zero token price at a fixed quote price gives the token-price effect at that quote price.  The corresponding comparisons at fixed token prices give quote-price effects.  The difference between those effects tests whether the two prices reinforce or offset each other.  A no-ledger condition and an identically displayed but nonbinding ledger at the two positive rates test the combined effect of seeing the ledger and the additional combined effect of actual charges.  Separate display effects for the two prices would require a complete nonbinding copy of the factorial design.
+
+\section{Results}
+
+The thread establishes a coherent question and an identifiable proposed experiment.  It does not establish whether inference prices improve auction outcomes.  Q supports the use of \(G^{\star}=7.50\) as the round benchmark and documents repeated one-cent improvements within a finite horizon.  P supports token-based cost accounting and budget exhaustion.  Neither paper runs Q's auction under a randomised inference price, so neither supplies the missing answer.
+
+The design supports careful causal statements if it is run.  Randomising \(f\) while holding \(\lambda\) fixed identifies the effect of pricing repeated quote actions under that token price.  Randomising \(\lambda\) while holding \(f\) fixed identifies the effect of pricing billed tokens under that quote price.  Their interaction shows whether the tariff components act as complements or substitutes.  Emmy's synthesis and the final peer checks agree on these contrasts.  Realised charges must not be equalised after treatment, because they are consequences of agents' behaviour.
+
+The main outcomes proposed by the peers are gross surplus, trade count, price dispersion, crossing behaviour, quote increments, abstention, and tokens per completed trade.  The sign of an effect remains open.  Moderate charges might reduce unproductive small improvements, while larger charges might cause early acceptance, abstention, or exit.  This possible non-monotonic pattern is a hypothesis, not a finding.
+
+\section{What did not hold and remaining objections}
+
+The original transplant into P's job economy did not hold the market setting fixed and was dropped.  The claim that greater survival pressure would amplify urgency also did not hold as a supported causal claim.  Q's language analysis is associational and limited to one model, while P's interventions change coordination as well as the number of model calls.  The peers therefore made market actions the outcomes of randomised prices and kept reasoning traces as secondary diagnostics.
+
+Immediate deactivation within a round would alter supply, demand, and the attainable-surplus benchmark.  The main design settles charges only after a round.  A separate study could allow immediate deactivation, but it would need to report efficiency against both the original benchmark and the best allocation among agents still active.  This settles the confound for the main design, not for that separate selection study.
+
+The corrected factorial settles the verifier's first objection to the fixed-fee versus token-fee comparison.  Several practical objections remain.  The record contains no power calculation and no evidence that the factorial can be afforded with enough replication.  A displayed nonbinding ledger may not be believed.  Billed tokens may omit or poorly represent hidden reasoning, and observability may differ between model APIs.  A scalar net-welfare result still needs a defensible conversion between compute and auction payoff.  The material is also too thin to support generalisation beyond the models tested by a future experiment.
+
+\section{Why the thread stopped}
+
+In the second review round, the verifier accepted that the connection was coherent and that the revised factorial identified the intended tariff effects.  The verifier nevertheless paused the thread because all substantive effects remained unmeasured.  Answering the question requires new experimental runs, access to the relevant models or APIs, calibrated prices, and enough replications to distinguish effects from variation.  None of these resources or results appears in the ledger.
+
+The smallest step that would restart the work is a pilot using Q's unchanged auction.  For each model, it would record billed tokens and quote actions per round, choose \(f_1\) and \(\lambda_1\) as fixed fractions of \(G^{\star}=7.50\), and support a power calculation.  The full consequential factorial and its ledger controls would then be run with those rates frozen.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

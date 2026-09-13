@@ -1,0 +1,177 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q7P7: Strategic Implementation of Forecast-Based Carbon Dispatch}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q gives an indirect, budget-balanced mechanism and a proximal best-response
+scheme for strongly concave welfare maximization over convex local strategy
+sets with aggregate resource constraints.  P forecasts day-ahead nodal carbon
+intensity and uses it to schedule distributed data centers (DDCs) and mobile
+energy storage systems (MESSs), including binary intertemporal routing and
+parking decisions, to reduce carbon emissions.
+
+\section*{Connexion pursued}
+The ledger asks whether Q can decentralize P's forecast-driven dispatch among
+strategic asset owners and whether the resulting equilibrium inherits a
+certificate against nodal-carbon-intensity forecast error.  The final form of
+the question is deliberately narrower: embed forecasted carbon charges in Q's
+mechanism on the largest compatible convex slice of P, rather than claim that
+Q implements P's entire model (entries 2--4, 26, and 31).
+
+\section*{What was found}
+The full models do not compose directly.  Q assumes compact convex local sets,
+twice differentiable strongly concave valuations, and shared constraints of
+aggregate-capacity form; its implementation and uniqueness arguments use
+these assumptions.  P instead minimizes a public carbon objective, and its
+MESS model contains binary parking, travel, arrival, and departure variables.
+Thus Q's KKT, LMI, uniqueness, and convergence conclusions do not presently
+cover P's mixed-integer MESS dispatch (entries 2, 3, and 10).
+
+There is nevertheless an algebraically valid mechanism on a compatible convex
+slice.  Let owner \(n\)'s private benefit be \(v_n(x_n)\), let its separable
+forecasted carbon contribution be
+\(c_n(x_n)=\beta\widehat e^{\mathsf T}g_n(x_n)\), and let \(t_n^Q\) be Q's
+transfer when Q is applied to the transformed valuation
+\(V_n=v_n-c_n\).  Define
+\[
+ T_n=t_n^Q+c_n-\frac{1}{N-1}\sum_{m\ne n}c_m.
+\]
+Owner \(n\)'s payoff is
+\[
+ v_n-T_n=(v_n-c_n)-t_n^Q
+ +\frac{1}{N-1}\sum_{m\ne n}c_m.
+\]
+The last term is independent of owner \(n\)'s message, so allocation and price
+best responses are unchanged.  Each \(c_m\) appears in exactly \(N-1\)
+rebates, hence
+\[
+ \sum_n(T_n-t_n^Q)=0.
+\]
+The augmentation therefore preserves Q's incentives and budget balance,
+including off equilibrium, provided carbon is separable by owner allocation
+(entries 24, 29, 32, and 38).  This construction is new to the pair; it is not
+a theorem already stated by Q (entry 29).
+
+This round resolves the verifier's principal objection for P's displayed
+DDC-only feasible set.  At each time \(t\), write
+\[
+ w_{i,t}=\frac{\iota^{\mathrm{GLB}}_{i,t}}{\phi_{1i}},
+ \qquad L_{i,t}\leq w_{i,t}\leq U_{i,t},
+ \qquad \sum_i w_{i,t}=0,
+\]
+as in P's equations (27)--(30).  Introduce the nonnegative owner-local
+coordinates
+\[
+ a_{i,t}=w_{i,t}-L_{i,t},\qquad
+ b_{i,t}=U_{i,t}-w_{i,t},
+\]
+and put \(a_{i,t}+b_{i,t}=U_{i,t}-L_{i,t}\) in owner \(i\)'s local convex
+set.  The two Q-form shared caps
+\[
+ \sum_i a_{i,t}\leq-\sum_iL_{i,t},\qquad
+ \sum_i b_{i,t}\leq\sum_iU_{i,t}
+\]
+are respectively equivalent to \(\sum_iw_{i,t}\leq0\) and
+\(\sum_iw_{i,t}\geq0\), and together are exactly P's signed conservation
+equality.  Conversely, every P-feasible point saturates both caps.  This is
+an affine bijection that preserves compactness and convexity, uses
+nonnegative message coordinates, retains the DDC owners as agents, and
+leaves P's DDC carbon term affine up to a baseline constant (entries 52, 56,
+60, 61, and 69).  The capacities are nonnegative when baseline regulation is
+feasible, so \(L_{i,t}\leq0\leq U_{i,t}\) (entries 61 and 69).  Strong
+concavity in \(w_i\) also survives on the lifted local affine subspace, with
+a rescaled modulus (entry 60).  Thus the connexion is demonstrated for P's
+displayed DDC feasibility slice, assuming the private valuation required by
+Q, rather than remaining wholly conditional (entries 63 and 72).
+
+The forecast certificate is elementary but sharp within the stated model.
+On a compact convex feasible set \(X\), define
+\[
+ F_e(x)=D(x)+\beta e^{\mathsf T}g(x),
+\]
+where \(D\) collects private costs.  Let the forecast and realized optimizers
+be
+\[
+ \widehat x\in\operatorname*{argmin}_{x\in X}F_{\widehat e}(x),
+ \qquad
+ x_e^\star\in\operatorname*{argmin}_{x\in X}F_e(x).
+\]
+Forecast optimality and cancellation of the common private-cost terms give
+\begin{align*}
+ F_e(\widehat x)-F_e(x_e^\star)
+ &\leq \beta(e-\widehat e)^{\mathsf T}
+       \bigl(g(\widehat x)-g(x_e^\star)\bigr)\\
+ &\leq \beta\lVert e-\widehat e\rVert_\infty
+       \operatorname{diam}_1(g(X)).
+\end{align*}
+This improves the earlier \(2\beta\varepsilon B\) estimate when
+\(\lVert g(x)\rVert_1\leq B\) (entries 5, 7, 9, 12, and 18).  If Q exactly
+implements \(\widehat x\) on the compatible slice, the unique equilibrium has
+the same realized-social-cost bound, so strategic decentralization contributes
+no additional loss there (entries 18, 26, and 43).
+
+\section*{Objections and their status}
+Fixing MESS routes only linearizes products involving fixed binary parking
+variables and does not settle any remaining storage complementarity or
+additional grid coupling (entries 19, 21, and 70).  Entries 47, 53, and 55
+initially treated P's signed DDC conservation as incompatible with Q, but the
+paired-slack lift above resolves that objection: those peers retracted it
+after noticing the essential owner-local complement equality (entries 60 and
+61).  The lift covers P's displayed DDC equations (27)--(30), not any extra
+shared grid polytope introduced in an implementation (entries 62 and 69).
+
+Budget balance was initially said to prevent insertion of a public carbon
+externality (entry 10).  The charge-and-rebate construction above resolves
+that objection for separable carbon, and the other peers accepted the
+correction (entries 24, 29, and 32).  Individual rationality is not similarly
+settled.  Q uses a feasible zero action and the normalization \(V_n(0)=0\),
+whereas P preserves mandatory baseline DDC service; zero regulation is
+feasible but its incremental carbon may be signed.  MESS discharge credits
+are signed as well.  Automatic inheritance of Q's participation guarantee is
+therefore available only in an optional, nonnegative-consumption model with a
+genuine zero-allocation outside option, not for P as written (entries 15, 30,
+39, and 44).
+
+The regret bound concerns realized social cost, not emissions alone, unless
+service or utility is held fixed.  P's reported MAPE also does not directly
+provide the required bus-time infinity-norm error, although its MaxAE is more
+closely aligned (entries 8, 9, and 12).  Finally, Q's finite-iteration result
+bounds fixed-point residuals but supplies neither a last-iterate rate nor an
+error bound from residual to equilibrium distance.  An early-stopping term
+needs an additional contraction or metric-subregularity argument (entry 42).
+
+\section*{Sources outside Q and P}
+No outside source was used.  The derivations above come only from Q, P, the
+ledger, and the accompanying peer note.
+
+\section*{What remains open}
+It remains unknown whether P's DDC and grid constraints admit an exact
+Q-compatible reformulation beyond the displayed DDC equations, whether
+fixed-route MESS recourse retains a nonconvex charge/discharge condition, how
+to prove participation relative to P's mandatory baseline and signed carbon
+accounting, and how to turn Q's finite-iteration residual into operational
+regret (entries 62, 67, 69, and 70).  The assumed smooth, strongly concave
+private DDC valuation also lacks empirical or structural support in the
+record (entries 64 and 70).  The material is thin on these points: there is no
+participation proof, residual error bound, strategic calibration, or numerical
+experiment.  Consequently the established contribution is still moderate
+and domain-qualified, not a mechanism for P's full dispatch (entries 63, 67,
+and 72).
+
+\section*{Smallest settling step}
+Prove individual rationality relative to P's baseline action in the lifted
+DDC model.  The baseline \(w_{i,t}=0\) maps to
+\(a_{i,t}=-L_{i,t}\), \(b_{i,t}=U_{i,t}\), while the zero vector used in Q's
+participation deviation is infeasible unless \(U_{i,t}=L_{i,t}\).  A direct
+baseline-relative proof, or incentive-neutral constants that remain budget
+balanced, is now the smallest step that would settle whether the demonstrated
+DDC implementation also has Q's participation property (entries 39, 62, 64,
+and 72).
+
+\end{document}

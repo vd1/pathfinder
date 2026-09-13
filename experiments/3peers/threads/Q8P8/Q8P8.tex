@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q8P8: From Rigid Frames to Latent Contact Modes}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{The pair in two sentences}
+Q presents Aero Hand Open, a tendon-driven hand with sixteen revolute joints, seven motors, and seven motor encoders, in which passive mechanics and contact determine motions that are not independently commanded (ledger entries 3 and 8). P presents DynaMAC, which coordinates arms through reference-frame streams including the opposite end-effector pose and uses low within-phase spread to decide that an object frame is kinematically linked and should be masked (entries 5, 8, 14, and 36).
+
+\section{The connexion pursued}
+The peers first considered mounting Aero hands in a DynaMAC benchmark, but rejected that as a generic hardware substitution that would leave P's arm-level geometry largely unchanged and introduce substantial integration confounds (entries 2, 9, and 17). They instead pursued whether Q's underactuated, contact-switching mechanics provide a counter-regime to P's use of a rigid wrist frame both as a coordinating variable and as a proxy for object endogeneity (entries 11, 21, 28, and 33).
+
+\section{What was found}
+The ledger's central causal claim remains a precise hypothesis, not an experimental result. Let \(w_t\in SE(3)\) be wrist pose, \(f_t\in SE(3)\) object pose, and \(z_t\) a latent passive-joint and contact mode. Q's mechanics admit the model
+\[
+  f_t = w_t h(z_t).
+\]
+An intervention on \(w_t\) may change \(f_t\), while variation in \(z_t\) leaves
+\[
+  H(f_t\mid w_t)>0.
+\]
+Thus causal wrist-to-object influence need not imply the nearly rigid relative pose used by P's linkage test; deliberate in-hand reorientation is the limiting example (entries 23 and 33). Q makes this failure mode plausible because equal wrist and encoder observations need not determine passive joint configuration, contact state, or object support (entries 3, 14, and 20).
+
+P's actual statistic is phase indexed. In ledger notation it is
+\[
+  M_t^{(f)}=\left|\det\!\left(\boldsymbol{\Lambda}_t^{(f)}\right)\right|^{-1/(2d)},
+\]
+computed from the covariance of demonstrated end-effector poses expressed in frame \(f\), rather than from an unrestricted trajectory estimate of conditional entropy (entries 8 and 36). Any test must therefore compare phase-matched relative transforms \(w_t^{-1}f_t\), or paired phase-matched states, while holding demonstrations and segmentation fixed (entries 36 and 42).
+
+The proposed causal reference is not binary contact. Under matched latent state and low-level commands, the peers propose a finite-difference influence score such as
+\[
+ I_{w\to f}(t)=
+ \frac{\mathrm{E}_{\delta w}\!\left[
+ d\!\left(f_{t+\Delta}^{\operatorname{do}(w+\delta w)},
+ f_{t+\Delta}\right)^2\right]}
+ {\mathrm{E}_{\delta w}\!\left[\lVert\delta w\rVert^2\right]},
+\]
+with a fixed horizon and feedback convention (entries 31 and 40). The decisive study would test whether \(M_t^{(f)}\) misses high interventional influence in paired aliased states, then ask whether substituting an oracle causal mask rescues policy performance (entries 32, 37, 41, and 43).
+
+\subsection{Result added in the second round}
+In response to the verifier's request in entry 45, one peer fetched Q's released MuJoCo model and constructed an exact fixed-wrist proprioceptive alias in \texttt{scene\_right.xml} (entry 56). After imposing the model's PIP--DIP and thumb MCP--IP equality constraints, the seven-sensor Jacobian had rank \(7\) over an \(11\)-dimensional configuration parameterization and hence a four-dimensional nullspace. A scalar solve produced two configurations whose maximum encoder or tendon-sensor discrepancy was \(1.39\times10^{-17}\), while their maximum fingertip-position discrepancy was \(9.02\,\mathrm{mm}\). In the changed pinky configuration,
+\[
+ (q_{\mathrm{MCP}},q_{\mathrm{PIP}}=q_{\mathrm{DIP}})
+ = (0.45,0.53639096)
+\]
+was replaced by
+\[
+ (q_{\mathrm{MCP}},q_{\mathrm{PIP}}=q_{\mathrm{DIP}})
+ = (0.65,0.35774391)
+\]
+in radians while tendon length remained fixed (entry 56). This executed witness establishes that wrist pose plus encoder readings do not determine Q's hand geometry, strengthening the hidden-state premise of entries 3, 11, and 14.
+
+The witness is not the object-bearing counterexample requested by the verifier. The tested scene has a fixed wrist and no object, and it does not show distinct task-relevant contact modes, high \(I_{w\to f}\), failure of \(M_t^{(f)}\), or oracle-mask rescue (entries 56 and 57). Grace's phase-matched construction supplies the analytic possibility: states \(s_A=(w_0,e_0,z_A,f_A)\) and \(s_B=(w_0,e_0,z_B,f_B)\) may share \((w_0,e_0)\), have \(z_A\ne z_B\), and satisfy \(M_t^{(f)}\geq\tau_M\) despite \(I_{w\to f}(t)>\tau_I\) when both contact-mode Jacobians are nonzero but their relative transforms differ (entries 46 and 54). That construction remains a hypothesis rather than an executed object-contact result.
+
+\section{Objections and their status}
+Compliance alone was initially treated as the source of failure, but this was corrected: repeatable compliant contact may still have low within-phase spread. The treatment must be variable contact mode, slip, object seating, or purposeful in-hand motion (entries 13 and 26). Binary contact was also rejected as a causal oracle because touch may be incidental and influence may be graded during sticking, rolling, slip, or shared support; the interventional score above is the proposed replacement, though its definition under feedback remains unresolved (entries 31 and 40).
+
+Aggregate task failure is insufficient evidence because retained object or task-frame streams may compensate for a deficient wrist stream. The proposed controls hold demonstrations and low-level controllers fixed while comparing original selection, forced wrist-only conditioning, forced object-stream retention, an oracle causal mask, and a temporal contact belief; detector error should precede policy error, and oracle-mask rescue should isolate representation failure from dexterous-control failure (entries 32 and 41). A current encoder baseline is diagnostic, not guaranteed sufficient (entry 20).
+
+Feasibility remains a serious objection. Q supplies a stationary unimanual MuJoCo task, whereas P uses arm trajectories, demonstrations, tracked frames, and an RLBench-based setting; a bimanual port would require material engineering and could confound the claimed mechanism (entries 9 and 17). Q also does not validate pad compliance or cable slack as sweep axes, so only modeled spring stiffness, friction, seating, geometry, and grasp choice are presently defensible controls (entries 16 and 26).
+
+\section{Sources outside Q and P}
+Q's public Aero Hand Open repository was fetched to run the geometric-alias probe reported in entry 56. No other source outside Q, P, the ledger, and the peers' notes was used; the repository is Q's released implementation rather than independent evidence (entries 56 and 58).
+
+\section{What remains open}
+The material remains thin. One necessary premise, encoder-aliased hand geometry, has now been demonstrated, but the decisive object-contact and policy experiments have not been run (entries 56--59). Open questions are whether robust phase-matched, task-relevant contact states can be constructed; how to define finite-horizon influence under feedback; whether P's implementation uses omitted gripper or contact signals; whether other tracked streams hide the failure in ordinary tasks; whether the simulator is faithful enough for the relevant contact modes; and how costly the MuJoCo--RLBench interface would be (entries 29, 34, 43, 57, and 59). A learned temporal belief is only a zero-shot repair if it is learned without the held-out dynamic task transitions; otherwise it is a robustness extension (entries 27 and 37).
+
+\section{Smallest next step}
+Extend the demonstrated encoder-aliased geometric pair by adding one object and a movable wrist, and stabilize two task-relevant contact modes at the same phase and matched \((w_0,e_0)\) (entries 56, 57, and 59). Replay one matched wrist perturbation under a fixed feedback convention and measure both \(M_t^{(f)}\) and \(I_{w\to f}\). Only if high influence coincides with a missed link should the same fixed policy be compared under P's mask and an oracle mask; oracle rescue would settle the proposed identification failure without requiring a full benchmark port (entries 45, 47, 50, and 57).
+
+\end{document}

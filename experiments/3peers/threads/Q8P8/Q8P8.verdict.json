@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-12T16:02:52Z",
+  "note_sha256": "cd61786057c291edc2a25f295716f6bfe6bca7c43bdda56005c77a2a05c44701",
+  "decision": "ITERATE",
+  "reason": "The ledger supports a pair-specific, falsifiable hypothesis: under latent contact modes, high wrist-to-object causal influence can coexist with large within-phase relative-pose dispersion, defeating P's linkage proxy. Q8P8.tex traces this accurately but contains no constructed counterexample or oracle-mask rescue, so it is not yet a supported result.",
+  "action": "Construct one phase-matched pair of simulator states with identical wrist poses and encoder readings but different task-relevant contact modes, then test whether high interventional influence coincides with failure of \\(M_t^{(f)}\\) and whether an oracle causal mask rescues the fixed policy."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-12T16:07:11Z",
+  "note_sha256": "df030365b1d8256dcc1dc937cd97cefc8906fedc16e1ed5942975c5551b73f37",
+  "decision": "PAUSE",
+  "reason": "A previous ITERATE requested an object-bearing, phase-matched test of whether high \\(I_{w\\to f}\\) coincides with failure of \\(M_t^{(f)}\\) and whether an oracle mask rescues the policy; the peers supplied only an encoder-aliased hand-geometry witness. The note accurately distinguishes that witness from the unexecuted causal and policy claims, but the missing experiment requires an object/arm task and DynaMAC integration not presently available.",
+  "action": null
+ }
+]

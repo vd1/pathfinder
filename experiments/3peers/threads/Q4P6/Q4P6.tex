@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q4P6: Incentives at Participation Boundaries}
+\author{Ada}
+\date{12 September 2026}
+
+\begin{document}
+\maketitle
+
+\section{The pair in two sentences}
+
+Q studies mechanisms for agents with private preferences and capabilities, requiring both truthful reports and obedience to recommended actions. P studies MARS-RA, which asks an external large multimodal model to compare embodied agents' egocentric observations, aggregates those comparisons into active-agent contribution scores, and uses the scores for potential-based reward shaping.
+
+\section{The connexion pursued}
+
+The initial connexion was that Q might make P robust to strategic misreporting. The peers rejected that formulation because P does not solicit contribution reports from its agents: the relevant strategic channel is action or observation choice, not direct corruption of comparison entries (ledger entries 1, 4, and 6). They instead pursued a narrower question: when does P's rank-derived potential preserve incentives as agents leave and re-enter, and when can participation boundaries create a manipulable payment (ledger entries 9--13)?
+
+\section{What was found}
+
+P's statistical result concentrates a Bradley--Terry estimate around a stable latent comparator vector. It does not identify that vector with true contribution, establish truthful behavior, or cover endogenous manipulation; P's Shapley claim assumes the needed identification (ledger entries 4 and 6). Thus estimator robustness is not incentive compatibility.
+
+The positive result is conditional. Let each persistent agent identity \(i\)
+have a scalar potential \(\Phi_i(x_t)\) on a fixed-dimensional augmented
+state, including active status, and let every transition pay
+\[
+F_{i,t}=\gamma\Phi_i(x_{t+1})-\Phi_i(x_t).
+\]
+Then
+\begin{align*}
+\sum_{t=0}^{T-1}\gamma^tF_{i,t}
+&=\sum_{t=0}^{T-1}
+  \left(\gamma^{t+1}\Phi_i(x_{t+1})-
+  \gamma^t\Phi_i(x_t)\right)\\
+&=-\Phi_i(x_0)+\gamma^T\Phi_i(x_T).
+\end{align*}
+For fixed initial state and zero terminal potential, this is independent of the intervening policy, so attempts merely to win later comparisons cannot improve the full-episode shaping return. Best-response orderings, and hence Nash equilibria, are preserved under these conditions (ledger entries 7, 8, 13, and 19).
+
+The boundary qualification is immediate. If an agent's accounting stops at
+an action-dependent removal time \(\tau_i\), before the inactive-state
+settlement, then the recorded sum is
+\[
+\sum_{t=0}^{\tau_i-1}\gamma^tF_{i,t}
+=-\Phi_i(x_0)+\gamma^{\tau_i}\Phi_i(x_{\tau_i}).
+\]
+The last term is an exit rent. Two actions can have equal environmental payoff
+while an exit action that produces \(\Phi_i(x_1)=h>0\) receives an additional
+\(\gamma h\), changing the shaped best response; re-entry can create the
+opposite boundary term (ledger entries 10, 12, and 19).
+
+This issue is specific in P's written formulation. P retains fixed identities
+in an \(n\times n\) comparison matrix, but its Bradley--Terry output and
+softmax potential lie in \(\mathbf{R}^{|I^t|}\), after which it writes
+\(\gamma\psi_{t+1}-\psi_t\) even though the active set may change.
+Battery-depleting actions cause removal and later respawn, so membership
+changes can be endogenous. The paper supplies no alignment, inactive-potential,
+or settlement rule at that interface (ledger entries 22, 24, 25, and 27).
+
+Q contributes an audit criterion rather than the telescoping theorem: incentive compatibility must block feasible concealment jointly with action deviations. Its revelation and peer-scoring results do not directly transfer because P has neither agent reports nor the belief separation and mechanism-contingent transfers required by peer scoring (ledger entries 5, 13, 20, and 27).
+
+\section{Objections and their status}
+
+The first objection, that rank aggregation cannot itself establish strategic robustness, was resolved by abandoning the direct misreporting claim (ledger entries 1, 4, and 6). The second, that valid potential shaping telescopes and therefore defeats generic observation-gaming examples, was resolved by restricting the concern to incomplete lifecycle accounting (ledger entries 7--10). A remaining objection is decisive: P's implementation may already pad scores to persistent identities and settle every boundary correctly. The supplied material contains no implementation, so the result is a manuscript-level ambiguity and conditional counterexample, not a demonstrated MARS-RA bug (ledger entries 14, 17, 20, 22, and 25).
+
+\section{Outside sources}
+
+No sources outside Q and P were used. The algebra and counterexample were derived in the ledger and Ada's note from the formulas under discussion.
+
+\section{What remains open}
+
+The material is thin on implementation and novelty. It remains unknown whether P uses fixed-population padding, gives rewards through inactive periods, or truncates per-agent accounting; it is also unknown whether an open Dec-POMDP theorem of sufficient breadth would go beyond standard potential-shaping algebra (ledger entries 14, 17, 20, 22, and 26).
+
+\section{Smallest next step}
+
+Inspect P's reward-shaping implementation at a single battery-depletion and respawn transition. Record the per-identity potentials and shaping payments immediately before removal, while inactive, and at re-entry; this one trace will determine whether the missing boundary settlement is only expository or is present in the implemented objective (ledger entries 17, 22, 25, and 26).
+
+\end{document}

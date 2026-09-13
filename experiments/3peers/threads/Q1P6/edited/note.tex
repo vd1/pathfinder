@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{From Pairwise Judgements to Open-Team Reward Shaping:\\An Account of Papers Q and P}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q surveys algorithms that use predictions while retaining formal guarantees, and paper P uses multimodal pairwise judgements to assign credit in open-team reinforcement learning.  The thread asked whether Q's consistency and robustness framework yields an end-to-end guarantee for P.  It found instead that Q is useful as an interface test: P's statistical claim reaches a latent comparison score rather than task credit, and P's shaping rule is not fully defined when the active team changes.  Standard potential-based shaping preserves policy ordering only after the coordinate and boundary conventions are fixed.  The thread therefore ended as a draft because it identifies a supported technical opening but does not prove the missing finite-training result.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q surveys learning-augmented algorithms, which are algorithms that use predictions but still seek formal protection when those predictions are wrong \cite{Q}.  It separates the object being predicted from the way its error is measured.  It also asks how prediction cost is counted and whether a guarantee survives each step of a system.  For a free-form or semantic prediction, Q requires an adapter to a task object, a task-specific error, and a proof that carries this error into the final objective.
+
+Paper P presents MARS-RA, a method for assigning credit among agents that cooperate in an embodied task \cite{P}.  At each time step, a large multimodal model compares the visible contributions of active agents in pairs.  A Bradley--Terry model combines those comparisons into real-valued scores.  Their softmax is then used as a potential to add dense shaping rewards during reinforcement learning.  The method is designed for an open team, so agents may enter and leave while an episode is running.
+
+The thread first asked whether the comparisons in P could simply be treated as predictions in Q.  On that reading, accurate comparisons would give consistency, inaccurate ones would call for robustness, and the number of model queries would be a prediction cost.  The peers rejected this direct relabelling.  They instead followed P's full chain: multimodal judgement, rank aggregation, task credit, potential shaping, and trained policy.  Q's main contribution to the comparison was the demand that every link in this chain be stated and checked.
+
+\section{What was done}
+
+The peers began by locating the object controlled by P's statistical proposition.  They distinguished the fitted Bradley--Terry score from both the comparator's latent score and the contribution that the task is meant to reward.  They then wrote a decomposition that separates finite-query estimation error from semantic error.
+
+Next, they tested whether either error changes the objective under potential-based reward shaping.  They expanded the discounted sum of shaping rewards and found the usual telescoping identity.  This redirected the work from optimal-policy guarantees to finite-training behaviour.
+
+The initial telescoping check assumed that the potential always lived in one fixed vector space.  A later type check showed that P estimates a vector only for the current active set, whose size can change.  The peers therefore split the shaping argument into two cases: a population-indexed rule with payments on every transition, and a rule that pays shaping only while an agent is active.
+
+In parallel, the peers checked P's Bradley--Terry estimator.  They gave a two-agent counterexample to the claim that connectivity alone ensures a finite maximum-likelihood estimate.  Finally, they combined semantic error, sampling error, and query cost into a conditional research target.  They did not turn that target into a theorem because the required sensitivity analysis of the reinforcement-learning procedure was absent.
+
+\section{Results}
+
+\subsection{The statistical bound stops short of task credit}
+
+Let \(n\) be the number of agents.  At time \(t\), let \(\widehat{\mathbf c}_t\) be the fitted Bradley--Terry score, \(\mathbf c_t^*\) the latent score assumed for the comparator, and \(\mathbf v_t^*\) the task-grounded credit vector, such as a Shapley credit vector.  Bradley--Terry probabilities do not change when the same constant is added to every score.  The peers therefore compared scores up to a shift \(a\mathbf 1\), where \(\mathbf 1\) is the all-ones vector.  The triangle inequality gives
+\[
+ \inf_{a\in\mathbb R}
+ \frac{\lVert\widehat{\mathbf c}_t-(\mathbf v_t^*+a\mathbf 1)\rVert_2}{\sqrt n}
+ \leq
+ \inf_{a\in\mathbb R}
+ \frac{\lVert\mathbf c_t^*-(\mathbf v_t^*+a\mathbf 1)\rVert_2}{\sqrt n}
+ +\frac{\lVert\widehat{\mathbf c}_t-\mathbf c_t^*\rVert_2}{\sqrt n}.
+\]
+The first term is semantic bias: it measures whether the comparator's latent ordering means the same thing as task credit.  The second is sampling error around that latent ordering.  More repeated queries can reduce the second term under a suitable sampling model, but cannot reduce the first.  P's Shapley statement assumes \(\mathbf c_t^*=\mathbf v_t^*\); it does not establish this equality in practice.  Emmy's end-to-end audit checked this claim against the relevant passages of both papers.
+
+\subsection{Fixed-coordinate shaping preserves the exact objective}
+
+Let \(\gamma\) be the discount factor, \(T\) the episode length, and \(\psi_t\) a consistently indexed potential at time \(t\).  For the shaping reward \(\gamma\psi_{t+1}-\psi_t\), the peers verified
+\[
+ \sum_{t=0}^{T-1}\gamma^t(\gamma\psi_{t+1}-\psi_t)
+ =-\psi_0+\gamma^T\psi_T.
+\]
+P sets the terminal potential \(\psi_T\) to zero.  With a fixed initial state, the remaining term is independent of later policy choices.  Thus, once the shaping rule is well typed, even poor comparisons do not change the ordering of exactly optimised policies through this term.  They may still change learning speed and performance after a limited training budget.  Ada's derivation and Emmy's audit independently reached this conclusion.
+
+\subsection{Open-team shaping needs an explicit boundary rule}
+
+P fits \(\widehat{\mathbf c}_t\in\mathbb R^{|I^t|}\), where \(I^t\) is the set of active agents at time \(t\).  It then subtracts consecutive vector potentials even though \(|I^t|\) may change.  It also combines this vector with a scalar environmental reward without saying which agent receives which component.  As written, these operations lack a common type.
+
+The peers checked a repair using a fixed population of \(n\) agents and a potential \(\Phi_t\in\mathbb R^n\).  If coordinate \(i\) receives \(\gamma\Phi_{t+1,i}-\Phi_{t,i}\) on every transition, then
+\[
+ \sum_{t=0}^{T-1}\gamma^t
+ (\gamma\Phi_{t+1,i}-\Phi_{t,i})
+ =-\Phi_{0,i}+\gamma^T\Phi_{T,i}.
+\]
+The usual invariance follows under fixed endpoint conditions.  If agent \(i\) instead receives shaping only on its active interval \([\tau_i,\sigma_i)\), the remaining boundary term is
+\[
+ -\gamma^{\tau_i}\Phi_{\tau_i,i}
+ +\gamma^{\sigma_i}\Phi_{\sigma_i,i}.
+\]
+Here \(\tau_i\) and \(\sigma_i\) are the entry and exit times.  Since team membership is part of P's dynamics, this term can depend on policy choices.  The reward recipient, coordinate map, and entry and exit payments must therefore be fixed before policy preservation can be claimed.  Grace's final type check and the later peer corrections support this two-case result.
+
+\subsection{A conditional query-cost target}
+
+The peers also derived a possible target for later work.  Suppose a repaired estimator has credit error at most \(b+AK^{-1/2}\), where \(b\) is semantic bias, \(K\) is the number of comparisons, and \(A\) collects the remaining estimation factors.  Suppose further that finite-training performance changes by at most \(L\) times this error, and that each comparison costs \(\kappa\).  The part of a bound controlled by \(K\) would be
+\[
+ Lb+LAK^{-1/2}+\kappa K.
+\]
+For positive continuous \(K\), differentiation gives
+\[
+ K^*=\left(\frac{LA}{2\kappa}\right)^{2/3}.
+\]
+This expression predicts diminishing benefit from further queries and leaves a floor set by \(b\).  It is not a result of either paper.  In particular, neither the thread nor the papers provide the learner sensitivity \(L\).
+
+\section{What did not hold, and the objections}
+
+The proposed generic consistency and robustness reading did not hold.  Under a complete fixed-coordinate shaping rule, exact optimisation makes the shaping return differ only by endpoint terms.  Comparison quality therefore does not produce the intended curve in optimal return.  The peers settled this objection by changing the target to finite-training performance, but they did not prove such a bound.
+
+P's Bradley--Terry proposition also did not hold under connectivity alone.  Consider two agents when every observed comparison favours the first.  The comparison graph is connected, but the unregularised likelihood continues to improve as the gap between their scores grows.  A finite maximum-likelihood estimate need not exist.  The peers agreed that a corrected result needs a constraint or regulariser, a convention fixing the translation freedom, control of score range, and graph-dependent curvature.  They also found incompatible normalisations of the error rate in P's main statement and appendix.  No repaired rate was proved in the thread.
+
+A further objection concerned the samples themselves.  Reversing the image order in repeated calls to one possibly deterministic multimodal model does not make the results independent Bradley--Terry observations.  Errors may be systematic, correlated, cyclic, or outside the model.  The semantic-bias decomposition records this problem, but the pair supplies no dependence or misspecification model that settles it.
+
+Finally, the first telescoping argument was too quick for an open team.  The peers corrected it after noticing the changing vector dimension and the missing scalar-to-agent reward allocation.  Their final conclusion is conditional: full population-indexed boundary payments restore telescoping, while active-interval-only payments can leave policy-dependent terms.
+
+\section{Why the thread stopped}
+
+The verifier judged the connexion to be supported and non-obvious.  In particular, the thread exposed the changing-active-set type error, the role of boundary payments, the weakness of connectivity for the stated estimator, and the difference between sampling error and semantic bias.  It remained a draft because its constructive query frontier depends on a finite-training sensitivity result that nobody in the thread proved.  The available material is also thin on a corrected Bradley--Terry rate and on complete reward-allocation semantics.
+
+The smallest step that would restart the work is to state one fixed-population, agent-indexed shaping rule.  It must say how the scalar environmental reward is allocated and what is paid when an agent enters or leaves.  An explicit telescoping proof can then decide whether that rule preserves policy ordering.  If it does, the next substantive theorem must concern finite-training performance rather than exact optimal return.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

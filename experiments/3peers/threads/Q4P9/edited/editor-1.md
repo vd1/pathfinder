@@ -1,0 +1,1 @@
+The account explains that P motivates, but does not establish, a representation-dependent planning gap in Q’s framework. It identifies a matched-semantics experiment as the smallest restart step. [note.tex](/Users/v/Code_2026/pathfinder-3peers/threads/Q4P9/edited/note.tex) builds successfully into a visually checked five-page PDF with resolved citations and no LaTeX warnings.

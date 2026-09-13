@@ -1,0 +1,69 @@
+\section*{Open-team PBRS audit}
+
+Let \(\mathcal N=\{1,\ldots,n\}\) be the fixed population and let
+\(I^t\subseteq\mathcal N\) be the active coalition. Paper P estimates
+\(\hat{\boldsymbol c}_t\in\mathbb R^{|I^t|}\), then sets
+\(\psi_t=\operatorname{softmax}(\hat{\boldsymbol c}_t)\) and writes
+\(F_t=\gamma\psi_{t+1}-\psi_t\). If \(I^{t+1}\ne I^t\), the subtraction
+is not defined without maps from the active-set spaces into a common codomain.
+There is also a scalar-vector mismatch between P's scalar environmental reward
+and its vector-valued potential.
+
+A fixed-population repair chooses \(\Phi_t\in\mathbb R^n\), for example
+\[
+  \Phi_{t,i}=\mathbf 1\{i\in I^t\}p_{t,i},
+\]
+with a declared convention for inactive coordinates. If every coordinate
+receives the shaping transition
+\[
+  F_{t,i}=\gamma\Phi_{t+1,i}-\Phi_{t,i}
+\]
+at every time step, then
+\[
+  \sum_{t=0}^{T-1}\gamma^tF_{t,i}
+  =-\Phi_{0,i}+\gamma^T\Phi_{T,i}.
+\]
+Thus zero terminal potential and a policy-independent initial potential recover
+the usual objective invariance, regardless of comparison accuracy.
+
+If instead coordinate \(i\) is shaped only while active, consider an active
+interval \([\tau_i,\sigma_i)\). The within-interval sum is
+\[
+  \sum_{t=\tau_i}^{\sigma_i-1}\gamma^tF_{t,i}
+  =-\gamma^{\tau_i}\Phi_{	au_i,i}
+   +\gamma^{\sigma_i}\Phi_{sigma_i,i}.
+\]
+These entry and exit terms need not be policy-independent because coalition
+transitions are part of P's dynamics. Omitting transitions across inactivity
+therefore does not inherit the standard PBRS theorem. Including them restores
+telescoping but can create large boundary shaping signals whose effect on
+finite-training optimization remains open.
+
+This changes the joint research question. The first theorem should characterize
+the necessary typing and boundary conditions for policy invariance in an open
+Dec-POMDP. Only after that repair should comparison error be decomposed into a
+finite-query term and semantic bias. A corrected constrained or regularized
+Bradley--Terry estimator could support
+\[
+  \inf_{a\in\mathbb R}
+  \frac{\|\hat{\boldsymbol c}_t-(\boldsymbol v_t^*+a\mathbf 1)\|_2}{\sqrt n}
+  \le b_t+A K^{-1/2},
+\]
+where \(b_t\) is misspecification or semantic bias. P's stated unregularized
+MLE does not supply this result under connectivity alone because complete
+separation can prevent a finite optimizer.
+
+The ordinary optimal-return consistency versus robustness curve is either
+undefined under P's displayed active-set construction or vacuous after the
+fixed-population repair. The nontrivial downstream target is finite-training
+regret or sample complexity, including comparison cost. If a learner-specific
+sensitivity bound \(L\) is established, the conditional objective
+\[
+  Lb+LAK^{-1/2}+\kappa K
+\]
+has continuous minimizer
+\[
+  K^*=\left(\frac{LA}{2\kappa}\right)^{2/3}.
+\]
+Without such a sensitivity theorem, this frontier is a research target rather
+than a consequence of either paper.

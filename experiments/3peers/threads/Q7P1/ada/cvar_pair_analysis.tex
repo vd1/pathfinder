@@ -1,0 +1,57 @@
+\section*{A sharp obstruction and a repaired target}
+
+Let the risk-adjusted satisfaction be
+\[
+R_n(x_n)=-\operatorname{CVaR}_{\beta_n}(-\psi_n(x_n,\xi_n)).
+\]
+Translation equivariance gives
+\[
+-\operatorname{CVaR}_{\beta_n}(-[\psi_n(x_n,\xi_n)-t_n(s)])
+=R_n(x_n)-t_n(s)
+\]
+because the payment is deterministic conditional on the message profile. Thus risk
+adjustment does not itself alter the payment term.
+
+Q's assumptions on the expected valuation do not imply its curvature assumptions
+for \(R_n\). On \(\mathcal X=[-1,1]\), let two equiprobable satisfaction samples be
+\[
+\psi(x,1)=-3,\qquad \psi(x,2)=3-2x^2.
+\]
+Then
+\[
+V(x)=\mathbb E[\psi(x,\xi)]=-x^2,
+\]
+so \(V(0)=0\) and \(V\) is strongly concave. At tail mass
+\(\beta=1/2\), however, the lower-tail satisfaction is
+\[
+R(x)=-\operatorname{CVaR}_{1/2}(-\psi(x,\xi))=-3,
+\]
+which is constant. After the harmless normalization \(R(x)-R(0)\), it is zero.
+Hence Q's LMI uniqueness argument, which inserts the strong-concavity modulus into
+the pseudogradient Jacobian, cannot be inferred after the CVaR substitution.
+
+Conditional on separately assuming that every \(R_n\) has the required concavity
+and regularity, Q's exact KKT matching extends using concave subgradients, and its
+equilibrium payment algebra remains available. The learning problem is different.
+P's fixed-radius, finite-batch oracle targets an expected empirical-smoothed
+surrogate and leaves a true-objective gap of order
+\[
+D=O\left(\delta_{\max}+\frac{e_s}{\delta_{\min}}\right).
+\]
+It is not a proximal best-response oracle. A defensible joint target is therefore
+a robust implementation theorem for a CVaR game learned with biased bandit
+feedback. If true risk-adjusted welfare is \(m\)-strongly concave and a learned
+allocation has welfare loss at most \(D\), then
+\[
+\|\widehat x-x^\star\|\leq\sqrt{\frac{2D}{m}}.
+\]
+On Q's capped message set from the learning section, Lipschitz payment and utility
+maps then turn a full-strategy displacement into explicit budget-residual and
+participation-slack bounds. This requires the price cap: Q's base mechanism defines
+prices on the unbounded orthant, so global payment Lipschitzness is unavailable there.
+An allocation-only bound does not control the price-dependent payments. Exact balance
+and rationality hold at the exact equilibrium of a surrogate
+game only if the mechanism actually implements that surrogate; they do not follow
+for arbitrary off-equilibrium iterates of P's update. Controlling prices and proving
+convergence of a game map, rather than a common-objective consensus map, are the
+remaining technical tasks.

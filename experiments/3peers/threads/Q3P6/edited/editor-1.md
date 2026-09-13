@@ -1,0 +1,1 @@
+The account explains the assumption gap and the unperformed test needed to resolve it. [note.tex](/Users/v/Code_2026/pathfinder-3peers/threads/Q3P6/edited/note.tex) and [references.bib](/Users/v/Code_2026/pathfinder-3peers/threads/Q3P6/edited/references.bib) are complete. The build passed with resolved citations, producing a visually checked four-page PDF.

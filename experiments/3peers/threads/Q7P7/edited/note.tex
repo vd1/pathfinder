@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Strategic Implementation of Forecast-Based Carbon Dispatch}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies a mechanism for strategic resource allocation, while paper P studies forecast-based scheduling to reduce power-system carbon emissions.  We asked whether Q could decentralise P's dispatch without adding a loss from strategic behaviour.  For P's displayed data-centre model, an exact change of variables puts its workload constraints into the form required by Q.  A balanced carbon charge then preserves Q's incentives and budget balance, and the resulting equilibrium inherits a bound on the social cost caused by forecast error.  The thread ended as a draft because this result does not cover P's mobile-storage decisions, baseline-relative participation, or several other assumptions needed for a full application.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q considers the allocation of limited resources among strategic agents with private, uncertain satisfaction functions and local constraints \cite{Q}.  It constructs quadratic payments so that the welfare-maximising allocation is the unique Nash equilibrium, while maintaining budget balance and, under its stated normalisation, individual rationality.  It also gives a decentralised proximal best-response algorithm that uses aggregate information and converges in mean square.
+
+Paper P forecasts day-ahead nodal carbon intensity, meaning the carbon emissions associated with electricity at each network bus and time \cite{P}.  It then schedules geographically flexible loads in response to that forecast.  These loads include distributed data centres (DDCs), which can shift workload, and mobile energy storage systems (MESSs), which can move, park, charge, and discharge.  Its full MESS schedule contains binary route and parking decisions.
+
+The work asked whether owners of these flexible assets could act strategically while still producing P's forecast-based dispatch.  The aim was to use Q's mechanism on the largest part of P's model that satisfies Q's assumptions, and then to measure how nodal-carbon-intensity forecast error affects realised social cost.  The question was narrowed early because Q's convex allocation model cannot directly represent P's mixed-integer MESS schedule.
+
+\section{What was done}
+
+The peers first compared the two mathematical models.  Q requires compact convex local feasible sets, smooth strongly concave valuations, nonnegative allocation coordinates, and shared aggregate capacity constraints.  P minimises a public carbon objective, and its MESS decisions are nonconvex.  The peers therefore focused on P's continuous DDC workload regulation and treated the DDCs as the strategic agents.
+
+They next separated the public carbon term from the private benefit of each owner.  Let \(N>1\) be the number of owners.  For owner \(n\), let \(x_n\) be its allocation, \(v_n(x_n)\) its private benefit, and \(c_n(x_n)\) its contribution to forecasted carbon cost.  Applying Q to the transformed valuation \(v_n-c_n\) gives Q's transfer \(t_n^Q\).  The peers proposed the actual transfer
+\[
+ T_n=t_n^Q+c_n-\frac{1}{N-1}\sum_{m\ne n}c_m.
+\]
+The rebate term is independent of owner \(n\)'s choice.  It therefore leaves that owner's best response unchanged.  Each carbon charge is also returned once across the other \(N-1\) owners, so the added transfers sum to zero.
+
+The first verifier round found that this argument was still conditional.  It had not shown that P's DDC workload balance had Q's aggregate-capacity form.  The peers returned to P's displayed DDC constraints and found an exact paired-slack construction.
+
+At time \(t\), let \(w_{i,t}\) be data centre \(i\)'s baseline-relative workload regulation after P's scaling, with lower and upper bounds \(L_{i,t}\) and \(U_{i,t}\).  P requires
+\[
+ L_{i,t}\leq w_{i,t}\leq U_{i,t},
+ \qquad \sum_i w_{i,t}=0.
+\]
+Define two nonnegative local coordinates
+\[
+ a_{i,t}=w_{i,t}-L_{i,t},
+ \qquad b_{i,t}=U_{i,t}-w_{i,t},
+\]
+and place the equality \(a_{i,t}+b_{i,t}=U_{i,t}-L_{i,t}\) in data centre \(i\)'s local feasible set.  The two shared constraints become
+\[
+ \sum_i a_{i,t}\leq-\sum_i L_{i,t},
+ \qquad
+ \sum_i b_{i,t}\leq\sum_i U_{i,t}.
+\]
+The first says \(\sum_i w_{i,t}\leq0\), and the second says \(\sum_i w_{i,t}\geq0\).  Together they reproduce P's equality.  Conversely, every point satisfying P's equality saturates both caps.  Baseline feasibility gives \(L_{i,t}\leq0\leq U_{i,t}\), so both capacities are nonnegative as Q requires.
+
+Finally, the peers derived a forecast-error certificate.  Let \(X\) be the compatible compact convex dispatch set, \(e\) the realised nodal carbon intensity, and \(\widehat e\) its forecast.  Let \(g(x)\) be the vector of electricity use produced by dispatch \(x\), \(D(x)\) the private operating cost, and \(\beta\) the weight placed on carbon.  Define
+\[
+ F_e(x)=D(x)+\beta e^{\mathsf T}g(x).
+\]
+If \(\widehat x\) minimises \(F_{\widehat e}\) on \(X\), and \(x_e^\star\) minimises \(F_e\), forecast optimality gives
+\begin{align*}
+ F_e(\widehat x)-F_e(x_e^\star)
+ &\leq \beta(e-\widehat e)^{\mathsf T}
+ \bigl(g(\widehat x)-g(x_e^\star)\bigr)\\
+ &\leq \beta\lVert e-\widehat e\rVert_\infty
+ \operatorname{diam}_1(g(X)).
+\end{align*}
+Here \(\operatorname{diam}_1(g(X))\) is the largest distance, in the one-norm, between the electricity-use vectors of two feasible dispatches.
+
+\section{Results}
+
+The displayed DDC constraints in P admit an exact, owner-preserving reformulation in Q's required form.  The paired-slack map is affine and one-to-one.  It preserves compactness and convexity and uses only nonnegative allocation coordinates.  P's DDC carbon term remains affine, apart from a baseline constant.  The peer checks recorded in the ledger confirmed each direction of this equivalence after the initial objections were withdrawn.
+
+On this DDC slice, assume that each owner's transformed private valuation is smooth and strongly concave, as Q requires, and that there are no further incompatible shared constraints.  Q then implements the forecast-optimal allocation at a unique Nash equilibrium.  The carbon charge and rebate above do not alter best responses and preserve budget balance, including away from equilibrium.  This augmentation is a deduction made in the thread, not a theorem stated in Q.
+
+Because the equilibrium allocation is \(\widehat x\), the realised social-cost loss at equilibrium is bounded by
+\[
+ F_e(x^{\mathrm{NE}})-F_e(x_e^\star)
+ \leq \beta\lVert e-\widehat e\rVert_\infty
+ \operatorname{diam}_1(g(X)),
+\]
+where \(x^{\mathrm{NE}}\) is the equilibrium allocation.  Strategic decentralisation adds no further loss on this slice.  This is a social-cost statement, not an emissions-only statement, unless service or utility is held fixed.
+
+\section{What did not hold}
+
+Q does not implement P's full model.  P's MESS route, travel, arrival, departure, and parking variables are binary.  Their feasible set is not convex, so Q's optimality, uniqueness, matrix-inequality, and convergence arguments do not apply.  Fixing routes removes some binary products but the record does not settle the remaining storage and grid constraints.
+
+An early objection said that P's signed workload balance could not be written as Q's nonnegative aggregate caps.  The paired-slack construction settled this objection.  Its owner-local complement equality was the missing point in the earlier split-variable arguments.  The construction covers only P's displayed DDC equations, not additional shared grid constraints that an implementation might introduce.
+
+Another objection said that budget balance prevents the mechanism from including a public carbon cost.  The balanced charge and rebate settled this for carbon costs that separate by owner.  It did not settle individual rationality.  Q's proof uses a feasible zero allocation, but P's mandatory baseline service maps to \(a_{i,t}=-L_{i,t}\) and \(b_{i,t}=U_{i,t}\), not to the zero vector.  A baseline-relative participation proof is absent.
+
+The forecast bound also has limits.  P's reported mean absolute percentage error does not supply the bus-time infinity-norm error used in the bound, though its maximum absolute error is closer to that quantity.  Q's finite-iteration result bounds a fixed-point residual, but the record contains no argument converting that residual into distance from equilibrium or operational regret.  The assumed smooth, strongly concave private DDC valuations also lack empirical or structural support in the material supplied.
+
+\section{Why the thread stopped}
+
+The verifier accepted the central connexion in the second round and marked the thread as a draft.  The exact lift resolves the first-round concern, and the balanced transfer and forecast bound are supported.  The status remains a draft because the result is limited to the displayed DDC slice, while baseline-relative individual rationality and the full MESS dispatch remain outside the claim.
+
+The smallest step that would restart the work is a direct participation proof relative to P's baseline DDC action.  An alternative would be to find incentive-neutral constants that preserve budget balance and give the same baseline guarantee.  No such proof or construction appears in the present record.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

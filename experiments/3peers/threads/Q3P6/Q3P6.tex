@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q and P: Credit under Churn}
+\author{ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies LLM traders in a finite double auction and finds model-, role-, and context-dependent heuristics associated with market-level inefficiency, whereas P uses an LMM comparator and Bradley--Terry rank aggregation to shape credit in cooperative tasks with changing active sets (ledger entries 3, 5, and 18). Together they motivate a test of whether roster churn creates structured comparator error that repetition concentrates rather than removes, but they do not establish that such an error occurs (ledger entries 21, 34, and 37).
+
+\section*{The connexion pursued}
+The pursued connexion was between Q's methodological lesson and P's robustness claim.  Q shows why systematic local rules should be conditioned on role, horizon, urgency, and anchoring and then linked to aggregate outcomes; P offers a setting in which such context dependence could matter because battery depletion and random respawn change the active set (ledger entries 10, 16, and 23).  The resulting question is whether repeated comparisons under controlled churn approach the intended credit signal or a context-dependent LMM preference, and whether any residual bias affects policy learning (ledger entries 12 and 18).
+
+\section*{What was found}
+P's convergence result assumes a stable latent preference vector \(\mathbf c_t^*\) at each time and centered Bradley--Terry observations.  With \(K\) comparisons it gives estimation error of order \(K^{-1/2}\), but the limit is the LMM's preference, not true contribution; alignment with a Shapley vector \(\mathbf v_t^*\) is a separate assumption (ledger entries 5 and 22).  Thus repetition can reduce sampling variance while retaining systematic bias.  In the notation proposed in the notes, if
+\[
+\mathbf c_t^*=\mathbf v_t^*+\boldsymbol\delta_t,
+\]
+then the score error
+\[
+B(K)=\mathrm E\!\left[\left\lVert
+\widehat{\mathbf c}_{t,K}-\mathbf v_t^*
+\right\rVert_2\right]
+\]
+need not vanish as \(K\) grows when \(\boldsymbol\delta_t\neq 0\) (ledger entries 24 and 25).
+
+P does not isolate this possibility experimentally.  Its results pool comparator accuracy and query-count effects, without a fixed-roster versus churning comparison or conditioning on entry, exit, active-set size, battery, or task phase; two additional environments omit dynamic agent counts (ledger entries 8 and 23).  Q cannot fill that evidential gap: it concerns acting traders rather than comparative referees, and its urgency-associated trace analysis is suggestive, single-model, and noncausal (ledger entries 7, 10, and 21).
+
+A secondary mechanism follows directly from P's active-set softmax.  If an incumbent \(i\) has score \(c_i\), normalization constant \(Z\), and entrant \(j\) has score \(c_j\), then
+\[
+\psi_i=\frac{e^{c_i}}{Z},
+\qquad
+\psi_i^+=\frac{e^{c_i}}{Z+e^{c_j}}<\psi_i.
+\]
+Membership therefore creates a roster-coupled potential jump even when incumbent scores are fixed (ledger entries 9 and 30).  Later corrections establish that this algebra alone proves neither policy bias nor a failure of potential-based reward shaping: the potential may still telescope when roster membership is represented in a suitable stationary state space (ledger entries 33 and 36).  The supported claim is only a risk to shaping variance, sample efficiency, or downstream success that should be measured (ledger entries 33, 34, and 36).
+
+\section*{Objections and their status}
+Entry or exit may legitimately alter marginal contribution, so comparisons must use matched counterfactuals with incumbent scores and physical state held fixed (ledger entries 7, 14, and 28).  P's instantaneous dense rewards are an agreement label, not established ground truth for long-horizon marginal or Shapley contribution; dense-reward agreement and final task success must therefore be reported separately (ledger entry 28).  The ordinary discounted shaping term for \(\gamma<1\) must also be separated from the normalization jump (ledger entries 14 and 31).  These objections were incorporated into the proposed controls, but they remain unresolved empirically.  It is also unknown whether P's prompts expose enough roster, battery, or deadline context for the Q-motivated effect to appear, and whether repeated API outputs behave independently (ledger entries 19 and 31).
+
+\section*{Sources outside Q and P}
+No outside source or prior-work search was used.  Accordingly, the notes make no novelty claim (ledger entries 19 and 31).
+
+\section*{What remains open}
+The material is thin on direct evidence: no ledger entry reports the proposed churn-conditioned experiment.  Open questions include whether churn produces a nonzero comparator error floor, whether that error changes downstream learning, whether active-set normalization affects optimization, and whether the precise Open Dec-POMDP satisfies the conditions needed for policy invariance (ledger entries 19, 31, and 34).
+
+\section*{Smallest settling step}
+Replay matched observations immediately near and far from an entry or exit, hold the physical scene and dense-reward pair ordering fixed, and compare one query with repeated LMM queries against independently flipped labels of the same pooled accuracy.  Measure conditional signed error and \(B(K)\): a churn-specific error floor would support the proposed connexion, while stable labels and approximately \(K^{-1/2}\) decay would extend P's robustness claim to the tested context (ledger entries 6, 24, 25, and 34).  Only after that result is known is the larger oracle/LMM by active-set/fixed-reference training study warranted (ledger entries 15, 27, and 37).
+
+\section*{This round's addition after review}
+The verifier judged the connexion promising but returned ITERATE because neither
+paper nor the first-round note supplies evidence that churn creates an error
+floor or affects learning (ledger entry 39).  That result still stands.  The
+material remains thin: this workspace contains paper sources and synthesis
+artifacts, but no MARS-Bench implementation, matched observations, LMM outputs,
+API configuration, or training checkpoints, so the requested experiment could
+not be run and no empirical plateau or learning harm is claimed (ledger entries
+43, 45, and 47).
+
+This round also corrected the proposed manipulation after checking P's deployed
+comparator interface.  P supplies paired egocentric images, task and rule
+context, identity mappings, and a contribution prompt, but does not state that
+entry, exit, battery, deadline, or active-set metadata are explicitly supplied
+(ledger entries 50 and 52).  The smallest valid next step is therefore to
+collect repeated judgments from the unmodified interface and stratify them by
+transition proximity and by roster or phase cues genuinely visible or inferable
+in those inputs, while holding the operational dense-reward ordering fixed.
+Then test whether \(B(K)\) decays at the stated \(K^{-1/2}\) rate or reaches a
+churn-specific floor, followed by a downstream policy test only if such a floor
+appears (ledger entries 40, 45, 48, and 50).  Adding explicit entry or exit
+framing to fixed images is only a secondary susceptibility test and cannot by
+itself establish failure of deployed MARS-RA (ledger entries 50 and 52).
+
+\end{document}

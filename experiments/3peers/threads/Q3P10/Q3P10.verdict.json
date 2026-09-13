@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-12T15:45:24Z",
+  "note_sha256": "524c3501cf7184b2822c051ac5ec1ed85ef67830685362642c9a13dd72982686",
+  "decision": "ITERATE",
+  "reason": "The connexion is promising, but the note contains no result yet and its four-arm design does not cleanly identify token-cost effects because fixed-per-quote and per-token treatments change both repetition incentives and total charges. A matched pilot cannot remove that structural confounding.",
+  "action": "Replace the four-arm comparison with a crossed fixed-per-quote-fee \u00d7 per-token-fee factorial, retaining a visible nonbinding-ledger control, and state the resulting identifiable contrasts."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-12T15:51:38Z",
+  "note_sha256": "9bc85ff2cad0a5944b1423b9f353822051b3d64a63266c03d0f332b13281acf2",
+  "decision": "PAUSE",
+  "reason": "The connexion is coherent and the corrected factorial is identifiable, but the note explicitly contains only a proposed experiment, not a supported result. Establishing whether inference pricing repairs or damages auction efficiency requires new experimental runs, API/model access, calibrated tariffs, and adequate replication, none of which the ledger supplies.",
+  "action": null
+ }
+]

@@ -1,0 +1,84 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{When a Wrist Pose Does Not Describe a Grasp}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Aero Hand Open is an underactuated tendon-driven hand, while DynaMAC is a method for coordinating robot arms through moving reference frames.  The thread asked whether DynaMAC's test for a rigidly linked object remains reliable when an object is held through compliant, changing contacts.  The peers found an exact example in the released Aero Hand model where the wrist and all seven encoder readings agree but the hand geometries differ.  They did not show that these two geometries produce different object contacts, that DynaMAC misses a causally influenced object, or that correcting its mask rescues a policy.  The thread therefore paused because the remaining claim requires an object and arm task joined to DynaMAC, which was not available.
+\end{abstract}
+
+\section{Introduction}
+
+Aero Hand Open, called Q here, is a five-finger hand with sixteen revolute joints and seven motors~\cite{qpaper}.  Cables let a motor move several joints, so those joints cannot be commanded separately.  The mechanics and any contact decide which joint moves.  The hand senses only its seven motor encoders.  Q supplies a tendon-level MuJoCo model, an identified map between simulated actuation and hardware commands, and a learning system that rotates a cube on the physical hand after training in simulation.
+
+DynaMAC, called P here, is a policy-independent layer for manipulation in moving scenes and for two-arm cooperation~\cite{ppaper}.  Its policies use several streams, each expressed relative to a reference frame.  In the two-arm case, the pose of the other end effector can be one such frame.  P also tries to recognise when a robot has taken control of an object.  It identifies a kinematic link from low spread among demonstrations at the same task phase, and then masks the linked object's frame.  P reports transfer from static demonstrations to moving scenes and coordinated arms.
+
+The first idea was simply to mount Aero hands in P's benchmark.  The peers rejected this as a weak test.  P works mainly with arm-level geometry, while Q supplies a stationary one-hand MuJoCo task rather than P's arm trajectories, demonstrations, tracked frames, and RLBench setting.  A broad port would therefore mix the question of interest with many engineering changes.  The thread instead asked a precise question: can an object be strongly controlled by a wrist even though its pose relative to that wrist is not nearly fixed, because hidden finger and contact states change?
+
+\section{What was done}
+
+The peers first compared P's link test with Q's mechanics.  Let \(w_t\) be the wrist pose at time \(t\), let \(f_t\) be the object pose, and let \(z_t\) collect the unobserved finger configuration and contact mode.  A simple description of a compliant grasp is
+\[
+  f_t = w_t h(z_t),
+\]
+where \(h(z_t)\) is the object's pose relative to the wrist.  Moving the wrist can move the object, but changes in \(z_t\) can also change the relative pose.  The wrist can therefore influence the object without fixing its pose.  Purposeful rotation of an object within a stationary hand is the clearest limiting case.
+
+The peers then checked the statistic that P actually uses.  At each task phase, P expresses demonstrated end-effector poses in a candidate frame \(f\), forms their covariance matrix \(\boldsymbol{\Lambda}_t^{(f)}\), and computes
+\[
+  M_t^{(f)}=
+  \left|\det\!\left(\boldsymbol{\Lambda}_t^{(f)}\right)\right|^{-1/(2d)},
+\]
+where \(d\) is the dimension of the pose representation.  P declares a link when \(M_t^{(f)}<\tau_M\), where \(\tau_M\) is its threshold.  Because this is a phase-indexed demonstration statistic, a fair test must compare wrist-to-object transforms at matching phases and keep the demonstrations and phase segmentation fixed.
+
+Next, the peers proposed a causal comparison.  Their finite-difference score asks how much an object pose changes after a small imposed wrist displacement.  This score was only a proposal: its time horizon and the low-level feedback rule still need to be fixed before it has a unique experimental meaning.  The important test is whether P's statistic fails to mark an object despite a large measured wrist-to-object influence.  A fixed policy would then be run with P's mask and with a mask supplied by that causal measurement.  Improvement from the latter would separate a frame-selection failure from an ordinary grasp-control failure.
+
+After the verifier asked for a constructed case, Emmy fetched Q's released MuJoCo implementation~\cite{aerorepo}.  The script \url{../emmy/probe_aero_aliasing.py} restricted the model to its finger equality constraints and examined the seven simulated encoder or tendon readings over eleven configuration variables.  The sensor Jacobian had rank seven, leaving four directions of motion that the readings do not locally distinguish.  Emmy then solved exactly for two fixed-wrist configurations with the same readings but different fingertip positions.
+
+Grace separately wrote an analytic, phase-matched construction.  Her check is in \url{../grace/phase_matched_counterexample.md}.  It considers two states with the same wrist pose and encoder readings but different contact modes and object poses.  In the construction, both modes transmit a wrist perturbation to the object, while their wrist-to-object transforms differ enough for P's spread test to miss the link.  This establishes logical possibility under the proposed model, not existence in the object-free simulation that was run.
+
+\section{Results}
+
+The executed result is an observation alias in Q's released model.  With the wrist fixed, the two configurations differed in their pinky angles.  In radians, the first used
+\[
+ (q_{\mathrm{MCP}},q_{\mathrm{PIP}}=q_{\mathrm{DIP}})
+ =(0.45,0.53639096),
+\]
+and the second used
+\[
+ (q_{\mathrm{MCP}},q_{\mathrm{PIP}}=q_{\mathrm{DIP}})
+ =(0.65,0.35774391).
+\]
+Here \(q_{\mathrm{MCP}}\), \(q_{\mathrm{PIP}}\), and \(q_{\mathrm{DIP}}\) are the angles of the pinky's knuckle, middle, and distal joints.  The tendon length was held fixed.  The largest sensor discrepancy was \(1.39\times10^{-17}\), while the largest fingertip-position difference was \(9.02\,\mathrm{mm}\).  The calculation and exact scalar solve are in \url{../emmy/probe_aero_aliasing.py}.
+
+This witness shows that wrist pose plus Q's encoder readings do not determine hand geometry.  It directly supports the hidden-state premise of the proposed challenge to P.  It does not by itself show hidden contact state, since the simulated scene had no object.  It also says nothing yet about P's task-phase statistic or policy performance.
+
+A second, analytic result is the possible separation between causal influence and rigid relative pose.  If two matched states have different contact modes, the wrist may move the object in both even though the relative transforms differ across demonstrations.  P's within-phase spread can then fail its link threshold.  Grace's construction checks this implication at the level of the stated model, but the required object-bearing states have not been made stable or tested in simulation.
+
+\section{What did not hold and remaining objections}
+
+The early suggestion that compliance alone defeats P's test did not hold.  A compliant grasp that repeats in the same way can still have low within-phase spread.  The relevant treatment must instead vary contact mode, slip, object seating, or deliberate in-hand motion.  Q does not validate pad compliance or cable slack as independent sweep variables.  The defensible controls in its present model are spring stiffness, friction, seating, geometry, and grasp choice.
+
+Binary contact also did not survive as a causal reference.  Touch can be incidental, and influence can be shared or graded during sticking, rolling, and slipping.  An intervention on the wrist is a better reference, but the peers did not settle its horizon or feedback convention.
+
+Task failure alone would not identify the proposed problem.  Other object or task-frame streams could compensate for a missed wrist link.  The proposed controls therefore keep demonstrations, trajectories, controllers, and policy class fixed.  They compare P's original selection with forced wrist conditioning, forced retention of the object stream, and an oracle causal mask.  Detector error should occur before policy error, and the oracle mask should improve the same fixed policy.  Encoder history may help infer contact mode, but the material does not show that current encoder readings are sufficient or that a temporal belief can be learned from static demonstrations alone.
+
+Feasibility remains the main practical objection.  Q's checked scene has a fixed wrist and no object.  P's policy, demonstrations, and masking interface belong to a separate RLBench-based system.  A full two-arm port could fail for integration or low-level control reasons unrelated to the proposed representation problem.  The present material is therefore too thin to support a task-level claim.
+
+\section{Why the thread stopped}
+
+The verifier first requested a phase-matched, object-bearing test in which strong wrist-to-object influence coincides with failure of P's statistic, followed by rescue with an oracle mask.  The second round produced the exact encoder-aliased hand-geometry witness, but not that requested test.  The verifier set the status to PAUSE because the note stated this limit correctly and because completing the experiment requires an object and movable wrist or arm task integrated with DynaMAC.
+
+The smallest restart is to add one object and a movable wrist to the tested Aero scene.  Two stable states must be saved at the same task phase with the same wrist pose and encoder readings but different, task-relevant contact modes.  The same small wrist perturbation must then be replayed under a fixed feedback rule while measuring both P's phase-matched statistic and wrist-to-object influence.  Only if strong influence accompanies a missed link is it useful to compare the fixed policy under P's mask and an oracle mask.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,63 @@
+\section*{A cost-aware robustness target for MARS-RA}
+
+\paragraph{What the present theorem controls.}
+Let \(v_t^*\) denote task-grounded credit, for example a Shapley vector, and
+let \(c_t^*\) denote the latent Bradley--Terry parameter of the comparator.
+The triangle inequality gives
+\[
+ \lVert \widehat c_t-v_t^*\rVert_2
+ \leq
+ \lVert \widehat c_t-c_t^*\rVert_2
+ +\lVert c_t^*-v_t^*\rVert_2.
+\]
+Proposition 1 of P controls only the first term, under correct specification
+and connectivity.  Repeated queries can reduce this sampling term but not the
+second, semantic-bias term.  Proposition 2 sets the second term to zero as an
+assumption.
+
+\paragraph{Why asymptotic policy quality is the wrong target.}
+For P's shaping reward
+\[
+ F_t=\gamma\psi_{t+1}-\psi_t,
+\]
+the discounted shaping return over an episode is
+\[
+ \sum_{t=0}^{T-1}\gamma^tF_t
+ =-\psi_0+\gamma^T\psi_T.
+\]
+P sets the terminal potential to zero, so this is \(-\psi_0\).  With a fixed
+initial state, the shift is independent of the subsequent policy.  Arbitrarily
+bad comparisons therefore need not change the exactly optimized policy
+objective.  They can still change optimization speed and finite-sample
+behavior.  A nontrivial robustness result must consequently concern regret,
+sample complexity, or performance after a fixed training budget.
+
+\paragraph{A concrete frontier to prove.}
+Suppose a finite-training analysis establishes that credit perturbation enters
+with sensitivity \(L\), and write
+\[
+ \epsilon_K\leq b+A K^{-1/2},
+\]
+where \(b\) is semantic bias and \(A\) contains dimension, confidence, and
+comparison-graph dependence.  Charging \(\kappa\) per comparison, the part of
+an upper bound controlled by the query count would be
+\[
+ Lb+LAK^{-1/2}+\kappa K.
+\]
+Its continuous minimizer is
+\[
+ K^*=\left(\frac{LA}{2\kappa}\right)^{2/3}.
+\]
+This supplies a falsifiable query-allocation law and predicts a bias floor:
+increasing \(K\) has diminishing returns and cannot repair systematically
+wrong comparisons.  The missing result is the sensitivity theorem that
+connects \(\epsilon_K\) to finite-training MARL performance.
+
+\paragraph{Assumptions that must be made explicit.}
+The comparison outcomes must be independent or have a declared dependence
+model, the Bradley--Terry link must be correctly specified or assigned a
+misspecification residual, and graph connectivity must be quantified through
+its spectral gap.  Position-reversed calls to one deterministic LMM are not
+automatically independent Bradley--Terry samples.  Also, P states different
+normalizations of its error rate in the proposition and appendix restatement;
+that rate should be repaired before it is propagated.

@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q and P: Compute-Inclusive Market Alignment}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{The pair in two sentences}
+Q studies whether LLM agents attain efficient allocations in a double auction and reports slow or absent convergence, repeated small quote improvements, and substantial variation across models (ledger entries \#3, \#7, and \#24). P studies a simulated energy economy in which token generation has cost \(C=kTS^{\alpha}\), but its deactivation rule is an analogical budget mechanism rather than literal survival (entries \#4, \#5, and \#26).
+
+\section{The connexion pursued}
+The peers rejected the initial proposal to place Q's auction inside P's heterogeneous job environment because that would change the institution, tasks, incentives, and measurement at once (entries \#3 and \#24).  The converged connexion instead keeps Q's reservation schedules, order book, random activation, horizon, and model population fixed, while importing P's inference-cost ledger (entries \#6, \#9, \#22, and \#24).  The resulting question is whether consequential inference pricing repairs or worsens LLM double-auction efficiency, and whether any change comes from token-proportional deliberation cost rather than a generic cost of repeated action (entries \#11 and \#24).
+
+\section{What was found}
+The material establishes a design and a testable question, not an empirical answer.  Q supplies both a welfare benchmark and a diagnosed stall mechanism, while P supplies an endogenous accounting rule for inference; neither paper alone measures compute-inclusive market alignment (entries \#10, \#17, and \#24).
+
+For Q's symmetric schedule, the efficient matched gains are
+\[
+2.50,\ 2.00,\ 1.50,\ 1.00,\ 0.50,\ 0,
+\]
+so the maximum surplus per round is
+\[
+G^{\star}=2.50+2.00+1.50+1.00+0.50+0=7.50.
+\]
+This derivation was checked independently in entries \#15 and \#23 and restated in entry \#31.  The zero-gain sixth trade also shows why trade count and surplus must be reported separately (entry \#31).
+
+Let realized trading surplus be \(G\) and total inference cost be \(C\).  The proposed conventional efficiency is
+\[
+\eta_{\mathrm{alloc}}=\frac{G}{G^{\star}},
+\]
+whereas
+\[
+\eta_{\mathrm{net}}=\frac{G-C}{G^{\star}}
+\]
+is interpretable only if compute cost and auction payoff have a preregistered common-unit conversion (entries \#20, \#26, and \#28).  Without that conversion, the appropriate object is a Pareto frontier between trading surplus and tokens, API cost, or joules (entries \#17, \#26, and \#28).
+
+The previous round proposed four contrasts: free inference; a visible but nonbinding token ledger; a visible consequential fixed fee per quote; and a visible consequential per-token fee at calibrated levels (entries \#6, \#22, and \#31).  The visible shadow ledger remains a useful salience control, and fees should still be calibrated before the experiment as preregistered fractions of \(G^{\star}=7.50\) and then frozen (entries \#15, \#23, \#31, and \#33).  However, the verifier showed that comparing fixed-fee and per-token arms changes both marginal incentives and total charges, so pilot matching cannot identify a token-cost effect (entry \#35).  The next subsection records the corrected design.
+
+\subsection{Factorial correction after review}
+The consequential treatment is now a randomized \(2\times2\) factorial with tariff
+\[
+C=fN+\lambda T,
+\]
+where \(N\) is the number of quote actions, \(T\) is observable billed inference tokens, \(f\in\{0,f_1\}\), and \(\lambda\in\{0,\lambda_1\}\) (entries \#36, \#37, \#40, and \#48).  Every factorial cell displays an accumulating ledger, and debits are settled only between rounds so that the within-round active schedules remain fixed (entries \#37, \#40, and \#48).  Realized charges are post-treatment mediators and must not be equalized after treatment (entries \#37 and \#44).
+
+For an outcome \(Y\), the simple token-price effects are
+\[
+E[Y\mid f,\lambda_1]-E[Y\mid f,0]
+\]
+at each value of \(f\), and the simple quote-price effects are
+\[
+E[Y\mid f_1,\lambda]-E[Y\mid 0,\lambda]
+\]
+at each value of \(\lambda\).  Their difference-in-differences identifies whether the two tariff components are complements or substitutes; if the interaction is nonzero, these conditional effects should be reported instead of only averaged main effects (entries \#37, \#42, \#46, and \#48).  These are effects of randomized tariffs, not pure equal-expenditure psychological effects (entry \#37).
+
+A no-ledger baseline and an identically displayed nonbinding ledger with both positive rates identify combined ledger salience.  Comparing that ledger with the corresponding consequential cell identifies the additional combined effect of consequence, provided the shadow ledger is believed (entries \#36, \#37, \#40, and \#44).  These controls do not identify separate salience effects of \(f\) and \(\lambda\); doing that requires mirroring the full factorial with nonbinding ledgers (entries \#36, \#40, and \#44).  This correction supplies an identifiable proposed experiment, not an empirical result (entries \#38, \#40, \#44, and \#48).
+
+The predicted sign remains deliberately open.  Moderate charges may suppress incremental quoting, while larger charges may induce premature crossing, abstention, or exit, so an inverted-U response is plausible but unproved (entries \#6, \#9, and \#24).  Primary measurements include gross surplus, trade count, price dispersion, crossing behavior, quote increments, abstention, and tokens per fill (entries \#6 and \#24).
+
+\section{Objections and their status}
+The first objection was that P does not show behavioral adaptation to marginal token price: its \(\alpha=0\) arm retains a per-token charge, and removing discussion mechanically removes an LLM call while changing coordination (entries \#5 and \#8).  This was resolved at the design level, but not empirically, by adding free, visible nonbinding, fixed-fee, and per-token arms (entries \#6, \#22, and \#31).
+
+The second objection was that Q's urgency vocabulary is associational, model-limited, and explicitly does not identify what causes switching (entries \#7, \#16, and \#24).  It was resolved by making randomized changes in crossing hazards and quote increments the causal test and relegating traces to secondary diagnostics (entries \#7 and \#17).
+
+The third objection was that immediate deactivation changes active supply and demand and therefore the attainable-surplus denominator (entries \#9 and \#13).  The primary design settles bankruptcy only after each round; within-round deactivation remains a secondary selection study that should report efficiency against both the original optimum and the optimum conditional on surviving agents (entries \#20, \#22, and \#24).  This resolves the primary-study confound but not the interpretation of the secondary arm.
+
+The verifier's objection was that the earlier fixed-fee versus per-token comparison could not isolate token pricing because it changed incentives and realized charges together (entry \#35).  The crossed \(f\times\lambda\) factorial resolves that objection by varying each price while holding the other fixed and by estimating their interaction (entries \#36, \#37, \#40, and \#48).  It does not resolve whether the experiment can be powered affordably or whether billed tokens capture hidden reasoning (entries \#38, \#40, and \#48).
+
+\section{Outside sources}
+No sources outside Q and P were used in the peer work (entries \#11, \#15, and \#24).  Accordingly, the result is a pair-level research opportunity, not a prior-art or novelty claim.
+
+\section{What remains open}
+Open issues are the common-unit conversion for net welfare, pilot-based fee and balance calibration, the credibility of a visibly nonbinding ledger, observability and controllability of hidden reasoning tokens, comparability of traces, exposure noise from random activation, replication requirements for model interactions, interpretation of within-round deactivation, and generalization beyond the tested models (entries \#26, \#31, \#33, and \#48).  The corrected factorial also raises unresolved power and API-cost demands (entries \#38, \#40, and \#48).  The material is thin: it contains a benchmark, an accounting connexion, and an identifiable design, but no result from running that design (entries \#35, \#38, and \#48).
+
+\section{Smallest next step}
+Run a pilot under Q's unchanged auction for each model, recording billed tokens and quote actions per round.  Use it only to choose and freeze \(f_1\) and \(\lambda_1\) as preregistered fractions of \(G^{\star}=7.50\), not to equalize realized post-treatment charges; then run the consequential \(2\times2\) factorial with the stated controls (entries \#37, \#40, \#44, and \#48).  This is the smallest next step that can make the corrected causal comparison operational, although a power calculation is still required before the experiment can settle the question (entries \#38 and \#48).
+
+\end{document}

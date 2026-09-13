@@ -96,6 +96,12 @@ threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
 threads/<pair>/edited/  note.tex, references.bib, note.pdf, edit.json
 ```
 
+The repository root is the reference campaign (Q "mechanism design", P
+"agentic cooperation"). `experiments/3peers/` is a second campaign
+directory of the same shape: the eight explore pairs run again with three
+peers, compared against two in the pilot report. Point any command at it
+with `--root experiments/3peers`; its `sources` is a link to the root's.
+
 ## campaign.json
 
 - `backend`: `claude` or `codex`. No fallback between them.

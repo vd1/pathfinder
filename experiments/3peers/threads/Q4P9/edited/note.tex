@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Contract Representation and Revelation for AI Agents}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The pair joins a theoretical paper on mechanisms for AI agents with an experimental paper on contracts negotiated by language-model agents.  We looked for a connection between the revelation argument in the first paper and the contrast between programmatic and natural-language contracts in the second.  The original idea, that natural language lets an agent counterfeit a commitment, did not survive scrutiny.  A narrower connection did: the theory treats lossless changes of representation as irrelevant, while the experiment suggests that representation may change an agent's later planning.  The thread paused because the existing treatments do not hold contract meaning, history, acceptance, and enforcement fixed, so a matched experiment is needed.
+\end{abstract}
+
+\section{Introduction}
+
+\subsection*{Paper Q}
+
+Paper Q, \emph{Mechanism Design for Alignment and Control}, studies how a human can design rules for AI agents whose preferences and capabilities are not known \cite{Q}.  Capability includes both the actions an agent can take and the information it receives.  The paper asks a mechanism to induce two things at once: an agent should report its type truthfully and should follow the recommended action.  A capable agent may hide evidence of its capability, but an incapable agent may not fabricate that evidence.  Under these assumptions, Q proves revelation principles for one agent and for several agents.  In simple terms, an indirect exchange of messages can be replaced by a direct report and a recommended plan without changing the set of equilibrium outcomes.
+
+\subsection*{Paper P}
+
+Paper P, \emph{Commitment To Cooperation With Self-Negotiated Contracts}, studies language-model agents that bargain and navigate through a game board \cite{P}.  Players need coloured chips to cross tiles, and some boards require help from the other player.  The paper compares several ways to make cooperation credible.  In the Programmatic Trading Contract treatment, or PTC, a judge turns the agreement into a JSON object, both players accept it, and the resulting transfers are enforced by a program.  In the Natural Language Trading Contract treatment, or NLTC, the full negotiation remains available and an external language-model judge decides whether each proposed move is covered.  Covered transfers then happen automatically.
+
+\subsection*{The connection pursued}
+
+The investigation first asked whether the natural-language treatment lets an agent reinterpret, and therefore counterfeit, its own commitment.  The peers rejected this connection.  Q's no-counterfeiting condition concerns evidence about physical execution or information capability.  P's agents do not control the later interpretation of their agreement: an external judge applies it.
+
+The revised question concerns representation and planning.  Q's revelation construction assumes that an agent can copy a contingent plan from one mechanism into another and optimise over the same possible deviations.  This makes a lossless relabelling irrelevant when actions, information, and payoffs are unchanged.  P reports a large behavioural difference between two contract representations despite similar average use of contract-covered moves.  The investigation therefore asked whether a contract's display can change the planning behaviour of a language-model agent even when its legal meaning does not change.
+
+\section{What was done}
+
+The peers began by checking the proposed counterfeiting account against the mechanisms in both papers.  They compared Q's verification order with P's natural-language enforcement procedure.  This showed that the two ideas concern different actions.  In Q, an agent may conceal a certificate but may not fabricate one.  In P, the agents bargain before play and an external judge later decides which moves the retained agreement covers.
+
+The peers then examined Q's revelation proof.  Q replaces equilibrium play in an indirect mechanism with a direct recommendation of the action plan produced by that play.  If an agent could profitably deviate after receiving the direct recommendation, it could copy that deviation in the indirect mechanism.  The assumed indirect equilibrium rules this out.  Conversely, a direct incentive-compatible mechanism is itself an indirect mechanism.  The same logic appears in Q's multi-agent result.
+
+From this proof the peers extracted a representation benchmark.  Consider two displays that are related by a one-to-one translation.  If both displays reveal the same information and contingencies, permit the same physical actions, and lead to the same payoffs, the translation changes only the labels.  Under Q's unrestricted optimisation assumptions, the games have the same set of equilibrium outcomes.  This is an implication of the proof's plan-copying step, not a separate result reported by P.
+
+The peers next checked P's behavioural results.  On mutually dependent boards, both players finish in \(79\%\) of PTC games and \(46\%\) of NLTC games.  The treatments use a similar mean number of contract-covered tiles, about \(2.60\) per game.  Yet agents make fewer additional trade proposals in NLTC, \(1.4\) rather than \(3.0\) per game, and accept fewer, \(0.7\) rather than \(1.4\).  When declining a trade, agents cite the insufficient contract in \(94\%\) of NLTC cases and \(74\%\) of PTC cases.  P describes this pattern as over-anchoring on the natural-language contract.
+
+Finally, the peers designed the smallest clean comparison.  Let \(c\) denote one canonical map of contractual obligations.  The map states exactly which move triggers which transfer.  It would be rendered losslessly as canonical JSON and as canonical prose, while the same program would enforce \(c\) in both conditions.  The board, model, role, and sampling controls would also be held fixed.  A full negotiation transcript would not be part of the core comparison because it contains extra information.
+
+The proposed primary test avoids relying on final completion alone.  It would identify decision points where an additional trade is strictly better for the acting agent under every relevant continuation.  It would then compare refusals across the two renderings, or compare each action with an exact planner for the game.  The difference in refusal rates could be written as
+\begin{multline*}
+ \Pr(\text{strictly suboptimal refusal}\mid c,\text{JSON}) \\
+ {}-\Pr(\text{strictly suboptimal refusal}\mid c,\text{prose}).
+\end{multline*}
+Here \(c\) is the fixed obligation map.  JSON and prose name its two lossless displays.
+
+\section{Results}
+
+\subsection*{What holds}
+
+First, Q's argument supports invariance of the equilibrium outcome set under a bijective relabelling, provided that information, feasible actions, and payoff consequences remain identical.  The support is the copying argument in Q's single-agent and multi-agent revelation proofs.  A deviation after the direct recommendation can be reproduced in the indirect mechanism, and the indirect equilibrium blocks it.  The peers independently checked this reading in their derivations in \url{../ada/interface_revelation_note.md} and \url{../emmy/behavioral_revelation_gap.md}.
+
+Second, P contains a real behavioural pattern that motivates a test of this assumption.  The PTC and NLTC results differ greatly in joint completion and in later trading, although mean realised contract coverage is similar.  The decline in additional trade, together with the stated reasons for refusal, is consistent with representation-dependent planning or over-anchoring.  It is not proof of that explanation.
+
+Third, weak enforcement does not explain the observed NLTC result on the evidence reported by P.  The external judge made \(3\) errors among \(1155\) approved moves, an error rate of \(0.26\%\).  All were false positives, meaning that the judge approved a move not covered by the agreement.  This check also supports rejection of the counterfeiting account: the record contains no agent-controlled channel for interpretation after negotiation.
+
+Fourth, a matched comparison could test the empirical adequacy of Q's optimisation and plan-copying assumptions for these agents.  A display-dependent difference in strictly suboptimal refusals, with meaning and enforcement fixed, would show that lossless representation affects behaviour.  It would not refute Q's theorem, which is valid under its stated assumptions.  It would instead show that unrestricted strategy copying is a poor description of the tested language-model agents.
+
+\section{What did not hold}
+
+The first proposed connection did not hold.  Natural language in P does not give an agent the right to reinterpret a commitment whenever performance becomes inconvenient.  Q's hard-evidence restriction and P's external contract judge address different problems.  Evidence for opportunistic reinterpretation would require disputed-coverage attempts concentrated under judge enforcement, and the present record reports no such pattern.
+
+The current P treatments are also not known to have the same meaning.  Their negotiations are generated separately.  PTC shows agents a JSON summary and requires explicit acceptance.  NLTC retains the whole negotiation and asks a judge to interpret it for each move.  Thus the treatments differ in contract terms, display, retained history, acceptance procedure, and enforcement.  Similar mean coverage is an outcome statistic, not proof that the obligation maps match board by board.
+
+The completion gap alone does not contradict Q.  Q establishes equality of sets of equilibrium outcomes, not equality of whichever outcome a particular agent selects.  Different displays might select different equilibria from the same set.  This objection led the peers to prefer dominated refusals or regret against an exact planner as the primary outcome.
+
+There is a further unresolved modelling objection.  One could define an interface-dependent set of strategies after seeing a failure and then say that the interface caused the failure.  That would merely rename the observation.  A useful capability account must instead specify its resource limit in advance, for example through a fixed token or inference budget, or estimate a display-to-policy relation on held-out comprehension tasks and test its predictions on unseen boards.  No such model or matched intervention is present in the supplied material.
+
+The existing evidence is therefore thin on the central causal question.  It does not establish whether the gap comes from syntax, extra transcript context, different negotiated content, the acceptance procedure, enforcement, or sampling.  The peers' proposed factorial variations could separate some of these causes, but those experiments have not been run.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the revised connection is plausible but not established by the available evidence.  The consolidated note accurately reflects the record, but P's two treatments do not isolate representation.  They differ in the contracts produced, the histories shown to agents, the way acceptance works, and the enforcement procedure.  Continuing from the current data would therefore turn a proposed explanation into an unsupported claim.
+
+The smallest step that would restart the thread is to take one accepted obligation map \(c\), produce losslessly equivalent canonical JSON and canonical prose, and show these displays under identical programmatic enforcement on the same boards and models.  The test should be registered in advance at decision points where a supplemental trade is strictly payoff-improving under every relevant continuation, or should use regret against an exact planner.  A representation-dependent difference would establish the proposed behavioural gap.  No difference would place P's original contrast in unmatched content, enforcement, history, acceptance, or sampling rather than representation itself.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

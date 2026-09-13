@@ -269,6 +269,15 @@ Q4P6 the author's search found prior work containing the main
 calibration step and narrowed the novelty claim accordingly, which the
 reviewer then accepted.
 
+Q1P6 was given a fourth paper round on 13 September (paper_rounds raised
+from 3 to 4, cost 5.3 USD). The author addressed the one minor finding
+of round 3; the round 4 reviewer then raised a new major finding, an
+inconsistency between the paper's boundary display and its own
+embedding, plus nine minor ones, and the paper ended again at
+PAUSE-ON-AMEND. A revision can open as many findings as it closes, so
+the review loop does not converge by adding rounds. Q1P6 stays a note
+with an unaccepted paper; a human, not another round, decides it.
+
 Campaign total at the end of the day: 172 USD API-equivalent over 322
 calls; 14 threads terminal, 5 DRAFT, 8 PAUSE, 1 PAUSE-ON-ITERATE, 4
 papers accepted.
@@ -396,8 +405,8 @@ of this campaign is 5 MB.
 
 Question from V: with a third peer on the same ledger, do we get more
 diverse results, more quality, or just more babble? Experiment: the eight
-explore pairs, run again from scratch in a sibling campaign with three
-peers (ada, emmy, grace), everything else equal to the two-peer run of the
+explore pairs, run again from scratch in a second campaign directory,
+now kept at `experiments/3peers/`, with three peers (ada, emmy, grace), everything else equal to the two-peer run of the
 previous evening: Codex on gpt-5.6-sol through ELM, two seats, four
 rounds, one repair, the same prompts. Research stage only, per pair:
 

@@ -1,0 +1,106 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Risk-Aware Resource Allocation: What Can Be Combined from Q and P?}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q designs payments that lead strategic agents to a socially preferred resource allocation, while P gives a distributed method for minimising conditional value-at-risk from sampled losses. We asked whether P's risk estimator could be placed inside Q's learning scheme to obtain a risk-aware mechanism. The comparison found a valid algebraic link, but also a loss-of-curvature counterexample, a mismatch between the algorithms, and an information gap for system-wide tail risk. It also separated the sum of individual risk valuations from the risk of aggregate satisfaction. The thread ended as a draft because these obstructions are supported, but the mechanism extension and its learning theorem remain unproved.
+\end{abstract}
+
+\section{Introduction}
+
+Q studies a resource-allocation problem in which agents have private, random satisfaction functions and local constraints. Its manager wants to maximise the sum of their expected satisfactions. Q constructs quadratic payments by a linear matrix inequality so that the unique Nash equilibrium gives the manager's allocation, balances the budget, and makes participation worthwhile. It also gives a decentralised learning method: each agent estimates and solves a proximal best-response problem, then the agents apply a Krasnoselskij update to the resulting game map \cite{Q}.
+
+P studies a different distributed problem. Several agents hold copies of one common decision and cooperatively minimise the average of local conditional value-at-risk, or CVaR, objectives. They observe sampled losses rather than gradients. P smooths each CVaR objective, estimates a gradient from sampled function values, and takes a projected-gradient step after exchanging decisions with neighbours. With fixed smoothing and finite samples, its agents reach consensus and approach an empirical, smoothed objective rather than the exact CVaR objective \cite{P}.
+
+The connexion pursued was to make Q risk-aware. For agent \(n\), let \(x_n\) be its allocation, let \(\xi_n\) denote its random state, and let \(\psi_n(x_n,\xi_n)\) be its satisfaction. The proposed risk-adjusted valuation was
+\[
+R_n(x_n)=-\operatorname{CVaR}_{\beta_n}
+  \bigl(-\psi_n(x_n,\xi_n)\bigr),
+\]
+where \(\beta_n\) is the tail level. The minus signs turn P's upper-tail risk measure for losses into a lower-tail measure of satisfaction. The question was whether \(R_n\) could replace Q's expected valuation and whether P's estimator could then learn the new equilibrium.
+
+\section{What was done}
+
+The peers first compared the two algorithms at the level of their actual updates. They found that Q asks each agent to solve a sample-average proximal best-response problem for its own allocation and price message. Q's convergence proof assumes a mean-square error bound for that approximate response, geometrically growing batches, and a nonexpansive exact game map. P instead takes one projected-gradient step for a common-decision consensus problem. Its result concerns an empirical, smoothed cooperative objective. This ruled out a direct insertion of P's update into Q's loop.
+
+They next separated the economic mechanism from the learning method. If \(t_n(s)\) is agent \(n\)'s payment for message profile \(s\), it is fixed once the messages are fixed. Translation equivariance of CVaR then gives
+\[
+-\operatorname{CVaR}_{\beta_n}
+  \bigl(-\psi_n(x_n,\xi_n)+t_n(s)\bigr)
+=R_n(x_n)-t_n(s).
+\]
+Thus risk adjustment leaves the payment term in the same algebraic position as in Q.
+
+The peers then tested whether Q's assumptions survive the change of valuation. On the allocation set \([-1,1]\), they considered two equally likely outcomes,
+\[
+\psi(x,1)=-3,
+\qquad
+\psi(x,2)=3-2x^2.
+\]
+The expected valuation is
+\[
+V(x)=\mathbb{E}[\psi(x,\xi)]=-x^2,
+\]
+so it is strongly concave and satisfies \(V(0)=0\). At tail level \(1/2\), however,
+\[
+-\operatorname{CVaR}_{1/2}(-\psi(x,\xi))=-3,
+\]
+which is constant. The substitution can therefore remove the curvature used by Q to prove uniqueness.
+
+After that obstruction, the peers examined sufficient replacement assumptions and possible error bounds. They noted that uniform strong concavity of every sample function \(\psi_n(\mathord{\cdot},\xi_n)\) preserves strong concavity through the CVaR risk-envelope representation. They also noted that \(\psi_n(0,\xi_n)=0\) almost surely is sufficient for the risk-adjusted baseline \(R_n(0)=0\). For learning, they converted a hypothetical welfare gap into an allocation bound. If true risk-adjusted welfare is \(m\)-strongly concave, \(x^\star\) is its maximiser, and a learned allocation \(\widehat{x}\) loses at most \(D\) in welfare, then
+\[
+\lVert \widehat{x}-x^\star\rVert
+\leq \sqrt{\frac{2D}{m}}.
+\]
+P's error scale suggests \(D=O(\delta_{\max}+e_s/\delta_{\min})\), where \(\delta_{\max}\) and \(\delta_{\min}\) are the largest and smallest smoothing radii and \(e_s\) is the finite-sample CVaR error. This was recorded only as an allocation-error target, not as a theorem for Q's game.
+
+Finally, the work turned to the meaning of social risk. It distinguished
+\[
+\sum_n -\operatorname{CVaR}_{\alpha}(-\psi_n)
+\qquad\text{from}\qquad
+-\operatorname{CVaR}_{\alpha}\left(-\sum_n\psi_n\right),
+\]
+where \(\alpha\) is a common tail level. The first objective sums individual tail valuations and retains Q's separable form. The second measures the tail of total satisfaction and depends on the joint distribution across agents.
+
+\section{Results}
+
+Four conclusions are supported by the record. First, deterministic message-contingent payments commute with the chosen lower-tail valuation. The displayed translation formula proves that the payment enters risk-adjusted utility as \(R_n-t_n\), just as Q's payment enters expected utility.
+
+Second, Q's expectation-level assumptions do not suffice after the substitution. The two-outcome example proves that strong concavity of expected satisfaction can coexist with a constant lower-tail valuation. The peers' risk-envelope check supports uniform samplewise strong concavity as a sufficient repair. Their baseline check likewise supports almost-sure normalisation at zero as a sufficient condition for \(R_n(0)=0\).
+
+Third, P supplies estimator-error information but not Q's missing game-level convergence result. Q and P update different objects and rely on different assumptions. P's fixed smoothing and finite samples target a surrogate cooperative problem, while Q requires approximate proximal responses for distinct allocation-price strategies. Exact equilibrium implementation therefore does not follow from P's convergence theorem.
+
+Fourth, local marginal information does not determine aggregate CVaR. At tail level \(1/2\), the peers compared two equally likely loss couplings. In the first, the loss vectors are \((1,0)\) and \((0,1)\); in the second, they are \((1,1)\) and \((0,0)\). Each agent has the same Bernoulli marginal distribution in both cases, so every local CVaR observation is the same. Yet the CVaR of total loss is \(1\) in the first case and \(2\) in the second. Local oracles of the kind used by Q and P cannot therefore evaluate aggregate CVaR without joint-tail information.
+
+\section{What did not hold and how objections were treated}
+
+The proposed literal splice did not hold. P's one-step gradient estimate is not Q's approximate proximal best response, and neither paper proves convergence for the combined game. The peers settled this objection by direct comparison of the update rules and assumptions.
+
+The claim that Q's economic proof transfers unchanged also did not hold as stated. CVaR may be nonsmooth, and, more decisively, it may remove strong concavity altogether. The counterexample settled the claim that Q's existing primitives are enough. A generalised Karush--Kuhn--Tucker or variational-inequality proof under stronger assumptions remains plausible, but the peers did not complete it.
+
+Closeness to the correct allocation did not imply budget balance or individual rationality. Q proves balance at an exact equilibrium using a complementarity identity, and its payments depend on price messages as well as allocations. Moreover, Q's base price domain is unbounded. A bound on payment or budget error would need a capped or locally bounded price domain and a perturbation bound for the full message, not merely the allocation. No such bound was proved.
+
+The two social objectives were not merged. The sum of individual CVaRs may be the intended welfare measure when individual risk preferences are primary. Aggregate CVaR may instead be intended when the manager cares about system-wide tail loss. The ledger did not choose between them. The two-coupling example proves that aggregate values are not identifiable from marginal oracles, but it does not yet produce different optimal allocations. That stronger impossibility claim remains open.
+
+No outside source or novelty search appears in the ledger. The record therefore supports no novelty claim and gives no broader prior-art comparison.
+
+\section{Why the thread stopped}
+
+The verifier left the status at DRAFT because the note accurately established several non-obvious obstructions while keeping conjectures separate from proved claims. What is missing is a completed positive theorem: either an exact nonsmooth extension of Q for individual CVaR together with a game-specific learning proof, or an impossibility and information result for aggregate CVaR.
+
+The smallest restart step is to choose the social-risk objective. For the sum of individual CVaRs, the next step is to prove Q's mechanism result under uniform samplewise strong concavity using generalised optimality conditions. For aggregate CVaR, the next step is to strengthen the marginal-information example so that two decision-dependent models have the same local oracle laws but different optimal allocations.
+
+\enlargethispage{2\baselineskip}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

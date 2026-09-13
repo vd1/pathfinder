@@ -1,0 +1,81 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Credit under Churn: A Reading of Two Studies of Language-Model Agents}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+One paper studies language models acting as traders, while the other uses a large multimodal model to compare the contributions of agents in a changing team.  We looked for a common question about whether repeated comparisons remove error when the set of active agents changes.  The papers support an assumption gap: repetition estimates the referee model's own stable preference more precisely, but need not make that preference a true measure of contribution.  They do not show that team changes cause such a bias or that any bias harms learning.  The thread therefore paused because the required observations, model outputs, code, and training records were not available for the decisive test.
+\end{abstract}
+
+\section{Introduction}
+
+Struski and colleagues place language-model agents in a finite double auction and compare the resulting markets with the behaviour expected from human markets \cite{Q}.  The model families and market roles behave differently.  Many agents improve an offer by the smallest possible amount, opening offers can anchor later offers, and some agents wait too long to trade.  These local patterns accompany slow or absent convergence to equilibrium and lower allocative efficiency.  The paper's analysis of reasoning traces associates urgency and execution words with the decision to complete a trade, but it covers only one model and does not establish the cause of that decision.
+
+Wang and colleagues address credit assignment in embodied cooperative tasks \cite{P}.  Their MARS-RA method asks a large multimodal model, used as a referee, which of two active agents contributes more.  A Bradley--Terry model combines these pairwise judgements into scores, and a softmax of the scores supplies a potential used for reward shaping.  Their MARS-Bench tasks allow agents to leave when their batteries run out and to return after a random delay.  The paper reports that more comparisons can improve estimation and learning, but its results pool conditions rather than separating fixed teams from changing teams.
+
+The connexion pursued was methodological.  The trading study shows that small, systematic, context-dependent rules can be associated with a large collective effect.  The credit-assignment study relies on repeated comparisons to suppress noise while the active set can change.  The question was therefore whether repetition under team churn removes error, or instead concentrates a stable but context-dependent referee preference.  Here, ``churn'' means an agent entering or leaving the active set.
+
+\section{What was done}
+
+The peers first separated ordinary noisy judgements from a wrong comparison target.  They checked the convergence statement in P and its proof assumptions.  At time \(t\), P assumes that the referee has a stable latent preference vector \(\mathbf{c}_t^*\), meaning a list of underlying comparison scores for the agents active at that time.  With \(K\) pairwise comparisons and a connected comparison graph, the fitted vector \(\widehat{\mathbf{c}}_{t,K}\) approaches \(\mathbf{c}_t^*\) at a rate proportional to \(K^{-1/2}\).  The proof uses centred comparison errors, so repeated samples fluctuate around the assumed referee preference.
+
+The peers then compared that target with a contribution reference.  Let \(\mathbf{v}_t^*\) denote a vector of true contribution scores, interpreted in P through Shapley values under ideal conditions.  P makes the link conditional: it obtains the Shapley interpretation only if \(\mathbf{c}_t^*=\mathbf{v}_t^*\).  To express a systematic difference, the peers wrote
+\[
+\mathbf{c}_t^*=\mathbf{v}_t^*+\boldsymbol{\delta}_t,
+\]
+where \(\boldsymbol{\delta}_t\) is the referee's context-dependent bias at time \(t\).  They proposed measuring
+\[
+B(K)=\operatorname{E}\!\left[
+\left\lVert\widehat{\mathbf{c}}_{t,K}-\mathbf{v}_t^*\right\rVert_2
+\right],
+\]
+where \(B(K)\) is the expected Euclidean distance from the contribution reference after \(K\) comparisons.  Centred noise predicts decay of roughly \(K^{-1/2}\).  A non-zero \(\boldsymbol{\delta}_t\) can instead leave an error floor as \(K\) grows.
+
+Next, the peers inspected the changing-team mechanism itself.  P applies softmax over the current active set.  If incumbent agent \(i\) has score \(c_i\), the old softmax denominator is \(Z\), and entrant \(j\) has score \(c_j\), then the incumbent's normalized potential changes from
+\[
+\psi_i=\frac{e^{c_i}}{Z}
+\quad\text{to}\quad
+\psi_i^+=\frac{e^{c_i}}{Z+e^{c_j}}<\psi_i.
+\]
+Here \(\psi_i\) is the incumbent's potential before entry and \(\psi_i^+\) is its potential afterwards.  This establishes a roster-coupled normalization jump even when the incumbent's unnormalised score does not change.
+
+Finally, the peers refined the proposed test after checking P's deployed comparison interface.  The referee receives two egocentric images, the task and rules, identity mappings, and a contribution prompt.  P does not state that entry, exit, battery, deadline, or active-set information is supplied explicitly.  The primary test must therefore use the unmodified interface and group judgements by transition proximity and by cues that are actually visible or inferable.  Adding explicit churn information to fixed images would be a secondary susceptibility test, not evidence about the deployed system by itself.
+
+\section{Results}
+
+The principal result is an assumption-gap diagnosis.  Under P's assumptions, more comparisons reduce estimation error relative to the referee's latent preference.  They do not establish that this preference equals true contribution.  Repetition can therefore make a systematically wrong target more precise.  This result follows from P's convergence proposition and its separate, conditional Shapley statement, and all peers agreed on this reading after checking the proof and the stated interpretation \cite{P}.
+
+P does not close this gap experimentally.  It reports pooled referee agreement with instantaneous dense-reward labels and pooled effects of query count on task success.  It does not condition errors on entry or exit, active-set size, battery state, task phase, or churn intensity.  Its two additional environments omit changing agent counts.  The peers found no fixed-team versus changing-team comparison in the paper.
+
+Q gives a reason to look for structured error, but no evidence that P's referee has it.  Q finds model-, role-, and context-dependent trading behaviour and links local trading patterns with market-level inefficiency \cite{Q}.  Its urgency analysis is suggestive, non-causal, and limited to one acting model.  An acting trader under incentives is not the same as an external referee comparing two images.  The supported use of Q is thus as a diagnostic template: condition local errors on context, then measure their collective effect.
+
+The softmax calculation also holds as algebra.  Changing membership can change an incumbent's normalized potential while its score stays fixed.  The peer checks later narrowed the consequence.  The jump alone proves neither policy bias nor failure of potential-based reward shaping.  If roster membership belongs to an appropriate stationary state space, the shaping terms may still telescope.  What remains justified is a test of shaping variance, sample efficiency, and final task success.
+
+\section{What did not hold and the objections}
+
+The strongest proposed claim did not hold: the material does not show a churn-specific error floor, and it does not show harm to policy learning.  Q cannot supply that evidence because it studies action choices rather than comparative judging.  P cannot supply it because its empirical results are not conditioned on churn.
+
+Several objections further limit the claim.  Entry or exit may genuinely alter an agent's marginal contribution, so a changed ranking is not automatically an error.  Any counterfactual comparison must hold the physical scene and incumbent scores fixed, or recalculate the operational reference label.  P's instantaneous dense rewards provide an agreement label, but they are not established ground truth for long-term marginal or Shapley contribution.  Agreement with that label and final task success must therefore be reported separately.
+
+The normalization argument also required correction.  With discount factor \(\gamma<1\), where \(\gamma\) weights future reward, ordinary potential shaping already contributes a discount term even when the potential is unchanged.  A test must separate that term from the extra change caused by active-set normalization.  It must also avoid claiming a change in the optimal policy unless a proof for the precise open-team process or direct evidence supports that claim.
+
+Other matters remain unsettled.  The papers do not show whether the actual referee inputs reveal enough information about roster changes, battery state, or task phase for the proposed context effect to arise.  They also do not establish that repeated application-programming-interface outputs are independent.  No outside literature search was recorded, so the thread makes no novelty claim.
+
+\section{Why the thread stopped}
+
+The verifier first requested the matched-observation churn test.  In the next round, the peers confirmed that neither paper contains its result and that the workspace lacks the MARS-Bench implementation, matched observations, referee outputs, application-programming-interface access, and training checkpoints needed to run it.  The final status was therefore PAUSE: the hypothesis is clear, but the evidence needed to decide it is absent.
+
+The smallest restart step is to collect repeated judgements from P's unmodified interface for matched observations near and far from an entry or exit.  The physical scene and the operational dense-reward ordering should be held fixed where possible, and only churn cues present in the actual inputs should define the primary comparison.  Vary \(K\) and measure whether \(B(K)\) follows the predicted \(K^{-1/2}\) decay or reaches a churn-specific floor.  A downstream policy test is warranted only if such a floor appears; explicit entry or exit wording can be tested separately as an interface intervention.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

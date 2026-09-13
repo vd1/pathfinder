@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\title{Participation Boundaries in Rank-Based Reward Shaping}
+\author{Ada's research note}
+\date{12 September 2026}
+
+\begin{document}
+\maketitle
+
+\section{Changed question}
+
+The abstract-level question about strategic misreporting is not the right one. MARS-RA does not ask embodied agents to report contributions. It sends their egocentric observations to an external comparator. The sharper question is:
+
+\begin{quote}
+When does an active-coalition, rank-derived potential remain policy invariant as agents leave and re-enter, and when do lifecycle boundaries create payments that a policy can manipulate?
+\end{quote}
+
+This question uses a feature specific to P, dynamic participation, and the joint deviation criterion from Q.
+
+\section{Evidence from the papers}
+
+P defines comparisons by
+\[
+(M_t)_{i,j}=f_{\mathrm{LMM}}(o_t^i,o_t^j,\Theta)
+\]
+for active agents (P, lines 285--300), and estimates
+\(\hat{\boldsymbol c}_t\in\mathbb R^{|I^t|}\) (P, lines 313--329). Its potential is the softmax of this active-agent vector, while its shaping equation subtracts consecutive potentials (P, lines 332--349). MARS-Bench removes agents when action-depleted batteries reach zero and later respawns them (P, lines 400--406). The text does not specify an identity-preserving continuation of the potential through a change in \(I^t\).
+
+P's statistical proposition assumes a stable Bradley--Terry latent preference and bounds estimation error around it (P, lines 356--376). It does not show that this latent preference is true contribution. Its Shapley statement assumes that identification (P, lines 383--389).
+
+Q requires incentive compatibility against a joint report and action deviation, not merely accurate estimation (Q, lines 1566--1616). Its multi-agent revelation principle then reduces indirect mechanisms to truthful and obedient direct ones (Q, lines 1618--1642). Q's peer-score construction additionally needs belief separation and mechanism-contingent transfers (Q, lines 1651--1734), neither of which exists in P. Q also identifies dynamic mechanism design as unresolved (Q, lines 2452--2457).
+
+\section{Telescoping benchmark}
+
+Suppose each persistent identity \(i\) has a potential \(\Phi_i(x_t)\) on a fixed-dimensional augmented state \(x_t\), including its active status, and receives
+\[
+F_{i,t}=\gamma\Phi_i(x_{t+1})-\Phi_i(x_t).
+\]
+If its objective accounts for every transition through terminal time \(T\), then pathwise
+\[
+\sum_{t=0}^{T-1}\gamma^tF_{i,t}
+=-\Phi_i(x_0)+\gamma^T\Phi_i(x_T).
+\]
+With a fixed initial state and zero terminal potential, the shaping return is constant. Winning later comparisons cannot create an equilibrium payoff gain. Q therefore does not supply a missing truthfulness proof in this benchmark; incentive robustness is obtained vacuously from potential cancellation.
+
+\section{Boundary counterexample}
+
+Now suppose agent \(i\)'s learner stops accounting at its action-dependent exit time \(\tau_i\), before settling the transition to an inactive potential. Its credited shaping return is
+\[
+\sum_{t=0}^{\tau_i-1}\gamma^tF_{i,t}
+=-\Phi_i(x_0)+\gamma^{\tau_i}\Phi_i(x_{\tau_i}).
+\]
+The residual boundary payment depends on both the exit time and the comparator score at exit. Consider two actions at time zero with equal environmental payoff. Action \(a\) keeps the agent active; action \(e\) exhausts its battery and exits after producing an observation with \(\Phi_i(x_1)=h>0\). If accounting stops before the inactive-state settlement, \(e\) receives the extra term \(\gamma h\). Thus the shaped game can prefer exit although the environmental game is indifferent. Re-entry can create a second, sign-reversed boundary term.
+
+This counterexample does not establish that P's implementation truncates accounting in this way. It establishes that P's written active-vector formula is incomplete at the very transitions its benchmark emphasizes, and that different completions have different incentive consequences.
+
+\section{Candidate contribution}
+
+A paper could define participation-safe rank shaping by embedding active scores into persistent identities, specifying inactive potentials and entry/exit settlements, and proving:
+
+\begin{enumerate}
+\item full accounting yields policy and Nash invariance despite endogenous participation;
+\item omitted or inconsistent settlements induce explicit boundary rents;
+\item participation incentive compatibility requires blocking action deviations that alter exit, re-entry, or observable evidence, in the spirit of Q's honesty and obedience constraints.
+\end{enumerate}
+
+MARS-Bench supplies a direct experiment: vary settlement rules and comparator bias, then test whether learned policies time battery depletion or visually salient behavior near removal. The empirical comparison should measure team return, exit timing, and rank credit separately.
+
+\section{Unresolved points}
+
+The implementation details needed to know whether MARS-RA currently pads identities, trains through inactive periods, or truncates per-agent rollouts are absent from P. Q's peer-scoring theorem is not directly usable without elicited reports, known conditional beliefs, and large transfers. The credible theoretical bridge is therefore Q's deviation concept and concealment framing, not its peer-score formula itself.
+
+\end{document}

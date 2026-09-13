@@ -1,0 +1,72 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Consolidation of Pair Q and P}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q is a survey and framework for learning-augmented algorithms that requires a typed prediction object, a task-defined error, prediction-cost accounting, and a proof across each component interface. P is MARS-RA, which asks a large multimodal model for pairwise contribution comparisons, fits Bradley--Terry scores, and uses their softmax as a potential for reward shaping in an open multi-agent reinforcement-learning system.
+
+\section*{The connexion pursued}
+The peers tested whether Q turns P into a consistency--robustness result, with comparison error playing the role of prediction error. They concluded that this generic relabeling overstates the evidence: the useful connexion is Q's interface discipline, applied to P's chain from comparisons to rank aggregation, task credit, potential shaping, and finite-training performance (ledger entries 1--6, 13, and 28).
+
+\section*{What was found}
+First, P's estimation claim stops at a latent comparator score. If \(\widehat{\mathbf c}_t\) is the fitted score, \(\mathbf c_t^*\) the Bradley--Terry latent score, and \(\mathbf v_t^*\) task-grounded credit, then the relevant decomposition is
+\[
+ \inf_{a\in\mathbf R}
+ \frac{\lVert\widehat{\mathbf c}_t-(\mathbf v_t^*+a\mathbf 1)\rVert_2}{\sqrt n}
+ \leq
+ \inf_{a\in\mathbf R}
+ \frac{\lVert\mathbf c_t^*-(\mathbf v_t^*+a\mathbf 1)\rVert_2}{\sqrt n}
+ +\frac{\lVert\widehat{\mathbf c}_t-\mathbf c_t^*\rVert_2}{\sqrt n}.
+\]
+The infimum accounts for Bradley--Terry translation invariance. Repeated queries can reduce the second, sampling term, but not the first, semantic-bias term. P's Shapley statement removes that bias only by assuming \(\mathbf c_t^*=\mathbf v_t^*\), so it does not prove recovery of task credit (entries 4--6 and 20).
+
+Second, ordinary episodic potential-based reward shaping does not yield the desired comparison-quality theorem. For a consistently indexed potential,
+\[
+ \sum_{t=0}^{T-1}\gamma^t
+ \bigl(\gamma\psi_{t+1}-\psi_t\bigr)
+ =-\psi_0+\gamma^T\psi_T.
+\]
+With P's zero terminal potential and a fixed initial state, this is policy-independent. Thus comparison quality cannot change the exactly optimized policy through this term; P's empirical effects must instead concern finite-training dynamics (entries 7--9 and 20).
+
+Third, P's displayed open-team construction is not consistently typed. It fits \(\widehat{\mathbf c}_t\in\mathbf R^{|I^t|}\) while the active set \(I^t\) changes, then subtracts consecutive vector potentials and combines a vector potential with a scalar environmental reward. If a fixed population-indexed potential \(\Phi_t\in\mathbf R^n\) is used and every coordinate transition is paid, then
+\[
+ \sum_{t=0}^{T-1}\gamma^t
+ \bigl(\gamma\Phi_{t+1,i}-\Phi_{t,i}\bigr)
+ =-\Phi_{0,i}+\gamma^T\Phi_{T,i},
+\]
+which restores the usual invariance under suitable endpoint conditions. If shaping is paid only while agent \(i\) is active on \([\tau_i,\sigma_i)\), the residual is
+\[
+ -\gamma^{\tau_i}\Phi_{\tau_i,i}
+ +\gamma^{\sigma_i}\Phi_{\sigma_i,i},
+\]
+and it may be policy-dependent. The reward recipient, coordinate map, and entry/exit convention must therefore be stated before a robustness claim is meaningful (entries 22--23, 26, 29, 32, and 34).
+
+Finally, the notes identify a conditional cost frontier. If a repaired estimator gives credit error at most \(b+AK^{-1/2}\), a learner-specific finite-training sensitivity bound supplies a constant \(L\), and each query costs \(\kappa\), then the controlled part of the bound would be
+\[
+ Lb+LAK^{-1/2}+\kappa K,
+ \qquad
+ K^*=\left(\frac{LA}{2\kappa}\right)^{2/3}.
+\]
+This follows by differentiating with respect to positive continuous \(K\). It is a proposed target, not a theorem from Q or P, because the required sensitivity result is absent (entries 11, 18, 27--29, and 32).
+
+\section*{Objections and their status}
+The first objection is that P's Proposition 1 is not well posed under connectivity alone. With two agents and all observed outcomes favoring the first, the comparison graph is connected but the unregularized Bradley--Terry likelihood improves as the score gap diverges, so a finite maximum-likelihood estimate need not exist. A constrained or regularized estimator, a gauge, dynamic-range control, and graph-dependent curvature are needed; P's main and appendix rate normalizations are also inconsistent (entries 7, 10, 15, and 25). This objection was accepted but not repaired in the pair materials.
+
+The second objection is that exact PBRS makes an optimal-return consistency--robustness curve vacuous. It was resolved only conditionally: telescoping is valid after a common codomain and boundary payments are defined, whereas active-interval-only payments leave entry/exit terms (entries 23, 26, 29, 32, and 34). The third objection is that LMM calls need not be independent Bradley--Terry samples; systematic, correlated, cyclic, or misspecified comparisons do not average away. This remains unresolved and motivates separating semantic bias from sampling variation (entries 10, 12, and 15).
+
+\section*{Outside sources}
+No source outside Q and P was used. The ledger and peer notes derive their claims by auditing Q and P; they introduce no independent empirical data or external theorem beyond the PBRS and Bradley--Terry arguments worked out there.
+
+\section*{What remains open}
+The material is thin on positive theory. It does not provide a valid corrected Bradley--Terry rate, an open-team PBRS theorem with complete reward-allocation semantics, or a finite-training MAPPO regret, sample-complexity, or sensitivity bound. In particular, \(L\) and therefore the query frontier remain conjectural (entries 25, 28, and 32).
+
+\section*{Smallest next step}
+The smallest decisive step is to state one fixed-population, agent-indexed shaping rule that specifies scalar-to-agent allocation and entry/exit payments, then prove by explicit telescoping whether it preserves policy ordering. This settles the pair-specific interface question without requiring the harder MAPPO analysis; if invariance holds, the next theorem must target finite-training performance rather than optimal return (entries 28, 32, and 34).
+
+\end{document}

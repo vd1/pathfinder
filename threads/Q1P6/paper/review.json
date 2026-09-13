@@ -66,5 +66,88 @@
     "fix": "Restrict the conclusion explicitly to coordinate-sum scalarisation and remove the broader assertion excluding comparison-dependent scalar team potentials."
    }
   ]
+ },
+ {
+  "round": 4,
+  "at": "2026-09-13T06:33:33Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: The read operation timed out"
+  ],
+  "paper_sha256": "5ff018ff1614c3e137568635d85cf04a11114fc01910505a55b6dc6bfa854668",
+  "decision": "AMEND",
+  "summary": "The paper is carefully scoped and attributes the telescoping, time-varying-potential and terminal-potential steps to Lu et al., Devlin and Kudenko, and Grze\u015b as the search record supports; its main theorem, the triangle-inequality split and the softmax signal bound are correct, and no reference looks invented. However, the active-only boundary display is inconsistent with the paper's own embedding. Under that embedding the exit term vanishes when the exit transition is paid, which undercuts the entry-and-exit and Grze\u015b statements and leaves the conclusion contradicting Section 4. The other corrections are presentational: pipeline-internal wording, undefined notation, one sentence stronger than the ledger, and bibliography rendering and in-text handling of the two uncatalogued prior works.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Section 4 (The active-only boundary), eq. (boundary) and the sentence after it; abstract ('entry and exit boundary terms remain'); Introduction para 3 ('show exactly where')",
+    "issue": "Under the embedding (1), an agent inactive at b has \u03a6_b^i = 0, and \u03a6_T = 0. If the exit transition b\u22121\u2192b is paid, the displayed exit term \u03b3^b \u03a6_b^i is therefore identically zero, and only the entry term \u2212\u03b3^a \u03a6_a^i (a > 0) survives. A nonzero exit term arises only if that transition is not paid; the sum then stops at b\u22122 and the term is \u03b3^(b\u22121) \u03a6_(b\u22121)^i. The clause 'adjusted according to ownership of the exit transition' does not define this. As written, the display never exhibits the exit term on which the abstract's claim and the Grze\u015b comparison rest.",
+    "fix": "Replace the display with the two ownership conventions and their sums: transition t paid iff i \u2208 I_t, and transition t paid iff i \u2208 I_t \u2229 I_(t+1). State that the entry term appears for a > 0 under both conventions, while the exit term appears only when the exit transition is unpaid. Restate the abstract, the introduction and the Grze\u015b sentence to match. Do not add a transfer design."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Conclusion ('entry and exit boundary terms of the kind already known for episodic terminal states'); Related work ('the main step of our boundary diagnosis is also published')",
+    "issue": "Section 4 says the entry term has no counterpart in Grze\u015b's analysis, but the conclusion calls both terms 'of the kind already known'. Given F1, the term that survives under the paid-exit convention is the entry term. The related-work sentence therefore misstates how much of the diagnosis prior work covers.",
+    "fix": "Say that only the exit term, and only when the exit transition is unpaid, corresponds to Grze\u015b's nonzero terminal potential. Align the conclusion and related-work sentences with Section 4."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Section 3, first paragraph ('This qualification is necessary for a standard stochastic-game equilibrium interpretation')",
+    "issue": "Ledger entry 12, the note and the paper's own Limitations say only that an equilibrium interpretation 'may require' state augmentation. 'Necessary' strengthens that claim.",
+    "fix": "Replace 'is necessary' with 'may be required', matching the Limitations section."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "where": "Introduction, para 2 ('comparison accuracy alone cannot control finite-training return without a stability, regret, or convergence contract')",
+    "issue": "This is stated as an impossibility, but the paper gives no formal statement or construction. Section 5 supports only the weaker claim that the local bound does not bound MAPPO's return and that neither source supplies a learner premise.",
+    "fix": "Rephrase as 'does not by itself yield a finite-training return bound', or label it explicitly as an informal observation, consistent with Section 5."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "where": "Section 2 ('the supplied checks report'); Section 4 ('The inputs do not specify', 'The inputs examine only one such potential', 'its wording in the supporting notes'); Interpretation ('the inputs do not examine')",
+    "issue": "The paper refers to material readers cannot see: checks, inputs and supporting notes. The estimator objections in Section 2 are attributed to these checks rather than located in P, so a reader cannot verify them without the ledger.",
+    "fix": "State the estimator objections as the paper's own reading of P and point to locations. Proposition 1 normalises by 1/\u221an with rate \u221a(n log n / K); the appendix restatement drops the normalisation; the final assembly obtains \u221a(log n / K). The displayed estimator is unregularised, but the sketch invokes regularised MLE, and Step 2 uses an approximate Taylor equality. Replace 'the inputs' with first-person scope statements. Delete the sentence about the notes' wording but keep the scope restriction."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "where": "Section 3 (definitions and Theorem 1); Section 5 (eq. local)",
+    "issue": "Several symbols are used without definition: T, including whether it is a possibly action-dependent termination time; \u03b3; \u03c1; \u03c0; E_\u03c0; and softmax_(I_t). The theorem clause 'on a common pathwise realisation' is unclear, because different policies induce different trajectories. The 1/2-Lipschitz constant of softmax is asserted without justification.",
+    "fix": "Define T as the (possibly action-dependent) termination time with \u03a6_T = 0 at termination. Define \u03b3 \u2208 [0,1], \u03c1 as the shaping weight, \u03c0 as the joint policy, and softmax_(I_t) as softmax over the coordinates in I_t. Replace the pathwise clause with 'for every realisation of the comparison outputs the discounted shaping sum equals \u2212\u03a6_0^i'. Justify the constant in one line: the softmax Jacobian J = diag(p) \u2212 p p\u1d40 satisfies v\u1d40Jv = Var_p(v) \u2264 1/2 for \u2016v\u2016\u2082 = 1."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "where": "Section 2, para 2 ('The identification c_t^* = v_t^* is an additional premise'); Section 5 (definition of \u03b4_t)",
+    "issue": "The wording suggests P leaves the premise implicit. In fact P states c_t^* = v_t^* as the explicit hypothesis of its Proposition 2 and says the result is an interpretive lens, not recovery of Shapley values in practice. The paper also never says that v_t^* is P's Shapley-value target.",
+    "fix": "Define v_t^* as the Shapley-value vector of P, up to translation. Note that P states the identification as an explicit hypothesis and frames Proposition 2 as interpretive. Keep the point that repeated queries do not remove semantic bias."
+   },
+   {
+    "id": "F8",
+    "severity": "minor",
+    "where": "Interpretation, first sentence ('makes objective-level robustness prediction-independent')",
+    "issue": "In Q, robustness is a prediction-independent worst-case performance bound. The result here is an invariance of payoff differences. Ledger 7 calls it 'objective-level policy invariance', and ledger 9 rejects relabelling P's results in Q's vocabulary.",
+    "fix": "Replace 'objective-level robustness' with 'objective-level invariance'."
+   },
+   {
+    "id": "F9",
+    "severity": "minor",
+    "where": "Introduction para 4 (Grze\u015b mentioned without year or venue); Related work paragraphs 1 and 2",
+    "issue": "Two prior works that carry the prior-work delimitation are named only by author, venue and year, without titles, bibliography entries or the locations of the copies read. 'Similar contemporaneous work by Devlin and Kudenko', reported by Lu et al., is a different paper from the AAMAS 2012 dynamic-shaping paper discussed next and can be confused with it. The sentence about DOI landing pages describes pipeline process, not the literature.",
+    "fix": "Give authors, full titles and venues in the text, as recorded in search.md: Devlin and Kudenko, 'Dynamic Potential-Based Reward Shaping', AAMAS 2012, pp. 433 to 440, read as White Rose eprint 75121; Grze\u015b, 'Reward Shaping in Episodic Reinforcement Learning', AAMAS 2017, read as the University of Kent author PDF. Add year and venue at the first mention of Grze\u015b. Distinguish Lu et al.'s mention from the 2012 paper. Keep the bibliography caveat to one sentence in Limitations."
+   },
+   {
+    "id": "F10",
+    "severity": "minor",
+    "where": "references.bib; \\bibliographystyle{plain}; reference checks",
+    "issue": "The plain style does not print doi, url or eprint fields, so Lu et al.'s DOI and URL and P's DOI do not appear in the PDF. P's entry is typed as an arXiv preprint but carries an ACL Anthology proceedings DOI, mixing two versions. Lu et al.'s arXiv identifier is duplicated in note and eprint. The pipeline's reference check for this build did not run (arXiv lookup timed out), so metadata consistency rests only on the 12 and 13 September verification recorded in search.md. That record does support all three entries.",
+    "fix": "Switch to a style that prints DOI and URL (for example plainnat or plainurl) and confirm the identifiers appear in the .bbl. Cite P either as the arXiv preprint or as the ACL 2026 long paper with its DOI, not both. Remove the duplicate note field. Rerun the reference check before sending."
+   }
+  ]
  }
 ]

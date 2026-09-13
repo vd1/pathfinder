@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-12T16:10:39Z",
+  "note_sha256": "183f91bdf6d4a595963f5a416ea6f86d2d96675187242dda2bd387dec9465b88",
+  "decision": "ITERATE",
+  "reason": "The note accurately reflects the ledger: P\u2019s \\(K^{-1/2}\\) result converges to the LMM\u2019s latent preference, while Q only motivates, rather than demonstrates, structured comparator bias. The proposed connexion remains promising but lacks evidence that churn creates a comparator error floor or affects learning.",
+  "action": "Run the matched-observation churn test described in the note, holding the scene and dense-reward ordering fixed while varying entry/exit context and query count \\(K\\), and test whether \\(B(K)\\) decays as \\(K^{-1/2}\\) or plateaus."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-12T16:13:46Z",
+  "note_sha256": "bfab465858b9eac1f1726cd71aa93bdb57bb351f1f6e738b2d46a0a6139dbb0e",
+  "decision": "PAUSE",
+  "reason": "The note accurately presents a promising hypothesis, not a supported result: Q does not demonstrate bias in P's comparator, and P supplies no churn-conditioned comparison or downstream test. A previous ITERATE requested the decisive test, but the peers could not run it because they lack the MARS-Bench implementation, matched observations, LMM outputs or API access, and training checkpoints.",
+  "action": null
+ }
+]

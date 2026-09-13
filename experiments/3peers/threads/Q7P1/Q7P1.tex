@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q and P: Risk-Aware Implementation and Learning}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q designs quadratic payments for a stochastic resource-allocation game and learns its Nash equilibrium through sample-average proximal best responses and a Krasnoselskij iteration. P studies distributed minimization of local CVaR losses by consensus and one-point projected-gradient updates, with smoothing and finite-sample error.
+
+\section*{The connexion pursued}
+The proposed connexion was to replace Q's expected valuation by the lower-tail risk-adjusted satisfaction
+\[
+R_n(x_n)=-\operatorname{CVaR}_{\beta_n}(-\psi_n(x_n,\xi_n))
+\]
+and to use P's zeroth-order CVaR estimator to learn the resulting mechanism. The ledger ultimately rejected a literal splice and split the question into an exact mechanism layer, an approximate learning layer, and a prior choice of social-risk objective (entries 14, 19, 23, 32, and 37).
+
+\section*{What was found}
+The sign above is required because P applies upper-tail CVaR to losses. Since Q's payment \(t_n(s)\) is deterministic once messages are fixed, translation equivariance gives
+\[
+-\operatorname{CVaR}_{\beta_n}(-\psi_n(x_n,\xi_n)+t_n(s))
+=R_n(x_n)-t_n(s).
+\]
+Thus the payment enters risk-adjusted utility in the same algebraic way as before (entries 8 and 22).
+
+Q's expectation-level assumptions do not ensure the curvature needed after this substitution. On \([-1,1]\), take equiprobable outcomes
+\[
+\psi(x,1)=-3,\qquad \psi(x,2)=3-2x^2.
+\]
+Then
+\[
+V(x)=\mathrm{E}[\psi(x,\xi)]=-x^2,
+\qquad
+-\operatorname{CVaR}_{1/2}(-\psi(x,\xi))=-3.
+\]
+The expected valuation is strongly concave and normalized at zero, while its lower-tail counterpart is constant. Hence Q's curvature-based uniqueness argument cannot be transferred from its stated primitives (entries 16, 21, and 28). Uniform samplewise strong concavity is recorded as a sufficient replacement through the CVaR risk-envelope argument, and almost-sure normalization \(\psi_n(0,\xi_n)=0\) is sufficient for \(R_n(0)=0\) and the intended participation baseline (entries 8, 10, and 22). A nonsmooth generalized-KKT or variational-inequality proof for Q's precise mechanism is plausible, but was not completed (entries 7, 14, and 23).
+
+The algorithms also differ at their basic objects. Q computes an approximate proximal best response for each distinct allocation-price message and assumes a mean-square oracle error, geometric batch growth, and a nonexpansive exact game map. P takes one projected-gradient step for agents holding copies of a common decision and converges, for fixed smoothing and finite samples, to an empirical-smoothed cooperative surrogate rather than Q's exact game equilibrium (entries 1, 3, 5, and 12). P therefore supplies estimator-error information, not Q's missing game-level convergence theorem.
+
+If true risk-adjusted welfare is \(m\)-strongly concave and a learned allocation has welfare loss at most \(D\), strong concavity yields
+\[
+\lVert \widehat x-x^\star\rVert
+\leq \sqrt{\frac{2D}{m}}.
+\]
+With P's reported scale \(D=O(\delta_{\max}+e_s/\delta_{\min})\), this suggests
+\[
+\lVert \widehat x-x^\star\rVert
+=O\left(\sqrt{\frac{\delta_{\max}+e_s/\delta_{\min}}{m}}\right).
+\]
+This is only an allocation bound. Payments depend on prices, and Q's base price domain is unbounded; payment or budget-residual bounds require a capped or locally bounded price domain and a full-message perturbation estimate (entries 18 and 25).
+
+Finally, two welfare targets must not be conflated:
+\[
+\sum_n-\operatorname{CVaR}_{\alpha}(-\psi_n)
+\qquad\text{and}\qquad
+-\operatorname{CVaR}_{\alpha}\left(-\sum_n\psi_n\right).
+\]
+Q's separable structure can address the first after suitable extensions. The second depends on the joint law and generally differs by a diversification wedge (entries 29 and 30). Ledger entry 34 gives the supporting information example: at (alpha=1/2), loss vectors ((1,0),(0,1)) and ((1,1),(0,0)), each equiprobable, have identical Bernoulli marginals but aggregate CVaRs (1) and (2). Local marginal oracles therefore cannot identify aggregate CVaR. As entry 36 objects, this example establishes value non-identifiability, not yet different optimal allocations.
+
+\section*{Objections and their status}
+The first objection was that smoothness and strong concavity do not automatically survive CVaR. The counterexample resolved the stronger transfer claim, while leaving open an extension under added samplewise curvature or direct strong monotonicity assumptions (entries 7, 16, and 28). The second objection was that proximity to a true equilibrium does not itself preserve budget balance: Q uses an equilibrium complementarity identity. Exact balance may hold at an exact surrogate equilibrium if Q's mechanism theorem applies to that surrogate, but P's iterates establish neither condition (entries 11, 13, and 17). The third objection concerned the social objective. The ledger resolved that the sum of individual CVaRs and aggregate CVaR are distinct normative choices, but did not choose between them (entries 30 and 36).
+
+\section*{Sources outside Q and P}
+No outside source or novelty search was used. The ledger expressly declines a novelty claim (entries 14, 32, and 37). All derivations here come from Q, P, the ledger, and the two peer notes; the material is therefore thin on prior art and on completed new proofs.
+
+\section*{What remains open}
+Open items are a rigorous nonsmooth generalized-KKT or variational-inequality extension of Q, a game-specific zeroth-order method controlling allocation and price messages, vanishing smoothing and sampling schedules, and explicit welfare, participation, and budget-residual constants (entries 14, 23, and 25). For aggregate risk, the record also lacks a decision-dependent indistinguishability example with different optimizers, a minimal joint-tail information model, and a payment rule that prices the tail externality (entries 35--37).
+
+\section*{Smallest next step}
+Fix the normative target first. If it is aggregate CVaR, the smallest settling step is to strengthen entry 34 into a decision-dependent pair of models with identical local oracle laws but different aggregate-CVaR optimal allocations; that would prove that Q and P's local information is insufficient for universal implementation. If the target is instead the sum of individual CVaRs, the smallest step is to prove the generalized-KKT extension for Q under uniform samplewise strong concavity before designing a learning algorithm.
+
+\end{document}
