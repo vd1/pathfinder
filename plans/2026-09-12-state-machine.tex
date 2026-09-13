@@ -11,15 +11,40 @@
 \newcommand{\file}[1]{\texttt{#1}}
 \title{Pathfinder as a state machine}
 \author{Pathfinder, \file{github.com/vd1/pathfinder}}
-\date{12 September 2026}
+\date{12 September 2026, revised 13 September}
 \begin{document}
 \maketitle
 
-\noindent One pair of papers is one machine. The campaign is a set of these machines plus a
-scheduler with a purse. Everything below is what the code does; the builder prompt points here
-for the shape to re-implement.
+\section*{What, why, how}
 
-\section{Global state of a pair}
+\paragraph{What.} Pathfinder takes two corpora of papers, Q and P, and looks for pairs (q, p)
+with something publishable between them: a result that neither paper states and that follows
+from putting the two together. For every pair it keeps, it produces a record in increasing order
+of readability and decreasing dependence on the process that made it: the \emph{thread} (a
+ledger of everything the agents said to each other), the \emph{note} (what the agents agreed and
+a judge accepted), the \emph{readable note} (the same, rewritten for a reader who never saw the
+ledger), and, when the judge said the result would carry a paper, the \emph{paper} (written with
+a literature search and reviewed).
+
+\paragraph{Why a state machine.} The work is done by model calls that cost money, take minutes,
+fail, and disagree. Writing the pipeline as a machine with explicit states, transitions and
+budgets is what makes it re-implementable by a colleague on another corpus, auditable after the
+fact (every decision traces to a file and a receipt), and safe to interrupt: a stop, a crash or an
+exhausted budget leaves the machine in a named state from which it resumes, and a human can see
+at a glance where each pair stands and what would move it.
+
+\paragraph{How.} One research thread, the work on one pair of papers, is one instance of the
+machine described below. The campaign is a set of these instances plus a scheduler with a purse.
+Three kinds of actor appear: \emph{agents}, model calls with a prompt and a bounded view of the
+state, of which the two \emph{judges} (the verifier of a note, the reviewer of a paper) make the
+only decisions; the \emph{pipeline}, code that builds, checks, records and moves the position;
+and the \emph{owner}, whoever types in the terminal, a human or a delegated session, who raises
+budgets, edits by hand and settles what is paused. The agents of one thread share one append-only
+ledger; that ledger, the files beside it and a position record are the whole state of the
+thread. Everything below is what the code does; the builder prompt points here for the shape to
+re-implement.
+
+\section{Global state of a thread}
 
 \paragraph{Position.} \file{stage}, where the machine is; \file{status}, one of \file{running},
 \file{stopped}, \file{BLOCKED} or a terminal word; the counters \file{round} (research rounds
@@ -31,19 +56,39 @@ used), \file{repairs} (note repairs used), the paper's \file{round} and the edit
   \item \file{inputs/}: the two papers, flattened \TeX{} or PDF text, and their metadata.
   \item \file{ledger.jsonl}: append-only attributed entries of kind idea, finding, objection,
     correction, intention, ready or review; the peers' shared memory and the verifier's evidence.
-  \item \file{ada/}, \file{emmy/}, \ldots: each peer's derivations, scripts and checks.
+  \item one directory per peer (\file{ada/}, \file{emmy/}, \ldots): that peer's derivations,
+    scripts and checks. The peers are a campaign setting (\file{peers}); two by default, three
+    were tested.
   \item \file{<pair>.tex}: the consolidated note; \file{<pair>.verdict.json}: every verdict with
     the digest of the note it judged.
+  \item \file{paper/}: the paper, its bibliography, its search record, the pipeline's checks per
+    round, and every review with the digest of the paper it judged.
   \item \file{edited/}: the readable note (\file{note.tex}, \file{references.bib},
     \file{note.pdf}).
-  \item \file{paper/}: the paper, its search record and every review with the digest of the paper
-    it judged.
-  \item \file{status.json}, \file{paper/paper.json}, \file{edited/edit.json}: the position.
+  \item \file{status.json}, \file{paper/paper.json}, \file{edited/edit.json}: the position of
+    each stage; \file{lock}: the pid of the runner working the thread.
 \end{itemize}
 
-\paragraph{Campaign level.} \file{scan.jsonl}, \file{shortlist.json}, \file{receipts.jsonl}
-(the only spend figure), the markers \file{stop.json} and \file{health.json}, and one pid lock
-per pair.
+\paragraph{Campaign level.} \file{fetch.json} (the two queries and how far each side has been
+paged), \file{Q.jsonl} and \file{P.jsonl}, \file{scan.jsonl}, \file{shortlist.json},
+\file{receipts.jsonl} (the only spend figure), and the markers \file{stop.json} and
+\file{health.json}.
+
+\section{The ledger}
+
+The ledger is the one piece of state several agents write. Its rules are what make the peers a
+group rather than a set of monologues:
+\begin{itemize}\setlength{\itemsep}{1pt}
+  \item Entries are appended through a helper, never edited; each carries a sequence number, an
+    actor, a kind and a time. Peers read the whole ledger before every call.
+  \item \emph{ready} is a claim about the ledger as it stands: it is void as soon as anyone
+    adds a substantive entry (anything but ready or review) after it. A peer whose ready still
+    stands is not called again in that round; it waits for its partners.
+  \item The round ends when every peer's ready stands, or when the round's allowance is out.
+  \item The verifier writes its verdict into the ledger as a review entry, so the next round's
+    peers, and the consolidator on a repair, read the judge's reasons where they read everything
+    else.
+\end{itemize}
 
 \section{States}
 
@@ -85,70 +130,147 @@ per pair.
   state/.style={draw, rounded corners=2pt, minimum height=6.5mm, inner xsep=6pt, fill=gray!8},
   term/.style={state, fill=green!12},
   pause/.style={state, fill=orange!14},
+  blocked/.style={state, fill=red!10},
   edge/.style={-{Stealth[length=2mm]}, semithick},
   lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt}]
   \node[term] (draft) at (0.8,0) {\st{draft}};
-  \node[state] (author) at (3.5,0) {\st{author}};
-  \node[state] (review) at (7.6,0) {\st{review}};
-  \node[term] (acc) at (11.0,0) {\st{accepted}};
-  \node[pause] (poa) at (7.6,-2.2) {\st{pause-on-amend}};
-  \node[state] (edit) at (14.2,0) {\st{edit}};
+  \node[state] (author) at (3.6,0) {\st{author}};
+  \node[state] (review) at (7.8,0) {\st{review}};
+  \node[term] (acc) at (12.6,0) {\st{accepted}};
+  \node[pause] (poa) at (7.8,-2.4) {\st{pause-on-amend}};
   \draw[edge] (draft) -- node[lab, above] {paper stage} (author);
   \draw[edge] (author) -- node[lab, above] {built and checked} (review);
-  \draw[edge] (review) -- node[lab, above] {\st{accept}} (acc);
+  \draw[edge] (review) -- node[lab, above] {\st{accept}, minors allowed} (acc);
   \draw[edge] (review) to[out=140, in=40, looseness=0.9] node[lab, above] {\st{amend}, rounds left} (author);
-  \draw[edge] (review) -- node[lab, right] {\st{amend}, rounds out} (poa);
-  \draw[edge] (poa) to[out=180, in=270] node[lab, left] {owner edits, \file{--review}} (review);
-  \node[font=\scriptsize, text width=34mm, align=center, below=2mm of edit] {every terminal thread, whatever its ending, then goes through the editor once};
+  \draw[edge] (review.south west) -- node[lab, left] {\st{amend}, rounds out} (poa.north west);
+  \draw[edge] (poa.north east) -- node[lab, right] {owner edits by hand, \file{--review}} (review.south east);
+  \draw[edge] (poa.east) -- ++(1.6,0) node[lab, right, text width=36mm, align=left] {or the owner raises \file{paper\_rounds} and reruns \file{paper}};
+\end{tikzpicture}
+
+\medskip
+
+\begin{tikzpicture}[x=1cm, y=1cm,
+  every node/.style={font=\footnotesize},
+  state/.style={draw, rounded corners=2pt, minimum height=6.5mm, inner xsep=6pt, fill=gray!8},
+  term/.style={state, fill=green!12},
+  blocked/.style={state, fill=red!10},
+  edge/.style={-{Stealth[length=2mm]}, semithick},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt}]
+  \node[state, text width=30mm, align=center] (any) at (1.6,0) {any terminal word of the thread};
+  \node[state] (edit) at (6.4,0) {\st{edit}};
+  \node[term] (done) at (10.4,0) {\st{done}};
+  \node[blocked] (blk) at (10.4,-1.8) {\st{blocked}};
+  \draw[edge] (any) -- node[lab, above] {editor stage} (edit);
+  \draw[edge] (edit) -- node[lab, above] {built, references clean} (done);
+  \draw[edge] (edit.south east) -- node[lab, below, sloped] {two attempts failed} (blk.west);
 \end{tikzpicture}
 \end{center}
 
 \noindent Terminal words of the research thread: \st{draft}, \st{pause}, \st{pause-on-iterate},
-\st{pause-on-revise}. Terminal words of the paper: \st{accepted}, \st{pause-on-amend}. Every
-\st{pause-on-x} means ``the loop named X ran out of its budget with the judge still asking''; a
-human can raise the budget and resume from the recorded stage. The editor runs once for every terminal
-thread, whatever its ending. \file{stopped} and \file{BLOCKED} are not endings:
-\file{stopped} is a drain checkpoint (a stop marker, a transport failure, a kill) and resumes at
-the recorded stage; \file{BLOCKED} is an unreadable decision or a missing output and waits for
-\file{reconcile}.
+\st{pause-on-revise}. Terminal words of the paper: \st{accepted}, \st{pause-on-amend}. Endings
+of the editor: \st{done}, \st{blocked}. Every \st{pause-on-x} means ``the loop named X ran out of
+its budget with the judge still asking''; the owner can raise the budget and resume from the
+recorded stage, or, for the paper, edit it by hand and ask for one more review. The editor runs
+once for every terminal thread, whatever its ending, so that even a paused pair leaves a readable
+account.
+
+\file{stopped} and \file{BLOCKED} are not endings. \file{stopped} is a drain checkpoint (a stop
+marker, a transport failure, a kill) and resumes at the recorded stage on the next start.
+\file{BLOCKED} is an unreadable decision or a missing output: the reply is saved beside the
+position (for the verifier, \file{verify-unreadable.txt}), the runner never re-admits the pair,
+and \file{reconcile} names the one safe action.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+stage & decisions of its judge & endings \\
+\midrule
+research thread & \st{draft}, \st{revise}, \st{iterate}, \st{pause} & \st{draft}, \st{pause}, \st{pause-on-iterate}, \st{pause-on-revise} \\
+paper & \st{accept}, \st{amend} & \st{accepted}, \st{pause-on-amend}, \file{blocked} \\
+editor & none & \st{done}, \file{blocked} \\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \section{Transitions}
 
-Each transition is one or more model calls. ``Sees'' is the part of the global state the agent
-can read; ``writes'' is what it may change. Nothing else is visible or writable, which is what
-makes the record auditable.
+Each transition is one or more model calls, or a mechanical step by the pipeline or the owner.
+``Sees'' is the part of the global state the agent can read; ``writes'' is what it may change.
+Nothing else is visible or writable, which is what makes the record auditable.
 
-\begin{small}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{19mm} >{\raggedright\arraybackslash}p{27mm} X X >{\raggedright\arraybackslash}p{34mm}@{}}
+\subsection*{Research thread}
+\begin{footnotesize}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{24mm} >{\raggedright\arraybackslash}p{26mm} X X >{\raggedright\arraybackslash}p{32mm}@{}}
 \toprule
 from $\to$ to & agent, prompt, tools & sees & writes & budget \\
 \midrule
 corpus $\to$ \st{scanned} & judge, \file{scan.md}, no tools & Q and P titles and abstracts, or full text & one row of \file{scan.jsonl} & one call, retried once if unparseable \\
-\st{scanned} $\to$ \st{new} & none (\file{select}) & all scan rows & \file{shortlist.json} & none \\
+\st{scanned} $\to$ \st{new} & none (\file{select}) & all scan rows & \file{shortlist.json}: the top cut, or every pair at or above a threshold; started pairs are kept & none \\
 \st{new} $\to$ \st{peers} & none (runner) & shortlist, statuses, locks, receipts, markers & lock, \file{status.json} & seats; guard: spend plus in-flight estimate under \file{budget\_usd}, else the stop marker \\
 \st{peers} $\to$ \st{peers} & every peer concurrently, \file{peer.md}, tools and web search & inputs, ledger, own and partners' directories, the scan's connexion and scores, this call's allowance & ledger entries through the helper, own directory & \file{peer\_calls} per peer and \file{peer\_seconds} shared, per round; a peer whose ready stands waits instead of calling \\
 \st{peers} $\to$ \st{consolidate} & none & ledger readiness & \file{status.json} & when every peer is ready or the allowance is out; an empty ledger goes to \st{pause} \\
-\st{consolidate} $\to$ \st{verify} & first peer, \file{consolidate.md}, tools & ledger, all directories, the prior note and the verifier's review if any & \file{<pair>.tex} & \file{consolidate\_seconds}; rerun once unless the note exists \\
-\st{verify} $\to$ next & verifier, \file{verify.md}, no tools & inputs, ledger, note, all inline & verdict file, a review entry in the ledger, \file{status.json} & \file{verify\_seconds}; rerun once on an empty reply \\
+\st{consolidate} $\to$ \st{verify} & first peer, \file{consolidate.md}, tools & ledger, all directories, the prior note; on a repair also the verifier's corrections & \file{<pair>.tex}; after an \st{iterate} it appends to the prior note, on a repair it rewrites & \file{consolidate\_seconds}; rerun once unless the note exists \\
+\st{verify} $\to$ next & verifier, \file{verify.md}, no tools & inputs, ledger, note, all inline & verdict file with the note's digest, a review entry in the ledger, \file{status.json} & \file{verify\_seconds}; rerun once on an empty reply; an unreadable verdict is saved and the pair is \file{BLOCKED} \\
 \st{verify} $\to$ \st{peers} & verdict \st{iterate} & & \file{round} $+1$ & \file{rounds} (4); at the cap \st{pause-on-iterate} \\
 \st{verify} $\to$ \st{consolidate} & verdict \st{revise} & the consolidator also sees the corrections & \file{repairs} $+1$ & \file{repairs} (1); at the cap \st{pause-on-revise} \\
-\st{draft} $\to$ \st{review} & author, \file{author.md}, tools and web search & everything in the thread, the web, the previous review's findings if any & \file{paper/} & \file{paper\_seconds} per call \\
-\st{review} $\to$ next & reviewer, \file{review.md}, no tools & paper, bib, the pipeline's reference checks, the search record, note, ledger, inputs, all inline & \file{paper/review.json}, \file{paper.json} & \file{review\_seconds}; \file{paper\_rounds} (3); at the cap \st{pause-on-amend}; \st{accept} may carry minor findings \\
-\st{pause-on-amend} $\to$ \st{review} & the owner edits the paper, then \file{paper PAIR --review} & the paper as it stands & one more review, counted as the next round & none: an owner round is outside the budget \\
-terminal $\to$ \st{edit} & editor, \file{editor.md}, tools, no search & inputs and metadata, note, verdicts, ledger, all directories, the build and reference checks on retry & \file{edited/} & \file{edit\_seconds}; two attempts, then \file{blocked} \\
 \bottomrule
 \end{tabularx}
-\end{small}
+\end{footnotesize}
+
+\subsection*{Paper, owner and editor}
+\begin{footnotesize}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{24mm} >{\raggedright\arraybackslash}p{26mm} X X >{\raggedright\arraybackslash}p{32mm}@{}}
+\toprule
+from $\to$ to & agent, prompt, tools & sees & writes & budget \\
+\midrule
+\st{draft} $\to$ \st{review} & author, \file{author.md}, tools and web search & everything in the thread, the web, the previous review's findings if any & \file{paper/}: \file{paper.tex}, \file{references.bib}, \file{search.md} & \file{paper\_seconds} per call \\
+\st{review} $\to$ next & reviewer, \file{review.md}, no tools & paper, bib, the pipeline's build and reference checks, the search record, note, ledger, inputs, all inline & \file{paper/review.json} with the paper's digest, \file{paper.json} & \file{review\_seconds}; \file{paper\_rounds} (3); at the cap \st{pause-on-amend}. \st{accept} may carry minor findings; \st{amend} only for a finding that changes a claim, its scope, attribution or correctness \\
+\st{pause-on-amend} $\to$ \st{review} & the owner edits the paper by hand, then \file{paper PAIR --review} & the paper as it stands & one more review, counted as the next round & none: an owner round is outside the budget \\
+\st{pause-on-x} $\to$ its loop & the owner raises the budget and reruns \file{research} or \file{paper} & the position & the loop continues from the recorded stage & the raised cap \\
+terminal $\to$ \st{edit} & editor, \file{editor.md}, tools, no search & inputs and metadata, note, verdicts, ledger, all directories; on retry, the build log and the reference findings & \file{edited/} & \file{edit\_seconds}; two attempts, then \file{blocked} \\
+\bottomrule
+\end{tabularx}
+\end{footnotesize}
 
 \medskip\noindent Between transitions the pipeline itself, with no model, does the checks that
-gate the next state: it builds the \LaTeX, verifies citations against the bibliography and
-arXiv, records digests, and writes the position. The verifier's and reviewer's judgements are
-the only decisions; every other arrow is mechanical.
+gate the next state: it builds the \LaTeX, verifies that every citation exists and is used and
+that arXiv identifiers carry their titles, refuses an edited note whose references do not check,
+records digests, and writes the position. The verifier's and reviewer's judgements are the only
+decisions; every other arrow is mechanical or the owner's.
+
+\section{The campaign}
+
+\begin{center}
+\begin{tikzpicture}[x=1cm, y=1cm,
+  every node/.style={font=\footnotesize},
+  state/.style={draw, rounded corners=2pt, minimum height=6.5mm, inner xsep=6pt, fill=gray!8},
+  edge/.style={-{Stealth[length=2mm]}, semithick},
+  lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt}]
+  \node[state] (fetch) at (0,0) {\file{fetch}};
+  \node[state] (sources) at (2.8,0) {\file{sources}};
+  \node[state] (scan) at (5.6,0) {\file{scan}};
+  \node[state] (select) at (8.4,0) {\file{select}};
+  \node[state] (research) at (11.4,0) {\file{research}};
+  \node[state, text width=22mm, align=center] (after) at (14.8,0) {\file{paper}, \file{edit}, \file{export}};
+  \draw[edge] (fetch) -- (sources);
+  \draw[edge] (sources) -- (scan);
+  \draw[edge] (scan) -- (select);
+  \draw[edge] (select) -- (research);
+  \draw[edge] (research) -- (after);
+  \draw[edge] (select.south) -- ++(0,-1.2) -| node[lab, pos=0.25, below] {open-ended: \file{fetch --more}, page older papers, scan the new pairs, \file{select --min-score}} (fetch.south);
+\end{tikzpicture}
+\end{center}
+
+\noindent \file{scan.jsonl} is append-only, so a longer corpus only adds rows; a threshold cut
+re-selects over all rows and keeps every pair that has a thread. \file{explore} runs the loop
+\file{fetch --more}, \file{scan}, \file{select --min-score} for a number of passes. The runner
+then admits whatever is \st{new} on the shortlist, so research can run while the corpus grows.
 
 \section{Budgets, and what exhausting them means}
 
 \begin{center}
-\begin{tabular}{@{}lll@{}}
+\begin{tabularx}{\textwidth}{@{}llX@{}}
 \toprule
 budget & scope & when exhausted \\
 \midrule
@@ -159,13 +281,14 @@ budget & scope & when exhausted \\
 editor attempts & the build and reference checks & \file{blocked} \\
 \file{budget\_usd} & the campaign, at admission & stop marker; threads in flight finish; \st{new} pairs wait \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \noindent Every model call appends a receipt, so the campaign budget is checked against the sum
-of receipts, never against an estimate alone.
+of receipts, never against an estimate alone. A call that times out with no usage is charged at
+\file{call\_estimate\_usd}. Owner rounds are not budgeted: the owner is the budget.
 
-\section{Interrupts}
+\section{Interrupts and hazards}
 
 \begin{itemize}\setlength{\itemsep}{1pt}
   \item A stop marker (operator, guard, or first Ctrl-C) stops admission; calls in flight land
@@ -173,8 +296,11 @@ of receipts, never against an estimate alone.
     recorded stage.
   \item No session within the grace time is a transport failure: no receipt, the pair is
     \file{stopped}, two in a row set the health marker and pause admission until a probe
-    succeeds.
+    succeeds. The \file{paper} and \file{edit} commands skip the failed pair and continue.
   \item \file{reconcile} reads the position of one pair and names the one safe action: start,
     resume peers, run consolidate, run verify, or nothing; \file{--apply} performs it.
+  \item The lock protects a thread from two runners. It does not protect the paper or editor
+    stage from two concurrent commands on the same pair; that is an operator error the code
+    does not yet catch.
 \end{itemize}
 \end{document}

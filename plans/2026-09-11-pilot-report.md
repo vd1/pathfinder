@@ -270,7 +270,7 @@ calibration step and narrowed the novelty claim accordingly, which the
 reviewer then accepted.
 
 Q1P6 was given a fourth paper round on 13 September (paper_rounds raised
-from 3 to 4, 5.3 USD). The author addressed the one minor finding of
+from 3 to 4 for the run and set back afterwards, 5.3 USD). The author addressed the one minor finding of
 round 3; the round 4 reviewer then raised a new major finding, an
 inconsistency between the paper's boundary display and its own
 embedding, plus nine minor ones, and the paper ended again at
