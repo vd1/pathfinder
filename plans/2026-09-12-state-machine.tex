@@ -110,7 +110,7 @@ Thus, the research phase is a sampler. The same input, rerun, may
 elicit a different response. Arguably, in the example above, 
 a referee would want both responses in one paper.
 
-\paragraph{Outline} 
+\subsection{Outline} 
 
 Below we describe the pipeline as a state machine with transitions. 
 The expected behaviours are:
@@ -127,13 +127,26 @@ resources and work already commited
 % A human can see at a glance where each pair stands and what is needed to
 % progress it.
 
-It is only at the end that 
-a \emph{note} synthesises
-what the researcher agents and verifier agreed on.\footnote{there is also
-a readable history-less version of the note for quick human reference.}
+% It is only at the end that 
+% a \emph{note} synthesises
+% what the researcher agents and verifier agreed on.\footnote{there is also
+% a readable history-less version of the note for quick human reference.}
 
 \section{The research phase}
 
+
+\noindent The research phase takes the incoming message $(q,p,c)$ and ends in one of four
+terminal states: 
+\begin{enumerate}
+\item \st{draft}, the note carries a result that would justify a paper
+\item \st{pause}, the pair does not yield anything worth further effort now, or
+there are missing inputs which the agents cannot supply
+\item \st{pause-on-iterate} and \st{pause-on-revise}, the loop named ran out of
+its budget with the verifier still asking. Each arrow of the diagram is
+described below, in the order a thread meets them.
+\end{enumerate}
+
+Here is a diagram which summarises the different states and transitions. Details are given below.
 \begin{center}
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[x=1cm, y=1cm,
@@ -164,39 +177,31 @@ a readable history-less version of the note for quick human reference.}
 \end{tikzpicture}}
 \end{center}
 
-\noindent The research phase takes the incoming message $(q,p,c)$ and ends in one of four
-terminal states: 
-\begin{enumerate}
-  \item \st{draft}, the note carries a result that would justify a paper; 
-  \item \st{pause}, the pair
-does not yield anything worth further effort now, or the missing input is one the agents cannot
-supply; \item \st{pause-on-iterate} and \st{pause-on-revise}, the loop named ran out of its budget
-with the verifier still asking. Each arrow of the diagram is described below, in the order a
-thread meets them.
-\end{enumerate}
+% \paragraph{Admission.} The runner, with no model call, admits a {new} pair when a seat is
+% free and the campaign guard passes: the spend recorded in the receipts plus an estimate for the
+% calls in flight must stay under \file{budget\_usd}, otherwise the runner writes the stop marker
+% and admits nothing more. Admission takes the thread's lock, flattens the two papers into
+% \file{inputs/} and creates one directory per researcher.
 
-\paragraph{Admission.} The runner, with no model call, admits a \st{new} pair when a seat is
-free and the campaign guard passes: the spend recorded in the receipts plus an estimate for the
-calls in flight must stay under \file{budget\_usd}, otherwise the runner writes the stop marker
-and admits nothing more. Admission takes the thread's lock, flattens the two papers into
-\file{inputs/} and creates one directory per researcher.
-
-\paragraph{Research round.} Every researcher is called concurrently with the prompt
-\file{peer.md}, with tools (files, shell, code) and web search. Each sees the two papers, the
+\paragraph{Research.} Upon receiving a triplet $(p,q,c)$,
+the runner process creates a specific directory, 
+with the two associated papers $p$ and $q$ and seed $c$, 
+and launches the duo of researcher agents concurrently with their prompt, and tools (files, shell, code, web search),
+research allowance (number of rounds, number of model calls per round, total agent time, and total token consumption), and own sub-directory. Each agent sees the two papers, the
 seed $c$ with its scores and rationale, the whole ledger, its own directory and its partners'
-directories, and the allowance left for this call. It writes ledger entries through the helper
-and whatever it likes in its own directory. The first prompt asks the plain question: is there
-something interesting to say about this pair, something that could lead to a publication; later
-rounds add the verifier's last verdict. A researcher's budget is \file{peer\_calls} calls per
-round; the round shares \file{peer\_seconds} of wall time. The round ends when every
-researcher's ready stands or the allowance is out. A researcher whose ready still stands when
+directories, and the allowance left for this call. It writes ledger entries %through the helper
+and whatever it likes in its own directory. The first prompt, \file{peer.md}, asks whether there
+is something publishable to say about this pair; later
+rounds add the verifier's last verdict. The round ends when all
+researcher agree to stop or the allowance is out. A researcher whose ready still stands when
 its turn comes is not called again; it waits for its partners, so a round costs only what the
-disagreement costs. If the round ends with an empty ledger the thread ends in \st{pause}.
+disagreement costs. (If the round ends with an empty ledger the thread ends in \st{pause}.)
 
-\paragraph{Consolidate.} The first researcher is called once with \file{consolidate.md} and
-tools, sees the ledger, every directory and the prior note if any, and writes the note
+\paragraph{Consolidate.} Once researchers are ready, 
+the first researcher (arbitrary) is called once with a new prompt \file{consolidate.md} and
+tools, sees the ledger, every directory and the note from preceding round (if any), and writes the note
 \file{<pair>.tex}: what the researchers agreed, with every claim pointing at the ledger entries
-that support it and mathematics in \TeX. After an \st{iterate} the note is appended to, so the
+that support it. After an \st{iterate} the note is appended to, so the
 history of the thread stays readable; on a \st{revise} the consolidator also sees the
 verifier's corrections and rewrites. The call has \file{consolidate\_seconds}; if it produces no
 note it is rerun once.
