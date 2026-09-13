@@ -192,10 +192,15 @@ seed $c$ with its scores and rationale, the whole ledger, its own directory and 
 directories, and the allowance left for this call. It writes ledger entries %through the helper
 and whatever it likes in its own directory. The first prompt, \file{peer.md}, asks whether there
 is something publishable to say about this pair; later
-rounds add the verifier's last verdict. The round ends when all
-researcher agree to stop or the allowance is out. A researcher whose ready still stands when
-its turn comes is not called again; it waits for its partners, so a round costs only what the
-disagreement costs. (If the round ends with an empty ledger the thread ends in \st{pause}.)
+rounds add the verifier's last verdict. There is no turn-taking: the two agents run
+concurrently and each spends its calls at its own pace. An agent declares itself done by
+writing a \emph{ready} entry, which is void as soon as its partner writes anything substantive.
+Before spending a call, an agent whose ready still stands does not spend it: its loop polls the
+ledger and waits, because a fresh call would only repeat what it already said; as soon as the
+partner writes, the call is made. The round ends when both agents' ready entries stand at once,
+or when the allowance is out. So a round costs what the disagreement costs: agreement after one
+exchange is one call each, an objection to every entry is the full allowance. (If the round
+ends with an empty ledger the thread ends in \st{pause}.)
 
 \paragraph{Consolidate.} Once researchers are ready, 
 the first researcher (arbitrary) is called once with a new prompt \file{consolidate.md} and
@@ -392,7 +397,8 @@ appended through a helper, never edited; each carries a sequence number, an acto
 time, and every agent reads the whole ledger before it speaks. A \emph{ready} entry is a claim
 about the ledger as it stands: it is void as soon as anyone adds a substantive entry (anything
 but ready or review) after it, so a researcher cannot declare itself done and walk away from
-an objection. The verifier writes its verdict into the ledger as a review entry, so the next
+an objection, and a researcher whose ready stands has no reason to spend another call until a
+partner writes. The verifier writes its verdict into the ledger as a review entry, so the next
 round's researchers, and the consolidator on a repair, read the judge's reasons where they read
 everything else.
 
