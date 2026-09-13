@@ -41,7 +41,15 @@ you already have, or a description of where the papers come from].
    Q rows in order so the prompt prefix caches. Append every result to one
    JSONL file so the scan can stop and resume. Keep the top cut (a
    percentage) or every pair above a threshold as the shortlist, frozen
-   with a digest of the scan file.
+   with a digest of the scan file. Be clear about which feasibility you
+   ask for. "Could a competent group do it" says where a lab should look
+   and is what the reference prompt asks; "can the peers settle it at
+   their desk, by derivation or with code that runs on the two papers
+   alone" predicts what the pipeline will finish. In the reference
+   campaign the two disagreed: the top-scoring pairs needed live
+   simulations and all paused, the lowest-scoring thread became an
+   accepted paper. If you want the score to order the queue, score the
+   desk question too.
 
 2. **Research.** For each shortlisted pair, a thread directory with the two
    full texts, an append-only ledger, and two peer agents with tools and web

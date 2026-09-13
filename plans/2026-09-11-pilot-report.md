@@ -600,6 +600,45 @@ budget of each loop, is `2026-09-12-state-machine.tex` (built as a PDF beside it
 - The builder prompt for colleagues, once the code has been read for
   leanness.
 
+## Score against ending, 13 September
+
+V noticed that becoming a paper had little to do with the scan score, and
+asked for a scatter plot (`plans/figures/2026-09-13-score-vs-outcome.png`,
+script beside it). Over the 14 threads the correlation between score and
+ending is slightly negative (Spearman rho -0.30, p 0.30; accepted papers
+mean score 1820 against 2317 for the rest). The three highest scores,
+Q4P10, Q3P9 and Q3P10 at 3000 and above, all paused; the lowest, Q1P2 at
+600, became an accepted paper.
+
+The reason is a nuance in what feasibility means, and it matters for
+anyone re-implementing the scan. The prompt asks whether the connexion
+"could be investigated by a competent group with methods and resources
+that exist today", and the scanner answered that question correctly: the
+three top pairs have open-sourced code and available data, so a lab could
+do them in weeks. But the thread's peers work at a desk: a sandbox, the
+two papers, their own scripts, web search, no provider credentials, no
+compute budget, no hours-long runs. The top three connexions each needed
+a live multi-agent simulation to be rerun, which the desk cannot do; the
+pairs that drafted were the ones whose connexion is a derivation, which
+is the one experiment the desk can run.
+
+So there are two feasibilities, both interesting and different: for a
+lab, which the prompt scores and which says where a human group should
+look; and for an agent in a thread, which nobody scores and which
+predicts what the pipeline will finish. Two consequences:
+
+- Keep the lab feasibility; it is a fair reading of the world and it is
+  what a human would want from a scan. Add a third question to the scan,
+  whether the connexion can be settled by derivation or by code that runs
+  on the two papers alone, and use that, not the product, to order the
+  queue and to spend rounds.
+- The alternative is to give the desk what the lab has: credentials and
+  a compute budget for the peers. That would let the pipeline pursue the
+  high-scoring pairs and would test whether the scanner's high scores
+  were right, at a cost per thread no longer bounded by the call budget.
+
+Neither is built. The scan prompt still asks the lab question.
+
 ## Reading: How to train your slop cannon, 13 September
 
 V pointed at Loader, Oppenheim and Osborne, "How to train your slop
