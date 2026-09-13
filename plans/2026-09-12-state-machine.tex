@@ -208,8 +208,8 @@ ends with an empty ledger the thread ends in \st{pause}.)
 the first researcher (arbitrary) is called once with a new prompt, \file{consolidate.md}, and
 tools, sees the ledger, every directory and the note from preceding round (if any), and writes 
 the research note summarising what the researchers agreed, with every claim pointing at the ledger entries
-that support it. After an \st{iterate} the consolidator keeps every result of the previous note that still
-stands and adds this round's work to it, so results accepted in an earlier round are not lost
+that support it. After an \st{iterate} the consolidator agent keeps relevant results of the previous note 
+and adds this round's work to it, so results accepted in an earlier round are not lost
 or silently reworded; on a \st{revise} the consolidator also sees the
 verifier's corrections and rewrites. The call has \file{consolidate\_seconds}; if it produces no
 note it is rerun once.
