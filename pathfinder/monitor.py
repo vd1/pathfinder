@@ -49,6 +49,7 @@ def state(campaign) -> dict:
                         "q_abstract": Q[int(pid[1:].split("P")[0]) - 1].get("abstract") if Q else None,
                         "p_abstract": P[int(pid.split("P")[1]) - 1].get("abstract") if P else None}
         shortlist.append({**p, "status": s.get("status"), "round": s.get("round"), "stage": s.get("stage"),
+                          "paper": (threads[pid]["paper"] or {}).get("status"),
                           **rc.get(pid, {"spend": 0.0, "seconds": 0.0, "calls": 0})})
     statuses = Counter(t["status"].get("status", "new") for t in threads.values())
     attention = []                                   # what an owner would act on: reason, age, the one safe action
