@@ -650,9 +650,11 @@ its prompt began with the paper, which changes every round, so the stable
 100k tokens behind it were paid in full each round. Both judges now share
 one head, papers then ledger then note, followed by what changes and the
 instruction last; the receipts record the provider's cache write and read
-counts. The researchers still read the ledger through a tool, so nothing
-carries across their calls; inlining it at the head of the peer prompt is
-the next step if the receipts show the judges benefiting.
+counts. The same head, papers then ledger, was then put in front of the
+researchers' and the consolidator's calls as well, with the actor's brief
+after it, so every call in a thread shares one prefix; the researchers
+still re-read the ledger through the helper during a call, since partners
+write while they work. Not yet measured on a run.
 
 ## Reading: How to train your slop cannon, 13 September
 

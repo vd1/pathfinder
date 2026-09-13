@@ -53,15 +53,20 @@ def prepare(campaign, pair_id: str) -> Path:
     return d
 
 
-def judge_head(d, inp, note_name: str) -> str:
-    """The static head of every judge's context: the two papers, the ledger, the note, in that order.
-    The same bytes for the verifier and the paper reviewer, and across rounds a prefix of the previous
-    call's, so a prompt cache serves everything but what the ledger gained since."""
+def thread_head(d, inp) -> str:
+    """The static head of every call in a thread: the two papers, then the ledger as it stands.
+    The same bytes for every researcher, the consolidator and both judges, and across calls a prefix
+    of the previous call's, since the ledger only grows; a prompt cache serves everything but what the
+    ledger gained since. Whatever differs between callers goes after it."""
     h = "## " + inp["Q"] + "\n\n" + (d / "inputs" / inp["Q"]).read_text(errors="replace")
     h += "\n\n## " + inp["P"] + "\n\n" + (d / "inputs" / inp["P"]).read_text(errors="replace")
-    h += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
-    h += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+    h += "\n\n## ledger.jsonl\n\n" + ((d / "ledger.jsonl").read_text() if (d / "ledger.jsonl").exists() else "")
     return h
+
+
+def judge_head(d, inp, note_name: str) -> str:
+    """The thread head plus the note, for the verifier and the paper reviewer."""
+    return thread_head(d, inp) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
 
 
 def _inputs(d: Path) -> dict:
@@ -111,7 +116,8 @@ def _peers(campaign, pair_id, stop):
             if L.ready(peers):
                 return
             _check(stop)
-            p = _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
+            p = thread_head(d, inp) + "\n\n## your task\n\n"
+            p += _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
                         LEDGER=f"{helper} --actor {actor}", SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
@@ -181,7 +187,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, NOTE_STEM=pair_id, PRIOR=prior), True,
+                                thread_head(d, inp) + "\n\n## your task\n\n"
+                                + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, NOTE_STEM=pair_id, PRIOR=prior), True,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():

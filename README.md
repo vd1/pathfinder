@@ -157,16 +157,19 @@ The seven prompts in `prompts/` are the place to tune behaviour: `scan.md`
 `verify.md`, `author.md`, `review.md` and `editor.md`. A campaign directory may carry its own `prompts/` to override
 them.
 
-## The judges' context
+## The thread's context
 
-The verifier and the paper reviewer get their material inline, in the same
-order: the two papers, the ledger, the note, then (for the reviewer) the
-search record, the paper, its bibliography and the pipeline's checks, and
-the instruction last. The head is byte-identical for both judges and, since
-the ledger only grows, a prefix of the previous round's, so a prompt cache
-serves everything but what the ledger gained since. Receipts record
-`cache_write` and `cache_read` token counts so the hit rate can be read
-off `receipts.jsonl`.
+Every call in a thread starts with the same head, inline: the two papers,
+then the ledger as it stands. The researchers, the consolidator and the
+two judges all get it, and whatever names the caller or changes between
+calls comes after it: the note for the judges, the search record, the
+paper and the checks for the reviewer, then the instruction last. The head
+is byte-identical across callers and, since the ledger only grows, a
+prefix of the previous call's, so a prompt cache serves everything but
+what the ledger gained since. Researchers still re-read the ledger through
+the helper during a call, since partners write while they work. Receipts
+record `cache_write` and `cache_read` token counts so the hit rate can be
+read off `receipts.jsonl`.
 
 ## Styles
 

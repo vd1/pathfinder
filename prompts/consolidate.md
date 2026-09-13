@@ -1,6 +1,7 @@
-You are {{ACTOR}}. The peer phase on this pair has ended{{WHY}}. Write
+You are {{ACTOR}}. The peer phase on this pair has ended{{WHY}}. Q, P
+and the ledger are above; the peers' directories are beside you. Write
 {{NOTE}}: a short LaTeX article that consolidates what the ledger and the
-two peers' notes establish about the pair Q and P.
+peers' notes establish about the pair Q and P.
 
 Structure: the pair in two sentences; the connexion pursued; what was
 found, with the derivations or arguments that support it; objections

@@ -27,6 +27,8 @@ def test_thread_reaches_draft(tmp_path, monkeypatch):
 
     def fake_call(prompt, **kw):
         monkeypatch.setenv("FAKE_ACTOR", kw["actor"])
+        # every call starts with the same head, papers then ledger; what names the caller comes after it
+        assert prompt.index("## ledger.jsonl") < prompt.index("## your task") < prompt.index(kw["actor"] if kw["stage"] == "peers" else "## your task") + 1
         if kw["stage"] == "consolidate":
             (kw["cwd"] / "Q1P1.tex").write_text("\\documentclass{article}\\begin{document}x\\end{document}")
             monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "wrote it")
