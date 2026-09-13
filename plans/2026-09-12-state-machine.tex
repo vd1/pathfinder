@@ -111,12 +111,12 @@ elicit a different response. Arguably, in the example above,
 a referee would want both responses in one paper.
 
 \paragraph{The various stages of the process}
-The process produces the following sequence of file outputs:
+The process outputs file:
 \begin{enumerate}
 \item 
-a conversation \emph{thread} recorded on a ledger of everything the researcher 
-agents said to each other
-\item a \emph{note} consigning to paper form what the researcher agents and verifier 
+a conversation \emph{thread} recording on a ledger of the researcher 
+agents chatter
+\item a \emph{note} consigning what the researcher agents and verifier 
 agreed on (together with a \emph{readable note} of the same, rewritten for a reader 
 who never saw the ledger), and,
 \item
@@ -124,36 +124,46 @@ when accepted by the reviewer, a \emph{paper}
 % (written
 % with a literature search and reviewed)
 \end{enumerate}
-The outputs above are arranged in increasing order of readability by humans, and 
-decreasing dependence on the history of the generation process.
+% The outputs above are arranged in increasing order of readability by humans, and 
+% decreasing dependence on the history of the generation process.
 
 The readable note presents the research phase’s final outcome for expert assessment,
 including unsuccessful or inconclusive outcomes.
 
+\paragraph{Why a state machine.} The work is done by model calls that cost
+money, take minutes, often fail or disagree. Writing the pipeline as a machine
+with explicit states, transitions and budgets makes it easy to re-implement on
+another corpus. It also makes clear the expected behaviours such as:
+auditability after the fact (every decision traces to a file and a receipt), and
+safe interruptibility: a stop, a crash or an exhausted budget leaves the machine
+in a named state from which it resumes, and a human can see at a glance where
+each pair stands and what is needed to progress it.
 
-\paragraph{Why a state machine.} The work is done by model calls that cost money, take minutes,
-fail, and disagree. Writing the pipeline as a machine with explicit states, transitions and
-budgets is what makes it re-implementable by a colleague on another corpus, auditable after the
-fact (every decision traces to a file and a receipt), and safe to interrupt: a stop, a crash or an
-exhausted budget leaves the machine in a named state from which it resumes, and a human can see
-at a glance where each pair stands and what would move it.
+% \paragraph{How.} One research thread is one instance of the machine described below. Its subject
+% is a pair of papers together with the seed of an idea: in Pathfinder the seed is the scan's
+% connexion, rationale and scores, handed to the peers in their first prompt; in the agQSL instance
+% of the same machine the seed is a written idea artefact. The machine does not care where the seed
+% came from, only that the thread starts from a pair and a seed. The campaign is a set of these
+% instances plus a scheduler with a purse.
+% Three kinds of actor appear: \emph{agents}, model calls with a prompt and a bounded view of the
+% state, of which the two \emph{judges} (the verifier of a note, the reviewer of a paper) make the
+% only decisions; the \emph{pipeline}, code that builds, checks, records and moves the position;
+% and the \emph{owner}, whoever types in the terminal, a human or a delegated session, who raises
+% budgets, edits by hand and settles what is paused. The agents of one thread share one append-only
+% ledger; that ledger, the files beside it and a position record are the whole state of the
+% thread. Everything below is what the code does; the builder prompt points here for the shape to
+% re-implement.
 
-\paragraph{How.} One research thread is one instance of the machine described below. Its subject
-is a pair of papers together with the seed of an idea: in Pathfinder the seed is the scan's
-connexion, rationale and scores, handed to the peers in their first prompt; in the agQSL instance
-of the same machine the seed is a written idea artefact. The machine does not care where the seed
-came from, only that the thread starts from a pair and a seed. The campaign is a set of these
-instances plus a scheduler with a purse.
-Three kinds of actor appear: \emph{agents}, model calls with a prompt and a bounded view of the
-state, of which the two \emph{judges} (the verifier of a note, the reviewer of a paper) make the
-only decisions; the \emph{pipeline}, code that builds, checks, records and moves the position;
-and the \emph{owner}, whoever types in the terminal, a human or a delegated session, who raises
-budgets, edits by hand and settles what is paused. The agents of one thread share one append-only
-ledger; that ledger, the files beside it and a position record are the whole state of the
-thread. Everything below is what the code does; the builder prompt points here for the shape to
-re-implement.
+\section{The state of a thread}
 
-\section{Global state of a thread}
+One research thread is one instance of the machine; the campaign is a set of instances plus a
+scheduler with a purse. Three kinds of actor touch a thread. \emph{Agents} are model calls with a
+prompt and a bounded view of the thread; among them two \emph{judges}, the verifier of a note
+and the reviewer of a paper, make the only decisions. The \emph{pipeline} is code: it builds,
+checks, records and moves the position, and never decides. The \emph{owner} is whoever types in
+the terminal, a human or a delegated session; the owner raises budgets, edits by hand and
+settles what is paused. Everything an agent sees or writes is a file under the thread's
+directory, which is what makes the record auditable after the fact.
 
 \paragraph{Position.} \file{stage}, where the machine is; \file{status}, one of \file{running},
 \file{stopped}, \file{BLOCKED} or a terminal word; the counters \file{round} (research rounds
@@ -163,12 +173,13 @@ used), \file{repairs} (note repairs used), the paper's \file{round} and the edit
 \paragraph{Memory,} all files under \file{threads/<pair>/}:
 \begin{itemize}\setlength{\itemsep}{1pt}
   \item \file{inputs/}: the two papers, flattened \TeX{} or PDF text, and their metadata; the
-    seed, the pair's row of \file{scan.jsonl}, is read from the campaign level.
+    seed $c$, the pair's row of \file{scan.jsonl}, is read from the campaign level.
   \item \file{ledger.jsonl}: append-only attributed entries of kind idea, finding, objection,
-    correction, intention, ready or review; the peers' shared memory and the verifier's evidence.
-  \item one directory per peer (\file{ada/}, \file{emmy/}, \ldots): that peer's derivations,
-    scripts and checks. The peers are a campaign setting (\file{peers}); two by default, three
-    were tested.
+    correction, intention, ready or review; the researchers' shared memory and the verifier's
+    evidence.
+  \item one directory per researcher (\file{ada/}, \file{emmy/}, \ldots): that agent's
+    derivations, scripts and checks. The researchers are a campaign setting (\file{peers}); two
+    by default, three were tested.
   \item \file{<pair>.tex}: the consolidated note; \file{<pair>.verdict.json}: every verdict with
     the digest of the note it judged.
   \item \file{paper/}: the paper, its bibliography, its search record, the pipeline's checks per
@@ -176,31 +187,25 @@ used), \file{repairs} (note repairs used), the paper's \file{round} and the edit
   \item \file{edited/}: the readable note (\file{note.tex}, \file{references.bib},
     \file{note.pdf}).
   \item \file{status.json}, \file{paper/paper.json}, \file{edited/edit.json}: the position of
-    each stage; \file{lock}: the pid of the runner working the thread.
+    each phase; \file{lock}: the pid of the runner working the thread.
 \end{itemize}
+
+\paragraph{The ledger.} The ledger is the one piece of state several agents write, and its
+rules are what make the researchers a group rather than a set of monologues. Entries are
+appended through a helper, never edited; each carries a sequence number, an actor, a kind and a
+time, and every agent reads the whole ledger before it speaks. A \emph{ready} entry is a claim
+about the ledger as it stands: it is void as soon as anyone adds a substantive entry (anything
+but ready or review) after it, so a researcher cannot declare itself done and walk away from
+an objection. The verifier writes its verdict into the ledger as a review entry, so the next
+round's researchers, and the consolidator on a repair, read the judge's reasons where they read
+everything else.
 
 \paragraph{Campaign level.} \file{fetch.json} (the two queries and how far each side has been
 paged), \file{Q.jsonl} and \file{P.jsonl}, \file{scan.jsonl}, \file{shortlist.json},
 \file{receipts.jsonl} (the only spend figure), and the markers \file{stop.json} and
 \file{health.json}.
 
-\section{The ledger}
-
-The ledger is the one piece of state several agents write. Its rules are what make the peers a
-group rather than a set of monologues:
-\begin{itemize}\setlength{\itemsep}{1pt}
-  \item Entries are appended through a helper, never edited; each carries a sequence number, an
-    actor, a kind and a time. Peers read the whole ledger before every call.
-  \item \emph{ready} is a claim about the ledger as it stands: it is void as soon as anyone
-    adds a substantive entry (anything but ready or review) after it. A peer whose ready still
-    stands is not called again in that round; it waits for its partners.
-  \item The round ends when every peer's ready stands, or when the round's allowance is out.
-  \item The verifier writes its verdict into the ledger as a review entry, so the next round's
-    peers, and the consolidator on a repair, read the judge's reasons where they read everything
-    else.
-\end{itemize}
-
-\section{States}
+\section{The research phase}
 
 \begin{center}
 \resizebox{\textwidth}{!}{%
@@ -230,9 +235,69 @@ group rather than a set of monologues:
   \draw[edge] (ver.east) -- node[lab, sloped, above, pos=0.6] {\st{iterate}, rounds out} (poi.west);
   \draw[edge] (peers.south) -- (6.2,-4.4) -- node[lab, below] {empty ledger} (23.4,-4.4) |- (pause.east);
 \end{tikzpicture}}
+\end{center}
 
-\medskip
+\noindent The research phase takes the incoming message $(q,p,c)$ and ends in one of four
+words: \st{draft}, the note carries a result that would justify a paper; \st{pause}, the pair
+does not yield anything worth further effort now, or the missing input is one the agents cannot
+supply; \st{pause-on-iterate} and \st{pause-on-revise}, the loop named ran out of its budget
+with the verifier still asking. Each arrow of the diagram is described below, in the order a
+thread meets them.
 
+\paragraph{Admission.} The runner, with no model call, admits a \st{new} pair when a seat is
+free and the campaign guard passes: the spend recorded in the receipts plus an estimate for the
+calls in flight must stay under \file{budget\_usd}, otherwise the runner writes the stop marker
+and admits nothing more. Admission takes the thread's lock, flattens the two papers into
+\file{inputs/} and creates one directory per researcher.
+
+\paragraph{Research round.} Every researcher is called concurrently with the prompt
+\file{peer.md}, with tools (files, shell, code) and web search. Each sees the two papers, the
+seed $c$ with its scores and rationale, the whole ledger, its own directory and its partners'
+directories, and the allowance left for this call. It writes ledger entries through the helper
+and whatever it likes in its own directory. The first prompt asks the plain question: is there
+something interesting to say about this pair, something that could lead to a publication; later
+rounds add the verifier's last verdict. A researcher's budget is \file{peer\_calls} calls per
+round; the round shares \file{peer\_seconds} of wall time. The round ends when every
+researcher's ready stands or the allowance is out. A researcher whose ready still stands when
+its turn comes is not called again; it waits for its partners, so a round costs only what the
+disagreement costs. If the round ends with an empty ledger the thread ends in \st{pause}.
+
+\paragraph{Consolidate.} The first researcher is called once with \file{consolidate.md} and
+tools, sees the ledger, every directory and the prior note if any, and writes the note
+\file{<pair>.tex}: what the researchers agreed, with every claim pointing at the ledger entries
+that support it and mathematics in \TeX. After an \st{iterate} the note is appended to, so the
+history of the thread stays readable; on a \st{revise} the consolidator also sees the
+verifier's corrections and rewrites. The call has \file{consolidate\_seconds}; if it produces no
+note it is rerun once.
+
+\paragraph{Verify.} A verifier that has taken no part in the thread is called with
+\file{verify.md} and no tools; the two papers, the ledger and the note are given inline, so its
+only evidence is the record. It writes a verdict file carrying the digest of the note it
+judged, a review entry in the ledger, and the position. It answers with one of four words.
+\st{draft}: the note contains a supported, non-obvious result about the pair. \st{revise}: the
+ledger supports a result but the note misstates it (a dropped result, an overclaim, a missing
+attribution), and the consolidator can fix it from the ledger without new research; the
+verdict lists the corrections. \st{iterate}: a promising line with a specific gap the
+researchers can close with what they have; the verdict names the one thing to do next.
+\st{pause}: nothing worth further effort now, or a gap that needs data, experiments or access
+the agents do not have; the verdict says what would be needed so that a human can decide. The
+verifier is told not to ask twice: if a previous \st{iterate} asked for something the ledger
+then shows the researchers could not supply, it must answer \st{pause} and name the missing
+input. The call has \file{verify\_seconds}; an empty reply is retried once; an unreadable
+verdict is saved beside the position and the thread is \file{BLOCKED}.
+
+\paragraph{The iterate loop.} On \st{iterate} the round counter goes up and the researchers
+are called again, with the verdict in the ledger. The cap is \file{rounds}, four in the
+reference campaign; at the cap the thread ends in \st{pause-on-iterate}.
+
+\paragraph{The revise loop.} On \st{revise} the repair counter goes up and the consolidator is
+called again with the corrections. The cap is \file{repairs}, one; at the cap the thread ends
+in \st{pause-on-revise}. A repair is a rewrite of the note from the same ledger; it costs one
+call, which is why it has its own word and its own cap rather than spending a research round.
+
+\section{The edit phase}
+
+\begin{center}
 \begin{tikzpicture}[x=1cm, y=1cm,
   every node/.style={font=\footnotesize},
   state/.style={draw, rounded corners=2pt, minimum height=6.5mm, inner xsep=6pt, fill=gray!8},
@@ -246,106 +311,108 @@ group rather than a set of monologues:
   \node[state] (review) at (7.8,0) {\st{review}};
   \node[term] (acc) at (12.6,0) {\st{accepted}};
   \node[pause] (poa) at (7.8,-2.4) {\st{pause-on-amend}};
-  \draw[edge] (draft) -- node[lab, above] {paper stage} (author);
+  \draw[edge] (draft) -- node[lab, above] {paper} (author);
   \draw[edge] (author) -- node[lab, above] {built and checked} (review);
   \draw[edge] (review) -- node[lab, above] {\st{accept}, minors allowed} (acc);
   \draw[edge] (review) to[out=140, in=40, looseness=0.9] node[lab, above] {\st{amend}, rounds left} (author);
   \draw[edge] (review.south west) -- node[lab, left] {\st{amend}, rounds out} (poa.north west);
   \draw[edge] (poa.north east) -- node[lab, right] {owner edits by hand, \file{--review}} (review.south east);
   \draw[edge] (poa.east) -- ++(1.6,0) node[lab, right, text width=36mm, align=left] {or the owner raises \file{paper\_rounds} and reruns \file{paper}};
-\end{tikzpicture}
-
-\medskip
-
-\begin{tikzpicture}[x=1cm, y=1cm,
-  every node/.style={font=\footnotesize},
-  state/.style={draw, rounded corners=2pt, minimum height=6.5mm, inner xsep=6pt, fill=gray!8},
-  term/.style={state, fill=green!12},
-  blocked/.style={state, fill=red!10},
-  edge/.style={-{Stealth[length=2mm]}, semithick},
-  lab/.style={font=\scriptsize, fill=white, inner sep=1.5pt}]
-  \node[state, text width=30mm, align=center] (any) at (1.6,0) {any terminal word of the thread};
-  \node[state] (edit) at (6.4,0) {\st{edit}};
-  \node[term] (done) at (10.4,0) {\st{done}};
-  \node[blocked] (blk) at (10.4,-1.8) {\st{blocked}};
-  \draw[edge] (any) -- node[lab, above] {editor stage} (edit);
+  \node[state, text width=30mm, align=center] (any) at (1.6,-4.8) {any ending of the research phase};
+  \node[state] (edit) at (5.8,-4.8) {\st{edit}};
+  \node[term] (done) at (11.6,-4.8) {\st{readable note}};
+  \node[blocked] (blk) at (11.6,-6.4) {\st{blocked}};
+  \draw[edge] (any) -- node[lab, above] {editor} (edit);
   \draw[edge] (edit) -- node[lab, above] {built, references clean} (done);
-  \draw[edge] (edit.south east) -- node[lab, below, sloped] {two attempts failed} (blk.west);
+  \draw[edge] (edit.south east) -- node[lab, below, sloped, pos=0.55] {two attempts failed} (blk.west);
 \end{tikzpicture}
 \end{center}
 
-\noindent Terminal words of the research thread: \st{draft}, \st{pause}, \st{pause-on-iterate},
-\st{pause-on-revise}. Terminal words of the paper: \st{accepted}, \st{pause-on-amend}. Endings
-of the editor: \st{done}, \st{blocked}. Every \st{pause-on-x} means ``the loop named X ran out of
-its budget with the judge still asking''; the owner can raise the budget and resume from the
-recorded stage, or, for the paper, edit it by hand and ask for one more review. The editor runs
-once for every terminal thread, whatever its ending, so that even a paused pair leaves a readable
-account.
+\noindent The edit phase has two independent branches. The upper one, the \emph{paper}, runs
+only on a \st{draft}: an author agent writes a paper from the note and a reviewer judges it,
+and the loop ends \st{accepted} or \st{pause-on-amend}. The lower one, the \emph{readable
+note}, runs once for every thread whatever its ending, so that even a paused pair leaves an
+account a colleague can read without the ledger. Neither branch changes the note or the
+ledger; the research record is frozen when the research phase ends.
 
-\file{stopped} and \file{BLOCKED} are not endings. \file{stopped} is a drain checkpoint (a stop
-marker, a transport failure, a kill) and resumes at the recorded stage on the next start.
-\file{BLOCKED} is an unreadable decision or a missing output: the reply is saved beside the
-position (for the verifier, \file{verify-unreadable.txt}), the runner never re-admits the pair,
-and \file{reconcile} names the one safe action.
+\paragraph{Author.} The author agent is called with \file{author.md}, tools and web search, in
+the thread's directory, so it sees everything the researchers left: the two papers, the ledger,
+the note, the verdicts, every directory. It also sees the previous review's findings, if this
+is a later round. It writes \file{paper/paper.tex}, \file{paper/references.bib} and
+\file{paper/search.md}, the record of the literature searches it ran and what they returned. It
+is asked for a short paper in the usual shape (abstract, introduction, what the two papers
+establish, the result, what did not hold, related work, limitations), with every claim traced
+to the note or the ledger and every reference verified against arXiv or a DOI. The call has
+\file{paper\_seconds}.
 
+\paragraph{Build and check.} Before any reviewer sees the paper the pipeline, with no model,
+builds it with \file{latexmk} and checks the bibliography: every cited key exists, every entry
+is cited, every entry carries a URL, DOI or arXiv identifier, and every arXiv identifier's title
+matches the arXiv record. The findings are written to \file{paper/checks-round-N.txt} and shown
+to the reviewer; a failed build is a finding too.
+
+\paragraph{Review.} A reviewer that has taken no part is called with \file{review.md} and no
+tools; it is given inline the paper, the bibliography, the pipeline's checks, the author's
+search record, the note, the ledger and the two papers. It reads the paper as an editor would
+before sending it to referees and checks that every claim traces to the note or ledger without
+strengthening it, that the mathematics is correct and the notation defined, that $q$ and $p$
+are represented fairly and what is new is separated from what they establish, that no reference
+looks invented, and that the related-work claim is supported by the recorded searches. It
+answers \st{accept} or \st{amend} with findings by identifier, each marked major or minor.
+\st{accept} may carry minor findings, the kind an author applies while formatting; \st{amend}
+is reserved for a finding that changes a claim, its scope, its attribution or its correctness,
+or that a referee would hold against the paper. A reviewer asked for a paper with no findings at
+all never converges, because every revision opens new minor points; this rule is what lets the
+loop end. The review is recorded with the digest of the paper it judged. The call has
+\file{review\_seconds}; the loop's cap is \file{paper\_rounds}, three; at the cap the paper
+ends \st{pause-on-amend}.
+
+\paragraph{The amend loop.} On \st{amend} with rounds left, the author is called again with
+the findings and must say what it did about each. The pipeline builds and checks again, and the
+reviewer reads the new version.
+
+\paragraph{The owner's moves.} A paper at \st{pause-on-amend} has two ways forward, both the
+owner's. The owner can raise \file{paper\_rounds} and rerun the paper command, which resumes
+the loop where it stopped. Or the owner can edit the paper by hand and ask for one reviewer
+round with \file{paper PAIR --review}: no author call, the paper as it stands, counted as the
+next round and outside the budget. In the reference campaign one paper went through three such
+rounds; the reviewer caught a real error in the owner's own edit before accepting.
+
+\paragraph{Editor.} For every thread with an ending, the editor agent is called with
+\file{editor.md} and tools but no web search. It sees the two papers and their metadata, the
+note, the verdicts, the ledger and every directory, and writes \file{edited/note.tex} with a
+bibliography: the note rewritten as a short readable paper, in plain terms, for a reader who
+never saw the ledger, keeping the structure of a paper (what was asked, what was done, what
+holds, what did not hold, why the thread stopped and what would restart it). The pipeline
+builds it and runs the same reference checks as for the paper, and refuses the result if a
+cited key is missing, an arXiv title does not match, or an identifier is unknown; on a refusal
+the editor is called once more with the findings and told to fix them in place. Two failed
+attempts end in \file{blocked}. The call has \file{edit\_seconds}.
+
+\paragraph{Words and endings.} The two judges' words, and where each phase can end:
 \begin{center}
 \small
 \begin{tabular}{@{}lll@{}}
 \toprule
-stage & decisions of its judge & endings \\
+phase & decisions of its judge & endings \\
 \midrule
-research thread & \st{draft}, \st{revise}, \st{iterate}, \st{pause} & \st{draft}, \st{pause}, \st{pause-on-iterate}, \st{pause-on-revise} \\
+research & \st{draft}, \st{revise}, \st{iterate}, \st{pause} & \st{draft}, \st{pause}, \st{pause-on-iterate}, \st{pause-on-revise} \\
 paper & \st{accept}, \st{amend} & \st{accepted}, \st{pause-on-amend}, \file{blocked} \\
-editor & none & \st{done}, \file{blocked} \\
+readable note & none & \st{done}, \file{blocked} \\
 \bottomrule
 \end{tabular}
 \end{center}
+Every \st{pause-on-x} means ``the loop named X ran out of its budget with the judge still
+asking''; the owner can raise the budget and resume from the recorded stage. \file{stopped} and
+\file{BLOCKED} are not endings. \file{stopped} is a drain checkpoint (a stop marker, a transport
+failure, a kill) and resumes at the recorded stage on the next start. \file{BLOCKED} is an
+unreadable decision or a missing output: the reply is saved beside the position, the runner
+never re-admits the thread, and \file{reconcile} names the one safe action.
 
-\section{Transitions}
-
-Each transition is one or more model calls, or a mechanical step by the pipeline or the owner.
-``Sees'' is the part of the global state the agent can read; ``writes'' is what it may change.
-Nothing else is visible or writable, which is what makes the record auditable.
-
-\subsection*{Research thread}
-\begin{footnotesize}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{24mm} >{\raggedright\arraybackslash}p{26mm} X X >{\raggedright\arraybackslash}p{32mm}@{}}
-\toprule
-from $\to$ to & agent, prompt, tools & sees & writes & budget \\
-\midrule
-corpus $\to$ \st{scanned} & judge, \file{scan.md}, no tools & Q and P titles and abstracts, or full text & one row of \file{scan.jsonl} & one call, retried once if unparseable \\
-\st{scanned} $\to$ \st{new} & none (\file{select}) & all scan rows & \file{shortlist.json}: the top cut, or every pair at or above a threshold; started pairs are kept & none \\
-\st{new} $\to$ \st{peers} & none (runner) & shortlist, statuses, locks, receipts, markers & lock, \file{status.json} & seats; guard: spend plus in-flight estimate under \file{budget\_usd}, else the stop marker \\
-\st{peers} $\to$ \st{peers} & every peer concurrently, \file{peer.md}, tools and web search & inputs, ledger, own and partners' directories, the scan's connexion and scores, this call's allowance & ledger entries through the helper, own directory & \file{peer\_calls} per peer and \file{peer\_seconds} shared, per round; a peer whose ready stands waits instead of calling \\
-\st{peers} $\to$ \st{consolidate} & none & ledger readiness & \file{status.json} & when every peer is ready or the allowance is out; an empty ledger goes to \st{pause} \\
-\st{consolidate} $\to$ \st{verify} & first peer, \file{consolidate.md}, tools & ledger, all directories, the prior note; on a repair also the verifier's corrections & \file{<pair>.tex}; after an \st{iterate} it appends to the prior note, on a repair it rewrites & \file{consolidate\_seconds}; rerun once unless the note exists \\
-\st{verify} $\to$ next & verifier, \file{verify.md}, no tools & inputs, ledger, note, all inline & verdict file with the note's digest, a review entry in the ledger, \file{status.json} & \file{verify\_seconds}; rerun once on an empty reply; an unreadable verdict is saved and the pair is \file{BLOCKED} \\
-\st{verify} $\to$ \st{peers} & verdict \st{iterate} & & \file{round} $+1$ & \file{rounds} (4); at the cap \st{pause-on-iterate} \\
-\st{verify} $\to$ \st{consolidate} & verdict \st{revise} & the consolidator also sees the corrections & \file{repairs} $+1$ & \file{repairs} (1); at the cap \st{pause-on-revise} \\
-\bottomrule
-\end{tabularx}
-\end{footnotesize}
-
-\subsection*{Paper, owner and editor}
-\begin{footnotesize}
-\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{24mm} >{\raggedright\arraybackslash}p{26mm} X X >{\raggedright\arraybackslash}p{32mm}@{}}
-\toprule
-from $\to$ to & agent, prompt, tools & sees & writes & budget \\
-\midrule
-\st{draft} $\to$ \st{review} & author, \file{author.md}, tools and web search & everything in the thread, the web, the previous review's findings if any & \file{paper/}: \file{paper.tex}, \file{references.bib}, \file{search.md} & \file{paper\_seconds} per call \\
-\st{review} $\to$ next & reviewer, \file{review.md}, no tools & paper, bib, the pipeline's build and reference checks, the search record, note, ledger, inputs, all inline & \file{paper/review.json} with the paper's digest, \file{paper.json} & \file{review\_seconds}; \file{paper\_rounds} (3); at the cap \st{pause-on-amend}. \st{accept} may carry minor findings; \st{amend} only for a finding that changes a claim, its scope, attribution or correctness \\
-\st{pause-on-amend} $\to$ \st{review} & the owner edits the paper by hand, then \file{paper PAIR --review} & the paper as it stands & one more review, counted as the next round & none: an owner round is outside the budget \\
-\st{pause-on-x} $\to$ its loop & the owner raises the budget and reruns \file{research} or \file{paper} & the position & the loop continues from the recorded stage & the raised cap \\
-terminal $\to$ \st{edit} & editor, \file{editor.md}, tools, no search & inputs and metadata, note, verdicts, ledger, all directories; on retry, the build log and the reference findings & \file{edited/} & \file{edit\_seconds}; two attempts, then \file{blocked} \\
-\bottomrule
-\end{tabularx}
-\end{footnotesize}
-
-\medskip\noindent Between transitions the pipeline itself, with no model, does the checks that
-gate the next state: it builds the \LaTeX, verifies that every citation exists and is used and
-that arXiv identifiers carry their titles, refuses an edited note whose references do not check,
-records digests, and writes the position. The verifier's and reviewer's judgements are the only
-decisions; every other arrow is mechanical or the owner's.
+Between transitions the pipeline itself, with no model, does the checks that gate the next
+state: it builds the \LaTeX, verifies the references, records digests, and writes the position.
+The verifier's and reviewer's judgements are the only decisions; every other arrow is mechanical
+or the owner's.
 
 \section{The campaign}
 
