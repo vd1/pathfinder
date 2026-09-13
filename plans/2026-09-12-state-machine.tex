@@ -33,8 +33,12 @@ fact (every decision traces to a file and a receipt), and safe to interrupt: a s
 exhausted budget leaves the machine in a named state from which it resumes, and a human can see
 at a glance where each pair stands and what would move it.
 
-\paragraph{How.} One research thread, the work on one pair of papers, is one instance of the
-machine described below. The campaign is a set of these instances plus a scheduler with a purse.
+\paragraph{How.} One research thread is one instance of the machine described below. Its subject
+is a pair of papers together with the seed of an idea: in Pathfinder the seed is the scan's
+connexion, rationale and scores, handed to the peers in their first prompt; in the agQSL instance
+of the same machine the seed is a written idea artefact. The machine does not care where the seed
+came from, only that the thread starts from a pair and a seed. The campaign is a set of these
+instances plus a scheduler with a purse.
 Three kinds of actor appear: \emph{agents}, model calls with a prompt and a bounded view of the
 state, of which the two \emph{judges} (the verifier of a note, the reviewer of a paper) make the
 only decisions; the \emph{pipeline}, code that builds, checks, records and moves the position;
@@ -53,7 +57,8 @@ used), \file{repairs} (note repairs used), the paper's \file{round} and the edit
 
 \paragraph{Memory,} all files under \file{threads/<pair>/}:
 \begin{itemize}\setlength{\itemsep}{1pt}
-  \item \file{inputs/}: the two papers, flattened \TeX{} or PDF text, and their metadata.
+  \item \file{inputs/}: the two papers, flattened \TeX{} or PDF text, and their metadata; the
+    seed, the pair's row of \file{scan.jsonl}, is read from the campaign level.
   \item \file{ledger.jsonl}: append-only attributed entries of kind idea, finding, objection,
     correction, intention, ready or review; the peers' shared memory and the verifier's evidence.
   \item one directory per peer (\file{ada/}, \file{emmy/}, \ldots): that peer's derivations,
