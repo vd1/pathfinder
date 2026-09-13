@@ -36,6 +36,9 @@ def test_paper_round_trip_accepts(tmp_path, monkeypatch):
 
     def fake_call(prompt, **kw):
         if kw["stage"] == "review":
+            # static material first, the paper after it, the instruction last
+            assert prompt.index("## ledger.jsonl") < prompt.index("## paper.tex") < prompt.index("## your task")
+            assert prompt.rstrip().endswith("}") and "independent reviewer" in prompt[prompt.index("## your task"):]
             monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", '{"decision":"ACCEPT","summary":"fine","findings":[]}')
         else:
             monkeypatch.setenv("FAKE_REPLY", "wrote it")

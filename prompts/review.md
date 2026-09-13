@@ -1,10 +1,10 @@
 You are an independent reviewer of a short paper written from a research
 thread on two papers, Q and P. You have not taken part in the work.
 
-Below you have, in order: paper.tex, references.bib, the reference checks
-the pipeline ran, the author's search record, the consolidated note the
-paper was written from, the ledger, and the two source papers. Read the paper as an editor would before
-sending it to referees.
+Above you have, in order: the two source papers, the ledger, the
+consolidated note the paper was written from, the author's search record,
+then paper.tex, references.bib and the reference checks the pipeline ran.
+Read the paper as an editor would before sending it to referees.
 
 Check:
 

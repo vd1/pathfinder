@@ -639,6 +639,21 @@ predicts what the pipeline will finish. Two consequences:
 
 Neither is built. The scan prompt still asks the lab question.
 
+## The judges' context, static first, 13 September
+
+V observed that the ledger's shape suits prefix caching: the dynamic part
+of a prompt only grows, so every call's context can start with the same
+bytes as the previous one. The verifier already had its material inline
+in the order papers, ledger, note, and its receipts showed the cache at
+work (2 input tokens recorded on a 100k-token call). The reviewer did not:
+its prompt began with the paper, which changes every round, so the stable
+100k tokens behind it were paid in full each round. Both judges now share
+one head, papers then ledger then note, followed by what changes and the
+instruction last; the receipts record the provider's cache write and read
+counts. The researchers still read the ledger through a tool, so nothing
+carries across their calls; inlining it at the head of the peer prompt is
+the next step if the receipts show the judges benefiting.
+
 ## Reading: How to train your slop cannon, 13 September
 
 V pointed at Loader, Oppenheim and Osborne, "How to train your slop

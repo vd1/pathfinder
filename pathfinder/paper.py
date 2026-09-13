@@ -163,14 +163,12 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
     checks = check_references(tex, bib) + ([] if ok else ["the pipeline's own latexmk build failed:\n" + log])
     (pd / f"checks-round-{rnd}.txt").write_text("\n".join(checks) or "no findings")
     _set(campaign, pair_id, status="reviewing", round=rnd, build_ok=ok)
-    q = _prompt(campaign, "review")
+    # static material first (the same head as the verifier's), then what changes each round, the instruction last
+    q = research.judge_head(d, inp, f"{pair_id}.tex")
+    q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")
     q += "\n\n## paper.tex\n\n" + tex + "\n\n## references.bib\n\n" + bib
     q += "\n\n## reference checks\n\n" + ("\n".join(checks) or "no findings")
-    q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")
-    q += "\n\n## " + pair_id + ".tex\n\n" + (d / f"{pair_id}.tex").read_text(errors="replace")
-    q += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
-    for side in "QP":
-        q += "\n\n## " + inp[side] + "\n\n" + (d / "inputs" / inp[side]).read_text(errors="replace")
+    q += "\n\n## your task\n\n" + _prompt(campaign, "review")
     r = transport.call(q, campaign=campaign, model=campaign.model, tools=False, search=False, cwd=d,
                        timeout=A.get("review_seconds", 900), thread=pair_id, stage="review", actor="reviewer")
     if r["transport_failed"]:

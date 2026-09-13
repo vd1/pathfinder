@@ -146,6 +146,12 @@ you already have, or a description of where the papers come from].
   the files the pipeline already writes.
 - **Prompts are files** in `prompts/`, overridable per campaign. They are
   the place to tune behaviour; the code should not need to change for that.
+- **Static material first, instruction last**, in every inline prompt. The
+  ledger is append-only, so a context that starts with the papers and the
+  ledger is a prefix of the next call's; put the instruction after the
+  material and every judge call, in every round, starts from the same
+  cached bytes. Record the provider's cache counts in the receipts so the
+  hit rate is measurable rather than assumed.
 - **One LaTeX style per document kind**, shipped with the pipeline and put
   on `TEXINPUTS` for the pipeline's builds and the agents' shells: the
   note, the readable note and the paper each load a single package that

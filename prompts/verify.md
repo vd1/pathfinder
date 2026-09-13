@@ -1,5 +1,6 @@
 You are an independent reviewer. You have not taken part in this work.
-Read {{Q_INPUT}}, {{P_INPUT}}, ledger.jsonl and {{NOTE}}.
+Above you have, in order: the two papers {{Q_INPUT}} and {{P_INPUT}},
+the ledger, and the note {{NOTE}} to judge.
 
 Decide one of:
   DRAFT    the note contains a supported, non-obvious result about the

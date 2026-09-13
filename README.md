@@ -157,6 +157,17 @@ The seven prompts in `prompts/` are the place to tune behaviour: `scan.md`
 `verify.md`, `author.md`, `review.md` and `editor.md`. A campaign directory may carry its own `prompts/` to override
 them.
 
+## The judges' context
+
+The verifier and the paper reviewer get their material inline, in the same
+order: the two papers, the ledger, the note, then (for the reviewer) the
+search record, the paper, its bibliography and the pipeline's checks, and
+the instruction last. The head is byte-identical for both judges and, since
+the ledger only grows, a prefix of the previous round's, so a prompt cache
+serves everything but what the ledger gained since. Receipts record
+`cache_write` and `cache_read` token counts so the hit rate can be read
+off `receipts.jsonl`.
+
 ## Styles
 
 The three LaTeX documents each load one style from `pathfinder/styles/`:

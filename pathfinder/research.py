@@ -53,6 +53,17 @@ def prepare(campaign, pair_id: str) -> Path:
     return d
 
 
+def judge_head(d, inp, note_name: str) -> str:
+    """The static head of every judge's context: the two papers, the ledger, the note, in that order.
+    The same bytes for the verifier and the paper reviewer, and across rounds a prefix of the previous
+    call's, so a prompt cache serves everything but what the ledger gained since."""
+    h = "## " + inp["Q"] + "\n\n" + (d / "inputs" / inp["Q"]).read_text(errors="replace")
+    h += "\n\n## " + inp["P"] + "\n\n" + (d / "inputs" / inp["P"]).read_text(errors="replace")
+    h += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
+    h += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+    return h
+
+
 def _inputs(d: Path) -> dict:
     return {s: next(p for p in (d / "inputs").iterdir() if p.stem == s and p.suffix != ".json").name for s in "QP"}
 
@@ -180,11 +191,9 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 _set(campaign, pair_id, stage="verify", repair=None)
             elif s["stage"] == "verify":
                 _check(stop)
-                p = _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
-                p += "\n\n## " + inp["Q"] + "\n\n" + (d / "inputs" / inp["Q"]).read_text(errors="replace")
-                p += "\n\n## " + inp["P"] + "\n\n" + (d / "inputs" / inp["P"]).read_text(errors="replace")
-                p += "\n\n## ledger.jsonl\n\n" + (d / "ledger.jsonl").read_text()
-                p += "\n\n## " + note.name + "\n\n" + note.read_text(errors="replace")
+                # static material first, the instruction last: the head is shared with every other judge call
+                p = judge_head(d, inp, note.name) + "\n\n## your task\n\n"
+                p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
                 r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"])
                 try:
                     v = parse_json(r["text"]); dec = v["decision"].upper()

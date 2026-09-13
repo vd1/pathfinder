@@ -25,6 +25,7 @@ def test_claude_call_returns_text_and_receipt(tmp_path, monkeypatch):
     r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
                        timeout=10, thread="T", stage="scan", actor="judge")
     assert r["text"] == "hello" and r["session"] == "fake-session" and r["cost"] == 0.5
+    assert r["cache_write"] == 7 and r["cache_read"] == 3                      # cache counts travel into the receipt
     rows = [json.loads(l) for l in (tmp_path / "receipts.jsonl").read_text().splitlines()]
     assert rows[0]["stage"] == "scan" and transport.spend(campaign(tmp_path)) == 0.5
 

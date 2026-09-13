@@ -61,6 +61,7 @@ def _command(campaign, model, tools, search, cwd):
 
 def _parse(campaign, model, lines):
     text, session, inp, out, cost, err = "", None, 0, 0, None, None
+    cache = {"cache_write": 0, "cache_read": 0}
     for line in lines:
         try:
             row = json.loads(line)
@@ -77,6 +78,7 @@ def _parse(campaign, model, lines):
             text = row.get("result") or ""
             u = row.get("usage") or {}
             inp, out = u.get("input_tokens", 0), u.get("output_tokens", 0)
+            cache = {"cache_write": u.get("cache_creation_input_tokens", 0), "cache_read": u.get("cache_read_input_tokens", 0)}
             cost = row.get("total_cost_usd")
             if row.get("is_error"):
                 err = text or "error"
@@ -85,11 +87,12 @@ def _parse(campaign, model, lines):
         elif t == "turn.completed":
             u = row.get("usage") or {}
             inp, out = u.get("input_tokens", 0), u.get("output_tokens", 0)
+            cache = {"cache_write": 0, "cache_read": u.get("cached_input_tokens", 0)}
         elif t in ("error", "turn.failed"):
             err = str(row.get("error") or row.get("message") or t)
     if cost is None:
         cost = campaign.price(model, inp, out)
-    return text, session, inp, out, cost, err
+    return text, session, inp, out, cost, err, cache
 
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
@@ -121,17 +124,17 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
     except subprocess.TimeoutExpired:
         _kill(proc); error = "timeout"
     t.join(5)
-    text, session, inp, out, cost, err = _parse(campaign, model, lines)
+    text, session, inp, out, cost, err, cache = _parse(campaign, model, lines)
     if error == "timeout" and not (inp or out):
         cost = campaign.call_estimate_usd          # usage unknown after a kill: charge the estimate
     if proc.returncode not in (0, None) and not error and not err:
         err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
     r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "input_tokens": inp,
-         "output_tokens": out, "cost": float(cost or 0), "error": error or err, "transport_failed": False}
+         "output_tokens": out, **cache, "cost": float(cost or 0), "error": error or err, "transport_failed": False}
     with open(campaign.path("receipts.jsonl"), "a") as f:
         f.write(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thread": thread,
                             "stage": stage, "actor": actor, "backend": campaign.backend, "model": model,
-                            **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cost", "error")}}) + "\n")
+                            **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cache_write", "cache_read", "cost", "error")}}) + "\n")
     return r
 
 
