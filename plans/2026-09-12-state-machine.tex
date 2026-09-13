@@ -47,30 +47,30 @@ Whether this particular attempt at generative creative input is enough or at all
 of creating new accumulative knowledge remains to be seen.
 
 \paragraph{Object of this note.}
-This note purports to describe in implementable terms
-a simple agentic process whereby an input tuple
-is progressively elaborated and in the favourable cases a pre-publication is
-generated. 
+This note describes in implementable terms a simple agentic process
+whereby an pathfinder input tuple is progressively elaborated into a research note, and, in
+favourable cases, into a bona fide pre-publication is generated. 
 
-As we will see below, the process recruits various agents in various
-roles: researchers, verifiers, editors, etc. It consists broadly in two
-phases.
+The process runs in two phases.
 \begin{enumerate}
-\item The research phase: 
-researcher agents collaborate and produce a draft paper via
-rounds of interactions with a verifier agent. This is the creative
-part of the process which can end on paused thread, or a draft. 
-In fact, running this phase again may lead to a different
-outcome, possibly a draft expounding on a different idea. 
-(The next paragraph gives an example.)
-\item The editing phase: 
+\item \underline{The research phase}: researcher agents (typically two) collaborate and
+produce a research note via rounds of interactions with a verifier agent. 
+The agents' dialog is recorded on a ledger. The final 
+note can be put on pause by the verifier or declared ready for the next
+phase. 
+
+\item \underline{The editing phase}: 
 an author agent produces via rounds of
 interactions with a reviewer agent, a final version of the draft.
-The final draft can put on pause or accepted as a pre-publication 
+The final draft can be put on pause or accepted as a pre-publication 
 by the reviewer.
 \end{enumerate}
 
 \paragraph{An example, and why reruns differ.}
+It is worth noting that 
+running the research phase again on the same input may lead to a different
+outcome, possibly a draft expounding on a different idea. 
+
 Consider the following $(q,p,c)$ input triplet (where $c$ was written by the scanning agent):
 
 \begin{quote}
@@ -110,100 +110,27 @@ Thus, the research phase is a sampler. The same input, rerun, may
 elicit a different response. Arguably, in the example above, 
 a referee would want both responses in one paper.
 
-\paragraph{The various stages of the process}
-The process outputs file:
+\paragraph{Outline} 
+
+Below we describe the pipeline as a state machine with transitions. 
+The expected behaviours are:
 \begin{enumerate}
-\item 
-a conversation \emph{thread} recording on a ledger of the researcher 
-agents chatter
-\item a \emph{note} consigning what the researcher agents and verifier 
-agreed on (together with a \emph{readable note} of the same, rewritten for a reader 
-who never saw the ledger), and,
-\item
-when accepted by the reviewer, a \emph{paper} 
-% (written
-% with a literature search and reviewed)
+\item budget control: each run of the process has a budget limiting
+the agents' resources in time and tokens
+\item auditability after the fact: every decision traces to a file and a receipt
+\item safe interruptibility and failure recovery: a stop, a model timeout, a
+crash, an exhausted token budget, or an agent violating their contracts leaves
+the machine in a named state from which it resumes with minimal waste of
+resources and work already commited
 \end{enumerate}
-% The outputs above are arranged in increasing order of readability by humans, and 
-% decreasing dependence on the history of the generation process.
 
-The readable note presents the research phase’s final outcome for expert assessment,
-including unsuccessful or inconclusive outcomes.
+% A human can see at a glance where each pair stands and what is needed to
+% progress it.
 
-\paragraph{Why a state machine.} The work is done by model calls that cost
-money, take minutes, often fail or disagree. Writing the pipeline as a machine
-with explicit states, transitions and budgets makes it easy to re-implement on
-another corpus. It also makes clear the expected behaviours such as:
-auditability after the fact (every decision traces to a file and a receipt), and
-safe interruptibility: a stop, a crash or an exhausted budget leaves the machine
-in a named state from which it resumes, and a human can see at a glance where
-each pair stands and what is needed to progress it.
-
-% \paragraph{How.} One research thread is one instance of the machine described below. Its subject
-% is a pair of papers together with the seed of an idea: in Pathfinder the seed is the scan's
-% connexion, rationale and scores, handed to the peers in their first prompt; in the agQSL instance
-% of the same machine the seed is a written idea artefact. The machine does not care where the seed
-% came from, only that the thread starts from a pair and a seed. The campaign is a set of these
-% instances plus a scheduler with a purse.
-% Three kinds of actor appear: \emph{agents}, model calls with a prompt and a bounded view of the
-% state, of which the two \emph{judges} (the verifier of a note, the reviewer of a paper) make the
-% only decisions; the \emph{pipeline}, code that builds, checks, records and moves the position;
-% and the \emph{owner}, whoever types in the terminal, a human or a delegated session, who raises
-% budgets, edits by hand and settles what is paused. The agents of one thread share one append-only
-% ledger; that ledger, the files beside it and a position record are the whole state of the
-% thread. Everything below is what the code does; the builder prompt points here for the shape to
-% re-implement.
-
-\section{The state of a thread}
-
-One research thread is one instance of the machine; the campaign is a set of instances plus a
-scheduler with a purse. Three kinds of actor touch a thread. \emph{Agents} are model calls with a
-prompt and a bounded view of the thread; among them two \emph{judges}, the verifier of a note
-and the reviewer of a paper, make the only decisions. The \emph{pipeline} is code: it builds,
-checks, records and moves the position, and never decides. The \emph{owner} is whoever types in
-the terminal, a human or a delegated session; the owner raises budgets, edits by hand and
-settles what is paused. Everything an agent sees or writes is a file under the thread's
-directory, which is what makes the record auditable after the fact.
-
-\paragraph{Position.} \file{stage}, where the machine is; \file{status}, one of \file{running},
-\file{stopped}, \file{BLOCKED} or a terminal word; the counters \file{round} (research rounds
-used), \file{repairs} (note repairs used), the paper's \file{round} and the editor's
-\file{attempt}.
-
-\paragraph{Memory,} all files under \file{threads/<pair>/}:
-\begin{itemize}\setlength{\itemsep}{1pt}
-  \item \file{inputs/}: the two papers, flattened \TeX{} or PDF text, and their metadata; the
-    seed $c$, the pair's row of \file{scan.jsonl}, is read from the campaign level.
-  \item \file{ledger.jsonl}: append-only attributed entries of kind idea, finding, objection,
-    correction, intention, ready or review; the researchers' shared memory and the verifier's
-    evidence.
-  \item one directory per researcher (\file{ada/}, \file{emmy/}, \ldots): that agent's
-    derivations, scripts and checks. The researchers are a campaign setting (\file{peers}); two
-    by default, three were tested.
-  \item \file{<pair>.tex}: the consolidated note; \file{<pair>.verdict.json}: every verdict with
-    the digest of the note it judged.
-  \item \file{paper/}: the paper, its bibliography, its search record, the pipeline's checks per
-    round, and every review with the digest of the paper it judged.
-  \item \file{edited/}: the readable note (\file{note.tex}, \file{references.bib},
-    \file{note.pdf}).
-  \item \file{status.json}, \file{paper/paper.json}, \file{edited/edit.json}: the position of
-    each phase; \file{lock}: the pid of the runner working the thread.
-\end{itemize}
-
-\paragraph{The ledger.} The ledger is the one piece of state several agents write, and its
-rules are what make the researchers a group rather than a set of monologues. Entries are
-appended through a helper, never edited; each carries a sequence number, an actor, a kind and a
-time, and every agent reads the whole ledger before it speaks. A \emph{ready} entry is a claim
-about the ledger as it stands: it is void as soon as anyone adds a substantive entry (anything
-but ready or review) after it, so a researcher cannot declare itself done and walk away from
-an objection. The verifier writes its verdict into the ledger as a review entry, so the next
-round's researchers, and the consolidator on a repair, read the judge's reasons where they read
-everything else.
-
-\paragraph{Campaign level.} \file{fetch.json} (the two queries and how far each side has been
-paged), \file{Q.jsonl} and \file{P.jsonl}, \file{scan.jsonl}, \file{shortlist.json},
-\file{receipts.jsonl} (the only spend figure), and the markers \file{stop.json} and
-\file{health.json}.
+It is only at the end that 
+a \emph{note} synthesises
+what the researcher agents and verifier agreed on.\footnote{there is also
+a readable history-less version of the note for quick human reference.}
 
 \section{The research phase}
 
@@ -238,11 +165,15 @@ paged), \file{Q.jsonl} and \file{P.jsonl}, \file{scan.jsonl}, \file{shortlist.js
 \end{center}
 
 \noindent The research phase takes the incoming message $(q,p,c)$ and ends in one of four
-words: \st{draft}, the note carries a result that would justify a paper; \st{pause}, the pair
+terminal states: 
+\begin{enumerate}
+  \item \st{draft}, the note carries a result that would justify a paper; 
+  \item \st{pause}, the pair
 does not yield anything worth further effort now, or the missing input is one the agents cannot
-supply; \st{pause-on-iterate} and \st{pause-on-revise}, the loop named ran out of its budget
+supply; \item \st{pause-on-iterate} and \st{pause-on-revise}, the loop named ran out of its budget
 with the verifier still asking. Each arrow of the diagram is described below, in the order a
 thread meets them.
+\end{enumerate}
 
 \paragraph{Admission.} The runner, with no model call, admits a \st{new} pair when a seat is
 free and the campaign guard passes: the spend recorded in the receipts plus an estimate for the
@@ -413,6 +344,57 @@ Between transitions the pipeline itself, with no model, does the checks that gat
 state: it builds the \LaTeX, verifies the references, records digests, and writes the position.
 The verifier's and reviewer's judgements are the only decisions; every other arrow is mechanical
 or the owner's.
+
+\section{The state of a thread}
+
+One research thread is one instance of the machine; the campaign is a set of instances plus a
+scheduler with a purse. Three kinds of actor touch a thread. \emph{Agents} are model calls with a
+prompt and a bounded view of the thread; among them two \emph{judges}, the verifier of a note
+and the reviewer of a paper, make the only decisions. The \emph{pipeline} is code: it builds,
+checks, records and moves the position, and never decides. The \emph{owner} is whoever types in
+the terminal, a human or a delegated session; the owner raises budgets, edits by hand and
+settles what is paused. Everything an agent sees or writes is a file under the thread's
+directory, which is what makes the record auditable after the fact.
+
+\paragraph{Position.} \file{stage}, where the machine is; \file{status}, one of \file{running},
+\file{stopped}, \file{BLOCKED} or a terminal word; the counters \file{round} (research rounds
+used), \file{repairs} (note repairs used), the paper's \file{round} and the editor's
+\file{attempt}.
+
+\paragraph{Memory,} all files under \file{threads/<pair>/}:
+\begin{itemize}\setlength{\itemsep}{1pt}
+  \item \file{inputs/}: the two papers, flattened \TeX{} or PDF text, and their metadata; the
+    seed $c$, the pair's row of \file{scan.jsonl}, is read from the campaign level.
+  \item \file{ledger.jsonl}: append-only attributed entries of kind idea, finding, objection,
+    correction, intention, ready or review; the researchers' shared memory and the verifier's
+    evidence.
+  \item one directory per researcher (\file{ada/}, \file{emmy/}, \ldots): that agent's
+    derivations, scripts and checks. The researchers are a campaign setting (\file{peers}); two
+    by default, three were tested.
+  \item \file{<pair>.tex}: the consolidated note; \file{<pair>.verdict.json}: every verdict with
+    the digest of the note it judged.
+  \item \file{paper/}: the paper, its bibliography, its search record, the pipeline's checks per
+    round, and every review with the digest of the paper it judged.
+  \item \file{edited/}: the readable note (\file{note.tex}, \file{references.bib},
+    \file{note.pdf}).
+  \item \file{status.json}, \file{paper/paper.json}, \file{edited/edit.json}: the position of
+    each phase; \file{lock}: the pid of the runner working the thread.
+\end{itemize}
+
+\paragraph{The ledger.} The ledger is the one piece of state several agents write, and its
+rules are what make the researchers a group rather than a set of monologues. Entries are
+appended through a helper, never edited; each carries a sequence number, an actor, a kind and a
+time, and every agent reads the whole ledger before it speaks. A \emph{ready} entry is a claim
+about the ledger as it stands: it is void as soon as anyone adds a substantive entry (anything
+but ready or review) after it, so a researcher cannot declare itself done and walk away from
+an objection. The verifier writes its verdict into the ledger as a review entry, so the next
+round's researchers, and the consolidator on a repair, read the judge's reasons where they read
+everything else.
+
+\paragraph{Campaign level.} \file{fetch.json} (the two queries and how far each side has been
+paged), \file{Q.jsonl} and \file{P.jsonl}, \file{scan.jsonl}, \file{shortlist.json},
+\file{receipts.jsonl} (the only spend figure), and the markers \file{stop.json} and
+\file{health.json}.
 
 \section{The campaign}
 
