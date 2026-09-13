@@ -192,22 +192,25 @@ seed $c$ with its scores and rationale, the whole ledger, its own directory and 
 directories, and the allowance left for this call. It writes ledger entries %through the helper
 and whatever it likes in its own directory. The first prompt, \file{peer.md}, asks whether there
 is something publishable to say about this pair; later
-rounds add the verifier's last verdict. There is no turn-taking: the two agents run
-concurrently and each spends its calls at its own pace. An agent declares itself done by
-writing a \emph{ready} entry, which is void as soon as its partner writes anything substantive.
-Before spending a call, an agent whose ready still stands does not spend it: its loop polls the
-ledger and waits, because a fresh call would only repeat what it already said; as soon as the
-partner writes, the call is made. The round ends when both agents' ready entries stand at once,
-or when the allowance is out. So a round costs what the disagreement costs: agreement after one
-exchange is one call each, an objection to every entry is the full allowance. (If the round
+rounds add the verifier's last verdict. There is no turn-taking,
+% : the two agents run
+% concurrently and each spends its calls at its own pace. An agent declares itself done by
+% writing a \emph{ready} entry, which is void as soon as its partner writes anything substantive.
+% Before spending a call, an agent whose ready still stands does not spend it: its loop polls the
+% ledger and waits, because a fresh call would only repeat what it already said; as soon as the
+% partner writes, the call is made. 
+the round ends when both agents agree it should,
+or when the allowance is out. 
+(If the round
 ends with an empty ledger the thread ends in \st{pause}.)
 
-\paragraph{Consolidate.} Once researchers are ready, 
-the first researcher (arbitrary) is called once with a new prompt \file{consolidate.md} and
-tools, sees the ledger, every directory and the note from preceding round (if any), and writes the note
-\file{<pair>.tex}: what the researchers agreed, with every claim pointing at the ledger entries
-that support it. After an \st{iterate} the note is appended to, so the
-history of the thread stays readable; on a \st{revise} the consolidator also sees the
+\paragraph{Consolidate.} Once the ledger has converged, 
+the first researcher (arbitrary) is called once with a new prompt, \file{consolidate.md}, and
+tools, sees the ledger, every directory and the note from preceding round (if any), and writes 
+the research note summarising what the researchers agreed, with every claim pointing at the ledger entries
+that support it. After an \st{iterate} the consolidator keeps every result of the previous note that still
+stands and adds this round's work to it, so results accepted in an earlier round are not lost
+or silently reworded; on a \st{revise} the consolidator also sees the
 verifier's corrections and rewrites. The call has \file{consolidate\_seconds}; if it produces no
 note it is rerun once.
 
