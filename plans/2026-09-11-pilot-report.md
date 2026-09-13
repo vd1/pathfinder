@@ -599,3 +599,51 @@ budget of each loop, is `2026-09-12-state-machine.tex` (built as a PDF beside it
   exist; pair ids should become arXiv-id based first.
 - The builder prompt for colleagues, once the code has been read for
   leanness.
+
+## Reading: How to train your slop cannon, 13 September
+
+V pointed at Loader, Oppenheim and Osborne, "How to train your slop
+cannon: a short guide to using large language models for research in the
+natural sciences" (github.com/Open-Science-Ledger/how-to-train-your-slop-cannon,
+CC BY 4.0). It is written for humans using agents; read the other way
+round it says what an agent harness owes its humans. Their table of
+failure modes against countermeasures, held against Pathfinder:
+
+| failure mode | their countermeasure | Pathfinder |
+| --- | --- | --- |
+| finite context, no continual learning | filesystem as memory, progressive disclosure | the ledger and the thread directory are the memory; every call starts fresh and reads only its thread; no wiki, no summary between rounds |
+| hallucination | ground truth on disk, quote before citing | full texts are on disk and the pipeline checks arXiv identifiers and titles; nothing forces a peer to quote the source verbatim before citing it |
+| nonzero error rate | decompose, verify each block, expand what fails | rounds and repairs are the loop, but a note is verified as a whole, not step by step |
+| hyperfixation, sycophancy | a verifier that sees only the artefact, never the reasoning | the verifier sees the ledger, so it sees the reasoning; the paper reviewer sees the note and ledger too. Their point is that independence needs blindness |
+| confident wrongness | structured proofs with numbered, dependent steps | the note is prose with ledger citations; a Lamport-style structure would let the verifier point at a step |
+| semantic shift | formalisation | out of scope |
+| bad taste | ask a human | the decision queue |
+
+Three things they do that Pathfinder does not, in the order I would try
+them:
+
+- **A verifier from another model family.** They argue blind spots are
+  correlated within a family and often glaring to another. The
+  two-verifier idea above becomes concrete: one Claude, one Codex, blind
+  to each other.
+- **Quote before citing.** Peers already have the full texts; a rule that
+  every claim about Q or P carries a verbatim quotation with a location
+  would give the verifier something to check rather than something to
+  believe.
+- **Numbered steps in the note.** The consolidator could write the result
+  as a tree of numbered claims with explicit dependencies; the verifier's
+  REVISE would then name a step, and the paper's reviewer likewise.
+
+Their own statement on tooling is also a data point for the writing
+skill: they found machine-drafted prose generic and wrote the parts that
+carry judgement themselves, using agents for corrections and criticism
+they then accepted or rejected. That is the division Pathfinder should
+assume for the engine note: the owner writes, the agent reviews and
+fixes what the owner approves.
+
+Read the other way, how an agent should use a human: for taste, framing
+and the seed, which the guide says no context window holds; for the
+decisions in the queue, presented with the state and the one action
+each would take; never for verification or routine, which the agent
+owes the human in checkable form (a diff, a digest, a numbered step),
+not as a summary of its own work.
