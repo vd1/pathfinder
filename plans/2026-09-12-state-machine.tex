@@ -17,14 +17,18 @@
 
 \section*{What, why, how}
 
-\paragraph{What.} Pathfinder takes two corpora of papers, Q and P, and looks for pairs (q, p)
-with something publishable between them: a result that neither paper states and that follows
-from putting the two together. For every pair it keeps, it produces a record in increasing order
-of readability and decreasing dependence on the process that made it: the \emph{thread} (a
-ledger of everything the agents said to each other), the \emph{note} (what the agents agreed and
-a judge accepted), the \emph{readable note} (the same, rewritten for a reader who never saw the
-ledger), and, when the judge said the result would carry a paper, the \emph{paper} (written with
-a literature search and reviewed).
+\paragraph{What.} Pathfinder takes two corpora of papers, $Q$ and $P$, and looks
+for pairs $(q, p)$ in $Q\times P$ with enough of an interesting connexion
+to elaborate it as a publication (with the usual constraints of novelty, relevance,
+readability, and exposition of related work in the literature).
+
+For every pair it keeps, it produces a record in increasing order of readability
+and decreasing dependence on the process that made it: the \emph{thread} (a
+ledger of everything the agents said to each other), the \emph{note} (what the
+agents agreed and a judge accepted), the \emph{readable note} (the same,
+rewritten for a reader who never saw the ledger), and, when the judge said the
+result would carry a paper, the \emph{paper} (written with a literature search
+and reviewed).
 
 \paragraph{Why a state machine.} The work is done by model calls that cost money, take minutes,
 fail, and disagree. Writing the pipeline as a machine with explicit states, transitions and
