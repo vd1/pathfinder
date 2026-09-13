@@ -37,11 +37,19 @@ peers did. British English; no em dash character.
 References: BibTeX only. Cite Q and P, with metadata from inputs/Q.json
 and inputs/P.json, and every outside source the ledger cites by URL, with
 the URL in the entry. Do not add sources the ledger does not cite. Every
-entry is cited at least once. Use \bibliographystyle{plain} and
-\bibliography{references}.
+entry is cited at least once. Use \bibliographystyle{plainurl} and
+\bibliography{references}, so that URLs and identifiers print.
 
-Form: article class; amsmath, amssymb, hyperref and url allowed, nothing
-else. Build it yourself with
+Form: article class with the pipeline's style, and nothing else:
+
+    \documentclass{article}
+    \usepackage{pathfinder-readable}
+    \pathfinderpair{{{NOTE_STEM}}}
+
+The style loads amsmath, amssymb, amsthm, hyperref and url, provides an
+abstract environment and the theorem environments theorem, proposition,
+lemma, corollary, definition and remark; do not load packages or define
+theorem environments yourself. Build it yourself with
 
     latexmk -pdf -interaction=nonstopmode -halt-on-error note.tex
 

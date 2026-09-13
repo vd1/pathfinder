@@ -113,7 +113,7 @@ def pdf(tex: Path) -> tuple[bytes, str]:
         shutil.copy(tex, tmp)
         for _ in range(2):
             subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", tex.name], cwd=tmp,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120, env=paper.tex_env())
         out, log = Path(tmp) / tex.with_suffix(".pdf").name, Path(tmp) / tex.with_suffix(".log").name
         data = out.read_bytes() if out.exists() else b""
         text = log.read_text(errors="replace") if log.exists() else "pdflatex produced no log"

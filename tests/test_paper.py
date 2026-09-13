@@ -75,3 +75,21 @@ def test_review_only_round_on_hand_edited_paper(tmp_path, monkeypatch):
     assert calls == ["review"]                            # no author call
     s = paper.status(c, "Q1P1"); assert s["status"] == "ACCEPTED" and s["round"] == 2
     assert [r["round"] for r in json.loads((pd / "review.json").read_text())] == [1, 2]
+
+
+def test_tex_env_exposes_the_style_files():
+    env = paper.tex_env()
+    assert str(paper.STYLES) in env["TEXINPUTS"] and (paper.STYLES / "pathfinder-paper.sty").exists()
+
+
+@pytest.mark.skipif(not shutil.which("latexmk"), reason="latexmk not installed")
+@pytest.mark.parametrize("style,body", [
+    ("pathfinder-note", "\\section{The pair}\\begin{claim}x\\end{claim} see \\ledger{3}"),
+    ("pathfinder-readable", "\\begin{abstract}a\\end{abstract}\\section{One}\\begin{theorem}t\\end{theorem}"),
+    ("pathfinder-paper", "\\begin{abstract}a\\end{abstract}\\section{One}\\begin{assumption}t\\end{assumption}\\begin{remark}r\\end{remark}"),
+])
+def test_each_style_builds(tmp_path, style, body):
+    (tmp_path / "doc.tex").write_text(f"\\documentclass{{article}}\\usepackage{{{style}}}\\pathfinderpair{{Q1P1}}\\title{{T}}"
+                                     f"\\begin{{document}}\\maketitle {body} \\(x\\) \\end{{document}}")
+    ok, log = paper.build(tmp_path, "doc.tex")
+    assert ok, log

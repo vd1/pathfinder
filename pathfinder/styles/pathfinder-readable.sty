@@ -1,0 +1,17 @@
+% pathfinder-readable: the note rewritten for a reader who never saw the ledger.
+% Reads like a short article: numbered sections, an abstract, plain theorem environments.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pathfinder-readable}[2026/09/13 Pathfinder readable note]
+\RequirePackage{pathfinder-common}
+\renewcommand{\pathfinder@kind}{Pathfinder readable note}
+\definecolor{pathfinder@ink}{HTML}{B8730F}
+\setcounter{secnumdepth}{1}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\renewenvironment{abstract}{\noindent\small\begin{quotation}\noindent\textbf{Abstract.}\ }{\end{quotation}\medskip}

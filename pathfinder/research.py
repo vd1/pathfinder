@@ -170,7 +170,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, PRIOR=prior), True,
+                                _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, NOTE_STEM=pair_id, PRIOR=prior), True,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():

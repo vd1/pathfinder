@@ -15,6 +15,8 @@ class TransportFailed(Exception):
 
 def _env(campaign):
     env = {k: v for k, v in os.environ.items() if not any(s in k for s in SCRUB)}
+    styles = Path(__file__).parent / "styles"          # the agents build with latexmk themselves; they must see the style files
+    env["TEXINPUTS"] = f"{styles}{os.pathsep}" + env.get("TEXINPUTS", "")
     prov = (campaign.raw or {}).get("codex") or {}
     if campaign.backend == "codex" and prov.get("key_file"):
         env[prov["env_key"]] = _key_from_file(campaign.path(prov["key_file"]), prov["env_key"])

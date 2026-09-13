@@ -146,6 +146,14 @@ you already have, or a description of where the papers come from].
   the files the pipeline already writes.
 - **Prompts are files** in `prompts/`, overridable per campaign. They are
   the place to tune behaviour; the code should not need to change for that.
+- **One LaTeX style per document kind**, shipped with the pipeline and put
+  on `TEXINPUTS` for the pipeline's builds and the agents' shells: the
+  note, the readable note and the paper each load a single package that
+  provides the maths and reference packages, a running header naming the
+  kind and the pair, and the theorem environments the prompt allows. The
+  prompts then say "load this package and nothing else", which ends the
+  drift of preambles from one agent to the next and makes the three
+  documents recognisable at a glance.
 
 ### What the pilot taught, so build it in
 

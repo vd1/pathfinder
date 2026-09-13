@@ -8,7 +8,15 @@ raised and how they were resolved or not; sources used from outside Q and
 P, if any; what remains open; and the smallest next step that would settle
 it. Attribute claims to ledger entries by number. Do not add results that
 are not in the ledger or the notes.{{PRIOR}} State plainly when the material is
-thin. Use article class, no packages beyond amsmath, and compile-clean
-pdflatex; write inline mathematics as \( ... \) and displayed
-mathematics as \[ ... \] or an amsmath environment, never with dollar
-signs.
+thin. Form: article class with the pipeline's style, and nothing else:
+
+    \documentclass{article}
+    \usepackage{pathfinder-note}
+    \pathfinderpair{{{NOTE_STEM}}}
+
+The style loads amsmath, amssymb, amsthm, hyperref and url and provides
+the environments claim and objection and the macro \ledger{12, 15} for
+citing ledger entries; do not load packages or define theorem
+environments yourself. Compile-clean pdflatex; write inline mathematics
+as \( ... \) and displayed mathematics as \[ ... \] or an amsmath
+environment, never with dollar signs.

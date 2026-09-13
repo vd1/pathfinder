@@ -32,11 +32,20 @@ Content rules:
   not add an entry you could not verify. Q and P are cited. Every entry is
   cited at least once.
 
-Form: article class; amsmath, amssymb, amsthm, hyperref and url are
-allowed, nothing else; inline mathematics as \( ... \), displayed as
-\[ ... \] or an amsmath environment, never dollar signs; \bibliographystyle{plain} and
-\bibliography{references}; British English; no em dash character. Build
-it yourself with
+Form: article class with the pipeline's style, and nothing else:
+
+    \documentclass{article}
+    \usepackage{pathfinder-paper}
+    \pathfinderpair{{{NOTE_STEM}}}
+
+The style loads amsmath, amssymb, amsthm, hyperref and url, provides an
+abstract environment and the theorem environments theorem, proposition,
+lemma, corollary, definition, assumption and remark; do not load packages
+or define theorem environments yourself. Inline mathematics as \( ... \),
+displayed as \[ ... \] or an amsmath environment, never dollar signs;
+\bibliographystyle{plainurl} and \bibliography{references}, so that URLs
+and identifiers print; British English; no em dash character. Build it
+yourself with
 
     latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
 

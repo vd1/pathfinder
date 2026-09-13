@@ -1,6 +1,6 @@
 """After DRAFT: an author writes a paper with BibTeX references, an independent reviewer accepts or returns it."""
 from __future__ import annotations
-import hashlib, json, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
+import hashlib, json, os, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import corpus, research, transport
@@ -26,6 +26,16 @@ def _set(campaign, pair_id, **kw):
     return s
 
 
+STYLES = Path(__file__).parent / "styles"
+
+
+def tex_env() -> dict:
+    """The environment for TeX runs: the pipeline's style files are visible to every document."""
+    env = dict(os.environ)
+    env["TEXINPUTS"] = f"{STYLES}{os.pathsep}" + env.get("TEXINPUTS", "")
+    return env
+
+
 def build(d: Path, main: str = "paper.tex") -> tuple[bool, str]:
     """latexmk in a scratch copy; on success copy the PDF back. Returns (ok, log tail)."""
     stem = Path(main).stem
@@ -34,7 +44,7 @@ def build(d: Path, main: str = "paper.tex") -> tuple[bool, str]:
         if f.suffix in (".tex", ".bib", ".bst", ".sty", ".png", ".pdf") and f.name != f"{stem}.pdf":
             shutil.copy(f, scratch)
     r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", main], cwd=scratch,
-                       capture_output=True, text=True, timeout=300)
+                       capture_output=True, text=True, timeout=300, env=tex_env())
     log = (scratch / f"{stem}.log").read_text(errors="replace") if (scratch / f"{stem}.log").exists() else r.stdout + r.stderr
     ok = r.returncode == 0 and (scratch / f"{stem}.pdf").exists()
     if ok:
