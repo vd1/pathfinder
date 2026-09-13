@@ -1,0 +1,260 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,hyperref,url}
+\hypersetup{hidelinks}
+\title{Peer scoring when energy also pays for evidence}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+This account connects the peer-scoring mechanism in \emph{Mechanism Design for Alignment and Control} with the
+resource economy in \emph{The Energy Society}.
+The peers asked whether energy pressure changes the evidence available from other agents and thereby weakens
+incentives to report truthfully.
+They checked examples in which selection reverses an outdated score and loss of informative outcomes raises the minimum peak payment.
+Correct calibration and score normalisation resolve parts of these examples, but no experiment established the
+proposed effect in the Energy Society.
+The verifier therefore paused the thread pending suitable round-level records or access to experiments in that economy.
+\end{abstract}
+
+\section{Introduction}
+\emph{Mechanism Design for Alignment and Control}, called Q here, studies how to make agents report truthfully
+and carry out intended actions when their preferences and capabilities are private \cite{Q}.
+Its peer-scoring construction uses what an agent's private type predicts about other agents' reports.
+A type means the private information relevant to its preferences, capabilities and beliefs.
+The designer must know these conditional beliefs, and different types must imply different beliefs.
+The mechanism also cancels the reported type's own utility, permits unrestricted rewards and prohibits actions outside the intended set.
+These are substantive assumptions, beyond simply paying agents for agreement.
+
+\emph{The Energy Society}, called P, studies language-model agents whose generated tokens consume energy \cite{P}.
+Energy funds reasoning and continued participation.
+Agents attempt jobs, make donations and recommend actions to one another.
+The competitive and cooperative conditions instruct them to maximise individual or group energy, respectively.
+These instructions do not implement Q's reward mechanism.
+P also has known correct answers for its multiple-choice jobs, so direct answer checking is an available alternative to peer scoring.
+
+The connexion pursued was narrower than a direct transfer of Q into P.
+If energy pressure changes which useful peer reports remain available, a score may be based on evidence that
+no longer has the assumed distribution.
+Paying for better reports then interacts with the resource that keeps peers active.
+The question was whether this feedback occurs in P and, if so, whether affordable payments can correct its effect on incentives.
+The thread supplied finite mathematical examples, not evidence that this feedback occurs in P.
+
+\section{What was done}
+Ada and Emmy first checked the proposed mechanism transfer against the papers' assumptions.
+They rejected a direct reading of P's prompted objectives as Q's mechanism.
+Ada began with a bounded-payment benchmark for two possible reports.
+Emmy examined selection: the possibility that the peers who remain observable differ from the original population.
+They also checked whether P's communication measures establish concealed capability, and found that they do not.
+
+Emmy then constructed an example in which scoring only observed reports with the original probabilities rewards a false report.
+Ada checked the calculation and pointed out that missing reports can themselves carry information.
+Emmy supplied a second example that removes informative outcomes even when missingness is recorded.
+Ada independently checked its sharp payment bound.
+Their literature searches meanwhile showed that effort costs, payment restrictions and poor equilibria already have substantial precedents.
+
+Next, Ada audited the simulation code, and Emmy checked the audit.
+This constrained when a missing report could legitimately enter the model.
+The peers separated a maximum possible payout from expected spending, and required beliefs to reflect public
+information available when a report is committed.
+Finally, Emmy checked score normalisation and showed that Q's quadratic score attains the sharp payment bound in the second example.
+Both peers left the natural-economy question open.
+They ran exact arithmetic checks, but no language-model experiments or full Energy Society runs.
+
+\section{Results}
+\subsection{Selection can reverse an outdated score}
+Let \(H\) and \(L\) label two private types and also their possible reports.
+Let \(Y\) be a truthful reference peer's outcome, and let \(y\) denote one possible value of that outcome.
+Write \(p_H\) and \(p_L\) for the outcome distributions believed by the two types before selection.
+For any reported distribution \(p\), Q's quadratic score is
+\[
+S(p,y)=2p(y)-\lVert p\rVert_2^2,
+\qquad \lVert p\rVert_2^2=\sum_y p(y)^2.
+\]
+Here \(p(y)\) is the probability assigned to outcome \(y\).
+With the correct, fixed outcome distribution, the expected advantage of reporting the true distribution over
+the other row is their squared distance.
+This positive margin is the reporting component of Q's argument.
+It does not by itself establish action obedience.
+
+In Emmy's first example, outcomes are zero or one, and
+\[
+p_H(1)=\frac34,\qquad p_L(1)=\frac14.
+\]
+An outcome of one is observed with probability \(1/10\); an outcome of zero is always observed.
+Among observed reports, the probability of one therefore falls to \(3/13\) for type \(H\) and \(1/31\) for type \(L\).
+The original score difference between reports \(H\) and \(L\) is one at outcome one and minus one at outcome zero.
+Thus the expected truthful advantage for type \(H\), conditional on observation, becomes
+\[
+2\frac3{13}-1=-\frac7{13}.
+\]
+A larger positive score multiplier strengthens the incentive to report falsely.
+
+The remedy in this example is to use the correct probabilities, provided selection is known and cannot be
+changed by the reporting deviation.
+Another remedy is to score nonresponse as an outcome.
+Writing \(q_H\) and \(q_L\) for the full observable distributions, in the order one, zero, missing, gives
+\[
+q_H=(3/40,1/4,27/40),\qquad
+q_L=(1/40,3/4,9/40).
+\]
+These distributions remain distinct: their squared distance is \(91/200\).
+Missingness therefore retains information here.
+The example shows a failure to update the score, not a failure of Q or a general loss of information whenever peers disappear.
+
+\subsection{Losing diagnostic outcomes raises the peak payment}
+The second example does lose useful information.
+Now the latent peer outcome has three values, with distributions
+\[
+p_H=(1/2,2/5,1/10),\qquad
+p_L=(1/2,1/10,2/5).
+\]
+The first value is always observed.
+The second and third are each observed with probability \(\varepsilon\), where \(0\leq\varepsilon\leq1\).
+Including missingness as a fourth outcome gives
+\begin{align*}
+q_H&=(1/2,2\varepsilon/5,\varepsilon/10,(1-\varepsilon)/2),\\
+q_L&=(1/2,\varepsilon/10,2\varepsilon/5,(1-\varepsilon)/2).
+\end{align*}
+Only the second and third outcomes distinguish the types.
+Their total variation distance, a measure of this distinction, is
+\[
+\operatorname{TV}(q_H,q_L)
+:=\frac12\sum_y|q_H(y)-q_L(y)|=\frac{3\varepsilon}{10}.
+\]
+
+Assume that utility is linear in bonuses, that the peer outcome distribution is fixed under reporting
+deviations, and that either type gains \(M>0\) from the false report's continuation before bonuses.
+The quantity \(M\) is an assumed temptation in this example, not an estimate of model preferences.
+Action obedience is a separate issue.
+Let \(R(r,y)\) be the bonus for report \(r\in\{H,L\}\) and outcome \(y\), with every bonus between zero and a cap \(B\).
+Define \(d(y)=R(H,y)-R(L,y)\).
+For truthfulness, the expected bonus advantage must offset the temptation:
+\[
+\mathbb E_{q_H}d\geq M,\qquad
+\mathbb E_{q_L}d\leq-M.
+\]
+The notation \(\mathbb E_q\) means expectation under distribution \(q\).
+Since \(|d(y)|\leq B\), subtraction gives
+\[
+2M\leq\sum_y(q_H(y)-q_L(y))d(y)
+\leq 2B\operatorname{TV}(q_H,q_L).
+\]
+
+This necessary bound is attained for these symmetric distributions.
+Pay \(B\) for report \(H\) on the second outcome, or for report \(L\) on the third, and zero otherwise.
+Either type then gains \(3B\varepsilon/10\) in expected bonus by reporting truthfully.
+The minimum cap is consequently
+\[
+B_{\min}=\frac{10M}{3\varepsilon}\qquad(\varepsilon>0).
+\]
+At equality the agent is indifferent after including the temptation; a larger cap gives strict preference for truthfulness.
+At \(\varepsilon=0\), the observable distributions coincide and no finite bonus works.
+Attainment is specific to this example, not a general sufficiency result for arbitrary distributions.
+
+The divergence concerns the largest possible payment.
+At the minimum cap, expected truthful payment is
+\[
+\frac{2\varepsilon}{5}B_{\min}=\frac{4M}{3}.
+\]
+Expected spending stays constant while rare payments become large.
+Thus an expected budget and a reserve sufficient for every payout are different restrictions.
+P supplies no explicit principal's scoring reserve; imposing one would be an added intervention.
+
+\subsection{Normalisation attains the same bound}
+A final correction concerned the difference between a score multiplier and the resulting payment cap.
+For the second example, let \(\Lambda>0\) be the multiplier and subtract the smallest score available at each outcome:
+\[
+b(y)=\min_{r\in\{H,L\}}S(q_r,y),\qquad
+R(r,y)=\Lambda\bigl[S(q_r,y)-b(y)\bigr].
+\]
+The baseline \(b(y)\) does not depend on the report.
+Under the fixed-distribution and linear-utility assumptions, subtracting it preserves reporting comparisons.
+The resulting payments are exactly the diagnostic bonuses just described, with
+\[
+B=\frac{3\Lambda\varepsilon}{5},\qquad
+\Lambda_{\min}=\frac{50M}{9\varepsilon^2},\qquad
+B_{\min}=\frac{10M}{3\varepsilon}.
+\]
+Here \(\Lambda_{\min}\) is the smallest multiplier that offsets \(M\).
+Its inverse-square growth does not mean that peak payments grow at that rate.
+Normalised quadratic scoring already attains the sharp cap.
+This argument does not preserve survival paths or cover deviations that change the peer outcome distribution.
+
+The derivations and qualifications are recorded in
+\path{ada/research_note.md} and \path{emmy/survival_scoring.md}.
+Ada independently checked the selection example and payment bound.
+Their exact arithmetic checks are in \path{ada/check_examples.py} and
+\path{emmy/verify_scoring.py}; Emmy's script also checks the final normalisation.
+
+\section{Objections and their resolution}
+The direct mechanism-transfer claim did not survive.
+P establishes neither Q's known belief and utility maps nor its cancellation and prohibition instruments.
+Q's separate coupled-reward construction also assumes scalar actions and a known decreasing relation between
+agents' biases that P does not establish.
+Likewise, avoiding difficult jobs or recommending collisions does not identify sandbagging, meaning concealed capability.
+P has no verified capability frontier or evaluation stage that determines later permissions.
+
+Poor equilibria do not refute Q either.
+Q requires the target behaviour to be an equilibrium, not the unique equilibrium.
+Recalibration settles the first example's reporting problem against a fixed peer distribution.
+It does not settle strategic manipulation of peers, or selection among equilibria.
+
+The code audit changed the proposed interpretation of exhaustion.
+At the recorded commit, energy is deducted after a completed model call \cite{middleware}.
+Completed votes remain available even if producing them exhausts their author, whereas already inactive agents
+are excluded before discussion \cite{environment}.
+Successful job payouts can also restore an exhausted solver's energy.
+Ordinary exhaustion during a completed call must therefore not be recorded as a missing vote.
+
+The relevant beliefs must condition on public history and active status at report commitment.
+An already known absence is not a future random scoring event.
+Fresh signals independent of past energy need not show survival bias at all.
+Sealing reports and eligibility before recommendations or donations limits immediate manipulation, but leaves
+strategic selection across rounds unresolved.
+
+P's resource evidence also needed qualification.
+Its abstract claims that larger models spend more energy than they gain even without size-dependent token costs.
+Its ``Experiment 2: No Size Penalty'' instead reports all agents surviving and all efficiency ratios above one.
+The peers used that section and its results table, labelled
+\texttt{tab:exp2\_big\_table} in the source, rather than the stronger abstract claim.
+Neither these results nor pooled collision counts identify the effect of a scoring intervention.
+
+Novelty remained unsettled.
+The scoped searches found earlier work on costly effort, participation and budget balance by Miller, Resnick
+and Zeckhauser \cite{miller}; participation and payment restrictions in \emph{Dwelling on the Negative}
+\cite{witkowski}; and budget-constrained information acquisition in \emph{Information Gathering with Peers}
+\cite{radanovic}.
+Gao, Wright and Leyton-Brown study uninformative equilibria and advantages of direct checking under their assumptions \cite{gao}.
+Q itself discusses language-model peer scoring, and Emmy checked its precursor by Qiu, Carroll and Allen \cite{qiu}.
+These checks ruled out treating a payment bound or generic language-model peer scoring as sufficient novelty.
+They were not a comprehensive literature review.
+
+\section{Why the thread stopped}
+The verifier's sole recorded round ended in PAUSE.
+It accepted the consolidated account and the conditional calculations, but found no evidence for the
+distinctive connexion: a resource-dependent loss of useful peer information in P after conditioning on public
+history.
+More algebra on the examples could not supply that evidence.
+Suitable round-level traces or access to new experiments were missing and would have to be provided before the research could proceed.
+
+The smallest restart is a channel-identification check in the natural P economy.
+Fix what is public when a report is committed, then estimate whether resource state changes the informative
+peer-outcome distributions after accounting for that history.
+Use the audited timing to distinguish inactive-at-start peers from completed votes.
+A synthetic erasure test can check the mathematics but cannot answer this question about the natural economy.
+
+If no material change appears, the proposed connexion lacks support.
+If it does appear, it supplies calibration for a sealed-report scoring test with explicit peak reserves.
+That test still needs direct-answer checking and report-independent transfers as controls.
+The latter must account for timing, recipients and payout variation, since equal expected payments can affect survival differently.
+Injected energy must not count as produced task value.
+Identifying natural private types, valuing energy near exhaustion, strategic peer influence and novelty would
+remain open even after this first empirical hurdle.
+
+\begingroup
+\raggedright
+\bibliographystyle{plain}
+\bibliography{references}
+\endgroup
+\end{document}

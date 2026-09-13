@@ -1,0 +1,1 @@
+The account explains the conditional re-entry incentive, the evidence limit on payments, and why implementation evidence is needed to restart the paused thread. Written to `edited/note.tex` and `edited/references.bib`, with build files retained. The seven-page PDF builds successfully, has no undefined citations, passes the style gates, and was visually checked.

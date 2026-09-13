@@ -1,0 +1,199 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,hyperref,url}
+\title{Do contracts discourage permitted trades?\\An unfinished connexion between markets and cooperation}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+This account connects \emph{Competitive Market Behavior of LLMs} (Q) with \emph{Commitment To Cooperation With
+Self-Negotiated Contracts} (P). The peers asked whether contracts could improve language-model trading, then
+narrowed the question to whether contractual wording makes agents infer restrictions that the rules do not
+impose. They established limits on payment-based explanations, feasible cooperation in P, and the distinction
+between market surplus and price convergence. They also corrected an overstrong reward bound: payments to a
+nonfinisher may enlarge the set of outcomes that benefit both players. The thread ended at PAUSE because these
+results did not establish the proposed shared cause, and the controlled agent trials needed to test it had not
+been run.
+\end{abstract}
+
+\section{Introduction}
+Q studies language models acting as buyers and sellers in a double auction, where either side can post an
+offer \cite{Q}. Each agent can trade once per round. A buyer who offers at least the current asking price
+trades immediately at that price; the seller's case is symmetric. Both parties then leave the round. Q reports
+inefficient allocations and small price adjustments despite profitable trading opportunities. It asks whether
+a familiar market institution works well when language models replace human traders.
+
+P studies bargaining and navigation in Colored Trails \cite{P}. Players spend coloured chips to move towards a
+goal and can help each other by exchanging chips or covering moves. Regular trading exchanges chips directly.
+In the alternative Pay-for-Partner setting, a promise to cover a later move can be refused when payment falls
+due. P studies contracts that automate tile payments, natural-language agreements interpreted during play, and
+point transfers conditional on finishing. Contracts can improve cooperation, but some conditions also suppress
+further trade.
+
+The initial connexion was to bring P's contracts into Q. Ada and Emmy rejected a simple explanation based on
+making settlement credible: Q already executes accepted trades automatically. They instead asked whether
+contractual wording could make an agent wrongly treat an existing obligation as a restriction on other
+profitable actions. P supplies agreements that leave further coordination necessary. Q supplies an already
+enforced market where wording could change without adding protection against later refusal. This is a proposed
+comparison, not a demonstrated common mechanism.
+
+\section{What was done}
+The peers first compared rules and reported behaviour. On P's mutually dependent boards under regular trading,
+natural-language contracts give normalised joint reward of \(0.64\), against \(0.93\) without contracts.
+Normalisation divides the combined score by P's benchmark of \(140\). Compared with programmatic tile
+contracts, natural-language contracts have similar mean executed coverage, about \(2.6\) moves, but fewer
+trades: \(1.95\) against \(3.28\). These observations suggested that contract use could discourage useful
+activity. The peers kept them separate from delayed Pay-for-Partner results, where refusal to honour a promise
+is a different problem.
+
+They next checked what contracts could change economically. Ada reduced a restricted bilateral payment in Q to
+an effective price. Emmy constructed chip exchanges that let both players finish in P, and examples separating
+efficient allocation from price convergence in Q. Ada checked the constructions independently. These
+calculations distinguished failure to find a feasible gain from the absence of such a gain.
+
+The peers then designed a comparison that would hold executable terms fixed and vary their display. In Q, an
+unfilled order would appear either as an order record or as a conditional obligation. A disclosed final
+trading opportunity would remove sensible waiting as an explanation for refusal. Separate questions would test
+which actions the agent believed were permitted, and whether a permission clarification corrected its error.
+
+Source checks narrowed possible novelty. Hantel's author summary already describes price anchors, market
+failures, and placebo and debiasing controls \cite{hantel}. Ada inspected the summary rather than the full
+linked paper; the associated SSRN URL remained a search lead \cite{ssrn}. Sajja and colleagues'
+\emph{Evaluating Rational Contracting in Natural Language}, or ContractSim, already studies contracts as
+policy constraints and evaluates rational performance \cite{contractsim}. These checks did not establish that
+the narrower experiment was new.
+
+Finally, Emmy reopened the reward calculation. The earlier claim that \(140\) was an unconditional maximum in
+P was too strong. Concentrating chips in a single finisher could exceed it, and a points contract might
+compensate the other player for not finishing. Both peers incorporated the correction. Their attempted
+implementation audit failed, so the revised claim remained conditional on the written rules.
+
+\section{Results and their support}
+\subsection{A same-trade payment can be an effective price}
+Let \(v\) be a buyer's value, \(c\) a seller's cost, \(p\) the transaction price, and \(d\) a net payment from
+that buyer to that seller. Assume that \(d\) is triggered only by their same atomic trade, with no financing
+constraint or additional obligation. With quasilinear utility, meaning money enters payoffs linearly, their
+payoffs \(u_B\) and \(u_S\) are
+\[
+u_B=v-p-d,\qquad u_S=p+d-c.
+\]
+The effective price \(p_{\mathrm{eff}}=p+d\) reproduces the allocation and realised payoffs. Combined surplus
+remains \(u_B+u_S=v-c\).
+
+Ada gave this reduction in \path{ada/research-note.md}; Emmy accepted its qualified form in
+\path{emmy/boundaries.md}. It does not establish equivalence of strategies. Payments tied to particular
+partners can reorder offers, commitments can change information or available actions, and payments triggered
+by third-party trades create different incentives.
+
+\subsection{Ordinary exchange reaches the both-finish bound}
+Each player in P begins with fourteen own-colour chips and two green chips. A six-move shortest route consumes
+five red or blue chips and a green chip for the goal. Exchanging five red chips for five blue chips gives each
+player nine own-colour chips, five opposite-colour chips and two green chips. Both can afford every shortest
+route. Each finishes with ten chips and scores \(20+5(10)=70\).
+
+Let \(R_{\mathrm{joint}}\) denote the sum of the final scores. If both players finish, at least twelve of the
+initial thirty-two chips are consumed. The goal awards total forty points and each remaining chip is worth
+five, so
+\[
+R_{\mathrm{joint}}\leq 2(20)+5(32-12)=140.
+\]
+Without point transfers, a nonfinisher receives zero. Since both no-interaction baselines are nonnegative,
+strict improvement over both baselines requires both players to finish. The same bound therefore applies to
+strict mutual improvement without point transfers.
+
+On an asymmetric board, take Red to be the player who can finish alone and Blue the player who cannot.
+Exchanging five red chips for six blue chips leaves Red with nine red, six blue and two green chips, and Blue
+with five red, eight blue and two green chips. Both can still take any shortest route. Red scores \(75\) and
+Blue scores \(65\), strictly exceeding their respective no-interaction baselines of at most \(70\) and zero.
+
+Emmy's \path{emmy/verify_bounds.py} checked all \(3432\) balanced boards and \(20\) shortest paths per board
+against five inventories, including the concentration case below. Its \(343200\) checks support resource
+feasibility. Ada independently checked the swap bounds. These are feasible constructions, not claims that
+agents choose them or that bargaining leads to them in equilibrium.
+
+\subsection{Compensating a nonfinisher changes the bound}
+Under P's written arbitrary-quantity exchange rule, Red can give one red chip for Blue's fourteen blue and two
+green chips. Red then holds thirteen red, fourteen blue and four green chips; Blue holds only one red chip.
+Red can finish with twenty-five chips left and score \(145\). Blue fails and scores zero. This refutes an
+unconditional \(140\) bound under those rules, though it does not benefit Blue.
+
+Suppose a programmatic points contract pays a recipient who does not finish. Red can first promise Blue ten
+points upon Red's completion. The same exchange then yields \((135,10)\), with Red's score first and Blue's
+second. Both strictly beat their asymmetric no-interaction baselines and joint reward is \(145\). This does
+not improve both scores relative to the ordinary exchange outcome \((75,65)\): Blue receives less.
+
+Emmy proposed this correction and Ada confirmed its arithmetic and textual basis. Point contracts may
+therefore expand the set of strictly baseline-improving rewards by compensating noncompletion. The earlier
+claim that P's gains must concern behaviour alone was withdrawn. Joint reward, individual improvement and the
+number of finishers must be reported separately.
+
+The implementation qualification matters. P's prompt says a nonfinisher receives zero total points, which
+needs reconciliation with its point-transfer rule. Chip quantities, scoring order and termination also need
+checking. Ada could not open P's anonymous repository \cite{prepo}; its API returned \texttt{not\_connected}
+\cite{papi}. The resource check does not establish how the code handles this construction or demonstrate a
+repository defect.
+
+\subsection{Market surplus and price convergence differ}
+In Q, surplus means buyer value minus seller cost, summed over trades. The ranked gains are
+\(2.5,2,1.5,1,0.5,0\), so maximum surplus is \(7.5\). Five positive-gain trades suffice. Emmy paired the five
+highest-value buyers with the five lowest-cost sellers at prices equal to the sellers' costs:
+\(0.75,1,1.25,1.5,1.75\). This gives full surplus despite a price-dispersion coefficient of about \(41.46\)
+under Q's measure of distance from its competitive price of \(2\).
+
+Conversely, one trade between a buyer with value \(3.25\) and a seller with cost \(0.75\), at price \(2\), has
+zero dispersion but only one third of maximum surplus. Emmy checked these examples in the same script; Ada
+checked maximum surplus independently. They show why price convergence cannot substitute for surplus
+measurement. They do not dispute Q's measured efficiency losses or describe typical play.
+
+\section{Objections and unresolved explanations}
+Equal mean covered moves in P does not imply equal contract quality, routes, inventories, timing or remaining
+gains. Executed coverage is itself affected by treatment. P's audit examined approved moves, so it cannot
+bound mistaken rejections. Holding terms fixed and using identical deterministic enforcement were proposed
+remedies, but were not carried out.
+
+Q's single-trade rule also limits the comparison. An agent that has traded leaves the round and cannot
+undertake P-like further trading after a partial agreement. The proposed Q test therefore concerns unfilled
+orders. Moreover, a profitable trade need not be the best choice if waiting could bring a better price. Only
+the disclosed final-opportunity probe removes that explanation; this disclosure would be an addition to Q's
+experiment.
+
+Most directly, saying further trade is unnecessary does not mean believing it is forbidden. P's explanations
+could reflect a mistaken belief that the existing plan is sufficient. The peers proposed separate tests of
+permission and plan sufficiency. Attention, planning, context burden and interpretation remained alternatives.
+Changed trading rates alone would establish sensitivity to presentation, not the proposed mistaken
+restriction.
+
+Practical questions remained too. Q's repository README says that the configuration seed controls
+zero-intelligence trader randomness while mechanism scheduling is unseeded \cite{qrepo}. Ada warned that
+matching seeds would not produce paired market histories. Later trials would need explicit scheduling coupling
+or independently randomised market runs. The peers had neither effect sizes nor a justified sample size, and
+ran no language-model experiment or market replication.
+
+\section{Why the thread stopped}
+The verifier recorded PAUSE in its final and only supplied round. It accepted that the note incorporated the
+corrections, but judged that the economic boundaries did not establish a non-obvious result about the
+connexion. P's unnecessary-trade judgments did not demonstrate false prohibitions; Q's incremental offers did
+not identify contract-induced restrictions. The record contained a design rather than the controlled agent
+evidence needed to support it, and the access needed to obtain that evidence was unestablished.
+
+The smallest restart would audit a final-opportunity Q snapshot in a pinned implementation and run the paired
+display diagnostic. Order state, permissions and history would be identical; only the presentation as an order
+record or conditional obligation would differ. For example, a buyer with value \(3\), its own standing bid of
+\(1.5\) and an available ask of \(2\) gains \(1\) by crossing. With no later action available, declining to
+cross gains zero.
+
+Separate cloned contexts would test permission judgments without prompting the trading agent first. An
+explicit clarification already entailed by the rules would be compared with an equal-budget generic reminder.
+Display-dependent false prohibitions, costly failures to cross and correction specifically by the permission
+clarification would support further investigation. Changed action rates alone would support only a framing
+effect. A P comparison would also need to distinguish false prohibitions from mistaken plan sufficiency.
+Complete market trials and a wider novelty check would still be needed before claiming a consequential shared
+mechanism.
+
+Separately, replaying the concentrated chip exchange and ten-point contract in P's implementation, then
+inspecting the nonfinisher's final reward, would settle the smallest open question about the corrected bound.
+Neither replay nor display diagnostic was completed in this thread.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

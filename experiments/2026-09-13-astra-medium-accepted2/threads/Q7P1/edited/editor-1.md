@@ -1,0 +1,1 @@
+The [account](edited/note.tex) explains the corrected payments, conditional risk guarantees and reasons the thread remained DRAFT. It includes [BibTeX references](edited/references.bib) and pointers to the peers’ checks. The six-page [PDF](edited/note.pdf) built successfully with no undefined citations, passed style checks and was visually inspected; build files remain in place.

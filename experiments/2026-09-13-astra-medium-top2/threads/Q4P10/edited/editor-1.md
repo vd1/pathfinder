@@ -1,0 +1,1 @@
+The account explains the checked scoring results, their limits, and the missing empirical evidence behind PAUSE. Written files are `edited/note.tex` and `edited/references.bib`. The seven-page PDF builds without errors or undefined citations, passes style checks, and has been visually reviewed; all build files remain in `edited/`.

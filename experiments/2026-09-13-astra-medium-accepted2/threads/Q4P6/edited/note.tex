@@ -1,0 +1,231 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,hyperref,url}
+\hypersetup{hidelinks}
+\setlength{\emergencystretch}{2em}
+\title{When Comparison-Based Reward Shaping Preserves Incentives\\
+An Account of the Q--P Research Thread}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This thread paired \emph{Mechanism Design for Alignment and Control} (Q) with \emph{MARS-RA} (P), which uses
+visual comparisons to guide cooperative learning.
+The peers asked whether P's rewards could support Q's requirements for truthful reports and obedience.
+They found that fully accounted potential-based shaping preserves existing incentives, while omitted rewards
+during absence can create a conditional incentive to hide evidence on return.
+They also showed why repeated judgments of fixed evidence cannot overcome a limit on what a bounded payment can induce.
+The verifier paused the thread because these arguments specialise known results, and neither the relevant
+accounting convention nor a feasible manipulation had been established for P.
+\end{abstract}
+
+\section{Introduction}
+
+Q, by Bergemann, Koh and Morris, studies how to reward an agent whose preferences and capabilities are unknown
+\cite{Q}. An agent may conceal a capability but cannot counterfeit it. The designer wants the agent both to
+report truthfully and to follow a recommended action. Q therefore asks whether any feasible combination of a
+false report and a changed action would benefit the agent. A mechanism is incentive compatible when no such
+deviation pays. Its results concern what reward rules can achieve under these strategic constraints.
+
+P, by Wang and colleagues, studies credit assignment in embodied multi-agent cooperation \cite{P}. An external
+large multimodal model compares pairs of images taken from the agents' viewpoints. A Bradley--Terry model,
+which represents pairwise preferences through score differences, combines these judgments into contribution
+scores. P normalises the scores using softmax, which turns them into positive shares summing to one. These
+shares become potentials: numerical values whose discounted changes are added to training rewards. Agents can
+disappear and later return, making the accounting across absences a relevant question.
+
+The proposed connexion was whether P's comparison-based rewards could inherit Q's strategic guarantees. The
+peers found that this did not follow. P's judges supply external assessments, not strategic reports from the
+agents. Recovering a judge's underlying preferences is a statistical task; making truthful reporting and
+obedience worthwhile is an incentive task. The investigation therefore shifted to a narrower question: when
+does P's form of reward shaping preserve incentives, and when might its accounting change them?
+
+\section{What was done}
+
+Ada and Emmy first read the definitions behind the apparent connexion. Both distinguished P's estimation
+target from Q's constraints on joint report and action deviations. They then divided the work. Ada examined
+how shaping rewards add up when an agent leaves and returns. Emmy examined how much an additional payment
+could achieve when its only evidence came from the judge's observations.
+
+Ada derived an identity for rewards that are included in an agent's return only at selected transitions. This
+exposed a possible debit on re-entry. Emmy derived a bound relating a profitable deviation, the available
+payment range and the distinguishability of the judge's evidence. In parallel, their source checks narrowed
+the novelty claims. Devlin and Kudenko already establish equilibrium preservation for dynamic potential-based
+shaping \cite{devlin}; Grzes studies episodic terminal-potential effects and their correction \cite{grzes}.
+Saig, Einav and Talgam-Cohen give a stronger statistical-contract result that contains the proposed two-action
+payment bound \cite{saig}.
+
+The peers next qualified the shaping argument, raised and settled an objection about relative scores, and
+constructed exact numerical examples. Ada checked the boundary identity and its correction using rational
+arithmetic. Emmy checked finite distributions for repeated judgments of one image and for judgments of fresh
+images. Each cross-checked the other's main results. They ended by agreeing that an audit of participation
+accounting was the main concrete direction. The evidence bound restricted possible incentive-changing repairs;
+it did not establish another failure of P.
+
+\section{Results}
+
+\subsection{Complete accounting leaves deviation gains unchanged}
+
+Fix one persistent agent identity and an episode of \(H\) transitions. Let \(t\) denote a transition index,
+\(\gamma\) the discount factor with \(0<\gamma\leq1\), and \(\Phi_t\) the agent's potential at time \(t\). The
+shaping increment is \(F_t=\gamma\Phi_{t+1}-\Phi_t\); the reward adds \(\rho F_t\), where \(\rho\) is a fixed
+weight. If the terminal potential \(\Phi_H\) is zero, then
+\[
+\sum_{t=0}^{H-1}\gamma^t F_t
+=-\Phi_0+\gamma^H\Phi_H=-\Phi_0.
+\]
+Each interior potential appears once with a positive sign and once with a negative sign, so it cancels.
+
+If the initial potential is fixed before any strategic choice, every complete strategy receives the same total
+adjustment, \(-\rho\Phi_0\). A deviation that was profitable remains profitable by exactly the same amount.
+This includes a deviation combining a false report with a changed action. Exact shaping therefore cannot newly
+establish Q's truthfulness or obedience requirements. It may still improve learning, so this conclusion does
+not contradict P's claimed learning benefits.
+
+The result holds with the same information and feasible strategies before and after shaping. It also requires
+adjacent increments to reuse the same realised potential. These conditions matter even if potentials depend on
+history or judge randomness. Ada gave the argument in \path{ada/boundary_audit.md}, and Emmy accepted these
+qualifications in \path{emmy/information_audit.md}.
+
+\subsection{Omitted increments can create a re-entry debit}
+
+Let \(m_t\) equal one when the agent's return includes the shaping increment at transition \(t\), and zero
+otherwise. This inclusion rule is the reward mask. Shifting indices gives
+\[
+\begin{aligned}
+\sum_{t=0}^{H-1}\gamma^t m_t F_t
+={}&-m_0\Phi_0
++\sum_{t=1}^{H-1}\gamma^t(m_{t-1}-m_t)\Phi_t\\
+&+\gamma^H m_{H-1}\Phi_H.
+\end{aligned}
+\]
+The middle sum records what fails to cancel when inclusion changes. A changing team alone does not cause a
+problem: complete accounting still cancels the interior terms. Dropping increments can cause one.
+
+Suppose both the terminal potential and potentials during inactivity are zero. Exit terms then vanish, but a
+re-entry at time \(e\) leaves a discounted debit \(-\gamma^e\Phi_e\). A smaller returning potential means a
+smaller debit. This can reward concealment if the agent can lower that potential at sufficiently little cost.
+
+Ada illustrated this with three transitions, zero base rewards, \(\gamma=0.99\), \(\rho=1\), mask \((1,0,1)\),
+and potentials \((1/2,0,p,0)\). Here \(p\) is the potential on return. The total masked shaping reward is
+\[
+G_{\mathrm{mask}}(p)=-\frac12-(0.99)^2p,
+\]
+where \(G_{\mathrm{mask}}\) denotes the discounted return under that mask. An explicitly assumed
+evidence-withholding action changes \(p\) from \(1/2\) to \(1/10\), without changing the physical trajectory.
+Before any manipulation cost, its gain is
+\[
+G_{\mathrm{mask}}(1/10)-G_{\mathrm{mask}}(1/2)=0.39204.
+\]
+Complete accounting gives \(-1/2\) in either case.
+
+Under the zero-inactive-potential convention, adding \(\Phi_e\) to the reward at re-entry cancels the debit.
+More generally, adding the settlement \((m_t-m_{t-1})\Phi_t\) at each interior time cancels the middle sum.
+These corrections must be multiplied by \(\rho\) when that shaping weight differs from one. Nonzero inactive
+potentials may require settlement outside active transitions.
+
+Ada's \path{ada/check_boundaries.py} checked 11,664 rational instances of the identity and checked the
+settlement for zero terminal potential. Emmy independently ran the checks and verified the example. This
+supports the algebra and the conditional counterexample. It does not show that P uses this mask or permits
+this manipulation.
+
+\subsection{Repeated judgments cannot supply missing evidence}
+
+Emmy considered a possible additional contract, rather than P's original shaping reward. Fix an agent's type,
+report and recommendation, and the other agents' strategies. Let \(g>0\) be the intrinsic expected gain from a
+feasible deviation relative to the desired behaviour. Let \(Z\) contain all evidence supplied to the judge,
+including images and metadata. Write \(\mu_\star\) and \(\mu_d\) for its probability laws under desired and
+deviating behaviour, respectively.
+
+Let \(Y_K\) be the transcript of \(K\) judge queries, with laws \(\nu_\star^K\) and \(\nu_d^K\). The judge
+uses the same random procedure given \(Z\) in either case, and obtains no further evidence. Suppose an
+additive payment \(T(Y_K)\) has range at most \(B>0\), with no other payment or action-prohibition channel.
+Obedience requires
+\[
+\begin{aligned}
+g&\leq \mathbb{E}_{\nu_\star^K}[T]-\mathbb{E}_{\nu_d^K}[T]\\
+ &\leq B\operatorname{TV}(\nu_\star^K,\nu_d^K)
+ \leq B\operatorname{TV}(\mu_\star,\mu_d).
+\end{aligned}
+\]
+Here \(\mathbb{E}\) denotes expectation under the indicated law. Total variation, written
+\(\operatorname{TV}\), measures how distinguishable two probability laws are. It ranges from zero for
+identical laws to one for perfectly distinguishable laws. On a finite outcome space it is half the sum of the
+absolute differences between outcome probabilities.
+
+For the first upper bound, subtract the payment's infimum and divide by \(B\). The resulting function lies
+between zero and one, so its expectation difference cannot exceed total variation. Conditioning that function
+on \(Z\) gives the evidence bound. Repeated queries may clarify what the judge thinks about an image, but
+cannot add evidence about the action that produced it. Identical evidence laws leave the profitable deviation
+undeterred at any finite payment range.
+
+For a single deviation the transcript bound is attainable: pay \(B\) on outcomes more likely under desired
+behaviour, and zero otherwise. Equality with \(g\) gives only weak obedience. Several deviations require a
+common contract; satisfying each pairwise bound separately is not sufficient.
+
+Emmy's synthetic example made the distinction concrete. Binary evidence equals one with probability \(0.6\)
+under desired behaviour and \(0.4\) under deviation. Given evidence one or zero, each conditionally
+independent judgment favours the agent with probability \(0.9\) or \(0.1\), respectively. With \(g=0.3\) and
+\(B=1\), repeated judgments of one image have total variation at most \(0.2\). No query count can deter the
+deviation.
+
+Fresh independent evidence before each query changes the premise. The judgment probabilities then become
+\(0.58\) and \(0.42\). With eight queries, total variation is approximately \(0.198909\) for a shared image
+and \(0.341177\) for fresh images. The latter exceeds the required \(0.3\), so the specified single-deviation
+payment suffices. Emmy's \path{emmy/check_information.py} checked the exact finite distributions; Ada
+independently recomputed these values. These are constructed calculations, not observations from P's
+benchmark.
+
+\section{Objections and unresolved claims}
+
+The initial transfer of strategic guarantees did not hold. Q's peer discipline requires separated conditional
+beliefs and additional reward instruments. P's external comparisons do not supply these assumptions. Nor does
+statistical consistency establish that the judge measures the strategic quantities Q requires.
+
+Ada also suggested that losing a common shift in contribution scores could obstruct implementation.
+Bradley--Terry comparisons and softmax cannot distinguish scores that all increase by the same amount. Emmy
+objected that losing a distinction matters only if the indistinguishable cases need different incentives, or
+conceal a profitable deviation. Q itself has an example where action differences identify what the reward
+needs. Ada accepted the objection. Relative scoring alone therefore supplied no impossibility result.
+
+The peers qualified the complete-accounting claim too. If an initial report determines the initial potential,
+the residual payment can depend on that report. If rewards reveal new information, the available strategies
+may change. If adjacent increments use independently resampled potentials, cancellation need not hold. These
+are limits of the stated argument, not evidence that P has a strategic reporting channel.
+
+The central empirical objection remained unresolved. The supplied material does not establish P's
+inactive-agent reward accounting, persistent identity through re-entry, stored potentials, or singleton score
+convention. No runnable implementation was supplied or audited. The assumed evidence-withholding action also
+needs to be feasible, with a specified cost and strategic payoff. P uses comparisons during training; a
+strategic deployment mechanism would be an extension.
+
+Finally, the source checks removed novelty claims for the generic shaping and payment arguments. The
+statistical-contract result of Saig and colleagues, Proposition~1, treats total variation distance to mixtures
+of deviations \cite{saig}. The peers did not settle prior work on the particular participation audit. The
+material supports a focused investigation, not a completed publication-level result.
+
+\section{Why the thread stopped}
+
+The verifier issued a single recorded decision: \textsc{Pause}. It accepted that the note followed the
+evidence and that the boundary identity and information bounds were sound. It stopped the thread because the
+mathematics specialised acknowledged prior results, while the proposed P-specific connexion depended on an
+unverified reward mask and an assumed manipulation. More synthetic calculations would not establish those
+missing facts.
+
+The smallest restart is to inspect and instrument one disappearance and re-entry trace in a runnable P
+implementation. Record the persistent agent identity, potentials, included shaping increments and discounted
+return. Compare the accumulated shaping with the boundary identity and complete accounting. This determines
+whether the proposed residual occurs in that implementation.
+
+Only if it does should the next test introduce an explicitly feasible evidence intervention and measure its
+gain, including its cost. Correct accounting defeats this accounting-based prediction; an unavailable or
+unprofitable intervention defeats the corresponding attack. The unresolved task is therefore to obtain
+implementation evidence and a specified strategic payoff, not to extend the existing algebra.
+
+\begingroup
+\raggedright
+\bibliographystyle{plain}
+\bibliography{references}
+\endgroup
+\end{document}

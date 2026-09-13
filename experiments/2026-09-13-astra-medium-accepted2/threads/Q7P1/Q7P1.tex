@@ -1,0 +1,269 @@
+\documentclass{article}
+\usepackage{amsmath}
+\title{Q and P: corrected implementation of a CVaR surrogate}
+\author{Ada}
+\date{13 September 2026}
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q, \emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic
+Stability}, proposes quadratic payments for strategic resource allocation,
+claiming welfare implementation, budget balance, individual rationality, and
+mean-square convergence of variable sample-size proximal best responses.
+P, \emph{Distributed risk-averse optimization via CVaR}, supplies empirical
+conditional value-at-risk (CVaR) values and a one-point gradient estimator for
+cooperative optimization, whose fixed-batch limit optimizes an expected
+empirical smoothed surrogate (ledger entries 3, 13, 15, 19).
+
+\section*{The connexion pursued}
+The initial connexion was to use P's value oracle in Q's strategic learning
+scheme. The supported replacement is narrower: correct Q's payments, implement
+a fixed risk surrogate, and quantify the difference from population-risk
+incentives. A weighted proximal-point learner replaces Q's original iteration
+(entries 15, 17, 19, 24, 26). This article consolidates the ledger through entry
+27 and both peers' notes; the allowance ended without a final common readiness
+checkpoint covering every last entry. Earlier readiness declarations are not
+treated as approval of later material.
+
+\section*{What was found and why}
+\paragraph{An obstruction preceding CVaR.}
+Emmy and Ada independently found that Q's implementation equality P2(i)
+contradicts its strict LMI P1(ii) (entries 1--3). For a nonzero resource vector
+\(v\), put \(h=\operatorname{col}((0,v),\ldots,(0,v))\). Q's price blocks give
+\[
+ h^\top(\Psi+\Psi^\top)h
+ =-2\sum_n v^\top\left(\sum_m A_{nm}^n\right)v=0,
+\]
+whereas the strict certificate requires a value at most
+\(-\upsilon N\|v\|^2<0\). This disproves simultaneous feasibility of the
+stated certificates, not existence of equilibria for every mechanism.
+
+\paragraph{A payment failure and its repair.}
+Write \(\gamma>0\) for Q's tax scale and
+\(b_N=(N^2-N+1)/(N-1)^2\), with \(N\ge2\). Direct collection of Q's
+equation \texttt{eq40}, at common prices and complementary capacity, gives
+\[
+ t_n^Q=\gamma b_N p^\top(x_n-c/N).
+\]
+The printed coefficients also give
+\(\sum_m a_m^n=\gamma c/[N(N-1)]\), violating Q's P4(ii) for positive
+capacity (entries 5--7). Ada's counterexample takes \(N=3\),
+\(\gamma=c=1\), \(X_n=[0,1]\), and
+\[
+ V_1(x)=10x-x^2/2,\qquad V_2(x)=V_3(x)=0.1x-x^2/2.
+\]
+At \(x=(1,0,0)\), \(p=(9,9,9)\), own price derivatives vanish and own
+allocation cost derivatives are \(0,8.9,8.9\), with the latter at lower
+bounds. Each own cost Hessian is
+\(\left(\begin{smallmatrix}1&-1/2\\-1/2&1\end{smallmatrix}\right)\succ0\),
+so these KKT conditions suffice for a Nash equilibrium. Nevertheless,
+\(t_1^Q=10.5>V_1(1)=9.5\): individual rationality fails. Emmy checked the
+same failure with coefficient \(1\) instead of \(0.1\) for the other
+valuations (entries 6, 7, 9).
+
+Ada's opponent-only adjustment, confirmed by Emmy, is
+\begin{align*}
+ t_n^{\rm corr}&=t_n^Q+r_n,\\
+ r_n&=\gamma(b_N-1)(\bar p_{-n}^{\rm av})^\top
+ \left(\sum_{j\ne n}x_j-\frac{N-1}{N}c\right),\qquad
+ \bar p_{-n}^{\rm av}=\frac{\sum_{j\ne n}p_j}{N-1}.
+\end{align*}
+It preserves all best responses. At common complementary prices,
+\(t_n^{\rm corr}=\lambda^\top(x_n-c/N)\), with \(\lambda=\gamma p\),
+so equilibrium budget balance is exact. For normalized concave valuations,
+\(0\in X_n\), nonnegative capacity and multipliers, planner stationarity
+and the supporting-gradient inequality give
+\[
+ V_n(x_n)\ge\lambda^\top x_n,\qquad
+ V_n(x_n)-t_n^{\rm corr}\ge\lambda^\top c/N\ge0.
+\]
+Thus the repair gives individual rationality when implementation holds;
+it does not restore Q's coefficient certificate or assert budget balance
+away from equilibrium (entries 8, 9, 17, 19).
+
+\paragraph{Implementation without unique prices.}
+Emmy's proof uses compact convex local sets, strongly convex costs
+\(f_n=-V_n\), valid subgradient/normal-cone sum rules, and existence of a
+planner KKT pair. Let \(m\) be a common curvature lower bound,
+\(\Pi=\mathbf1\mathbf1^\top/N\), \(\Delta=I-\Pi\), and
+\(\kappa=(2N-1)/(N-1)^2\); matrices act resourcewise.
+Differentiating \texttt{eq40} and scaling price rows by \((N-1)/N\) gives
+\[
+ G_x\in\partial f(x)+\gamma(\Pi-\kappa\Delta)p,
+ \qquad G_p=\gamma\Delta p-\gamma\Pi x+\frac{\gamma}{N}\mathbf1c.
+\]
+For differences \(u=x-x'\), \(v=p-p'\), completion of squares yields
+\begin{align*}
+ \langle G(s)-G(s'),s-s'\rangle
+ &\ge m\|\Pi u\|^2
+ +(m-\gamma\kappa^2/4)\|\Delta u\|^2\\
+ &\quad+\gamma\|\Delta v-(\kappa/2)\Delta u\|^2.
+\end{align*}
+Consequently the sufficient threshold is
+\[
+ m>\frac{\gamma(2N-1)^2}{4(N-1)^4}.
+\]
+It also ensures own joint-cost convexity. A planner KKT pair gives a Nash
+equilibrium at \(p_n=\lambda/\gamma\). Adding its variational inequality
+to that of any other equilibrium forces \(u=0\) and \(\Delta v=0\).
+The remaining stationarity conditions identify common prices as planner
+multipliers. Thus allocations are unique, while prices need not be
+(entries 4, 9, 14, 17, 19; Emmy's implementation proof).
+
+\paragraph{The statistical surrogate and economic errors.}
+Use upper-tail probability \(\beta_n\), bounded losses \(|J_n|\le U_n\),
+samplewise convexity, Lipschitz constants \(L_n\), and fresh iid samples
+from a query-independent distribution. Set
+\[
+ C_n=\operatorname{CVaR}_{\beta_n}(J_n),\quad
+ H_{n,s}=\operatorname{E}\widehat C_{n,s},\quad
+ e_n=\frac{U_n}{\beta_n}\sqrt{\frac{2\pi}{s_n}}.
+\]
+The threshold representation gives
+\(\operatorname{E}\inf_\tau\widehat\phi\le
+\inf_\tau\operatorname{E}\widehat\phi\), hence \(H_{n,s}\le C_n\).
+P's integrated Dvoretzky--Kiefer--Wolfowitz bound gives the other side,
+\(C_n-e_n\le H_{n,s}\). Centered ball smoothing and Jensen's inequality
+therefore imply
+\[
+ -e_n\le\widetilde C_n(x)-C_n(x)\le L_n\delta_n,
+ \qquad w_n=e_n+L_n\delta_n.
+\]
+These are bounds between deterministic expected functions, requiring no
+expected supremum of empirical errors (Ada, entry 13; Emmy's check, entry 17).
+
+Normalize true and surrogate valuations at zero:
+\(V_n(x)=C_n(0)-C_n(x)\) and analogously for \(\widetilde V_n\).
+For satisfaction data use loss \(J_n=-\psi_n\); deterministic taxes enter
+additively by cash translation. At a corrected surrogate equilibrium, the
+oscillation \(w_n\) bounds actual unilateral regret and individual-rationality
+shortfall. Comparing surrogate optimality at \(\widetilde x\) and a true
+optimum \(x^*\) gives
+\[
+ \sum_n C_n(\widetilde x_n)-\sum_n C_n(x_n^*)\le\sum_n w_n,
+ \qquad
+ \|\widetilde x-x^*\|^2\le\frac{2\sum_n w_n}{m_0},
+\]
+when total population cost has curvature \(m_0>0\). Budget balance stays
+exact. Applied to P with its additional domain-comparator term, the same
+value argument gives limiting error of order
+\(O(\delta_{\max}+s_{\min}^{-1/2})\); it does not eliminate inverse-radius
+variance in finite-time learning (entries 13, 17 and Ada's note).
+
+\paragraph{Local queries preserving zero.}
+The late continuation resolves the local boundary objection. Given a known
+relative interior ball \(a_n+\rho_n\mathcal B\subset X_n\), query at
+\[
+ q_n(x,u)=(1-\varepsilon_n)x+\varepsilon_na_n+\delta_nu,
+ \qquad 0<\delta_n<\varepsilon_n\rho_n.
+\]
+This is a convex combination of \(x\) and an interior-ball point, so every
+query is locally feasible. Decisions still include zero. For ball direction
+\(v\), define \(K_n(x)=\operatorname{E}\widehat C_{n,s}(q_n(x,v))\).
+P's sphere identity and the chain rule give the unbiased oracle
+\[
+ \widehat g_n^K(x)=\frac{(1-\varepsilon_n)d_n}{\delta_n}
+ \widehat C_{n,s}(q_n(x,u))u.
+\]
+Here directions and dimension are relative to the local affine hull.
+Samplewise curvature \(m_n\) becomes \(m_n(1-\varepsilon_n)^2\), whose
+minimum must exceed the weighted threshold above. With
+\(R_n=\sup_{x\in X_n}\|x-a_n\|\), the error interval is
+\[
+ -e_n-L_n\varepsilon_nR_n\le K_n-C_n
+ \le L_n\delta_n+L_n\varepsilon_nR_n.
+\]
+All economic bounds hold with
+\(w_n^K=e_n+2L_n\varepsilon_nR_n+L_n\delta_n\). Taking
+\(\delta_n=\varepsilon_n\rho_n/2\) gives order
+\(O(s_n^{-1/2}+\varepsilon_n)\). This requires fresh samples at arbitrary
+locally feasible queries and guarantees no joint capacity feasibility of
+experiments (Ada, entries 20, 24; Emmy, entries 22, 26).
+
+\paragraph{A changed learner with a proof.}
+For fixed surrogate parameters, assume a compact product strategy set
+\(\mathcal S\) with a price box containing a surrogate planner KKT
+equilibrium. The preceding comparison proves that all boxed equilibria
+retain the implemented allocation and complementary common prices; the
+reference price need not be strictly inside the box (entries 17, 24).
+With normal cone \(N_{\mathcal S}\), use
+\[
+ R(z)=(I+\eta(\widetilde G+N_{\mathcal S}))^{-1}z,\qquad\eta>0.
+\]
+The inner operator \(\widetilde G(s)+\eta^{-1}(s-z)\) is strongly
+monotone. P's oracle, analytic payment gradients, projection, and aggregate
+messages give, for appropriate diminishing inner steps,
+\(\operatorname{E}[\|s_T-R(z)\|^2\mid z]\le C/(T+1)\).
+Taking \(T_k=\lceil(k+1)^{2+\zeta}\rceil\), \(\zeta>0\), makes expected
+norm errors summable, hence almost surely summable. Firm nonexpansiveness
+of the resolvent gives convergent distances and vanishing residual;
+compactness identifies an equilibrium limit. Boundedness then gives
+mean-square convergence, with deterministic limiting allocation and possibly
+random common price (entries 11, 17, 19, 24; Emmy's full recurrence proof).
+
+\section*{Objections and their disposition}
+The LMI contradiction and original individual-rationality failure remain
+objections to Q as printed; the replacement arguments do not validate those
+claims. Nor does weighted monotonicity prove Q's original proximal
+best-response (PBR) iteration nonexpansive. Emmy's interior quadratic example
+with \(N=3\), \(m=\gamma=1\) has consensus-price column
+\[
+ \begin{pmatrix}-(\mu+1)/D\\1-1/(2D)\end{pmatrix},\qquad
+ D=(\mu+1)^2-1/4,
+\]
+whose squared norm is \(1+1/(2D^2)>1\) for every \(\mu>0\).
+Ada independently checked it. This refutes automatic Euclidean
+nonexpansiveness, not every possible convergence proof (entries 10, 14).
+
+Expected curvature in Q does not ensure CVaR curvature; samplewise strong
+convexity is an added assumption (entries 9, 19). Full-message uniqueness
+also fails: with \(N=3\), \(X_n=[0,1]\), \(c=3/2\), \(\gamma=1\),
+equiprobable \(Z=\pm1\), and tail mass \(1/2\),
+\[
+ J_n(x,Z)=x^2-3x+Z(x-1/2),\qquad
+ C_n(x)=x^2-3x+|x-1/2|.
+\]
+The unique allocation is \(x_n=1/2\), but
+\(\partial C_n(1/2)=[-3,-1]\), allowing every common price in \([1,3]\)
+(entries 14, 17). The robust conclusion is allocation convergence.
+The boundary objection is resolved only locally under the known-ball oracle
+model, as the final checks explicitly stress (entries 24, 26).
+
+\section*{Outside sources used}
+The peers' literature searches found Wang, Shen, and Zavlanos,
+\emph{Risk-Averse No-Regret Learning in Online Convex Games}, ICML 2022
+(PMLR 162, \texttt{wang22w}), and Cui and Shanbhag,
+\texttt{arXiv:2104.07860} (entry 12). These already cover empirical-CVaR
+one-point game learning and stochastic proximal methods in adjacent settings.
+Ada's note, referenced by entry 15, additionally records
+\emph{Learning of Nash Equilibria in Risk-Averse Games},
+\texttt{arXiv:2403.10399}, and \emph{Sample average approximation of
+conditional value-at-risk based variational inequalities},
+DOI \texttt{10.1007/s11590-023-01996-9}.
+The searches establish relevant prior work, not absence of a matching result.
+Ada explicitly reports checking landing pages and abstracts rather than full
+proofs. These sources constrain novelty claims; the algebra and changed-learner
+arguments above are supplied in the notes.
+
+\section*{What remains open}
+The evidence for the algebraic corrections and conditional fixed-surrogate
+theorem is substantive, with independent exact-arithmetic checks recorded in
+entries 14, 17, 24, and 26. The material is thin on publication novelty and
+practical efficiency: no complete closest-literature comparison, efficient
+total oracle complexity, or stochastic performance benchmark is supplied.
+Convergence of original VS-PBR, an exact population-risk schedule with changing
+batches and radii, and jointly capacity-feasible exploratory queries remain
+unproved (entry 26). Fixed-surrogate convergence does not settle them.
+
+\section*{The smallest next step}
+For the immediate publication question, read the closest full papers listed
+above and compare their assumptions and conclusions against the corrected
+payment formula, exact equilibrium transfer properties, and oscillation-based
+economic errors. This is the smallest missing check identified by both notes
+that could establish whether the supported package adds a distinct result
+(entries 15, 19, 26). It would settle that narrower novelty comparison;
+the separate algorithmic and joint-query questions still require their own
+proofs, and the record supplies no single step that settles all of them.
+
+\end{document}

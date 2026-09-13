@@ -1,0 +1,165 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{url}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+\DeclareMathOperator{\logit}{logit}
+
+\title{From Truthful Peer Signals to Contribution Rankings:\\A Conditional Interface for Q and P}
+\author{Anonymous}
+\date{}
+
+\begin{document}
+\sloppy
+\maketitle
+
+\begin{abstract}
+Q studies truthful type elicitation and obedient action by privately informed AI agents, while P estimates cooperative contribution scores from pairwise judgements and uses them for potential-based reward shaping.  These results do not directly compose: P has no report channel for its acting agents, and truthful heterogeneous signals need not follow a common Bradley--Terry model. % ledger: 2, 14, 17, 18
+We isolate a conditional interface.  When several observers report conditionally independent symmetric flips of the same realised binary comparison, cross-observer moments identify their positive reliabilities without labels; calibrated means then identify Bradley--Terry edge probabilities, and a connected comparison graph identifies scores up to translation. % ledger: 32, 37, 38, 41
+The rank-one calibration step is already established in the single-coin crowdsourcing literature, so our contribution is the explicit interface and its boundary conditions, not a new calibration method.  The result is at population level only and does not establish a practical incentive-compatible decentralisation of P. % ledger: 34, 37, 41
+\end{abstract}
+
+\section{Introduction}
+
+Mechanism design and credit assignment address different failures in multi-agent systems.  Q, \emph{Mechanism Design for Alignment and Control}, models agents with private alignment and capability and develops mechanisms for truthful reports and obedient actions \cite{bergemann2026mechanism}. % ledger: 2, 5, 17
+P, \emph{MARS-RA}, asks an external large multimodal model to compare agents' egocentric observations, fits contribution scores by Bradley--Terry rank aggregation, and converts the scores into potential-based shaping rewards \cite{wang2026mars}. % ledger: 2, 3, 41
+P's acting agents do not submit the reports that Q's mechanism elicits.  Q therefore does not certify the strategic robustness of P's existing comparator. % ledger: 2, 38, 41
+
+The pair nevertheless poses a precise question: can privately informed peers replace P's trusted comparator, with Q-style scoring inducing truthful reports and P-style aggregation recovering a common ranking? % ledger: 12, 19, 23
+Truthfulness alone is insufficient because partial observers can have different, correlated, or edge-dependent errors.  Their reports need not be samples from one Bradley--Terry likelihood. % ledger: 14, 18, 24
+We give the narrow positive baseline supported by the source notes.  Under a shared latent draw, conditionally independent symmetric observation noise, positive observer reliability, a calibrating overlap structure, and a connected agent-comparison graph, the ranking is identified without contribution labels. % ledger: 37, 38, 41
+
+The algebraic centre of this result, factorising worker agreements into a rank-one matrix, is not new.  It is the single-coin Dawid--Skene structure studied for sparse worker interactions by Ma et al. \cite{ma2017crowdsourcing,ma2019gradient}.  Work on heterogeneous-worker ranking also estimates worker reliability jointly with item quality, under different response models and estimation procedures \cite{nordio2023quite,shejole2026signal}.  Accordingly, this paper's modest contribution is to state exactly how known label-free calibration supplies the missing interface between Q and P, and to make explicit why this does not yet produce an implementable strategic mechanism. % ledger: 32, 38, 41
+
+\section{What Q and P establish}
+
+\subsection{Truthful elicitation in Q}
+
+For finite supported epistemic types, Q uses a quadratic peer score based on a designer-known conditional distribution of co-player reports.  Distinct types must induce separated conditional report laws, and the transfer scale must dominate the utility gain from a false report.  Under these conditions, truthful reporting is supported; the construction also uses report- and action-contingent transfers to implement target actions. % ledger: 5, 13, 17
+This is not a theorem that arbitrary binary comparison labels can be truthfully elicited.  Such a use requires a justified finite-type specialisation with known, distinct peer-report laws and bounded strategic gains. % ledger: 14, 17
+Nor does Q provide unique truthful-equilibrium selection, collusion resistance, or a dynamic result for within-episode entry and exit. % ledger: 8, 13, 24
+
+\subsection{Rank aggregation and shaping in P}
+
+P proves convergence to a stable comparator preference when comparisons share a Bradley--Terry latent vector and the comparison graph is connected.  Its interpretation in terms of true contribution or Shapley value assumes the required equality rather than recovering it from heterogeneous views. % ledger: 3, 13, 18, 41
+Thus additional queries can estimate a systematically biased comparator target more precisely. % ledger: 13
+
+P then uses the estimated score in a potential-based shaping term.  For
+\[
+F_t=\gamma\psi_{t+1}-\psi_t, \qquad \psi_T=0,
+\]
+the discounted total is
+\[
+\sum_{t=0}^{T-1}\gamma^tF_t
+=-\psi_0+\gamma^T\psi_T=-\psi_0.
+\]
+Consequently, if the initial boundary term is common to the alternatives being compared, shaping preserves their return difference and cannot repair a pre-existing incentive-compatibility violation. % ledger: 4, 5, 11, 15
+If a report changes $\psi_0$, the resulting boundary term can create a reporting incentive, but it is then an explicit boundary transfer rather than trajectory credit. % ledger: 7
+
+\section{A conditional interface}
+
+Let $G=(V,E)$ be an undirected graph of agents to be ranked.  For an oriented edge $e=(i,j)$, let a binary latent comparison satisfy
+\[
+X_e\in\{-1,+1\},\qquad
+\Pr(X_e=+1)=\sigma(c_i-c_j),
+\]
+where $c\in\mathbb{R}^{|V|}$ is the latent score vector and $\sigma(z)=(1+\exp(-z))^{-1}$. % ledger: 27, 32, 37
+Observer $r$ reports $Y_{er}\in\{-1,+1\}$.  Conditional on the same realised $X_e$, observer reports are independent and satisfy
+\[
+\mathbb{E}[Y_{er}\mid X_e]=a_rX_e,\qquad a_r>0.
+\]
+Reliability is symmetric and does not depend on the edge. % ledger: 27, 28, 29, 37
+
+The result uses population distributions, not isolated co-labelled items.  Let $H=(R,L)$ be an observer-overlap graph.  For every link $\{r,s\}\in L$, the sampling design repeatedly assigns both observers to the same items: on each repetition they label the same realised latent draw $X$, and the repetitions are drawn from a population on which the noise model above holds.  The design contains a triangle of observers, all three of whose pairwise moment distributions are observed.  Every observer used for an edge mean lies in the component reached from that triangle by observed pairwise moment distributions.  Finally, for every $e\in E$, repeated draws from the edge-specific population are labelled by at least one observer in that calibrated component.  These are sufficient population-level coverage conditions supported by the notes.  In particular, neither a single co-labelled realisation nor connected observer links without a calibrating triangle and edge coverage suffice. % ledger: 27, 32, 37, 41
+
+\begin{theorem}[Population interface identification]
+Suppose the shared-draw, repeated-population sampling, conditional-independence, symmetric-noise, positive-reliability, calibration-connectivity, and edge-coverage conditions above hold.  Then the reliabilities of observers in the calibrated component and the probabilities of the covered edges are identified without observing $X_e$.  Under the stated coverage of every edge, if $G$ is connected, $c$ is identified up to an additive constant. % ledger: 32, 37, 38, 41
+\end{theorem}
+
+\begin{proof}
+For a calibration link $\{r,s\}\in L$, take expectation over its repeated shared-draw item population.  Conditional independence on each common realised draw gives
+\[
+q_{rs}:=\mathbb{E}[Y_{er}Y_{es}]
+=\mathbb{E}\!\left[
+  \mathbb{E}[Y_{er}\mid X_e]
+  \mathbb{E}[Y_{es}\mid X_e]
+\right]
+=a_ra_s,
+\]
+because $X_e^2=1$. % ledger: 27, 29, 32, 41
+For the observed calibration triangle $r,s,u$,
+\[
+a_r=\sqrt{\frac{q_{rs}q_{ru}}{q_{su}}}.
+\]
+Positivity fixes the sign.  Along every observed link from a calibrated observer $r$ to an uncalibrated observer $v$, $a_v=q_{rv}/a_r$, so the stipulated component identifies all observers used for edge means. % ledger: 27, 32, 37, 41
+For each edge $e$, take expectation over its own repeated-draw population.  By edge coverage, some calibrated observer $r$ labels that population.  Writing $m_e=\mathbb{E}[X_e]$, its first moment gives
+\[
+\mathbb{E}[Y_{er}]=a_rm_e,
+\qquad p_e:=\Pr(X_e=+1)=\frac{1+m_e}{2}.
+\]
+Thus every covered $p_e$ is identified.  The assumed coverage includes all $e\in E$.  Finally,
+\[
+\logit(p_e)=c_i-c_j.
+\]
+Edge differences on a connected graph identify $c$ modulo addition of a constant vector. % ledger: 27, 32, 37, 41
+\end{proof}
+
+\begin{remark}[What is new here]
+The agreement factorisation and label-free skill identification are established for single-coin crowdsourcing, including sparse interaction graphs \cite{ma2017crowdsourcing,ma2019gradient}.  The theorem packages that known calibration step with P's Bradley--Terry edge inversion.  Its contribution is a pair-specific interface statement and a diagnosis of its assumptions, rather than a new rank-one identification result. % ledger: 32, 38, 41
+\end{remark}
+
+\section{Relation to incentive compatibility}
+
+The theorem begins with truthful signals; it does not cause truthfulness.  A Q-style specialisation can support a truthful finite-type report only if the designer already knows separated conditional peer-report laws and makes the scoring loss dominate the bounded benefit of lying. % ledger: 13, 17, 41
+Conditional on those premises, the theorem explains how the resulting heterogeneous reports can feed P's ranking stage. % ledger: 19, 23, 38
+
+There is a bootstrap circularity.  Q requires the conditional peer-report map before scoring, whereas the proposed interface learns reliabilities or report laws from reports whose truthfulness the score is intended to induce.  Cross-fitting by itself supplies no truthful seed.  Anchors, trusted initialisation, or a joint mechanism-learning theorem may be needed. % ledger: 41
+Moreover, the notes' approximate-response argument is unilateral with peers held truthful.  It does not cover coordinated deviations, collusion, or selection among equilibria. % ledger: 33, 37
+
+Potential shaping remains orthogonal.  Once a ranking defines a valid terminal-zero state-time potential with a common initial boundary term, it may alter learning dynamics while leaving return comparisons unchanged.  It neither supplies the report incentive nor improves its margin. % ledger: 4, 5, 7, 15
+
+\section{Specific related work}
+
+Ma et al. study label-free skill estimation in the symmetric single-coin Dawid--Skene model.  They represent worker agreement as a rank-one correlation matrix and characterise identifiability through the worker interaction graph; their later paper develops sparse rank-one matrix completion and spectral graph-dependent guarantees \cite{ma2017crowdsourcing,ma2019gradient}.  This prior work contains the main algebraic step used in our theorem. % ledger: 32, 37, 41
+
+Nordio, Tarable, and Leonardi jointly estimate object qualities and heterogeneous worker reliabilities from repeated pairwise comparisons, but use a worker-dependent response model and an approximate likelihood algorithm rather than the shared-draw agreement interface above \cite{nordio2023quite}.  Shejole et al. likewise jointly learn rewards and worker competency under a Boltzmann-rational extension of Bradley--Terry and analyse an expectation-maximisation procedure \cite{shejole2026signal}.  These papers show that joint ranking and reliability estimation is itself established territory.  Our narrower observation is that a shared realised comparison turns peer agreements into a label-free calibration stage that can precede P's edge inversion. % ledger: 29, 32, 38
+
+\section{Limitations}
+
+First, the result is population identification, not a finite-sample error theorem.  Its observable inputs are distributions of repeated shared-draw labels for every required observer link and repeated edge-specific labels from calibrated observers.  The available proof sketch invokes concentration and Lipschitz inversion but does not allocate samples across edges and observer overlaps or track the distinct condition numbers of the two graphs.  We therefore state no rate. % ledger: 29, 34, 37
+
+Second, reports must concern the same realised latent comparison.  If observers instead receive independent Bradley--Terry redraws for the same edge, then
+\[
+\mathbb{E}[Y_{er}Y_{es}]=a_ra_sm_e^2,
+\]
+which confounds reliability with edge strength. % ledger: 29, 33
+Correlated errors and unrestricted edge-dependent or asymmetric confusion also destroy the factorisation used here. % ledger: 28, 38
+
+Third, positivity, three pairwise moment populations forming a calibrating triangle, pairwise-distribution paths to every observer used for an edge mean, calibrated coverage of every comparison edge, and a connected agent-comparison graph are substantive restrictions.  Entry or exit can remove calibrating peers or disconnect either information structure; Q is static and does not establish incentive compatibility through such churn. % ledger: 8, 13, 37, 39, 41
+
+Fourth, equality between the recovered ranking and true contribution is conditional on the model.  Neither Q nor P establishes that realistic partial views satisfy it, and P's Shapley interpretation assumes the relevant equality. % ledger: 13, 18, 41
+
+Fifth, the Q-style implementation assumes substantial reward flexibility, including potentially very large transfers and prohibitive off-support penalties.  It may therefore be impractical when rewards are bounded. % ledger: 13, 17
+
+Finally, no experiment in the source material tests the moment restrictions.  The theorem does not establish a deployable decentralisation of MARS-RA, collusion resistance, equilibrium selection, or a way around Q's need for known belief maps. % ledger: 24, 35, 39, 41
+
+\section{Interpretation and open questions}
+
+The interface separates three logically different tasks: incentives determine whether reports reflect private signals; label-free calibration maps heterogeneous truthful signals to latent comparison probabilities; rank aggregation recovers scores from those probabilities.  Potential shaping is a later learning device, not a substitute for any of the three. % ledger: 5, 14, 19, 38
+
+The smallest empirical test must follow the theorem's sampling design.  For every proposed calibration link, jointly assign the observer pair to a population of repeated items while ensuring that both label each item's same latent draw.  Include all three links of a calibrating triangle, connect every observer used for an edge mean by such link populations, and obtain repeated labels from a calibrated observer on every claimed comparison edge.  The resulting cross-peer moments can then be tested for edge invariance and rank-one factorisation.  Failure would reject this interface and point towards anchors or correlated or asymmetric observation models. % ledger: 35, 38, 41, 42
+Open technical questions are a constant-tracked finite-sample bound with both graph condition numbers, a truthful bootstrap for the belief map, equilibrium selection against collusion, and incentive compatibility under churn. % ledger: 34, 39, 41, 42
+
+\section{Conclusion}
+
+Q and P do not compose as written.  Under restrictive shared-draw assumptions, known label-free worker calibration followed by Bradley--Terry inversion does provide a clean population interface from heterogeneous peer reports to a common score vector. % ledger: 2, 32, 38, 41
+The interface clarifies what a future incentive-compatible decentralisation would have to establish, while its bootstrap, finite-sample, misspecification, collusion, and churn problems remain open. % ledger: 34, 37, 39, 41
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}
