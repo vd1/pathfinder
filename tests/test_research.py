@@ -27,8 +27,11 @@ def test_thread_reaches_draft(tmp_path, monkeypatch):
 
     def fake_call(prompt, **kw):
         monkeypatch.setenv("FAKE_ACTOR", kw["actor"])
-        # every call starts with the same head, papers then ledger; what names the caller comes after it
-        assert prompt.index("## ledger.jsonl") < prompt.index("## your task") < prompt.index(kw["actor"] if kw["stage"] == "peers" else "## your task") + 1
+        # by default the researchers get links, not the papers; the verifier gets everything inline, instruction last
+        if kw["stage"] == "peers":
+            assert "## ledger.jsonl" not in prompt and "Read inputs/" in prompt and "--since 0" in prompt
+        if kw["stage"] == "verify":
+            assert prompt.index("## ledger.jsonl") < prompt.index("## your task")
         if kw["stage"] == "consolidate":
             (kw["cwd"] / "Q1P1.tex").write_text("\\documentclass{article}\\begin{document}x\\end{document}")
             monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "wrote it")
@@ -170,3 +173,30 @@ def test_three_peers_share_the_ledger(tmp_path, monkeypatch):
     assert sorted(actors) == ["ada", "emmy", "grace"] and (tmp_path / "threads" / "Q1P1" / "grace").is_dir()
     from pathfinder.ledger import Ledger
     assert Ledger(tmp_path / "threads" / "Q1P1" / "ledger.jsonl").count() == 3
+
+
+def test_inline_papers_is_a_setting(tmp_path, monkeypatch):
+    """With inline_papers on, researchers and consolidator get the shared head first and their brief after it."""
+    monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setattr(transport, "SESSION_GRACE", 2)
+    c = make(tmp_path); c.raw["inline_papers"] = True
+    helper = f"{sys.executable} -m pathfinder.ledger --root . "
+    monkeypatch.setenv("FAKE_RUN", helper + "--actor $FAKE_ACTOR add --kind idea --text hi >/dev/null; "
+                       + helper + "--actor $FAKE_ACTOR ready --seen $(" + helper + "--actor x read | grep -c '^#')")
+    seen = {}
+    real = transport.call
+
+    def fake_call(prompt, **kw):
+        monkeypatch.setenv("FAKE_ACTOR", kw["actor"]); seen.setdefault(kw["stage"], prompt)
+        if kw["stage"] == "consolidate":
+            (kw["cwd"] / "Q1P1.tex").write_text("\\documentclass{article}\\begin{document}x\\end{document}")
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", "wrote it")
+        elif kw["stage"] == "verify":
+            monkeypatch.setenv("FAKE_RUN", "true"); monkeypatch.setenv("FAKE_REPLY", '{"decision":"DRAFT","reason":"fine","action":null}')
+        else:
+            monkeypatch.setenv("FAKE_REPLY", "peer")
+        return real(prompt, **kw)
+    monkeypatch.setattr(research.transport, "call", fake_call)
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    for stage in ("peers", "consolidate", "verify"):
+        p = seen[stage]; assert p.index("## ledger.jsonl") < p.index("## your task"), stage
+    assert "You are ada" in seen["peers"][seen["peers"].index("## your task"):]

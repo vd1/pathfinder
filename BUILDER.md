@@ -146,12 +146,16 @@ you already have, or a description of where the papers come from].
   the files the pipeline already writes.
 - **Prompts are files** in `prompts/`, overridable per campaign. They are
   the place to tune behaviour; the code should not need to change for that.
-- **Static material first, instruction last**, in every inline prompt. The
-  ledger is append-only, so a context that starts with the papers and the
-  ledger is a prefix of the next call's; put the instruction after the
-  material and every judge call, in every round, starts from the same
-  cached bytes. Record the provider's cache counts in the receipts so the
-  hit rate is measurable rather than assumed.
+- **Static material first, instruction last**, in the judges' prompts,
+  which are inline. The ledger is append-only, so a context that starts
+  with the papers and the ledger is a prefix of the next round's. Do not
+  push the papers inline to the researchers by default: given the whole
+  text they audit the papers instead of working the pair, a tool-using
+  session re-reads its context on every turn so a cache does not make
+  the head free, and a tool-less and a tool-bearing session have
+  different prefixes anyway. Give researchers links and let them read.
+  Record the provider's cache counts, including the first turn's hit, so
+  any such change is measured rather than assumed.
 - **One LaTeX style per document kind**, shipped with the pipeline and put
   on `TEXINPUTS` for the pipeline's builds and the agents' shells: the
   note, the readable note and the paper each load a single package that

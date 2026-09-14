@@ -159,17 +159,22 @@ them.
 
 ## The thread's context
 
-Every call in a thread starts with the same head, inline: the two papers,
-then the ledger as it stands. The researchers, the consolidator and the
-two judges all get it, and whatever names the caller or changes between
-calls comes after it: the note for the judges, the search record, the
-paper and the checks for the reviewer, then the instruction last. The head
-is byte-identical across callers and, since the ledger only grows, a
-prefix of the previous call's, so a prompt cache serves everything but
-what the ledger gained since. Researchers still re-read the ledger through
-the helper during a call, since partners write while they work. Receipts
-record `cache_write` and `cache_read` token counts so the hit rate can be
-read off `receipts.jsonl`.
+The researchers and the consolidator get links: the paths of the two
+papers and the ledger, which they read through their tools, as much as
+they need. The two judges get their material inline, in the same order,
+the two papers, the ledger, the note, then for the reviewer the search
+record, the paper and the checks, and the instruction last; that head is
+byte-identical for both judges and a prefix of the previous round's, so
+a prompt cache serves what has not changed.
+
+`inline_papers: true` in `campaign.json` puts the same head in front of
+the researchers' and the consolidator's calls too, with their brief after
+it. It is off by default: a researcher given the whole of both papers
+reads all of it and tends to audit the papers rather than work the pair,
+and on a long tool-using session the head is re-read on every turn, which
+a cache makes cheaper but not free. Receipts record `cache_write`,
+`cache_read` and `prefix_read` (the first turn's cache hit) so the effect
+can be measured rather than assumed.
 
 ## Styles
 

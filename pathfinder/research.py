@@ -116,10 +116,15 @@ def _peers(campaign, pair_id, stop):
             if L.ready(peers):
                 return
             _check(stop)
-            last = L.count()                                   # the head's ledger ends here; the agent reads on from it
-            p = thread_head(d, inp) + "\n\n## your task\n\n"
+            inline = bool(campaign.raw.get("inline_papers"))    # default: links, the agent reads what it needs through tools
+            last = L.count() if inline else 0                     # where the agent's own reading of the ledger starts
+            material = (f"Q and P are above, and so is the ledger as it stood when this call began, ending at entry {last}; "
+                        f"the files are inputs/{inp['Q']}, inputs/{inp['P']} and ledger.jsonl if you need to quote by line."
+                        if inline else
+                        f"Read inputs/{inp['Q']} and inputs/{inp['P']}, then the ledger with the read command below.")
+            p = (thread_head(d, inp) + "\n\n## your task\n\n") if inline else ""
             p += _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
-                        LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, 1200)),
+                        MATERIAL=material, LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")
@@ -188,8 +193,11 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                thread_head(d, inp) + "\n\n## your task\n\n"
-                                + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, NOTE_STEM=pair_id, PRIOR=prior), True,
+                                ((thread_head(d, inp) + "\n\n## your task\n\n") if campaign.raw.get("inline_papers") else "")
+                                + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, NOTE_STEM=pair_id, PRIOR=prior,
+                                          MATERIAL=("Q, P and the ledger are above; the peers' directories are beside you."
+                                                    if campaign.raw.get("inline_papers") else
+                                                    f"Read inputs/{inp['Q']}, inputs/{inp['P']}, ledger.jsonl and the peers' directories beside you.")), True,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():

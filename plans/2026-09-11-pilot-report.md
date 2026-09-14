@@ -690,9 +690,16 @@ reference settings (Opus peers, two seats), with the new context layout.
   is the number to watch on the next run.
 
 Reading: the shared head is not free on a tool-using session, and it is
-not shared across kinds of session. Whether it pays depends on the
-first-turn hit rate, which the next run will show. The judges' order
-(material first, instruction last) stands on its own merits.
+not shared across kinds of session. V also pointed out the change of
+input it made: researchers used to be handed links to the papers and
+read what they needed; the head hands them the whole text, and Q7P7's
+audit of Q looks like the footprint of that. The inline head is now a
+campaign setting, `inline_papers`, off by default; researchers get links
+again. The judges' order (material first, instruction last) stands on
+its own merits. The controlled test, one pair several times on one
+model with the setting off and on, is the next experiment; every
+comparison so far was one run against one run, which the run-to-run
+spread does not support.
 
 ## Reading: How to train your slop cannon, 13 September
 

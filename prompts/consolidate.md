@@ -1,5 +1,5 @@
-You are {{ACTOR}}. The peer phase on this pair has ended{{WHY}}. Q, P
-and the ledger are above; the peers' directories are beside you. Write
+You are {{ACTOR}}. The peer phase on this pair has ended{{WHY}}.
+{{MATERIAL}} Write
 {{NOTE}}: a short LaTeX article that consolidates what the ledger and the
 peers' notes establish about the pair Q and P.
 
