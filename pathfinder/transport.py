@@ -61,7 +61,7 @@ def _command(campaign, model, tools, search, cwd):
 
 def _parse(campaign, model, lines):
     text, session, inp, out, cost, err = "", None, 0, 0, None, None
-    cache = {"cache_write": 0, "cache_read": 0}
+    cache = {"cache_write": 0, "cache_read": 0, "prefix_read": None}   # prefix_read: cache hit on the first turn, the shared-head measurement
     for line in lines:
         try:
             row = json.loads(line)
@@ -74,11 +74,13 @@ def _parse(campaign, model, lines):
             session = row["session_id"]
         elif t == "thread.started":
             session = row.get("thread_id")
+        elif t == "assistant" and cache["prefix_read"] is None and (row.get("message") or {}).get("usage"):
+            cache["prefix_read"] = (row["message"]["usage"] or {}).get("cache_read_input_tokens", 0)
         elif t == "result":
             text = row.get("result") or ""
             u = row.get("usage") or {}
             inp, out = u.get("input_tokens", 0), u.get("output_tokens", 0)
-            cache = {"cache_write": u.get("cache_creation_input_tokens", 0), "cache_read": u.get("cache_read_input_tokens", 0)}
+            cache.update({"cache_write": u.get("cache_creation_input_tokens", 0), "cache_read": u.get("cache_read_input_tokens", 0)})
             cost = row.get("total_cost_usd")
             if row.get("is_error"):
                 err = text or "error"
@@ -87,7 +89,7 @@ def _parse(campaign, model, lines):
         elif t == "turn.completed":
             u = row.get("usage") or {}
             inp, out = u.get("input_tokens", 0), u.get("output_tokens", 0)
-            cache = {"cache_write": 0, "cache_read": u.get("cached_input_tokens", 0)}
+            cache.update({"cache_write": 0, "cache_read": u.get("cached_input_tokens", 0)})
         elif t in ("error", "turn.failed"):
             err = str(row.get("error") or row.get("message") or t)
     if cost is None:
@@ -134,7 +136,7 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
     with open(campaign.path("receipts.jsonl"), "a") as f:
         f.write(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thread": thread,
                             "stage": stage, "actor": actor, "backend": campaign.backend, "model": model,
-                            **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cache_write", "cache_read", "cost", "error")}}) + "\n")
+                            **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cache_write", "cache_read", "prefix_read", "cost", "error")}}) + "\n")
     return r
 
 

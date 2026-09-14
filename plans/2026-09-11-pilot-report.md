@@ -656,6 +656,44 @@ after it, so every call in a thread shares one prefix; the researchers
 still re-read the ledger through the helper during a call, since partners
 write while they work. Not yet measured on a run.
 
+## The rerun with the shared head, 14 September
+
+To measure the cache and to draw a second sample of two DRAFT pairs, Q7P1
+and Q7P7 were run again from scratch in `experiments/cache-run/` on the
+reference settings (Opus peers, two seats), with the new context layout.
+
+- **Q7P7 paused in round 1.** Its two earlier runs, on Codex with two and
+  three peers, had both drafted. This time the verifier found the pair's
+  material largely known and the Q audit a comment on Q alone. Three runs,
+  two endings, three different results: the sampler again.
+- **Q7P1 stopped in round 2** on a transport failure, with the campaign
+  already past its 40 USD budget (48 USD spent), so the runner exited. It
+  resumes if the owner raises the budget; about 10 USD more.
+- **The cache counts flow**, and they say two things. First, a
+  tool-using session on Opus reads its whole context back on every turn:
+  a peer call of 400 to 700 seconds recorded 1.0 to 2.4 million cache-read
+  tokens against 100 to 200 thousand written, at 2.5 to 3.9 USD per call.
+  That is the price of the inline head on a long session, and it is in
+  line with Opus peer calls before the change (3 to 5 USD), so no saving
+  and no regression is visible at this size; the earlier runs of these two
+  pairs were on Codex, so their 7 to 9 USD per thread is not a comparison.
+  Second, the verifier got no cache hit at all (102k written, 0 read)
+  though the consolidator had used the same head minutes before. A
+  tool-less session and a tool-bearing one have different prefixes before
+  our head (the tool definitions), so the head is shared only among calls
+  of the same kind: researchers and consolidator with each other, the
+  verifier with the reviewer.
+- **The measurement that matters was missing.** The totals mix the first
+  turn, where a prefix hit shows, with every later turn, where the session
+  re-reads itself. The CLI reports usage per assistant turn, so receipts
+  now also record `prefix_read`, the cache read on the first turn; that
+  is the number to watch on the next run.
+
+Reading: the shared head is not free on a tool-using session, and it is
+not shared across kinds of session. Whether it pays depends on the
+first-turn hit rate, which the next run will show. The judges' order
+(material first, instruction last) stands on its own merits.
+
 ## Reading: How to train your slop cannon, 13 September
 
 V pointed at Loader, Oppenheim and Osborne, "How to train your slop

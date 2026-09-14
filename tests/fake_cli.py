@@ -14,6 +14,7 @@ else:
 if os.environ.get("FAKE_RUN"):
     subprocess.run(os.environ["FAKE_RUN"], shell=True, check=True)
 if mode == "claude":
+    print(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1, "cache_creation_input_tokens": 5, "cache_read_input_tokens": 2}}}))
     print(json.dumps({"type": "result", "subtype": "success", "result": reply, "session_id": "fake-session",
                       "total_cost_usd": 0.5, "usage": {"input_tokens": 100, "output_tokens": 10, "cache_creation_input_tokens": 7, "cache_read_input_tokens": 3}}))
 else:
