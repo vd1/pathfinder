@@ -119,7 +119,7 @@ def test_meta_file_opens_the_document(tmp_path):
     (d / "Q1P1.verdict.json").write_text(json.dumps([{"round": 1, "decision": "ITERATE"}, {"round": 2, "decision": "REVISE"}, {"round": 2, "decision": "DRAFT"}]))
     meta = research.write_meta(c, "Q1P1", d)
     t = meta.read_text()
-    assert "\\pathfinderpair{Q1P1}" in t and "Alpha \\& Beta" in t and "thread DRAFT; 3 verdicts so far, 1 ITERATE, 1 REVISE" in t
+    assert "\\pathfinderpair{Q1P1}" in t and "Alpha \\& Beta" in t and "Research phase: DRAFT after 3 rounds, 1 ITERATE, 1 REVISE" in t
     (d / "doc.tex").write_text("\\documentclass{article}\\usepackage{pathfinder-note}\\title{T}\\begin{document}\\maketitle x\\end{document}")
     ok, log = paper.build(d, "doc.tex"); assert ok, log
     txt = subprocess.run(["pdftotext", str(d / "doc.pdf"), "-"], capture_output=True, text=True).stdout

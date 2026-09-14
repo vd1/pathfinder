@@ -137,7 +137,7 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         if reviews:
             findings = ("The previous review returned the paper with these findings; address each and say what you did:\n"
                         + json.dumps(reviews[-1].get("findings", []), indent=1))
-        research.write_meta(campaign, pair_id, pd, f"paper round {rnd}")
+        research.write_meta(campaign, pair_id, pd, f"paper, review round {rnd}")
         p = _prompt(campaign, "author", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=f"{pair_id}.tex",
                     NOTE_STEM=pair_id, ROUND=rnd, FINDINGS=findings)
         if not resume_review:

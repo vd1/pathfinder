@@ -102,14 +102,15 @@ def status_line(campaign, pair_id: str) -> str:
     v = json.loads((d / f"{pair_id}.verdict.json").read_text()) if (d / f"{pair_id}.verdict.json").exists() else []
     it, rv = sum(x.get("decision") == "ITERATE" for x in v), sum(x.get("decision") == "REVISE" for x in v)
     st = s.get("status", "new"); rnd = s.get("round", 1)
-    where = f"thread {st}" if st in TERMINAL else f"round {rnd}, verification pending"
-    return f"{where}; {len(v)} verdict{'s' if len(v) != 1 else ''} so far, {it} ITERATE, {rv} REVISE"
+    rounds = f"{rnd} round{'s' if rnd != 1 else ''}"
+    where = f"{st} after {rounds}" if st in TERMINAL else f"round {rnd}, verification pending"
+    return f"Research phase: {where}, {it} ITERATE, {rv} REVISE"
 
 
 def write_meta(campaign, pair_id: str, where: Path, extra: str = "") -> Path:
     """pathfinder-meta.tex beside a document: the style reads it, so every document opens with the pair,
     the two papers linked to arXiv, the date of production and the thread's state, none of it typed by an agent."""
-    m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f"; {extra}" if extra else "")
+    m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f". Edit phase: {extra}" if extra else "")
     t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{time.strftime('%Y-%m-%d')}}}\n"
          f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}{{{m['P_ID']}}}{{{m['P_TITLE']}}}\n"
          f"\\pathfinderstatus{{{_tex_escape(line)}}}\n")
