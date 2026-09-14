@@ -185,7 +185,9 @@ The three LaTeX documents each load one style from `pathfinder/styles/`:
 `pathfinder-note` for the consolidated note, `pathfinder-readable` for the
 readable note, `pathfinder-paper` for the paper. Each loads the maths,
 hyperref and url packages, prints a running header naming the kind of
-document and the pair (`\pathfinderpair{Q7P7}`), and provides the theorem
+document, the pair (`\pathfinderpair{Q7P7}`) and the date of production
+(`\date{2026-09-14}`, which the prompts pass as `{{DATE}}`; `\today` at
+build time is the fallback), and provides the theorem
 environments the prompts allow; the note style also has `\ledger{12, 15}`
 for citing ledger entries. The pipeline puts the directory on `TEXINPUTS`
 for its own builds and for the agents' shells, so a document only needs

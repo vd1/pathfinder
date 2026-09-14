@@ -14,8 +14,9 @@ thin. Form: article class with the pipeline's style, and nothing else:
     \documentclass{article}
     \usepackage{pathfinder-note}
     \pathfinderpair{{{NOTE_STEM}}}
+    \date{{{DATE}}}
 
-The style loads amsmath, amssymb, amsthm, hyperref and url and provides
+The date is the date of production; keep it. The style loads amsmath, amssymb, amsthm, hyperref and url and provides
 the environments claim and objection and the macro \ledger{12, 15} for
 citing ledger entries; do not load packages or define theorem
 environments yourself. Compile-clean pdflatex; write inline mathematics

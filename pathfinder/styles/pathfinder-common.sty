@@ -25,7 +25,7 @@
 \renewcommand{\headrulewidth}{0.6pt}
 \renewcommand{\headrule}{{\color{pathfinder@ink}\hrule width\headwidth height\headrulewidth}}
 \fancyhead[L]{\color{pathfinder@ink}\sffamily\scriptsize\MakeUppercase{\pathfinder@kind}}
-\fancyhead[R]{\color{pathfinder@ink}\sffamily\scriptsize\pathfinder@pair}
+\fancyhead[R]{\color{pathfinder@ink}\sffamily\scriptsize\pathfinder@pair\ifx\@date\@empty\else\quad\textperiodcentered\quad\@date\fi}
 \fancyfoot[C]{\sffamily\scriptsize\thepage}
 \fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\sffamily\scriptsize\thepage}\renewcommand{\headrulewidth}{0pt}}
 % title block: kind above the title, no author line unless given
@@ -33,12 +33,13 @@
   \begingroup
   \thispagestyle{plain}
   \noindent{\color{pathfinder@ink}\sffamily\scriptsize\MakeUppercase{\pathfinder@kind}%
-    \ifx\pathfinder@pair\@empty\else\quad\textperiodcentered\quad\pathfinder@pair\fi}\par
+    \ifx\pathfinder@pair\@empty\else\quad\textperiodcentered\quad\pathfinder@pair\fi%
+    \ifx\@date\@empty\else\quad\textperiodcentered\quad\@date\fi}\par
   \vspace{2pt}{\color{pathfinder@ink}\hrule height 0.6pt}\vspace{10pt}
   {\raggedright\LARGE\bfseries\@title\par}
   \ifx\@author\@empty\else\vspace{6pt}{\large\@author\par}\fi
-  \ifx\@date\@empty\else\vspace{4pt}{\small\@date\par}\fi
   \vspace{14pt}
   \endgroup}
-\date{}
+% the date of production; the prompts pass it explicitly, \today is the fallback at build time
+\date{\today}
 \author{}

@@ -37,8 +37,9 @@ Form: article class with the pipeline's style, and nothing else:
     \documentclass{article}
     \usepackage{pathfinder-paper}
     \pathfinderpair{{{NOTE_STEM}}}
+    \date{{{DATE}}}
 
-The style loads amsmath, amssymb, amsthm, hyperref and url, provides an
+The date is the date of production; keep it. The style loads amsmath, amssymb, amsthm, hyperref and url, provides an
 abstract environment and the theorem environments theorem, proposition,
 lemma, corollary, definition, assumption and remark; do not load packages
 or define theorem environments yourself. Inline mathematics as \( ... \),
