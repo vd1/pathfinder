@@ -167,9 +167,12 @@ record, the paper and the checks, and the instruction last; that head is
 byte-identical for both judges and a prefix of the previous round's, so
 a prompt cache serves what has not changed.
 
-`inline_papers: true` in `campaign.json` puts the same head in front of
-the researchers' and the consolidator's calls too, with their brief after
-it. It is off by default: a researcher given the whole of both papers
+Two switches in `campaign.json`, both off by default, put material in
+front of the researchers' and the consolidator's calls, with their brief
+after it: `inline_papers` for the two papers, `inline_ledger` for the
+ledger as it stood when the call began (the read command then starts
+from its last entry). They are separate so that either effect can be
+tested alone. Off by default because a researcher given the whole of both papers
 reads all of it and tends to audit the papers rather than work the pair,
 and on a long tool-using session the head is re-read on every turn, which
 a cache makes cheaper but not free. Receipts record `cache_write`,

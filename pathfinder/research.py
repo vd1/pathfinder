@@ -53,20 +53,33 @@ def prepare(campaign, pair_id: str) -> Path:
     return d
 
 
-def thread_head(d, inp) -> str:
-    """The static head of every call in a thread: the two papers, then the ledger as it stands.
-    The same bytes for every researcher, the consolidator and both judges, and across calls a prefix
-    of the previous call's, since the ledger only grows; a prompt cache serves everything but what the
-    ledger gained since. Whatever differs between callers goes after it."""
-    h = "## " + inp["Q"] + "\n\n" + (d / "inputs" / inp["Q"]).read_text(errors="replace")
-    h += "\n\n## " + inp["P"] + "\n\n" + (d / "inputs" / inp["P"]).read_text(errors="replace")
-    h += "\n\n## ledger.jsonl\n\n" + ((d / "ledger.jsonl").read_text() if (d / "ledger.jsonl").exists() else "")
-    return h
+def thread_head(d, inp, papers: bool = True, ledger: bool = True) -> str:
+    """The static head of a call in a thread: the two papers, then the ledger as it stands, each optional.
+    The same bytes for every caller that gets it, and across calls a prefix of the previous call's, since
+    the ledger only grows; a prompt cache serves everything but what the ledger gained since. Whatever
+    differs between callers goes after it."""
+    parts = []
+    if papers:
+        parts.append("## " + inp["Q"] + "\n\n" + (d / "inputs" / inp["Q"]).read_text(errors="replace"))
+        parts.append("## " + inp["P"] + "\n\n" + (d / "inputs" / inp["P"]).read_text(errors="replace"))
+    if ledger:
+        parts.append("## ledger.jsonl\n\n" + ((d / "ledger.jsonl").read_text() if (d / "ledger.jsonl").exists() else ""))
+    return "\n\n".join(parts)
 
 
 def judge_head(d, inp, note_name: str) -> str:
     """The thread head plus the note, for the verifier and the paper reviewer."""
     return thread_head(d, inp) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+
+
+def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
+    in_papers, in_ledger = bool(campaign.raw.get("inline_papers")), bool(campaign.raw.get("inline_ledger"))
+    above = [x for x, on in (("Q and P", in_papers), ("the ledger", in_ledger)) if on]
+    read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
+    material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
+                                                                          if read else "The peers' directories are beside you.")
+    head = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if above else ""
+    return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material)
 
 
 def _inputs(d: Path) -> dict:
@@ -116,13 +129,14 @@ def _peers(campaign, pair_id, stop):
             if L.ready(peers):
                 return
             _check(stop)
-            inline = bool(campaign.raw.get("inline_papers"))    # default: links, the agent reads what it needs through tools
-            last = L.count() if inline else 0                     # where the agent's own reading of the ledger starts
-            material = (f"Q and P are above, and so is the ledger as it stood when this call began, ending at entry {last}; "
-                        f"the files are inputs/{inp['Q']}, inputs/{inp['P']} and ledger.jsonl if you need to quote by line."
-                        if inline else
-                        f"Read inputs/{inp['Q']} and inputs/{inp['P']}, then the ledger with the read command below.")
-            p = (thread_head(d, inp) + "\n\n## your task\n\n") if inline else ""
+            # two independent switches, both off by default: the agent reads what it needs through tools
+            in_papers, in_ledger = bool(campaign.raw.get("inline_papers")), bool(campaign.raw.get("inline_ledger"))
+            last = L.count() if in_ledger else 0                  # where the agent's own reading of the ledger starts
+            material = (("Q and P are above" if in_papers else f"Read inputs/{inp['Q']} and inputs/{inp['P']}")
+                        + (f"; the ledger as it stood when this call began is above too, ending at entry {last}."
+                           if in_ledger else ", then the ledger with the read command below.")
+                        + (f" The files are inputs/{inp['Q']}, inputs/{inp['P']} and ledger.jsonl if you need to quote by line." if in_papers or in_ledger else ""))
+            p = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if (in_papers or in_ledger) else ""
             p += _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
                         MATERIAL=material, LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
@@ -193,11 +207,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                ((thread_head(d, inp) + "\n\n## your task\n\n") if campaign.raw.get("inline_papers") else "")
-                                + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note.name, NOTE_STEM=pair_id, PRIOR=prior,
-                                          MATERIAL=("Q, P and the ledger are above; the peers' directories are beside you."
-                                                    if campaign.raw.get("inline_papers") else
-                                                    f"Read inputs/{inp['Q']}, inputs/{inp['P']}, ledger.jsonl and the peers' directories beside you.")), True,
+                                _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior), True,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():
