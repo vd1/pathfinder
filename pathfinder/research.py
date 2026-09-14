@@ -116,9 +116,10 @@ def _peers(campaign, pair_id, stop):
             if L.ready(peers):
                 return
             _check(stop)
+            last = L.count()                                   # the head's ledger ends here; the agent reads on from it
             p = thread_head(d, inp) + "\n\n## your task\n\n"
             p += _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
-                        LEDGER=f"{helper} --actor {actor}", SECONDS=int(min(left, 1200)),
+                        LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")

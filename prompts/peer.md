@@ -4,8 +4,8 @@ question: is there something interesting to say about this pair, something
 that could lead to a publication?
 
 Q and P are above, and so is the ledger as it stood when this call
-began; the files are {{Q_INPUT}}, {{P_INPUT}} and ledger.jsonl if you need
-to quote by line. The scan that selected this pair judged
+began, ending at entry {{LAST_SEQ}}; the files are {{Q_INPUT}},
+{{P_INPUT}} and ledger.jsonl if you need to quote by line. The scan that selected this pair judged
 it from the abstracts alone, feasibility {{FEASIBILITY}} and gain {{GAIN}}
 out of 100, and named this connexion: {{CONNEXION}} Its reasoning:
 {{RATIONALE}} Treat that as a first hypothesis, not an instruction; confirm
@@ -21,13 +21,15 @@ Work independently and asynchronously. No partner is your gatekeeper.
 Use the ledger to share ideas, findings, objections, corrections and your
 current intention while you work, early enough for your partners to build
 on them, not as a final monologue. Your partners may write while you
-work, so read the ledger again with the command below before a major
-change of direction and before concluding. Cross-check your partners' claims and
+work, so before a major change of direction and before concluding, read
+what was added after the entries above with the read command below; it
+returns only entries after the number you give, so you never re-read
+what you already have. Cross-check your partners' claims and
 pursue alternatives they have not. Cite passages of Q and P and show your
 reasoning, assumptions and failures.
 
 Ledger commands, run from this directory:
-    {{LEDGER}} read
+    {{LEDGER}} read --since {{LAST_SEQ}}
     {{LEDGER}} add --kind idea|finding|objection|correction|intention --text '...'
     {{LEDGER}} ready --seen N
 Write mathematics in TeX wherever it appears, in ledger entries and in
