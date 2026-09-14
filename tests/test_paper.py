@@ -1,4 +1,4 @@
-import json, shutil, sys
+import json, shutil, subprocess, sys
 from pathlib import Path
 import pytest
 from pathfinder import paper, research, transport
@@ -87,7 +87,7 @@ def test_tex_env_exposes_the_style_files():
 
 @pytest.mark.skipif(not shutil.which("latexmk"), reason="latexmk not installed")
 @pytest.mark.parametrize("style,body", [
-    ("pathfinder-note", "\\section{The pair}\\begin{claim}x\\end{claim} see \\ledger{3}"),
+    ("pathfinder-note", "\\pathfinderpapers{2608.29130}{A Title with \\& and \\%}{2609.04460}{Other}\\section{The pair}\\begin{claim}x\\end{claim} see \\ledger{3}"),
     ("pathfinder-readable", "\\begin{abstract}a\\end{abstract}\\section{One}\\begin{theorem}t\\end{theorem}"),
     ("pathfinder-paper", "\\begin{abstract}a\\end{abstract}\\section{One}\\begin{assumption}t\\end{assumption}\\begin{remark}r\\end{remark}"),
 ])
@@ -96,3 +96,31 @@ def test_each_style_builds(tmp_path, style, body):
                                      f"\\begin{{document}}\\maketitle {body} \\(x\\) \\end{{document}}")
     ok, log = paper.build(tmp_path, "doc.tex")
     assert ok, log
+
+
+def test_paper_meta_escapes_titles(tmp_path):
+    (tmp_path / "inputs").mkdir()
+    (tmp_path / "inputs" / "Q.json").write_text(json.dumps({"id": "2608.29130", "title": "Alpha & Beta: 50% of $x_1$"}))
+    (tmp_path / "inputs" / "P.json").write_text(json.dumps({"id": "2609.04460", "title": "Plain"}))
+    m = research.paper_meta(tmp_path)
+    assert m["Q_ID"] == "2608.29130" and m["Q_TITLE"] == "Alpha \\& Beta: 50\\% of \\$x\\_1\\$" and m["P_TITLE"] == "Plain"
+
+
+@pytest.mark.skipif(not shutil.which("latexmk"), reason="latexmk not installed")
+def test_meta_file_opens_the_document(tmp_path):
+    from pathfinder import research
+    (tmp_path / "campaign.json").write_text("{}")
+    c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=False, seats=1, cut=1, rounds=1,
+                 allowances={}, budget_usd=9, prices={}, scan_fulltext=None)
+    d = tmp_path / "threads" / "Q1P1"; (d / "inputs").mkdir(parents=True)
+    (d / "inputs" / "Q.json").write_text(json.dumps({"id": "2608.29130", "title": "Alpha & Beta"}))
+    (d / "inputs" / "P.json").write_text(json.dumps({"id": "2609.04460", "title": "Gamma"}))
+    (d / "status.json").write_text(json.dumps({"status": "DRAFT", "round": 3, "stage": "done"}))
+    (d / "Q1P1.verdict.json").write_text(json.dumps([{"round": 1, "decision": "ITERATE"}, {"round": 2, "decision": "REVISE"}, {"round": 2, "decision": "DRAFT"}]))
+    meta = research.write_meta(c, "Q1P1", d)
+    t = meta.read_text()
+    assert "\\pathfinderpair{Q1P1}" in t and "Alpha \\& Beta" in t and "thread DRAFT; 3 verdicts so far, 1 ITERATE, 1 REVISE" in t
+    (d / "doc.tex").write_text("\\documentclass{article}\\usepackage{pathfinder-note}\\title{T}\\begin{document}\\maketitle x\\end{document}")
+    ok, log = paper.build(d, "doc.tex"); assert ok, log
+    txt = subprocess.run(["pdftotext", str(d / "doc.pdf"), "-"], capture_output=True, text=True).stdout
+    assert "Alpha & Beta" in txt and "arXiv:2608.29130" in txt and "1 ITERATE, 1 REVISE" in txt

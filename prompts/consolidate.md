@@ -13,10 +13,8 @@ thin. Form: article class with the pipeline's style, and nothing else:
 
     \documentclass{article}
     \usepackage{pathfinder-note}
-    \pathfinderpair{{{NOTE_STEM}}}
-    \date{{{DATE}}}
 
-The date is the date of production; keep it. The style loads amsmath, amssymb, amsthm, hyperref and url and provides
+Set \title; do not set \date or \author. The style reads pathfinder-meta.tex beside the document, written by the pipeline, and opens every document with the pair, the two papers linked to their arXiv abstracts, the date of production and the thread's state. The style loads amsmath, amssymb, amsthm, hyperref and url and provides
 the environments claim and objection and the macro \ledger{12, 15} for
 citing ledger entries; do not load packages or define theorem
 environments yourself. Compile-clean pdflatex; write inline mathematics

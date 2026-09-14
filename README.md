@@ -184,14 +184,19 @@ can be measured rather than assumed.
 The three LaTeX documents each load one style from `pathfinder/styles/`:
 `pathfinder-note` for the consolidated note, `pathfinder-readable` for the
 readable note, `pathfinder-paper` for the paper. Each loads the maths,
-hyperref and url packages, prints a running header naming the kind of
-document, the pair (`\pathfinderpair{Q7P7}`) and the date of production
-(`\date{2026-09-14}`, which the prompts pass as `{{DATE}}`; `\today` at
-build time is the fallback), and provides the theorem
+hyperref and url packages, opens the document with the pair, the two
+papers' titles linked to their arXiv abstracts, the date of production and
+the thread's state (its ending or round, and how many ITERATE and REVISE
+so far), prints a running header with the kind, the pair and the date, and
+provides the theorem
 environments the prompts allow; the note style also has `\ledger{12, 15}`
-for citing ledger entries. The pipeline puts the directory on `TEXINPUTS`
-for its own builds and for the agents' shells, so a document only needs
-`\usepackage{pathfinder-paper}` and no other package.
+for citing ledger entries. The opening block comes from
+`pathfinder-meta.tex`, which the pipeline writes beside each document
+before the agent is called and again after every verdict, so no agent
+types a title-block value; the style reads it if present. The pipeline
+puts the styles directory on `TEXINPUTS` for its own builds and for the
+agents' shells, so a document only needs `\usepackage{pathfinder-paper}`,
+a `\title`, and no other package.
 
 ## Departures from the agQSL instance
 

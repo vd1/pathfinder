@@ -111,6 +111,8 @@ def pdf(tex: Path) -> tuple[bytes, str]:
         return _pdf_cache[key][1], _pdf_cache[key][2]
     with tempfile.TemporaryDirectory() as tmp:
         shutil.copy(tex, tmp)
+        if (tex.parent / "pathfinder-meta.tex").exists():
+            shutil.copy(tex.parent / "pathfinder-meta.tex", tmp)
         for _ in range(2):
             subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", tex.name], cwd=tmp,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120, env=paper.tex_env())

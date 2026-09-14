@@ -18,6 +18,14 @@
 \newcommand{\pathfinder@kind}{Pathfinder}
 \newcommand{\pathfinder@pair}{}
 \newcommand{\pathfinderpair}[1]{\renewcommand{\pathfinder@pair}{#1}}
+% the two papers, printed under the title with links to their arXiv abstracts, and a status line;
+% the pipeline writes them to pathfinder-meta.tex beside the document, read at the end of this file
+\newcommand{\pathfinder@papers}{}
+\newcommand{\pathfinderpapers}[4]{\renewcommand{\pathfinder@papers}{%
+  \noindent{\small\textbf{Q}\quad\href{https://arxiv.org/abs/#1}{#2}\quad{\color{pathfinder@ink}\sffamily\scriptsize arXiv:#1}\par}%
+  \noindent{\small\textbf{P}\quad\href{https://arxiv.org/abs/#3}{#4}\quad{\color{pathfinder@ink}\sffamily\scriptsize arXiv:#3}\par}}}
+\newcommand{\pathfinder@status}{}
+\newcommand{\pathfinderstatus}[1]{\renewcommand{\pathfinder@status}{#1}}
 \definecolor{pathfinder@ink}{HTML}{555555}
 % running header: a thin rule in the document's colour, the kind on the left, the pair on the right
 \pagestyle{fancy}
@@ -38,8 +46,12 @@
   \vspace{2pt}{\color{pathfinder@ink}\hrule height 0.6pt}\vspace{10pt}
   {\raggedright\LARGE\bfseries\@title\par}
   \ifx\@author\@empty\else\vspace{6pt}{\large\@author\par}\fi
+  \ifx\pathfinder@papers\@empty\else\vspace{8pt}\pathfinder@papers\fi
+  \ifx\pathfinder@status\@empty\else\vspace{4pt}\noindent{\color{pathfinder@ink}\sffamily\scriptsize\pathfinder@status\par}\fi
   \vspace{14pt}
   \endgroup}
 % the date of production; the prompts pass it explicitly, \today is the fallback at build time
 \date{\today}
 \author{}
+% the pipeline's metadata for this document: pair, papers, date, status
+\InputIfFileExists{pathfinder-meta}{}{}

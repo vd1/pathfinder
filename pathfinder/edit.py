@@ -34,6 +34,7 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         if stop():
             _set(campaign, pair_id, status="stopped"); return "stopped"
         _set(campaign, pair_id, status="editing", attempt=attempt + 1)
+        research.write_meta(campaign, pair_id, ed, "readable note")
         p = _prompt(campaign, "editor", STATUS=st, NOTE=f"{pair_id}.tex", NOTE_STEM=pair_id,
                     Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", RETRY=retry)
         r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=False, cwd=d,

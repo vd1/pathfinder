@@ -82,6 +82,40 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
     return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material)
 
 
+def _tex_escape(t: str) -> str:
+    return "".join({"&": "\\&", "%": "\\%", "$": "\\$", "#": "\\#", "_": "\\_", "{": "\\{", "}": "\\}", "~": "\\textasciitilde{}", "^": "\\textasciicircum{}"}.get(c, c) for c in t)
+
+
+def paper_meta(d: Path) -> dict:
+    """Q_ID, Q_TITLE, P_ID, P_TITLE from the thread's inputs, TeX-escaped, for the document prompts:
+    every document opens with the two titles linked to their arXiv abstracts."""
+    out = {}
+    for side in "QP":
+        m = json.loads((d / "inputs" / f"{side}.json").read_text())
+        out[f"{side}_ID"] = m.get("id", ""); out[f"{side}_TITLE"] = _tex_escape(m.get("title", ""))
+    return out
+
+
+def status_line(campaign, pair_id: str) -> str:
+    """Where the thread stands, for the title block: ending or round, and how many ITERATE and REVISE so far."""
+    d = campaign.thread_dir(pair_id); s = status(campaign, pair_id)
+    v = json.loads((d / f"{pair_id}.verdict.json").read_text()) if (d / f"{pair_id}.verdict.json").exists() else []
+    it, rv = sum(x.get("decision") == "ITERATE" for x in v), sum(x.get("decision") == "REVISE" for x in v)
+    st = s.get("status", "new"); rnd = s.get("round", 1)
+    where = f"thread {st}" if st in TERMINAL else f"round {rnd}, verification pending"
+    return f"{where}; {len(v)} verdict{'s' if len(v) != 1 else ''} so far, {it} ITERATE, {rv} REVISE"
+
+
+def write_meta(campaign, pair_id: str, where: Path, extra: str = "") -> Path:
+    """pathfinder-meta.tex beside a document: the style reads it, so every document opens with the pair,
+    the two papers linked to arXiv, the date of production and the thread's state, none of it typed by an agent."""
+    m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f"; {extra}" if extra else "")
+    t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{time.strftime('%Y-%m-%d')}}}\n"
+         f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}{{{m['P_ID']}}}{{{m['P_TITLE']}}}\n"
+         f"\\pathfinderstatus{{{_tex_escape(line)}}}\n")
+    where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
+
+
 def _inputs(d: Path) -> dict:
     return {s: next(p for p in (d / "inputs").iterdir() if p.stem == s and p.suffix != ".json").name for s in "QP"}
 
@@ -207,6 +241,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                              " scratch. The verifier's review is the latest review entry in the ledger.")
                 else:
                     prior = ""
+                write_meta(campaign, pair_id, d)                     # the note's title block: pair, papers, date, state
                 r = _stage_call(campaign, pair_id, "consolidate",
                                 _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior), True,
                                 A["consolidate_seconds"], done=note.exists)
@@ -231,6 +266,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 hist = json.loads(verdicts.read_text()) if verdicts.exists() else []
                 hist.append({"round": s["round"], "at": _now(), "note_sha256": hashlib.sha256(note.read_bytes()).hexdigest(), **v})
                 verdicts.write_text(json.dumps(hist, indent=1))
+                write_meta(campaign, pair_id, d)                     # the state on the note follows the verdicts
                 repairs = s.get("repairs", 0)
                 if dec == "REVISE" and repairs < campaign.raw.get("repairs", 1):
                     L.add("verifier", "review", f"REVISE: {v.get('reason')} Corrections: {v.get('action')}")
@@ -240,7 +276,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     _set(campaign, pair_id, stage="peers", round=s["round"] + 1, reason=v.get("reason"))
                 else:
                     final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
-                    _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); return final
+                    _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
     except Stopped:
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:
