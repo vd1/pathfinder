@@ -31,6 +31,7 @@ def main(argv=None):
     xp = sub.add_parser("export", help="write a self-contained snapshot of the monitor page and every thread's documents")
     xp.add_argument("dir"); xp.add_argument("--with-sources", action="store_true", help="include the copied arXiv sources under inputs/")
     xp.add_argument("--zip", action="store_true", help="also zip the directory")
+    sub.add_parser("restyle", help="rebuild every note, readable note and paper PDF with the current styles; sources untouched")
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     ns = ap.parse_args(argv); c = config.load(Path(ns.root))
@@ -97,6 +98,12 @@ def main(argv=None):
                 print(f"{pid}: transport failure; run again later")
     elif ns.cmd == "export":
         print(monitor.export(c, Path(ns.dir), ns.with_sources, ns.zip))
+    elif ns.cmd == "restyle":
+        from . import restyle
+        res = restyle.regenerate(c)
+        print(f"rebuilt {res['rebuilt']}, failed {len(res['failed'])}")
+        for name, tail in res["failed"]:
+            print(f"--- {name}\n{tail[-800:]}")
     elif ns.cmd == "reconcile":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for pid in pairs:

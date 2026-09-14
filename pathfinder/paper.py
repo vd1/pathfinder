@@ -36,13 +36,18 @@ def tex_env() -> dict:
     return env
 
 
-def build(d: Path, main: str = "paper.tex") -> tuple[bool, str]:
-    """latexmk in a scratch copy; on success copy the PDF back. Returns (ok, log tail)."""
+def build(d: Path, main: str = "paper.tex", restyle: str | None = None) -> tuple[bool, str]:
+    """latexmk in a scratch copy; on success copy the PDF back. Returns (ok, log tail).
+    restyle: a Pathfinder style name; a document that does not load one is built as if it did, in the
+    scratch copy only, so the source and its recorded digest are untouched."""
     stem = Path(main).stem
     scratch = d / ".build"; shutil.rmtree(scratch, ignore_errors=True); scratch.mkdir()
     for f in d.glob("*"):
         if f.suffix in (".tex", ".bib", ".bst", ".sty", ".png", ".pdf") and f.name != f"{stem}.pdf":
             shutil.copy(f, scratch)
+    if restyle:
+        from .restyle import restyle as _restyle
+        (scratch / main).write_text(_restyle((d / main).read_text(errors="replace"), restyle))
     r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", main], cwd=scratch,
                        capture_output=True, text=True, timeout=300, env=tex_env())
     log = (scratch / f"{stem}.log").read_text(errors="replace") if (scratch / f"{stem}.log").exists() else r.stdout + r.stderr

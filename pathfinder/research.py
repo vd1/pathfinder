@@ -107,11 +107,11 @@ def status_line(campaign, pair_id: str) -> str:
     return f"Research phase: {where}, {it} ITERATE, {rv} REVISE"
 
 
-def write_meta(campaign, pair_id: str, where: Path, extra: str = "") -> Path:
+def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str | None = None) -> Path:
     """pathfinder-meta.tex beside a document: the style reads it, so every document opens with the pair,
     the two papers linked to arXiv, the date of production and the thread's state, none of it typed by an agent."""
     m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f". Edit phase: {extra}" if extra else "")
-    t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{time.strftime('%Y-%m-%d')}}}\n"
+    t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{date or time.strftime('%Y-%m-%d')}}}\n"
          f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}{{{m['P_ID']}}}{{{m['P_TITLE']}}}\n"
          f"\\pathfinderstatus{{{_tex_escape(line)}}}\n")
     where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"

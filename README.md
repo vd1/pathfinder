@@ -198,6 +198,17 @@ puts the styles directory on `TEXINPUTS` for its own builds and for the
 agents' shells, so a document only needs `\usepackage{pathfinder-paper}`,
 a `\title`, and no other package.
 
+`pathfinder restyle` rebuilds every note, readable note and paper PDF of a
+campaign with the current styles. Documents written before the styles
+existed are built from a restyled copy in the scratch directory: the
+packages and theorem environments the style provides are dropped, the
+author and date are left to the style, and the plain bibliography style
+becomes plainurl. The sources themselves are never rewritten, because every
+verdict and review records the digest of the text it judged. The metadata
+file carries each document's own production date, taken from the last
+verdict, the editor's status and the paper's status. The monitor builds
+notes the same way on demand.
+
 ## Departures from the agQSL instance
 
 - One package, standard library only, one loop in one terminal; no

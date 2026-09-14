@@ -37,7 +37,8 @@ def state(campaign) -> dict:
         verd = json.loads((d / f"{pid}.verdict.json").read_text()) if (d / f"{pid}.verdict.json").exists() else []
         noise = {".aux", ".log", ".out", ".fls", ".fdb_latexmk", ".blg", ".bbl", ".pdf", ".synctex.gz", ".toc"}
         files = sorted(str(x.relative_to(d)) for x in d.rglob("*") if x.is_file() and "__pycache__" not in x.parts
-                       and ".build" not in x.parts and x.suffix not in noise and x.name not in ("lock", "ledger.lock")) if d.exists() else []
+                       and ".build" not in x.parts and x.suffix not in noise
+                       and x.name not in ("lock", "ledger.lock", "pathfinder-meta.tex")) if d.exists() else []
         threads[pid] = {"status": s, "entries": len(led), "by_kind": dict(Counter(e["kind"] for e in led)),
                         "by_actor": dict(Counter(e["actor"] for e in led)), "ledger": led, "verdicts": verd,
                         "note": f"{pid}.tex" if (d / f"{pid}.tex").exists() else None, "files": files,
@@ -105,14 +106,17 @@ _pdf_cache: dict = {}
 
 
 def pdf(tex: Path) -> tuple[bytes, str]:
-    """Compile a note with pdflatex in a scratch directory; cached by mtime. Returns (pdf bytes, log)."""
-    key, mtime = str(tex), tex.stat().st_mtime
+    """Compile a note with pdflatex in a scratch directory, in the note style whatever its preamble;
+    cached by the mtimes of the note and its metadata. Returns (pdf bytes, log)."""
+    from .restyle import restyle
+    meta = tex.parent / "pathfinder-meta.tex"
+    key, mtime = str(tex), (tex.stat().st_mtime, meta.stat().st_mtime if meta.exists() else 0)
     if key in _pdf_cache and _pdf_cache[key][0] == mtime:
         return _pdf_cache[key][1], _pdf_cache[key][2]
     with tempfile.TemporaryDirectory() as tmp:
-        shutil.copy(tex, tmp)
-        if (tex.parent / "pathfinder-meta.tex").exists():
-            shutil.copy(tex.parent / "pathfinder-meta.tex", tmp)
+        (Path(tmp) / tex.name).write_text(restyle(tex.read_text(errors="replace"), "pathfinder-note"))
+        if meta.exists():
+            shutil.copy(meta, tmp)
         for _ in range(2):
             subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", tex.name], cwd=tmp,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120, env=paper.tex_env())
