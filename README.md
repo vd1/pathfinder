@@ -17,7 +17,7 @@ Every thread ends with a ledger, a note named after the pair (for example
 `Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE`,
 `PAUSE-ON-ITERATE` or `PAUSE-ON-REVISE`. The whole pipeline as a state
 machine, with every transition's agent, prompt, visibility and budget, is
-in `notes/2026-09-12-state-machine-astra.pdf`.
+in `notes/pathfinder-engine.pdf`.
 
 3. **Paper.** On a DRAFT thread, an author agent writes a short paper with
    BibTeX references, searching for prior work and verifying every
