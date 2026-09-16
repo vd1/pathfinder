@@ -206,11 +206,10 @@ ends with an empty ledger the thread ends in \st{pause}.)
 
 \paragraph{Consolidate.} Once the ledger has converged, 
 the first researcher (arbitrary) is called once with a new prompt, \file{consolidate.md}, and
-tools, sees the ledger, every directory and the note from preceding round (if any), and writes 
+tools, sees the ledger, every directory and the note from preceding rounds (if any), and writes 
 the research note summarising what the researchers agreed, with every claim pointing at the ledger entries
-that support it. After an \st{iterate} the consolidator writes a new note that merges this
-round's work into the previous one, keeping every result that still stands, so what an earlier
-round established is neither lost nor silently reworded; on a \st{revise} the consolidator
+that support it. The note merges the current
+round's work with the previous ones (if any); on a \st{revise} the consolidator
 also sees the verifier's corrections and rewrites the note as a repair, without new research. The call has \file{consolidate\_seconds}; if it produces no
 note it is rerun once.
 
