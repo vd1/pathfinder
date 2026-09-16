@@ -1,0 +1,26 @@
+per-call estimates: generation 8000, review r=6000, edit e=8000
+critic c=1000: cheapest edited AR task 30000, cheapest unedited 15000; AR median 30000
+critic c=2000: cheapest edited AR task 32000, cheapest unedited 16000; AR median 30000
+critic c=4000: cheapest edited AR task 36000, cheapest unedited 18000; AR median 30000
+critic c=6000: cheapest edited AR task 40000, cheapest unedited 20000; AR median 30000
+=> if c > 1000, median 30000 < cheapest edited cost, so at least 53 of 105 AR tasks were accepted at first pass with v0 unedited
+
+P(uninformative first-pass acceptance of a tasks ships <= 14 failing v0)
+  a   F=20    F=24    F=28
+ 53  0.9866  0.8664  0.5640
+ 57  0.9671  0.7529  0.3774
+ 61  0.9286  0.6007  0.2142
+ 65  0.8615  0.4283  0.0996
+ 69  0.7581  0.2642  0.0363
+ 73  0.6179  0.1355  0.0097
+ 77  0.4519  0.0545  0.0017
+ 81  0.2837  0.0158  0.0002
+ 85  0.1428  0.0028  0.0000
+ 89  0.0512  0.0002  0.0000
+ 93  0.0101  0.0000  0.0000
+ 97  0.0005  0.0000  0.0000
+101  0.0000  0.0000  0.0000
+105  0.0000  0.0000  0.0000
+F=20: uninformative acceptance compatible (p>=0.05) only if a <= 89
+F=24: uninformative acceptance compatible (p>=0.05) only if a <= 77
+F=28: uninformative acceptance compatible (p>=0.05) only if a <= 67

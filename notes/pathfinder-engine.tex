@@ -135,18 +135,18 @@ to establish what those links mean and whether they yield anything useful.
 To test the engine on a small scale,
 we picked the ten most recent Arxiv papers (at the time of the call)
 returned by arxiv for the
-queries ``mechanism design'' (for $Q$) and ``agentic cooperation'' (for $P$). These 
+queries ``mechanism design'' (for $Q$) and ``agentic cooperation'' (for $P$). These
 papers are labelled $Q1,\ldots,Q10$ and $P1,\ldots,P10$. The $Q$-collection includes
 economic mechanisms, learning-augmented algorithms, robotic hardware, and
 astronomical instrumentation. The $P$ one includes multi-agent learning,
 perception, distributed optimisation, and energy systems.\footnote{The question
-of how to choose the corpora is not discussed in this note.} 
+of how to choose the corpora is not discussed in this note.}
 
 The scanner agent (Sonnet 5) scored each of the $100$ pairs from $0$ to
-$100$ for feasibility and scientific-gain, and proposed a seed connexion. 
-It did so being only given 
-titles and abstracts thereby keeping contexts small. 
-The ranking score is the product. 
+$100$ for feasibility and scientific-gain, and proposed a seed connexion.
+It did so being only given
+titles and abstracts thereby keeping contexts small.
+The ranking score is the product.
 % There were $99$ parseable scored pairs: the response for $Q1P7$ could not
 % be parsed (see failure recovery below).
 We picked a threshold of $1500$
@@ -168,10 +168,10 @@ threads. (Because it looked promising to the human in charge.)
 \label{fig:pilot-heatmap}
 \end{figure}
 
-The campaign used several models (Table~\ref{tab:pilot-models}). 
+The campaign used several models (Table~\ref{tab:pilot-models}).
 Totals include retries and failed calls, not just successful
 transitions. %They exclude the later Astra experiments described below.
-Recorded dollar costs are indicative calculated accounting values. 
+Recorded dollar costs are indicative calculated accounting values.
 % , not an independently
 % reconciled provider invoice.
 Appendix~\ref{app:resources} discusses per-stage costs and elapsed times,
@@ -222,7 +222,7 @@ The highest-scoring pair, $Q4P10$, did not reach \st{draft}: a generic incentive
 inequality was not enough to establish the proposed connexion to the energy
 simulation. Conversely, the retained low-scoring $Q1P2$ did produce an accepted
 manuscript (a false positive for the scanning phase). The scan ranking
-was not a reliable ordering of the eventual outcomes in this small sample. 
+was not a reliable ordering of the eventual outcomes in this small sample.
 Other paused
 threads lacked a controlled experiment, an executable interface, or evidence
 that the proposed transfer added something specific to the pair. For example,
@@ -330,7 +330,7 @@ measures actual contribution only if the comparison model captures it. The
 conclusion is therefore a judge-free ranking result under stated information
 conditions, not yet a complete mechanism for making those conditions hold.
 
-\subsection{Example 2: Q7P1} 
+\subsection{Example 2: Q7P1}
 Consider another example:
 % input, whose seed was supplied by a scanning agent:
 \begin{quote}
@@ -389,6 +389,21 @@ result may survive while its intended application still needs substantial work.
 
 \subsection{A selective perception guarantee: Q1P2}
 
+\begin{quote}
+\(q:\) \href{https://arxiv.org/abs/2609.04787}{\file{arXiv:2609.04787}},
+\emph{Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and
+System-Level Implications}, surveys algorithms that use predictions while
+retaining guarantees when those predictions are wrong.
+
+\(p:\) \href{https://arxiv.org/abs/2608.23650}{\file{arXiv:2608.23650}},
+\emph{Concept-Guided Exploration: Building Persistent, Actionable Scene Graphs},
+lets a robot build a map of rooms and doors. Its estimated room walls guide
+where it looks for doors.
+
+The seed asks: could \(q\)'s approach to fallible predictions give \(p\)'s
+door detector a guarantee when the estimated walls are wrong?
+\end{quote}
+
 Concept-guided exploration uses estimated walls to decide which scan points to
 retain for subsequent door detection. Its first gate accepts a point $z$ when
 its distance from the wall set is at most $\delta=0.15$ metres. The problem is
@@ -432,6 +447,22 @@ and a validation protocol, not a demonstrated safer robot.
 
 \subsection{An accounting repair for changing coalitions: Q1P6}
 
+\begin{quote}
+\(q:\) \href{https://arxiv.org/abs/2609.04787}{\file{arXiv:2609.04787}},
+\emph{Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and
+System-Level Implications}, surveys how algorithms can benefit from predictions
+without losing their guarantees when the predictions are inaccurate.
+
+\(p:\) \href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
+\emph{MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons
+in Embodied Multi-Agent Cooperation}, uses an outside AI judge to compare
+cooperating agents' contributions. The resulting scores adjust their training
+rewards, including when agents join or leave the active team.
+
+The seed asks: could \(q\)'s treatment of prediction errors explain how mistakes
+in \(p\)'s comparisons affect its reward guarantees?
+\end{quote}
+
 MARS-RA turns pairwise comparisons into contribution scores and then into
 potential-based reward shaping. Its active coalition can change, so consecutive
 potential vectors need not have the same index set. The investigation found that
@@ -471,6 +502,22 @@ finite-training performance. The scientific gain is a diagnosed ambiguity and a
 sufficient repair, not a new general reward-shaping theorem.
 
 \subsection{From peer signals to rankings: Q4P6}
+
+\begin{quote}
+\(q:\) \href{https://arxiv.org/abs/2609.01595}{\file{arXiv:2609.01595}},
+\emph{Mechanism Design for Alignment and Control}, studies rewards that give
+agents an interest in reporting what they know truthfully.
+
+\(p:\) \href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
+\emph{MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons
+in Embodied Multi-Agent Cooperation}, uses an outside AI judge to compare
+agents' contributions from images, then combines those comparisons into
+scores for training.
+
+The seed asks: could the participants replace the outside judge, with \(q\)'s
+incentives making their reports truthful and their reports supplying \(p\)'s
+contribution ranking?
+\end{quote}
 
 This pair asks whether truthful peer information can feed a contribution
 ranking, rather than merely resemble a pairwise preference model. The accepted
@@ -515,6 +562,21 @@ requiring local corrections; it did not establish publication readiness.
 
 \subsection{A static risk bound, and what subsequent scrutiny changed}
 
+\begin{quote}
+\(q:\) \href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}},
+\emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic
+Stability}, proposes messages, payments and a learning procedure intended to
+make self-interested participants share limited resources efficiently.
+
+\(p:\) \href{https://arxiv.org/abs/2609.04460}{\file{arXiv:2609.04460}},
+\emph{Distributed risk-averse optimization via CVaR}, learns from noisy
+observations while paying particular attention to losses in the worst
+fraction of cases.
+
+The seed asks: could \(p\)'s way of learning about risk make \(q\)'s
+resource-sharing scheme risk-averse while preserving its guarantees?
+\end{quote}
+
 The original $Q7P1$ proposal sought to combine distributed risk-averse
 optimisation with a mechanism possessing strategic and dynamic guarantees. The
 accepted root-campaign paper established a more limited statement. Let $C_n$ be
@@ -557,7 +619,26 @@ implementation of the replacement learner and external assessment of the repair
 remain open. These are later outputs, not additional successes in the original
 fourteen-thread denominator.
 
-The accepted $Q7P7$ paper similarly contains a useful separation. For a fixed
+\subsection{A directional emissions guarantee: Q7P7}
+
+\begin{quote}
+\(q:\) \href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}},
+\emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic
+Stability}, proposes payments and a learning procedure intended to coordinate
+participants who pursue their own interests.
+
+\(p:\) \href{https://arxiv.org/abs/2607.26560}{\file{arXiv:2607.26560}},
+\emph{Emission-Forecasting-Based Spatial-Temporal Carbon Response: A Multi-Agent
+Attention-Enhanced Deep Learning Framework}, forecasts the carbon intensity
+of electricity and moves flexible demand across locations and times to
+reduce emissions.
+
+The seed asks: could \(q\)'s incentives preserve \(p\)'s emissions reductions
+when the owners of flexible demand act strategically rather than simply
+following a central schedule?
+\end{quote}
+
+The accepted paper similarly contains a useful separation. For a fixed
 baseline and proposed migration schedule, write $\Delta g$ for the change in
 nodal electrical withdrawals, $\widehat e$ for forecast carbon intensities, and
 $e$ for realised intensities. With the sign of $\Delta g$ chosen so that

@@ -60,3 +60,61 @@ of P's text constraint.
 * Prior work on conformity in multi-agent debate exists (searched: "multi-agent
   LLM debate conformity sycophancy false consensus critic yields confident
   rebuttal 2025"); I make no novelty claim for the P side.
+
+## Continuation iteration (2026-09-16, owner entry #40)
+
+### Access check
+
+* arXiv 2608.18167 is v1 only (16 Aug 2026), "Accepted to ICML 2026 Workshop
+  on DL4C", no code or data link. P App. A: prompts "will be released alongside
+  the implementation upon acceptance". Searches for an author repository found
+  only unrelated projects named adversarial-review.
+* P does not list its 105 LCB stdin tasks. LCB release v6 (test6.jsonl) has 112
+  stdin AtCoder tasks (60 hard, 2025-01-04 to 2025-04-06); no contest-date
+  window of it gives 105 tasks with 57 hard, so P's set is not identified.
+* P's model is Claude Sonnet 4.5 (paid; excluded by #40). A reproduction or a
+  matched ablation on P's own tasks, model and harness is not possible.
+
+### What P's aggregates identify (p_aggregate.py)
+
+Rounded percentages fix the counts: ZS 81, Self-Refine 81, SR 81, TwoR 79,
+MARS 86, AR 91 of 105. Exact McNemar p over all pairings compatible with the
+marginals: AR vs MARS in [0.0625, 0.49]; MARS vs SR in [0.0625, 0.54]; AR vs SR
+in [0.002, 0.14]. Neither "MARS clearly higher" nor "AR over MARS" can reach
+p < 0.05 with any pairing. Prose errors: MARS "85%" (Table: 82%) and MARS
+"43/57" hard (Table: 39/57; 43 is AR).
+
+### New controlled experiment (ar_ablation.py; not a reproduction)
+
+Local gemma4:26b (Ollama, no thinking, T = 0.7), 40 medium/hard LCB v6 stdin
+tasks (seeded shuffle), P App. A LCB prompts adapted to stdin programs, hidden
+tests from the dataset. Arms share their prefix per task (same v0, same first
+review): ZS, SR (edit once), RO (R-only iterate-to-clean), AR (inner cap 5,
+first-pass termination), ARZ (content-free critic, DISAGREE rate matched to the
+realized AR rate in inner round 1 and later rounds). Outer cap 3 edits for RO,
+AR, ARZ. Analysis fixed in ar_ablation_analyse.py before results:
+AR - SR = (RO - SR) + (ARZ - RO) + (AR - ARZ), plus the stop signal on v0
+(accept given v0 correct, accept given v0 wrong), the market omission and
+commission split read on the reviewer's terminal decision.
+
+### What P's token medians imply (p_token_bound.py; ledger #53)
+
+P Fig. 5a: LCB median tokens ZS 8000, SR 22000, TwoR 28000, AR 30000,
+"estimated from per-method call counts". Solving gives review r = 6000 and
+edit e = 8000. Any edited AR task needs at least six calls (generate, review,
+critique, edit, review, critique), costing 28000 + 2c. If the critic call costs
+more than 1000 tokens, the median AR task (the 53rd of 105) was not edited, so
+at least 53 AR tasks shipped v0 at first pass. AR fails 14 tasks, so at most 14
+failing v0 were accepted. The +10 over ZS/SR comes from at most 52 edited
+tasks. With the ZS failure count (24) as a proxy for AR v0 failures, a stop
+rule that ignores correctness and accepts a tasks is compatible (hypergeometric
+p >= 0.05) only for a <= 77. More than about 78 first-pass accepts would
+therefore prove the stop decision carries correctness information. P does not
+report the count, so this reduces one part of the causal question to one
+number in P's logs.
+
+### Status at the end of the continuation
+
+The local ablation (ar_ablation.py) and ada's stop-signal run were still in
+progress when this call ended. Per-call timings (43 to 131 s) put the planned
+40 tasks at about 10 h. Nothing from those runs is reported as a result here.

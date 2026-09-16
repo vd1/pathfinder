@@ -146,6 +146,24 @@ def valid(row):
     return all(type(row.get(k)) is int for k in ("feasibility", "gain"))
 
 matched = [(baseline[r["pair_id"]], r) for r in results if r["pair_id"] in baseline and valid(r) and valid(baseline[r["pair_id"]])]
+def midranks(values):
+    ordered = sorted(range(len(values)), key=values.__getitem__)
+    result = [0.0] * len(values)
+    start = 0
+    while start < len(ordered):
+        end = start + 1
+        while end < len(ordered) and values[ordered[end]] == values[ordered[start]]:
+            end += 1
+        for index in ordered[start:end]:
+            result[index] = (start + 1 + end) / 2
+        start = end
+    return result
+
+def spearman(left, right):
+    if len(left) < 2 or len(set(left)) < 2 or len(set(right)) < 2:
+        return None
+    return statistics.correlation(midranks(left), midranks(right))
+
 comparison = {"matched_original_pairs": len(matched), "excluded_original_unparseable": [k for k, r in baseline.items() if not valid(r)],
     "interpretation": "Two-run within-pair variance is squared difference / 2. Its mean pools pair-specific estimates; it is not precise per-pair variance. Model version and time effects cannot be separated from sampling variability.",
     "axes": {}}
@@ -156,6 +174,7 @@ for axis in ("feasibility", "gain", "score"):
     if differences:
         pooled = statistics.mean(d * d / 2 for d in differences)
         comparison["axes"][axis] = {"mean_change": statistics.mean(differences),
+            "spearman_rank_correlation": spearman([score(old) for old, new in matched], [score(new) for old, new in matched]),
             "mean_absolute_change": statistics.mean(abs(d) for d in differences),
             "root_mean_squared_change": math.sqrt(statistics.mean(d*d for d in differences)),
             "mean_within_pair_sample_variance": pooled, "pooled_within_pair_sd": math.sqrt(pooled),

@@ -58,3 +58,44 @@ a deadlock exit. The P side is a design argument plus a toy model; it has no P p
   profit. It reports no market efficiency, so it is a different comparison.
 - Background: Gode and Sunder (1993), https://www.journals.uchicago.edu/doi/10.1086/261868 ;
   Jia and Yuan, https://arxiv.org/abs/2409.08357 (cited by Q).
+
+## Continuation round (owner entry #40), 2026-09-16
+
+### Access check
+- arXiv abstract page https://arxiv.org/abs/2608.18167 (v1, 16 Aug 2026) links no code or data.
+  P App. A says the prompts "will be released alongside the implementation upon acceptance".
+- Web query run: "Adversarial Review" reviewer critic "false consensus" SWE-PRBench LiveCodeBench code github.
+  The GitHub repositories named adversarial-review that it returns are unrelated projects.
+- P does not list its 105 LCB stdin tasks, per-task outcomes, the LCB outer cap, or critic
+  disagreement rates, and it uses a paid model (Sonnet 4.5). An exact reproduction or a matched
+  ablation on P's own tasks is therefore still not possible. No paid calls were made.
+
+### New controlled experiment (not a reproduction)
+Files: `stop_signal_exp.py` (runner), `stop_signal_analyse.py` (analysis),
+`stop_signal_calls.jsonl` (all model outputs), `stop_signal_run.log`.
+
+- Model: local gemma4:26b through ollama, thinking off, temperature 0.7, no paid API.
+- Tasks: HumanEvalPack python (https://huggingface.co/datasets/bigcode/humanevalpack), a seeded
+  random 40 of the 164 problems. Each problem has a canonical and a human-injected buggy
+  solution. Ground truth comes from the hidden tests: all 40 canonical solutions pass and
+  all 40 buggy ones fail (checked by the runner).
+- Prompts: P App. A "reviewer prompt (LCB)" and "AR: critic prompt (LCB)", verbatim.
+  One deviation, made for local throughput: a system line asks for responses under 200 words
+  that end with the required verdict line. The one verbose call made before this change
+  (about 1000 tokens, roughly 25 to 60 s) is kept in `stop_signal_calls_verbose_pilot.jsonl`
+  and left out of the analysis. Brevity may move R's operating point. It does not change the
+  logic of the test.
+- Design, review only: R reviews each artifact once. If R approves, C critiques that review
+  once, and an independent second reviewer R2 reviews the artifact once.
+
+What it isolates. P's AR stops the outer loop only when R approves and C agrees in the first
+round (first-pass termination). Write \( \mathrm{TPR} = P(\text{approve} \mid \text{correct}) \)
+and \( \mathrm{FPR} = P(\text{approve} \mid \text{buggy}) \). Take a content-free critic that
+disagrees with probability \( d \), independently of correctness. It gives
+\[ \mathrm{TPR}_{\mathrm{ZI}} = (1-d)\,\mathrm{TPR}_R, \qquad \mathrm{FPR}_{\mathrm{ZI}} = (1-d)\,\mathrm{FPR}_R, \]
+so the share of shipped artifacts that are buggy is unchanged. It only sends more artifacts,
+correct ones included, back for editing. The real critic adds stopping information only if
+\[ P(\text{C agrees} \mid \text{R approves, correct}) \ne P(\text{C agrees} \mid \text{R approves, buggy}). \]
+The experiment estimates both conditional rates, and does the same for R2, which gives
+information without interaction. It does not measure whether the critic's text improves M's
+edits. Emmy's generation ablation (#43) covers that part.

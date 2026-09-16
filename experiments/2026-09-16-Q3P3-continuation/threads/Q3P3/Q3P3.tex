@@ -1,44 +1,176 @@
 \documentclass{article}
-\usepackage{amsmath}
+\usepackage{pathfinder-note}
 
 \title{Q and P: Institutions, Agents, and Stopping Rules}
-\author{Ada}
-\date{September 11, 2026}
 
 \begin{document}
 \maketitle
 
-\section*{The pair in two sentences}
-Q studies LLM traders in a continuous double auction and reports slower or absent convergence and lower allocative efficiency than in the human benchmark. P studies Adversarial Review (AR), where a reviewer and critic exchange structured judgments before a coding agent revises its work, and reports gains alongside a false-consensus failure mode.
+\section{The pair in two sentences}
+Q studies LLM traders in a continuous double auction. It reports slower or absent convergence, and lower allocative efficiency, than in the human benchmark. P studies Adversarial Review (AR), in which a reviewer and a critic exchange structured judgments before a coding agent revises its work, and reports gains alongside a false-consensus failure mode.
 
-\section*{The connexion pursued}
-The pursued question was whether observed multi-agent performance comes from agent information or from the institution, especially its stopping rule and admissible messages. A zero-intelligence control can separate those contributions: Q permits a constrained random-trader benchmark, while P suggests analogous controls in which critic verdicts are random or the reviewer alone is allowed to iterate (ledger entries 11, 14, 16, and 18).
+\section{The connexion pursued}
+The question was whether observed multi-agent performance comes from what the agents know or from the institution, especially its stopping rule and its admissible messages. A zero-intelligence control can separate the two. Q permits a constrained random-trader benchmark. P suggests analogous controls: a critic whose verdicts are random, or a reviewer that is allowed to iterate alone \ledger{11, 14, 16, 18}.
 
-\section*{What was found}
-The firm result is on Q alone. Two independent implementations of Q's stated mechanism give constrained zero-intelligence traders (ZI-C) efficiency near $0.96$, about $5.8$--$5.9$ trades per round, and mean transaction price $2.00$; every reported LLM cell in Q has efficiency $0.36$--$0.91$ (ledger entries 3 and 5). The comparison is robust to the simulated quote range (ledger entry 5). On a finer horizon grid, the five-round LLM means equal the ZI-C efficiency obtained after only about 53 draws for GPT Large, 80 for Gemini Large, and 131 for GPT Small, although Q allows 300 draws (ledger entry 8).
+After the verifier's second ITERATE \ledger{33}, the owner authorised one more iteration on the matched P ablation. It was not to use paid model campaigns, and it was not to claim the causal gap closed without evidence \ledger{40}. This round therefore stated the P question as an identity over paired arms run on the same tasks:
+\begin{itemize}
+\item Zero-shot (ZS);
+\item Single-reviewer (SR), which edits once;
+\item an R-only loop that iterates until the reviewer approves at first pass (RO);
+\item AR;
+\item AR with a content-free critic whose DISAGREE rate matches the realised AR rate (ARZ).
+\end{itemize}
+Then
+\[
+  \mathrm{AR}-\mathrm{SR} = (\mathrm{RO}-\mathrm{SR}) + (\mathrm{ARZ}-\mathrm{RO}) + (\mathrm{AR}-\mathrm{ARZ}).
+\]
+The first term measures re-review and stopping. The second measures the extra edits that a critic forces whatever its content. The third is the value of the critic's information \ledger{43, 49, 52}. This decomposition is the P counterpart of reading Q's LLM markets against the ZI-C floor, with omission and commission scored separately \ledger{52, 54}.
 
-The surplus accounting explains the benchmark. With maximum feasible surplus $7.50$, define
+\section{What was found}
+
+\subsection{Q: a zero-intelligence floor (earlier rounds, still standing)}
+The firm result concerns Q alone. Two independent implementations of Q's stated mechanism give constrained zero-intelligence traders (ZI-C) an efficiency near \(0.96\), about \(5.8\)--\(5.9\) trades per round and a mean transaction price of \(2.00\). Every reported LLM cell in Q has efficiency \(0.36\)--\(0.91\) \ledger{3, 5}. The comparison is robust to the simulated quote range: efficiency stays at \(0.943\)--\(0.957\) \ledger{5}. On a finer horizon grid, ZI-C reaches the five-round LLM mean efficiency after only about 53 draws for GPT Large, 80 for Gemini Large and 131 for GPT Small, whereas Q allows 300 draws \ledger{8}.
+
+\begin{claim}
+In Q's mechanism, and conditional on the LLMs complying with the reservation bound stated in their prompt, budget-constrained random traders extract about \(0.96\) of the maximum surplus, more than any reported LLM market \ledger{3, 5, 18, 31}.
+\end{claim}
+
+The surplus accounting explains the benchmark. The maximum feasible surplus is \(7.50\). Define
 \[
   1-E=O+C,
 \]
-where $O$ is the foregone surplus of intramarginal traders left out, divided by $7.50$, and $C$ is the surplus destroyed by extramarginal participation, divided by $7.50$. The five efficient pairs contribute $2.50,2.00,1.50,1.00,0.50$, so at most $k=1,\ldots,5$ completed efficient pairs yield efficiencies $0.33,0.60,0.80,0.93,1.00$ (ledger entries 4 and 7). ZI-C has $O=0.009$ and $C=0.032$, whereas a stylised one-cent ``creeper'' has omission about $0.82$; making acceptance the default raises volume but produces commission $0.10$--$0.17$ and efficiency only $0.71$--$0.79$ (ledger entry 4). Thus a cheap terminal move can exchange missed trades for bad trades without recovering the ZI-C result. The direction is model-dependent: reported GPT Large and Gemini Large mainly omit trades, but GPT Small and unreported Gemini runs also display commission (ledger entries 6 and 7).
+where \(O\) is the surplus forgone because intramarginal traders were left out, divided by \(7.50\), and \(C\) is the surplus destroyed by extramarginal participation, divided by \(7.50\). The five efficient pairs contribute \(2.50, 2.00, 1.50, 1.00, 0.50\). So a round with \(k=1,\ldots,5\) trades has efficiency at most \(0.33, 0.60, 0.80, 0.93, 1.00\) respectively \ledger{5, 7}. ZI-C has \(O=0.009\) and \(C=0.032\). A stylised one-cent ``creeper'' has an omission of about \(0.82\). Making acceptance the default raises volume but produces a commission of \(0.10\)--\(0.17\) and an efficiency of only \(0.71\)--\(0.79\) \ledger{4}; an independent implementation gives \(0.79\)--\(0.82\) with a commission of \(0.10\)--\(0.11\) \ledger{12}. Thus a cheap terminal move can exchange missed trades for bad trades without recovering the ZI-C result. The direction of failure depends on the model. The reported GPT Large and Gemini Large markets mainly omit trades, but GPT Small and the unreported Gemini runs also show commission \ledger{6, 7}.
 
-This does not establish the proposed connexion to P. In P, Single-reviewer and Two-reviewers edit once, while MARS and AR re-review revised artifacts; those latter methods are also the methods above the $75$--$77\%$ cluster (ledger entries 11, 16, and 22). Consequently P does not identify the informational value of reviewer--critic interaction separately from re-review, stopping, and adaptive compute. A four-parameter toy model shows only plausibility: when one review--edit cycle is calibrated to have zero net effect, iteration until approval adds $0.3$--$9.1$ percentage points, with median $2.6$, but it is not evidence about P's tasks (ledger entry 12).
+\subsection{P: the confound (earlier rounds, still standing)}
+None of this establishes the proposed connexion to P. In P, Single-reviewer and Two-reviewers edit once, while MARS and AR re-review revised artifacts. MARS and AR are also the only methods above the \(75\)--\(77\%\) cluster \ledger{11, 16, 22}. Consequently P cannot separate the informational value of reviewer--critic interaction from re-review, stopping and adaptive compute. A four-parameter toy model shows only that the confound is plausible. When one review--edit cycle is calibrated to have zero net effect, iterating until approval adds \(0.3\)--\(9.1\) percentage points (median \(2.6\)). A random critic that blocks approval with probability \(0.3\) lowers pass rates in every parameter set. The toy is not evidence about P's tasks \ledger{12, 36}.
 
-\section*{Objections and resolutions}
-The first objection was that an enforced tick-size result had been attributed too directly to Q. Code inspection showed that Q uses strict floating-point improvement for LLM orders and applies its price increment only in a ZI deadlock check; the tick experiment therefore concerns a new enforced and stated message constraint, not Q as run (ledger entries 9 and 13). This objection was resolved by narrowing the claim.
+\subsection{This round: access to P}
+P is on arXiv as v1 only (16 August 2026), with no code or data link. Its Appendix A says that the prompts ``will be released alongside the implementation upon acceptance''. Searches for an author repository found only unrelated projects named adversarial-review \ledger{43, 44}. P does not list its 105 LiveCodeBench (LCB) stdin tasks, its per-task outcomes, its LCB outer cap or its critic disagreement rates. LCB release v6 has 112 stdin AtCoder tasks (60 hard, 4 January to 6 April 2025), and no contiguous contest-date window of it gives 105 tasks with 57 hard. P's task set therefore remains unidentified \ledger{43, 45}. P's model, Claude Sonnet 4.5, is paid and was excluded \ledger{40, 43}. An exact reproduction, or a matched ablation on P's own tasks, model and harness, is still impossible, and no paid calls were made \ledger{43, 44, 54}.
 
-The second objection was that ZI-C and the LLMs might not share the same effective constraint. Q's exchange does not enforce reservation values, although its prompt tells LLMs never to violate them; violation events are logged but their rate is not reported (ledger entries 13, 18, 20, and 22). The $0.96$ result is therefore a constrained-strategy floor conditional on LLM prompt compliance, not an unconditional exchange baseline.
+\subsection{This round: what P's reported aggregates identify}
+The rounded percentages in P's Table~1 each admit exactly one count out of 105: ZS 81, Self-Refine 81, Single-reviewer 81, Two-reviewers 79, MARS 86 and AR 91. The prose value of \(85\%\) for MARS would be 89 \ledger{45, 46}. On the 48 non-hard tasks, AR solves 48 and Single-reviewer 45. So 7 of AR's 10 extra tasks over Single-reviewer are on the hard tier, as P says \ledger{45}.
 
-The verifier objected that the Q--P connexion remained analogy rather than a supported cross-paper result and requested a matched P ablation (ledger entry 24). Both peers accepted the objection. They also established that the supplied material lacks P's task instances, per-task outcomes, traces, disagreement rates, orchestration, and credentials, so running that ablation here would invent evidence (ledger entries 25, 27, and 29). P also reports MARS as $82\%$ in Table~1 but calls it $85\%$ in prose, an unresolved internal inconsistency (ledger entries 16 and 22).
+P reports no per-task pairing, so the peers computed exact two-sided McNemar \(p\)-values over every joint table compatible with the marginals. The lower ends follow in closed form. Let \(b\) and \(c\) be the numbers of discordant tasks favouring each method. The marginals fix \(\delta=b-c\), and the exact test gives
+\[
+  p=\min\Bigl(1,\; 2\sum_{i\le \min(b,c)}\binom{b+c}{i}2^{-(b+c)}\Bigr),
+\]
+which is smallest at \(c=0\), where \(p=2^{1-\delta}\). The upper ends come from the largest discordance the marginals allow. The resulting ranges \ledger{45, 46} are:
+\begin{itemize}
+\item AR vs MARS (\(\delta=5\)): \(p\in[0.0625, 0.49]\); on the hard subset (\(\delta=4\)), \(p\in[0.125, 0.60]\).
+\item MARS vs Single-reviewer (\(\delta=5\)): \(p\in[0.0625, 0.54]\).
+\item AR vs Single-reviewer (\(\delta=10\)): \(p\in[0.0020, 0.14]\); on the hard subset (\(\delta=7\)), \(p\in[0.016, 0.31]\).
+\end{itemize}
 
-\section*{Sources outside Q and P}
-The work used Gode and Sunder's 1993 ZI-C strategy as background and inspected Q's released repository, including its configurations, notebook, and order-handling code (ledger entries 4, 6, and 13). A prior-work search found BAZAAR, a sealed-bid double auction that reports individual profit rather than market efficiency; it is a different comparison and supplies no novelty claim here (ledger entry 14). No outside source supplied evidence for the proposed P ablation.
+\begin{claim}
+In a single run on 105 tasks, P's orderings ``MARS is clearly higher than the cluster'' and ``AR beats MARS'' cannot reach \(p<0.05\) under any pairing. Only AR over the \(77\%\) cluster can, and only if AR loses almost no task that Single-reviewer solves \ledger{45, 46}.
+\end{claim}
 
-\section*{What remains open}
-The material is thin on the cross-paper question. No LLM intervention was run; Q's LLM reservation-violation rate is unknown; two author ZI-C batches have unexplained price-dispersion differences; and P provides neither uncertainty nor paired task-level outputs (ledger entries 14, 18, 27, and 31). The supported conclusion is therefore negative: Q supplies a standalone constrained ZI-C result, but Q and P together do not yet establish a cross-paper advance (ledger entries 27, 29, and 31).
+This round found a second prose--table mismatch in P. The prose credits MARS with ``+3 hard tasks (43/57)'' over Single-reviewer, but Table~1 gives MARS \(39/57\), and \(43/57\) is AR's figure. Both passages are in \path{inputs/P.tex}: the prose at line 171 and Table~1 \ledger{45, 49}.
 
-\section*{Smallest settling step}
-On the same P tasks, compare an R-only iterate-to-clean loop, AR, and AR with a critic whose verdict is random but matched to the observed disagreement rate. Hold outer caps and compute equal and report paired per-task outcomes. If AR beats both controls, critic information has an effect beyond re-review and stopping; otherwise the proposed institutional decomposition is not supported (ledger entries 25, 27, and 31).
+\subsection{This round: what P's token medians imply}
+P's Fig.~5a gives median LCB tokens per task of 8000 for ZS, 22000 for Single-reviewer, 28000 for Two-reviewers and 30000 for AR, ``estimated from per-method call counts'' \ledger{53}. Let \(g\), \(r\), \(e\) and \(c\) be the token costs of a generation, a review, an edit and a critique. From \(g=8000\), \(g+r+e=22000\) and \(g+2r+e=28000\), we get \(r=6000\) and \(e=8000\). In AR every edit is followed by a new inner round. The cheapest edited AR task therefore makes six calls (generate, review, critique, edit, review, critique) and costs
+\[
+  g+2r+e+2c = 28000+2c,
+\]
+whereas a task accepted at first pass costs \(g+r+c\) \ledger{53}. The median of 105 tasks is the 53rd. If \(c>1000\), every edited task costs more than the median, so at least 53 AR tasks shipped their first version \(v_0\) unedited. AR fails 14 tasks, so at most 14 failing \(v_0\) were accepted, and the \(+10\) over ZS and Single-reviewer comes from at most 52 edited tasks \ledger{53}.
+
+Take the ZS failure count \(F=24\) as a proxy for the number of failing AR \(v_0\). Suppose a stop rule that ignores correctness accepts \(a\) tasks. The number of failing tasks it accepts is then hypergeometric, and \(P(\text{at most 14 failures accepted})\ge 0.05\) only for \(a\le 77\). The threshold is \(a\le 89\) for \(F=20\) and \(a\le 67\) for \(F=28\). For example, with \(F=24\) the probability is \(0.055\) at \(a=77\) and \(0.016\) at \(a=81\) (\path{emmy/p_token_bound_out.txt}) \ledger{53}.
+
+\begin{claim}
+If P's logs show more than about 77 first-pass accepts, then P's stop decision (R, or R with C) must carry correctness information, whatever the edits do. If \(53\le a\le 77\), P's numbers are compatible with a content-free stop rule combined with effective edits. P does not report \(a\), so this part of the verifier's question reduces to one number in P's logs, ideally split by whether \(v_0\) passes \ledger{53, 54}.
+\end{claim}
+
+This bound rests on two assumptions: that P's medians are call-count estimates, as its caption says, and that AR's \(v_0\) has the ZS failure distribution (same model, same generation prompt, single run) \ledger{53}.
+
+\subsection{This round: what a content-free critic can and cannot do}
+Under P's first-pass termination, AR stops the outer loop only when R approves and C agrees in the first inner round \ledger{44}. Write \(\mathrm{TPR}=P(\text{R approves}\mid\text{correct})\) and \(\mathrm{FPR}=P(\text{R approves}\mid\text{buggy})\). A critic that disagrees with probability \(d\), independently of correctness, gives
+\[
+  \mathrm{TPR}_{\mathrm{ZI}}=(1-d)\,\mathrm{TPR},\qquad \mathrm{FPR}_{\mathrm{ZI}}=(1-d)\,\mathrm{FPR}.
+\]
+Let \(\pi\) be the share of correct artifacts under review. The buggy share among shipped artifacts is \((1-\pi)\mathrm{FPR}/\bigl(\pi\,\mathrm{TPR}+(1-\pi)\mathrm{FPR}\bigr)\), because the factor \(1-d\) cancels. The shipped-buggy share is therefore unchanged. Such a critic only sends more artifacts, correct ones included, back for editing \ledger{44, 52}. The real critic adds stopping information if and only if
+\[
+  P(\text{C agrees}\mid\text{R approves, correct}) \ne P(\text{C agrees}\mid\text{R approves, buggy}).
+\]
+So \(\mathrm{AR}-\mathrm{ARZ}\) is the sum of stopping information and edit guidance from the critic's text. The institutional part, the extra forced edits, is exactly what ARZ reproduces \ledger{52}. This argument is analytic and needs no data. It identifies the quantities to measure but does not measure them.
+
+\subsection{This round: local controlled experiments, with no result yet}
+Two free experiments were started on a local open-weight model. Emmy's run (\path{emmy/ar_ablation.py}) uses:
+\begin{itemize}
+\item gemma4:26b through Ollama, with thinking off and temperature \(0.7\);
+\item 40 medium and hard LCB v6 stdin tasks (26 medium first, then 14 hard);
+\item P's Appendix~A LCB prompts, adapted from functions to stdin programs, with the dataset's hidden tests as ground truth;
+\item the arms ZS, SR, RO, AR (inner cap 5, first-pass termination) and ARZ, which share their prefix on each task, with an outer cap of 3 edits for the iterating arms.
+\end{itemize}
+Its analysis script (\path{emmy/ar_ablation_analyse.py}) was fixed before any results came in \ledger{43, 47}. Ada's run (\path{ada/stop_signal_exp.py}) only reviews and never generates code. It uses 40 HumanEvalPack Python problems, each with a canonical and a human-injected buggy solution; the runner checked that all 40 canonical solutions pass the hidden tests and none of the 40 buggy ones do. R reviews each artifact once. Each approval is followed by one critique from C and one independent review from a second reviewer R2, which serves as a non-interacting unanimity control. P's reviewer and critic prompts are used verbatim, plus a system line asking for responses under 200 words \ledger{44, 46, 48}. Both are new experiments with a different model and different tasks, not reproductions of P \ledger{43, 50}.
+
+Neither has produced a result. On the shared single-slot server, calls took 33--131\,s, and some reached the 3000-token output cap. At about 15 minutes per task, the 40 planned ablation tasks need about 10 hours. When the peer phase ended, no ablation task had finished after 16 minutes \ledger{49, 54}. Ada's run had 6 records (3 complete artifacts) at its last status entry, and its analysis uses only complete artifacts \ledger{46, 52}. Even when complete, 40 problems can detect only large effects, so the plan is to report intervals rather than orderings \ledger{46}.
+
+The material from this round is thin in evidence. It consists of arithmetic on P's reported aggregates, one analytic identity and two unfinished runs. It sharpens the causal question and prices part of it, but it does not answer it \ledger{54}.
+
+\section{Objections and resolutions}
+
+\begin{objection}[Tick size attributed to Q]
+An enforced tick-size result had been attributed too directly to Q \ledger{9}.
+\end{objection}
+Code inspection showed that Q uses a strict floating-point improvement rule for LLM orders and applies its price increment only in a check for ZI deadlock. The tick experiment therefore concerns a new message constraint, enforced and stated in the prompt, not Q as run \ledger{9, 13}. Resolved by narrowing the claim.
+
+\begin{objection}[Same constraint for ZI-C and LLMs]
+ZI-C and the LLMs might not face the same effective constraint.
+\end{objection}
+Q's exchange does not enforce reservation values, although its prompt tells LLMs never to violate them. Violations are logged, but their rate is not reported \ledger{13, 18, 20, 22}. The \(0.96\) result is therefore a floor for constrained strategies, conditional on LLM compliance with the prompt, not an unconditional exchange baseline. Resolved by conditioning the claim; the rate itself remains unknown.
+
+\begin{objection}[Analogy, not a cross-paper result]
+The verifier twice judged the Q--P connexion to be an analogy rather than a supported cross-paper result, and requested a matched P ablation \ledger{24, 33}.
+\end{objection}
+Both peers accepted the objection. In the earlier rounds they established that the supplied material lacks P's task instances, per-task outcomes, traces, disagreement rates, orchestration and credentials, so running the ablation would have meant inventing evidence \ledger{25, 27, 29, 34, 36}. This round rechecked public availability and found nothing new \ledger{43, 44}. It started a free controlled experiment with a different model, but the experiment has not finished \ledger{49, 54}. Not resolved.
+
+\begin{objection}[Is the gap to be decomposed real?]
+The causal question matters only if the gap between AR and its controls is real. Yet P's own AR vs MARS gap lies within the noise of a single run \ledger{45}.
+\end{objection}
+Accepted by both peers \ledger{46}. Any matched ablation therefore needs paired per-task outcomes, ideally with repeated seeds. This qualifies the verifier's request rather than answering it.
+
+\begin{objection}[P's internal numbers]
+P reports MARS at \(82\%\) in Table~1 but \(85\%\) in its prose \ledger{16, 22}, and it credits MARS in the prose with AR's \(43/57\) hard tasks \ledger{45}.
+\end{objection}
+Both mismatches were confirmed in the source. Unresolved inside P; the exact counts above use the table values.
+
+\begin{objection}[Conduct of the local runs]
+Running the local jobs raised procedural problems: contention for the shared server, a verdict-parsing bug in ada's runner, and a prompt deviation in ada's runner.
+\end{objection}
+The jobs sent different context sizes, which made Ollama reload the model on every alternation. Ada restarted with the same \texttt{num\_ctx} (16384) as emmy \ledger{48, 50}. A markdown filter logged NEEDS\_CHANGES verdicts as invalid. The bug did not change which calls were made, because only APPROVE triggers C and R2, and the analysis re-parses every logged text \ledger{52}. Ada's runner adds a brevity line and emmy's does not, so the two runs differ in that respect. Brevity may move R's operating point but does not change the logic of the stop-signal test \ledger{48, 50}. Resolved procedurally; none of these issues affects a reported result, since there are none yet.
+
+\section{Sources outside Q and P}
+Earlier rounds used the following:
+\begin{itemize}
+\item Gode and Sunder's 1993 ZI-C strategy as background (\url{https://www.journals.uchicago.edu/doi/10.1086/261868}).
+\item Q's released repository (\url{https://github.com/jswistak/competitive-market-simulation}), including its configurations, its notebook and its order-handling code \ledger{4, 6, 13}.
+\item BAZAAR (\url{https://github.com/lechmazur/bazaar}), found by a prior-work search. It is a sealed-bid double auction that reports individual profit rather than market efficiency, so it is a different comparison and supports no novelty claim here \ledger{14}.
+\end{itemize}
+
+This round added the following:
+\begin{itemize}
+\item P's arXiv abstract page and web searches for an author repository \ledger{43, 44}.
+\item The LiveCodeBench \texttt{code\_generation\_lite} release v6, at \url{https://huggingface.co/datasets/livecodebench/code_generation_lite} \ledger{43, 45}.
+\item HumanEvalPack (\url{https://huggingface.co/datasets/bigcode/humanevalpack}) \ledger{44}.
+\item The open-weight model gemma4:26b, served locally by Ollama without a paid API \ledger{43, 44}.
+\end{itemize}
+No outside source supplied evidence about P's own tasks or runs.
+
+\section{What remains open}
+The material is thin on the cross-paper question. The following remain open:
+\begin{itemize}
+\item No LLM intervention has finished: the two local runs are incomplete \ledger{54}.
+\item P's first-pass accept count and its per-task outcomes are unknown \ledger{53, 54}.
+\item P's code and task list are not public \ledger{43}.
+\item P provides no uncertainty estimates \ledger{27, 45}.
+\item Q's LLM reservation-violation rate is unknown \ledger{18, 54}.
+\item Two ZI-C batches by Q's authors differ in price dispersion without explanation \ledger{14, 54}.
+\end{itemize}
+The supported conclusion is still negative. Q supplies a standalone constrained ZI-C result. The Q--P decomposition of institution against agent (omission against commission in Q; stopping information, forced edits and edit guidance in P) is now well posed and partly quantified, but it is not a supported cross-paper result \ledger{31, 54}.
+
+\section{Smallest settling step}
+The settling experiment is unchanged. On the same P tasks, compare an R-only iterate-to-clean loop, AR, and AR with a random critic whose verdicts match the observed disagreement rate. Hold outer caps and compute equal, and report paired per-task outcomes, ideally over repeated seeds. If AR beats both controls, critic information has an effect beyond re-review and stopping. Otherwise the proposed institutional decomposition is not supported \ledger{25, 27, 31, 45}.
+
+This round found two smaller steps. For P itself, the cheapest step is the first-pass accept count from P's logs, split by whether \(v_0\) passes. A count above about 77 would show that P's stop decision carries correctness information \ledger{53}. That count would not separate R's contribution from C's. Without P's authors, the cheapest step is to let \path{emmy/ar_ablation.py} and \path{ada/stop_signal_exp.py} finish (about 10 hours on the shared local server) and apply the analysis scripts that were fixed in advance. That would settle the decomposition for gemma4:26b on LCB v6 and HumanEvalPack, within the power of 40 problems, and not for P \ledger{46, 49, 54}.
 
 \end{document}
