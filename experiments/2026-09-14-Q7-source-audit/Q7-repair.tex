@@ -1,0 +1,542 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,tabularx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{array}
+\setlength{\emergencystretch}{2em}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newcommand{\R}{\mathbb R}
+\newcommand{\E}{\mathbb E}
+\newcommand{\one}{\mathbf 1}
+\newcommand{\CVaR}{\operatorname{CVaR}}
+\newcommand{\col}{\operatorname{col}}
+\title{From a failed certificate to a risk-aware mechanism:\\
+A source audit and conditional repair of Q7 through P1}
+\author{Pathfinder research note}
+\date{14 September 2026}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We check the Q7P1 investigation directly against the cached TeX and public
+version-one HTML of its source papers. Q7's strict matrix certificate is
+incompatible with its implementation equalities. Its explicit payment also
+fails its stated participation condition, and a deterministic example gives
+an equilibrium with negative participation utility. A separate printed
+reduction used for learning changes the sign of own-price curvature. These
+findings do not invalidate the entire mechanism: direct price optimality
+conditions recover welfare implementation under a local concavity condition.
+An opponent-only transfer correction then restores equilibrium budget balance
+and individual rationality without changing best responses. P1 motivates
+targeting a fixed expected empirical CVaR surrogate, with inward queries that
+preserve the original allocation set and its zero-allocation opt-out. We give
+explicit error bounds and a monotone-operator replacement for the failed
+full-message certificate. This is a source-checked mathematical proposal,
+not an externally reviewed paper or a validated implementation of Q7's
+original stochastic learner.
+\end{abstract}
+
+\section{Scope and source identification}
+
+Q7 is Garjani, Shokri, and Kebriaei's mechanism-design paper
+\cite{q7}; P1 is Wang, Huang, Xu, and Johansson's distributed CVaR paper
+\cite{p1}. Both public records list a single version at the time of this
+audit. The cached sources are \path{sources/2608.29130.tex} and
+\path{sources/2609.04460.tex}. The relevant displayed expressions agree
+with the public version-one HTML. The PDF endpoints could not be retrieved
+through the browsing tool; this is not a claim of a byte-for-byte PDF audit.
+
+The explicit Q7 payment is numbered (24) in the public HTML; its TeX label
+is \texttt{eq40}. References to ``equation 40'' in earlier working notes
+should be understood as that source label, not the rendered equation number.
+The existing Q7P1 follow-up already proposed an opponent-only payment
+correction and a weighted monotonicity argument. This note rederives those
+ideas from the sources, sharpens the scope of the negative findings, and
+adds a direct price-equilibrium argument separating the static repair from
+the stronger condition needed for the proposed learner. It does not claim
+that this audit independently originated every ingredient.
+
+We write $\gamma>0$ for the payment scale, reserving $m>0$ for valuation
+curvature. Q7 uses the same symbol $\alpha$ for both. Let $N\geq2$, let
+$x_n\in X_n\subset\R^K_{\geq0}$, and let $p_n\in\R^K_{\geq0}$. The
+local sets are convex and compact and contain zero. Prices in the static
+game are not capped. The capacity constraint is $\sum_nx_n\leq c$.
+We assume that the planner problem has a KKT multiplier; a suitable Slater
+condition suffices. Upper bounds on prices require a separate analysis and
+are not silently included in the theorems below.
+
+\section{What is wrong in Q7, as stated}
+
+\subsection{The matrix conditions have no common solution}
+
+Q7's Proposition 1 requires
+\begin{equation}
+ \Psi+\Psi^{\mathsf T}\preceq-\nu I,\qquad \nu>0,
+ \label{eq:strict}
+\end{equation}
+where the price-price block in row $n$, column $m$ of $\Psi$ is
+$-A^n_{nm}$. Its implementation condition P2(i) requires
+\begin{equation}
+ \sum_m A^n_{nm}=0\qquad\text{for every }n.
+ \label{eq:rowsum}
+\end{equation}
+These are public equations (5)(ii) and (7)(i), respectively; the cached
+source locations are lines 200--216 and 240--248.
+
+\begin{proposition}[Certificate incompatibility]
+No coefficients satisfy both \eqref{eq:strict} and \eqref{eq:rowsum}.
+\end{proposition}
+\begin{proof}
+For nonzero $v\in\R^K$, take $d=\col((0,v),\ldots,(0,v))$. Then
+\begin{equation}
+ d^{\mathsf T}\Psi d
+ =-\sum_n v^{\mathsf T}\left(\sum_m A^n_{nm}\right)v=0.
+\end{equation}
+Consequently $d^{\mathsf T}(\Psi+\Psi^{\mathsf T})d=0$, contradicting
+the upper bound $-\nu\|d\|^2<0$.
+\end{proof}
+
+This is an algebraic contradiction, not a failed numerical search for
+coefficients. It makes the combined sufficient conditions vacuous and
+invalidates the assertion that the displayed example satisfies them.
+It does not prove that the mechanism is unstable. Nor does it establish
+$\Psi d=0$: the allocation components can respond to a common-price shift.
+The obstruction is a zero quadratic form, not necessarily a null vector
+of the full operator. Replacing strict negativity by a non-strict inequality
+without analysing the cross terms is not a repair.
+
+\subsection{The explicit payment violates participation}
+
+Write $S=\sum_m x_m$, $P_{-n}=\sum_{m\ne n}p_m$, and
+$H_{-n}=\sum_{m\ne n}p_m^{\mathsf T}x_m$. Q7's explicit payment is
+\begin{align}
+ t_n^Q=\gamma\bigg[&\frac12\|p_n\|^2
+ -\frac{p_n^{\mathsf T}P_{-n}}{N-1}
+ -\frac{p_n^{\mathsf T}(S-c)}{N-1}\nonumber\\
+ &+\frac{N P_{-n}^{\mathsf T}(x_n-c/N)}{(N-1)^2}
+ +\frac{\sum_{m\ne n}\|p_m\|^2}{2(N-1)}
+ -\frac{H_{-n}-P_{-n}^{\mathsf T}c/N}{(N-1)^2}\bigg].
+ \label{eq:original-tax}
+\end{align}
+The TeX source is lines 410--426. Expanding its linear-price terms gives
+\begin{equation}
+ \sum_m a_m^n=\frac{\gamma c}{N(N-1)}.
+ \label{eq:failed-participation-condition}
+\end{equation}
+For a positive capacity coordinate this violates Q7's condition P4(ii),
+which requires that sum to be nonpositive. Thus the explicit formula does
+not satisfy the advertised sufficient conditions. The following example
+also shows an actual failure of its claimed participation property.
+
+\begin{proposition}[A deterministic participation counterexample]
+Set $N=3$, $K=1$, $c=\gamma=1$, $X_n=[0,1]$, and
+\begin{equation}
+ V_1(x)=10x-\tfrac12x^2,\qquad
+ V_2(x)=V_3(x)=\tfrac1{10}x-\tfrac12x^2.
+ \label{eq:counter-valuations}
+\end{equation}
+The profile $x=(1,0,0)$, $p=(9,9,9)$ is a Nash equilibrium for
+\eqref{eq:original-tax}, but agent one's utility is $-1$.
+\end{proposition}
+\begin{proof}
+The valuations are smooth, normalised at zero, and $1$-strongly concave.
+The sets are compact and convex, contain zero, and admit strict aggregate
+slack. Deterministic satisfaction is a permissible special case of Q7's
+stochastic model. Each player's own negative-utility Hessian is
+\begin{equation}
+ \begin{pmatrix}1&-1/2\\-1/2&1\end{pmatrix},
+\end{equation}
+which is positive definite. At the displayed profile, the price derivatives
+of negative utility are zero and its allocation derivatives are
+$(0,89/10,89/10)$. These satisfy the box-constrained first-order conditions,
+which are globally sufficient by convexity. Direct substitution gives
+\begin{equation}
+ t^Q=(21/2,-21/4,-21/4),\qquad V=(19/2,0,0),
+\end{equation}
+so the first utility is $19/2-21/2=-1$.
+\end{proof}
+
+The example does not satisfy P4(ii), so it is not a counterexample to a
+conditional participation argument whose premises include P4(ii) and the
+required equilibrium structure. It refutes the explicit formula's claimed
+participation guarantee and the assertion that this formula satisfies P4.
+This distinction corrects the broader informal description of the failure.
+
+The same allocation with any common price $p_n=\lambda$,
+$\lambda\in[1/10,9]$, satisfies the same sufficient first-order conditions.
+Thus this instance also directly refutes uniqueness of the full message
+profile. The allocation is unique; the supporting price need not be.
+
+\subsection{The printed learning reduction is not equivalent}
+
+In Section 4, Q7 replaces $t_n^Q$ by a reduced payment
+$\widehat t_n=\gamma[s_n^{\mathsf T}Ms_n+
+(\Delta\bar s_{-n}+d)^{\mathsf T}s_n]$, declaring that only terms
+independent of the player's own message have been removed. But its printed
+$M$ has price-price block $-I/2$ (cached lines 432--440). Therefore
+\begin{equation}
+ \nabla^2_{p_np_n}t_n^Q=\gamma I,
+ \qquad
+ \nabla^2_{p_np_n}\widehat t_n=-\gamma I.
+ \label{eq:sign-error}
+\end{equation}
+Deleting opponent-only terms cannot change this curvature. This establishes
+a printed inconsistency, not a finding about unpublished code or author
+intent. In particular, repairing the static transfers does not establish
+the stated stochastic-learning theorem. The replacement below uses the
+derivatives of the explicit payment, not this reduced expression.
+
+\section{A static repair that preserves incentives}
+
+Define the opponent-only correction
+\begin{equation}
+ r_n(s_{-n})=\frac{\gamma}{(N-1)^2}
+ \left(P_{-n}^{\mathsf T}c-NH_{-n}\right),
+ \qquad t_n^R=t_n^Q-r_n(s_{-n}).
+ \label{eq:rebate}
+\end{equation}
+The correction can have either sign. Because it is independent of $(x_n,p_n)$,
+it leaves every unilateral payoff difference, best response, and Nash
+equilibrium unchanged for a fixed collection of valuations. A useful exact
+identity is
+\begin{equation}
+ p_1=\cdots=p_N=p
+ \quad\Longrightarrow\quad
+ t_n^R=\gamma p^{\mathsf T}(x_n-c/N),
+ \label{eq:common-tax}
+\end{equation}
+even away from aggregate feasibility.
+
+\begin{theorem}[Allocation implementation, balance, and participation]
+Suppose each $V_n$ is continuously differentiable and $m$-strongly concave,
+with $V_n(0)=0$, and
+\begin{equation}
+ m\geq\frac{\gamma}{(N-1)^2}.
+ \label{eq:local-concavity}
+\end{equation}
+Under the set and KKT assumptions in Section 1, the game with payments
+$t_n^R$ has a Nash equilibrium. Every equilibrium implements the unique
+welfare-maximising allocation, uses a common nonnegative price, balances
+the budget, and gives each agent utility at least zero. Full message
+uniqueness is not asserted.
+\label{thm:static}
+\end{theorem}
+
+\begin{proof}
+Let $h=S-c$. At any equilibrium the price first-order conditions, coordinate
+by coordinate, are
+\begin{equation}
+ p_n\geq0,\quad
+ g_n:=Np_n-\sum_jp_j-h\geq0,\quad p_ng_n=0.
+ \label{eq:price-kkt}
+\end{equation}
+They follow from the strictly convex own-price part of either payment.
+At an agent with minimum price, $Np_n-\sum_jp_j\leq0$; hence $g_n\geq0$
+forces $h\leq0$. If the maximum price is positive, its complementarity
+condition yields
+$0=Np_{\max}-\sum_jp_j-h$. Both terms on the right are nonnegative,
+so $h=0$ and all prices equal the maximum. Otherwise all prices are zero.
+Applied to each resource, this proves common pricing, feasibility, and
+$p^{\mathsf T}(S-c)=0$ at every equilibrium.
+
+The own-allocation derivative of the payment is
+\begin{equation}
+ \nabla_{x_n}t_n^R=
+ \gamma\left(-\frac{p_n}{N-1}
+             +\frac{N P_{-n}}{(N-1)^2}\right).
+ \label{eq:allocation-gradient}
+\end{equation}
+At common prices this is $\gamma p$. The allocation conditions are
+therefore exactly the planner KKT conditions with multiplier $\lambda=\gamma p$.
+Strict concavity makes the planner's allocation unique.
+
+Conversely, take a planner optimum and a KKT multiplier $\lambda$ and set
+$p_n=\lambda/\gamma$. The own negative utility, up to affine and opponent-only
+terms, can be written as
+\begin{equation}
+ -V_n(x_n)-\frac{\gamma}{2(N-1)^2}\|x_n\|^2
+ +\frac{\gamma}{2}\left\|p_n-\frac{x_n}{N-1}\right\|^2.
+\end{equation}
+It is convex under \eqref{eq:local-concavity}. The planner KKT conditions
+thus give globally optimal unilateral choices, proving equilibrium existence.
+
+Finally, \eqref{eq:common-tax} and complementarity give
+$\sum_n t_n^R=\gamma p^{\mathsf T}(S-c)=0$. An agent can deviate to
+$(0,p)$ while the other messages remain fixed. This is locally feasible
+and gives utility $\gamma p^{\mathsf T}c/N\geq0$. Its equilibrium utility
+is no smaller. In the counterexample, the corrected taxes are $(6,-3,-3)$
+and utilities are $(7/2,3,3)$.
+\end{proof}
+
+The price argument also applies to Q7's original payment. Under the same
+concavity and KKT premises, its equilibrium allocations can therefore be
+rescued without its impossible certificate. The transfer correction repairs
+participation, not allocation incentives. Budget balance is an equilibrium
+property; neither payment guarantees physically feasible requests at every
+off-equilibrium message profile. The proof also explains why unique
+allocation is the appropriate general conclusion, rather than unique prices.
+
+\section{How P1 induces a different mechanism-design target}
+
+P1's fixed-batch analysis identifies a deterministic object: the expected
+empirical, smoothed CVaR, rather than the population CVaR itself. Its
+one-point estimator is unbiased for the gradient of that surrogate
+(Section 4.3, cached lines 853--878). This is the useful connexion:
+design the strategic mechanism for the objective its oracle actually
+estimates, and then control the difference from the scientific target.
+
+There are genuine interface changes. P1 concerns cooperative agents sharing
+a decision vector; Q7 has selfish agents with separate resource demands.
+P1 assumes a ball about zero inside its decision set, whereas a nonnegative
+resource set generally has zero on its boundary. Translating or shrinking
+the strategic allocation set would change the meaning of zero consumption
+and the feasible welfare benchmark. We instead move the \emph{queries},
+not the allocations.
+
+\subsection{A fixed surrogate with feasible queries}
+
+For agent $n$, let
+\begin{equation}
+ C_n(x)=\CVaR_{\beta_n}[J_n(x,\xi)],\qquad 0<\beta_n<1.
+\end{equation}
+Assume samplewise convexity, $L_n$-Lipschitz continuity, and
+$|J_n(x,\xi)|\leq U_n$ on $X_n$. These are P1-type oracle assumptions,
+now applied to separate local resource variables. Assume a known interior
+ball $a_n+\rho_n\mathbb B\subset X_n$. Choose
+$0<\varepsilon_n<1$ and $0<\delta_n<\varepsilon_n\rho_n$ and define
+\begin{equation}
+ q_n(x,u)=(1-\varepsilon_n)x+\varepsilon_na_n+\delta_nu.
+ \label{eq:inward}
+\end{equation}
+Every query with $\|u\|\leq1$ is in $X_n$ by convexity. In particular,
+the message $x=0$ remains feasible, without querying outside the resource
+domain. Lower-dimensional sets require a relative-interior construction;
+the present statement assumes a full-dimensional ball.
+
+Let $\widehat C_{n,s_n}$ denote empirical CVaR from a fresh i.i.d. batch of
+fixed size $s_n$. Freeze $s_n$, its distribution, and the query parameters.
+Define
+\begin{equation}
+ \widetilde C_n(x)=
+ \E_{\nu,\xi^{1:s_n}}\widehat C_{n,s_n}(q_n(x,\nu))
+ +\frac{\kappa_n}{2}\|x\|^2,
+ \quad \nu\sim\operatorname{Unif}(\mathbb B),
+ \label{eq:surrogate}
+\end{equation}
+and $\widetilde V_n(x)=\widetilde C_n(0)-\widetilde C_n(x)$.
+The optional $\kappa_n\geq0$ supplies missing curvature. If every sample
+loss is already $\mu_n$-strongly convex, the surrogate is strongly convex
+with modulus at least $\mu_n(1-\varepsilon_n)^2+\kappa_n$; for merely
+convex losses take $\mu_n=0$. This follows because empirical CVaR is a
+maximum of nonnegative weighted sample losses whose weights sum to one.
+Smoothing and expectation preserve the modulus after the affine contraction.
+
+Select $\gamma$ so that the minimum surrogate modulus satisfies
+\eqref{eq:local-concavity}. Theorem~\ref{thm:static} now applies exactly to
+the game with valuations $\widetilde V_n$. No claim that P1's cooperative
+network algorithm learns this strategic equilibrium is needed or made.
+
+\subsection{What is lost relative to true risk}
+
+Put $R_n=\sup_{x\in X_n}\|x-a_n\|$, $D_n=\sup_{x\in X_n}\|x\|$, and
+\begin{equation}
+ e_n=\frac{U_n}{\beta_n}\sqrt{\frac{2\pi}{s_n}}.
+\end{equation}
+The empirical minimum has downward bias:
+$\E\widehat C_{n,s_n}(y)\leq C_n(y)$. Its expected absolute error is at
+most $e_n$, by the bounded-loss empirical-CDF estimate used in P1.
+Consequently, with $b_n(x)=\widetilde C_n(x)-C_n(x)$,
+\begin{equation}
+ -e_n-L_n\varepsilon_nR_n
+ \leq b_n(x)\leq
+ L_n\varepsilon_nR_n+L_n\delta_n+\frac{\kappa_nD_n^2}{2}.
+ \label{eq:one-sided}
+\end{equation}
+For the lower bound, use Jensen's inequality for ball smoothing about
+$(1-\varepsilon_n)x+\varepsilon_na_n$, then the Lipschitz displacement
+bound. For the upper bound use downward empirical bias and Lipschitz
+continuity. Define the interval width
+\begin{equation}
+ w_n=e_n+2L_n\varepsilon_nR_n+L_n\delta_n
+            +\frac{\kappa_nD_n^2}{2}.
+ \label{eq:width}
+\end{equation}
+
+\begin{corollary}[True-risk consequences]
+Let $\widetilde s=(\widetilde x,\widetilde p)$ be a surrogate-game
+equilibrium and let $x^*$ minimise $\sum_n C_n(x_n)$ on the same original
+resource-feasible set. Then
+\begin{align}
+ \sum_n C_n(\widetilde x_n)-\sum_n C_n(x_n^*)&\leq\sum_n w_n,\\
+ C_n(0)-C_n(\widetilde x_n)-t_n^R(\widetilde s)&\geq-w_n.
+\end{align}
+Moreover, no unilateral deviation in the true-risk game can improve agent
+$n$'s utility by more than $w_n$ at $\widetilde s$.
+\end{corollary}
+\begin{proof}
+Surrogate optimality bounds the true aggregate gap by
+$\sum_n[b_n(x_n^*)-b_n(\widetilde x_n)]$, at most $\sum_n w_n$.
+The difference between true and surrogate normalised valuations is
+$b_n(x)-b_n(0)$, whose magnitude is at most $w_n$. For a unilateral
+deviation, the normalisation constant cancels: the change in this difference
+is $b_n(x_n')-b_n(\widetilde x_n)\leq w_n$. The surrogate deviation gain
+is nonpositive and the tax is identical in both games.
+\end{proof}
+
+Thus equilibrium balance and implementation are exact for the declared
+surrogate game; participation and incentives relative to true CVaR have
+explicit errors. If agents actually optimise true CVaR rather than the
+declared surrogate, $\widetilde s$ is an approximate equilibrium, not
+automatically an exact one. Regularisation is also not free: its distortion
+is included in $w_n$.
+
+\section{Replacing, rather than assuming, the convergence certificate}
+
+Let $F$ be the negative-utility pseudogradient for the surrogate game,
+and group coordinates as $(x,p)$. Deriving directly from the payments gives
+\begin{align}
+ F_{x_n}&=\nabla\widetilde C_n(x_n)
+       +\gamma\left(-\frac{p_n}{N-1}
+                   +\frac{N P_{-n}}{(N-1)^2}\right),\\
+ F_{p_n}&=\frac{\gamma}{N-1}
+                 \left(Np_n-\sum_jp_j-S+c\right).
+ \label{eq:pseudogradient}
+\end{align}
+Let $D=\operatorname{diag}(I,(N-1)I/N)$ and $G=DF$. Positive scaling
+of the separate allocation and price blocks preserves their product-set
+normal-cone conditions, so the zeros of $G+N_{\mathcal S}$ are the same
+Nash equilibria. Write $\Pi=(I_N-\one\one^{\mathsf T}/N)\otimes I_K$
+and $a=\gamma(2N-1)/(N-1)^2$.
+
+\begin{proposition}[A feasible monotonicity replacement]
+If the surrogate costs are $m$-strongly convex and
+\begin{equation}
+ m>\frac{\gamma(2N-1)^2}{4(N-1)^4},
+ \label{eq:monotonicity}
+\end{equation}
+then $G$ is monotone. In particular, for differences $\Delta x,\Delta p$,
+\begin{align}
+ \langle G(s)-G(s'),s-s'\rangle
+ &\geq m\|\Delta x\|^2+\gamma\|\Pi\Delta p\|^2
+                 -a\langle\Pi\Delta x,\Pi\Delta p\rangle\\
+ &\geq\left(m-\frac{a^2}{4\gamma}\right)\|\Delta x\|^2
+       +\gamma\left\|\Pi\Delta p-
+                          \frac{a}{2\gamma}\Pi\Delta x\right\|^2.
+ \label{eq:monotone-bound}
+\end{align}
+\end{proposition}
+\begin{proof}
+The allocation-price block of the unscaled operator has eigenvalue
+$\gamma$ on common prices and $-a$ on price disagreements. The scaled
+price-allocation block is $-\gamma(\one\one^{\mathsf T}/N)\otimes I_K$,
+so their common-mode contributions to the quadratic form cancel.
+The scaled price-price block is $\gamma\Pi$. Strong convexity supplies
+the allocation term, and completing the square gives the second inequality.
+The positive allocation coefficient follows from \eqref{eq:monotonicity}.
+\end{proof}
+
+This deliberately permits a zero common-price quadratic form. It does not
+contradict the obstruction, and is stronger than the local concavity
+condition needed for the static theorem. A convergent replacement is the
+proximal point iteration
+\begin{equation}
+ s^{k+1}=(I+h\mathcal A)^{-1}s^k,
+ \qquad \mathcal A=G+N_{\mathcal S},\quad h>0.
+ \label{eq:ppa}
+\end{equation}
+Here $N_{\mathcal S}$ denotes the convex normal cone. For completeness,
+$\mathcal A$ is maximal monotone: subtract $m\|x_n\|^2/2$ from each
+surrogate cost and include the set indicators in the resulting proper,
+closed convex function. Its subdifferential is maximal monotone. The
+remaining affine operator is monotone by the calculation above and is
+continuous on the full space, so their sum is maximal monotone. Theorem
+\ref{thm:static} supplies a zero. The resolvent is firmly nonexpansive;
+its iterates are Fejer monotone with respect to the zero set, have
+vanishing steps, and converge in finite dimensions to a zero
+\cite{rockafellar}. Convergence to one supporting price does not imply
+that all initialisations select the same price.
+
+An inexact version retains convergence if its errors relative to the exact
+resolvent are summable. This is a contract for a replacement learner, not
+a validation of Q7's parallel proximal best-response iteration: the
+resolvent solves a coupled variational inequality.
+
+P1 supplies an oracle for the allocation part. With $u$ uniform on the unit
+sphere in dimension $K$ and a fresh batch, set
+\begin{equation}
+ \widehat g_n(x)=
+ (1-\varepsilon_n)\frac{K}{\delta_n}
+       \widehat C_{n,s_n}(q_n(x,u))u+\kappa_nx.
+ \label{eq:oracle}
+\end{equation}
+It is conditionally unbiased for $\nabla\widetilde C_n(x)$, and
+$\|\widehat g_n(x)\|\leq
+(1-\varepsilon_n)KU_n/\delta_n+\kappa_nD_n$.
+This supplies a bounded stochastic oracle for inner solves. A practical
+decentralised inner solver, its sample complexity, and a proof that its
+errors meet the summability requirement are not supplied here. Changing
+batches between calls is compatible with the fixed surrogate; changing
+their size or distribution changes the target and needs another argument.
+
+\section{Verification, novelty, and the connexion}
+
+The accompanying \path{check_q7.py} uses rational arithmetic for the
+counterexample, payment identities, gradients, price continuum examples,
+and finite-dimensional instances of the monotonicity identity. It also
+enumerates a two-outcome, two-sample CVaR oracle to check its expected
+surrogate and inward-query gradient identity. These are reproducible
+algebra checks, not measurements on Q7's transportation data or P1's sensor
+network, and they do not replace the general proofs.
+
+The source identities, counterexample, and direct equilibrium argument are
+checked here without assuming the earlier internal review's verdict. This
+is still a single audit, not external peer review. The only new literature
+search in this audit was a targeted check for a Q7 correction and the
+standard proximal-point reference; no correction was located in that bounded
+search. The payment invariance principle, convex perturbation estimates,
+and proximal-point convergence are established ideas. Publication novelty
+of this particular synthesis has not been established.
+
+The proposed connexion can therefore be stated precisely: \emph{P1's
+sampling semantics induce a reformulation of Q7 around a fixed risk
+surrogate, allocation rather than message uniqueness, and explicitly
+bounded economic error.} The audit removes a false certificate and repairs
+the transfer normalisation; the resulting mechanism theorem does not need
+that certificate. What remains open is the efficient stochastic implementation
+of the replacement learner and independent validation of the synthesis.
+
+\appendix
+\section{Audit provenance}
+The SHA-256 hashes of the cached sources at the read used for this audit are:
+\begin{center}\small
+\begin{tabular}{l}
+Q7: \texttt{2a4e5c7f74fb0350d271636307f402af3}\\
+\phantom{Q7: }\texttt{b0f734341f798312ae7a6ece9bbbe76}\\[3pt]
+P1: \texttt{c5631017064059edf3bb128b0bfc9177}\\
+\phantom{P1: }\texttt{3601627142112e48a39dd88f6ba0d803}
+\end{tabular}
+\end{center}
+Each hash is split across consecutive lines for typesetting; concatenate
+the two hexadecimal fragments without whitespace. Existing campaign
+manuscripts, review records, and status files were not changed by this audit.
+
+\begin{thebibliography}{9}
+\bibitem{q7}
+S. Garjani, M. Shokri, and H. Kebriaei.
+\emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic Stability}.
+arXiv:2608.29130v1, 2026.
+\url{https://arxiv.org/html/2608.29130v1}.
+\bibitem{p1}
+S. Wang, K. Huang, L. Xu, and K. H. Johansson.
+\emph{Distributed risk-averse optimization via CVaR}.
+arXiv:2609.04460v1, 2026.
+\url{https://arxiv.org/html/2609.04460v1}.
+\bibitem{rockafellar}
+R. T. Rockafellar.
+Monotone operators and the proximal point algorithm.
+\emph{SIAM Journal on Control and Optimization}, 14(5):877--898, 1976.
+\url{https://doi.org/10.1137/0314056}.
+\end{thebibliography}
+\end{document}

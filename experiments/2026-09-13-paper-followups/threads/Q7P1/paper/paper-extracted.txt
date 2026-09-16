@@ -1,0 +1,445 @@
+ Corrected quadratic payments for a fixed CVaR
+                   surrogate
+
+
+                                     Abstract
+         We examine the combination of a quadratic resource-allocation mecha-
+     nism and an empirical conditional value-at-risk (CVaR) oracle. The mech-
+     anism’s strict matrix certificate is incompatible with its implementation
+     equalities, and its printed payment can violate individual rationality. An
+     adjustment depending only on opponents’ messages repairs equilibrium
+     transfers. Under additional curvature and multiplier-existence assump-
+     tions, a weighted monotonicity argument implements the unique optimum
+     of a fixed expected empirical CVaR surrogate, with exact budget balance
+     and surrogate individual rationality. The oscillation of the surrogate er-
+     ror bounds population-risk regret, participation shortfall and welfare loss.
+     Contracting only the loss queries preserves the zero outside action and lo-
+     cal feasibility. A standard nested stochastic proximal-point construction
+     gives mean-square allocation convergence to this fixed surrogate optimum,
+     without requiring unique prices. These conclusions neither validate the
+     original best-response learner nor establish exact population-risk learning.
+
+
+1    The question and its scope
+Garjani, Shokri and Kebriaei [3], called Q below, propose quadratic payments
+for strategic allocation with capacity constraints. Wang, Huang, Xu and Jo-
+hansson [4], called P, develop a cooperative distributed CVaR method using
+loss values. P establishes consensus and convergence to a fixed expected empir-
+ical smoothed objective under its fixed-batch assumptions. Q’s implementation
+and dynamic guarantees are conditional on certificates and assumptions that
+cannot simply be carried into that setting.
+    Our contribution is a correction and conditional combination of these con-
+structions. We give a direct implementation proof for Q’s explicit payment
+after an incentive-preserving transfer adjustment, and quantify how P’s statis-
+tical surrogate changes economic guarantees. The new content is the specific
+repair and its combination with the economic error bounds. The value estima-
+tor, elementary smoothing construction and generic proximal-point convergence
+principle are not claimed as new. Throughout, implementation means Nash im-
+plementation in the message game; no truthful-reporting or dominant-strategy
+assertion is made.
+
+
+                                          1
+2      Payments and implementation
+2.1     Model and the printed payment
+There are N ≥ 2 agents and r resources. Agent n chooses sn = (xn , pn ) ∈
+Xn × Rr+ , P
+           where Xn is compact and convex. Capacity is c ∈ Rr+ . The planner
+minimises n fn (xn ) over
+                                Q       P
+                       A = {x ∈ n Xn :     n xn ≤ c}.
+
+The normal cone convention is NX (x) = {v : ⟨v, y − x⟩ ≤ 0 for all y ∈ X}. A
+planner Karush–Kuhn–Tucker (KKT) pair (x⋆ , λ) satisfies
+                                                       X
+   0 ∈ ∂fn (x⋆n ) + λ + NXn (x⋆n ), λ ≥ 0, x⋆ ∈ A, λ⊤ (    x⋆n − c) = 0. (1)
+                                                                n
+
+The game cost is fn (xn ) + tn (s); the coupling constraint is imposed at equilib-
+rium, not on unilateral message choices.                             P
+     Write γ > 0 for Q’s payment scale, and define P−n =                j̸=n pj , X−n =
+                                  2                      ⊤
+P                  P                             P
+   j̸=n xj , S−n =     j̸=n ∥pj ∥ , and D−n =      j̸=n pj xj . The printed payment in
+Q, Section III, equation labelled eq40 in its source, is
+                                   p⊤ P−n    p⊤ (xn + X−n − c)
+                   
+                     1
+         tn (s) = γ ∥pn ∥2 − n
+          Q
+                                          − n
+                     2              N −1           N −1
+                             ⊤                                          ⊤
+                                                                                     (2)
+                                 (xn − c/N )                   D−n − P−n
+                                                                                
+                         N P−n                     S−n                     c/N
+                     +                        +            −                      .
+                              (N − 1)2           2(N − 1)         (N − 1)2
+All derivatives below are taken from this expression.
+
+2.2     Obstructions in Q
+Proposition 1. Q’s strict certificate P1(ii) and implementation equality P2(i)
+cannot hold simultaneously. Moreover, payment (2) need not be individually
+rational, even with normalised strongly concave valuations.
+                                                       n
+                                                 P
+Proof. In Q’s notation, P2(i) requires              m Anm = 0. For v ̸= 0 and h =
+col((0, v), . . . , (0, v)), its price blocks give
+                                               X X          
+                        h⊤ (Ψ + Ψ⊤ )h = −2         v⊤    Annm v = 0.
+                                           n        m
+               ⊤
+P1(ii), Ψ + Ψ ⪯ −υI with υ > 0, would instead bound this by −υN ∥v∥2 < 0.
+This disproves simultaneous feasibility of those sufficient conditions.
+   For the payment claim, take N = 3, γ = c = 1, Xn = [0, 1], and valuations
+      V1 (x) = 10x − x2 /2,      V2 (x) = V3 (x) = 0.1x − x2 /2,       fn = −Vn .
+At x = (1, 0, 0), p = (9, 9, 9), own price derivatives vanish and own allocation
+cost derivatives are 0, 8.9,8.9. The positive
+                                              derivatives occur at lower bounds.
+                               1 −1/2
+Each own cost Hessian is −1/2      1
+                                        ≻  0, so these conditions suffice for a Nash
+equilibrium. Substitution gives tQ
+                                 1 = 10.5 > V1 (1) = 9.5.
+
+
+                                           2
+                                2                  2
+              P put bN = (N − N + 1)/(N − 1) . At common prices pn = p
+    More generally,
+            ⊤
+satisfying p ( n xn − c) = 0, collection of terms gives
+                                        ⊤
+                            tQ
+                             n = γbN p (xn − c/N ).                        (3)
+
+The printed linear coefficients also satisfy m anm = γc/[N (N − 1)], violating
+                                             P
+Q’s P4(ii) when capacity has a positive component. These failures do not imply
+absence of equilibria or impossibility of every implementing mechanism.
+
+2.3    A direct replacement theorem
+Assume each fn is continuous and m-strongly convex on Xn , with convex ex-
+tensions sufficient for the subgradient and normal-cone sum rules. Assume a
+planner KKT pair exists. Define
+                                            ⊤               
+                                         P−n            N −1
+             tcorr
+              n    = t Q
+                       n + γ(b N − 1)             X−n −      c   .      (4)
+                                        N −1             N
+Theorem 2. If
+                                      γ(2N − 1)2
+                                 m>              ,                           (5)
+                                       4(N − 1)4
+then every equilibrium of the corrected game implements the unique planner
+allocation. Prices are common and λ = γpn is a planner multiplier. Conversely,
+every planner KKT pair gives an equilibrium at pn = λ/γ. If also 0 ∈ Xn and
+fn (0) = 0, then for Vn = −fn the corrected equilibrium payments satisfy
+                            X
+  tcorr
+   n    = λ⊤ (xn − c/N ),       tcorr
+                                 n    = 0,    Vn (xn ) − tcorr
+                                                          n    ≥ λ⊤ c/N ≥ 0. (6)
+                             n
+
+Prices need not be unique.
+Proof. The added term depends only on opponents, preserving every best re-
+sponse. Stack allocations and prices separately. Let Π = 11⊤ /N , ∆ = I − Π,
+and κ = (2N − 1)/(N − 1)2 ; these matrices act resourcewise. Differentiating (2)
+and multiplying price rows by (N − 1)/N gives the weighted own-cost operator
+                                                               γ
+         Gx ∈ ∂f (x) + γ(Π − κ∆)p,          Gp = γ∆p − γΠx +     1 ⊗ c.      (7)
+                                                               N
+Positive row scaling preserves the product-set optimality conditions. For u =
+x − x′ , v = p − p′ , strong convexity and completion of squares give
+
+            ⟨G(s) − G(s′ ), s − s′ ⟩ ≥ m∥Πu∥2 + (m − γκ2 /4)∥∆u∥2
+                                                                             (8)
+                                      + γ∥∆v − (κ/2)∆u∥2 .
+
+This holds for any corresponding subgradient selections. Condition (5) also
+implies m > γ/(N − 1)2 , so the own allocation-price cost is jointly strongly
+convex: its price quadratic has curvature γ and cross coefficient −γ/(N − 1).
+Thus own optimality conditions are sufficient.
+
+
+                                        3
+   Substituting a KKT pair into (7) supplies a game equilibrium. Add its
+variational inequality to that of any other equilibrium. The left side of (8) is
+then nonpositive, forcing u = 0 and ∆v = 0. At common prices the remaining
+game conditions are precisely (1). Strong convexity gives allocation uniqueness.
+   Equation (3), the correction and complementarity yield the transfer identity
+and budget balance. Choose gn ∈ ∂fn (xn ), vn ∈ NXn (xn ) with gn + λ + vn = 0.
+Feasibility of zero gives vn⊤ xn ≥ 0. The subgradient inequality at zero yields
+0 ≥ fn (xn ) + λ⊤ xn , proving participation.
+
+
+3     The fixed risk surrogate and economic errors
+Assume 0 ∈ Xn . Losses Jn (x, ξ) are bounded in absolute value by Un , sam-
+plewise Ln -Lipschitz and mn -strongly convex on Xn . Samples are fresh and iid
+from a query-independent distribution. For upper-tail probability βn ∈ (0, 1),
+define
+                  Cn (x) = inf τ + βn−1 E[Jn (x, ξ) − τ ]+ ,
+                                
+                                                                           (9)
+                           τ ∈R
+                                (           s
+                                                                  )
+                                             n
+                bn,s (x) = inf τ + 1
+                                           X
+                C   n                          [Jn (x, ξi ) − τ ]+ .      (10)
+                           τ ∈R      βn sn i=1
+
+Here [a]+ = max{a, 0}. True normalised valuation is Vn (x) = Cn (0) − Cn (x).
+For satisfaction data the loss is Jn = −ψn ; cash translation allows deterministic
+taxes outside the risk functional. The planner sums individual risks, rather than
+taking the risk of an aggregate random loss.
+
+3.1    One-sided value error and feasible queries
+Suppose a known relative interior ball an + ρn Bn ⊂ Xn is available, where Bn
+is the unit ball in the local affine hull, of dimension dn > 0. Fix 0 < εn < 1 and
+0 < δn < εn ρn . Define
+             qn (x, v) = (1 − εn )x + εn an + δn v,                          (11)
+              Kn (x) = Ev,ξ1:sn C bn,s (qn (x, v)),
+                                       n                v ∼ Unif(Bn ).       (12)
+Decisions remain in Xn , including zero. Set
+           r
+        Un 2π
+  en =          , Rn = sup ∥x − an ∥, wn = en + 2Ln εn Rn + Ln δn .          (13)
+        βn sn             x∈Xn
+
+Lemma 3. Every query in (12) is locally feasible, and
+             −en − Ln εn Rn ≤ Kn (x) − Cn (x) ≤ Ln δn + Ln εn Rn .           (14)
+The surrogate has curvature mn (1 − εn )2 . With a uniform sphere direction u,
+independent of the fresh batch, the oracle
+                                  (1 − εn )dn b
+                      gbn (x) =              Cn,sn (qn (x, u))u              (15)
+                                      δn
+
+                                           4
+is unbiased for ∇Kn (x), the relative gradient. It satisfies
+
+                            ∥b
+                             gn (x)∥ ≤ (1 − εn )dn Un /δn .
+
+Proof. The query is the convex combination (1 − εn )x + εn (an + (δn /εn )v).
+The strict radius inequality also leaves a relative neighbourhood on which the
+smoothing identity is valid. Applying P’s sphere identity and the chain rule
+gives (15). Since 0 ∈ Xn , the affine hull is a linear subspace; gradients can be
+lifted by an orthonormal basis.
+     Let Hn = ECbn,s . Interchanging infimum and expectation in the inequality
+                    n
+direction gives Hn ≤ Cn . P’s integrated Dvoretzky–Kiefer–Wolfowitz calcula-
+tion gives E|Cbn,s (x) − Cn (x)| ≤ en , hence Cn − en ≤ Hn ≤ Cn . At a centre
+                  n
+y admitting ball queries, Jensen’s inequality and Lipschitz continuity therefore
+give
+                     −en ≤ Ev Hn (y + δn v) − Cn (y) ≤ Ln δn .               (16)
+Taking y = (1 − εn )x + εn an proves (14). These compare deterministic expected
+functions; no expected supremum of random empirical errors is used.
+    Samplewise strong convexity passes through CVaR by monotonicity, convex-
+ity and cash translation: the deterministic quadratic deficit passes through the
+risk functional unchanged. This applies also to empirical CVaR and expectation.
+Affine contraction scales the deficit by (1 − εn )2 .
+
+3.2    Economic consequence
+For a real function a, let oscX a = supX a − inf X a. Equation (14) gives
+oscXn (Kn − Cn ) ≤ wn . Use surrogate valuation VnK (x) = Kn (0) − Kn (x),
+and retain payment (4).
+Theorem 4. Assume a surrogate planner KKT pair exists and
+
+                                                         γ(2N − 1)2
+                    meff = min mn (1 − εn )2 >                      .
+                                  n                      4(N − 1)4
+                                                                       P
+At every surrogate equilibrium se, its allocation x
+                                                  e uniquely minimises  n Kn
+on A. Budget balance and surrogate individual rationality are exact. Writing
+Un (s) = Vn (xn ) − tcorr
+                     n (s), population-risk guarantees are
+
+                      sup         {Un (s′n , se−n ) − Un (e
+                                                          s)} ≤ wn ,        (17)
+                   s′n ∈Xn ×Rr+
+
+                                                           s) ≥ −wn ,
+                                                       Un (e                (18)
+                            X                   X                X
+                                                           ⋆
+                                       xn ) −
+                                   Cn (e              Cn (xn ) ≤   wn ,     (19)
+                             n                    n              n
+
+where x⋆ minimises population cost on A. If total population cost has curvature
+m0 > 0, then
+                                        2 X
+                           x − x⋆ ∥2 ≤
+                          ∥e                   wn .                        (20)
+                                       m0 n
+
+
+                                              5
+Proof. Lemma 3 and Theorem 2 give exact surrogate implementation and trans-
+fers. Put an = Kn − Cn in this proof only. The true minus surrogate payoff
+at allocation xn is an (xn ) − an (0). Its change under any unilateral deviation
+is at most osc an , proving (17); its absolute value is at most wn , proving (18).
+Transfers themselves do not change when evaluated under true preferences, so
+budget balance remains exact. Surrogate optimality gives
+            X                            X                          X
+               [Cn (exn ) − Cn (x⋆n )] ≤   [an (x⋆n ) − an (e
+                                                            xn )] ≤   wn .
+             n                           n                             n
+
+                                                           ⋆
+Strong convexity and constrained optimality at x lower-bound this gap by
+        x − x⋆ ∥2 .
+(m0 /2)∥e
+                                                         −1/2
+    Taking δn = εn ρn /2 yields error order O(sn      + εn ), for fixed problem
+constants. Where centred queries are already permissible, (16) gives the smaller
+oscillation bound en +Ln δn . The improvement is at the objective level and does
+not remove the inverse-radius dependence of oracle variance.
+
+
+4    A replacement learner
+Fix all surrogate parameters. Assume a compact
+                                            Q price box [0, Pmax   ]r containing
+                                                                r
+a surrogate KKT equilibrium, and put S = n (Xn × [0, Pmax ] ). Comparison
+with that equilibrium in (8) shows every boxed equilibrium has its allocation
+and common prices. Capacity is therefore feasible already; slack resources force
+zero price by the boxed price condition. No strict interiority of the reference
+price is needed. This retains the unboxed equilibrium characterisation.
+    Let GK denote (7) for the smooth costs Kn − Kn (0). For η > 0, define
+
+       R(z) = (I + η(GK + NS ))−1 z,              Hz (s) = GK (s) + η −1 (s − z).
+
+The continuous monotone operator on the compact convex product gives a well-
+defined resolvent. To approximate it, use projected stochastic updates with
+the oracle (15), analytic payment gradients, and aggregate allocation and price
+messages:
+                                                             1
+          st+1 = projS (st − αt H
+                                b z (st )),       αt =            ,   σ = η −1 .
+                                                         σ(t + 2)
+
+Proposition 5. Run Tk = ⌈(k + 1)2+ζ ⌉ inner updates centred at zk , where
+ζ > 0, and set zk+1 = sTk . Then zk converges almost surely and in mean square
+to a possibly random surrogate equilibrium. Its allocation converges in mean
+square to the deterministic optimum xe of Theorem 4.
+Proof. Compactness and the oracle bound give a uniform conditional second
+moment M 2 for H  b z . With y = R(z), projection, the VI at y, and σ-strong
+monotonicity give
+
+              E[∥st+1 − y∥2 | st , z] ≤ (1 − 2σαt )∥st − y∥2 + αt2 M 2 .
+
+
+                                              6
+Induction yields
+
+     E[∥sT − R(z)∥2 | z] ≤ C/(T + 1),        C = max{diam(S)2 , M 2 /σ 2 }.
+                                          P
+Thus the errors ek = zk+1 − R(zk ) have k E∥ek ∥ < ∞, and are almost surely
+summable.
+   Subtracting the resolvent VIs proves firm nonexpansiveness. For any fixed
+point z ⋆ ,
+                 ∥R(zk ) − z ⋆ ∥2 ≤ ∥zk − z ⋆ ∥2 − ∥zk − R(zk )∥2 .
+Summable errors imply convergent distances to fixed points and vanishing resid-
+ual. Compactness supplies a cluster point; continuity places it in the fixed-
+point set. The distance argument then gives convergence of the whole sequence.
+Boundedness yields mean-square convergence by dominated convergence. The
+allocation component is unique by Theorem 2.
+
+
+5    Related work and interpretation
+The sampled CVaR one-point step is already published. Wang, Shen and Za-
+vlanos [5], Algorithm 1 and Lemmas 2–3, give the estimator, smoothing compar-
+ison and distribution-function error bound, with regret guarantees. The nested
+learner is also an application of an existing principle: Cui and Shanbhag [2],
+Section 3.2, Propositions 5–6, use stochastic inner solves of proximal inclusions
+and a polynomial inner schedule of exponent greater than two to obtain almost-
+sure convergence under monotonicity. We include the compact-case proof to
+specify precisely which learner is justified here.
+    Wang et al. [6], Algorithm 1 and Theorem 1, use loss gradients and estimated
+quantiles under strong monotonicity. Their theorem bounds the time average
+of squared distance with high probability. Our weighted operator retains a
+common-price degeneracy. Cherukuri [1], Section 3, studies sample-average VIs
+whose operator components are CVaRs, proving consistency and exponential
+solution-set approximation. Here the implemented objective is the deterministic
+expectation of a fixed empirical risk estimate, and the operator differentiates
+that objective. Those statistical targets and guarantees differ.
+    The comparison supports a focused contribution: a correction of Q’s specific
+payment, with P’s fixed surrogate interpreted through explicit welfare and in-
+centive errors. It does not support novelty claims for CVaR game learning, the
+proximal construction or feasible smoothing in general. The sources examined
+did not identify the same payment repair and economic-bound package; this
+bounded search is not a proof of priority. Economically, finite sampling changes
+the implemented preferences. Equations (17)–(19) concern a fixed surrogate
+equilibrium assessed using population risk, rather than a finite-time regret guar-
+antee for a learning trajectory.
+
+
+
+
+                                        7
+6    Limitations and open questions
+The added assumptions are substantive: samplewise curvature, valid KKT sum
+rules, existence of a surrogate planner multiplier, a feasible zero outside ac-
+tion, known local interior balls and fresh losses at arbitrary local queries. For
+learning, a known price cap must contain a KKT price. Q’s expected curvature
+assumption alone does not imply CVaR curvature. Exact budget balance is
+asserted only at equilibrium; local query feasibility does not ensure joint capac-
+ity feasibility of experiments. No efficient total oracle complexity or stochastic
+benchmark is supplied.
+    Weighted monotonicity does not prove Q’s proximal best-response map non-
+expansive. In the recorded interior quadratic example with N = 3 and m =
+γ = 1, its consensus-price column has squared norm 1 + 1/(2D2 ) > 1, where
+D = (µ + 1)2 − 1/4, for every µ > 0. This defeats that certificate, without
+proving divergence of all damped iterations. Proposition 5 concerns a changed
+algorithm.
+    Allocation uniqueness likewise does not imply price uniqueness. For N = 3,
+Xn = [0, 1], c = 3/2, γ = 1, equiprobable Z = ±1, and tail probability 1/2, the
+losses
+                         Jn (x, Z) = x2 − 3x + Z(x − 1/2)
+give Cn (x) = x2 − 3x + |x − 1/2|. The unique allocation is xn = 1/2, but
+∂Cn (1/2) = [−3, −1] admits every common price in [1, 3].
+    Open questions are convergence of the original VS-PBR iteration, efficient
+sample complexity for the replacement learner, a population-risk limit with
+changing batches and radii, and jointly capacity-feasible exploration. The fixed-
+parameter theorem establishes none of these. Broader publication priority of
+the specific correction remains subject to further comparison.
+
+
+References
+[1] Ashish Cherukuri. Sample average approximation of conditional value-
+    at-risk based variational inequalities. Optimization Letters, 18:471–
+    496, 2024.    Published online in 2023. https://doi.org/10.1007/
+    s11590-023-01996-9.
+[2] Shisheng Cui and Uday V. Shanbhag. On the computation of equi-
+    libria in monotone and potential stochastic hierarchical games, 2021.
+    arXiv:2104.07860, version 2 (2022). https://arxiv.org/abs/2104.07860.
+
+[3] Shaya Garjani, Mohammad Shokri, and Hamed Kebriaei. A systematic
+    approach to mechanism design with stochastic dynamic stability, 2026.
+    arXiv:2608.29130. https://arxiv.org/abs/2608.29130.
+[4] Siyi Wang, Kun Huang, Lei Xu, and Karl H. Johansson. Distributed risk-
+    averse optimization via CVaR, 2026. arXiv:2609.04460. https://arxiv.
+    org/abs/2609.04460.
+
+
+                                        8
+[5] Zifan Wang, Yi Shen, and Michael M. Zavlanos. Risk-averse no-regret learn-
+    ing in online convex games, 2022. arXiv:2203.08957. Also published in ICML
+    2022. https://arxiv.org/abs/2203.08957.
+[6] Zifan Wang, Yi Shen, Michael M. Zavlanos, and Karl H. Johansson. Learning
+    of Nash equilibria in risk-averse games, 2024. arXiv:2403.10399. https:
+    //arxiv.org/abs/2403.10399.
+
+
+
+
+                                      9
+

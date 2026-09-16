@@ -22,7 +22,7 @@ with uv, standard library only], for me to run from a terminal with my
 [Claude Code | Codex] subscription. Keep it simple: plain files for all
 state, one process per command, no services, no database, no framework.
 Read the design and the prompts at https://github.com/vd1/pathfinder: the
-state machine in `plans/2026-09-12-state-machine.pdf` is the shape to
+state machine in `notes/2026-09-12-state-machine-astra.pdf` is the shape to
 build, with every state, transition, agent, prompt, what each agent sees
 and writes, and the budget of each loop; the spec in
 `plans/2026-09-11-pathfinder-design.md` and the pilot report in

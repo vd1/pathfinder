@@ -1,0 +1,93 @@
+{
+  "config": {
+    "backend": "claude",
+    "model": "claude-opus-5",
+    "scan_model": "claude-sonnet-5",
+    "peer_search": true,
+    "seats": 2,
+    "cut": 12,
+    "rounds": 4,
+    "allowances": {
+      "peer_seconds": 1800,
+      "peer_calls": 2,
+      "consolidate_seconds": 1800,
+      "verify_seconds": 900,
+      "paper_seconds": 1800,
+      "review_seconds": 900,
+      "edit_seconds": 900
+    },
+    "budget_usd": 200,
+    "prices": {
+      "claude-opus-5": {
+        "input_per_m": 15,
+        "output_per_m": 75
+      },
+      "claude-sonnet-5": {
+        "input_per_m": 3,
+        "output_per_m": 15
+      },
+      "gpt-5.6-sol": {
+        "input_per_m": 2,
+        "output_per_m": 8
+      }
+    },
+    "scan": {
+      "fulltext": null
+    },
+    "call_estimate_usd": 5,
+    "codex": {
+      "name": "elm",
+      "base_url": "https://elm.edina.ac.uk/api/v1",
+      "env_key": "ELM_KEY",
+      "wire_api": "responses"
+    },
+    "peers": null
+  },
+  "q": {
+    "id": "2609.04787",
+    "title": "Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and System-Level Implications",
+    "abstract": "Learning-augmented algorithms use fallible predictions while retaining formal performance guarantees. This survey synthesizes prediction interfaces, error measures, consistency--robustness trade-offs, and five representative construction mechanisms across online optimization, caching, learned data structures, graph problems, and mechanism design. An orthogonal theorem-level axis distinguishes achieved upper bounds from matched asymptotic dependence. Formal guarantees are separated from empirical systems evidence, with explicit treatment of prediction cost, feedback, and composition. The resulting synthesis states sufficient conditions for limited end-to-end reasoning and delineates open problems in cost-aware prediction, endogenous error, semantic predictors, and benchmarking.",
+    "authors": [
+      "Hailiang Zhao",
+      "Xueyan Tang",
+      "Peng Chen",
+      "Zenong Ye",
+      "Tianjun Zhu",
+      "Jianwei Yin",
+      "Shuiguang Deng"
+    ],
+    "date": "2026-09-04",
+    "text": "sources/2609.04787.tex"
+  },
+  "p": {
+    "id": "2607.26560",
+    "title": "Emission-Forecasting-Based Spatial-Temporal Carbon Response: A Multi-Agent Attention-Enhanced Deep Learning Framework",
+    "abstract": "As a major contributor to carbon emissions, the decarbonization of power systems has garnered significant societal attention. Nodal carbon intensity (NCI), a critical factor in carbon-oriented demand response, has traditionally been determined through ex-post calculations. However, this ex-post approach introduces latency in low-carbon dispatch. To address this, this paper presents a proactive ex-ante spatial-temporal carbon response framework. At its core, we develop a novel deep learning-based hierarchical design, enhanced by a dual-stage attention mechanism and a large language model (LLM)-based multi-agent cooperation system, to accurately forecast day-ahead NCI. This design effectively mitigates the impact of renewable energy uncertainty and enhances predictive resilience. On the demand side, the framework proposes a spatial-temporal carbon scheduling model that integrates geographically dispatchable loads (GDLs), including mobile energy storage systems (MESSs) and distributed data centers (DDCs). Leveraging high-accuracy day-ahead NCI predictions, the framework can effectively reduce system emissions by quickly responding to carbon intensity fluctuations. The proposed framework is tested on the modified IEEE 33-bus system. According to the simulation results, the impacts of proposed framework on dispatching latency and emission outcomes are analyzed. The results demonstrate that under a one-hour reduction in carbon scheduling latency, the proposed model and methodology can achieve over 30% emission reduction. This research breaks through the limitations of passive carbon accounting, advancing toward proactive carbon management. It offers an intelligent solution that accelerates the transition to cleaner power systems while directly supporting sustainable production goals.",
+    "authors": [
+      "Feiyu Cai",
+      "Jing Qiu",
+      "Yi Yang",
+      "Chenxi Zhang",
+      "Xinlei Wang",
+      "Baichuan Liu",
+      "Junhua Zhao"
+    ],
+    "date": "2026-07-29",
+    "text": "sources/2607.26560.txt"
+  },
+  "previous": [
+    {
+      "pair_id": "Q1P7",
+      "q": "2609.04787",
+      "p": "2607.26560",
+      "feasibility": null,
+      "gain": null,
+      "connexion": null,
+      "rationale": null,
+      "model": "claude-sonnet-5",
+      "seconds": 13.100000000000001,
+      "cost": 0.077703,
+      "error": "unparseable: no JSON object in reply"
+    }
+  ]
+}

@@ -575,7 +575,8 @@ say `accepted` or `returned` are read as ACCEPTED and PAUSE-ON-AMEND. The
 repair cap used to end as PAUSE-ON-ITERATE with a "repair cap" reason; it
 now ends as PAUSE-ON-REVISE, so every loop has its own PAUSE-ON word. The
 pipeline as a state machine, with what each agent sees and writes and the
-budget of each loop, is `2026-09-12-state-machine.tex` (built as a PDF beside it).
+budget of each loop, is `../notes/2026-09-12-state-machine-astra.tex` (built as a
+PDF beside it).
 
 ## Decisions taken on the way
 

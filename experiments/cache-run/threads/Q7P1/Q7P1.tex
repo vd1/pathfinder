@@ -1,0 +1,223 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+\pathfinderpair{Q7P1}
+
+\title{Q7P1: CVaR agents with zeroth-order feedback in an LMI-designed payment mechanism}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q designs a quadratic payment \(t_n=\tfrac12p^\top A^np+p^\top B^nx+p^\top a^n\) for a resource-allocation mechanism through LMI and linear conditions meant to give a unique Nash equilibrium (P1), Nash implementation of the welfare optimum (P2), budget balance (P3) and individual rationality (P4), and proves mean-square convergence of a sample-average proximal best-response scheme with a Krasnoselskij step (P5).
+P minimises an average of local CVaR objectives over a time-varying network with a one-point zeroth-order gradient estimate built from empirical CVaR values, and bounds the limiting ergodic and last-iterate gaps by \(O(\delta_{\max}+e_s/\delta_{\min})\).
+
+\paragraph{Conventions.}
+P1 to P5 always denote Q's properties; the paper P is written P. Ledger entries are cited as \ledger{n}; peer files are in \texttt{ada/} and \texttt{emmy/}. The ledger names results of Q and P partly by source label and partly by count, and these do not always agree with the numbering the sources produce. This note names results by content. In particular, ``payment (40)'' is the explicit payment of Q labelled \texttt{eq40} (Proposition~3 in Q's numbering, called ``Proposition~2'' in \ledger{3}); ``Q Theorem~4'' is Q's convergence theorem (label \texttt{theorem4}); ``Q Assumption~2(ii)'' in \ledger{12} is the variance bound, Assumption~3(ii) in Q; ``P Remark~4'' in \ledger{9, 10} is P's remark on fixed smoothing radii (Remark~2 in P); ``P Lemma~5'' in \ledger{9} is the CVaR-distribution bound P cites from Wang et al. All derivations in the thread take \(K=1\). Notation: \(s=(x,p)\) stacks quantities and prices; \(F\) is the pseudo-gradient of utilities, \(F_n=\nabla_{s_n}U_n\); \(J\) is its Jacobian; \(h_n\) is a curvature floor of valuation \(n\), \(\nabla^2V_n\preceq-h_nI\); \(\alpha\) is the scale of payment (40), which Q also takes as its strong-concavity constant, so Q's Assumption~2 means \(h_n\ge\alpha\); \(\Pi=I-\mathbf 1\mathbf 1^\top/N\).
+
+The peer phase ended on the allowance. emmy's last \emph{ready} \ledger{15} predates ada's entry \ledger{16}, so that entry was not reviewed by emmy.
+
+\section{The connexion pursued}
+
+Q's agents hold valuations that are expectations and can minimise sample averages of them; P's agents see only noisy loss values and optimise CVaR. The thread asked what happens to Q's mechanism when its agents are CVaR-averse and learn with P's one-point estimator: which of P1 to P5 carry over, and whether stochastic approximation of P's kind converges in the game Q's payment induces. Before building the combination, both peers checked whether Q itself certifies what the combination needs \ledger{1, 2}. That check changed the question: Q's certificates for P1 and P5 do not hold (Claims~1 and~2), so the open problem became convergence of learning in a game that is neither monotone nor nonexpansive in the Euclidean metric \ledger{5}, and the answer offered is a fixed weighted metric (Claim~3) together with a curvature requirement on the risk-adjusted valuations (Claim~4). A separate correction to P came out of the same work (Claim~5) and was transferred to Q's equilibrium properties (Claim~6). The scan hypothesis that opened the thread is not in the ledger; \ledger{5} refers to it only as sharpened.
+
+\section{What was found}
+
+The algebra about Q (Claims~1 to~3) consists of complete derivations for \(K=1\) with independent numerical checks by both peers. The correction to P (Claim~5) is a short argument checked twice. The material on convergence of learning in the combined system is thin: a Robbins--Siegmund inequality, a sketch for the common price level, and two small simulations, of which the one that uses P's estimator is inconclusive.
+
+\subsection{Q's certificates}
+
+\begin{claim}[P1 (ii) contradicts P2 (i)]
+No parameters satisfy \(\Psi+\Psi^\top\preceq-\upsilon I\), \(\upsilon>0\), together with \(\sum_mA^n_{nm}=0\). Hence no member of Q's family satisfies the full LMI system, and Q's proposition that payment (40) satisfies it is false as far as P1 is concerned. \ledger{1, 3}
+\end{claim}
+
+Take \(z\) with zero quantity part and \(p_n=v\) for every \(n\). The price-price block of \(\Psi_{nm}\) is \(-A^n_{nm}\) for every \(m\), including \(m=n\), so
+\[
+z^\top\Psi z=-\sum_nv^\top\Big(\sum_mA^n_{nm}\Big)v=0
+\]
+by P2 (i), and \(z^\top(\Psi+\Psi^\top)z=0>-\upsilon\|z\|^2\) \ledger{3}. For payment (40) the entries of \(J\) are \ledger{3} (\texttt{ada/weighted\_monotone.md})
+\begin{gather*}
+J_{x_nx_n}=-h_n,\qquad J_{x_np_n}=\frac{\alpha}{N-1},\qquad J_{x_np_m}=-\frac{\alpha N}{(N-1)^2},\\
+J_{p_nx_m}=\frac{\alpha}{N-1},\qquad J_{p_np_n}=-\alpha,\qquad J_{p_np_m}=\frac{\alpha}{N-1},
+\end{gather*}
+where \(J_{p_nx_m}\) holds for every \(m\) and the remaining entries with index \(m\) are for \(m\neq n\). With \(h_n=\alpha\) and \(z=(u\mathbf 1,v\mathbf 1)\),
+\[
+z^\top Jz=N\alpha\Big(-u^2+\frac{uv}{N-1}\Big)>0\qquad\text{for }0<u<\frac{v}{N-1},
+\]
+so the game of (40) is not monotone in the Euclidean metric \ledger{3}. emmy reports \(\lambda_{\max}(J+J^\top)=0.414,0.118,0.031,0.006,0.0002\) for \(N=2,3,5,10,50\), while \(\max\operatorname{Re}\operatorname{eig}J=-0.5\) \ledger{3}; ada's independent script gives \(0.118\) at \(N=3\) and \(1.7\cdot10^{-4}\) at \(N=50\), \(h=\alpha=0.8\) (\texttt{ada/check.out}). The game is not a potential game, since \(J_{x_np_m}\neq J_{p_mx_n}\) \ledger{3}. On the consensus subspace the defect is \(\sum_nu_n^\top[\sum_k\operatorname{diag}(\theta^k)-\operatorname{diag}(\zeta^n)]v\) in Q's notation for P2; (40) has \(\zeta=\alpha\) and \(\sum_k\theta^k=N\alpha/(N-1)\). Choosing \(\theta=\zeta/N\) inside Q's family gives \(\lambda_{\max}(J+J^\top)=0\) numerically: monotone, never strictly \ledger{3}. \texttt{ada/check.out} also records, without discussion in the ledger, a member of this variant (\(N=50\), \(h=\alpha=0.8\), \(\zeta=N\theta\approx39\), \(\mu=1\)) whose linearised proximal best response has spectral radius \(24.2\), with Krasnoselskij spectral radius \(4.93\) at \(\tau=0.2\); Euclidean monotonicity of the variant does not by itself make Q's iteration stable.
+
+\begin{claim}[Q's nonexpansiveness assumption fails for its own payment]
+For payment (40) with \(N\ge3\) and quadratic valuations, the proximal best-response map, linearised on the region where no constraint of the proximal step binds, is expansive in the Euclidean norm for every \(\mu>0\). Q's Assumption~5 therefore cannot be met by any choice of \(\mu\), including \(\mu\ge N\alpha/(N-1)\), which Q's remark says suffices. The Krasnoselskij iteration is still locally convergent at \(h=\alpha\). \ledger{4, 8}
+\end{claim}
+
+On that region \(T(s)=Ls+\text{const}\) with \(L=(\mu I-D)^{-1}(\mu I+J-D)\), \(D\) the block diagonal of the per-agent \(2\times2\) blocks of \(J\) \ledger{4}. For the family with \(A^n_{nn}=a\), \(B^n_{nl}=-\theta\), \(\sum_mB^n_{mn}=\zeta\), \(\sum_mA^n_{nm}=0\) and curvature \(h\), take \(z=(0,\mathbf 1v)\). Then \(Jz=(-\zeta\mathbf 1v,0)\), each agent's block of \(\mu I-D\) is \(\begin{pmatrix}\mu+h&-\theta\\-\theta&\mu+a\end{pmatrix}\) with determinant \(\det=(\mu+h)(\mu+a)-\theta^2\), and
+\[
+(Lz)_n=\Big(-\frac{(\mu+a)\zeta}{\det}\,v,\ \Big(1-\frac{\theta\zeta}{\det}\Big)v\Big),\qquad
+\frac{\|Lz\|^2}{\|z\|^2}-1=\frac{\zeta^2\big((\mu+a)^2+\theta^2\big)-2\zeta\theta\det}{\det^2}.
+\]
+The ratio is recorded in \ledger{8}; the intermediate expression for \((Lz)_n\) was checked while consolidating. For (40), \(\zeta=a=h=\alpha\) and \(\theta=\alpha/(N-1)\), the numerator equals \(\alpha[(\mu+\alpha)^2(\alpha-2\theta)+\alpha\theta^2+2\theta^3]\), positive for all \(\mu>0\) once \(\theta\le\alpha/2\), that is \(N\ge3\); for \(N=2\) it is positive iff \((\mu+\alpha)^2<3\alpha^2\) \ledger{8}. emmy's grid (\(\alpha=0.8\), \(N\in\{3,10,50\}\), \(h\in\{0.8,1,3\}\), \(\mu\in\{1,N/(N-1),5\}\)) gives \(\|L\|_2\in[1.009,1.116]\), spectral radius of \(L\) in \([0.67,0.96]\), and Krasnoselskij spectral radius in \([0.95,0.99]\) at \(\tau=0.2\) \ledger{4}; ada finds the ratio above \(1\) up to \(\mu=1000\), tending to \(1\) \ledger{8} (\texttt{ada/check2.out}).
+
+Two further defects of Q were noted in \ledger{4}. The remark supporting Assumption~5 uses Gershgorin's theorem, which bounds eigenvalues and not singular values, and writes the convex function \(V_n=\tfrac{\alpha}{2}\|x_n\|^2+b^\top x_n\) as the example valuation. Q's convergence proof uses the per-agent inequality \(\|T_n(s)-s_n^\ast\|\le\|s_n-s_n^\ast\|\), which nonexpansiveness of the whole map \(T\) does not give. emmy proposed replacing Assumption~5 by a Stein LMI \(L^\top WL\preceq\rho^2W\), \(W\succ0\) \ledger{4}; this was not pursued once Claim~3 appeared.
+
+\subsection{A metric in which the game of (40) is monotone}
+
+\begin{claim}[Weighted monotonicity]
+Let \(W=\operatorname{diag}(I_x,\tfrac{N-1}{N}I_p)\) and \(c_N=\alpha(2N-1)/(N-1)^2\). If every valuation satisfies \(\nabla^2V_n\preceq-h_{\min}I\) with
+\[
+h_{\min}\ge\frac{c_N^2}{4\alpha}=\frac{\alpha(2N-1)^2}{4(N-1)^4},
+\]
+then \(\langle F(s)-F(s'),W(s-s')\rangle\le0\) for all \(s,s'\). Q's Assumption~2 (\(h_{\min}=\alpha\)) meets this iff \(N\ge3\); for large \(N\) the threshold is about \(\alpha/N^2\). With strict inequality the bound improves to \(-\gamma(\|x-x'\|^2+\|\Pi(p-p')\|^2)\) for some \(\gamma>0\). The only flat direction is the common price level. \ledger{7, 14}
+\end{claim}
+
+With \(w=(N-1)/N\), the blocks of \(S=WJ+J^\top W\) are \ledger{7}: \(S^{xx}=-2\operatorname{diag}(h)\); \(S^{pp}=2wJ^{pp}=-2\alpha\Pi\), because \(J^{pp}=-\tfrac{\alpha N}{N-1}\Pi\); and
+\[
+S^{xp}=J^{xp}+w(J^{px})^\top=\frac{\alpha(2N-1)}{(N-1)^2}I+\alpha\Big(\frac1N-\frac{N}{(N-1)^2}\Big)\mathbf 1\mathbf 1^\top=c_N\Pi .
+\]
+With \(q=\Pi p\),
+\[
+z^\top Sz=-2x^\top Hx+2c_Nx^\top q-2\alpha\|q\|^2\le-2x^\top Hx+\frac{c_N^2}{2\alpha}\|\Pi x\|^2,
+\]
+which is nonpositive when \(H\succeq\tfrac{c_N^2}{4\alpha}I\). Valuations enter only the \(xx\) block, so integrating \(S\) along the segment from \(s'\) to \(s\) gives the claim for nonlinear valuations. \ledger{7} states the curvature condition as necessary and sufficient; the derivation shows it is sufficient, and necessary when all \(h_n\) are equal. On \(\operatorname{span}\{(0,\mathbf 1)\}\) the weighted consensus block is \(\begin{pmatrix}-h&-\alpha\\\alpha&0\end{pmatrix}\), skew in its price part: a Lagrangian saddle with the price level as multiplier, pinned only through the quantity equations \ledger{7}. Numerically, over 200 draws \(h_n\sim U[\alpha,3\alpha]\) and \(N=3,10,50\), \(\lambda_{\max}(WJ+J^\top W)\le10^{-14}\) while \(\lambda_{\max}(J+J^\top)=0.106,0.0043,0.00013\) \ledger{7}.
+
+\paragraph{Projected play needs no preconditioning.}
+Consider \(s^{k+1}=\Pi_{\mathcal S}[s^k+\eta_kMG^k]\), with \(G^k\) a stochastic pseudo-gradient and \(M\) positive and scalar on each quantity block and each price block, and a Lyapunov function \(\|\cdot\|_Q^2\) with \(Q\) of the same form \ledger{14} (\texttt{emmy/F4\_saddle\_convergence.md}). Because \(\mathcal S\) is a product of per-agent quantity sets and price sets and \(Q\) is scalar on each factor, the Euclidean projection equals the \(Q\)-projection, the fixed points are the Nash equilibria, and nonexpansiveness of the projection gives, with \(\Delta_k=s^k-s^\ast\),
+\[
+\|\Delta_{k+1}\|_Q^2\le\|\Delta_k\|_Q^2+2\eta_k\,\Delta_k^\top QM\big(G^k-F(s^\ast)\big)+\eta_k^2\big\|M\big(G^k-F(s^\ast)\big)\big\|_Q^2 .
+\]
+The cross term is the quantity controlled by Claim~3 whenever \(QM=W\); plain play (\(M=I\), \(Q=W\)) is covered \ledger{14}, which ada accepted \ledger{16}. With P's estimator at a fixed batch size, the payment part of \(G^k\) is exact, the valuation part is unbiased for \(\nabla\widetilde V_n\) with \(\widetilde V_n=-\widetilde C^n\) the expected smoothed empirical CVaR, and \(\|\hat g^n_k\|\le dU_n/\delta_n\). If the surrogate valuations keep a curvature floor strictly above the threshold of Claim~3, then for the equilibrium \(s^\ast\) of the surrogate game \ledger{14}
+\[
+\mathbb E\big[\|\Delta_{k+1}\|_W^2\mid\mathcal F_k\big]\le\|\Delta_k\|_W^2-2\eta_k\gamma\big(\|x^k-x^\ast\|^2+\|\Pi(p^k-p^\ast)\|^2\big)+\eta_k^2C,
+\]
+and Robbins--Siegmund with \(\sum\eta_k=\infty\), \(\sum\eta_k^2<\infty\) gives almost-sure convergence of \(\|\Delta_k\|_W\) and \(\sum_k\eta_k(\|x^k-x^\ast\|^2+\|\Pi(p^k-p^\ast)\|^2)<\infty\) almost surely. Nothing here controls the common price level.
+
+\paragraph{Uniqueness of the equilibrium.}
+If \(s^\ast\) and \(s'\) are both Nash equilibria, adding their variational inequalities and using the strict form of Claim~3 gives \(x'=x^\ast\) and \(p'=p^\ast+v\mathbf 1\). For (40), \(F_x(s')-F_x(s^\ast)=J^{xp}\mathbf 1v=-\alpha v\mathbf 1\). If some agent has \(x_n^\ast\) in the interior of \(\mathcal X_n\), its quantity residual vanishes at both equilibria, so \(v=0\) \ledger{14}; ada checked the shift from (40) directly \ledger{16}. This replaces Q's uniqueness argument, which rests on the infeasible LMI of Claim~1, by a Slater-type condition. When every quantity sits at a bound the price level can be non-unique (\texttt{emmy/F4\_saddle\_convergence.md}, section~3).
+
+\paragraph{Convergence of the price level: a sketch.}
+emmy argues through the ODE method for projected stochastic approximation (Kushner--Yin) and LaSalle's invariance principle: along the projected flow \(\tfrac{d}{dt}\tfrac12\|s-s^\ast\|_W^2\le-\gamma(\|x-x^\ast\|^2+\|\Pi(p-p^\ast)\|^2)\), so invariant sets lie in \(\{x=x^\ast,\ \Pi p=\Pi p^\ast\}\); there an interior agent's quantity drift is \(-\alpha(v-v^\ast)\), nonzero unless the level is \(v^\ast\), so \(s^\ast\) is the only invariant point \ledger{14}. The full stochastic argument was not written, and it gives no rate.
+
+\paragraph{A strict metric, interior only.}
+With the per-agent metric \(P_n=\begin{pmatrix}1&e\\e&w\end{pmatrix}\), \(z^\top(PJ+J^\top P)z=-2eN\alpha v^2\) on \(z=(0,\mathbf 1v)\) \ledger{14}. For homogeneous \(h\), \(J\) splits into the consensus block \(\begin{pmatrix}-h&-\alpha\\ \alpha N/(N-1)&0\end{pmatrix}\) and \(N-1\) disagreement blocks \(\begin{pmatrix}-h&c_N\\0&-\alpha N/(N-1)\end{pmatrix}\) (\texttt{emmy/F4\_saddle\_convergence.md}, section~4). Grid searches at \(h=\alpha=1\) find a strong-monotonicity modulus independent of \(N\): about \(0.55\) for \(N=3,10,50,500\) in emmy's normalisation \ledger{14}, and \(0.47\) to \(0.50\) for \(N=3,10,50,200\) in ada's \ledger{16}. This is the cross-term Lyapunov construction of Qu and Li for primal-dual dynamics and is an LMI in \((e,w)\) for a fixed payment. Because \(P_n\) couples \(x_n\) with \(p_n\), the \(P\)-projection no longer reproduces the equilibrium conditions when a bound is active, so a linear rate follows only for interior equilibria \ledger{14}.
+
+\subsection{Where risk aversion bites}
+
+\begin{claim}[A curvature floor must hold sample by sample]
+Each stabilising ingredient above (Q's P1 (i), the weighted monotonicity of Claim~3, and the Krasnoselskij step) needs a curvature floor on the valuation the agents actually optimise. CVaR passes on a floor that holds for every sample, but not one that holds only in mean, which is what Q's Remark~1 advertises as the weaker assumption. Without per-sample concavity, which is P's Assumption~4 in loss form, the risk-adjusted valuation can fail to be concave at all. \ledger{8, 16}
+\end{claim}
+
+Loss of curvature \ledger{8}: on \(x\in[0,M)\) let \(\psi(x;\xi)=-\xi x^2-(1-\xi)Mx\) with \(\xi\sim\mathrm{Bernoulli}(1/2)\). Then \(\mathbb E\psi=-x^2/2-Mx/2\) is \(1\)-strongly concave, while the loss \(-\psi\) takes the values \(x^2\) and \(Mx\ge x^2\) with equal probability, so \(-\mathrm{CVaR}_{1/2}[-\psi]=-Mx\) has curvature \(0\). With curvature \(0\), P1 (i) together with P2 (iii) requires \(\begin{pmatrix}0&-\theta\\-\theta&a\end{pmatrix}\succeq0\), which forces \(\theta=0\), so the coupling term drops out of the payment; the condition of Claim~3 fails; and the price-level block is a bilinear saddle. At \(\mu=1\), \(N=50\), \(\alpha=1\), the largest Krasnoselskij \(\tau\) with spectral radius below \(1\) is \(1.96,0.59,0.20,0.058,0.019\) for \(h=1,0.3,0.1,0.03,0.01\), and for \(N=3\) no \(\tau\) works once \(h\le0.1\) (\texttt{ada/check2.out}). P's smoothing \(C_\delta\) adds no curvature.
+
+Loss of concavity \ledger{16}: on \(x\in[0,1]\) let \(\ell(x,\xi)=x^2+(2\xi-1)a\sin(kx)\), \(\xi\sim\mathrm{Bernoulli}(1/2)\). Then \(\mathbb E\ell=x^2\) is strongly convex, but \(\mathrm{CVaR}_{1/2}\ell=x^2+a|\sin kx|\) has second derivative \(2-ak^2|\sin kx|\), negative near the peaks of \(|\sin kx|\) for \(a=1\), \(k=4\). Q's KKT argument for P2 then has no footing.
+
+In Q's own EV application the randomness enters linearly and the quadratic preference is deterministic, so CVaR-averse users keep curvature \(\alpha_n\) \ledger{8}.
+
+\subsection{A dimension-free bias bound for P}
+
+In this subsection \(\alpha_i\) is P's CVaR level, not Q's payment scale.
+
+\begin{claim}[The \(e_s/\delta_{\min}\) floor in P is an artefact]
+Let \(\varepsilon_i=L_i\delta_i+\tfrac{2U_i}{\alpha_i}\sqrt{\pi/(2s_i)}\). P's limiting neighbourhoods, in the ergodic results with time-varying batches and in the fixed-batch last-iterate theorem, hold with
+\[
+D_1=2L_{\max}\delta_{\max}+2\sqrt{2\pi}\max_i\frac{U_i}{\alpha_i}\,e_s,\qquad D_2=D_1+\frac{D_xL_{\max}\delta_{\max}}{r}=O(\delta_{\max}+e_s),
+\]
+with no factor \(d\) and no \(1/\delta_{\min}\). The factor \(1/\delta_{\min}^2\) survives only in the transient term \(G_{\max}^2\sum\eta_k^2/\sum\eta_k\). \ledger{5, 9, 10}
+\end{claim}
+
+Let \(\widetilde C^i_k(x)=\mathbb E_{\nu,\xi}\widehat C^i_k(x+\delta_i\nu)\), the object P already uses in its last-iterate proof. Three facts were checked against P \ledger{9}. First, the empirical CVaR is convex and \(L_i\)-Lipschitz for each sample realisation (a minimum over \(\tau\) of a jointly convex function), so \(\widetilde C^i_k\) is convex and \(L_i\)-Lipschitz. Second, pointwise in \(y=x+\delta_i\nu\), the CVaR-distribution lemma P cites from Wang et al.\ and the DKW inequality give \(|\mathbb E_\xi\widehat C^i(y)-C^i(y)|\le\tfrac{2U_i}{\alpha_i}\sqrt{\pi/(2s_i)}\), before any factor \(d/\delta_i\) enters, so \(|\widetilde C^i_k-C^i|\le\varepsilon_i\) uniformly. Third, \(\mathbb E[\hat g^i_k\mid\mathcal F_k]=\nabla\widetilde C^i_k(y^i_k)\) also for time-varying batches. P splits \(\hat g=g+e\) and pays \(D_x\mathbb E\|e\|\), which carries \(d/\delta_i\). The value route instead uses \ledger{5}
+\[
+\mathbb E\big[\langle\hat g^i_k,y^i_k-z\rangle\mid\mathcal F_k\big]=\langle\nabla\widetilde C^i_k(y^i_k),y^i_k-z\rangle\ge\widetilde C^i_k(y^i_k)-\widetilde C^i_k(z)\ge C^i(y^i_k)-C^i(z)-2\varepsilon_i .
+\]
+At the fixed-batch last-iterate limit \(\bar x_\infty\), a minimiser of \(\widetilde{\mathcal C}\) over \(\mathcal X_\delta\), with \(\bar\varepsilon=\sup_x|\widetilde{\mathcal C}-\mathcal C|\le L_{\max}\delta_{\max}+\sqrt{2\pi}\max_i(U_i/\alpha_i)e_s\) and \(z_\delta=(1-\delta_{\max}/r)x^\ast\),
+\[
+\mathcal C(\bar x_\infty)-\mathcal C^\ast\le[\mathcal C-\widetilde{\mathcal C}](\bar x_\infty)+\underbrace{\widetilde{\mathcal C}(\bar x_\infty)-\widetilde{\mathcal C}(z_\delta)}_{\le0}+[\widetilde{\mathcal C}-\mathcal C](z_\delta)+\mathcal C(z_\delta)-\mathcal C^\ast\le2\bar\varepsilon+\frac{D_xL_{\max}\delta_{\max}}{r}.
+\]
+The constants are those of ada's correction \ledger{10}, which replaced \(4L_{\max}\delta_{\max}\) in \ledger{9}. The factor in front of \(e_s\) is \(\max_iU_i/\alpha_i\) with P's definition of \(e_s\); a weighted average would need a reweighted sampling condition \ledger{9}.
+
+Scope, as narrowed in \ledger{10}: P's statement that a smaller \(\delta\) enlarges the estimator, hence the transient term, stays correct, and the caption of P's smoothing-radius figure (larger radii, larger long-run neighbourhoods) agrees with the \(\delta_{\max}\) term. What changes is the attribution of an \(e_s/\delta_{\min}\) floor, and P's statement that a diminishing \(\delta_k\) requires growing batches to control the estimation error. \ledger{10} says the batches are then needed only for the transient variance term; in P's bounds, however, the batch size does not enter \(G_i=dU_i/\delta_i\), so that last clause is imprecise. What the value route shows is that the finite-sample floor does not grow as \(\delta\) shrinks.
+
+\subsection{Transfer to Q: what the surrogate equilibrium keeps}
+
+\begin{claim}[Equilibrium properties under surrogate valuations]
+Suppose CVaR agents in Q's mechanism learn with P's estimator at fixed batch sizes, so that the target is the equilibrium of the surrogate game with valuations \(\widetilde V_n=-\widetilde C^n\), and suppose that game satisfies Q's hypotheses for P2 to P4. Then at that equilibrium budget balance holds exactly, the loss in true risk-adjusted welfare is at most \(2\sum_n\varepsilon_n\), and individual rationality is violated by at most \(2\varepsilon_n\). If the true risk-adjusted welfare is \(h\)-strongly concave, the surrogate allocation \(\tilde x\) and the true optimum \(x^o\) satisfy \(\|\tilde x-x^o\|\le2\sqrt{\sum_n\varepsilon_n/h}\). Prices get no bound from this argument. \ledger{5, 16}
+\end{claim}
+
+Budget balance \ledger{5}: at a symmetric-price equilibrium with \(K=1\), payment (40) evaluates to
+\[
+t_n(s^\ast)=\alpha k_N\tilde p\Big(x_n^o-\frac cN\Big),\qquad k_N=\frac{N}{N-1}+\frac{1}{(N-1)^2},
+\]
+using \(\tilde p\sum_nx_n^o=\tilde pc\), so \(\sum_nt_n(s^\ast)=\alpha k_N\tilde p(\sum_nx_n^o-c)=0\) by complementary slackness, whatever the valuations. This evaluation was redone term by term while consolidating and agrees. Welfare: \(\sum_nV_n(x^o)-\sum_nV_n(\tilde x)\le[\sum_nV_n-\widetilde V_n](x^o)+[\sum_n\widetilde V_n(x^o)-\widetilde V_n(\tilde x)]+[\sum_n\widetilde V_n-V_n](\tilde x)\le2\sum_n\varepsilon_n\), the middle bracket being nonpositive because \(\tilde x\) maximises the surrogate welfare. Individual rationality: one \(\varepsilon_n\) comes from \(|\widetilde V_n-V_n|\) at the equilibrium quantity and one from \(\widetilde V_n(0)\neq0\) (\texttt{emmy/F3\_value\_route.md}). Strategies \ledger{16}: first-order optimality of \(x^o\) gives \(\tfrac h2\|\tilde x-x^o\|^2\le\sum_nV_n(x^o)-\sum_nV_n(\tilde x)\le2\sum_n\varepsilon_n\). For quadratic valuations at interior equilibria, \texttt{ada/check.out} shows equilibrium residuals near \(10^{-16}\), \(\sum_nt_n\) near \(10^{-14}\) and positive minimum utility for \(N=3\) and \(N=50\).
+
+\subsection{Simulations of learning}
+
+ada ran stochastic projected pseudo-gradient play on the game of (40) with \(N=10\), \(\alpha=1\), quadratic valuations of curvature \(h\), boxes \(x\in[0,5]\), \(p\in[0,10]\), additive noise \(\sigma=0.3\) and no bias, 5 seeds and \(4\cdot10^4\) steps \ledger{12} (\texttt{ada/sim\_play.out}). With \(\eta_k=0.5/(k+1)^{0.6}\), the final rms quantity error was \(0.0058,0.022,0.098\) and the price-level error \(0.001,0.007,0.006\) for \(h=1,0.1,0.02\), nearly the same with and without the price scaling. With \(\eta_k=0.5/(k+1)\) all runs stayed near \(x=0\) with the price level \(2.3\) to \(3.6\) too high, which ada attributes to a too small step sum. Every tested \(h\) lies above the threshold \(0.0138\) of Claim~3 at \(N=10\), so the regime where Claim~3 fails was not reached, and the \(h=0\) run is degenerate \ledger{12}.
+
+emmy ran play with price steps scaled by \(N/(N-1)\) at \(N=5\), \(\alpha=0.8\), \(h_n\sim U[\alpha,3\alpha]\), \(x\in[0,5]\), with some agents at the lower bound \ledger{14} (\texttt{emmy/saddle\_check.out}). Without noise, \(\|s_k-s^\ast\|\) was \(2.9\cdot10^{-10}\) at \(k=10^4\) with the coupling active (\(p^\ast=6.25\)) and \(1.7\cdot10^{-14}\) with it slack. With additive noise \(\sigma=1\) it was \(1.0\cdot10^{-2}\) and \(6.4\cdot10^{-4}\) at \(k=2\cdot10^5\). With P's one-point estimator (\(\delta=0.3\), \(s=64\), loss \(\tfrac h2(x-\tilde x)^2+\xi x\), \(\xi\sim U(-2,2)\), CVaR level \(1/2\)), the mean of the last \(10^5\) of \(4\cdot10^5\) iterates lay at distance \(0.42\) from the true-CVaR equilibrium, prices agreed across agents, and the spread was still large (standard deviation \(0.53\) in \(x\), \(0.25\) in \(p\)).
+
+\section{Objections and how they stand}
+
+\begin{objection}[One-point estimates cannot feed Q's algorithm]
+Q's VS-PBR has agents minimise a sample average of \(\psi_n(\cdot;\xi)\) as a function, so P's one-point estimator cannot be dropped into it; bandit CVaR agents must run pseudo-gradient play, and Q's convergence theorem does not apply even after Assumption~5 is repaired. Also, P's estimator is unbiased for \(\nabla\widetilde C\), not for \(\nabla V\), so Q's variance bound holds only with \(\widetilde V_n\) in place of \(V_n\). \ledger{12}
+\end{objection}
+Resolved. emmy accepted it \ledger{14}. The equilibrium statements of Claim~6 do not depend on the algorithm and stand, the learning question moved to projected play, and the surrogate valuations are built into the recursion of Claim~3.
+
+\begin{objection}[Preconditioning is unnecessary]
+ada's remark that play must scale price steps by \(N/(N-1)\) to use \(W\) is wrong: plain projected play already has the \(W\)-monotone cross term. \ledger{14}
+\end{objection}
+Resolved. ada accepted it \ledger{16}, and it explains why the price scaling made no visible difference in ada's runs \ledger{12}.
+
+\begin{objection}[Try to break the value route]
+emmy asked for an attempt to break the value-route bound \ledger{5}.
+\end{objection}
+Not broken. ada checked each step against P \ledger{9}, then corrected the constant and narrowed the consequences for P's remark and figure \ledger{10}. The last clause of \ledger{10} is imprecise, as noted under Claim~5.
+
+\begin{objection}[Two moduli for the strict metric]
+emmy reports a modulus near \(0.55\), ada \(0.47\) to \(0.50\), and ada suspected the grid or the normalisation \ledger{14, 16}.
+\end{objection}
+Resolved by the scripts. \texttt{emmy/saddle\_check.py} computes \(-\lambda_{\max}(PJ+J^\top P)/\lambda_{\max}(P)\) on the \(2\times2\) consensus and disagreement blocks; \texttt{ada/check\_f4metric.py} computes the smallest generalised eigenvalue of \(-(PJ+J^\top P)/2\) relative to \(P\) on the full matrix. The two numbers are different normalisations and are not comparable; both agree that the modulus does not depend on \(N\).
+
+\begin{objection}[Bias or variance]
+The offset \(0.42\) in emmy's CVaR run does not separate the \(O(\delta+1/\sqrt s)\) bias from unfinished variance decay \ledger{14}; ada replies that by Claim~6 a strategy offset of that size can be pure surrogate bias, without having checked \(U\) and \(L\) in emmy's script \ledger{16}.
+\end{objection}
+Open. From the printed means (\(p=5.137\) against \(p^\ast=5.001\) for each of the five agents), about \(0.30\) of the \(0.42\) is the common price level and about \(0.12\) the quantities, and Claim~6 gives no bound on prices. Further, emmy's perturbed points can leave the box (\(x=0\), \(\delta=0.3\)), which P's shrinkage is designed to prevent.
+
+\begin{objection}[Linearisations ignore projections]
+The expansiveness of Claim~2 and the Krasnoselskij thresholds are computed for the unconstrained linearisation \ledger{4}.
+\end{objection}
+Not resolved. The claims hold on the region where no constraint of the proximal step binds, and Assumption~5 is global, so one expansive direction on that region suffices to refute it; no one checked whether that region has nonempty interior in Q's EV instance.
+
+\begin{objection}[Reading ada's simulation]
+\ledger{12} reads the Euclidean non-monotonicity as quantitatively harmless in that instance.
+\end{objection}
+Qualified while consolidating. In \texttt{ada/sim\_play.py} the equilibrium price equals \(h\) (with \(\alpha=1\)) and the rms equilibrium quantity is \(0.593\) for every \(h\). The relative errors are therefore about \(1\%\) and \(0.1\%\) at \(h=1\), \(4\%\) and \(7\%\) at \(h=0.1\), and \(17\%\) and \(30\%\) at \(h=0.02\): accuracy degrades as the curvature approaches the threshold of Claim~3, which fits Claim~4 but was not tested below the threshold.
+
+\begin{objection}[P's estimator on Q's constraint sets]
+P needs \(r\mathbb B\subseteq\mathcal X\); Q has \(\mathcal X_n\subset\mathbb R^K_{\ge0}\), and in the EV case \(\mathcal Ar_n=b_n\) gives empty interior. The estimator must perturb in the affine hull about a relative-interior point, with \(d\) replaced by the affine dimension. \ledger{16}
+\end{objection}
+Unanswered by emmy. ada calls it routine; it has not been written.
+
+\begin{objection}[Premise of the individual-rationality transfer]
+Not raised in the ledger; noted while consolidating. Claim~6's bound on individual rationality presupposes that Q's IR guarantee holds for the surrogate game under payment (40).
+\end{objection}
+Open. The coefficient table in \texttt{ada/check.py} gives \(a^n_n=\theta c\) and \(a^n_m=-\zeta c/(N(N-1))\) for \(m\neq n\), so for (40) \(\sum_ma^n_m=\alpha c/(N-1)-\alpha c/N=\alpha c/(N(N-1))>0\), the sign Q's sufficient condition P4 (ii) forbids. Q's IR proof therefore does not cover (40), and the IR part of Claim~6 inherits that gap; the budget-balance and welfare parts do not depend on P4.
+
+\section{Sources from outside Q and P}
+
+Named in the ledger or notes, none consulted or checked against its original during the thread: the ODE method for projected stochastic approximation of Kushner and Yin \ledger{14}; LaSalle's invariance principle (\texttt{emmy/F4\_saddle\_convergence.md}); the cross-term Lyapunov construction of Qu and Li for primal-dual gradient dynamics \ledger{14}; the Arrow--Hurwicz primal-dual picture (same note); and Stein-type LMIs \ledger{4}. They appear only in the price-level sketch, the strict-metric remark and the unpursued replacement for Assumption~5. Identification added while consolidating: H.~J.~Kushner and G.~G.~Yin, \emph{Stochastic Approximation and Recursive Algorithms and Applications}, 2nd ed., Springer, 2003; G.~Qu and N.~Li, ``On the exponential stability of primal-dual gradient dynamics'', \emph{IEEE Control Systems Letters}, 2019; K.~J.~Arrow, L.~Hurwicz and H.~Uzawa, \emph{Studies in Linear and Non-Linear Programming}, Stanford University Press, 1958. The Schur complement and projection onto product sets are used without citation; Robbins--Siegmund, DKW, Rockafellar--Uryasev and the CVaR-distribution lemma of Wang et al.\ are already used in P.
+
+\section{What remains open}
+
+\begin{itemize}
+\item Convergence of bandit CVaR play on (40) to the surrogate equilibrium, including the common price level. There is a Robbins--Siegmund inequality for the directions Claim~3 controls, and a Kushner--Yin and LaSalle sketch for the level that needs one interior quantity \ledger{14}; the stochastic argument is not written.
+\item Rates. Weighted monotonicity gives none; the strict metric gives a linear rate only for interior equilibria \ledger{14}.
+\item The size of the surrogate bias against the variance in the only experiment with P's estimator, and in particular whether the common price offset there is bias or non-convergence (Objection~5). The constants in the strategy bound of Claim~6 were not evaluated for that instance.
+\item The regime below the curvature threshold of Claim~3, of order \(\alpha/N^2\): no simulation reached it \ledger{12}, and whether price damping or an extragradient or proximal-point scheme is then needed \ledger{8} is untested.
+\item Individual rationality under (40), in the original game and in the surrogate game (Objection~9).
+\item Generality. Everything is for \(K=1\); the extension by Kronecker products is asserted in \texttt{ada/weighted\_monotone.md} without a check. Weighted monotonicity was derived for (40) only; the restated P1 condition \(WJ+J^\top W\preceq-\upsilon\operatorname{diag}(I,\Pi)\) \ledger{7} was not solved jointly with P2 to P4 over Q's family, and the Stein alternative \ledger{4} was not tried.
+\item The affine-hull version of P's estimator on Q's sets \ledger{16}, and Q's EV instance itself, which the thread did not revisit beyond the remark in \ledger{8}.
+\end{itemize}
+
+\section{The smallest next step}
+
+Settle Objection~5 in \texttt{emmy/saddle\_check.py}, since the proposed line of work \ledger{14} rests on play converging to the surrogate equilibrium. (i) Compute that equilibrium: tabulate \(\widetilde V_n\) on a grid of \(x\) by Monte Carlo over batches of \(64\) samples and over the smoothing perturbation, with perturbed points kept inside the box, solve the coupled surrogate welfare problem and read \(\tilde p\) from its multiplier. (ii) Rerun the same play over several seeds at \(4\cdot10^5\) and \(1.6\cdot10^6\) steps. (iii) Report the distance of the tail means to the surrogate equilibrium and to the true-CVaR equilibrium, separately for the quantities and the common price level. If the distance to the surrogate equilibrium shrinks with the horizon while the offset to the true equilibrium stays, the offset is bias as \ledger{16} suggests and the price level converges as the sketch in \ledger{14} predicts. If the common price stays away from \(\tilde p\), the price-level argument is missing something and has to be written out before anything is built on it.
+
+\end{document}

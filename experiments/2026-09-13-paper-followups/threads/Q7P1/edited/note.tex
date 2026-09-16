@@ -1,0 +1,242 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,hyperref,url}
+\title{Corrected payments for learning with tail risk}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+This account connects Q's payments for strategic resource allocation with P's sampled estimates of conditional value-at-risk.
+The peers asked whether P's estimates could support Q's learning rule.
+They found failures in Q's certificates and participation claim, then developed corrected payments, a fixed
+risk approximation, and a replacement learning rule under added assumptions.
+The corrected equilibrium balances payments exactly, while approximation errors bound losses in welfare,
+incentives and participation under true risk preferences.
+The thread remained a draft: this conditional result was supported, but broader convergence and feasibility
+questions, and a full comparison with prior work, remained open when the research allowance ended.
+\end{abstract}
+
+\section{Introduction}
+Q, by Garjani, Shokri and Kebriaei~\cite{Q}, studies how to share limited resources among people who act in their own interests.
+Each person chooses an allocation and reports a price.
+A payment rule is meant to make individual choices deliver the allocation that maximises total welfare.
+Q claims that its quadratic payments achieve this at a unique Nash equilibrium, where nobody can gain by changing their own message alone.
+It also claims balanced payments, voluntary participation, and convergence of a learning rule based on noisy observations.
+
+P, by Wang, Huang, Xu and Johansson~\cite{P}, studies cooperating agents who care about unusually large losses.
+Its risk measure is conditional value-at-risk (CVaR), which measures loss in a specified upper tail of the distribution.
+Agents observe sampled loss values rather than risk values or gradients.
+P uses empirical CVaR and random perturbations to estimate a gradient, then combines local updates with communication.
+With fixed sample sizes and smoothing radii, its limiting objective is an expected empirical, smoothed approximation to population CVaR.
+
+The proposed connexion was to put P's value estimates into Q's strategic learning scheme.
+This required more than replacing an average by a risk measure.
+The peers had to check whether the payments still aligned incentives, what objective the samples actually
+represented, and whether the resulting learning rule converged.
+The useful outcome was a narrower construction: implement a fixed risk approximation exactly, then bound its
+economic error relative to true risk preferences.
+
+\section{What was done}
+Ada and Emmy first checked Q's algebra independently.
+Both found that its strict matrix inequality conflicted with an equality needed for implementation.
+They then divided the work: Emmy pursued an alternative implementation proof, while Ada studied the economic
+effects of P's fixed sampling error.
+
+Direct substitution into Q's printed payment revealed a further problem: an equilibrium participant could pay more than the value received.
+Ada proposed a correction depending only on other participants' messages, and Emmy checked it.
+Emmy then separated equilibrium implementation from learning convergence.
+A weighted calculation supported the former, but a quadratic example defeated the automatic nonexpansiveness
+needed for the original learning argument.
+He therefore developed a different, nested proximal-point learner.
+
+Meanwhile, Ada bounded the difference between the expected sampled objective and true CVaR directly in value,
+without first estimating gradient error.
+Emmy checked the bound and its consequences for welfare and incentives.
+The peers also checked related literature and found existing work on sampled CVaR games and stochastic proximal methods.
+Late in the thread, they resolved a local query problem: random perturbations could leave a participant's
+feasible set, while shrinking the decision set could remove the zero allocation needed for participation.
+Ada moved only the query points inward; Emmy checked the construction and its effect on curvature and error.
+
+\section{Results}
+\subsection{Corrected payments and implemented allocations}
+Let \(N\ge2\) be the number of participants, indexed by \(n\).
+Participant \(n\) chooses an allocation vector \(x_n\) in a compact convex set \(X_n\), and a nonnegative price vector \(p_n\).
+The nonnegative vector \(c\) is total capacity, so feasible allocations satisfy \(\sum_n x_n\le c\), component by component.
+Let \(\gamma>0\) be the payment scale and \(t_n^Q\) Q's printed quadratic payment, labelled \texttt{eq40} in its source.
+A positive payment is a cost to the participant.
+Ada's correction was
+\[
+ t_n^{\rm corr}=t_n^Q+
+ \frac{\gamma N}{(N-1)^3}
+ \left(\sum_{j\ne n}p_j\right)^\top
+ \left(\sum_{j\ne n}x_j-\frac{N-1}{N}c\right).
+\]
+Here \(j\) indexes other participants, and the transpose denotes the ordinary inner product.
+The added term cannot change anyone's best response because it does not depend on that person's own message.
+
+The implementation proof needs additional assumptions.
+Write \(V_n\) for a participant's valuation and \(f_n=-V_n\) for the corresponding cost.
+The costs must have a common strong convexity bound \(m>0\), meaning a uniform positive quadratic lower curvature.
+The proof also assumes valid rules for combining subgradients with local constraint conditions, and existence
+of a planner Karush--Kuhn--Tucker (KKT) pair.
+Such a pair consists of an optimal allocation and nonnegative capacity multipliers satisfying stationarity and complementary slackness.
+A sufficient curvature condition is
+\[
+ m>\frac{\gamma(2N-1)^2}{4(N-1)^4}.
+\]
+
+Emmy multiplied the price components of the game's optimality operator by \((N-1)/N\).
+This preserved individual optimality conditions and cancelled the interaction between common allocation and common price changes.
+Completing squares in the remaining terms showed that two equilibria must have the same allocation and no price disagreement.
+Conversely, a planner KKT pair supplied an equilibrium.
+Thus every equilibrium implements the unique welfare allocation, although its common price need not be unique.
+The full argument is in \path{emmy/research_note.md}, under ``A weighted operator repairs allocation
+implementation''; Ada checked the calculation independently.
+
+At these equilibria let \(p\) be the common price and \(\lambda=\gamma p\) the planner multiplier.
+The corrected payment reduces to
+\[
+ t_n^{\rm corr}=\lambda^\top(x_n-c/N).
+\]
+Complementary slackness makes these payments sum to zero.
+If \(0\in X_n\) and the concave valuation is normalised by \(V_n(0)=0\), planner stationarity gives
+\[
+ V_n(x_n)\ge\lambda^\top x_n,
+ \qquad V_n(x_n)-t_n^{\rm corr}\ge\lambda^\top c/N\ge0.
+\]
+Participation therefore yields at least the normalised outside value.
+These are equilibrium guarantees; balance away from equilibrium was not proved.
+
+\subsection{From the sampled objective to true risk}
+For participant \(n\), let \(J_n\) be the random loss and \(\beta_n\in(0,1)\) the upper-tail probability used for CVaR.
+Write \(C_n(x)\) for population CVaR at allocation \(x\), and \(H_n(x)\) for the expected empirical CVaR from \(s_n\) samples.
+Assume fresh independent, identically distributed samples from a distribution independent of the query point.
+Assume also samplewise convex losses, bounded by \(|J_n|\le U_n\), with Lipschitz constant \(L_n\), which
+bounds changes in loss per unit distance.
+Define
+\[
+ e_n=\frac{U_n}{\beta_n}\sqrt{\frac{2\pi}{s_n}}.
+\]
+The threshold formula for CVaR makes \(H_n\le C_n\): minimising the sampled expression before taking expectation can only lower its value.
+P's integrated distribution-function error bound supplies the other inequality, \(C_n-e_n\le H_n\).
+
+Let \(\widetilde C_n\) be the average of \(H_n\) over a centred ball of radius \(\delta_n>0\), where those queries are allowed.
+Convexity and the Lipschitz bound give
+\[
+ -e_n\le\widetilde C_n(x)-C_n(x)\le L_n\delta_n,
+ \qquad w_n=e_n+L_n\delta_n.
+\]
+The number \(w_n\) bounds the variation of the approximation error between any two decisions.
+Ada gave the proof in \path{ada/research-note.md}, under ``P's fixed-batch objective admits a sharper value
+bound'' and ``Economic perturbation theorem''; Emmy independently checked them.
+
+Use normalised true valuation \(V_n(x)=C_n(0)-C_n(x)\), and the same definition with \(\widetilde C_n\) for the surrogate valuation.
+For satisfaction observations, the loss is negative satisfaction; deterministic payments enter additively by
+CVaR's cash translation property.
+At a corrected surrogate equilibrium, the true gain from any unilateral deviation is at most \(w_n\), and true
+normalised utility is at least \(-w_n\).
+Payments still balance exactly.
+If \(\widetilde x\) is its allocation and \(x^*\) a true planner optimum, then
+\[
+ \sum_n C_n(\widetilde x_n)-\sum_n C_n(x_n^*)\le\sum_n w_n.
+\]
+The proof compares surrogate values at the two allocations; payment terms cancel in the corresponding unilateral comparisons.
+If total population cost has strong convexity bound \(m_0>0\), the squared Euclidean allocation error is at most \(2\sum_n w_n/m_0\).
+For P itself, including its extra comparison for the contracted domain, the value argument gives a limiting
+error of order smoothing radius plus inverse square root of batch size.
+It does not remove the inverse-radius variance cost of finite-time learning.
+
+\subsection{Feasible local queries and a replacement learner}
+Suppose a known ball of radius \(\rho_n>0\), centred at \(a_n\), lies inside \(X_n\) relative to its affine
+hull, the smallest affine space containing the set.
+For a direction \(u\) of norm at most one in that space, the peers used
+\[
+ q_n(x,u)=(1-\varepsilon_n)x+\varepsilon_na_n+\delta_nu,
+ \qquad 0<\varepsilon_n<1,\quad 0<\delta_n<\varepsilon_n\rho_n.
+\]
+This is a convex combination of feasible points, so every query is locally feasible.
+Decisions still range over the original set and include zero.
+Let \(K_n\) be expected empirical CVaR averaged over these ball queries, and let \(R_n\) be the greatest
+distance from \(a_n\) to a point in \(X_n\).
+The economic bounds above then hold with
+\[
+ w_n^K=e_n+2L_n\varepsilon_nR_n+L_n\delta_n
+\]
+replacing \(w_n\).
+If each sample loss has curvature \(m_n\), the new curvature is \(m_n(1-\varepsilon_n)^2\); its minimum must
+exceed the implementation threshold.
+Choosing \(\delta_n=\varepsilon_n\rho_n/2\) gives error of order \(s_n^{-1/2}+\varepsilon_n\).
+Ada's continuation (E)--(H) contains the derivation, including the chain-rule factor in P's unbiased gradient estimator.
+This construction assumes fresh losses can be queried at arbitrary locally feasible points.
+It does not ensure that simultaneous experimental queries respect total capacity.
+
+For fixed surrogate parameters, Emmy proved convergence of a changed learner.
+It assumes a compact product strategy set with a price box containing a surrogate planner KKT equilibrium.
+Each outer step solves a regularised version of the weighted equilibrium conditions approximately, using
+projected stochastic gradient steps, P's value estimator, analytic payment derivatives and aggregate messages.
+The regularisation makes each inner problem strongly monotone.
+
+The expected squared inner error is bounded by a constant divided by the number of inner steps plus one.
+At outer index \(k\), taking \(\lceil(k+1)^{2+\zeta}\rceil\) inner steps, for any fixed \(\zeta>0\), makes the
+expected norm errors summable.
+The proximal map's distance inequality then gives almost sure convergence; boundedness gives mean-square convergence.
+The limiting allocation is the deterministic surrogate optimum, while the common price can have a random limit.
+The complete recurrence proof is in Emmy's ``A conservative sampled-feedback convergence construction'', which Ada checked.
+The record supplies no efficient total sample bound or stochastic performance benchmark.
+
+\section{What did not hold}
+Q's implementation equalities force zero curvature in a direction that changes all reported prices equally while leaving allocations fixed.
+Its strict matrix inequality requires strictly negative curvature in every nonzero direction.
+The peers' contradiction disproves simultaneous feasibility of those certificates, not existence of all possible implementing mechanisms.
+The replacement argument does not validate Q's printed certificates.
+
+The participation failure is concrete.
+Ada took three participants, unit capacity and payment scale, allocations in \([0,1]\), and valuations
+\[
+ V_1(x)=10x-x^2/2,\qquad V_2(x)=V_3(x)=0.1x-x^2/2.
+\]
+Allocation \((1,0,0)\) with all prices equal to \(9\) satisfies the individual optimality conditions; positive
+definite own-cost Hessians make them sufficient for equilibrium.
+Yet Q charges the first participant \(10.5\) for value \(9.5\).
+The corrected payments are \((6,-3,-3)\), which settle this failure.
+Emmy checked a variant with coefficient \(1\) for the other valuations.
+Both peers supplied exact rational checks in \path{ada/check_algebra.py} and \path{emmy/check_algebra.py}.
+
+The same checks supported Emmy's separate quadratic example in which Q's proximal best-response map expands a
+common-price perturbation for every positive proximal parameter.
+Thus weighted monotonicity does not establish that map's Euclidean nonexpansiveness.
+This rules out the proposed transfer of its certificate, without proving that every damped iteration diverges.
+The nested learner supplies a different convergence result.
+
+Q's curvature assumption concerns expected satisfaction; it does not supply the samplewise curvature needed here.
+Nor is unique allocation the same as unique price.
+Ada's strongly convex loss example produces a kink in CVaR at an interior optimum: the allocation is unique,
+but every common price in \([1,3]\) is a valid multiplier.
+Emmy checked it.
+Fixed batches also retain a statistical bias, so convergence to their surrogate is not exact population-risk convergence.
+No changing-parameter learning schedule was established for the corrected game.
+
+\section{Why the thread stopped}
+The verifier recorded a single decision, DRAFT.
+Its reason recognised the connexion and accepted the corrected payments, weighted implementation, local
+queries and replacement learner under their stated assumptions.
+It also recognised that the account separated this conditional result from Q's invalid certificates and the
+open questions about true-risk convergence, joint query feasibility and novelty.
+It did not report a new algebraic defect.
+The consolidated note says the research allowance ended without a final common readiness checkpoint covering every last entry.
+
+The smallest recorded step towards restarting the publication question is to read the closest full papers and
+compare assumptions and conclusions.
+The ledger's search already found Wang, Shen and Zavlanos on empirical-CVaR game learning~\cite{wang22}, and
+Cui and Shanbhag on stochastic proximal methods for hierarchical games~\cite{cui}.
+Ada's note, incorporated by the ledger, also records work on learning Nash equilibria in risk-averse
+games~\cite{wang24} and sample-average CVaR variational inequalities~\cite{saa}.
+Her search checked landing pages and abstracts, not full proofs.
+These references prevent novelty from resting merely on the estimator or the generic proximal method.
+A focused comparison could establish whether the corrected transfers and explicit economic error bounds add a distinct result.
+The record is too thin to settle that question; efficiency, original-rule convergence and jointly feasible
+exploration require separate work.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,54 @@
+You are judging one candidate pairing of two research papers, Q and P,
+drawn from two different corpora. Judge only from the text below. Do not
+browse and do not assume content beyond it.
+
+Decide whether this pairing implies a research connexion worth pursuing:
+something one paper supplies that the other could use, test, extend or
+contradict, concrete enough that somebody could act on it.
+
+First name the connexion. What claim, method, mechanism, derivation,
+comparison or experiment links Q to P, what would be built or run, and
+what result would establish or refute it. If nothing follows from the
+pair beyond "both papers exist", say so and score accordingly.
+
+Then score two independent axes, each an integer from 0 to 100.
+
+feasibility: could that connexion be investigated by a competent group
+with methods and resources that exist today? Ignore whether the result
+would be interesting.
+  0   no coherent connexion; nothing to investigate
+  25  well defined but needs tools, data or theory that do not yet exist
+  50  possible in principle but demanding
+  75  achievable with ordinary effort; the pieces are in the two papers
+  100 small and direct; plausibly done within days
+
+gain: what would be learned that is not already known, specifically
+because Q and P are brought together? Ignore difficulty.
+  0   nothing new; already known or immediate from either paper alone
+  25  incremental confirmation or minor extension
+  50  substantive but local
+  75  resolves a live uncertainty or materially advances understanding
+  100 decisive; revises a central claim or opens a new line of work
+If the same connexion could be made with almost any paper of P's kind,
+nothing about P is doing work: cap gain at 50.
+
+Score the strongest connexion you can construct, not the average reading.
+Use the full range. Do not inflate to be safe; thresholds are applied
+downstream. Most pairs score low on at least one axis, and that is not a
+criticism of either paper.
+
+Output exactly one JSON object and nothing else, no code fences:
+{"feasibility": 0, "gain": 0, "connexion": "one sentence naming it",
+ "rationale": "two or three sentences saying why each number is what it is"}
+
+## Q
+
+Title: Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and System-Level Implications
+
+Learning-augmented algorithms use fallible predictions while retaining formal performance guarantees. This survey synthesizes prediction interfaces, error measures, consistency--robustness trade-offs, and five representative construction mechanisms across online optimization, caching, learned data structures, graph problems, and mechanism design. An orthogonal theorem-level axis distinguishes achieved upper bounds from matched asymptotic dependence. Formal guarantees are separated from empirical systems evidence, with explicit treatment of prediction cost, feedback, and composition. The resulting synthesis states sufficient conditions for limited end-to-end reasoning and delineates open problems in cost-aware prediction, endogenous error, semantic predictors, and benchmarking.
+
+## P
+
+Title: Emission-Forecasting-Based Spatial-Temporal Carbon Response: A Multi-Agent Attention-Enhanced Deep Learning Framework
+
+As a major contributor to carbon emissions, the decarbonization of power systems has garnered significant societal attention. Nodal carbon intensity (NCI), a critical factor in carbon-oriented demand response, has traditionally been determined through ex-post calculations. However, this ex-post approach introduces latency in low-carbon dispatch. To address this, this paper presents a proactive ex-ante spatial-temporal carbon response framework. At its core, we develop a novel deep learning-based hierarchical design, enhanced by a dual-stage attention mechanism and a large language model (LLM)-based multi-agent cooperation system, to accurately forecast day-ahead NCI. This design effectively mitigates the impact of renewable energy uncertainty and enhances predictive resilience. On the demand side, the framework proposes a spatial-temporal carbon scheduling model that integrates geographically dispatchable loads (GDLs), including mobile energy storage systems (MESSs) and distributed data centers (DDCs). Leveraging high-accuracy day-ahead NCI predictions, the framework can effectively reduce system emissions by quickly responding to carbon intensity fluctuations. The proposed framework is tested on the modified IEEE 33-bus system. According to the simulation results, the impacts of proposed framework on dispatching latency and emission outcomes are analyzed. The results demonstrate that under a one-hour reduction in carbon scheduling latency, the proposed model and methodology can achieve over 30% emission reduction. This research breaks through the limitations of passive carbon accounting, advancing toward proactive carbon management. It offers an intelligent solution that accelerates the transition to cleaner power systems while directly supporting sustainable production goals.

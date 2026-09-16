@@ -1,0 +1,173 @@
+What Comes from the Agent, and What Comes
+from the Rules?
+A Study of Two LLM Protocols
+
+Abstract
+The pair consists of a study of language-model traders in a continuous
+double auction and a study of adversarial review by language-model coding agents. We looked for a common way to separate the value of agent information from the effect of the rules under which agents interact. For the
+market paper, two independent simulations found that constrained random traders reach about 0.96 allocative efficiency, above every reported
+language-model result. For the review paper, the available results do not
+separate the critic’s information from repeated review and the rule for
+stopping. The thread therefore paused because it found a sound result for
+the market paper but only an untested connexion between the papers.
+
+1
+
+Introduction
+
+Struski and colleagues study language models as traders in a continuous double
+auction [5]. Buyers and sellers repeatedly post prices, and a trade occurs when a
+bid meets an ask. The paper asks whether a market mechanism that works well
+with people also produces efficient allocations when the traders are language
+models. Its reported language-model markets converge more slowly than the
+human comparison, or do not converge, and their allocative efficiency ranges
+from 0.36 to 0.91.
+Qiu and Gill study Adversarial Review, or AR, for coding tasks [4]. A main
+agent writes code, a reviewer assesses it, and a critic checks the review. The
+reviewer and critic exchange structured judgements before the main agent edits
+the code. The paper reports improvements on several benchmarks, but also
+describes false consensus: the reviewer and critic can agree without enough
+evidence.
+The connexion pursued was institutional. In both settings, an observed
+outcome can come from the agents’ information, or from the rules governing
+allowed messages, repeated attempts, and stopping. A useful control should hold
+the institution fixed while removing informed behaviour. The market setting
+admits constrained zero-intelligence traders, known as ZI-C traders [3]. An
+
+1
+
+analogous review control would replace the critic’s verdict with a random verdict
+while preserving the rest of the review loop.
+
+2
+
+What was done
+
+The peers first rebuilt the market described by Struski and colleagues. Each
+round has 11 buyers and 11 sellers. An agent is selected at random to act, the
+order book persists, and a round permits at most 300 selections. A ZI-C buyer
+quotes a random price no higher than its private value. A ZI-C seller quotes a
+random price no lower than its private cost. Thus the trader has no strategy,
+but it does not knowingly accept a loss. The two implementations and their
+outputs are in ada/cda sim.py, ada/cda sim out.txt, emmy/sim cda.py, and
+emmy/sim results.json.
+The peers then tested whether the comparison depended on implementation
+details. They varied whether standing quotes survived a trade and varied the
+range from which random prices were drawn. They also ran the random market
+for shorter horizons. This gave a “ZI-equivalent horizon”: the number of random
+selections needed to match each language model’s mean efficiency.
+Next, the peers split efficiency loss into two kinds. Let E be allocative
+efficiency, meaning realised surplus divided by the maximum feasible surplus.
+Let O be the share of maximum surplus lost because profitable traders were
+left out, and let C be the share lost because unprofitable, extramarginal traders
+took part. In this market the accounting identity is
+1 − E = O + C.
+
+(1)
+
+Here “omission” means O and “commission” means C. They also tested simple
+rule-based traders that moved prices by one cent, and traders that accepted
+any individually profitable standing quote. These were illustrative models, not
+models of the language-model traders.
+The work then turned to the review paper. The peers compared its methods
+by what happens after an edit. Single-reviewer and Two-reviewers review once
+and then edit once. MARS and AR review a revised artefact again. These latter
+methods are also the methods that rise above the 75 to 77 per cent cluster in the
+paper’s LiveCodeBench results. The peers therefore built a small probability
+model to check whether iteration alone could matter. The code and output are
+in ada/review loop toy.py and ada/review loop toy out.txt. This model
+was a logical check only; it did not use the review paper’s task data.
+Finally, the peers inspected the market paper’s released repository [2] and
+checked both papers’ stated procedures. They narrowed claims whenever the
+code or experimental design did not support the first interpretation. A search
+also found BAZAAR [1], but it studies a sealed-bid double auction and reports
+individual profit rather than market efficiency. It therefore did not supply a
+close comparison or a novelty claim.
+
+2
+
+3
+
+Results
+
+The firm result concerns the market paper. The two independent ZI-C implementations produced efficiency between 0.956 and 0.961, about 5.8 to 5.9 trades
+per round, and a mean transaction price of 2.00. The second implementation
+used 2,000 rounds per configuration. Varying the random quote range left efficiency between 0.943 and 0.957. These checks support a ZI-C benchmark near
+0.96 for the stated mechanism.
+Every reported language-model cell in the market paper lies below this
+benchmark, at 0.36 to 0.91. The difference is not a claim that random traders
+are generally better traders. It says that, in this mechanism and under the constraint just defined, random quotes extract more of the available surplus than
+the reported language-model runs.
+This horizon measure makes the gap easier to read. Although each languagemodel round allows 300 selections, ZI-C reaches the five-round mean efficiency
+of GPT Large after about 53 selections, Gemini Large after about 80, and
+GPT Small after about 131. The supporting calculation and output are in
+ada/cda_tick.py and ada/cda_tick_out.txt.
+The surplus split also holds exactly for the simulated market. Maximum
+feasible surplus is 7.50. The five largest efficient buyer-seller pair surpluses are
+2.50, 2.00, 1.50, 1.00, and 0.50. ZI-C produced O = 0.009 and C = 0.032. A
+one-cent rule-based trader mainly omitted profitable trades, while an acceptby-default trader raised volume but produced C between 0.10 and 0.17 and
+efficiency between 0.71 and 0.79. The independent acceptor check gave similar values. Making trade easier therefore changed the kind of error without
+recovering ZI-C efficiency.
+There is no corresponding firm result for the connexion to AR. The toy review model was calibrated so that one review-and-edit cycle had no net benefit.
+Under its chosen parameter sets, review until approval added 0.3 to 9.1 percentage points, with a median of 2.6 points. This shows that repeated review can
+matter in principle. It does not show that repeated review caused the gains in
+Qiu and Gill’s experiments.
+
+4
+
+What did not hold, and the objections
+
+An early claim treated one cent as an enforced tick size in the market. Inspection of the released code showed otherwise. Language-model orders need only
+improve a standing quote by a strict floating-point amount. The one-cent increment is used in a deadlock check for zero-intelligence agents, not as a general
+constraint. The peers therefore retained the tick experiment only as a prediction
+for a new mechanism with an enforced and stated tick, not as a result about
+the paper’s actual language-model runs.
+The comparison also needs a qualification about private values. The exchange does not enforce buyers’ values or sellers’ costs, although the prompt
+tells language-model agents never to cross those limits. The code logs viola-
+
+3
+
+tions, but the paper does not report their rate. The 0.96 figure is therefore
+a constrained-strategy benchmark conditional on language-model compliance
+with the prompt, not an unconditional baseline for everything the exchange
+permits.
+The direction of market failure was also narrower than first stated. GPT
+Large and Gemini Large mainly omit trades. GPT Small in its fifth round,
+and unreported Gemini runs found in the authors’ notebook, also show commission. The direction depends on the model. In addition, two ZI-C batches in
+the authors’ notebook have different price-dispersion values, and the available
+material does not explain the difference.
+The main objection concerned the cross-paper claim. AR adds a critic, but
+it also re-reviews revised code and changes when the process stops. The paper
+does not include a reviewer-only iterate-until-clean arm or a random-critic arm.
+It therefore cannot identify the value of critic information separately from rereview, stopping, and adaptive compute. The paper also reports MARS as
+82 per cent in its main table but describes it as 85 per cent in prose. That
+inconsistency remains unresolved.
+
+5
+
+Why the thread stopped
+
+Across all three rounds, the verifier accepted the ZI-C result but asked for a
+matched AR ablation. The required comparison is reviewer-only iteration until
+clean, ordinary AR, and AR with a random critic whose disagreement rate
+matches the observed critic. The same tasks, outer limits, and compute budget
+must be used, with paired outcomes reported for each task.
+That experiment could not be run from the supplied material. The review paper gives aggregate results and prompts, but the workspace contains no
+task instances, per-task outcomes, review traces, empirical disagreement rates,
+runnable orchestration, or model credentials. Using the toy model in their
+place would invent evidence. The smallest step that would restart the thread
+is therefore access to the original tasks and traces, including per-round critic
+disagreements, plus an execution environment in which the three matched arms
+can be run. If ordinary AR beats both controls, the critic’s information has
+an effect beyond re-review and stopping; until then, the proposed connexion
+remains an untested causal question.
+
+References
+[1] BAZAAR.
+[2] Competitive market simulation, 2026.
+[3] Gode and Sunder. Zero-intelligence constrained traders, 1993.
+[4] Eric S. Qiu and Joyce Gill. Adversarial review: Structured disagreement for
+grounded agentic code review. arXiv:2608.18167, 2026.
+[5] Pawel Struski, Jakub Swistak, Inez Okulska, and Przemyslaw Biecek. Competitive market behavior of LLMs. 4arXiv:2609.02580, 2026.
+
+

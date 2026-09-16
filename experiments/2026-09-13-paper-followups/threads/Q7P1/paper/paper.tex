@@ -1,0 +1,491 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm,hyperref,url}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator{\osc}{osc}
+\DeclareMathOperator{\col}{col}
+\title{Corrected quadratic payments for a fixed CVaR surrogate}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+% Ledger: 1--9, 13--19, 20, 22, 24, 26.
+We examine the combination of a quadratic resource-allocation mechanism
+and an empirical conditional value-at-risk (CVaR) oracle. The mechanism's
+strict matrix certificate is incompatible with its implementation equalities,
+and its printed payment can violate individual rationality. An adjustment
+depending only on opponents' messages repairs equilibrium transfers.
+Under additional curvature and multiplier-existence assumptions, a weighted
+monotonicity argument implements the unique optimum of a fixed expected
+empirical CVaR surrogate, with exact budget balance and surrogate individual
+rationality. The oscillation of the surrogate error bounds population-risk
+regret, participation shortfall and welfare loss. Contracting only the loss
+queries preserves the zero outside action and local feasibility. A standard
+nested stochastic proximal-point construction gives mean-square allocation
+convergence to this fixed surrogate optimum, without requiring unique prices.
+These conclusions neither validate the original best-response learner nor
+establish exact population-risk learning.
+\end{abstract}
+
+\section{The question and its scope}
+% Ledger: 3, 12, 15, 17, 19, 24, 26.
+Garjani, Shokri and Kebriaei~\cite{Q}, called Q below, propose quadratic
+payments for strategic allocation with capacity constraints. Wang, Huang,
+Xu and Johansson~\cite{P}, called P, develop a cooperative distributed
+CVaR method using loss values. P establishes consensus and convergence to a
+fixed expected empirical smoothed objective under its fixed-batch assumptions.
+Q's implementation and dynamic guarantees are conditional on certificates
+and assumptions that cannot simply be carried into that setting.
+
+% Ledger: 1--9, 13, 17, 19, 24, 26.
+Our contribution is a correction and conditional combination of these
+constructions. We give a direct implementation proof for Q's explicit
+payment after an incentive-preserving transfer adjustment, and quantify
+how P's statistical surrogate changes economic guarantees. The new content
+is the specific repair and its combination with the economic error bounds.
+The value estimator, elementary smoothing construction and generic
+proximal-point convergence principle are not claimed as new. Throughout,
+implementation means Nash implementation in the message game; no
+truthful-reporting or dominant-strategy assertion is made.
+
+\section{Payments and implementation}
+\subsection{Model and the printed payment}
+% Ledger: 4, 6--9, 17, 19; source: Q, Section III, label eq40.
+There are \(N\ge2\) agents and \(r\) resources. Agent \(n\) chooses
+\(s_n=(x_n,p_n)\in X_n\times\mathbb R_+^r\), where \(X_n\) is compact
+and convex. Capacity is \(c\in\mathbb R_+^r\). The planner minimises
+\(\sum_n f_n(x_n)\) over
+\[
+ \mathcal A=\{x\in\textstyle\prod_n X_n:\ \sum_nx_n\le c\}.
+\]
+The normal cone convention is
+\(N_X(x)=\{v:\langle v,y-x\rangle\le0\text{ for all }y\in X\}\).
+A planner Karush--Kuhn--Tucker (KKT) pair \((x^\star,\lambda)\) satisfies
+\begin{equation}\label{eq:kkt}
+ 0\in\partial f_n(x_n^\star)+\lambda+N_{X_n}(x_n^\star),\quad
+ \lambda\ge0,\quad x^\star\in\mathcal A,\quad
+ \lambda^\top(\sum_nx_n^\star-c)=0.
+\end{equation}
+The game cost is \(f_n(x_n)+t_n(s)\); the coupling constraint is imposed
+at equilibrium, not on unilateral message choices.
+
+% Ledger: 4--9, 17; source: Q, label eq40, reproduced to specify the game.
+Write \(\gamma>0\) for Q's payment scale, and define
+\(P_{-n}=\sum_{j\ne n}p_j\), \(X_{-n}=\sum_{j\ne n}x_j\),
+\(S_{-n}=\sum_{j\ne n}\|p_j\|^2\), and
+\(D_{-n}=\sum_{j\ne n}p_j^\top x_j\).
+The printed payment in Q, Section III, equation labelled
+\texttt{eq40} in its source, is
+\begin{equation}\label{eq:tax}
+\begin{aligned}
+ t_n^Q(s)=\gamma\bigg[&\frac12\|p_n\|^2
+ -\frac{p_n^\top P_{-n}}{N-1}
+ -\frac{p_n^\top(x_n+X_{-n}-c)}{N-1}\\
+ &+\frac{N P_{-n}^\top(x_n-c/N)}{(N-1)^2}
+ +\frac{S_{-n}}{2(N-1)}
+ -\frac{D_{-n}-P_{-n}^\top c/N}{(N-1)^2}\bigg].
+\end{aligned}
+\end{equation}
+All derivatives below are taken from this expression.
+
+\subsection{Obstructions in Q}
+% Ledger: 1--3, 5--7, 9.
+\begin{proposition}\label{prop:failure}
+Q's strict certificate P1(ii) and implementation equality P2(i) cannot
+hold simultaneously. Moreover, payment~\eqref{eq:tax} need not be
+individually rational, even with normalised strongly concave valuations.
+\end{proposition}
+\begin{proof}
+% Ledger: 1--3.
+In Q's notation, P2(i) requires \(\sum_m A_{nm}^n=0\).
+For \(v\ne0\) and \(h=\col((0,v),\ldots,(0,v))\), its price blocks give
+\[
+ h^\top(\Psi+\Psi^\top)h
+ =-2\sum_n v^\top\Big(\sum_m A_{nm}^n\Big)v=0.
+\]
+P1(ii), \(\Psi+\Psi^\top\preceq-\upsilon I\) with \(\upsilon>0\),
+would instead bound this by \(-\upsilon N\|v\|^2<0\).
+This disproves simultaneous feasibility of those sufficient conditions.
+
+% Ledger: 6, 7, 9.
+For the payment claim, take \(N=3\), \(\gamma=c=1\), \(X_n=[0,1]\),
+and valuations
+\[
+ V_1(x)=10x-x^2/2,\qquad V_2(x)=V_3(x)=0.1x-x^2/2,
+ \qquad f_n=-V_n.
+\]
+At \(x=(1,0,0)\), \(p=(9,9,9)\), own price derivatives vanish and
+own allocation cost derivatives are \(0,8.9,8.9\). The positive derivatives
+occur at lower bounds. Each own cost Hessian is
+\(\left(\begin{smallmatrix}1&-1/2\\-1/2&1\end{smallmatrix}\right)\succ0\),
+so these conditions suffice for a Nash equilibrium. Substitution gives
+\(t_1^Q=10.5>V_1(1)=9.5\).
+\end{proof}
+% Ledger: 5--9.
+More generally, put \(b_N=(N^2-N+1)/(N-1)^2\). At common prices
+\(p_n=p\) satisfying \(p^\top(\sum_nx_n-c)=0\), collection of terms gives
+\begin{equation}\label{eq:old-transfer}
+ t_n^Q=\gamma b_Np^\top(x_n-c/N).
+\end{equation}
+The printed linear coefficients also satisfy
+\(\sum_m a_m^n=\gamma c/[N(N-1)]\), violating Q's P4(ii) when
+capacity has a positive component. These failures do not imply absence
+of equilibria or impossibility of every implementing mechanism.
+
+\subsection{A direct replacement theorem}
+% Ledger: 4, 8, 9, 14, 17, 19.
+Assume each \(f_n\) is continuous and \(m\)-strongly convex on \(X_n\),
+with convex extensions sufficient for the subgradient and normal-cone sum
+rules. Assume a planner KKT pair exists. Define
+\begin{equation}\label{eq:repair}
+ t_n^{\rm corr}=t_n^Q+
+ \gamma(b_N-1)\left(\frac{P_{-n}}{N-1}\right)^\top
+ \left(X_{-n}-\frac{N-1}{N}c\right).
+\end{equation}
+% Ledger: 8, 9, 17, 19.
+\begin{theorem}\label{thm:implementation}
+If
+\begin{equation}\label{eq:threshold}
+ m>\frac{\gamma(2N-1)^2}{4(N-1)^4},
+\end{equation}
+then every equilibrium of the corrected game implements the unique planner
+allocation. Prices are common and \(\lambda=\gamma p_n\) is a planner
+multiplier. Conversely, every planner KKT pair gives an equilibrium at
+\(p_n=\lambda/\gamma\). If also \(0\in X_n\) and \(f_n(0)=0\),
+then for \(V_n=-f_n\) the corrected equilibrium payments satisfy
+\begin{equation}\label{eq:transfers}
+ t_n^{\rm corr}=\lambda^\top(x_n-c/N),\qquad
+ \sum_nt_n^{\rm corr}=0,\qquad
+ V_n(x_n)-t_n^{\rm corr}\ge\lambda^\top c/N\ge0.
+\end{equation}
+Prices need not be unique.
+\end{theorem}
+\begin{proof}
+% Ledger: 4, 9, 14, 17, 19.
+The added term depends only on opponents, preserving every best response.
+Stack allocations and prices separately. Let
+\(\Pi=\mathbf1\mathbf1^\top/N\), \(\Delta=I-\Pi\), and
+\(\kappa=(2N-1)/(N-1)^2\); these matrices act resourcewise.
+Differentiating~\eqref{eq:tax} and multiplying price rows by \((N-1)/N\)
+gives the weighted own-cost operator
+\begin{equation}\label{eq:operator}
+ G_x\in\partial f(x)+\gamma(\Pi-\kappa\Delta)p,\qquad
+ G_p=\gamma\Delta p-\gamma\Pi x+\frac{\gamma}{N}\mathbf1\otimes c.
+\end{equation}
+Positive row scaling preserves the product-set optimality conditions.
+For \(u=x-x'\), \(v=p-p'\), strong convexity and completion of squares give
+\begin{equation}\label{eq:monotone}
+\begin{aligned}
+ \langle G(s)-G(s'),s-s'\rangle
+ &\ge m\|\Pi u\|^2+(m-\gamma\kappa^2/4)\|\Delta u\|^2\\
+ &\quad+\gamma\|\Delta v-(\kappa/2)\Delta u\|^2.
+\end{aligned}
+\end{equation}
+This holds for any corresponding subgradient selections. Condition
+\eqref{eq:threshold} also implies \(m>\gamma/(N-1)^2\), so the own
+allocation-price cost is jointly strongly convex: its price quadratic
+has curvature \(\gamma\) and cross coefficient \(-\gamma/(N-1)\).
+Thus own optimality conditions are sufficient.
+
+% Ledger: 17, 19.
+Substituting a KKT pair into~\eqref{eq:operator} supplies a game equilibrium.
+Add its variational inequality to that of any other equilibrium.
+The left side of~\eqref{eq:monotone} is then nonpositive, forcing
+\(u=0\) and \(\Delta v=0\). At common prices the remaining game
+conditions are precisely~\eqref{eq:kkt}. Strong convexity gives allocation
+uniqueness.
+
+% Ledger: 8, 9, 17, 19.
+Equation~\eqref{eq:old-transfer}, the correction and complementarity yield
+the transfer identity and budget balance. Choose
+\(g_n\in\partial f_n(x_n)\), \(v_n\in N_{X_n}(x_n)\) with
+\(g_n+\lambda+v_n=0\). Feasibility of zero gives \(v_n^\top x_n\ge0\).
+The subgradient inequality at zero yields
+\(0\ge f_n(x_n)+\lambda^\top x_n\), proving participation.
+\end{proof}
+
+\section{The fixed risk surrogate and economic errors}
+% Ledger: 9, 13, 17, 19, 20, 22, 24.
+Assume \(0\in X_n\). Losses \(J_n(x,\xi)\) are bounded in absolute
+value by \(U_n\), samplewise \(L_n\)-Lipschitz and
+\(m_n\)-strongly convex on \(X_n\). Samples are fresh and iid from a
+query-independent distribution. For upper-tail probability
+\(\beta_n\in(0,1)\), define
+\begin{align}
+ C_n(x)&=\inf_{\tau\in\mathbb R}\left\{\tau+
+ \beta_n^{-1}\mathbb E[J_n(x,\xi)-\tau]_+\right\},\label{eq:cvar}\\
+ \widehat C_{n,s_n}(x)&=\inf_{\tau\in\mathbb R}\left\{\tau+
+ \frac1{\beta_ns_n}\sum_{i=1}^{s_n}[J_n(x,\xi_i)-\tau]_+\right\}.
+\end{align}
+Here \([a]_+=\max\{a,0\}\). True normalised valuation is
+\(V_n(x)=C_n(0)-C_n(x)\). For satisfaction data the loss is
+\(J_n=-\psi_n\); cash translation allows deterministic taxes outside the
+risk functional. The planner sums individual risks, rather than taking
+the risk of an aggregate random loss.
+
+\subsection{One-sided value error and feasible queries}
+% Ledger: 13, 17, 20, 22, 24, 26.
+Suppose a known relative interior ball
+\(a_n+\rho_n\mathcal B_n\subset X_n\) is available, where
+\(\mathcal B_n\) is the unit ball in the local affine hull, of dimension
+\(d_n>0\). Fix \(0<\varepsilon_n<1\) and
+\(0<\delta_n<\varepsilon_n\rho_n\). Define
+\begin{align}
+ q_n(x,v)&=(1-\varepsilon_n)x+\varepsilon_na_n+\delta_nv,\\
+ K_n(x)&=\mathbb E_{v,\xi^{1:s_n}}\widehat C_{n,s_n}(q_n(x,v)),
+ \qquad v\sim\operatorname{Unif}(\mathcal B_n).\label{eq:K}
+\end{align}
+Decisions remain in \(X_n\), including zero. Set
+\begin{equation}\label{eq:error-constants}
+ e_n=\frac{U_n}{\beta_n}\sqrt{\frac{2\pi}{s_n}},\quad
+ R_n=\sup_{x\in X_n}\|x-a_n\|,\quad
+ w_n=e_n+2L_n\varepsilon_nR_n+L_n\delta_n.
+\end{equation}
+% Ledger: 13, 17, 20, 22, 24.
+\begin{lemma}\label{lem:oracle}
+Every query in~\eqref{eq:K} is locally feasible, and
+\begin{equation}\label{eq:interval}
+ -e_n-L_n\varepsilon_nR_n\le K_n(x)-C_n(x)
+ \le L_n\delta_n+L_n\varepsilon_nR_n.
+\end{equation}
+The surrogate has curvature \(m_n(1-\varepsilon_n)^2\). With a uniform
+sphere direction \(u\), independent of the fresh batch, the oracle
+\begin{equation}\label{eq:oracle}
+ \widehat g_n(x)=\frac{(1-\varepsilon_n)d_n}{\delta_n}
+ \widehat C_{n,s_n}(q_n(x,u))u
+\end{equation}
+is unbiased for \(\nabla K_n(x)\), the relative gradient. It satisfies
+\[
+ \|\widehat g_n(x)\|\le (1-\varepsilon_n)d_nU_n/\delta_n.
+\]
+\end{lemma}
+\begin{proof}
+% Ledger: 20, 22, 24.
+The query is the convex combination
+\((1-\varepsilon_n)x+\varepsilon_n(a_n+(\delta_n/\varepsilon_n)v)\).
+The strict radius inequality also leaves a relative neighbourhood on which
+the smoothing identity is valid. Applying P's sphere identity and the chain
+rule gives~\eqref{eq:oracle}. Since \(0\in X_n\), the affine hull is a
+linear subspace; gradients can be lifted by an orthonormal basis.
+
+% Ledger: 13, 17; source: P appendix, CVaR error calculation.
+Let \(H_n=\mathbb E\widehat C_{n,s_n}\). Interchanging infimum and
+expectation in the inequality direction gives \(H_n\le C_n\).
+P's integrated Dvoretzky--Kiefer--Wolfowitz calculation gives
+\(\mathbb E|\widehat C_{n,s_n}(x)-C_n(x)|\le e_n\), hence
+\(C_n-e_n\le H_n\le C_n\).
+At a centre \(y\) admitting ball queries, Jensen's inequality and
+Lipschitz continuity therefore give
+\begin{equation}\label{eq:centred}
+ -e_n\le\mathbb E_v H_n(y+\delta_nv)-C_n(y)\le L_n\delta_n.
+\end{equation}
+Taking \(y=(1-\varepsilon_n)x+\varepsilon_na_n\) proves
+\eqref{eq:interval}. These compare deterministic expected functions;
+no expected supremum of random empirical errors is used.
+
+% Ledger: 9, 17, 19, 20, 22, 24.
+Samplewise strong convexity passes through CVaR by monotonicity,
+convexity and cash translation: the deterministic quadratic deficit
+passes through the risk functional unchanged. This applies also to
+empirical CVaR and expectation. Affine contraction scales the deficit
+by \((1-\varepsilon_n)^2\).
+\end{proof}
+
+\subsection{Economic consequence}
+% Ledger: 13, 17, 19, 24, 26.
+For a real function \(a\), let \(\osc_X a=\sup_Xa-\inf_Xa\).
+Equation~\eqref{eq:interval} gives \(\osc_{X_n}(K_n-C_n)\le w_n\).
+Use surrogate valuation \(V_n^K(x)=K_n(0)-K_n(x)\), and retain
+payment~\eqref{eq:repair}.
+% Ledger: 13, 17, 19, 24, 26.
+\begin{theorem}\label{thm:economic}
+Assume a surrogate planner KKT pair exists and
+\[
+ m_{\rm eff}=\min_n m_n(1-\varepsilon_n)^2
+ >\frac{\gamma(2N-1)^2}{4(N-1)^4}.
+\]
+At every surrogate equilibrium \(\widetilde s\), its allocation
+\(\widetilde x\) uniquely minimises \(\sum_nK_n\) on \(\mathcal A\).
+Budget balance and surrogate individual rationality are exact. Writing
+\(U_n(s)=V_n(x_n)-t_n^{\rm corr}(s)\), population-risk guarantees are
+\begin{align}
+ \sup_{s_n'\in X_n\times\mathbb R_+^r}
+ \{U_n(s_n',\widetilde s_{-n})-U_n(\widetilde s)\}&\le w_n,\label{eq:regret}\\
+ U_n(\widetilde s)&\ge-w_n,\label{eq:ir}\\
+ \sum_n C_n(\widetilde x_n)-\sum_n C_n(x_n^\star)&\le\sum_nw_n,
+ \label{eq:welfare}
+\end{align}
+where \(x^\star\) minimises population cost on \(\mathcal A\).
+If total population cost has curvature \(m_0>0\), then
+\begin{equation}\label{eq:allocation}
+ \|\widetilde x-x^\star\|^2\le\frac{2}{m_0}\sum_nw_n.
+\end{equation}
+\end{theorem}
+\begin{proof}
+% Ledger: 13, 17, 24.
+Lemma~\ref{lem:oracle} and Theorem~\ref{thm:implementation} give exact
+surrogate implementation and transfers. Put \(a_n=K_n-C_n\) in this
+proof only. The true minus surrogate payoff at allocation \(x_n\) is
+\(a_n(x_n)-a_n(0)\). Its change under any unilateral deviation is at
+most \(\osc a_n\), proving~\eqref{eq:regret}; its absolute value is at
+most \(w_n\), proving~\eqref{eq:ir}. Transfers themselves do not change
+when evaluated under true preferences, so budget balance remains exact.
+Surrogate optimality gives
+\[
+ \sum_n[C_n(\widetilde x_n)-C_n(x_n^\star)]
+ \le\sum_n[a_n(x_n^\star)-a_n(\widetilde x_n)]\le\sum_nw_n.
+\]
+Strong convexity and constrained optimality at \(x^\star\) lower-bound
+this gap by \((m_0/2)\|\widetilde x-x^\star\|^2\).
+\end{proof}
+% Ledger: 13, 17, 24, 26.
+Taking \(\delta_n=\varepsilon_n\rho_n/2\) yields error order
+\(O(s_n^{-1/2}+\varepsilon_n)\), for fixed problem constants.
+Where centred queries are already permissible,~\eqref{eq:centred} gives
+the smaller oscillation bound \(e_n+L_n\delta_n\).
+The improvement is at the objective level and does not remove the
+inverse-radius dependence of oracle variance.
+
+\section{A replacement learner}
+% Ledger: 11, 17, 19, 24, 26; prior method: Cui--Shanbhag, Section 3.2.
+Fix all surrogate parameters. Assume a compact price box
+\([0,P_{\max}]^r\) containing a surrogate KKT equilibrium, and put
+\(\mathcal S=\prod_n(X_n\times[0,P_{\max}]^r)\).
+Comparison with that equilibrium in~\eqref{eq:monotone} shows every
+boxed equilibrium has its allocation and common prices. Capacity is
+therefore feasible already; slack resources force zero price by the
+boxed price condition. No strict interiority of the reference price is
+needed. This retains the unboxed equilibrium characterisation.
+
+% Ledger: 11, 17, 19, 24.
+Let \(G^K\) denote~\eqref{eq:operator} for the smooth costs
+\(K_n-K_n(0)\). For \(\eta>0\), define
+\[
+ R(z)=(I+\eta(G^K+N_{\mathcal S}))^{-1}z,
+ \qquad H_z(s)=G^K(s)+\eta^{-1}(s-z).
+\]
+The continuous monotone operator on the compact convex product gives a
+well-defined resolvent. To approximate it, use projected stochastic
+updates with the oracle~\eqref{eq:oracle}, analytic payment gradients,
+and aggregate allocation and price messages:
+\[
+ s_{t+1}=\operatorname{proj}_{\mathcal S}
+ (s_t-\alpha_t\widehat H_z(s_t)),\qquad
+ \alpha_t=\frac{1}{\sigma(t+2)},\quad \sigma=\eta^{-1}.
+\]
+% Ledger: 11, 17, 19, 24.
+\begin{proposition}\label{prop:learning}
+Run \(T_k=\lceil(k+1)^{2+\zeta}\rceil\) inner updates centred at \(z_k\),
+where \(\zeta>0\), and set \(z_{k+1}=s_{T_k}\). Then \(z_k\) converges
+almost surely and in mean square to a possibly random surrogate equilibrium.
+Its allocation converges in mean square to the deterministic optimum
+\(\widetilde x\) of Theorem~\ref{thm:economic}.
+\end{proposition}
+\begin{proof}
+% Ledger: 17, 19, 24.
+Compactness and the oracle bound give a uniform conditional second moment
+\(M^2\) for \(\widehat H_z\). With \(y=R(z)\), projection, the VI
+at \(y\), and \(\sigma\)-strong monotonicity give
+\[
+ \mathbb E[\|s_{t+1}-y\|^2\mid s_t,z]
+ \le(1-2\sigma\alpha_t)\|s_t-y\|^2+\alpha_t^2M^2.
+\]
+Induction yields
+\[
+ \mathbb E[\|s_T-R(z)\|^2\mid z]\le C/(T+1),\qquad
+ C=\max\{\operatorname{diam}(\mathcal S)^2,M^2/\sigma^2\}.
+\]
+Thus the errors \(e_k=z_{k+1}-R(z_k)\) have
+\(\sum_k\mathbb E\|e_k\|<\infty\), and are almost surely summable.
+
+% Ledger: 17, 19, 24.
+Subtracting the resolvent VIs proves firm nonexpansiveness. For any
+fixed point \(z^\star\),
+\[
+ \|R(z_k)-z^\star\|^2\le\|z_k-z^\star\|^2-\|z_k-R(z_k)\|^2.
+\]
+Summable errors imply convergent distances to fixed points and vanishing
+residual. Compactness supplies a cluster point; continuity places it in
+the fixed-point set. The distance argument then gives convergence of the
+whole sequence. Boundedness yields mean-square convergence by dominated
+convergence. The allocation component is unique by
+Theorem~\ref{thm:implementation}.
+\end{proof}
+
+\section{Related work and interpretation}
+% Ledger: 12, 15, 19, 26; literature verification and reading: search.md.
+The sampled CVaR one-point step is already published. Wang, Shen and
+Zavlanos~\cite{wang2022}, Algorithm 1 and Lemmas 2--3, give the estimator,
+smoothing comparison and distribution-function error bound, with regret
+guarantees. The nested learner is also an application of an existing
+principle: Cui and Shanbhag~\cite{cui2021}, Section 3.2, Propositions 5--6,
+use stochastic inner solves of proximal inclusions and a polynomial
+inner schedule of exponent greater than two to obtain almost-sure
+convergence under monotonicity. We include the compact-case proof to
+specify precisely which learner is justified here.
+
+% Ledger: 15, 19, 26; literature comparison checked in search.md.
+Wang et al.~\cite{wang2024}, Algorithm 1 and Theorem 1, use loss gradients
+and estimated quantiles under strong monotonicity. Their theorem bounds
+the time average of squared distance with high probability. Our weighted
+operator retains a common-price degeneracy. Cherukuri~\cite{cherukuri},
+Section 3, studies sample-average VIs whose operator components are
+CVaRs, proving consistency and exponential solution-set approximation.
+Here the implemented objective is the deterministic expectation of a
+fixed empirical risk estimate, and the operator differentiates that
+objective. Those statistical targets and guarantees differ.
+
+% Ledger: 12, 13, 15, 17, 19, 24, 26.
+The comparison supports a focused contribution: a correction of Q's
+specific payment, with P's fixed surrogate interpreted through explicit
+welfare and incentive errors. It does not support novelty claims for
+CVaR game learning, the proximal construction or feasible smoothing in
+general. The sources examined did not identify the same payment repair
+and economic-bound package; this bounded search is not a proof of priority.
+Economically, finite sampling changes the implemented preferences.
+Equations~\eqref{eq:regret}--\eqref{eq:welfare} concern a fixed surrogate
+equilibrium assessed using population risk, rather than a finite-time
+regret guarantee for a learning trajectory.
+
+\section{Limitations and open questions}
+% Ledger: 9, 14, 17, 19, 24, 26.
+The added assumptions are substantive: samplewise curvature, valid KKT
+sum rules, existence of a surrogate planner multiplier, a feasible zero
+outside action, known local interior balls and fresh losses at arbitrary
+local queries. For learning, a known price cap must contain a KKT
+price. Q's expected curvature assumption alone does not imply CVaR
+curvature. Exact budget balance is asserted only at equilibrium; local
+query feasibility does not ensure joint capacity feasibility of experiments.
+No efficient total oracle complexity or stochastic benchmark is supplied.
+
+% Ledger: 10, 14, 17, 19.
+Weighted monotonicity does not prove Q's proximal best-response map
+nonexpansive. In the recorded interior quadratic example with \(N=3\)
+and \(m=\gamma=1\), its consensus-price column has squared norm
+\(1+1/(2D^2)>1\), where \(D=(\mu+1)^2-1/4\), for every \(\mu>0\).
+This defeats that certificate, without proving divergence of all damped
+iterations. Proposition~\ref{prop:learning} concerns a changed algorithm.
+
+% Ledger: 14, 17.
+Allocation uniqueness likewise does not imply price uniqueness. For
+\(N=3\), \(X_n=[0,1]\), \(c=3/2\), \(\gamma=1\), equiprobable
+\(Z=\pm1\), and tail probability \(1/2\), the losses
+\[
+ J_n(x,Z)=x^2-3x+Z(x-1/2)
+\]
+give \(C_n(x)=x^2-3x+|x-1/2|\). The unique allocation is \(x_n=1/2\),
+but \(\partial C_n(1/2)=[-3,-1]\) admits every common price in \([1,3]\).
+
+% Ledger: 19, 24, 26.
+Open questions are convergence of the original VS-PBR iteration, efficient
+sample complexity for the replacement learner, a population-risk limit
+with changing batches and radii, and jointly capacity-feasible exploration.
+The fixed-parameter theorem establishes none of these. Broader publication
+priority of the specific correction remains subject to further comparison.
+
+\bibliographystyle{plain}
+\bibliography{references}
+\end{document}

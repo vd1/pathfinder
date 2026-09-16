@@ -17,7 +17,7 @@ Every thread ends with a ledger, a note named after the pair (for example
 `Q2P3.tex`), a verdict history and a terminal status: `DRAFT`, `PAUSE`,
 `PAUSE-ON-ITERATE` or `PAUSE-ON-REVISE`. The whole pipeline as a state
 machine, with every transition's agent, prompt, visibility and budget, is
-in `plans/2026-09-12-state-machine.pdf`.
+in `notes/2026-09-12-state-machine-astra.pdf`.
 
 3. **Paper.** On a DRAFT thread, an author agent writes a short paper with
    BibTeX references, searching for prior work and verifying every
@@ -109,6 +109,10 @@ peers, compared against two in the pilot report. Point any command at it
 with `--root experiments/3peers`; its `sources` is a link to the root's.
 
 ## campaign.json
+
+`campaign.example.json` in the repository root is a working starting point
+with no path leaving the campaign directory: copy it to `campaign.json` in
+your own campaign directory and edit the models and the budget.
 
 - `backend`: `claude` or `codex`. No fallback between them.
 - `model`: model for peers, consolidation and verification.

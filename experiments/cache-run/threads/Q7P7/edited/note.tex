@@ -1,0 +1,458 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\pathfinderpair{Q7P7}
+
+\title{Designed payments for strategic agents and ex-ante carbon dispatch: an audit of the mechanism and a paused connexion}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The pair joins a mechanism-design paper, which builds payments meant to steer selfish agents sharing a limited resource to the best allocation for all \cite{Q}, and a power-systems paper, which forecasts the carbon intensity at each bus of a distribution feeder a day ahead and moves storage and data-centre load towards low forecasts \cite{P}.
+Two peers asked whether the first paper's payments could steer the flexible loads of the second, and then whether a rule that charges carbon to loads can act as such a payment, adding up to the emissions actually caused and rewarding only moves that cut them.
+They found that the mechanism's guarantees fail as stated, since its uniqueness condition can never hold together with its main design condition and its explicit payment can leave an agent worse off than staying out, and that a change of one parameter restores voluntary participation.
+On the carbon side, a toy network and one hour of the paper's test feeder showed that moving load between buses mostly shifts attributed carbon onto other loads, and a simple derivation gave a marginal charge with a fixed refund that adds up correctly.
+The thread paused because its solid part is a comment on the mechanism paper alone, the joint material is thin and largely known, and the joint question only has substance under curtailment, which needs equilibrium theory and network data that neither paper supplies.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+\paragraph{The mechanism paper.}
+Q \cite{Q} studies a manager who shares \(K\) resources, available in amounts \(c\in\mathbb{R}^K\), among \(N\) agents.
+Agent \(n\) receives a bundle \(x_n\ge0\) from a private convex compact set \(\mathcal{X}_n\).
+It values the bundle by a private function \(V_n\), which is strongly concave with parameter \(\alpha>0\) and has \(V_n(0)=0\); the value may be an average over random outcomes.
+The manager wants the allocation \(x^o\) that maximises \(\sum_nV_n(x_n)\) subject to \(\sum_nx_n\le c\).
+We write \(\lambda^o\ge0\) for the shadow price (Lagrange multiplier) of that constraint.
+The manager does not know the \(V_n\), so each agent sends a request \(x_n\) and a proposed price vector \(p_n\), and pays
+\[
+t_n=\tfrac12\,p^\top A^np+p^\top B^nx+p^\top a^n,
+\]
+where \(p\) and \(x\) stack all prices and requests.
+Agent \(n\) then has utility \(U_n=V_n(x_n)-t_n\).
+A Nash equilibrium is a profile of messages from which no agent gains by changing its own message alone.
+Q chooses the coefficient blocks \(A^n_{ml}\), \(B^n_{ml}\in\mathbb{R}^{K\times K}\) and \(a^n_m\in\mathbb{R}^K\) to satisfy linear matrix inequalities (LMIs) that it derives for four properties.
+Q calls them P1 to P4; to avoid a clash with the name of the second paper, we name them in words.
+They are \emph{uniqueness} of the Nash equilibrium; \emph{Nash implementation}, meaning the equilibrium allocation is \(x^o\); \emph{budget balance}, meaning the payments sum to zero at equilibrium; and \emph{individual rationality} or voluntary participation, meaning no agent ends with utility below \(V_n(0)=0\).
+Q gives one explicit payment and states that it meets all the conditions.
+It is labelled \texttt{eq40} in Q's source, and we call it eq40.
+A fifth property is a learning algorithm: agents repeatedly take a regularised best response computed from samples of their random value, with more samples at each iteration, and Q proves convergence in mean square.
+Q illustrates the scheme with electric-vehicle users choosing destinations and routes in the Sioux Falls network.
+
+\paragraph{The carbon paper.}
+P \cite{P} is about carbon-aware scheduling on a distribution network.
+Its signal is the nodal carbon intensity (NCI) \(e_{i,t}\) at bus \(i\) and hour \(t\), the carbon per unit of power consumed there.
+NCI comes from a carbon emission flow (CEF) model: the intensity at a bus is the power-weighted average of the intensities of the flows entering it (the proportional-sharing rule of P's equations (23) and (24), after P's reference [13]).
+P argues that computing NCI after the fact delays the response, so it forecasts NCI a day ahead.
+The forecaster has two tiers: Tier~1 predicts renewable output from weather data, and Tier~2 predicts NCI from past NCI and the Tier-1 forecast.
+Two agents built on a large language model help prepare data and retune the forecaster.
+The forecast \(\hat e_{i,t}\) drives a schedule of geographically dispatchable loads (GDLs).
+These are mobile energy storage systems (MESSs), which travel between buses to charge and discharge, and distributed data centres (DDCs), which pass workload to one another.
+The schedule minimises forecast NCI times load, summed over buses and hours (P's equation (26)).
+On a modified IEEE 33-bus feeder, P reports that Case~3 (ex-ante schedule, GDLs moved in space and time) emits 33.86 percent less than Case~2 (ex-ante schedule, GDLs not moved).
+Its abstract states a reduction of more than 30 percent under a one-hour cut in scheduling latency.
+
+\paragraph{The connexion.}
+The connexion first proposed was to wrap P's schedule in Q's mechanism.
+If GDL owners act in their own interest, Q's payments would steer them to P's schedule, and one could check whether P's reductions survive strategic behaviour.
+Two peers, ada and emmy, took this up.
+During the thread they replaced it with a narrower question: can a rule that assigns carbon to loads work as a payment rule in Q's sense?
+Write \(\gamma_n\) for the carbon charged to flexible load \(n\) when its load is \(x_n\), \(\gamma^{\mathrm{fix}}\) for the carbon charged to the fixed loads, and \(E\) for the physical emissions of the system.
+The properties sought were these.
+\begin{itemize}
+\item[(C1)] \emph{Conservation}: \(\sum_n\gamma_n+\gamma^{\mathrm{fix}}=E\). This is the carbon analogue of budget balance.
+\item[(C2)] \emph{Alignment}: when each flexible load responds to its own charge, the outcome maximises \(\sum_nV_n\) subject to an emissions cap \(E\le E^{\mathrm{cap}}\). This is the analogue of Nash implementation.
+\item[(C3)] \emph{No harm to fixed loads}: no fixed load is charged more after the flexible loads move. This is a carbon analogue of individual rationality.
+\end{itemize}
+P's CEF charge meets C1 but not C2 or C3; charging every load at its marginal emissions meets C2 but not C1 (Section~\ref{sec:carbon}).
+The peers' files write \(\kappa_n\) for \(\gamma_n\); here \(\kappa\) is kept for a payment factor in Section~\ref{sec:repair}.
+
+\section{What was done}\label{sec:done}
+
+The peers worked by written exchange, recorded entry by entry in a ledger, with scripts and outputs in the folders \texttt{ada/} and \texttt{emmy/}.
+A consolidator then wrote a note for a verifier, who decided whether the thread should continue.
+
+emmy opened with two tracks.
+The first was an audit of Q, since any use of Q in the pair inherits its guarantees.
+The second was a test of whether P's spatial moves reduce physical emissions or only move attributed carbon.
+ada left both to emmy, apart from cross-checks, and took two further tracks: what Q needs when its capacity \(c\) is itself a forecast, and which claims of P any mechanism built on P would inherit.
+
+emmy's audit came first.
+By hand and with short scripts, emmy showed that Q's uniqueness condition contradicts its implementation condition, that eq40 breaks one of Q's participation conditions and can leave an agent with negative utility, that Q's simulation does not use the sample sizes its convergence theorem requires, and that a step of the proof drops a factor.
+emmy then built a three-bus toy network to compare attributed and physical carbon, and on that basis proposed the carbon-as-payment question above.
+emmy also found a family of payments inside Q's class that repairs participation.
+
+ada checked the audit independently and extended it.
+ada showed that the game induced by eq40 is not even monotone, that its equilibrium can fail to be unique, that the accuracy Q reports matches the theoretical sample sizes rather than the printed ones, and that the proof and the algorithm contain further gaps and sign errors.
+ada gave a second repair of participation, with a proof valid on every instance, and tested it on random instances.
+ada worked out what happens to budget balance when the game is played with a forecast capacity, and listed objections to P.
+ada reproduced emmy's toy figures by hand and accepted the carbon-as-payment question, noting that it would require P's forecaster to predict a different quantity.
+emmy checked ada's participation bound by hand and confirmed that the two repairs coincide at a boundary point.
+
+In a second round, ada treated the simplest network: one marginal source, no losses, no line limits and no curtailment.
+There a carbon cap becomes Q's capacity constraint, and ada proposed a carbon charge meeting C1 and C2.
+The first formula counted part of the emissions twice, and ada corrected it minutes later.
+emmy moved the toy comparison onto P's own test feeder, the IEEE 33-bus network, and ran it with and without curtailment of solar output.
+emmy closed with an account of the pair, a short literature search, and a rating of what the pair could yield.
+
+emmy's last two entries came after ada's last entry, so ada did not cross-check them during the exchange.
+The consolidator compared their figures with the script output and found agreement, but did not rerun the scripts.
+The figures quoted below are taken from the peers' output files.
+The verifier re-derived the audit of Q and paused the thread after one round.
+
+\section{Results}\label{sec:results}
+
+\subsection{Q's guarantees as stated}\label{sec:audit}
+
+\begin{proposition}\label{prop:lmi}
+Q's uniqueness condition asks that \(\Psi+\Psi^\top\preceq-\upsilon I\) for some \(\upsilon>0\).
+Here \(\Psi\) is a block matrix built from \(\alpha\) and the payment coefficients, and \(\preceq\) is the order on symmetric matrices.
+Q's implementation condition includes \(\sum_mA^n_{nm}=0\) for every \(n\).
+No choice of coefficients satisfies both.
+\end{proposition}
+
+\begin{proof}[Argument]
+In \(\Psi\), the part that links agent \(n\)'s price to agent \(m\)'s price is \(-A^n_{nm}\), for \(m=n\) as well.
+Take a direction \(z\) that changes no request and moves every agent's price by the same vector \(v\in\mathbb{R}^K\). Then
+\[
+z^\top\Psi z=\sum_n v^\top\Big(-\sum_mA^n_{nm}\Big)v=0,
+\]
+so \(z^\top(\Psi+\Psi^\top)z=0\), whereas the uniqueness condition needs \(z^\top(\Psi+\Psi^\top)z\le-\upsilon\|z\|^2<0\).
+\end{proof}
+
+In words, the price-only part of such a payment does not change when all prices move together, so only the link between requests and prices can fix the price level.
+For eq40 with \(N=4\) and \(\alpha=0.8\), \(\Psi+\Psi^\top\) has a positive eigenvalue, \(+0.0433\) (\texttt{emmy/q\_lmi\_check.out}).
+So Q's uniqueness result never applies to a payment that achieves Nash implementation, and the appeal to uniqueness at the end of Q's convergence theorem has no proof.
+emmy noted that for eq40 the price conditions at an interior point force equal prices and \(\sum_nx_n=c\), so a direct argument might still give uniqueness; Proposition~\ref{prop:degenerate} shows that such an argument needs an extra condition.
+
+\begin{proposition}\label{prop:monotone}
+Let \(J\) be the Jacobian of the map that stacks each agent's gradient of its own utility with respect to its own message.
+With \(\nabla^2V_n=-\alpha I\), the game induced by eq40 is not monotone: \(J+J^\top\) has a positive eigenvalue.
+\end{proposition}
+
+\begin{proof}[Argument]
+Let \(v\) be the direction that gives every agent the request \(\varepsilon u\) and the price \(u\), for a vector \(u\ne0\) and a scalar \(\varepsilon\). ada computed from eq40 (\texttt{ada/notes.md}, section~1)
+\[
+v^\top(J+J^\top)v=2N\alpha\|u\|^2\Big(\frac{\varepsilon}{N-1}-\varepsilon^2\Big),
+\]
+which is positive for \(0<\varepsilon<1/(N-1)\).
+\end{proof}
+
+For \(N=3\), \(K=2\) and \(\alpha=1\), the largest eigenvalue of \(J+J^\top\) is \(+0.118\), and the value along this direction at \(\varepsilon=0.25\) matches the formula (\texttt{ada/check\_q.out}).
+The usual tools for uniqueness and convergence, Rosen's diagonal strict concavity and monotone variational inequalities, therefore do not apply.
+The convergence theorem rests entirely on Q's Assumption~5, that the regularised best-response map is non-expansive, which Q assumes rather than proves.
+
+\begin{proposition}\label{prop:ir}
+eq40 does not satisfy Q's participation condition \(\sum_ma^n_m\le0\): it gives \(\sum_ma^n_m=\alpha c/(N(N-1))>0\).
+At the equilibrium that achieves \(x^o\), eq40 charges
+\[
+t^*_n=\kappa_N\,\lambda^{o\top}\Big(x^o_n-\frac cN\Big),\qquad \kappa_N=\frac{N^2-N+1}{(N-1)^2},
+\]
+and there are instances where an agent's equilibrium utility is negative.
+\end{proposition}
+
+\begin{proof}[Argument]
+At the equilibrium all agents propose the same price, \(\lambda^o/\alpha\), and \(\lambda^{o\top}\sum_mx^o_m=\lambda^{o\top}c\); substituting into eq40 gives the formula for \(t^*_n\) (\texttt{ada/notes.md}, section~2).
+For a counterexample take \(N=2\), \(K=1\), \(\alpha=1\), \(V_n(x)=b_nx-\tfrac12x^2\), \(c=1\) and \(\mathcal{X}_n=[0,2]\), with \(b=(10,1.1)\) (emmy) or \(b=(10,0.1)\) (ada).
+Then \(x^o=(1,0)\), \(\lambda^o=9\) and \(\kappa_2=3\), so \(t_1=3\cdot9\cdot\tfrac12=13.5\) and the payments sum to zero.
+Agent~1 gets \(U_1=9.5-13.5=-4<0=V_1(0)\).
+\end{proof}
+
+Both peers confirmed that this profile is an equilibrium: emmy by a grid search over agent~1's replies (\texttt{emmy/q\_ir\_counterexample.out}), ada by a best-response gap of \(3.6\times10^{-15}\) (\texttt{ada/check\_q.out}).
+An agent whose optimal share of \(c\) is large pays more than its value covers.
+On 40 random quadratic instances with \(N\) from 2 to 5, eq40 broke participation in 13, mostly at \(N=2\) and \(N=3\), where \(\kappa_2=3\) and \(\kappa_3=7/4\) (\texttt{ada/check\_fix.out}).
+ada pointed out that P's case study, with two MESSs and three DDCs, lies in this small-\(N\) range.
+
+\begin{proposition}\label{prop:degenerate}
+Uniqueness is false when the shadow price is not pinned down.
+In the example of Proposition~\ref{prop:ir} with \(b=(10,0.1)\) and \(\mathcal{X}_1=[0,1]\), the allocation \(x=(1,0)\) with both agents proposing a common price \(p\) is a Nash equilibrium of the game induced by eq40 for \(p\) in \([0.1,9]\), and agent~1's payment \(t_1=1.5p\) ranges from 0.15 to 13.5.
+\end{proposition}
+
+ada checked the best-response gaps at \(p=0.1\), 3 and 9, and they are zero (\texttt{ada/check\_q.out}, section~2b).
+When an agent's own upper limit binds, the multiplier of the shared constraint is not unique, and neither is the equilibrium price.
+ada noted that this is the normal case whenever local limits bind, for instance the power or state-of-charge limits of P's MESSs.
+
+\begin{remark}[The algorithm and its proof]\label{rem:algo}
+Write \(M_i\) for the number of samples at iteration \(i\) (Q writes \(Q_i\)).
+Q's convergence theorem needs \(M_i\ge C_b/\eta^{2(i+1)}\) for some \(\eta\in(0,1)\), where \(C_b\) is a constant from Q's assumptions.
+Q's simulation prints \(M_i=\lceil0.96^{i+1}\rceil\), which equals 1 for every \(i\); \(0.96^{-(i+1)}\) was probably meant.
+With \(\eta=0.96\) the theorem needs about \(1.65\times10^{14}C_b\) samples at iteration 400 and \(2.1\times10^{15}C_b\) in total.
+The relative error of \(10^{-7}\) that Q reports at 400 iterations matches \(\eta^{400}\approx8\times10^{-8}\), that is the theoretical schedule rather than the printed one.
+The peers also found three gaps in the text.
+The proof uses a bound for each agent separately that the global Assumption~5 does not give; ada proposed summing over agents before applying the Cauchy--Schwarz inequality, but did not write this out.
+Between two steps of the proof (\texttt{eq35} to \texttt{eq36} in Q's source) the cross terms lose a factor 2.
+In the approximate payment used inside the algorithm one sign is flipped, which makes the printed regularised problem concave in the price, and two off-diagonal blocks of a matrix are transposed.
+\end{remark}
+
+Both peers confirmed each point of this subsection independently, by hand and numerically, and they did not disagree on any fact.
+
+\subsection{A repair of participation inside Q's class}\label{sec:repair}
+
+emmy described a symmetric family of payments inside Q's class.
+All coefficients are multiples of the \(K\times K\) identity, and the family has two free parameters, \(\theta>0\) and \(\beta\), with \(\zeta=-\theta+(N-1)\beta\).
+The price-only coefficients \(A^n\) are those of eq40.
+The other coefficients are \(B^n_{nm}=-\theta\) for all \(m\); \(B^n_{mn}=\beta\) and \(B^n_{mm}=-\theta/(N-1)\) for \(m\ne n\); \(a^n_n=\theta c\); and \(a^n_m=-\zeta c/(N(N-1))\) for \(m\ne n\).
+eq40 is the member \(\theta=\alpha/(N-1)\), \(\beta=\alpha N/(N-1)^2\).
+emmy reported (\texttt{emmy/q\_ir\_repair.py}) that every member meets Q's implementation and budget conditions and two of its three participation conditions, and meets the first part of the uniqueness conditions when \(\theta\le\alpha\).
+The remaining participation condition, \(\sum_ma^n_m\le0\), holds exactly when \(\theta\le\zeta/N\), that is \(\beta\ge\theta(N+1)/(N-1)\).
+
+\begin{proposition}\label{prop:repair}
+For a member of this family, the payment at the equilibrium that achieves \(x^o\) is
+\[
+t^*_n=\kappa\,\lambda^{o\top}\Big(x^o_n-\frac cN\Big),\qquad \kappa=1+\frac{N\theta}{(N-1)\zeta}.
+\]
+If \(0\in\mathcal{X}_n\) for every \(n\) and \(\theta\le\zeta/N\), which is the same as \(\kappa\le N/(N-1)\), then every agent's utility at that equilibrium is non-negative, on every instance.
+\end{proposition}
+
+\begin{proof}[Argument]
+The argument is ada's, and emmy checked it by hand.
+The formula for \(t^*_n\) is derived in \texttt{ada/notes.md}, section~3.
+Optimality of \(x^o\) gives \(\nabla V_n(x^o_n)=\lambda^o+g\), where \(g\) lies in the normal cone of \(\mathcal{X}_n\) at \(x^o_n\), that is \(g^\top(y-x^o_n)\le0\) for all \(y\in\mathcal{X}_n\).
+Taking \(y=0\) gives \(g^\top x^o_n\ge0\).
+Concavity and \(V_n(0)=0\) then give \(V_n(x^o_n)\ge\nabla V_n(x^o_n)^\top x^o_n\ge\lambda^{o\top}x^o_n\).
+Since \(0\le\lambda^{o\top}x^o_n\le\lambda^{o\top}c\) and \(\kappa\ge1\),
+\[
+U_n=V_n(x^o_n)-t^*_n\ \ge\ (1-\kappa)\,\lambda^{o\top}x^o_n+\kappa\,\frac{\lambda^{o\top}c}{N}\ \ge\ \lambda^{o\top}c\,\Big(1-\kappa\,\frac{N-1}{N}\Big),
+\]
+and the right-hand side is non-negative when \(\kappa\le N/(N-1)\).
+\end{proof}
+
+For eq40, \(\kappa_N>N/(N-1)\), so the bound says nothing, as the counterexample requires.
+The two peers' repairs meet at the boundary member \(\theta=\alpha/N\), \(\beta=\alpha(N+1)/(N(N-1))\), \(\zeta=\alpha\).
+Write \(\bar p_{-n}=\sum_{m\ne n}p_m\), \(\bar x_{-n}=\sum_{m\ne n}x_m\), \(\bar\sigma^p_{-n}=\sum_{m\ne n}p_m^\top p_m\) and \(\bar\sigma^{px}_{-n}=\sum_{m\ne n}p_m^\top x_m\).
+With eq40 expanded from the grouped form in which Q prints it, the two payments are
+\begin{align*}
+\text{eq40:}\quad t_n&=\alpha\Big[\tfrac12p_n^\top\big(p_n-\tfrac{2}{N-1}\bar p_{-n}\big)-\tfrac{1}{N-1}\,p_n^\top(x_n+\bar x_{-n}-c)+\tfrac{N}{(N-1)^2}\,\bar p_{-n}^\top x_n\\
+&\qquad\quad-\tfrac{1}{(N-1)^2}\,\bar\sigma^{px}_{-n}+\tfrac{1}{2(N-1)}\,\bar\sigma^{p}_{-n}-\tfrac{1}{N(N-1)}\,\bar p_{-n}^\top c\Big],\\
+\text{repair:}\quad t_n&=\alpha\Big[\tfrac12p_n^\top\big(p_n-\tfrac{2}{N-1}\bar p_{-n}\big)-\tfrac{1}{N}\,p_n^\top(x_n+\bar x_{-n}-c)+\tfrac{N+1}{N(N-1)}\,\bar p_{-n}^\top x_n\\
+&\qquad\quad-\tfrac{1}{N(N-1)}\,\bar\sigma^{px}_{-n}+\tfrac{1}{2(N-1)}\,\bar\sigma^{p}_{-n}-\tfrac{1}{N(N-1)}\,\bar p_{-n}^\top c\Big].
+\end{align*}
+Three coefficients differ: those of \(p_n^\top(x_n+\bar x_{-n}-c)\), \(\bar p_{-n}^\top x_n\) and \(\bar\sigma^{px}_{-n}\), which equal \(\theta/\alpha\), \(\beta/\alpha\) and \(\theta/(\alpha(N-1))\).
+
+ada reported the following for the repaired payment (\texttt{ada/check\_fix.out}).
+The equilibrium price is \(\lambda^o/\alpha\), and \(t^*_n=\frac{N}{N-1}\lambda^{o\top}(x^o_n-c/N)\).
+Each agent's utility is strictly concave in its own message, also at \(N=2\), where eq40 is only semidefinite.
+Numerically \(J+J^\top\preceq0\) for \(N=2\), 3 and 5, with top eigenvalue 0 along the common-price direction, so the game is monotone but not strictly.
+On the 40 random instances, equilibrium gaps stayed below \(1.1\times10^{-14}\), total payments below \(2\times10^{-13}\) in absolute value, and the smallest utility was \(+0.25\).
+On the counterexample of Proposition~\ref{prop:ir} the repair gives \(U_1=+0.5\).
+emmy's interior member \(\theta=0.5\), \(\beta=2\) at \(N=2\) gives a common price of 6, utilities \((2,7.5)\), zero total payment, and unique best replies on a grid (\texttt{emmy/q\_ir\_repair.out}).
+
+The repair leaves two things open.
+It does not remove the continuum of equilibria of Proposition~\ref{prop:degenerate}.
+Monotonicity also does not supply Assumption~5; ada named a regularised method for monotone variational inequalities as the safer route.
+
+\subsection{Attributed and physical carbon in P}\label{sec:carbon}
+
+The \emph{locational marginal emissions} \(\mathrm{LME}_i\) at bus \(i\) are the change in total physical emissions when the load at bus \(i\) grows by one unit.
+The physical effect of a small change \(\Delta\ell_i\) in the loads is therefore \(\sum_i\mathrm{LME}_i\,\Delta\ell_i\).
+P's objective instead scores the change as \(\sum_i\hat e_i\,\Delta\ell_i\).
+
+\begin{proposition}\label{prop:cef}
+Let \(L_{i,t}\) be the load at bus \(i\) in hour \(t\), \(E^{\mathrm{gen}}_t\) the carbon emitted by generation and \(E^{\mathrm{loss}}_t\) the carbon attributed to network losses.
+The proportional-sharing rule conserves carbon: \(\sum_ie_{i,t}L_{i,t}=E^{\mathrm{gen}}_t-E^{\mathrm{loss}}_t\).
+Hence a move of a GDL between buses within one hour that changes neither generation nor curtailment leaves total attributed carbon unchanged.
+Any fall in the GDL part of P's objective is then carbon passed to other loads.
+\end{proposition}
+
+emmy illustrated this on a toy network (\texttt{emmy/cef\_toy.py}).
+A substation at bus~0 imports power with intensity \(e_g=0.8\).
+Buses 1 and 2 each carry a fixed load of 1, bus~2 has solar output of 1.5, and a GDL of 0.5 sits at bus~1 or bus~2; there are no losses.
+Without curtailment and with the GDL at bus~1, bus~1 receives 1.0 from the grid and 0.5 of surplus solar, so its NCI is \((1.0\cdot0.8+0.5\cdot0)/1.5=0.533\).
+The GDL is charged 0.267 and the fixed loads 0.533.
+Moving the GDL to bus~2 takes its charge to 0 and raises the fixed loads' charge to 0.800.
+Physical emissions stay at \(E=0.8\), and \(\mathrm{LME}=(0.8,0.8)\) before and after.
+If instead reverse flow out of bus~2 is blocked, 0.5 of solar is curtailed while the GDL is at bus~1, and \(\mathrm{LME}=(0.8,0)\).
+Then the move cuts \(E\) from 1.2 to 0.8, and the saving of 0.4 in P's objective equals the physical saving.
+
+\begin{proposition}\label{prop:feeder}
+On a radial feeder with fixed dispatch and no curtailment, any within-hour move of a load between buses changes emissions only through losses: \(\Delta E=e_g\,\Delta\mathrm{loss}\), where \(e_g\) is the intensity of power imported at the substation.
+\end{proposition}
+
+\begin{proof}[Argument]
+With dispatch fixed, \(E=e_gP_{\mathrm{sub}}+\text{const}\), where \(P_{\mathrm{sub}}\) is the power imported at the substation, and \(P_{\mathrm{sub}}=\sum L-\sum G+\mathrm{loss}\), with \(\sum L\) the total load and \(\sum G\) the total local generation.
+A move changes neither \(\sum L\) nor \(\sum G\).
+\end{proof}
+
+emmy ran this on P's test feeder (\texttt{emmy/cef33.py}, \texttt{emmy/cef33.out}).
+Most of the setting had to be assumed, because P does not give it.
+It used the Baran and Wu data for the IEEE 33-bus feeder, a lossy DistFlow power flow, and the CEF rule, with conservation checked to \(10^{-4}\).
+Grid import has intensity \(e_g=0.8\).
+There is solar output of 1.5\,MW at bus~9, wind of 0.6\,MW at bus~22, and a unit of 0.4\,MW at bus~30 with intensity 0.5.
+Dispatch is fixed, since P's scheduling model has no generation variables.
+One DDC of 0.5\,MW sits at bus 15, 22 or 28, the DDC buses of P's Fig.~7, and a single hour is modelled.
+\begin{itemize}
+\item[(A)] \emph{No curtailment.} Without the DDC, NCI at buses 15, 22 and 28 is 0, 0 and 0.216, while LME is 0.822, 0.791 and 0.822. Moving the DDC from bus~28 to bus~15 lowers its attributed carbon by 0.224, raises the fixed loads' attributed carbon by 0.229, and raises physical emissions by 0.0075. Over all 32 single-bus placements, physical emissions vary by 0.033, while \(0.5\) times the NCI at the placement bus varies by 0.339, and the correlation between the two is \(-0.09\). P's objective thus ranks placements almost entirely by reallocation, and C3 fails on P's own feeder.
+\item[(B)] \emph{Curtailment.} A reverse-flow limit of 0.3\,MW on branch 8--9 means that 0.515\,MW of solar at bus~9 is curtailed unless it is absorbed. NCI is 0 at both bus~15 and bus~22, so P's objective cannot tell them apart. Yet physical emissions are 1.675 with the DDC at bus~15 and 2.068 at bus~22, where LME is 0.001 and 0.791.
+\end{itemize}
+Over the 32 placements in (B), physical emissions and \(0.5\) times NCI correlate at \(+0.72\), with ranges 0.434 and 0.354.
+NCI's failure in (B) is thus the tie between buses 15 and 22, not a reversal across all buses.
+Charging every load at LME fails C1: in (A) without the DDC, \(\sum_i\mathrm{LME}_iL_i=3.04\) against \(E=1.25\), about 2.4 times too much.
+
+The use of LME for shifting data-centre load was studied before \cite{arxiv201003379}, and LME in distribution networks has been studied too \cite{arxiv240207379}.
+A strategic data centre that responds to LME can raise emissions, without payment design or an average-intensity signal in that work \cite{arxiv251020805}.
+The thread does not record how closely these three sources were read.
+
+\subsection{What a mechanism layer needs from P}\label{sec:layer}
+
+\begin{proposition}\label{prop:cap}
+Assume one marginal source of intensity \(e_g\) at the feeder head, no losses, no line limits and no curtailment, with renewable output \(R\) and total fixed load \(\ell^{\mathrm{fix}}\).
+Then \(E=e_g(\sum_nx_n+\ell^{\mathrm{fix}}-R)\), and an emissions cap \(E\le E^{\mathrm{cap}}\) is exactly Q's constraint \(\sum_nx_n\le c\) with
+\[
+c=R-\ell^{\mathrm{fix}}+\frac{E^{\mathrm{cap}}}{e_g}.
+\]
+\end{proposition}
+
+The proof is a rearrangement.
+A mechanism layer of Q's type therefore consumes P's Tier-1 renewable forecast, a load forecast and the marginal intensity \(e_g\).
+P's Tier-2 NCI does not enter, and it cannot stand in for \(e_g\).
+ada's example: a bus fed half by a zero-carbon unit at its limit and half by a marginal unit of intensity 1.6 has NCI 0.8 and LME 1.6, while a bus fed by two units of intensity 0.8 has NCI 0.8 and LME 0.8.
+A source read at abstract level argues for excess power rather than marginal intensity as the scheduling signal, without a mechanism or conservation, and so already covers this signal point \cite{arxiv250711377}.
+
+\begin{proposition}\label{prop:charge}
+In the setting of Proposition~\ref{prop:cap}, fix weights \(w_n\) and \(w_{\mathrm{fix}}\) in advance from public forecasts, with \(\sum_nw_n+w_{\mathrm{fix}}=1\), and charge
+\[
+\gamma_n=e_g\,(x_n-w_nR),\qquad \gamma^{\mathrm{fix}}=e_g\,(\ell^{\mathrm{fix}}-w_{\mathrm{fix}}R).
+\]
+Then C1 holds, and each flexible load pays the physical marginal rate \(e_g\) on its own load.
+In emmy's toy network, C3 holds as well.
+\end{proposition}
+
+\begin{proof}[Argument]
+Summing gives \(e_g(\sum_nx_n+\ell^{\mathrm{fix}}-R)=E\).
+The weights do not depend on anyone's load, so the marginal charge on \(x_n\) is \(e_g\).
+\end{proof}
+
+In words, every load pays the marginal rate and the renewable rent \(e_gR\) is handed back in fixed shares.
+In the toy network without curtailment (\(e_g=0.8\), \(R=1.5\), \(\ell^{\mathrm{fix}}=2\), GDL of 0.5, \(w_{\mathrm{GDL}}=0\)), the GDL is charged 0.4 and the fixed loads 0.4, with \(E=0.8\).
+Neither charge changes when the GDL moves, whereas under CEF the fixed loads' charge goes from 0.533 to 0.800.
+
+This rule gives the carbon quantities, not a price for them.
+To reach the capped optimum of C2, loads still need a price per unit of carbon equal to the shadow price of the cap, and the rule does not supply it; the verifier raised this point.
+
+The weights play the role of Q's offsets \(a^n\).
+The charge is affine in the agent's own load with coefficient 1 on the marginal term, like Q's equilibrium payment \(t^*_n=\kappa\lambda^{o\top}(x_n-c/N)\) with \(\kappa=1\).
+But every symmetric member of Q's class that meets implementation and budget balance has \(\kappa=1+N\theta/((N-1)\zeta)>1\), so Q's equilibrium money payments cannot double as a conserving carbon split.
+Three sources may bear on the novelty of this charge.
+One, read at abstract level, gives a market-clearing locational marginal carbon emission and notes that CEF over-allocates \cite{arxiv240113182}.
+Another, which the peers could not open, is a demand-response mechanism driven by marginal factors that may overlap Proposition~\ref{prop:charge} \cite{su18094398}.
+A third, not read, combines LME with a two-layer dispatch mechanism \cite{arxiv260319530}.
+
+\paragraph{Beyond the simplest case.}
+emmy located the resource in regime (B) as surplus solar output at a network limit.
+Let \(R_9\) be the solar output at bus~9, \(\ell^{\mathrm{fix}}_{\mathrm{sub}}\) the fixed load in the part of the feeder below bus~9, and \(\bar f_{89}\) the reverse-flow limit on branch 8--9.
+Curtailment is avoided when the flexible loads below bus~9 absorb enough:
+\[
+\sum_{n:\ \mathrm{bus}(n)\ \text{below bus 9}}x_n\ \ge\ R_9-\ell^{\mathrm{fix}}_{\mathrm{sub}}-\bar f_{89}-\mathrm{loss},
+\]
+where \(\mathrm{loss}\) denotes the network losses.
+With \(x^{\max}_n\) an upper limit on agent \(n\)'s load and the slack \(y_n=x^{\max}_n-x_n\), this becomes Q's form \(\sum_ny_n\le c\) for the agents below bus~9, with \(c\) affine in the Tier-1 forecast \(\hat R_9\).
+Which agents enter the constraint depends on whether curtailment occurs, and that is itself decided by \(\hat R_9\).
+Q's participation proof uses \(x\ge0\) and non-positive coefficients \(B\), so participation must be rechecked after the change of variables; this was not done.
+
+\begin{proposition}\label{prop:forecast}
+Let the game induced by eq40 be played with a forecast capacity \(\hat c\), with equilibrium price \(\hat\lambda\), and settled with the realised capacity \(c\).
+On resources where the constraint binds, \(\sum_n\hat x_n-c=\hat c-c\), so the whole forecast error becomes physical overuse or underuse.
+The budget imbalance is \(\hat\lambda^\top(c-\hat c)/(N-1)\).
+Its expectation is zero for a calibrated forecast, \(\mathbb{E}[c\mid\hat c]=\hat c\), and it is a systematic surplus for a forecast equal to the truth plus noise, \(\hat c=c+\delta\).
+\end{proposition}
+
+\begin{proof}[Argument]
+At a common price, eq40 gives \(\sum_nt_n=\lambda^\top(c_{\mathrm{pay}}-\sum_nx_n)/(N-1)\) for whatever constant \(c_{\mathrm{pay}}\) the payment uses (\texttt{ada/notes.md}, section~2).
+Play with \(\hat c\) gives \(\sum_n\hat x_n=\hat c\) on binding resources, and settling with \(c_{\mathrm{pay}}=c\) gives the imbalance.
+ada verified it to \(10^{-15}\) for \(N=5\), \(K=3\).
+Since \(\hat\lambda\) depends on \(\hat c\) only, calibration gives \(\mathbb{E}[\hat\lambda^\top(c-\hat c)]=\mathbb{E}[\hat\lambda^\top\,\mathbb{E}[c-\hat c\mid\hat c]]=0\).
+If \(\hat c=c+\delta\), a larger \(\hat c\) lowers \(\hat\lambda\), and the imbalance is positive on average.
+\end{proof}
+
+In ada's Monte Carlo run the mean imbalance was \(0.0207\pm0.0051\) for the noisy forecast and \(-0.0011\pm0.0035\) for the calibrated one (\texttt{ada/check\_q.out}).
+ada concluded that the accuracy measures P reports (MAE, MSE, RMSE, MAPE and MaxAE, in P's Table~III) are not the ones a mechanism needs.
+Calibration governs budget balance, and a lower quantile governs feasibility.
+The error in \(c\) is a fixed bias across iterations, so Q's growing sample sizes cannot remove it.
+ada estimated that with \(\eta=0.96\) and a 10 percent displacement, extra sampling stops helping after about 56 iterations, where \(M_i\approx105\,C_b\).
+That count ignores the step-size factor \(\tau\) in Q's error bound \(\tau\eta^{i+1}\), so it is an order of magnitude only.
+emmy stated, without computing it, that the effect carries over to regime (B) with the sign reversed: over-forecast solar output leads to over-absorption and an imbalance of the opposite sign.
+The analysis was done for eq40 only, and whether it carries over to the repaired payment was not checked.
+
+\subsection{How much the results rest on}\label{sec:weight}
+
+The audit of Q (Sections~\ref{sec:audit} and~\ref{sec:repair}) is the solid part.
+Each item has a hand argument, both peers checked it numerically, and the verifier re-derived it.
+
+The joint material (Sections~\ref{sec:carbon} and~\ref{sec:layer}) is thin.
+It rests on a three-bus toy network, on one hour of a 33-bus feeder whose generation, intensities and limits emmy chose because P gives none, and on a lossless derivation with one marginal source.
+No strategic game was solved on any model of P, and P's forecaster, data and MESS model were not used.
+The curtailment regime, where the joint question has content, was described but not worked out.
+Outside sources were read at abstract level at most, and two were not read.
+
+Both peers rated the gain low to moderate.
+The outputs they considered defensible were a comment on Q, covering its errors and the \(\theta\le\zeta/N\) repair, and at most a short note on conserving versus marginal carbon charges for strategic flexible loads with a forecast capacity.
+Neither saw a full paper that needs both Q and P.
+They differed only in grading: ada rated the forecast-capacity material a section of a paper, and emmy rated Propositions~\ref{prop:cap} to~\ref{prop:forecast} together a short note.
+
+\section{What did not hold, and the objections raised}\label{sec:objections}
+
+\subsection{Claims that did not hold}
+
+\begin{itemize}
+\item \emph{Q's guarantees.} eq40 does not meet all of Q's conditions, and its equilibrium can leave an agent below its outside option. Uniqueness cannot be obtained from Q's uniqueness condition for any implementing payment, and it fails outright when local limits bind. The simulation does not run the sample schedule that the convergence theorem needs. See Section~\ref{sec:audit}.
+\item \emph{The starting connexion.} It was dropped for two reasons. Q's guarantees do not hold as stated, and in P's model the spatial part of the reduction is mostly reallocation of attributed carbon. Moreover, the latency effect P advertises is never quantified, so there was no latency-attributable reduction to preserve.
+\item \emph{The first conserving charge.} ada first proposed \(\gamma_n=e_g(x_n-(R-\ell^{\mathrm{fix}})/N)\), with \(e_g\ell^{\mathrm{fix}}\) left on the fixed loads. This counts \(e_g\ell^{\mathrm{fix}}\) twice, since the \(\gamma_n\) alone already sum to \(E\). ada corrected it to the rule of Proposition~\ref{prop:charge}; the toy figures of 0.4 and 0.4 were right, but the formula was not.
+\item \emph{An overstatement about the feeder.} In the closing account emmy wrote that NCI ranks placements wrongly in both regimes. The output for regime (B) does not support this, since the correlation there is \(+0.72\); the consolidator flagged it. The failure in (B) is the tie between buses 15 and 22.
+\end{itemize}
+
+\subsection{Objections to P}
+
+ada raised these objections; emmy first raised the question of physical versus attributed emissions in the second.
+\begin{enumerate}
+\item \emph{The headline is not a latency effect.} P's abstract, discussion and conclusion claim more than 30 percent reduction under a one-hour cut in latency. The only figure given, 33.86 percent, compares Case~3 with Case~2, which are both ex-ante and differ in whether GDLs move. The latency comparison, Case~1 against Case~3, is shown only qualitatively, in P's Fig.~6. \emph{Status:} stands; only P's authors can supply the missing figure.
+\item \emph{What P's emissions are.} P does not say whether emissions are evaluated with realised or predicted NCI; evaluation with the prediction would be circular. Nor does it say whether the 33.86 percent and the per-bus emissions of its Fig.~8 are physical or attributed. emmy reads Fig.~8 as attributed. \emph{Status:} open. Propositions~\ref{prop:cef} and~\ref{prop:feeder} show that the distinction decides what the figure means.
+\item \emph{Nodal series from system data.} P trains on regional demand and fuel-mix series for New South Wales from the Australian Energy Market Operator, 8760 hours in all, which give one system-wide intensity per hour. How distinct series for buses 9, 18 and 31 of the feeder are obtained is not stated. \emph{Status:} open.
+\item \emph{A phase lead is a bias.} P states that its predicted NCI curve consistently runs earlier than the calculated one. A systematic lead is forecast bias, and against an ex-post signal lagged by one hour the advantage is partly built in. \emph{Status:} stands as a reading of P's text and Fig.~6; not quantified.
+\item \emph{NCI depends on the dispatch.} By P's equation (23), NCI depends on branch flows and MESS discharge. GDLs of 0.5 to 0.7\,MW sit on a feeder whose base load is about 3.7\,MW, so treating the forecast as fixed in P's objective ignores feedback. \emph{Status:} supported by emmy's feeder run. In regime (A), a DDC at bus~28 is attributed 0.224 for 0.5\,MW, an intensity of 0.447 against 0.216 without it, while the objective with fixed NCI counts 0.108.
+\item \emph{The language-model agents are not reproducible.} GPT-4 at temperature 0.2 is not deterministic, so P's daily agent-driven retuning cannot be reproduced from the text. \emph{Status:} stands; it does not bear on the pair.
+\item \emph{P's forecaster is not reusable as it is.} A charge meeting C1 and C2 needs an ex-ante forecast of LME, or of the cap's shadow price along LME. That target is piecewise constant, with jumps when curtailment starts or stops. P's loss (its equation (25), a weighted MAPE) divides by the target, so it is undefined when LME is zero, which happens in exactly the curtailment hours where spatial shifting has physical value. By Proposition~\ref{prop:forecast} a mechanism also needs calibration and a feasibility quantile rather than MAPE. What the pair asks for is a probabilistic LME forecaster aware of the curtailment regime, one that identifies the marginal unit and its intensity, and neither paper provides one. \emph{Status:} stands, as a gap in both papers rather than a dispute between the peers.
+\end{enumerate}
+
+\subsection{Left open}
+
+Several questions remain unsettled.
+Does the repaired payment have a unique equilibrium without Rosen's condition, and what non-degeneracy assumption would exclude the continuum of Proposition~\ref{prop:degenerate}?
+Does Assumption~5 hold for the repaired game, which is monotone but not strictly?
+The per-agent step and the factor 2 in Q's proof have not been repaired in writing.
+Participation after the change to slack variables has not been checked.
+Curtailment, several marginal units and line limits have not been treated.
+P's MESS model is mixed-integer (P's equations (35) to (42)) and so lies outside Q's assumption of convex strategy sets; only DDC workload shifting fits Q.
+It is not known whether Propositions~\ref{prop:cap} to~\ref{prop:forecast} are new relative to the LME literature, nor whether the forecast analysis carries over to the repaired payment.
+
+\section{Why the thread stopped}\label{sec:stop}
+
+After one round the verifier chose to pause.
+The verifier re-derived the audit of Q and found it correct.
+Uniqueness and implementation conflict, the Jacobian of eq40 is indefinite, the counterexample with \(U_1=-4\) and the continuum of equilibria are valid, and the \(\theta\le\zeta/N\) repair gives \(\kappa\le N/(N-1)\) and voluntary participation.
+But all of this concerns Q alone and says nothing about the pair.
+
+On the pair itself, the verifier judged the evidence slight and the points largely known.
+The evidence is a toy network, one hour of a feeder with invented generation, and a lossless derivation with one marginal source.
+That average CEF intensity reallocates carbon under fixed dispatch is already noted in the LME literature the peers cite.
+The cap as Q's constraint is a rearrangement.
+The marginal charge with a fixed refund conserves carbon, but alignment with the cap still needs the cap's shadow price, which the rule does not give.
+That calibration governs budget balance is a modest point.
+Both peers rated the gain low to moderate and saw no paper that needs both inputs.
+
+The connexion has real content only under curtailment.
+There the set of agents in the constraint switches with the renewable forecast.
+Treating that would need an extension of Q's equilibrium theory to non-smooth constraints that switch between regimes.
+It would also need nodal generation, curtailment and network data, which P does not provide.
+The verifier left two decisions to a person: whether to write the comment on Q on its own, and whether that theory and data are worth sourcing.
+
+\paragraph{The smallest step that would restart it.}
+The cheapest step is to read the two sources flagged as possible prior art and not yet read \cite{arxiv260319530,su18094398}, checking them against Proposition~\ref{prop:charge} and properties C1 to C3.
+If either already gives a conserving and marginal carbon charge for strategic flexible loads, the pair line reduces to the comment on Q and the thread can close on that.
+If neither does, the step that meets the verifier's main objection is a computation under curtailment.
+It would run the repaired payment of Section~\ref{sec:repair} on emmy's regime (B) in \texttt{emmy/cef33.py}, with the constraint below bus~9 written in slack variables.
+It would sweep \(\hat R_9\) across the curtailment threshold, recording the equilibrium, participation and properties C1 to C3.
+That run must also decide how P's workload balance across data centres (P's equation (28)) links the agents below bus~9 with those elsewhere, since the constraint involves only the former.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

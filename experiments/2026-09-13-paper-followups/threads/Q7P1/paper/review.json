@@ -1,0 +1,36 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-13T15:37:34Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: The read operation timed out"
+  ],
+  "paper_sha256": "d3a2f570251a010664068e5c515bc4f95067b254d69bd022cc198b1d3986cccf",
+  "decision": "ACCEPT",
+  "summary": "The payment correction, conditional implementation theorem, surrogate error bounds and replacement learner are mathematically supported by the supplied material. The manuscript fairly separates its conclusions from Q's disputed guarantees and P's established surrogate results, and appropriately limits novelty to the recorded search. References are cited and consistent with the recorded bibliographic verification; the pipeline timeout supplies no contradictory evidence.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Section 3, empirical CVaR definition and economic consequence",
+    "issue": "The notation s_n denotes both an agent's message and its batch size; U_n denotes both a loss bound and a payoff function.",
+    "fix": "Use distinct notation for batch sizes and payoff functions, and explicitly specify that fixed batch sizes are positive integers."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Section 2.2, certificate obstruction and linear-coefficient claim",
+    "issue": "The proof imports \u03a8, A_nm^n and a_m^n from Q without defining their relevant blocks or coefficient roles, leaving the displayed certificate calculation dependent on consulting Q.",
+    "fix": "State that the price-price block of \u03a8_nm is \u2212A_nm^n and define a_m^n as the coefficient of p_m in Q's quadratic payment parameterization."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Section 6, proximal best-response counterexample",
+    "issue": "The consensus-price column norm is quoted from the research record without defining \u03bc or displaying the column, making this supporting calculation difficult to check within the paper.",
+    "fix": "Define \u03bc as the proximal regularization parameter and include the two-component column already given in the consolidated note, specifying that it is calculated from the explicit payment reproduced in Section 2."
+   }
+  ]
+ }
+]
