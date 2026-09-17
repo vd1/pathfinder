@@ -13,6 +13,23 @@ Feature: Operate a paper-pair research workflow
       Then pair "Q1P1" is paused for an empty research record
       And no research account is produced
 
+    Scenario: An empty successful consolidation response is retried
+      Given pair "Q1P1" has substantive findings awaiting consolidation
+      And its first consolidation returns no account and no provider error
+      When Pathfinder consolidates pair "Q1P1"
+      Then Pathfinder makes one more consolidation attempt
+
+    Scenario: A direct-provider response becomes the research account
+      Given pair "Q1P1" has substantive findings awaiting consolidation
+      And its direct provider cannot write campaign files
+      When the provider returns a research account for pair "Q1P1"
+      Then Pathfinder stores the response as the pair's research account
+
+    Scenario: Consolidation succeeds only with a stored research account
+      Given pair "Q1P1" has substantive findings awaiting consolidation
+      When both consolidation attempts produce no stored research account
+      Then pair "Q1P1" is blocked at consolidation
+
   Rule: Each assessment decision has one operational consequence
 
     Scenario: A draft decision completes the investigation

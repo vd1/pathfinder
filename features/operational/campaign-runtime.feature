@@ -41,3 +41,20 @@ Feature: Operate and recover a research campaign
       Given pair "Q1P1" cannot continue automatically
       When Pathfinder admits pending investigations
       Then pair "Q1P1" is not admitted
+
+    Scenario: Reconcile resumes a blocked consolidation
+      Given pair "Q1P1" is blocked at consolidation without a research account
+      When the operator applies the recovery action for pair "Q1P1"
+      Then pair "Q1P1" runs consolidation again
+      And pair "Q1P1" continues from the resulting research account
+
+    Scenario: Research does not silently finish with blocked shortlist pairs
+      Given the shortlist contains terminal and blocked investigations
+      When the operator runs the research command
+      Then Pathfinder reports the blocked investigations as requiring recovery
+
+    Scenario: Reconcile completes every recoverable shortlisted investigation
+      Given the shortlist contains recoverable blocked investigations
+      When the operator applies reconciliation to the shortlist
+      Then every shortlisted investigation reaches a terminal research status
+      And every shortlisted investigation records its final verification outcome

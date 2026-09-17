@@ -6,6 +6,9 @@ from . import config, corpus, edit, monitor, paper, reconcile, research, runner,
 
 
 def main(argv=None):
+    """@planks("When the operator runs the research command")
+    @planks("When the operator applies reconciliation to the shortlist")
+    """
     ap = argparse.ArgumentParser(prog="pathfinder"); ap.add_argument("--root", default=".")
     sub = ap.add_subparsers(dest="cmd", required=True)
     f = sub.add_parser("fetch", help="fill Q.jsonl and P.jsonl from the arXiv API, or append older papers with --more")

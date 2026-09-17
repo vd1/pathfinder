@@ -1,17 +1,185 @@
 import ast
+import io
 import json
 import re
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from behave import given, then, when
 
-from pathfinder import research, runner, transport
+from pathfinder import reconcile, research, runner, transport
 
 from operational_steps import assignments, prepared_corpora, seed_pair
 
 
+def provider_reply(text="", error=None):
+    return {"text": text, "error": error, "transport_failed": False, "seconds": 0}
+
+
+def run_with_replies(context, replies, action):
+    # @exceptional-double: provider conditions cannot be produced on demand.
+    original = transport.call
+    context.provider_calls = []
+
+    def call(*args, **kwargs):
+        context.provider_calls.append(kwargs.get("stage"))
+        return replies.pop(0)
+
+    transport.call = call
+    try:
+        return action()
+    finally:
+        transport.call = original
+
+
 def repository_root(context):
     return Path(context.config.base_dir).parent
+
+
+@given('pair "Q1P1" has substantive findings awaiting consolidation')
+def findings_awaiting_consolidation(context):
+    context.campaign = seed_pair(context)
+    d = research.prepare(context.campaign, "Q1P1")
+    research.Ledger(d / "ledger.jsonl").add(context.campaign.peers[0], "finding", "substantive finding")
+    research._set(context.campaign, "Q1P1", stage="consolidate", status="running")
+
+
+@given("its first consolidation returns no account and no provider error")
+def empty_first_consolidation(context):
+    context.replies = [provider_reply(), provider_reply("stored account")]
+
+
+@when('Pathfinder consolidates pair "Q1P1"')
+def consolidate_named_pair(context):
+    context.result = run_with_replies(
+        context,
+        context.replies,
+        lambda: research._stage_call(context.campaign, "Q1P1", "consolidate", "prompt", True, 1),
+    )
+
+
+@then("Pathfinder makes one more consolidation attempt")
+def makes_second_attempt(context):
+    assert context.provider_calls[:2] == ["consolidate", "consolidate"]
+
+
+@given("its direct provider cannot write campaign files")
+def direct_provider_cannot_write(context):
+    context.direct_provider_cannot_write = True
+
+
+@when('the provider returns a research account for pair "Q1P1"')
+def provider_returns_account(context):
+    context.returned_account = "provider research account"
+    context.result = run_with_replies(
+        context,
+        [provider_reply(context.returned_account), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')],
+        lambda: research.run_thread(context.campaign, "Q1P1"),
+    )
+
+
+@then("Pathfinder stores the response as the pair's research account")
+def stores_provider_account(context):
+    path = context.campaign.thread_dir("Q1P1") / "Q1P1.tex"
+    assert context.direct_provider_cannot_write and path.read_text() == context.returned_account
+
+
+@when("both consolidation attempts produce no stored research account")
+def both_consolidations_empty(context):
+    context.result = run_with_replies(
+        context,
+        [provider_reply(), provider_reply()],
+        lambda: research.run_thread(context.campaign, "Q1P1"),
+    )
+
+
+@then('pair "Q1P1" is blocked at consolidation')
+def blocked_at_consolidation(context):
+    status = research.status(context.campaign, "Q1P1")
+    assert context.result == "BLOCKED" and status["status"] == "BLOCKED" and status["stage"] == "consolidate"
+
+
+@given('pair "Q1P1" is blocked at consolidation without a research account')
+def blocked_consolidation(context):
+    findings_awaiting_consolidation(context)
+    research._set(context.campaign, "Q1P1", status="BLOCKED", reason="consolidate: no note")
+    context.replies = [provider_reply("recovered account"), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')]
+
+
+@when('the operator applies the recovery action for pair "Q1P1"')
+def apply_recovery(context):
+    context.result = run_with_replies(
+        context,
+        context.replies,
+        lambda: reconcile.apply(context.campaign, "Q1P1"),
+    )
+
+
+@then('pair "Q1P1" runs consolidation again')
+def runs_consolidation_again(context):
+    assert context.provider_calls[0] == "consolidate"
+
+
+@then('pair "Q1P1" continues from the resulting research account')
+def continues_from_account(context):
+    assert context.provider_calls[:2] == ["consolidate", "verify"] and context.result == "DRAFT"
+
+
+@given("the shortlist contains terminal and blocked investigations")
+def terminal_and_blocked_shortlist(context):
+    context.campaign = seed_pair(context)
+    context.campaign.path("shortlist.json").write_text(json.dumps({"pairs": [{"pair_id": "Q1P1"}, {"pair_id": "Q1P2"}]}))
+    research._set(context.campaign, "Q1P1", stage="done", status="DRAFT")
+    context.campaign.thread_dir("Q1P2").mkdir(parents=True)
+    research._set(context.campaign, "Q1P2", stage="consolidate", status="BLOCKED", reason="consolidate: no note")
+
+
+@when("the operator runs the research command")
+def run_research_command(context):
+    output = io.StringIO()
+    with redirect_stdout(output):
+        runner.run(context.campaign, interval=0)
+    context.command_output = output.getvalue()
+
+
+@then("Pathfinder reports the blocked investigations as requiring recovery")
+def reports_blocked_recovery(context):
+    assert "Q1P2" in context.command_output and "reconcile" in context.command_output.lower()
+
+
+@given("the shortlist contains recoverable blocked investigations")
+def recoverable_shortlist(context):
+    context.campaign = seed_pair(context)
+    context.campaign.path("P.jsonl").write_text(context.campaign.path("P.jsonl").read_text() * 2)
+    context.campaign.path("shortlist.json").write_text(json.dumps({"pairs": [{"pair_id": "Q1P1"}, {"pair_id": "Q1P2"}]}))
+    for pair_id in ("Q1P1", "Q1P2"):
+        d = research.prepare(context.campaign, pair_id)
+        research.Ledger(d / "ledger.jsonl").add(context.campaign.peers[0], "finding", "substantive finding")
+        research._set(context.campaign, pair_id, stage="consolidate", status="BLOCKED", reason="consolidate: no note")
+
+
+@when("the operator applies reconciliation to the shortlist")
+def reconcile_shortlist(context):
+    replies = []
+    for pair_id in ("Q1P1", "Q1P2"):
+        replies.extend([provider_reply(f"account {pair_id}"), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')])
+    context.results = run_with_replies(
+        context,
+        replies,
+        lambda: [reconcile.apply(context.campaign, pair_id) for pair_id in ("Q1P1", "Q1P2")],
+    )
+
+
+@then("every shortlisted investigation reaches a terminal research status")
+def all_shortlisted_terminal(context):
+    assert context.results == ["DRAFT", "DRAFT"]
+
+
+@then("every shortlisted investigation records its final verification outcome")
+def all_verdicts_recorded(context):
+    for pair_id in ("Q1P1", "Q1P2"):
+        verdicts = json.loads((context.campaign.thread_dir(pair_id) / f"{pair_id}.verdict.json").read_text())
+        assert verdicts[-1]["decision"] == "DRAFT"
 
 
 @given('role "consolidate" is assigned execution class "provider" through ELM')

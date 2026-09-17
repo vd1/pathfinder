@@ -203,6 +203,7 @@ def _peers(campaign, pair_id, stop):
 def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
     """@planks("When Pathfinder consolidates a frozen paper pair")
     @planks("When Pathfinder verifies the frozen paper pair")
+    @planks("When Pathfinder consolidates pair \"Q1P1\"")
 
     Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
     """
@@ -212,7 +213,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
                            timeout=seconds, thread=pair_id, stage=stage, actor=campaign.peers[0] if stage == "consolidate" else "verifier")
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
-        if r["text"] or r["error"] is None or done():
+        if r["text"] or r["error"] is not None or done():
             return r
     return r
 
@@ -226,6 +227,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("When the verifier returns \"REVISE\" with a correction")
     @planks("When the verifier returns \"REVISE\"")
     @planks("When the campaign continues")
+    @planks("When the provider returns a research account for pair \"Q1P1\"")
+    @planks("When both consolidation attempts produce no stored research account")
     """
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
     note, verdicts = d / f"{pair_id}.tex", d / f"{pair_id}.verdict.json"

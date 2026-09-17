@@ -4,7 +4,9 @@ from . import research, runner
 
 
 def inspect(campaign, pair_id: str) -> dict:
-    """@planks("When the operator inspects pair \"Q1P1\"")"""
+    """@planks("When the operator inspects pair \"Q1P1\"")
+    @planks("When the operator applies the recovery action for pair \"Q1P1\"")
+    """
     d = campaign.thread_dir(pair_id); s = research.status(campaign, pair_id); holder = runner.Lock.holder(d)
     note = (d / f"{pair_id}.tex").exists()
     if holder:
@@ -26,6 +28,9 @@ def inspect(campaign, pair_id: str) -> dict:
 
 
 def apply(campaign, pair_id: str) -> str:
+    """@planks("When the operator applies the recovery action for pair \"Q1P1\"")
+    @planks("When the operator applies reconciliation to the shortlist")
+    """
     info = inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
