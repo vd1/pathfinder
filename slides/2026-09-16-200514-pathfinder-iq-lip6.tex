@@ -59,7 +59,7 @@
 \newcommand{\stage}[2][Teal]{{\color{#1}\fontsize{10}{12}\selectfont\bfseries #2}}
 % one line of a dialogue: speaker in colour, words beside
 \newcommand{\dline}[3]{\par\noindent\makebox[17mm][l]{\color{#1}\fontsize{13}{17}\selectfont\bfseries #2}%
-  \parbox[t]{\dimexpr\linewidth-17mm\relax}{\fontsize{13}{17}\selectfont\raggedright #3}\par\vspace{4mm}}
+  {\color{#1!78!Ink}\parbox[t]{\dimexpr\linewidth-17mm\relax}{\fontsize{13}{17}\selectfont\raggedright #3}}\par\vspace{4mm}}
 % a source paper: corpus colour on the left edge and on its label (Q teal, P olive)
 \newcommand{\corpuscard}[6]{\begin{tikzpicture}
   \node[fill=#1,rounded corners=2.5pt,inner xsep=8pt,inner ysep=5pt,outer sep=0pt,
@@ -194,12 +194,12 @@ moves from that question to a result, an obstruction, or a concrete missing expe
 \begin{tikzpicture}[x=1cm,y=1cm]
   \path[use as bounding box] (0,0) rectangle (5.3,4.5);
   \fill[Mist,rounded corners=3pt] (0,0) rectangle (5.3,4.5);
-  \draw[Teal,line width=.9pt,fill=Paper] (.75,2.05) rectangle (4.55,3.95);
+  \draw[Olive,line width=.9pt,fill=Paper] (.75,2.05) rectangle (4.55,3.95);
   \node[font=\small,align=center] at (2.65,3.0) {An outside judge\\ranks the agents};
-  \fill[Rust] (1.3,1.55) circle (.2);
-  \fill[Rust,rounded corners=2.5pt] (1.05,.68) rectangle (1.55,1.27);
-  \draw[Rust,line width=1pt,line cap=round] (1.55,1.15) -- (2.05,1.95);
-  \node[font=\scriptsize,text=Rust] at (1.3,.38) {Alice, author of P6};
+  \fill[Olive] (1.3,1.55) circle (.2);
+  \fill[Olive,rounded corners=2.5pt] (1.05,.68) rectangle (1.55,1.27);
+  \draw[Olive,line width=1pt,line cap=round] (1.55,1.15) -- (2.05,1.95);
+  \node[font=\scriptsize,text=Olive] at (1.3,.38) {Alice, author of P6};
   \fill[Teal] (4.0,1.3) circle (.2);
   \fill[Teal,rounded corners=2.5pt] (3.75,.68) rectangle (4.25,1.02);
   \node[font=\scriptsize,text=Teal] at (4.0,.38) {Bob};
@@ -207,9 +207,9 @@ moves from that question to a result, an obstruction, or a concrete missing expe
 \end{column}
 \begin{column}{.67\textwidth}
   \dline{Teal}{Bob}{``Why use a judge? Could you not ask the agents directly?''}
-  \dline{Rust}{Alice}{``We could \ldots\ but wouldn't they misreport?''}
+  \dline{Olive}{Alice}{``We could \ldots\ but wouldn't they misreport?''}
   \dline{Teal}{Bob}{``Glad you ask. I have just heard of a mechanism-design paper about that \ldots''}
-  \dline{Rust}{Alice}{``Interesting!''}
+  \dline{Olive}{Alice}{``Interesting!''}
 \end{column}
 \end{columns}
 \vfill
@@ -557,8 +557,8 @@ of 100 pairs, and is not matched for quality. Choosing medium effort does not pr
   \smallprint{Expert assessment becomes a search for directions in their own programme.}
 \end{column}
 \end{columns}
-\vspace{2mm}\takeaway{\textbf{Human validation:} do the notes add something new and useful to the expert's research? 
-}
+\vspace{2mm}
+% \takeaway{\textbf{Human validation:} do the notes add something new and useful to the expert's research?}
 % \smallprint{Darker cells indicate higher scan scores, scientific quality as scored by Opus 5.}
 \note{Timing: 1 minute. The admitted release has 82 papers on each side; the original
 working inventories contain additional excluded rows. The supplied dashboard screenshot replaces
