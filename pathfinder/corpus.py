@@ -37,7 +37,10 @@ def fetch(query: str, n: int, start: int = 0) -> list[dict]:
 
 
 def more(campaign, side: str, n: int, fetch_fn=fetch) -> list[dict]:
-    """Append the next n older papers for one side, never reordering or dropping existing rows."""
+    """@planks("When its next page contains papers \"q2\" and \"q3\"")
+
+    Append the next n older papers for one side, never reordering or dropping existing rows.
+    """
     queries = json.loads(campaign.path("fetch.json").read_text())
     path = campaign.path(f"{side}.jsonl"); rows = read(path) if path.exists() else []
     have = {r["id"] for r in rows}

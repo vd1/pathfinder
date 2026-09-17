@@ -60,6 +60,7 @@ def guard_ok(campaign, inflight: int) -> bool:
 
 
 def pending(campaign) -> list[str]:
+    """@planks("When Pathfinder admits pending investigations")"""
     pairs = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]]
     return [p for p in pairs if research.status(campaign, p).get("status") not in research.TERMINAL | {"BLOCKED"}
             and not Lock.holder(campaign.thread_dir(p))]          # BLOCKED waits for reconcile, never re-admission
@@ -103,6 +104,7 @@ def run(campaign, interval: float = 5.0):
 
 
 def _loop(campaign, ex, interval, futures):
+    """@planks("When the operator requests a stop")"""
     failures = 0
     while True:
         if unhealthy(campaign) and not futures:

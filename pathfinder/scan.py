@@ -36,6 +36,9 @@ def done(campaign) -> set[str]:
 
 
 def run(campaign, stop=lambda: False):
+    """@planks("When the connection judge assesses pair \"{pair_id}\"")
+    @planks("When the connection scan resumes")
+    """
     Q, P, seen = corpus.read(campaign.path("Q.jsonl")), corpus.read(campaign.path("P.jsonl")), done(campaign)
     for i, q in enumerate(Q, 1):
         for j, p in enumerate(P, 1):

@@ -214,6 +214,15 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
 
 
 def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
+    """@planks("When the findings are consolidated into a research account")
+    @planks("When the peer stage finishes")
+    @planks("When the verifier returns \"DRAFT\"")
+    @planks("When the verifier returns \"ITERATE\" with an unanswered question")
+    @planks("When the verifier returns \"ITERATE\"")
+    @planks("When the verifier returns \"REVISE\" with a correction")
+    @planks("When the verifier returns \"REVISE\"")
+    @planks("When the campaign continues")
+    """
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
     note, verdicts = d / f"{pair_id}.tex", d / f"{pair_id}.verdict.json"
     inp = _inputs(d)

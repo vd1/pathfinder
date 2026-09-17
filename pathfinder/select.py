@@ -5,6 +5,7 @@ from . import corpus
 
 
 def rank(rows: list[dict]) -> list[dict]:
+    """@planks("When Pathfinder ranks the assessed connections")"""
     scored = [r for r in rows if r.get("feasibility") is not None and r.get("gain") is not None]
     for r in scored:
         r["score"] = r["feasibility"] * r["gain"]
@@ -12,7 +13,12 @@ def rank(rows: list[dict]) -> list[dict]:
 
 
 def run(campaign, cut: float | None = None, force: bool = False, min_score: float | None = None) -> dict:
-    """Freeze the top `cut` percent of a complete scan, or every pair at or above `min_score` of any scan."""
+    """@planks("When Pathfinder builds the shortlist")
+    @planks("When the admission threshold is \"{threshold}\"")
+    @planks("When Pathfinder rebuilds the shortlist")
+
+    Freeze the top `cut` percent of a complete scan, or every pair at or above `min_score` of any scan.
+    """
     raw = campaign.path("scan.jsonl").read_bytes()
     rows = [json.loads(l) for l in raw.decode().splitlines() if l.strip()]
     ranked = rank(rows)
