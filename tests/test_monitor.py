@@ -20,6 +20,19 @@ def test_state_and_status_text(tmp_path):
     assert "Q1P1" in monitor.status_text(c)
 
 
+def test_known_cost_and_unknown_cost_calls_over_old_and_new_receipts(tmp_path):
+    c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=True, seats=2, cut=50,
+                 rounds=3, allowances={}, budget_usd=10, prices={}, scan_fulltext=None)
+    (tmp_path / "shortlist.json").write_text(json.dumps({"cut": 50, "pairs": []}))
+    old_format = {"thread": "Q1P1", "stage": "peers", "cost": 2.5, "seconds": 30}
+    new_known = {"v": 2, "thread": "Q1P1", "stage": "verify", "cost": 1.0, "cost_basis": "reported", "seconds": 5, "outcome": "completed"}
+    new_unknown = {"v": 2, "thread": "Q1P1", "stage": "peers", "cost": None, "cost_basis": None, "seconds": 9, "outcome": "timeout", "error": "timeout"}
+    (tmp_path / "receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in (old_format, new_known, new_unknown)))
+    s = monitor.state(c)["campaign"]
+    assert s["spend"] == 3.5                      # known cost only: the unknown call adds nothing to it
+    assert s["unknown_cost_calls"] == 1           # and is counted beside it, not hidden
+
+
 def test_pdf_compiles_a_note(tmp_path):
     import shutil, pytest
     if not shutil.which("pdflatex"):

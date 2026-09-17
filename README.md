@@ -92,7 +92,8 @@ Q.jsonl  P.jsonl   one paper per line: id, title, abstract, authors, date, text
 sources/           flattened e-prints, <id>.tex or <id>.txt (ignored by git)
 scan.jsonl         one row per scored pair, appended as the scan runs
 shortlist.json     the frozen cut, with a digest of scan.jsonl
-receipts.jsonl     one line per model call; the only source of spend figures
+receipts.jsonl     one line per attempted model call, failures included; the only
+                   source of spend figures (see Receipts below)
 stop.json          present while a stop is requested
 health.json        present while admissions are paused after transport failures
 threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
@@ -126,9 +127,12 @@ your own campaign directory and edit the models and the budget.
 - `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
   (per peer per round), `consolidate_seconds`, `verify_seconds`,
   `paper_seconds`, `review_seconds`, `edit_seconds`.
-- `budget_usd`: hard cap on receipts plus in-flight estimate.
+- `budget_usd`: cap on known cost, plus `call_estimate_usd` for every call in
+  flight and every call that opened a session and whose cost is unknown.
 - `call_estimate_usd`: what one in-flight call is assumed to cost by the guard.
-- `prices`: per-model prices used when the CLI reports no cost.
+- `prices`: per-model prices, in USD, used when the CLI reports no cost. A
+  model missing from the table has unknown cost, not zero: the guard then
+  counts each of its calls at `call_estimate_usd`, so price the models you use.
 - `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
   sources instead of abstracts on that side.
 - `codex`: optional, for the Codex backend through a custom OpenAI-compatible
@@ -143,16 +147,42 @@ your own campaign directory and edit the models and the budget.
   call and exits; a running research loop stops admitting, lets calls in
   flight land, writes their checkpoints and exits. `stop --clear` removes the
   marker; the next `research` resumes every thread at its recorded stage.
-- The budget guard runs before every admission: receipts plus in-flight calls
-  times `call_estimate_usd` must stay under `budget_usd`, otherwise it writes
-  the stop marker itself.
+- The budget guard runs before every admission: known cost, plus
+  `call_estimate_usd` for each call in flight and each call that opened a
+  session and whose cost is unknown, must stay under `budget_usd`, otherwise it writes the stop marker itself.
 - A call that produces no session within 60 seconds, plus a second per
-  5 KB of prompt, is a transport failure:
-  no receipt, the thread is marked stopped. Two in a row set `health.json`;
+  5 KB of prompt, is a transport failure, and so is an agent CLI that cannot
+  be launched: a receipt with no usage and no cost, the thread is marked stopped. Two in a row set `health.json`;
   admissions pause until a probe call succeeds.
 - Threads are locked by a pid file. `pathfinder reconcile [pair]` names the
   one safe action for a thread (start, resume peers, run consolidate, run
   verify, or nothing) and `--apply` performs it.
+
+## Receipts
+
+Every call the transport attempts appends one line to `receipts.jsonl`,
+including a CLI that cannot be launched, a call that never opens a session
+and a call killed at its deadline. A receipt holds `v` (2), `at`, `thread`,
+`stage`, `actor`, `backend`, `model`, `seconds`, `outcome` (`completed`,
+`error`, `timeout`, `no session`, `launch failed`), `error`, and:
+
+- `usage`: the provider's usage counters exactly as it reported them, or
+  null when none arrived. On a call that did not complete they may be
+  partial. The two CLIs count differently (Codex's `input_tokens` includes
+  its cached tokens, Claude's does not), which is why the raw object is kept.
+- `input_tokens`, `output_tokens`, `cache_write`, `cache_read`,
+  `prefix_read`: the same counters under common names for the monitor. A
+  counter that was not reported is null, never zero.
+- `cost` in USD and `cost_basis`: `reported` by the CLI, or `priced` from the
+  reported counters with the campaign's table, in which case `rates` holds
+  the rates applied. A priced amount is an approximation that ignores cached
+  rates. When neither is possible both are null.
+
+Nothing in a receipt is an estimate. The guard's caution about calls of
+unknown cost lives in the guard, which does not charge a call that never
+reached a session. The monitor shows known cost and, beside
+it, how many calls have unknown cost. Receipts without `v` predate this
+format; in them a zero may mean unknown.
 
 ## Prompts
 
@@ -167,9 +197,11 @@ The researchers and the consolidator get links: the paths of the two
 papers and the ledger, which they read through their tools, as much as
 they need. The two judges get their material inline, in the same order,
 the two papers, the ledger, the note, then for the reviewer the search
-record, the paper and the checks, and the instruction last; that head is
-byte-identical for both judges and a prefix of the previous round's, so
-a prompt cache serves what has not changed.
+record, the paper and the checks, and the instruction last. The two papers
+and the ledger entries already present are the same bytes for both judges
+and from one round to the next, so a prompt cache can serve that leading
+part; what follows it, the new entries, the note and the instruction,
+changes. Nothing depends on a cache hit.
 
 Two switches in `campaign.json`, both off by default, put material in
 front of the researchers' and the consolidator's calls, with their brief

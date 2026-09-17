@@ -1,5 +1,7 @@
 """One adapter over the Claude Code CLI and the Codex CLI. Streams JSON lines so the
-session id arrives early; a call with no session within SESSION_GRACE is a transport failure."""
+session id arrives early; a call with no session within SESSION_GRACE is a transport failure.
+Every attempted call appends one receipt. What the provider did not report stays null: never
+zero, never an estimate."""
 from __future__ import annotations
 import json, os, shlex, signal, subprocess, threading, time
 from pathlib import Path
@@ -60,8 +62,9 @@ def _command(campaign, model, tools, search, cwd):
 
 
 def _parse(campaign, model, lines):
-    text, session, inp, out, cost, err = "", None, 0, 0, None, None
-    cache = {"cache_write": 0, "cache_read": 0, "prefix_read": None}   # prefix_read: cache hit on the first turn, the shared-head measurement
+    """Text, session, the provider's last usage object as reported (None when none arrived, possibly
+    partial on a call that did not complete), the cost the provider reported, the error, the first turn's cache hit."""
+    text, session, usage, cost, err, prefix_read = "", None, None, None, None, None
     for line in lines:
         try:
             row = json.loads(line)
@@ -74,34 +77,75 @@ def _parse(campaign, model, lines):
             session = row["session_id"]
         elif t == "thread.started":
             session = row.get("thread_id")
-        elif t == "assistant" and cache["prefix_read"] is None and (row.get("message") or {}).get("usage"):
-            cache["prefix_read"] = (row["message"]["usage"] or {}).get("cache_read_input_tokens", 0)
+        elif t == "assistant" and (row.get("message") or {}).get("usage"):
+            usage = row["message"]["usage"]
+            if prefix_read is None:                # the first turn's cache hit, the shared-head measurement
+                prefix_read = usage.get("cache_read_input_tokens")
         elif t == "result":
             text = row.get("result") or ""
-            u = row.get("usage") or {}
-            inp, out = u.get("input_tokens", 0), u.get("output_tokens", 0)
-            cache.update({"cache_write": u.get("cache_creation_input_tokens", 0), "cache_read": u.get("cache_read_input_tokens", 0)})
+            usage = row.get("usage") or usage
             cost = row.get("total_cost_usd")
             if row.get("is_error"):
                 err = text or "error"
         elif t == "item.completed" and (row.get("item") or {}).get("type") == "agent_message":
             text = row["item"].get("text", "")
         elif t == "turn.completed":
-            u = row.get("usage") or {}
-            inp, out = u.get("input_tokens", 0), u.get("output_tokens", 0)
-            cache.update({"cache_write": 0, "cache_read": u.get("cached_input_tokens", 0)})
+            usage = row.get("usage") or usage
         elif t in ("error", "turn.failed"):
             err = str(row.get("error") or row.get("message") or t)
-    if cost is None:
-        cost = campaign.price(model, inp, out)
-    return text, session, inp, out, cost, err, cache
+    return text, session, usage, cost, err, prefix_read
+
+
+def _counters(backend, usage):
+    """The monitor's convenience fields, read from the raw usage; a counter that was not reported is None."""
+    u = usage or {}
+    if backend == "claude":
+        return {"input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
+                "cache_write": u.get("cache_creation_input_tokens"), "cache_read": u.get("cache_read_input_tokens")}
+    return {"input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
+            "cache_write": u.get("cache_write_input_tokens"), "cache_read": u.get("cached_input_tokens")}
+
+
+def _cost(campaign, model, reported, counters):
+    """(cost in USD, basis, rates). Reported by the provider, or priced from reported counters with the
+    campaign's table, an approximation that ignores cached rates; otherwise unknown."""
+    if reported is not None:
+        return float(reported), "reported", None
+    rates, inp, out = campaign.prices.get(model), counters["input_tokens"], counters["output_tokens"]
+    if rates and inp is not None and out is not None:
+        return campaign.price(model, inp, out), "priced", rates
+    return None, None, None
+
+
+def _receipt(campaign, thread, stage, actor, model, r):
+    row = {"v": 2, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thread": thread, "stage": stage,
+           "actor": actor, "backend": campaign.backend, "model": model,
+           **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
+                                    "cache_read", "prefix_read", "cost", "cost_basis", "error")}}
+    if r.get("rates"):
+        row["rates"] = r["rates"]
+    with open(campaign.path("receipts.jsonl"), "a") as f:
+        f.write(json.dumps(row) + "\n")
+
+
+def _failed(campaign, thread, stage, actor, model, started, outcome, error):
+    """A call that never reached a model session: a receipt with no usage and no cost."""
+    r = {"text": "", "session": None, "seconds": round(time.time() - started, 1), "usage": None, "input_tokens": None,
+         "output_tokens": None, "cache_write": None, "cache_read": None, "prefix_read": None, "cost": None,
+         "cost_basis": None, "outcome": outcome, "error": error, "transport_failed": True}
+    _receipt(campaign, thread, stage, actor, model, r)
+    return r
 
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
-    proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
-                            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            text=True, start_new_session=True)
+    started = time.time()
+    try:
+        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
+                                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                text=True, start_new_session=True)
+    except OSError as e:
+        return _failed(campaign, thread, stage, actor, model, started, "launch failed", f"launch failed: {e}")
     lines, session_seen = [], threading.Event()
 
     def reader():
@@ -115,28 +159,25 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
         proc.stdin.write(prompt); proc.stdin.close()
     except BrokenPipeError:
         pass
-    started = time.time()
     if not session_seen.wait(SESSION_GRACE + len(prompt) // 5000):      # a long prompt takes longer to open
         _kill(proc)
-        return {"text": "", "session": None, "seconds": round(time.time() - started, 1), "input_tokens": 0,
-                "output_tokens": 0, "cost": 0.0, "error": "no session", "transport_failed": True}
+        return _failed(campaign, thread, stage, actor, model, started, "no session", "no session")
     try:
         proc.wait(timeout=max(1, timeout - (time.time() - started)))
         error = None
     except subprocess.TimeoutExpired:
         _kill(proc); error = "timeout"
     t.join(5)
-    text, session, inp, out, cost, err, cache = _parse(campaign, model, lines)
-    if error == "timeout" and not (inp or out):
-        cost = campaign.call_estimate_usd          # usage unknown after a kill: charge the estimate
+    text, session, usage, reported, err, prefix_read = _parse(campaign, model, lines)
     if proc.returncode not in (0, None) and not error and not err:
         err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
-    r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "input_tokens": inp,
-         "output_tokens": out, **cache, "cost": float(cost or 0), "error": error or err, "transport_failed": False}
-    with open(campaign.path("receipts.jsonl"), "a") as f:
-        f.write(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thread": thread,
-                            "stage": stage, "actor": actor, "backend": campaign.backend, "model": model,
-                            **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cache_write", "cache_read", "prefix_read", "cost", "error")}}) + "\n")
+    counters = _counters(campaign.backend, usage)
+    cost, basis, rates = _cost(campaign, model, reported, counters)
+    r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "usage": usage, **counters,
+         "prefix_read": prefix_read, "cost": cost, "cost_basis": basis, "rates": rates,
+         "outcome": "timeout" if error else "error" if err else "completed", "error": error or err,
+         "transport_failed": False}
+    _receipt(campaign, thread, stage, actor, model, r)
     return r
 
 
@@ -155,5 +196,18 @@ def receipts(campaign) -> list[dict]:
     return [json.loads(l) for l in p.read_text().splitlines() if l.strip()] if p.exists() else []
 
 
+def known_cost(rows) -> float:
+    return round(sum(r["cost"] for r in rows if r.get("cost") is not None), 4)
+
+
+def unknown_cost_calls(rows) -> int:
+    return sum(1 for r in rows if r.get("cost") is None)
+
+
 def spend(campaign) -> float:
-    return round(sum(r.get("cost") or 0 for r in receipts(campaign)), 4)
+    """What the budget guard counts: known cost, plus the per-call estimate for every call that opened a
+    session and whose cost is unknown. A call that never reached a session is not charged, as before, or
+    the probes of a long outage would exhaust the budget. The caution lives here, not in the receipts."""
+    rows = receipts(campaign)
+    charged = sum(1 for r in rows if r.get("cost") is None and r.get("outcome") not in ("no session", "launch failed"))
+    return round(known_cost(rows) + charged * campaign.call_estimate_usd, 4)

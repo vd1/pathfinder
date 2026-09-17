@@ -1164,7 +1164,10 @@ require incremental retrieval in the reference helper.
 Prefix sharing is a separate execution optimisation. Within the shared task
 context, the current implementation places the source papers first, followed by
 the growing ledger, before caller-specific instructions and changing material.
-Judges also receive the note being assessed. An implementation should preserve
+Judges also receive the note being assessed. What one call can reuse from an
+earlier one is therefore the leading part only, the papers and the ledger
+entries already present; the new entries, the note and the instruction after
+them change. An implementation should preserve
 the common material and its ordering between calls, placing unnecessary per-call
 variation outside the reusable prefix. The backend must configure any required
 cache boundaries and report actual cache usage rather than infer a cache hit
@@ -1196,15 +1199,55 @@ numbers are settings, not properties of the scientific task. Within a research
 round the call cap applies per researcher and elapsed call time is accumulated
 across researchers.
 
-Calls append receipts recording the usage reported by the provider and the
-available cost estimate. The admission guard compares recorded expenditure plus
-a reservation for work in flight against the campaign budget. This is a
+Every attempted call appends a receipt, specified below. The admission guard
+compares recorded expenditure, a per-call estimate for every call that
+established a session and whose cost is unknown, and a reservation for work in
+flight against the campaign budget. This is a
 scheduling guard, not a strict upper bound on the eventual bill: admitted
 threads can need further calls, and concurrent researchers can overshoot a
 shared time allowance before their usage is collected. Token usage is recorded,
 but the present runner does not enforce a separate hard token quota. Unpriced
 subscription usage must not be interpreted as free work. Strict reservation
 before every call would require a stronger accounting mechanism.
+
+\paragraph{Call receipts.}
+The receipts are the campaign's only record of what it consumed, and every
+statement about cost or time rests on them. They are therefore part of the
+specification. The runner appends one receipt for every call it attempts,
+including an agent that could not be launched, a call that never established a
+session, and a call ended at its deadline. This covers the attempts the runner
+handles; it is not a promise of durable accounting across an abrupt crash of the
+runner itself.
+
+A receipt records the time, the thread, the stage and the role, the backend and
+the model requested, the elapsed time, and an outcome: completed, error,
+timeout, no session, or launch failed. It records the provider's usage counters
+as the provider reported them, with the backend named, because providers count
+differently: one includes cached tokens in its input total where another reports
+them apart, and reasoning may or may not be included in output. A breakdown into
+uncached input, cache reads, cache writes and billed output is derived later
+from the raw counters and their documented meaning; it is not substituted for
+them.
+
+What was not reported stays unknown. A missing counter is recorded as absent,
+never as zero, while a reported zero remains zero. Counters that did arrive are
+kept on a failed or interrupted call as well, where the outcome tells the reader
+that they may be partial: such a call can consume resources without saying how
+much. A cost, in US dollars, carries its basis. It is either the amount the
+provider reported, or an amount priced from reported counters at rates the
+receipt retains, which is an approximation and not a reconstructed provider
+charge. When neither is possible the cost is unknown. An amount computed for a
+subscription is an equivalent, not an additional bill. No receipt holds an
+estimate: the guard's caution about calls of unknown cost belongs to the guard,
+which does not charge a call that never reached a session, and a display of expenditure states the known cost and, separately, how many
+calls have unknown cost. Repricing under another tariff is an analysis over
+receipts and adds nothing to them.
+
+The guarantee is this: enough is recorded to reconstruct what a campaign
+consumed and, where the provider reports enough, to reprice it, and what cannot
+be known is visibly unknown. The reference receipts do not identify retries;
+that identity must not be inferred from adjacent receipts, since an ordinary
+later call can carry the same thread, stage and role.
 
 \paragraph{Stop.}
 A stop request prevents new admission and is tested at call or stage boundaries.
@@ -1458,6 +1501,11 @@ recorded stage.
 \item The admission guard writing the stop marker when the budget is reached.
 \item Two consecutive transport failures setting the health marker, and a
 successful probe call clearing it.
+\item An agent that cannot be launched, and a call that never establishes a
+session, each leaving a receipt with no usage and no cost.
+\item A call ended at its deadline leaving a receipt that keeps whatever usage
+was reported, and none when none was, with the guard still counting it; and a
+missing counter recorded as unknown while a reported zero stays zero.
 \item Both blocked paths, an unreadable verdict and an unreadable review, and
 reconciliation naming and applying the one safe action.
 \item A killed runner leaving an ownership marker whose process is gone.

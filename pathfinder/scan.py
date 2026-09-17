@@ -47,7 +47,7 @@ def run(campaign, stop=lambda: False):
             for attempt in range(2):
                 r = transport.call(render(campaign, q, p), campaign=campaign, model=campaign.scan_model, tools=False,
                                    search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid, stage="scan", actor="judge")
-                row["seconds"] += r["seconds"]; row["cost"] += r["cost"]
+                row["seconds"] += r["seconds"]; row["cost"] += r["cost"] or 0
                 try:
                     v = parse_json(r["text"])
                     row.update(feasibility=int(v["feasibility"]), gain=int(v["gain"]), connexion=v.get("connexion"),

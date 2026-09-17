@@ -75,7 +75,7 @@ def state(campaign) -> dict:
                           "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "Clear the stop marker and start the runner again; raise budget_usd first if the guard wrote the marker."})
     phase = ("research" if sl["pairs"] else "select" if scan and len(scan) >= len(Q) * len(P) and Q else "scan" if Q else "fetch")
     return {"generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "campaign": {"name": campaign.root.name, "phase": phase, "spend": round(sum(r.get("cost") or 0 for r in receipts), 4), "budget": campaign.budget_usd,
+            "campaign": {"name": campaign.root.name, "phase": phase, "spend": transport.known_cost(receipts), "unknown_cost_calls": transport.unknown_cost_calls(receipts), "budget": campaign.budget_usd,
                          "calls": len(receipts), "seconds": round(sum(r.get("seconds") or 0 for r in receipts)),
                          "first_call": receipts[0].get("at") if receipts else None, "last_call": receipts[-1].get("at") if receipts else None,
                          "errors": sum(bool(r.get("error")) for r in receipts),
