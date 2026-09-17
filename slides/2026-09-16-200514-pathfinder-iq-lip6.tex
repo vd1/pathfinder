@@ -6,7 +6,7 @@
 \usepackage{tikz}
 \usepackage{booktabs}
 \usepackage{pgfpages}
-\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,decorations.pathreplacing}
 \usefonttheme{professionalfonts}
 \definecolor{Ink}{RGB}{24,47,57}
 \definecolor{Teal}{RGB}{21,102,121}
@@ -323,45 +323,40 @@ that is a proposed refinement, not an implemented state transition in this diagr
 \end{frame}
 
 \begin{frame}[t]{Practicalities}
-% \kicker{Recover completed work. Account for resources. Reuse context.}
-\vspace{1mm}
+\vspace{4mm}
 \begin{columns}[T,onlytextwidth]
-  \begin{column}{.315\textwidth}
-    {\Large\color{Teal}\textbf{Recover}}\par\vspace{2mm}
-    Keep artifacts and the ledger.\par\vspace{2mm}
-    Resume from the recorded stage.\par\vspace{2mm}
-    Retry failed calls within limits.\par\vspace{3mm}
-    \smallprint{A transport failure is not a scientific PAUSE.}
+  \begin{column}{.3\textwidth}
+    {\Large\color{Teal}\textbf{Nothing is lost}}\par\vspace{3mm}
+    Every step is saved as it happens.\par\vspace{2mm}
+    After a crash, work resumes where it stopped.
   \end{column}
-  \begin{column}{.315\textwidth}
-    {\Large\color{Teal}\textbf{Account}}\par\vspace{2mm}
-    Record tokens and elapsed time per call.\par\vspace{2mm}
-    Bound calls, rounds and time.\par\vspace{2mm}
-    Check budget before admitting work.\par\vspace{3mm}
-    \smallprint{An admission guard is not a hard cap on the final bill.}
+  \begin{column}{.3\textwidth}
+    {\Large\color{Teal}\textbf{Spending is bounded}}\par\vspace{3mm}
+    Every call records its time and its cost.\par\vspace{2mm}
+    Each loop has a limit, and the budget is checked before new work starts.
   \end{column}
-  \begin{column}{.315\textwidth}
-    {\Large\color{Teal}\textbf{Reuse}}\par\vspace{2mm}
-    Keep common context at the front.\par\vspace{2mm}
-    Append new ledger entries.\par\vspace{2mm}
-    Put changing instructions last.\par\vspace{3mm}
-    \smallprint{Identical prefixes can be cached across calls.}
+  \begin{column}{.3\textwidth}
+    {\Large\color{Teal}\textbf{Reading is reused}}\par\vspace{3mm}
+    Every call starts with the same material.\par\vspace{2mm}
+    What the model has already read costs much less to read again.
   \end{column}
 \end{columns}
-\vspace{2.5mm}
+\vspace{9mm}
 \begin{tikzpicture}[x=1cm,y=1cm]
   \node[anchor=west,text=Muted,font=\small,inner sep=0pt]
-    at (0,1.05) {Prompt context, left to right};
-  \fill[CardFill] (0,0) rectangle (5.8,.75);
-  \fill[Mist] (5.8,0) rectangle (11.6,.75);
-  \fill[Warm] (11.6,0) rectangle (17.4,.75);
-  \draw[Teal,line width=.6pt] (0,0) rectangle (17.4,.75);
-  \draw[Teal,line width=.6pt] (5.8,0) -- (5.8,.75) (11.6,0) -- (11.6,.75);
-  \node[text=Ink,font=\small] at (2.9,.375) {Shared papers};
-  \node[text=Ink,font=\small] at (8.7,.375) {Growing ledger};
-  \node[text=Ink,font=\small] at (14.5,.375) {Current call's instructions};
+    at (0,1.2) {What an agent reads, in order};
+  \fill[CardFill] (0,0) rectangle (5.2,.9);
+  \fill[Mist] (5.2,0) rectangle (12.6,.9);
+  \fill[Warm] (12.6,0) rectangle (18.4,.9);
+  \draw[Teal,line width=.6pt] (0,0) rectangle (18.4,.9);
+  \draw[Teal,line width=.6pt] (5.2,0) -- (5.2,.9) (12.6,0) -- (12.6,.9);
+  \node[text=Ink] at (2.6,.45) {The two papers};
+  \node[text=Ink] at (8.9,.45) {The shared ledger, which only grows};
+  \node[text=Ink] at (15.5,.45) {This call's instructions};
+  \draw[decorate,decoration={brace,mirror,amplitude=4pt},Teal,line width=.6pt] (0,-.15) -- (12.6,-.15)
+    node[midway,below=5pt,font=\small,text=Teal] {the same as last time, so cheap to reread};
 \end{tikzpicture}
-\takeaway{Persistent state supports recovery; resource records support control; stable prefixes reduce repeated input cost.}
+\takeaway{The machinery keeps the work safe and the bill predictable. It makes no scientific judgement.}
 \note{Timing: 45 seconds. These are operational mechanisms, not additional scientific verdicts.
 The runner keeps artifacts, a shared ledger and stage state. Recovery resumes from a recorded
 boundary; it does not promise to recover an interrupted model's internal state or avoid every
