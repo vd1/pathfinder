@@ -31,6 +31,7 @@ Binding behaviour lives in `.feature` specs and referenced `assets/**`. History 
 - Add real OpenCode and Pi probes only for a role whose behavior requires those harnesses.
 - Keep high-level features separate from `features/operational/`.
 
-## Open Decision
+## Corrective Voyage
 
-- Decide how to replace or remove the rejected uncommitted production and verification changes without violating operator-work custody.
+- Commit `a2dcd5b` passed by mapping ELM to a routing label. It did not invoke ELM and remains false-green for the first real slice.
+- The active watch requires one minimal frozen pair to execute through ELM and retain provider-produced evidence.

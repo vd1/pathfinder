@@ -23,8 +23,8 @@ Feature: Define reproducible role comparisons
     Scenario: A self-contained role uses its assigned provider interface
       Given role "scan" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM
       And ELM authenticates with environment variable "ELM_API_KEY"
-      When the comparison run schedules role "scan"
-      Then it submits the role through ELM's OpenAI-compatible request interface
+      When role "scan" executes a minimal frozen paper pair
+      Then the receipt retains ELM's provider identifier, raw response, token usage, latency, and cost
 
     Scenario: A tool-using role uses its assigned agent harness
       Given role "research" requires workspace tools or multiple turns

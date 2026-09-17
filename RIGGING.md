@@ -23,7 +23,7 @@ Procedure lives in the skills. Every role reads this on open.
 ## Commands
 
 - discover: `nix develop path:. -c uv run behave --dry-run --tags="not @captain and not @shipwright"`
-- focused: `ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; nix develop path:. -c uv run behave "$file" --name "^${name}$" --tags="not @captain and not @shipwright"`
+- focused: `set -a; . "$HOME/.aienv"; set +a; ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; nix develop path:. -c uv run behave "$file" --name "^${name}$" --tags="not @captain and not @shipwright"`
 - broad: `nix develop path:. -c uv run pytest -q`
 - coverage: `nix develop path:. -c uv run pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
 - step-usage: `nix develop path:. -c uv run behave --steps-catalog --tags="not @captain and not @shipwright"`
@@ -51,7 +51,7 @@ Procedure lives in the skills. Every role reads this on open.
 - dependency: behave
 - dependency: pytest
 - dependency: pytest-cov
-- dependency: ELM OpenAI-compatible request interface with `Qwen/Qwen3.5-397B-A17B-FP8`; authenticate from `ELM_API_KEY` after sourcing `~/.aienv` without reading it
+- dependency: ELM OpenAI-compatible request interface at `https://elm.edina.ac.uk/api/v1` with `Qwen/Qwen3.5-397B-A17B-FP8`; authenticate from `ELM_API_KEY` after sourcing `~/.aienv` without reading it
 
 ## Outbound
 

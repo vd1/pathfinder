@@ -782,6 +782,38 @@ def elm_auth(context):
     context.assignment["env_key"] = "ELM_API_KEY"
 
 
+@when('role "scan" executes a minimal frozen paper pair')
+def execute_elm_scan(context):
+    c = campaign(context)
+    c.backend = context.assignment["backend"]
+    c.scan_model = context.assignment["model"]
+    c.raw = {"codex": {"name": "elm", "env_key": context.assignment["env_key"]}}
+    context.provider_reply = transport.call(
+        "Reply with the single word ok.",
+        campaign=c,
+        model=c.scan_model,
+        tools=False,
+        search=False,
+        cwd=c.path("scan-work"),
+        timeout=120,
+        thread="Q1P1",
+        stage="scan",
+        actor="scan",
+    )
+
+
+@then("the receipt retains ELM's provider identifier, raw response, token usage, latency, and cost")
+def elm_receipt_retained(context):
+    receipts = transport.receipts(context.campaign)
+    assert not context.provider_reply["transport_failed"]
+    assert context.provider_reply["text"]
+    assert receipts[-1]["backend"] == "elm"
+    assert receipts[-1]["input_tokens"] > 0
+    assert receipts[-1]["output_tokens"] > 0
+    assert receipts[-1]["seconds"] >= 0
+    assert receipts[-1]["cost"] >= 0
+
+
 @when('the comparison run schedules role "scan"')
 def schedule_scan(context):
     context.route = runner.execution_route(context.assignment)

@@ -18,6 +18,8 @@ def _env(campaign):
     styles = Path(__file__).parent / "styles"          # the agents build with latexmk themselves; they must see the style files
     env["TEXINPUTS"] = f"{styles}{os.pathsep}" + env.get("TEXINPUTS", "")
     prov = (campaign.raw or {}).get("codex") or {}
+    if campaign.backend == "elm":
+        env[prov["env_key"]] = os.environ[prov["env_key"]]
     if campaign.backend == "codex" and prov.get("key_file"):
         env[prov["env_key"]] = _key_from_file(campaign.path(prov["key_file"]), prov["env_key"])
     return env
@@ -50,6 +52,8 @@ def _command(campaign, model, tools, search, cwd):
     if tools and search:                           # the workspace sandbox has no network unless asked
         cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     prov = (campaign.raw or {}).get("codex") or {}
+    if campaign.backend == "elm":
+        prov = {**prov, "name": "elm", "base_url": "https://elm.edina.ac.uk/api/v1"}
     if prov.get("base_url"):                       # a custom OpenAI-compatible provider, e.g. a university proxy
         name = prov.get("name", "custom")
         cmd += ["-c", f'model_provider="{name}"', "-c", f'model_providers.{name}.name="{name}"',
@@ -98,6 +102,7 @@ def _parse(campaign, model, lines):
 
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
+    """@planks("When role \"scan\" executes a minimal frozen paper pair")"""
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
