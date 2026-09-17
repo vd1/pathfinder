@@ -17,6 +17,8 @@
 \definecolor{PCardFill}{RGB}{225,229,211}
 \definecolor{Warm}{RGB}{249,233,219}
 \definecolor{Muted}{RGB}{91,104,110}
+\definecolor{Olive}{RGB}{104,116,56}
+\hyphenpenalty=10000 \exhyphenpenalty=10000
 \setbeamercolor{normal text}{fg=Ink,bg=Paper}
 \setbeamercolor{frametitle}{fg=Ink,bg=Paper}
 \setbeamercolor{structure}{fg=Teal}
@@ -46,37 +48,49 @@
 \fi
 \newcommand{\assetdir}{assets/2026-09-16-200514}
 \input{assets/2026-09-16-200514/numbers.tex}
-\newcommand{\kicker}[1]{{\color{Muted}\fontsize{8}{10}\selectfont\MakeUppercase{#1}\par}\vspace{2mm}}
-\newcommand{\smallprint}[1]{\par{\color{Muted}\fontsize{7}{9}\selectfont #1\par}}
-\newcommand{\takeaway}[1]{\begin{beamercolorbox}[wd=\linewidth,sep=6pt]{conclusion}
-  \fontsize{10.5}{13}\selectfont #1\end{beamercolorbox}}
-\newcommand{\papercard}[5][CardFill]{\begin{tikzpicture}
-  \node[draw=Teal,fill=#1,line width=0.6pt,rounded corners=4pt,
-    inner sep=5pt,outer sep=0pt,
-    text width=\dimexpr\linewidth-10pt-0.6pt\relax,align=left] {%
-      \begin{minipage}[t][36pt][t]{\linewidth}
-      {\color{Teal}\fontsize{8.7}{10}\selectfont\bfseries #2\enspace #3\par}\vspace{1pt}
-      {\color{Ink}\fontsize{8.2}{10}\selectfont #4\par #5\par}
+% a quiet line under the title: sentence case, no capitals
+\newcommand{\kicker}[1]{{\color{Muted}\fontsize{9}{11}\selectfont #1\par}\vspace{2mm}}
+\newcommand{\smallprint}[1]{\par{\color{Muted}\fontsize{8}{10}\selectfont #1\par}}
+% the slide's conclusion, anchored to the bottom of the frame, with a rust rule on its left
+\newcommand{\takeaway}[1]{\par\vfill\noindent{\setlength{\fboxsep}{0pt}\colorbox{Rust}{\hspace*{2.4pt}%
+  {\setlength{\fboxsep}{7pt}\colorbox{Warm}{\parbox{\dimexpr\linewidth-2.4pt-14pt\relax}{%
+  \raggedright\fontsize{10.5}{13.5}\selectfont #1}}}}}\par}
+% narrative stage labels inside a case study
+\newcommand{\stage}[2][Teal]{{\color{#1}\fontsize{10}{12}\selectfont\bfseries #2}}
+% one line of a dialogue: speaker in colour, words beside
+\newcommand{\dline}[3]{\par\noindent\makebox[17mm][l]{\color{#1}\fontsize{13}{17}\selectfont\bfseries #2}%
+  \parbox[t]{\dimexpr\linewidth-17mm\relax}{\fontsize{13}{17}\selectfont\raggedright #3}\par\vspace{4mm}}
+% a source paper: corpus colour on the left edge and on its label (Q teal, P olive)
+\newcommand{\corpuscard}[6]{\begin{tikzpicture}
+  \node[fill=#1,rounded corners=2.5pt,inner xsep=8pt,inner ysep=5pt,outer sep=0pt,
+    text width=\dimexpr\linewidth-16pt\relax,align=left] (c) {%
+      \begin{minipage}[t][35pt][t]{\linewidth}
+      {\fontsize{9}{11}\selectfont{\color{#2}\bfseries #3}\enspace{\bfseries #4}\par}\vspace{1.5pt}
+      {\color{Ink}\fontsize{8.6}{10.6}\selectfont #5\par #6\par}
       \end{minipage}};
+  \begin{scope}\clip[rounded corners=2.5pt] (c.south west) rectangle (c.north east);
+    \fill[#2] (c.south west) rectangle ([xshift=2.6pt]c.north west);\end{scope}
   \end{tikzpicture}}
+\newcommand{\qcard}[4]{\corpuscard{CardFill}{Teal}{#1}{#2}{#3}{#4}}
+\newcommand{\pcard}[4]{\corpuscard{PCardFill}{Olive}{#1}{#2}{#3}{#4}}
 
 % mini abstracts
-\newcommand{\Qfour}{\papercard{Q4}{Incentives to report what one knows}
+\newcommand{\Qfour}{\qcard{Q4}{Incentives to report what one knows}
   {Agents may profit by hiding what they know.}
   {Rewards can make truthful reporting worthwhile.}}
-\newcommand{\Psix}{\papercard[PCardFill]{P6}{An outside judge for a team}
+\newcommand{\Psix}{\pcard{P6}{An outside judge for a team}
   {A team works together; credit is hard to assign.}
   {An outside AI judges contributions from images.}}
-\newcommand{\Qseven}{\papercard{Q7}{Sharing resources}
+\newcommand{\Qseven}{\qcard{Q7}{Sharing resources}
   {Participants compete for limited resources.}
   {Messages and payments aim to share them well.}}
-\newcommand{\Pone}{\papercard[PCardFill]{P1}{Learning about bad outcomes}
+\newcommand{\Pone}{\pcard{P1}{Learning about bad outcomes}
   {Learn to act while controlling bad outcomes.}
   {Estimate losses in the worst fraction of cases.}}
-\newcommand{\Qthree}{\papercard{Q3}{AI agents in a market}
+\newcommand{\Qthree}{\qcard{Q3}{AI agents in a market}
   {AI agents buy and sell in a simulated market.}
   {Their performance is compared with humans.}}
-\newcommand{\Pthree}{\papercard[PCardFill]{P3}{A critic for the code reviewer}
+\newcommand{\Pthree}{\pcard{P3}{A critic for the code reviewer}
   {An AI reviews code; a critic challenges its review.}
               {The coding agent then revises the program.}}
 \newcommand{\paperpair}[2]{\begin{columns}[T,onlytextwidth]
@@ -100,27 +114,39 @@
 \begin{document}
 
 \begin{frame}[plain]
-\kicker{IQ lab, LIP6\quad /\quad 17 September 2026}
-\vspace{8mm}
-{\rmfamily\fontsize{46}{50}\selectfont Pathfinder}\par\vspace{3mm}
-{\rmfamily\fontsize{24}{29}\selectfont From seminar questions to research}\par
-\vspace{5mm}{\color{Teal}\rule{28mm}{1.5pt}}\par\vspace{10mm}
+\vspace{7mm}
+\kicker{IQ lab, LIP6\qquad 17 September 2026}
+\vspace{9mm}
+{\rmfamily\fontsize{50}{54}\selectfont Pathfinder}\par\vspace{3mm}
+{\rmfamily\fontsize{21}{26}\selectfont From seminar questions\\to research}\par
+\vspace{5mm}{\color{Teal}\rule{28mm}{1.5pt}}\par\vspace{9mm}
+\begin{minipage}{.6\textwidth}
 \begin{columns}[T,onlytextwidth]
-  \begin{column}{.31\textwidth}
-    {\large\bfseries Vincent Danos}\par\vspace{2mm}
-    {\color{Muted}CNRS, ENS}
+  \begin{column}{.3\textwidth}
+    {\bfseries Vincent Danos}\par\vspace{1.5mm}
+    {\small\color{Muted}CNRS, ENS}
+  \end{column}
+  \begin{column}{.36\textwidth}
+    {\bfseries Elham Kashefi}\par\vspace{1.5mm}
+    {\small\color{Muted}CNRS, LIP6\\University of Edinburgh}
   \end{column}
   \begin{column}{.34\textwidth}
-    {\large\bfseries Elham Kashefi}\par\vspace{2mm}
-    {\color{Muted}CNRS, LIP6\\University of Edinburgh}
-  \end{column}
-  \begin{column}{.31\textwidth}
-    {\large\bfseries William Waites}\par\vspace{2mm}
-    {\color{Muted}University of Edinburgh}
+    {\bfseries William Waites}\par\vspace{1.5mm}
+    {\small\color{Muted}University of Edinburgh}
   \end{column}
 \end{columns}
-\vspace{12mm}
-\href{https://github.com/vd1/pathfinder}{github.com/vd1/pathfinder}
+\end{minipage}
+\par\vspace{9mm}
+{\small\href{https://github.com/vd1/pathfinder}{github.com/vd1/pathfinder}}
+% the pilot's scan as a bare grid: the deck's motif, explained on the heat map slide
+\begin{tikzpicture}[remember picture,overlay]
+  \begin{scope}[shift={([xshift=-72mm,yshift=32mm]current page.east)},x=5.8mm,y=5.8mm]
+    \input{\assetdir/title-grid.tex}
+  \end{scope}
+  \node[anchor=north west,font=\fontsize{8}{10.5}\selectfont,text=Muted,align=left,inner sep=0pt]
+    at ([xshift=-71.6mm,yshift=-29mm]current page.east)
+    {Ten papers by ten papers.\\Every cell is a possible encounter.};
+\end{tikzpicture}
 \note{Timing: 15 seconds. Introduce the project and the authors. This is a programme for
 generating and investigating connections between research papers, with a small pilot and
 larger quantum-facing experiments. The main talk is approximately fifteen minutes, leaving
@@ -129,13 +155,14 @@ five minutes for discussion.}
 
 \begin{frame}[t]{Convention: mini-abstracts}
 % \kicker{The stay visible whenever their papers appear}
-\vspace{2mm}
-\paperpair{\smallprint{Mechanism design}}{\smallprint{Systems of cooperating agents}}
+\vspace{3mm}
+\paperpair{{\stage{Q}\enspace{\small\color{Muted}mechanism design}}}{{\stage[Olive]{P}\enspace{\small\color{Muted}systems of cooperating agents}}}
+\vspace{-1mm}
 \paperpair{\Qfour}{\Psix}
-\vspace{5mm}
+\vspace{5.5mm}
 \paperpair{\Qseven}{\Pone}
-\vspace{5mm}
-\paperpair{\Qthree\\ }{}
+\vspace{5.5mm}
+\paperpair{\Qthree}{\Pthree}
 
 % \begin{columns}[T,onlytextwidth]
 %   \begin{column}{.49\textwidth}
@@ -161,26 +188,31 @@ moves from that question to a result, an obstruction, or a concrete missing expe
 \end{frame}
 
 \begin{frame}[t]{Making connexions \ldots}
-\kicker{Pathfinder: from seminar questions to research}
-\begin{tikzpicture}[x=1.22cm,y=1cm]
-  \path[use as bounding box] (0,0) rectangle (14.5,3.85);
-  \fill[Mist] (.15,.2) rectangle (4.2,3.7);
-  \draw[Teal,line width=1pt] (.65,1.7) rectangle (3.7,3.2);
-  \node[font=\small,align=center] at (2.175,2.45) {An outside judge\\ranks the agents};
-  \fill[Teal] (1.25,1.18) circle (.17);
-  \draw[Teal,line width=2pt] (1.25,1) -- (1.25,.5);
-  \draw[Teal,line width=1pt] (1.25,.8) -- (1.8,1.3);
-  \node[anchor=west,font=\scriptsize,text=Muted] at (.45,.35) {P6's author Alice explains P6};
-  \node[anchor=north west,text width=9.4cm,align=left,font=\large] at (4.65,3.55)
-    {Bob: ``Why use a judge? Could you not ask the agents directly?''};
-  \node[anchor=north west,text width=9cm,align=left,font=\large,text=Rust] at (5.25,2.4)
-    {Alice: ``We could \ldots but wouldn't they misreport?''};
-  \node[anchor=north west,text width=9cm,align=left,font=\large] at (4.65,1.25)
-    {Bob: ``Glad you ask, I have just heard of a mechanism-design paper about that\ldots''};
-  \node[anchor=north west,text width=9cm,align=left,font=\large,text=Rust] at (5.25,0.1)
-    {Alice: ``Interesting!''};
+\vspace{2mm}
+\begin{columns}[c,onlytextwidth]
+\begin{column}{.29\textwidth}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \path[use as bounding box] (0,0) rectangle (5.3,4.5);
+  \fill[Mist,rounded corners=3pt] (0,0) rectangle (5.3,4.5);
+  \draw[Teal,line width=.9pt,fill=Paper] (.75,2.05) rectangle (4.55,3.95);
+  \node[font=\small,align=center] at (2.65,3.0) {An outside judge\\ranks the agents};
+  \fill[Rust] (1.3,1.55) circle (.2);
+  \fill[Rust,rounded corners=2.5pt] (1.05,.68) rectangle (1.55,1.27);
+  \draw[Rust,line width=1pt,line cap=round] (1.55,1.15) -- (2.05,1.95);
+  \node[font=\scriptsize,text=Rust] at (1.3,.38) {Alice, author of P6};
+  \fill[Teal] (4.0,1.3) circle (.2);
+  \fill[Teal,rounded corners=2.5pt] (3.75,.68) rectangle (4.25,1.02);
+  \node[font=\scriptsize,text=Teal] at (4.0,.38) {Bob};
 \end{tikzpicture}
-\vspace{5mm}
+\end{column}
+\begin{column}{.67\textwidth}
+  \dline{Teal}{Bob}{``Why use a judge? Could you not ask the agents directly?''}
+  \dline{Rust}{Alice}{``We could \ldots\ but wouldn't they misreport?''}
+  \dline{Teal}{Bob}{``Glad you ask. I have just heard of a mechanism-design paper about that \ldots''}
+  \dline{Rust}{Alice}{``Interesting!''}
+\end{column}
+\end{columns}
+\vfill
 \paperpair{\Psix}{\Qfour}
 % \smallprint{Vincent Danos\quad Elham Kashefi\quad William Waites\hfill github.com/vd1/pathfinder}
 \note{Timing: 45 seconds. This is a made-up seminar exchange, not the history of how these papers met.
@@ -193,15 +225,22 @@ the research that follows them. We will return to what this particular connectio
 \begin{frame}[t]{What if we asked across an entire collection?}
 \kicker{Mechanism design $\times$ agent cooperation}
 \begin{columns}[T,onlytextwidth]
-\begin{column}{.61\textwidth}
-  \resizebox{8.5cm}{!}{\input{assets/2026-09-16-200514/pilot-heatmap.tex}}
+\begin{column}{.63\textwidth}
+  \resizebox{11.2cm}{!}{\input{assets/2026-09-16-200514/pilot-heatmap.tex}}
 \end{column}
-\begin{column}{.36\textwidth}
-  {\rmfamily\fontsize{32}{34}\selectfont 100}\quad possible encounters\par\vspace{3mm}
-  {\rmfamily\fontsize{25}{28}\selectfont 14}\quad investigated pairs\par\vspace{3mm}
-  {\rmfamily\fontsize{25}{28}\selectfont 5}\quad accepted manuscripts\par\vspace{4mm}
-  {\small Colour: feasibility $\times$ gain.\par
-  Outline: investigated.\par Star: internally accepted.}\vspace{3mm}
+\begin{column}{.33\textwidth}
+  \vspace{4mm}
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabular}{@{}r@{\hspace{4mm}}l@{}}
+  {\rmfamily\fontsize{34}{36}\selectfont 100} & possible encounters\\
+  {\rmfamily\fontsize{34}{36}\selectfont 14} & investigated pairs\\
+  {\rmfamily\fontsize{34}{36}\selectfont\color{Rust} 5} & accepted manuscripts\\
+  \end{tabular}\par\vspace{7mm}
+  {\small
+  \tikz[baseline=-.6ex]{\shade[left color=Paper,right color=Teal] (0,-.11) rectangle (.62,.11);
+    \draw[gray!50,line width=.25pt] (0,-.11) rectangle (.62,.11);}\enspace feasibility $\times$ gain\par\vspace{1.5mm}
+  \tikz[baseline=-.6ex]{\draw[black,line width=.85pt] (0,-.13) rectangle (.62,.13);}\enspace investigated\par\vspace{1.5mm}
+  \makebox[6.2mm][c]{$\star$}\enspace internally accepted}\vspace{3mm}
   % \smallprint{Acceptance is a workflow verdict, not external scientific validation.}
 \end{column}
 \end{columns}
@@ -216,29 +255,27 @@ estimate of a discovery rate, and we have not assessed what alternative selectio
 \end{frame}
 
 \begin{frame}[t]{Scan. Research. Edit.}
-% \kicker{A familiar scientific process, made explicit}
+\vspace{3mm}
 \begin{tikzpicture}[x=1.22cm,y=1cm]
-  \path[use as bounding box] (0,-.3) rectangle (14.5,4.6);
-  \node[state,text width=3.2cm,minimum height=1.2cm] (scan) at (1.85,3.6)
-    {\Large SCAN\\\small Propose and prioritise questions};
-  \node[state,text width=3.3cm,minimum height=1.2cm] (research) at (6.3,3.6)
-    {\Large RESEARCH\\\small Investigate; challenge; consolidate};
-  \node[state,text width=3.6cm,minimum height=1.2cm] (edit) at (12.2,3.6)
-    {\Large EDIT\\\small Make the outcome assessable};
+  \path[use as bounding box] (0,-.2) rectangle (14.5,5.0);
+  \node[state,text width=3.7cm,minimum height=1.5cm] (scan) at (1.95,4.0)
+    {{\Large\rmfamily Scan}\\[1pt]\small Propose and prioritise questions};
+  \node[state,text width=4.3cm,minimum height=1.5cm] (research) at (7.1,4.0)
+    {{\Large\rmfamily Research}\\[1pt]\small Investigate, challenge, consolidate};
+  \node[state,text width=3.9cm,minimum height=1.5cm] (edit) at (12.45,4.0)
+    {{\Large\rmfamily Edit}\\[1pt]\small Make the outcome assessable};
   \draw[flow] (scan) -- node[lab,above] {selected\\question} (research);
   \draw[flow] (research) -- node[lab,above] {terminal\\outcome} (edit);
-  \node[paused,text width=4.4cm,anchor=west] (account) at ([yshift=-2.05cm]edit.west)
-    {Readable account\\\scriptsize Human-centric explanation};
-  \node[state,fill=green!10!Paper,text width=4.4cm,anchor=west] (paper) at ([yshift=-2.05cm]research.west)
-    {Publication manuscript\\\scriptsize Author $\rightleftarrows$ Reviewer};
-  \coordinate (editbranch) at ([yshift=-3mm]edit.south);
+  \node[paused,text width=4.2cm] (account) at (12.45,1.0)
+    {Readable account\\[1pt]\scriptsize Human-centric explanation};
+  \node[state,fill=Olive!14!Paper,draw=Olive,text width=4.2cm] (paper) at (7.1,1.0)
+    {Publication manuscript\\[1pt]\scriptsize Author $\rightleftarrows$ Reviewer};
+  \coordinate (editbranch) at ([yshift=-7mm]edit.south);
   \draw[draw=Teal,line width=.8pt] (edit.south) -- (editbranch);
   \draw[flow] (editbranch) -| node[lab,above,pos=.25] {DRAFT} (paper.north);
-  \draw[flow] (editbranch) -- node[lab,right,xshift=2mm] {PAUSE} (editbranch |- account.north);
-  % \node[anchor=west,font=\small,text=Muted] at (.2,.1)
-  %   {The readable account explains the result; it does not change the research verdict.};
+  \draw[flow,draw=Rust] (editbranch) -- node[lab,right,xshift=1mm] {PAUSE} (account.north);
 \end{tikzpicture}
-\takeaway{The output may be a result, an obstruction, a mistake in either papers, or an account of what is missing to pursue the connexion.}
+\takeaway{The output may be a result, an obstruction, a mistake in either paper, or an account of what is missing to pursue the connexion.}
 \note{Timing: 45 seconds. Explain only the phases, not the formal state notation. Scan generates
 the seminar question. Research tests it and can reformulate it. Both DRAFT and PAUSE outcomes enter
 editing. The diagram shows their main destinations: a publication manuscript for DRAFT, a readable
@@ -287,31 +324,31 @@ that is a proposed refinement, not an implemented state transition in this diagr
 
 \begin{frame}[t]{Practicalities}
 % \kicker{Recover completed work. Account for resources. Reuse context.}
-\vspace{3mm}
+\vspace{1mm}
 \begin{columns}[T,onlytextwidth]
   \begin{column}{.315\textwidth}
-    {\Large\color{Teal}\textbf{Recover}}\par\vspace{3mm}
+    {\Large\color{Teal}\textbf{Recover}}\par\vspace{2mm}
     Keep artifacts and the ledger.\par\vspace{2mm}
     Resume from the recorded stage.\par\vspace{2mm}
     Retry failed calls within limits.\par\vspace{3mm}
     \smallprint{A transport failure is not a scientific PAUSE.}
   \end{column}
   \begin{column}{.315\textwidth}
-    {\Large\color{Teal}\textbf{Account}}\par\vspace{3mm}
+    {\Large\color{Teal}\textbf{Account}}\par\vspace{2mm}
     Record tokens and elapsed time per call.\par\vspace{2mm}
     Bound calls, rounds and time.\par\vspace{2mm}
     Check budget before admitting work.\par\vspace{3mm}
     \smallprint{An admission guard is not a hard cap on the final bill.}
   \end{column}
   \begin{column}{.315\textwidth}
-    {\Large\color{Teal}\textbf{Reuse}}\par\vspace{3mm}
+    {\Large\color{Teal}\textbf{Reuse}}\par\vspace{2mm}
     Keep common context at the front.\par\vspace{2mm}
     Append new ledger entries.\par\vspace{2mm}
     Put changing instructions last.\par\vspace{3mm}
     \smallprint{Identical prefixes can be cached across calls.}
   \end{column}
 \end{columns}
-\vspace{6mm}
+\vspace{2.5mm}
 \begin{tikzpicture}[x=1cm,y=1cm]
   \node[anchor=west,text=Muted,font=\small,inner sep=0pt]
     at (0,1.05) {Prompt context, left to right};
@@ -324,7 +361,6 @@ that is a proposed refinement, not an implemented state transition in this diagr
   \node[text=Ink,font=\small] at (8.7,.375) {Growing ledger};
   \node[text=Ink,font=\small] at (14.5,.375) {Current call's instructions};
 \end{tikzpicture}
-\vspace{7mm}
 \takeaway{Persistent state supports recovery; resource records support control; stable prefixes reduce repeated input cost.}
 \note{Timing: 45 seconds. These are operational mechanisms, not additional scientific verdicts.
 The runner keeps artifacts, a shared ledger and stage state. Recovery resumes from a recorded
@@ -340,25 +376,27 @@ Researchers also read new ledger entries before changing direction or declaring 
 
 \begin{frame}[t]{Q4P6: when can we dispense with the judge?}
 \paperpair{\Qfour}{\Psix}
+\vspace{1mm}
 \begin{tikzpicture}[x=1.22cm,y=1cm]
-  \path[use as bounding box] (0,0) rectangle (14.5,3.3);
-  \node[font=\small\bfseries,anchor=west] at (.2,3.05) {SEED};
-  \node[font=\small\bfseries,text=Rust,anchor=west] at (4.9,3.05) {OBSTACLE};
-  \node[font=\small\bfseries,text=Teal,anchor=west] at (10,3.05) {CONDITIONAL RESULT};
-  \node[align=left,text width=3.8cm,anchor=north west,font=\small] at (.2,2.65)
-    {Replace judge with participants' reports.};
-  \node[align=left,text width=4.3cm,anchor=north west,font=\small] at (4.9,2.65)
-    {Truthful reports can still\\be insufficient for ranking.};
-  \draw[flow] (4.15,2.3) -- (4.7,2.3);
-  \draw[flow] (9.15,2.3) -- (9.75,2.3);
-  \node[agent] (a) at (10.65,1.7) {};
-  \node[agent] (b) at (11.75,2.35) {};
-  \node[agent] (c) at (11.75,1.05) {};
-  \node[agent] (d) at (13,2.35) {};
-  \node[agent] (e) at (13.65,1.05) {};
+  \path[use as bounding box] (0,-.1) rectangle (14.5,3.5);
+  \node[anchor=west,inner sep=0pt] at (.1,3.2) {\stage[Ink]{Seed}};
+  \node[anchor=west,inner sep=0pt] at (4.75,3.2) {\stage[Rust]{Obstacle}};
+  \node[anchor=west,inner sep=0pt] at (9.6,3.2) {\stage{Conditional result}};
+  \node[align=left,text width=4.6cm,anchor=north west,font=\small,inner sep=0pt] at (.1,2.8)
+    {Replace the judge with the participants' own reports.};
+  \node[align=left,text width=4.8cm,anchor=north west,font=\small,inner sep=0pt] at (4.75,2.8)
+    {Truthful reports can still be insufficient for ranking.};
+  \draw[flow] (4.0,3.2) -- (4.55,3.2);
+  \draw[flow] (8.85,3.2) -- (9.4,3.2);
+  \node[agent] (a) at (9.95,1.55) {};
+  \node[agent] (b) at (11.05,2.35) {};
+  \node[agent] (c) at (11.05,.75) {};
+  \node[agent] (d) at (12.4,2.35) {};
+  \node[agent] (e) at (13.1,.75) {};
   \draw[Teal,line width=1pt] (a)--(b)--(c)--(a) (b)--(d)--(e)--(c);
-  \node[font=\scriptsize,align=center] at (12.1,.45) {overlap calibrates observers\\and connects the ranking};
-  \node[anchor=west,text width=8.5cm,font=\small,align=left] at (.2,.8)
+  \node[font=\scriptsize,align=left,anchor=west,text=Muted] at (13.35,1.6) {overlap\\calibrates\\observers};
+  \node[anchor=north west,inner sep=0pt] at (.1,1.35) {\stage[Muted]{Conditions}};
+  \node[anchor=north west,text width=9.6cm,font=\small,align=left,inner sep=0pt] at (.1,.9)
     {Informative observations. Structured errors.\\Enough shared comparisons.};
 \end{tikzpicture}
 \takeaway{\textbf{Under these conditions, peer reports identify the model's ranking without an external judge.}}
@@ -378,17 +416,17 @@ not a correction to a paper that already relied on strategic user reports.}
 {\small\textbf{Shared seed:} adapt resource sharing to participants who care about bad outcomes.}\par\vspace{2mm}
 \begin{tikzpicture}[x=1.22cm,y=1cm]
   \path[use as bounding box] (0,-.25) rectangle (14.5,3.25);
-  \node[font=\small\bfseries,anchor=west] at (.15,2.95) {FIRST RUN};
+  \node[anchor=west,inner sep=0pt] at (.15,2.95) {\stage[Ink]{First run}};
   \node[state,text width=4.2cm] (bound) at (3.2,2.25) {Risk approximation\\\textbf{Error bound}};
   \node[paused,text width=5.4cm] (premise) at (10.45,2.25)
     {Mechanism application assumes\\a suitable mechanism exists};
   \draw[flow] (bound) -- (premise);
-  \node[font=\small\bfseries,text=Rust,anchor=west] at (.15,1.15) {RERUN};
+  \node[anchor=west,inner sep=0pt] at (.15,1.15) {\stage[Rust]{Rerun}};
   \node[paused,text width=4.2cm] (audit) at (3.2,.45) {Q7's printed payments\\\textbf{Gain 9.5; pay 10.5}};
   \node[state,text width=5.4cm] (repair) at (10.45,.45)
     {Follow-up: repair the payments\\and strengthen the assumptions};
   \draw[flow,draw=Rust] (audit) -- (repair);
-\end{tikzpicture}
+\end{tikzpicture}\par\vspace{1mm}
 {\small The first run bounded the error in estimating risk, but left the resource-sharing rules conditional.
 The rerun found that Q7 could charge a participant more than they gained, prompting a repair under stronger assumptions.}\par\vspace{2mm}
 \takeaway{\textbf{The approximation bound survives. Its intended application needed repair.}}
@@ -409,25 +447,24 @@ practice remains open. These are two runs, not a single uninterrupted chain of r
 \vspace{2mm}
 \begin{columns}[T,onlytextwidth]
   \begin{column}{.315\textwidth}
-    {\color{Teal}\textbf{SEED: spot a rush to finish}}\par\vspace{2mm}
+    \stage[Ink]{Seed: spot a rush to finish}\par\vspace{2mm}
     \small Q3 finds urgency in traders' language just before a trade.
     P3's reviewers sometimes agree too soon.\par\vspace{2mm}
     \textbf{Could Q3's language analysis warn when P3's reviewers are rushing to agree?}
   \end{column}
   \begin{column}{.315\textwidth}
-    {\color{Teal}\textbf{SHIFT: test simpler agents}}\par\vspace{2mm}
+    \stage{Shift: test simpler agents}\par\vspace{2mm}
     \small The researchers found that simple random traders could do well under Q3's rules.\par\vspace{2mm}
     This suggested a different question for P3:
     \textbf{does the critic help, or do extra rounds of review explain the gain?}
   \end{column}
   \begin{column}{.315\textwidth}
-    {\color{Rust}\textbf{TEST: compare fairly}}\par\vspace{2mm}
+    \stage[Rust]{Test: compare fairly}\par\vspace{2mm}
     \small Compare a reviewer working alone with a reviewer helped by a critic.\par\vspace{2mm}
     Let both review and repair repeatedly, on the same tasks, with equal computing budgets.\par\vspace{2mm}
     \textbf{The required materials were unavailable.}
   \end{column}
 \end{columns}
-\vspace{5mm}
 \takeaway{Q3 inspired the test; it did not establish the answer for P3. Neither the seed nor the revised connexion was demonstrated.}
 \vspace{1mm}\smallprint{Original outcome: PAUSE-ON-ITERATE. Missing evidence, not proof that the critic is ineffective.}
 \note{Timing: 1 minute 30 seconds. The original seed transfers Q3's analysis of traders' language
@@ -456,7 +493,8 @@ continuation was requested, but no completed new outcome was available when thes
   \foreach \label/\value/\y in {Scan/3.74692/2.7,Research/410.56226/1.9,Manuscript/116.11062/1.1,Account/70.52111/.3}{
     \pgfmathsetmacro{\barw}{4.4*\value/410.56226}
     \node[anchor=west,font=\small] at (0,\y) {\label};
-    \fill[Teal] (2.1,\y-.18) rectangle (2.1+\barw,\y+.18);
+    \pgfmathparse{\value>400 ? 100 : 38}\edef\barshade{\pgfmathresult}
+    \fill[Teal!\barshade!Paper] (2.1,\y-.2) rectangle (2.1+\barw,\y+.2);
     \node[anchor=west,font=\small] at (2.2+\barw,\y)
       {\$\pgfmathprintnumber[fixed,precision=0]{\value}};
   }
@@ -493,7 +531,8 @@ of 100 pairs, and is not matched for quality. Choosing medium effort does not pr
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.52\textwidth}
   \centering
-  \includegraphics[width=\linewidth,height=6.1cm,keepaspectratio]{\assetdir/julien-dashboard.png}
+  {\setlength{\fboxsep}{3pt}\setlength{\fboxrule}{.5pt}\fcolorbox{Mist}{white}{%
+  \includegraphics[width=\dimexpr\linewidth-7pt\relax,height=6.3cm,keepaspectratio]{\assetdir/julien-dashboard.png}}}
 \end{column}
 \begin{column}{.45\textwidth}
   {\rmfamily\fontsize{30}{33}\selectfont 71$\times$82}\par
@@ -505,7 +544,7 @@ of 100 pairs, and is not matched for quality. Choosing medium effort does not pr
   \textbf{3} DRAFT outcomes}\par\vspace{2mm}
   {\small\color{Teal}\textbf{One pair can suggest several connexions.}}\par\vspace{2mm}
   % \smallprint{DRAFT is an internal research outcome, not external validation.}\vspace{4mm}
-  {\small The expert already knows\\one side of the connection.}\par\vspace{2mm}
+  {\small The expert already knows\\one side of the connexion.}\par\vspace{2mm}
   \smallprint{Expert assessment becomes a search for directions in their own programme.}
 \end{column}
 \end{columns}
@@ -535,7 +574,8 @@ A supported obstruction can be useful even when the research ends at PAUSE rathe
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.62\textwidth}
   {\small \QSLColumns\ vendor-side paper artefacts (columns)}\par\vspace{2mm}
-  \hspace*{8mm}\includegraphics[width=10.6cm,height=6.7cm,keepaspectratio]{\assetdir/qsl-dashboard.pdf}
+  {\setlength{\fboxsep}{3pt}\setlength{\fboxrule}{.5pt}\fcolorbox{Mist}{white}{%
+  \includegraphics[width=11.0cm,height=6.7cm,keepaspectratio]{\assetdir/qsl-dashboard.pdf}}}
   % \smallprint{\QSLRows\ QSL papers (rows). Frozen paper-pair universe.}
 \end{column}
 \begin{column}{.35\textwidth}
@@ -568,20 +608,21 @@ their execution or a measured discovery rate. Source: the local companion manusc
 frozen-corpus ledger.}
 \end{frame}
 
-\begin{frame}[t]{How much of creativity is connexion?}
-% \kicker{From a seminar question to a change in scientific work}
-\vspace{2mm}
-% {
-% \rmfamily\fontsize{22}{27}\selectfont
-If agents can make the connections and also investigate what follows\ldots
-% }
-\par\vspace{5mm}
-{\large What are the other things humans do in science?}\par\vspace{2mm}
-{\color{Teal}\large Choosing questions. Inventing concepts. Judging significance. Apply for funding.}\par\vspace{5mm}
-% \takeaway{\Large How much longer before all mathematicians are agents?}
-%
-{\small Can agents also help choose which corpora to bring together?}\par\vspace{2mm}
-% \smallprint{Discussion, not a forecast. Most mathematical work being agent-produced would not imply the disappearance of human mathematicians.}
+\begin{frame}[plain]
+\vspace{12mm}
+{\rmfamily\fontsize{36}{42}\selectfont How much of creativity\\is connexion?}\par
+\vspace{5mm}{\color{Teal}\rule{28mm}{1.5pt}}\par\vspace{8mm}
+{\large If agents can make the connexions and also investigate what follows \ldots}\par\vspace{6mm}
+{\large What are the other things humans do in science?}\par\vspace{3mm}
+{\rmfamily\fontsize{15}{21}\selectfont\color{Teal}
+Choosing questions.\quad Inventing concepts.\\Judging significance.\quad Applying for funding.}\par
+\vspace{8mm}
+{\color{Muted}Can agents also help choose which corpora to bring together?}\par
+\begin{tikzpicture}[remember picture,overlay]
+  \begin{scope}[shift={([xshift=-48mm,yshift=-10mm]current page.east)},x=3.6mm,y=3.6mm,opacity=.5]
+    \input{\assetdir/title-grid.tex}
+  \end{scope}
+\end{tikzpicture}
 \note{Timing: 1 minute, then five minutes of discussion. Pathfinder explores creativity through
 connections; it does not establish that creativity reduces to connections. Finding a candidate,
 establishing its consequences, and judging those consequences important are different achievements.
