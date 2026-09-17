@@ -13,15 +13,13 @@ Feature: Operate and recover a research campaign
 
   Rule: Suspension preserves resumable progress
 
-    @captain
     Scenario: A stop request drains admitted work
       Given pair "Q1P1" is being investigated
       And pair "Q1P2" is waiting for admission
       When the operator requests a stop
-      Then pair "Q1P1" preserves the result of its active stage
+      Then pair "Q1P1" finishes and preserves its active stage
       And pair "Q1P2" remains waiting
 
-    @captain
     Scenario: Completed stages are not repeated after continuation
       Given pair "Q1P1" stopped after its research account was produced
       When the campaign continues
@@ -29,19 +27,16 @@ Feature: Operate and recover a research campaign
 
   Rule: Recovery follows recorded state
 
-    @captain
     Scenario: A missing research account returns to consolidation
       Given pair "Q1P1" stopped before its research account was produced
       When the operator inspects pair "Q1P1"
       Then the next safe recovery action is "run consolidate"
 
-    @captain
     Scenario: An existing research account proceeds to assessment
       Given pair "Q1P1" stopped with a research account awaiting assessment
       When the operator inspects pair "Q1P1"
       Then the next safe recovery action is "run verify"
 
-    @captain
     Scenario: A blocked investigation waits for operator recovery
       Given pair "Q1P1" cannot continue automatically
       When Pathfinder admits pending investigations
