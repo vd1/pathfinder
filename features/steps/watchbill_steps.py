@@ -138,7 +138,12 @@ def provider_returns_account(context):
     context.returned_account = "provider research account"
     context.result = run_with_replies(
         context,
-        [provider_reply(context.returned_account), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')],
+        [
+            provider_reply(context.returned_account),
+            provider_reply(context.returned_account),
+            provider_reply('{"decision":"DRAFT","reason":"ready","action":null}'),
+            provider_reply('{"decision":"DRAFT","reason":"ready","action":null}'),
+        ],
         lambda: research.run_thread(context.campaign, "Q1P1"),
     )
 
