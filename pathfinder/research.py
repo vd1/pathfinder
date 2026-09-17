@@ -231,6 +231,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("When the campaign continues")
     @planks("When the provider returns a research account for pair \"Q1P1\"")
     @planks("When both consolidation attempts produce no stored research account")
+    @planks("When the direct provider returns a complete research account on its consolidation retry")
     """
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
     note, verdicts = d / f"{pair_id}.tex", d / f"{pair_id}.verdict.json"
@@ -275,7 +276,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 # static material first, the instruction last: the head is shared with every other judge call
                 p = judge_head(d, inp, note.name) + "\n\n## your task\n\n"
                 p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
-                r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"])
+                r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"], done=lambda: True)
                 try:
                     v = parse_json(r["text"]); dec = v["decision"].upper()
                     assert dec in ("DRAFT", "REVISE", "ITERATE", "PAUSE")

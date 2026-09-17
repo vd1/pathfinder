@@ -133,6 +133,46 @@ def evaluates_consolidation_attempt(context):
     )
 
 
+@when("the direct provider returns a complete research account on its consolidation retry")
+def provider_returns_account_on_retry(context):
+    context.returned_account = "complete research account"
+    context.account_at_verification = None
+    replies = [
+        provider_reply(),
+        provider_reply(context.returned_account),
+        provider_reply('{"decision":"DRAFT","reason":"ready","action":null}'),
+    ]
+
+    # @exceptional-double: provider conditions cannot be produced on demand.
+    original = transport.call
+    context.provider_calls = []
+
+    def call(*args, **kwargs):
+        stage = kwargs.get("stage")
+        context.provider_calls.append(stage)
+        if stage == "verify":
+            context.account_at_verification = (
+                context.campaign.thread_dir("Q1P1") / "Q1P1.tex"
+            ).read_text()
+        return replies.pop(0)
+
+    transport.call = call
+    try:
+        context.result = research.run_thread(context.campaign, "Q1P1")
+    finally:
+        transport.call = original
+
+
+@then("Pathfinder stores that research account before verification")
+def stores_account_before_verification(context):
+    assert context.account_at_verification == context.returned_account
+
+
+@then("the verifier assesses it once")
+def verifier_assesses_once(context):
+    assert context.provider_calls.count("verify") == 1
+
+
 @when('the provider returns a research account for pair "Q1P1"')
 def provider_returns_account(context):
     context.returned_account = "provider research account"

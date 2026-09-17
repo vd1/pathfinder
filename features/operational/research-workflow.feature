@@ -42,6 +42,12 @@ Feature: Operate a paper-pair research workflow
       When Pathfinder evaluates the consolidation attempt
       Then Pathfinder makes one more consolidation attempt
 
+    Scenario: A returned research account proceeds directly to verification
+      Given pair "Q1P1" has substantive findings awaiting consolidation
+      When the direct provider returns a complete research account on its consolidation retry
+      Then Pathfinder stores that research account before verification
+      And the verifier assesses it once
+
     @contract
     Scenario: Provider call receipts retain evidence of generated output
       Given an OpenAI-compatible provider call reports positive output tokens and no parsed text
