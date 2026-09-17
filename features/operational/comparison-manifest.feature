@@ -37,6 +37,25 @@ Feature: Define reproducible role comparisons
       When the comparison run schedules role "consolidate"
       Then it executes through Claude Code rather than a batch provider
 
+    Scenario: Direct-provider consolidation returns its account in the response
+      Given role "consolidate" is assigned execution class "provider" through ELM
+      And the provider cannot write campaign files
+      When Pathfinder consolidates a frozen paper pair
+      Then the provider response becomes the pair's research account
+
+    Scenario: Direct-provider verification assesses the consolidated account
+      Given a direct-provider consolidation produced a research account
+      And role "verify" is assigned execution class "provider" through ELM
+      When Pathfinder verifies the frozen paper pair
+      Then the pair records the provider's verification decision
+
+    Scenario: Assigned comparison execution honours each role's execution class
+      Given one frozen paper pair
+      And each comparison role has a model, backend, and execution class assignment
+      When Pathfinder runs the assigned comparison workflow
+      Then each role follows its assigned execution route
+      And consolidation completes before verification
+
   Rule: Receipts preserve comparable observations
 
     Scenario: Every role execution produces a comparable receipt

@@ -201,7 +201,11 @@ def _peers(campaign, pair_id, stop):
 
 
 def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
-    """Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists."""
+    """@planks("When Pathfinder consolidates a frozen paper pair")
+    @planks("When Pathfinder verifies the frozen paper pair")
+
+    Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
+    """
     d = campaign.thread_dir(pair_id)
     for attempt in range(2):
         r = transport.call(prompt, campaign=campaign, model=campaign.model, tools=tools, search=False, cwd=d,

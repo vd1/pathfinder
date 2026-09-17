@@ -24,11 +24,13 @@ Procedure lives in the skills. Every role reads this on open.
 
 - discover: `nix develop path:. -c uv run behave --dry-run --tags="not @captain and not @shipwright"`
 - focused: `set -a; . "$HOME/.aienv"; set +a; ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; nix develop path:. -c uv run behave "$file" --name "^${name}$" --tags="not @captain and not @shipwright"`
-- broad: `nix develop path:. -c uv run pytest -q`
-- coverage: `nix develop path:. -c uv run pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
+- broad: `nix develop path:. -c uv run behave --tags="not @captain and not @shipwright"`
+- coverage: `nix develop path:. -c uv run coverage run --branch --source=pathfinder -m behave --tags="not @captain and not @shipwright"`
+- broad-unit: `nix develop path:. -c uv run pytest -q`
+- coverage-unit: `nix develop path:. -c uv run pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
 - step-usage: `nix develop path:. -c uv run behave --steps-catalog --tags="not @captain and not @shipwright"`
 - plank-inventory: `nix develop path:. -c python -c 'from pathlib import Path; print("".join(f"{p}:{n}:{line.strip()}\\n" for p in Path("pathfinder").rglob("*.py") for n,line in enumerate(p.read_text().splitlines(),1) if "@planks(" in line or "@planks-provisional(" in line), end="")'`
-- typecheck: none
+- typecheck: `nix develop path:. -c python -m compileall -q pathfinder`
 - lint: none
 - conformance: none
 
@@ -39,10 +41,10 @@ Procedure lives in the skills. Every role reads this on open.
 
 ## Tiers
 
-- default: @logic
+- default: untagged
 - sandbox: none
-- policy: @logic via `nix develop path:.`; current scenarios are non-binding `@captain` skeletons
-- weather: none
+- policy: untagged local scenarios via `nix develop path:.`; direct ELM scenarios source `~/.aienv` and use `ELM_API_KEY`
+- weather: .shipshape/behave-timings.json
 - runrecord: .shipshape/runrecord.jsonl
 
 ## Dependencies
@@ -60,3 +62,4 @@ Procedure lives in the skills. Every role reads this on open.
 ## Known false-failure modes
 
 - mode: plank inventory uses text search and cannot prove docstring attachment to a declaration
+- mode: Behave `--steps-catalog` is plain text and does not report scenario usage as structured data

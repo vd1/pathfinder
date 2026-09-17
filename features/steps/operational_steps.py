@@ -104,6 +104,7 @@ def technique_paper(context, identifier):
 
 @when('the connection judge assesses pair "{pair_id}"')
 def assess_pair(context, pair_id):
+    # @exceptional-double: internal composition has no independent external verifier.
     original = scan.transport.call
     scan.transport.call = lambda *args, **kwargs: {
         "seconds": 0, "cost": 0, "text": json.dumps({"feasibility": 50, "gain": 40, "connexion": "connection", "rationale": "evidence"}), "error": None
@@ -138,6 +139,7 @@ def missing_assessment(context):
 @when('the connection scan resumes')
 def resume_scan(context):
     context.assessed = []
+    # @exceptional-double: internal composition has no independent external verifier.
     original = scan.transport.call
 
     def call(*args, **kwargs):
@@ -428,6 +430,7 @@ def request_stop(context):
         set_status(context, stage="peers", status="stopped")
         return "stopped"
 
+    # @exceptional-double: internal composition has no independent external verifier.
     original = runner._work
     runner._work = work
     try:
@@ -512,6 +515,7 @@ def prepared_corpora(context):
 
 @when("the operator starts a Pathfinder campaign from those corpora")
 def start_prepared_campaign(context):
+    # @exceptional-double: internal composition has no independent external verifier.
     original = scan.transport.call
     scan.transport.call = lambda *args, **kwargs: {
         "seconds": 0,

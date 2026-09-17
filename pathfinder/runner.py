@@ -97,7 +97,8 @@ def execution_receipt(role, backend, model, execution_class, prompt_digest, prov
 
 
 def run_assigned_comparison(campaign, assignments: dict) -> dict:
-    """@planks("When Pathfinder runs the assigned comparison workflow")"""
+    """@planks("When Pathfinder runs the assigned comparison workflow")
+    """
     receipts = []
     outcome = None
     for role, assignment in assignments.items():
