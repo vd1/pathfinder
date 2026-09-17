@@ -108,13 +108,18 @@ def _counters(backend, usage):
 
 def _cost(campaign, model, reported, counters):
     """(cost in USD, basis, rates). Reported by the provider, or priced from reported counters with the
-    campaign's table, an approximation that ignores cached rates; otherwise unknown."""
+    campaign's table, an approximation; otherwise unknown. Codex counts cached tokens inside its input
+    total, so when the table has a cached rate and the cached count was reported they are priced apart."""
     if reported is not None:
         return float(reported), "reported", None
     rates, inp, out = campaign.prices.get(model), counters["input_tokens"], counters["output_tokens"]
-    if rates and inp is not None and out is not None:
+    if not rates or inp is None or out is None:
+        return None, None, None
+    cached = counters["cache_read"] if campaign.backend == "codex" and "cached_input_per_m" in rates else None
+    if cached is None:
         return campaign.price(model, inp, out), "priced", rates
-    return None, None, None
+    return ((inp - cached) * rates["input_per_m"] + cached * rates["cached_input_per_m"]
+            + out * rates["output_per_m"]) / 1e6, "priced", rates
 
 
 def _receipt(campaign, thread, stage, actor, model, r):

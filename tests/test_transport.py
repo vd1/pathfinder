@@ -104,6 +104,15 @@ def test_codex_receipt_keeps_the_raw_counters_and_the_rates(tmp_path, monkeypatc
     assert row["cost_basis"] == "priced" and row["rates"] == {"input_per_m": 1.0, "output_per_m": 1.0}
 
 
+def test_codex_cached_input_is_priced_at_the_cached_rate_when_the_table_has_one(tmp_path, monkeypatch):
+    raw = {"input_tokens": 1_000_000, "cached_input_tokens": 900_000, "output_tokens": 0}
+    monkeypatch.setenv("FAKE_MODE", "codex"); monkeypatch.setenv("FAKE_USAGE", json.dumps(raw))
+    c = campaign(tmp_path, "codex"); c.prices = {"m": {"input_per_m": 10.0, "cached_input_per_m": 1.0, "output_per_m": 50.0}}
+    transport.call("p", campaign=c, model="m", tools=False, search=False, cwd=tmp_path, timeout=10, thread="T", stage="s", actor="a")
+    row = rows(tmp_path)[0]
+    assert abs(row["cost"] - 1.9) < 1e-9 and row["rates"]["cached_input_per_m"] == 1.0      # 0.1M at 10 plus 0.9M at 1, not 10.0
+
+
 def test_reported_cost_is_marked_reported(tmp_path, monkeypatch):
     transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
                    timeout=10, thread="T", stage="s", actor="a")

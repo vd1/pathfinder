@@ -133,6 +133,17 @@ your own campaign directory and edit the models and the budget.
 - `prices`: per-model prices, in USD, used when the CLI reports no cost. A
   model missing from the table has unknown cost, not zero: the guard then
   counts each of its calls at `call_estimate_usd`, so price the models you use.
+  An entry may also give `cached_input_per_m`: Codex counts cached tokens
+  inside its input total, and with that rate they are priced apart. In the
+  recorded Astra experiments nine input tokens in ten were cached, and flat
+  pricing overstated the cost 4.5 times. The shipped table prices
+  `gpt-6-astra` at OpenAI's published standard rates of 16 September 2026: 10,
+  1 and 50 USD per million uncached input, cached input and output tokens.
+  Those rates double for a request above 272,000 input tokens. Nothing is
+  done about that tier, for two reasons: a receipt sums the requests of a
+  call, so its input total can pass the threshold without any single request
+  doing so, and the Codex CLI's context window, 258,000 tokens at that date,
+  keeps a single request below it.
 - `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
   sources instead of abstracts on that side.
 - `codex`: optional, for the Codex backend through a custom OpenAI-compatible
@@ -175,8 +186,8 @@ and a call killed at its deadline. A receipt holds `v` (2), `at`, `thread`,
   counter that was not reported is null, never zero.
 - `cost` in USD and `cost_basis`: `reported` by the CLI, or `priced` from the
   reported counters with the campaign's table, in which case `rates` holds
-  the rates applied. A priced amount is an approximation that ignores cached
-  rates. When neither is possible both are null.
+  the rates applied. A priced amount is an approximation: it ignores cache
+  writes and any long-context tier. When neither is possible both are null.
 
 Nothing in a receipt is an estimate. The guard's caution about calls of
 unknown cost lives in the guard, which does not charge a call that never
