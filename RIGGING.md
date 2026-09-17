@@ -26,7 +26,7 @@ Procedure lives in the skills. Every role reads this on open.
 - focused: `ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; nix develop path:. -c uv run behave "$file" --name "^${name}$" --tags="not @captain and not @shipwright"`
 - broad: `nix develop path:. -c uv run pytest -q`
 - coverage: `nix develop path:. -c uv run pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
-- step-usage: none
+- step-usage: `nix develop path:. -c uv run behave --steps-catalog --tags="not @captain and not @shipwright"`
 - plank-inventory: `nix develop path:. -c python -c 'from pathlib import Path; print("".join(f"{p}:{n}:{line.strip()}\\n" for p in Path("pathfinder").rglob("*.py") for n,line in enumerate(p.read_text().splitlines(),1) if "@planks(" in line or "@planks-provisional(" in line), end="")'`
 - typecheck: none
 - lint: none
@@ -51,6 +51,7 @@ Procedure lives in the skills. Every role reads this on open.
 - dependency: behave
 - dependency: pytest
 - dependency: pytest-cov
+- dependency: ELM OpenAI-compatible request interface with `Qwen/Qwen3.5-397B-A17B-FP8`; authenticate from `ELM_API_KEY` after sourcing `~/.aienv` without reading it
 
 ## Outbound
 

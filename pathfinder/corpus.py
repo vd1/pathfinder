@@ -59,6 +59,16 @@ def read(path: Path) -> list[dict]:
     return [json.loads(l) for l in Path(path).read_text().splitlines() if l.strip()]
 
 
+def validate_snapshot(path: Path) -> list[dict]:
+    """@planks("When Pathfinder validates the snapshot")"""
+    rows = read(path)
+    for row in rows:
+        for key in ("id", "title", "abstract"):
+            if not row.get(key):
+                raise ValueError(f"snapshot record requires {key}")
+    return rows
+
+
 def body(campaign, row: dict, fulltext: bool) -> str:
     if fulltext and row.get("text"):
         p = campaign.path(row["text"])

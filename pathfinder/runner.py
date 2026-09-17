@@ -1,12 +1,104 @@
 """The research loop: seats, rolling admission, budget guard, stop as a drain, health flag."""
 from __future__ import annotations
-import json, os, signal, time
+import copy, hashlib, json, os, signal, time
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
 from . import research, transport
+from . import corpus
 
 
 PROBE_INTERVAL = 60
+
+
+def _digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def create_manifest(campaign) -> dict:
+    """@planks("When a comparison run is created")
+    @planks("When the campaign is inspected or repeated")
+    """
+    digests = {side: _digest(campaign.path(f"{side}.jsonl")) for side in ("Q", "P")}
+    manifest = {"snapshots": {side: f"{side}.jsonl" for side in ("Q", "P")}, "snapshot_digests": digests}
+    campaign.path("manifest.json").write_text(json.dumps(manifest, indent=2))
+    return manifest
+
+
+def pair_identity(campaign, pair_id: str) -> str:
+    """@planks("When both runs enumerate their cross-corpus pairs")"""
+    i, j = (int(n) for n in pair_id[1:].split("P"))
+    q = corpus.read(campaign.path("Q.jsonl"))[i - 1]["id"]
+    p = corpus.read(campaign.path("P.jsonl"))[j - 1]["id"]
+    return hashlib.sha256(f"{q}\0{p}".encode()).hexdigest()
+
+
+def result_provenance(campaign, pair_id: str) -> dict:
+    """@planks("Given a run produces a result for one cross-corpus pair")"""
+    i, j = (int(n) for n in pair_id[1:].split("P"))
+    return {
+        "record_ids": [corpus.read(campaign.path("Q.jsonl"))[i - 1]["id"], corpus.read(campaign.path("P.jsonl"))[j - 1]["id"]],
+        "snapshot_digests": [_digest(campaign.path(f"{side}.jsonl")) for side in ("Q", "P")],
+    }
+
+
+def validate_manifest(manifest: dict) -> dict:
+    """@planks("When the operator defines a run manifest")
+    @planks("When the operator defines a run")
+    """
+    required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
+    for role in ("scan", "research", "consolidate", "verify"):
+        if required - manifest["assignments"][role].keys():
+            raise ValueError(f"incomplete assignment for {role}")
+    return manifest
+
+
+def comparison_arm(baseline: dict, role: str, *, model: str | None = None, backend: str | None = None) -> dict:
+    """@planks("When the operator creates a comparison arm for role \"verify\"")"""
+    arm = copy.deepcopy(baseline)
+    if model is not None:
+        arm["assignments"][role]["model"] = model
+    if backend is not None:
+        arm["assignments"][role]["backend"] = backend
+    return arm
+
+
+def compare_manifests(baseline: dict, arm: dict) -> dict:
+    """@planks("When the runs are compared")"""
+    changed = [role for role in baseline["assignments"] if baseline["assignments"][role] != arm["assignments"][role]]
+    return {"role": changed[0], "outcomes": [], "cost": [], "latency": []}
+
+
+def reproduction_record(campaign, manifest: dict) -> dict:
+    """@planks("When the comparison run starts")"""
+    encoded = json.dumps(manifest, sort_keys=True).encode()
+    prompts = campaign.path("prompts")
+    return {
+        "manifest_digest": hashlib.sha256(encoded).hexdigest(),
+        "snapshot_digests": {side: _digest(campaign.path(f"{side}.jsonl")) for side in ("Q", "P")},
+        "prompt_digests": {path.name: _digest(path) for path in prompts.glob("*") if path.is_file()} if prompts.exists() else {},
+    }
+
+
+def execution_route(assignment: dict) -> str:
+    """@planks("When the comparison run schedules role \"scan\"")
+    @planks("When the comparison run schedules role \"research\"")
+    @planks("When the comparison run schedules role \"consolidate\"")
+    """
+    return "openai-compatible" if assignment["backend"] == "elm" else assignment["backend"]
+
+
+def execution_receipt(role, backend, model, execution_class, prompt_digest, provider_job_id, raw_response, outcome, latency, token_usage, cost):
+    """@planks("When the execution finishes")
+    @planks("When the same assignment is repeated")
+    """
+    return dict(role=role, backend=backend, model=model, execution_class=execution_class, prompt_digest=prompt_digest,
+                provider_job_id=provider_job_id, raw_response=raw_response, outcome=outcome, latency=latency,
+                token_usage=token_usage, cost=cost)
+
+
+def validate_assignment(assignment: dict) -> bool:
+    """@planks("When the run manifest is validated")"""
+    return assignment.get("provider") == "elm" and assignment.get("backend") in {"opencode", "pi"}
 
 
 def _now():

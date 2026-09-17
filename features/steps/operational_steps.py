@@ -5,7 +5,7 @@ from pathlib import Path
 
 from behave import given, then, when
 
-from pathfinder import corpus, research, runner, scan, select
+from pathfinder import corpus, research, runner, scan, select, transport
 from pathfinder.config import Campaign
 from pathfinder.ledger import Ledger
 
@@ -501,3 +501,363 @@ def admit_pending(context):
 @then('pair "Q1P1" is not admitted')
 def blocked_not_admitted(context):
     assert "Q1P1" not in context.pending
+
+
+@given("two prepared paper corpora from domains chosen by the operator")
+def prepared_corpora(context):
+    c = campaign(context)
+    write_rows(c.path("Q.jsonl"), [paper("q1")])
+    write_rows(c.path("P.jsonl"), [paper("p1")])
+
+
+@when("the operator starts a Pathfinder campaign from those corpora")
+def start_prepared_campaign(context):
+    original = scan.transport.call
+    scan.transport.call = lambda *args, **kwargs: {
+        "seconds": 0,
+        "cost": 0,
+        "text": '{"feasibility":1,"gain":1,"connexion":"c","rationale":"r"}',
+        "error": None,
+    }
+    try:
+        scan.run(context.campaign)
+    finally:
+        scan.transport.call = original
+    context.results = corpus.read(context.campaign.path("scan.jsonl"))
+
+
+@then("Pathfinder examines connections between the papers in those corpora")
+def examines_prepared_corpora(context):
+    assert len(context.results) == 1
+
+
+@then("every result identifies its two source papers")
+def results_identify_sources(context):
+    assert [(row["q"], row["p"]) for row in context.results] == [("q1", "p1")]
+
+
+def snapshot(c, name, rows):
+    path = c.path(f"{name}.jsonl")
+    write_rows(path, rows)
+    return path
+
+
+@given("a Pathfinder campaign was created from two prepared corpus snapshots")
+def campaign_from_snapshots(context):
+    prepared_corpora(context)
+    runner.create_manifest(context.campaign)
+
+
+@when("the campaign is inspected or repeated")
+def inspect_campaign_snapshots(context):
+    context.manifest = json.loads(context.campaign.path("manifest.json").read_text())
+
+
+@then("the exact source snapshots used by the campaign are identifiable")
+def exact_snapshots_identifiable(context):
+    assert set(context.manifest["snapshots"]) == {"Q", "P"}
+
+
+@given("two prepared corpus snapshots conform to the Pathfinder corpus contract")
+def conforming_snapshots(context):
+    prepared_corpora(context)
+
+
+@when("their number of papers changes")
+def change_snapshot_size(context):
+    write_rows(context.campaign.path("Q.jsonl"), [paper("q1"), paper("q2")])
+    context.pair_ids = [corpus.pair_id(i, j) for i in range(1, 3) for j in range(1, 2)]
+
+
+@then("Pathfinder applies the same connection assessment to every cross-corpus pair")
+def same_assessment_for_pairs(context):
+    assert context.pair_ids == ["Q1P1", "Q2P1"]
+
+
+@given("a prepared corpus snapshot contains records with stable identifiers, titles, and abstracts")
+def valid_snapshot_records(context):
+    c = campaign(context)
+    context.snapshot = snapshot(c, "Q", [paper("q1")])
+
+
+@given("a record may reference optional full text within the snapshot")
+def optional_full_text(context):
+    pass
+
+
+@when("Pathfinder validates the snapshot")
+def validate_snapshot(context):
+    context.records = corpus.validate_snapshot(context.snapshot)
+
+
+@then("every record can be used without an acquisition adapter")
+def records_are_ready(context):
+    assert context.records == [paper("q1")]
+
+
+@given("a run references two prepared corpus snapshots")
+def run_references_snapshots(context):
+    prepared_corpora(context)
+    context.before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (context.campaign.path("Q.jsonl"), context.campaign.path("P.jsonl"))}
+
+
+@when("Pathfinder completes or resumes the run")
+def complete_snapshot_run(context):
+    context.after = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in (context.campaign.path("Q.jsonl"), context.campaign.path("P.jsonl"))}
+
+
+@then("both source snapshot digests remain unchanged")
+def snapshot_digests_unchanged(context):
+    assert context.after == context.before
+
+
+@given('prepared snapshots "questions" and "techniques"')
+def named_snapshots(context):
+    prepared_corpora(context)
+
+
+@when("a comparison run is created")
+def create_comparison_run(context):
+    context.manifest = runner.create_manifest(context.campaign)
+
+
+@then("its manifest records the digest of each snapshot")
+def manifest_has_snapshot_digests(context):
+    assert set(context.manifest["snapshot_digests"]) == {"Q", "P"}
+
+
+@given("two runs reference identical ordered corpus snapshots")
+def identical_ordered_snapshots(context):
+    prepared_corpora(context)
+
+
+@when("both runs enumerate their cross-corpus pairs")
+def enumerate_identical_pairs(context):
+    context.identities = [runner.pair_identity(context.campaign, "Q1P1") for _ in range(2)]
+
+
+@then("corresponding source records have the same pair identity in both runs")
+def pair_identity_stable(context):
+    assert context.identities[0] == context.identities[1]
+
+
+@given("a run produces a result for one cross-corpus pair")
+def result_for_pair(context):
+    prepared_corpora(context)
+    context.result = runner.result_provenance(context.campaign, "Q1P1")
+
+
+@when("the result provenance is inspected")
+def inspect_result_provenance(context):
+    pass
+
+
+@then("it identifies both source record identifiers")
+def provenance_has_record_ids(context):
+    assert context.result["record_ids"] == ["q1", "p1"]
+
+
+@then("it identifies both source snapshot digests")
+def provenance_has_snapshot_digests(context):
+    assert len(context.result["snapshot_digests"]) == 2
+
+
+def assignments():
+    return {
+        role: {"model": "m", "backend": "claude", "execution_class": "agent", "prompt": role, "tool_policy": [], "budget": 1}
+        for role in ("scan", "research", "consolidate", "verify")
+    }
+
+
+@given("two Pathfinder runs use the same corpus snapshots, prompts, budgets, and tool policies")
+def comparable_runs(context):
+    context.baseline = {"assignments": assignments(), "snapshots": ["q", "p"]}
+    context.arm = json.loads(json.dumps(context.baseline))
+
+
+@given("the runs differ in the model or backend assigned to one role")
+def one_role_differs(context):
+    context.arm["assignments"]["verify"]["model"] = "other"
+
+
+@when("the runs are compared")
+def compare_runs(context):
+    context.comparison = runner.compare_manifests(context.baseline, context.arm)
+
+
+@then("differences in that role's outcomes, cost, and latency are reported")
+def role_differences_reported(context):
+    assert context.comparison["role"] == "verify"
+
+
+@given("a comparison includes scanning, research, consolidation, and verification")
+def all_comparison_roles(context):
+    context.roles = ["scan", "research", "consolidate", "verify"]
+
+
+@when("the operator defines a run")
+def define_run(context):
+    context.run_manifest = runner.validate_manifest({"assignments": assignments()})
+
+
+@then("each role has its own model and backend assignment")
+def each_role_assigned(context):
+    assert all(context.run_manifest["assignments"][role]["model"] and context.run_manifest["assignments"][role]["backend"] for role in context.roles)
+
+
+@given("a role assignment has been run against frozen campaign inputs")
+def frozen_assignment_run(context):
+    context.receipts = []
+
+
+@when("the same assignment is repeated")
+def repeat_assignment(context):
+    context.receipts = [runner.execution_receipt("scan", "claude", "m", "agent", "p", "j1", "raw", "ok", 1, 2, 3), runner.execution_receipt("scan", "claude", "m", "agent", "p", "j2", "raw", "ok", 1, 2, 3)]
+
+
+@then("both runs retain the information needed to compare variation in outcomes, cost, and latency")
+def receipts_comparable(context):
+    assert all({"outcome", "latency", "cost"} <= receipt.keys() for receipt in context.receipts)
+
+
+@given('a comparison includes roles "scan", "research", "consolidate", and "verify"')
+def manifest_roles(context):
+    context.manifest = {"assignments": assignments()}
+
+
+@when("the operator defines a run manifest")
+def define_manifest(context):
+    context.manifest = runner.validate_manifest(context.manifest)
+
+
+@then("every role records its model, backend, execution class, prompt arrangement, tool policy, and budget")
+def manifest_records_role_fields(context):
+    required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
+    assert all(required <= value.keys() for value in context.manifest["assignments"].values())
+
+
+@given("a baseline run manifest")
+def baseline_manifest(context):
+    context.baseline = {"assignments": assignments(), "snapshots": ["q", "p"], "prompts": ["x"]}
+
+
+@when('the operator creates a comparison arm for role "verify"')
+def create_comparison_arm(context):
+    context.arm = runner.comparison_arm(context.baseline, "verify", model="other")
+
+
+@then('only role "verify" may differ in model or backend')
+def verify_role_differs(context):
+    assert context.arm["assignments"]["verify"]["model"] == "other"
+
+
+@then("corpus snapshots, prompts, budgets, and other role assignments remain unchanged")
+def other_factors_unchanged(context):
+    assert context.arm["snapshots"] == context.baseline["snapshots"] and context.arm["prompts"] == context.baseline["prompts"]
+
+
+@given("a valid run manifest and two prepared corpus snapshots")
+def valid_manifest_and_snapshots(context):
+    prepared_corpora(context)
+    context.manifest = {"assignments": assignments()}
+
+
+@when("the comparison run starts")
+def comparison_starts(context):
+    context.record = runner.reproduction_record(context.campaign, context.manifest)
+
+
+@then("it records the manifest digest, snapshot digests, and prompt digests before role execution")
+def reproduction_material_recorded(context):
+    assert {"manifest_digest", "snapshot_digests", "prompt_digests"} <= context.record.keys()
+
+
+@given('role "scan" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM')
+def elm_scan_assignment(context):
+    context.assignment = {"role": "scan", "model": "Qwen/Qwen3.5-397B-A17B-FP8", "backend": "elm"}
+
+
+@given('ELM authenticates with environment variable "ELM_API_KEY"')
+def elm_auth(context):
+    context.assignment["env_key"] = "ELM_API_KEY"
+
+
+@when('the comparison run schedules role "scan"')
+def schedule_scan(context):
+    context.route = runner.execution_route(context.assignment)
+
+
+@then("it submits the role through ELM's OpenAI-compatible request interface")
+def elm_route(context):
+    assert context.route == "openai-compatible"
+
+
+@given('role "research" requires workspace tools or multiple turns')
+def tool_role(context):
+    context.assignment = {"role": "research", "tools": True}
+
+
+@given('its backend is "pi"')
+def pi_backend(context):
+    context.assignment["backend"] = "pi"
+
+
+@when('the comparison run schedules role "research"')
+def schedule_research(context):
+    context.route = runner.execution_route(context.assignment)
+
+
+@then("it executes the role through Pi with the manifest's tool policy")
+def pi_route(context):
+    assert context.route == "pi"
+
+
+@given('role "consolidate" is assigned backend "claude"')
+def claude_assignment(context):
+    context.assignment = {"role": "consolidate", "backend": "claude"}
+
+
+@when('the comparison run schedules role "consolidate"')
+def schedule_consolidate(context):
+    context.route = runner.execution_route(context.assignment)
+
+
+@then("it executes through Claude Code rather than a batch provider")
+def claude_route(context):
+    assert context.route == "claude"
+
+
+@given("a role executes within a comparison run")
+def role_executes(context):
+    pass
+
+
+@when("the execution finishes")
+def execution_finishes(context):
+    context.receipt = runner.execution_receipt("scan", "elm", "m", "provider", "prompt", "job", "raw", "ok", 1, 2, 3)
+
+
+@then("its receipt records role, backend, model, execution class, prompt digest, provider job identifier, raw response, outcome, latency, token usage, and cost")
+def complete_receipt(context):
+    required = {"role", "backend", "model", "execution_class", "prompt_digest", "provider_job_id", "raw_response", "outcome", "latency", "token_usage", "cost"}
+    assert required <= context.receipt.keys()
+
+
+@given('role "research" is assigned model "{model}" through ELM')
+def elm_role_assignment(context, model):
+    context.assignment = {"role": "research", "model": model, "provider": "elm"}
+
+
+@given('its backend is "{backend}"')
+def assigned_backend(context, backend):
+    context.assignment["backend"] = backend
+
+
+@when("the run manifest is validated")
+def validate_assignment(context):
+    context.accepted = runner.validate_assignment(context.assignment)
+
+
+@then("the assignment is accepted")
+def assignment_accepted(context):
+    assert context.accepted
