@@ -378,7 +378,7 @@ Researchers also read new ledger entries before changing direction or declaring 
 \paperpair{\Qfour}{\Psix}
 \vspace{1mm}
 \begin{tikzpicture}[x=1.22cm,y=1cm]
-  \path[use as bounding box] (0,-.1) rectangle (14.5,3.5);
+  \path[use as bounding box] (0,-.3) rectangle (14.5,3.5);
   \node[anchor=west,inner sep=0pt] at (.1,3.2) {\stage[Ink]{Seed}};
   \node[anchor=west,inner sep=0pt] at (4.75,3.2) {\stage[Rust]{Obstacle}};
   \node[anchor=west,inner sep=0pt] at (9.6,3.2) {\stage{Conditional result}};
@@ -388,13 +388,22 @@ Researchers also read new ledger entries before changing direction or declaring 
     {Truthful reports can still be insufficient for ranking.};
   \draw[flow] (4.0,3.2) -- (4.55,3.2);
   \draw[flow] (8.85,3.2) -- (9.4,3.2);
-  \node[agent] (a) at (9.95,1.55) {};
-  \node[agent] (b) at (11.05,2.35) {};
-  \node[agent] (c) at (11.05,.75) {};
-  \node[agent] (d) at (12.4,2.35) {};
-  \node[agent] (e) at (13.1,.75) {};
-  \draw[Teal,line width=1pt] (a)--(b)--(c)--(a) (b)--(d)--(e)--(c);
-  \node[font=\scriptsize,align=left,anchor=west,text=Muted] at (13.35,1.6) {overlap\\calibrates\\observers};
+  % observers are dots; an edge joins two observers who judged the same comparison.
+  % A triangle of mutual overlaps fixes three reliabilities; further overlaps carry the calibration onward.
+  \coordinate (a) at (10.0,1.5); \coordinate (b) at (11.0,2.4); \coordinate (c) at (11.0,.6);
+  \fill[Teal!16!Paper] (a) -- (b) -- (c) -- cycle;
+  \draw[Teal,line width=1.2pt,line join=round] (a) -- (b) -- (c) -- cycle;
+  \node[agent,minimum size=4.6mm] (na) at (a) {};
+  \node[agent,minimum size=4.6mm] (nb) at (b) {};
+  \node[agent,minimum size=4.6mm] (nc) at (c) {};
+  \node[agent,minimum size=4.6mm,fill=Teal!32!Paper,draw=Teal,line width=.8pt] (nd) at (12.25,2.4) {};
+  \node[agent,minimum size=4.6mm,fill=Teal!32!Paper,draw=Teal,line width=.8pt] (ne) at (12.25,.6) {};
+  \node[agent,minimum size=4.6mm,fill=Teal!32!Paper,draw=Teal,line width=.8pt] (nf) at (13.5,1.5) {};
+  \draw[Teal!45!Paper,line width=.8pt] (nd) -- (ne);
+  \draw[flow] (nb) -- (nd); \draw[flow] (nc) -- (ne);
+  \draw[flow] (nd) -- (nf); \draw[flow] (ne) -- (nf);
+  \node[font=\scriptsize,align=right,anchor=east,text=Teal,inner sep=0pt] at (9.6,1.5) {three mutual\\overlaps fix\\reliabilities};
+  \node[font=\scriptsize,align=center,anchor=north,text=Muted,inner sep=0pt] at (12.5,.12) {further overlaps carry the calibration onward};
   \node[anchor=north west,inner sep=0pt] at (.1,1.35) {\stage[Muted]{Conditions}};
   \node[anchor=north west,text width=9.6cm,font=\small,align=left,inner sep=0pt] at (.1,.9)
     {Informative observations. Structured errors.\\Enough shared comparisons.};
