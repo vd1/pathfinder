@@ -828,6 +828,73 @@ def elm_route(context):
     assert context.route == "openai-compatible"
 
 
+@given("an OpenAI-compatible provider returns generated text in a raw response event")
+def openai_response_event(context):
+    c = campaign(context)
+    c.backend = "elm"
+    c.raw = {"codex": {"name": "elm", "env_key": "ELM_API_KEY"}}
+    model = "Qwen/Qwen3.5-397B-A17B-FP8"
+    command = transport._command(c, model, False, False, c.root)
+    proc = __import__("subprocess").run(
+        command,
+        input="Reply with exactly GOLDEN-TEXT.",
+        cwd=c.root,
+        env=transport._env(c),
+        text=True,
+        capture_output=True,
+        timeout=120,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr[-500:]
+    rows = [json.loads(line) for line in proc.stdout.splitlines() if line.strip()]
+    event = next(row for row in rows if row.get("type") == "item.completed" and (row.get("item") or {}).get("type") == "agent_message")
+    assert "GOLDEN-TEXT" in event["item"]["text"]
+    event["item"] = {"type": "agent_message", "text": event["item"]["text"]}
+    fixture = Path(context.config.base_dir).parent / "features" / "fixtures" / "elm-qwen-response-event.json"
+    fixture.parent.mkdir(parents=True, exist_ok=True)
+    fixture.write_text(json.dumps(event, indent=2, sort_keys=True) + "\n")
+    context.raw_response_event = fixture.read_text()
+    context.generated_text = event["item"]["text"]
+
+
+@when("Pathfinder parses the provider response")
+def parse_provider_response(context):
+    c = context.campaign
+    context.parsed_response = transport._parse(c, "Qwen/Qwen3.5-397B-A17B-FP8", [context.raw_response_event])
+
+
+@then("the parsed response contains the generated text")
+def parsed_response_contains_generated_text(context):
+    assert context.parsed_response[0] == context.generated_text
+
+
+@given("an OpenAI-compatible provider call reports positive output tokens and no parsed text")
+def output_without_parsed_text(context):
+    context.provider_lines = [
+        json.dumps({"type": "thread.started", "thread_id": "thread-1"}),
+        json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": ""}}),
+        json.dumps({"type": "turn.completed", "usage": {"input_tokens": 3, "output_tokens": 7}}),
+    ]
+
+
+@when("Pathfinder records the completed provider call")
+def record_completed_provider_call(context):
+    context.provider_receipt = transport._parse(
+        campaign(context), "Qwen/Qwen3.5-397B-A17B-FP8", context.provider_lines
+    )
+
+
+@then("the receipt identifies the process exit and terminal response event")
+def receipt_identifies_completion(context):
+    assert context.provider_receipt[1] == "thread-1"
+
+
+@then("the receipt retains the raw response events needed to account for the output tokens")
+def receipt_retains_response_events(context):
+    assert context.provider_receipt[3] == 7
+    assert context.provider_receipt[0] == ""
+
+
 @given('role "research" requires workspace tools or multiple turns')
 def tool_role(context):
     context.assignment = {"role": "research", "tools": True}

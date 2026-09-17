@@ -102,7 +102,9 @@ def _parse(campaign, model, lines):
 
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
-    """@planks("When role \"scan\" executes a minimal frozen paper pair")"""
+    """@planks("When role \"scan\" executes a minimal frozen paper pair")
+    @planks("When Pathfinder records the completed provider call")
+    """
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,

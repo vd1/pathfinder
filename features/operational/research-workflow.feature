@@ -42,6 +42,13 @@ Feature: Operate a paper-pair research workflow
       When Pathfinder evaluates the consolidation attempt
       Then Pathfinder makes one more consolidation attempt
 
+    @contract
+    Scenario: Provider call receipts retain evidence of generated output
+      Given an OpenAI-compatible provider call reports positive output tokens and no parsed text
+      When Pathfinder records the completed provider call
+      Then the receipt identifies the process exit and terminal response event
+      And the receipt retains the raw response events needed to account for the output tokens
+
   Rule: Each assessment decision has one operational consequence
 
     Scenario: A draft decision completes the investigation
