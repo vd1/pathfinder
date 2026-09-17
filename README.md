@@ -236,3 +236,7 @@ to have an agent build a pipeline like this one in their own stack, with the
 decisions that matter and what the pilot taught written in.
 
 Licence: MIT.
+
+## Built with Shipshape
+
+This repository uses [Shipshape](https://github.com/dmytri/shipshape), a context-isolated spec-driven workflow for coding agents. Install with `npx skills add dmytri/shipshape --skill '*'`, or the experimental open-plugin build with `npx plugins add dmytri/shipshape`.
