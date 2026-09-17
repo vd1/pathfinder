@@ -73,13 +73,14 @@ def judge_head(d, inp, note_name: str) -> str:
 
 
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
+    """@planks("When Pathfinder requests consolidation from the direct provider")"""
     in_papers, in_ledger = bool(campaign.raw.get("inline_papers")), bool(campaign.raw.get("inline_ledger"))
     above = [x for x, on in (("Q and P", in_papers), ("the ledger", in_ledger)) if on]
     read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
     material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
                                                                           if read else "The peers' directories are beside you.")
     head = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if above else ""
-    return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material)
+    return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
 
 
 def _tex_escape(t: str) -> str:
@@ -204,6 +205,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     """@planks("When Pathfinder consolidates a frozen paper pair")
     @planks("When Pathfinder verifies the frozen paper pair")
     @planks("When Pathfinder consolidates pair \"Q1P1\"")
+    @planks("When Pathfinder evaluates the consolidation attempt")
 
     Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
     """
@@ -213,7 +215,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
                            timeout=seconds, thread=pair_id, stage=stage, actor=campaign.peers[0] if stage == "consolidate" else "verifier")
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
-        if r["text"] or r["error"] is not None or done():
+        if r["error"] is not None or done():
             return r
     return r
 

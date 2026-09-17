@@ -68,6 +68,71 @@ def direct_provider_cannot_write(context):
     context.direct_provider_cannot_write = True
 
 
+@when("Pathfinder requests consolidation from the direct provider")
+def requests_direct_consolidation(context):
+    context.direct_prompt = None
+    prompts = context.campaign.path("prompts")
+    prompts.mkdir()
+    (prompts / "consolidate.md").write_text("Consolidate {{NOTE}}. {{PRIOR}}")
+
+    # @exceptional-double: internal composition has no independent external verifier.
+    original = transport.call
+
+    def call(prompt, *args, **kwargs):
+        context.direct_prompt = prompt
+        return provider_reply("research account")
+
+    transport.call = call
+    try:
+        research._stage_call(
+            context.campaign,
+            "Q1P1",
+            "consolidate",
+            research._consolidate_prompt(
+                context.campaign,
+                context.campaign.thread_dir("Q1P1"),
+                research._inputs(context.campaign.thread_dir("Q1P1")),
+                "Q1P1",
+                "",
+                "Q1P1.tex",
+                "",
+            ),
+            True,
+            1,
+        )
+    finally:
+        transport.call = original
+
+
+@then("the request asks the provider to return the complete research account")
+def requests_returned_account(context):
+    assert context.direct_provider_cannot_write
+    assert "return" in context.direct_prompt.lower()
+    assert "complete research account" in context.direct_prompt.lower()
+
+
+@given("its direct provider returns text without producing a stored research account")
+def direct_provider_returns_unstored_text(context):
+    context.replies = [provider_reply("unstored account"), provider_reply("stored account")]
+
+
+@when("Pathfinder evaluates the consolidation attempt")
+def evaluates_consolidation_attempt(context):
+    context.result = run_with_replies(
+        context,
+        context.replies,
+        lambda: research._stage_call(
+            context.campaign,
+            "Q1P1",
+            "consolidate",
+            "prompt",
+            True,
+            1,
+            done=(context.campaign.thread_dir("Q1P1") / "Q1P1.tex").exists,
+        ),
+    )
+
+
 @when('the provider returns a research account for pair "Q1P1"')
 def provider_returns_account(context):
     context.returned_account = "provider research account"
@@ -293,7 +358,21 @@ def check_planks(context):
                     if isinstance(decorator, ast.Call) and decorator.args and isinstance(decorator.args[0], ast.Constant):
                         if isinstance(decorator.func, ast.Name) and decorator.func.id in {"given", "when", "then"}:
                             step_patterns.add(f"{decorator.func.id.title()} {decorator.args[0].value}")
+    captain_scenarios = set()
+    for path in (context.root / "features").rglob("*.feature"):
+        tags = set()
+        for line in path.read_text().splitlines():
+            stripped = line.strip()
+            if stripped.startswith("@"):
+                tags.update(stripped.split())
+            elif stripped.startswith("Scenario:"):
+                if "@captain" in tags:
+                    captain_scenarios.add(f"{path.relative_to(context.root)}:{stripped.removeprefix('Scenario:').strip()}")
+                tags.clear()
+            elif stripped and not stripped.startswith("Feature:") and not stripped.startswith("Rule:"):
+                tags.clear()
     errors = []
+    provisional_errors = []
     plank_re = re.compile(r'@(planks|planks-provisional)\("(.+?)"\)')
     for path in (context.root / "pathfinder").rglob("*.py"):
         tree = ast.parse(path.read_text())
@@ -302,9 +381,10 @@ def check_planks(context):
                 for kind, value in plank_re.findall(ast.get_docstring(node, clean=False) or ""):
                     if kind == "planks" and value.replace('\\"', '"') not in step_patterns:
                         errors.append(f"{path}:{node.lineno}: stale plank {value}")
-                    if kind == "planks-provisional":
-                        errors.append(f"{path}:{node.lineno}: provisional plank {value}")
+                    if kind == "planks-provisional" and value not in captain_scenarios:
+                        provisional_errors.append(f"{path}:{node.lineno}: invalid provisional plank {value}")
     context.plank_errors = errors
+    context.provisional_plank_errors = provisional_errors
 
 
 @then("every plank is attached to a declaration and matches a current step pattern")
@@ -314,7 +394,7 @@ def planks_match(context):
 
 @then('every provisional plank names a scenario that carries "@captain"')
 def provisional_planks_match(context):
-    assert not context.plank_errors, "\n".join(context.plank_errors)
+    assert not context.provisional_plank_errors, "\n".join(context.provisional_plank_errors)
 
 
 @given("the verification paths from the rigging")

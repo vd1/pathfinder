@@ -30,6 +30,18 @@ Feature: Operate a paper-pair research workflow
       When both consolidation attempts produce no stored research account
       Then pair "Q1P1" is blocked at consolidation
 
+    Scenario: Direct-provider consolidation requests a returned research account
+      Given pair "Q1P1" has substantive findings awaiting consolidation
+      And its direct provider cannot write campaign files
+      When Pathfinder requests consolidation from the direct provider
+      Then the request asks the provider to return the complete research account
+
+    Scenario: A provider reply without a stored account remains retryable
+      Given pair "Q1P1" has substantive findings awaiting consolidation
+      And its direct provider returns text without producing a stored research account
+      When Pathfinder evaluates the consolidation attempt
+      Then Pathfinder makes one more consolidation attempt
+
   Rule: Each assessment decision has one operational consequence
 
     Scenario: A draft decision completes the investigation
