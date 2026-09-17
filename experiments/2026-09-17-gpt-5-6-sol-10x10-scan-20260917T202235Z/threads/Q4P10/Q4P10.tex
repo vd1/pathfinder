@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Capability Concealment under Survival Pressure}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+The mechanism-design paper studies agents of unknown alignment and capability.  Its key one-sided-imitation premise is that capability may be concealed but not counterfeited; under that premise it claims a revelation principle and nested cyclical monotonicity, and it separately discusses sandbagging, peer scoring, and coupled rewards.  The Energy Society supplies a possible experimental setting: heterogeneous agents pay energy to act, earn energy through jobs or donations, and deactivate at zero energy.  Competitive and cooperative incentives change behaviour and job allocation, while recommendations support coordination and more ambitious job choice.  The pursued connexion is therefore a boundary test: can a formally specified mechanism reduce strategic capability concealment in this survival economy specifically when counterfeiting is blocked? \ledger{10, 14}
+
+\section{Supported findings}
+
+The supported proposal is a preregistered mechanism-by-counterfeitability experiment, not a demonstrated performance gain.  It would cross the Energy Society incentive conditions with separately justified peer-scoring or coupled-reward arms and compare a regime in which agents may underclaim but cannot pass verified tests for infeasible higher capability against a regime in which claims can be counterfeited.  The primary endpoint would be the interaction on ground-truthed underclaiming or avoidable task under-selection.  Allocation efficiency and group survival would be secondary outcomes, potentially forming the causal chain from elicitation to allocation to survival.  Observability of reports to peers or the principal must be varied separately, since full observability can remove the elicitation problem rather than instantiate non-counterfeitability. \ledger{5, 7, 10, 12}
+
+Either a benefit confined to the non-counterfeitable regime or a failure there would be informative about the behavioural boundary of the mechanism-design claim.  This is a conditional hypothesis only.  Evidence is thin: the available material consists of abstracts and ledger synthesis, not verified mechanisms or experimental results. \ledger{14, 15}
+
+\section{Objections and unresolved issues}
+
+The abstracts do not establish that peer scoring or coupled rewards prevent sandbagging, license combining those mechanisms, or improve survival.  The Energy Society abstract provides neither a private capability type nor an explicit report or verification stage; model size, token cost, and poor outcomes are not by themselves evidence of sandbagging.  Consequently, truthful reporting cannot be an endpoint until a genuine reporting stage and exogenous capability ground truth exist. \ledger{1, 6, 11}
+
+Implementation remains unresolved.  The exact transfers, scoring rules, equilibrium benchmark, and predicted interaction must be recovered from the full mechanism paper.  The simulation must expose hooks for reports, enforced feasible-action sets, and verified success probabilities.  Peer scoring and coupled rewards may need distinct arms; observability needs its own factor; and seeds, statistical power, computational feasibility, and any mediation analysis remain unspecified. \ledger{12, 15}
+
+\section{Smallest next step}
+
+Before running agents, extract one implementable transfer rule and its equilibrium prediction from the full mechanism paper, then inspect the Energy Society interface for one minimal report-and-verification hook.  Write a tiny preregistered pilot containing one mechanism arm, the two counterfeitability regimes, and the primary interaction on verified underclaiming.  If either the rule or the hook cannot be made explicit, stop: the proposed connexion is not yet testable. \ledger{3, 8, 15}
+
+\end{document}

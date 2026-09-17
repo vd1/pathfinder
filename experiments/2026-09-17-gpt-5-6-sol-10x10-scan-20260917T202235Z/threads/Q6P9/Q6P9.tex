@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Strategy-Proof Facility Location Under Formal and Natural-Language Implementation}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+\emph{Mechanism Design for Facility Location Games Under a Prelocated Facility} (Q) studies the placement of a new facility when agents privately know their locations and incur the expected distance to the nearer facility.  It seeks strategy-proof mechanisms with approximation guarantees for maximum or social cost.  A particularly clean candidate is Q's deterministic mechanism for the general line setting, reported as a best-possible \(2\)-approximation for maximum cost.  \emph{Commitment To Cooperation With Self-Negotiated Contracts} (P) studies cooperation by LLM agents and contrasts formal contracts that compile to code with natural contracts that require reinterpretation \ledger{1, 7}.
+
+The connexion pursued is an implementation gap.  Hold one fully specified Q outcome rule fixed, express it both as verified executable code and as extensionally matched natural language, and ask whether reinterpretation changes the effective allocation rule.  This uses P's representation contrast without claiming that P already studies facility location or truthful revelation \ledger{3, 9}.
+
+\section{Supported findings}
+
+The supplied abstracts support the question, not its answer.  On a preregistered finite grid, the executable version can serve as a canonical oracle.  For every report profile, compare allocations (or output distributions); for every true profile, enumerate unilateral reports and compute ex-post deviation regret using nearest-facility costs; then compute the maximum-cost ratio to the true optimum under Q's exact convention.  This separates a semantic audit from an incentive audit and from any secondary behavioral study of what an LLM chooses to report \ledger{4, 14}.
+
+A substantive positive result would consist of minimal, reproducible profiles tracing natural-language reinterpretation to an allocation mismatch and then to positive deviation regret or a ratio exceeding \(2\).  Such violations are empirical possibilities, not consequences of reinterpretation.  A well-powered equivalence result could also be informative, but a small null test would not establish robustness \ledger{10, 20}.
+
+\section{Objections and unresolved issues}
+
+Observed truth-telling is neither necessary nor sufficient for strategy-proofness: the latter concerns whether truthful reporting is a dominant strategy under the implemented outcome rule.  Likewise, making self-negotiation the primary manipulation would change the mechanism and confound bargaining with representation fidelity.  Behavioral truth rates and negotiation therefore belong, if anywhere, in secondary analyses \ledger{8, 19}.
+
+One-off prompt errors would show LLM unreliability, not yet make a mechanism-design contribution.  Evidence should persist across reasonable matched paraphrases and multiple interpreters or backbones, use exact tie-breaking and repeated decoding or distributional comparisons where relevant, and mediate any incentive or approximation failure through a semantic allocation error \ledger{15, 20}.
+
+Evidence is thin.  The supplied material contains only abstracts, while the peer directories add no notes beyond the ledger.  Q's allocation formula, assumptions, tie-breaking, and randomization details are absent; so are P's compiler, enforcement, prompts, and reinterpretation protocol.  No current evidence establishes that reinterpretation causes manipulability, violates Q's bound, or induces honesty \ledger{16, 21}.
+
+\section{Smallest next step}
+
+Obtain the full texts and select Q's deterministic general-line maximum-cost mechanism.  Reconstruct its exact rule and tie-breaking as a tested executable oracle, and verify the implementation profile-by-profile on the smallest nontrivial finite grid before introducing any LLM interpreter.  Only after that control passes should one add a single matched natural-language rendition and search for the first semantic counterexample \ledger{11, 21}.
+
+\end{document}

@@ -1,0 +1,58 @@
+
+
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Mechanism Design for Contract Implementation: Q Meets P}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+Q develops a mechanism design framework for AI agents with unknown capabilities and alignment. Its central contribution is a revelation principle and characterization of implementable policies via nested cyclical monotonicity, applicable when capabilities can be concealed but not counterfeited (one-sided imitation) \ledger{8}. P studies self-negotiated contracts between LLM agents in a spatial-temporal bargaining game, comparing formal contracts (compile to code) against natural contracts (allow reinterpretation) \ledger{9}.
+
+\section*{The Connexion}
+
+The hypothesis pursued: Q's nested cyclical monotonicity characterizes which P-contracts are implementable when agents can conceal capabilities during negotiation. The proposed insight was that formal contracts satisfy implementability conditions more robustly than natural contracts because compilation removes ambiguity that enables strategic misrepresentation \ledger{3, 4}.
+
+\section*{Supported Findings}
+
+The ledger establishes:
+
+\begin{itemize}
+    \item Q explicitly models sandbagging (more capable agents pretending to be less capable) and provides tools for settings with capability uncertainty \ledger{8}.
+    \item P demonstrates contracts improve cooperative outcomes but does not address whether capability uncertainty was present or controlled for in experiments \ledger{9, 11}.
+    \item The mapping is plausible: P's contract negotiation could be reframed as implicit allocation over capability types, to which Q's conditions would apply \ledger{3}.
+\end{itemize}
+
+\section*{Objections}
+
+Three objections remain unresolved:
+
+\begin{enumerate}
+    \item \textbf{Structural mismatch:} Q assumes a principal designing mechanisms for agents; P has peer-to-peer negotiation with no external principal. Agents in P are simultaneously mechanism designers and participants \ledger{10}.
+    \item \textbf{Motivational gap:} P's contracts solve temporal commitment problems (early cost, late benefit), not capability elicitation. The abstract shows no evidence that capability uncertainty was tested or observed \ledger{11}.
+    \item \textbf{Novelty threshold:} The contribution appears modest---applying existing Q theory to P's setting rather than generating new theory. The formal-vs-natural robustness claim could be novel if proven \ledger{7}.
+\end{enumerate}
+
+\section*{Unresolved Issues}
+
+For publication, the following must be resolved:
+
+\begin{itemize}
+    \item Formalize P's contract space as a mechanism design problem and show negotiation induces an allocation rule over capability types \ledger{6}.
+    \item Prove that Q's nested cyclical monotonicity conditions apply to symmetric peer negotiation (either by showing equivalence to principal-agent structure or extending the theory) \ledger{5}.
+    \item Empirical support: either re-analyze P's data for evidence of capability concealment or run new experiments with hidden capability treatments \ledger{6}.
+\end{itemize}
+
+\section*{Smallest Next Step}
+
+Formalize the mapping: express P's contract negotiation as an implicit allocation rule \( x(\theta_1, \theta_2) \) over capability types and check whether Q's nested cyclical monotonicity condition can be stated in this space. If the mapping fails, the hypothesis does not hold. If it succeeds, proceed to prove formal contracts satisfy the condition more robustly than natural contracts under sandbagging \ledger{6}.
+
+\section*{Assessment}
+
+Evidence is thin. The connexion is theoretically motivated but lacks empirical grounding in P's experimental design. The structural mismatch between principal-designer and peer negotiation settings is the critical barrier. This work may serve as a theoretical companion to P if the mapping can be formalized, but standalone publication requires resolving the structural objection and demonstrating novelty beyond application of existing theory \ledger{5, 7}.
+
+\end{document}

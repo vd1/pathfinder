@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Endogenous Prediction Interfaces for Bimanual Manipulation}
+
+\begin{document}
+\maketitle
+
+\paragraph{The pair.}
+Q surveys learning-augmented algorithms: algorithms that exploit fallible predictions while retaining formal guarantees.  Its scope includes prediction interfaces and error measures, consistency--robustness trade-offs, prediction cost, feedback, composition, endogenous error, and benchmarking.  P presents DynaMAC, in which each arm is part of the other arm's dynamic environment and the opposite arm is supplied as a dynamic task parameter.  P also introduces DynaBench and reports gains exceeding 35 percentage points with twenty times fewer samples.  These descriptions support a conceptual pairing, but the evidence available here consists only of abstracts and is therefore thin \ledger{15, 19}.
+
+\paragraph{Connexion pursued.}
+The cross-arm dynamic task parameter in P can be studied as the prediction interface of Q, with error measured on the task-relevant relative-frame transformation.  Unlike the usual exogenous prediction, this signal is endogenous: each arm's action changes the other arm and hence the distribution of later prediction errors.  The sharp research target is consequently not a direct application of an existing guarantee, but a confidence-gated comparison between DynaMAC and a safe baseline under closed-loop intervention \ledger{7, 11}.
+
+\paragraph{Supported findings.}
+The pair supports asking for two linked outcomes.  First, a conditional theorem would seek robustness relative to the baseline, up to explicit switching, recovery, feedback, latency, and prediction-acquisition costs, while seeking consistency as calibrated task-space error and latency vanish.  Second, DynaBench could inject coupled error and sweep feedback frequency and prediction cost to test whether P's reported advantage survives.  Such experiments would provide empirical consistency--robustness frontiers, not theorem-level bounds \ledger{17, 20}.
+
+\paragraph{Objections.}
+Neither abstract supplies the formal dynamics, return or loss, calibrated uncertainty, fallback controller, adversarial error protocol, or recovery model needed to prove the proposed bound.  A gate alone is insufficient: the endogenous disturbance may corrupt the gate, and DynaMAC may carry the system outside the baseline's recoverable region.  Thus ordinary learning-augmented fallback constructions do not automatically transfer.  A defensible theorem would at least require an observable calibrated gate signal, a baseline-invariant recoverable set, bounded switching and recovery loss, and an intervention-aware error budget \ledger{12, 16}.
+
+\paragraph{Unresolved issues and smallest next step.}
+It remains unknown whether P exposes the relative-frame signal and perturbation hooks needed for causal error injection, whether a useful baseline has a nontrivial invariant recoverable set, how calibration behaves under policy-induced distribution shift, and whether the added cost terms leave a non-vacuous guarantee \ledger{21}.  The smallest next step is to inspect P's full specification or implementation and answer one binary question: does DynaBench permit intervention on the cross-arm task-relative signal while logging return, recovery-set membership, latency, and switching?  If it does, implement one error-and-latency sweep against one fixed fallback before attempting a theorem; if it does not, the proposed connexion is not yet operational.
+
+\end{document}

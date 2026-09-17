@@ -1,0 +1,28 @@
+{
+  "backend": "elm",
+  "model": "gpt-5.6-sol",
+  "scan_model": "gpt-5.6-sol",
+  "peer_search": false,
+  "seats": 2,
+  "cut": 12,
+  "rounds": 1,
+  "allowances": {
+    "peer_seconds": 1800,
+    "peer_calls": 2,
+    "consolidate_seconds": 1800,
+    "verify_seconds": 900
+  },
+  "budget_usd": 200,
+  "call_estimate_usd": 1.0,
+  "prices": {
+    "gpt-5.6-sol": {"input_per_m": 2.0, "output_per_m": 8.0}
+  },
+  "scan": {"fulltext": null},
+  "repairs": 1,
+  "codex": {
+    "name": "elm",
+    "base_url": "https://elm.edina.ac.uk/api/v1",
+    "env_key": "ELM_API_KEY",
+    "wire_api": "responses"
+  }
+}

@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Enforceable Price Commitments in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+The first paper studies large language model (LLM) agents in a double auction.  It reports slower or absent convergence toward market equilibrium, lower allocative efficiency than in human markets, and substantial heterogeneity across model families and market roles.  It also associates trade execution, rather than continued incremental price adjustment, with a shift in chain-of-thought language from strategy toward urgency.  The second paper studies cooperation when costs precede benefits and defection is tempting.  It reports that observable, self-negotiated contracts with enforceable terms can improve cooperation beyond regular trading.  The connexion pursued is whether enforceability can improve LLM price discovery while leaving the auction's order submission and clearing intact \ledger{1, 13}.
+
+This is a testable transfer, not an established explanation.  Nothing supplied shows promises, reneging, delayed reciprocity, or demand for commitment in the first paper's spot market.  Its inefficiency therefore cannot yet be called a commitment failure \ledger{6, 7}.
+
+\section{Supported findings and proposed test}
+
+The strongest supported design has three preregistered arms: an ordinary double auction, an auction preceded by negotiation of a non-binding contingent reservation-price schedule, and an auction with an otherwise identical but automatically enforced schedule.  Negotiation, syntax, information, quantities, order submission, and clearing should match across the two negotiated arms.  The confirmatory estimand is the binding-minus-non-binding difference in convergence time or distance and allocative efficiency.  Equal gains in both negotiated arms would instead favor a planning or communication account; no gain or harm would reject the proposed transfer \ledger{12, 13}.
+
+The first paper directly motivates equilibrium convergence, allocative efficiency, and model-family and buyer--seller heterogeneity as outcomes.  The second motivates self-negotiated observable representations, enforcement, and variation across LLM backbones.  Urgency-language incidence may be recorded only as exploratory evidence: the reported lexical relation is associative and does not establish a faithful or causal mediator \ledger{8, 16}.
+
+\section{Objections and unresolved issues}
+
+Binding contracts may change price discovery mechanically rather than repair a commitment problem.  Quantity commitments are especially problematic because they can preallocate exchange or thin the order book; reservation-price limits are the narrower first intervention.  Even a positive binding-minus-non-binding effect would show only that enforceable price limits help this repeated auction.  A broader commitment-failure interpretation would require evidence such as voluntary uptake, costly constraint or breach behaviour, and robustness to matched exogenous bidding constraints \ledger{14, 17}.
+
+Evidence is thin.  The supplied material consists only of abstracts, and the peer directories contain no additional notes.  There are no effect sizes, protocol details, market horizon, contract syntax or enforcement semantics, power inputs, or evidence that auction agents renege on plans.  It is also unresolved whether reservation-price schedules are economically meaningful without suppressing the incremental adjustment under study.  The direction of the effect should therefore not be predicted \ledger{10, 18}.
+
+\section{Smallest next step}
+
+Run a small pilot, using one model and the original auction quantities and clearing rules, that implements matched non-binding and binding contingent reservation-price schedules.  Its purpose is only to verify identical information and negotiation across arms, measure contract uptake and constraint, and determine whether the intervention preserves a functioning order book.  Full protocols and released frameworks are needed before choosing timing, powering the confirmatory study, or making a mechanism claim \ledger{14, 18}.
+
+\end{document}

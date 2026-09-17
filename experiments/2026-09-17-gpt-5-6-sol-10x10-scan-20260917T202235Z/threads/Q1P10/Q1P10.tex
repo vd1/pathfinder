@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Costly Endogenous Advice in the Energy Society}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+The learning-augmented-algorithms paper surveys methods that use fallible predictions while retaining formal guarantees.  It distinguishes formal guarantees from systems evidence and highlights prediction cost, feedback, composition, endogenous error, and semantic predictors.  The Energy Society makes token generation consume survival energy and reports that recommendations support coordination and ambitious job choice, while cooperative and competitive incentives alter donations and job allocation.  The supported connexion is therefore a test of costly advice under strategic feedback: does incentive-generated advice behave worse than exogenously corrupted advice after nominal accuracy and energy cost are matched? \ledger{8, 12}
+
+This does not transfer an algorithm or theorem from the first paper into the second.  The first paper is a survey, and neither abstract specifies an Energy Society prediction interface, error measure, safe fallback, welfare function, or robustness theorem. \ledger{2, 17}
+
+\section{Supported findings and proposed test}
+
+The ledger supports one concrete empirical hypothesis.  Compare advice-gated job and donation decisions under exogenous corruption with decisions under strategically generated recommendations.  Match observed error rate, token-energy cost, and decision opportunities---including energy state, action type, and consequence---because equal aggregate accuracy can hide errors concentrated in consequential states.  A residual deterioration in individual deactivation, active population, or group economic output would be an endogenous-advice penalty: evidence that an accuracy-only consistency--robustness summary misses semantic or incentive-dependent error. \ledger{12, 16}
+
+Robustness should mean incremental degradation over a fixed horizon relative to the same policy with recommendations disabled, with recommender and gate costs charged.  Survival, active population, and group output must remain separate outcomes.  The evidence is thin: the abstracts motivate this comparison but establish neither the penalty nor any bound. \ledger{13, 18}
+
+\section{Objections and unresolved issues}
+
+An advice-free policy cannot be assumed to preserve survival: larger models reportedly spend more energy than they gain, and cooperative donations can cost donors their own survival.  Accordingly, an observed finite-horizon degradation envelope is not a formal guarantee.  Moreover, survival is not interchangeable with welfare, and matching only accuracy and cost is inadequate when advice changes which jobs are attempted. \ledger{4, 13, 16}
+
+The available material leaves unresolved whether the released code permits the required interventions, how semantic error is labelled, what the advice-disabled comparator does, how group output or welfare is defined, what horizon and replication design are appropriate, and whether any incremental bound can be proved.  A null endogenous-advice penalty would still delimit the concern, but it would not validate a general theorem. \ledger{14, 19}
+
+\section{Smallest next step}
+
+Inspect the full Energy Society code for one hook that can disable, inject, and record recommendations without otherwise changing the policy.  Then specify a single fixed-horizon pilot comparing disabled advice with exogenous and incentive-generated advice, using opportunity-stratified matching and separately reporting deactivation, active population, and group output.  If the intervention hook or operational error label is absent, the proposed connexion is not yet testable. \ledger{12, 15}
+
+\end{document}

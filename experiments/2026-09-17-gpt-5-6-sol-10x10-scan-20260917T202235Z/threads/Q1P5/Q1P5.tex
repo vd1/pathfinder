@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Selective Certification for Learning-Augmented Base-Station Placement}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the pursued connexion}
+
+Paper Q surveys learning-augmented algorithms: fallible predictions are used while formal guarantees are retained, with attention to prediction error, cost, feedback, composition, and the separation of theorem-level claims from systems evidence.  Paper P uses ray-traced channel impulse responses to train cooperative PPO agents for base-station placement in TDOA localization.  Its shared reward combines localization accuracy and coverage, while its reported comparison uses localization mean absolute error (MAE).  The pursued connexion was to regard the MARL placement as advice and GDOP placement as a robust fallback.  The record rejects that reduction as stated: P presents an action policy, not a prediction interface with an error measure, and neither abstract gives GDOP a worst-case localization guarantee under NLOS. \ledger{13, 17}
+
+\section{Supported finding}
+
+P nevertheless supplies a reason to study selective deployment.  Relative to the stronger mean-optimized geometric baseline, its learned policy improves average MAE by only about \(3\%\); gains reach about \(14\%\) on some of five campus segments, but performance is comparable or slightly worse on others.  This heterogeneity supports investigating a gate, though not claiming that such a gate has already been built or validated. \ledger{1, 6, 13}
+
+The narrow formal connexion is a conditional paired-loss certificate.  For environment \(x\), define
+\[
+  \Delta(x)=L_{\mathrm{MARL}}(x)-L_{\mathrm{GDOP}}(x),
+\]
+where \(L\) is downstream TDOA localization MAE and coverage is imposed as a separate feasibility constraint.  Suppose an upper certificate \(U_\Delta(x)\) satisfies \(\Delta(x)\leq U_\Delta(x)\) on its stated validity event.  Deploy MARL only if coverage passes and \(U_\Delta(x)\leq 0\); otherwise deploy GDOP.  On that event, any accepted MARL placement is no worse in MAE than the GDOP placement.  This preserves the baseline decision; it does not make GDOP robust to propagation effects.  If validity is probabilistic, the conclusion is correspondingly high probability, not deterministic. \ledger{12, 16}
+
+An elementary alternative illustrates the limit of the evidence.  If estimates obey \(\lvert\widehat L(c)-L(c)\rvert\leq\epsilon\) for both candidates, minimizing estimated loss yields only
+\[
+  L(\widehat c)\leq \min_c L(c)+2\epsilon,
+\]
+not exact baseline preservation.  Separate intervals would require the MARL upper bound to be no larger than the GDOP lower bound. \ledger{3, 7, 12}
+
+\section{Objections and unresolved issues}
+
+Evidence is thin: both supplied papers are represented only by abstracts.  Q's applicable construction hypotheses are unavailable, while P does not provide its action space, data splits, uncertainty score, held-out protocol, or a prediction-error definition aligned with deployment MAE.  The reward/evaluation mismatch also prevents silently identifying PPO's training objective with the required loss. \ledger{2, 6, 9}
+
+The proposed certificate method and shift class remain unspecified.  Ray-tracing mismatch or campus shift alone does not imply validity, and five segments may be too few independent units for credible shift calibration.  Prediction and simulation cost must be charged, and coverage must remain explicit.  Publication value would have to come from finite-sample, shift-valid certification that accepts MARL often enough to produce a net benefit, not from the elementary selector implication. \ledger{14, 18}
+
+\section{Smallest next step}
+
+Obtain the full papers and determine whether P exposes candidate-level losses or uncertainty features and defensible held-out site or mismatch units, while matching them against an actual construction theorem from Q.  Then run one go/no-go test: under a precisely stated held-out shift, does an upper certificate for \(\Delta\) retain its target coverage and certify MARL often enough to reduce MAE after prediction and ray-tracing cost?  If either validity or useful acceptance fails, this pair establishes motivation only, not a guaranteed hybrid. \ledger{10, 14, 18}
+
+\end{document}

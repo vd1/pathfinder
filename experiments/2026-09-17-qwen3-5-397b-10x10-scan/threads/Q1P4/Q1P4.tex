@@ -1,0 +1,44 @@
+
+
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Q1P4: Learning-Augmented Prediction Interfaces for RTCC Cooperative Perception}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+Q surveys learning-augmented algorithms: fallible predictions with formal guarantees, covering prediction interfaces, error measures, and consistency--robustness trade-offs across online optimization, caching, learned data structures, graph problems, and mechanism design. P realizes uplink-completion-triggered edge-GPU inference for multi-agent cooperative perception, where encoder branches dispatch immediately upon wireless input completion, propagating through H2D staging and CUDA synchronization while preserving fusion dependencies.
+
+\section*{Connexion Pursued}
+
+The ledger proposes applying Q's prediction-interface framework to P's RTCC mechanism. Instead of reactive dispatch triggered by actual completion events, predictions of transmission-completion times could enable proactive GPU dispatch~\ledger{1, 2}. Q provides the formal scaffolding---prediction interfaces, error measures, consistency--robustness mechanisms---while P provides a concrete execution path with measurable latency and validated wireless completion events.
+
+\section*{Supported Findings}
+
+The peer notes establish only that the connexion is structurally plausible:
+\begin{itemize}
+  \item Q does articulate prediction interfaces and error measures as core components.
+  \item P does expose reactive trigger points (completion events) that could, in principle, accept predictions.
+  \item P's latency is measurable and the execution path is validated on physical GPU hardware.
+\end{itemize}
+
+\section*{Objections and Unresolved Issues}
+
+Three verification questions remain unresolved~\ledger{1, 2}:
+\begin{enumerate}
+  \item Does Q provide concrete prediction-interface templates applicable to wireless scheduling (as opposed to online optimization or caching)?
+  \item Does P's current mechanism leave exploitable latency headroom, or is H2D overhead already negligible?
+  \item What prediction horizon is sensible given wireless timescales versus GPU H2D overhead?
+\end{enumerate}
+
+Evidence is thin on all three points. The abstract scan of Q does not confirm timing-specific prediction templates. P's abstract reports latency reduction from RTCC but does not decompose overhead components. No prediction-horizon analysis appears in either paper.
+
+\section*{Smallest Next Step}
+
+Read Q's section on prediction interfaces (likely Section 2 or 3 of the survey) to extract concrete interface definitions and error measures. Simultaneously, inspect P's DAG timing breakdown to quantify H2D staging cost relative to wireless completion variance. This determines whether the connexion has purchase or should be abandoned.
+
+\end{document}

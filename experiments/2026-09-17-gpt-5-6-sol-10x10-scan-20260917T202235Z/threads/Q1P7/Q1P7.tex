@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{A Certified Forecast-to-Dispatch Crossover for Carbon-Aware Scheduling}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+The first paper surveys learning-augmented algorithms: methods that use fallible predictions while seeking formal guarantees.  Its relevant themes are consistency--robustness trade-offs, the separation of theorem-level claims from systems evidence, and explicit accounting for prediction cost, feedback, and composition.  The second paper supplies a concrete forecast-to-decision setting: day-ahead nodal carbon-intensity (NCI) forecasts drive spatial--temporal scheduling of mobile energy storage systems and distributed data centers on a modified IEEE 33-bus system.  It reports more than \(30\%\) emission reduction under a one-hour reduction in scheduling latency.  These facts support studying the whole forecast-to-dispatch pipeline rather than forecast accuracy alone \ledger{8, 15}.
+
+The connexion pursued is therefore a state-feasible, baseline-anchored, learning-augmented receding-horizon version of the carbon scheduler.  The target would be an error-dependent total-system comparator gap, including forecast acquisition or computation cost and latency, which approaches a perfect-forecast oracle when decision-relevant NCI error is small and falls back to a state-matched robust-MPC guarantee when forecasts fail.  An IEEE-33 experiment would then locate the error--cost--latency frontier at which net emissions benefit changes sign \ledger{17, 22}.
+
+\section{What is supported}
+
+The thematic fit and the application substrate are supported.  In particular, the abstracts establish the learning-augmented evaluation dimensions, the use of day-ahead NCI prediction in MESS/DDC scheduling, simulation on IEEE-33, and analysis of latency and emissions \ledger{2, 21}.  They consequently establish a focused research hypothesis: a certified crossover may reveal whether the reported gain persists after forecast overhead, latency, and intertemporal feasibility are charged.  They do not establish that crossover, its sign, or any error-dependent guarantee.  On those points the evidence is thin: the supplied material consists only of abstracts \ledger{12, 15}.
+
+\section{Objections and unresolved issues}
+
+The carbon-response abstract provides neither scheduler equations nor an NCI error metric, controlled perturbations, forecast-cost accounting, feedback experiments, a prediction-free robust comparator, or the comparator behind the \(30\%\) figure.  Its claim of predictive resilience is not evidence of robustness to arbitrary forecast failure, and the latency result does not isolate forecast accuracy as its cause \ledger{9, 18}.
+
+A confidence gate alone is also insufficient.  Forecast-driven storage and migration actions alter the intertemporal state, so later switching can inherit infeasible or disadvantaged states.  A meaningful result needs a recoverable safe set, reserved feasibility, or a state-matched baseline; it must bound a comparator or regret gap and constraint violations, rather than merely note that finite-horizon emissions are bounded \ledger{10, 16}.
+
+Unresolved questions include the actual objective, constraints, and state coupling; whether recoverable baseline anchoring exists; which decision-relevant NCI error norm controls the gap; whether dispatched load makes error endogenous; the forecast's emissions, monetary cost, and delay; and the baseline used for the reported gain.  The abstracts cannot settle these prerequisites, so the proposed feasibility level and any net-benefit claim remain unsupported \ledger{19, 23}.
+
+\section{Smallest next step}
+
+Obtain the full scheduler formulation and reproduce one feasible IEEE-33 trajectory from identical current states under the original forecast-driven scheduler and a prediction-free robust MPC baseline.  Record the objective, constraints, \(30\%\) comparator, forecast overhead, and latency.  This single audit determines whether state-matched baseline anchoring is even well posed; only then should an error-dependent theorem or a crossover sweep be attempted.
+
+\end{document}

@@ -1,0 +1,46 @@
+
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Learning-Augmented Survival: Connecting Formal Guarantees to Existential Pressure}
+
+\begin{document}
+
+\section*{The Pair}
+
+Q surveys learning-augmented algorithms with formal consistency--robustness guarantees across online optimization, caching, and mechanism design. P introduces The Energy Society, a survival economy where LLM agents spend energy proportional to token generation and face deactivation at zero reserves.
+
+\section*{Connexion Pursued}
+
+Whether Q's prediction-interface framework can transform P from empirical observation into a theoretically-grounded system with formal survival guarantees. The hypothesis: consistency--robustness trade-offs become existence-critical rather than performance-only under survival pressure.
+
+\section*{Supported Findings}
+
+The connexion is \textsc{supported} with sharpening. P already ties token costs to survival, but lacks formal prediction interfaces with consistency guarantees from Q \ledger{1}. The survival-pressure setting qualitatively transforms the problem: poor predictions cause agent deactivation rather than degraded competitive ratios \ledger{3}.
+
+A specific mechanism match emerges: derive a survival threshold theorem where, given prediction error rate \(\epsilon\) and cost-per-token \(c\), there exists critical energy reserve \(E_{\text{crit}}\) below which no algorithm achieving consistency \(\rho\) guarantees survival with probability \(>\delta\) \ledger{2}. P's empirical finding that larger models ``spend more energy than they gain'' could formalize as: model size \(M\) increases \(c(M)\), pushing \(E_{\text{crit}}\) beyond reachable reserves unless prediction quality scales superlinearly \ledger{2}.
+
+Testable prediction: agents using Q-style switching mechanisms (trust prediction when confidence high, fall back to robust baseline) should show measurably longer survival than pure LLM or pure heuristic baselines, with gap widening under competitive pressure \ledger{2}.
+
+\section*{Objections}
+
+Two objections remain unresolved. First, is this non-obvious? Applying LA algorithms to new domains is standard; the survival setting must yield qualitatively different mathematics, not just new application domains \ledger{4}. Response: survival pressure creates phase-transition behavior absent in standard LA settings---algorithms that are 2-competitive may have 0\% survival while 3-competitive achieve 80\% if they avoid catastrophic depletion \ledger{4}.
+
+Second, Q is a survey paper, not original theory. Publication requires new theoretical results, not just applying Q's framework to P \ledger{6}. The multi-agent competitive setting with energy transfer (donations) may produce novel game-theoretic results absent from Q, but this needs formal development rather than empirical validation alone \ledger{6}.
+
+\section*{Unresolved Issues}
+
+Evidence remains thin on whether the survival-pressure setting yields novel mathematics beyond known Q bounds \ledger{6}. The cooperative/competitive incentive structure raises mechanism design questions---can agents trade prediction confidence signals? Do coalitions form around high-accuracy predictors?---that are open problems at the Q/P intersection but lack formal treatment \ledger{4}.
+
+\section*{Smallest Next Step}
+
+Formalize the survival threshold theorem: for agent \(i\) with energy \(E_i(t)\), prediction error \(\epsilon_i\), and \(n\) agents in competitive setting, prove survival probability bound
+\[
+\mathbb{P}(\text{survival} > T) \geq f(\epsilon_i, n, \text{cooperation\_level})
+\]
+with explicit phase-transition characterization at \(\epsilon_{\text{threshold}}\) where survival becomes impossible regardless of strategy \ledger{5}. Run controlled Energy Society simulations with varying prediction quality to validate the phase transition empirically before pursuing full formal proof.
+
+\end{document}
+```

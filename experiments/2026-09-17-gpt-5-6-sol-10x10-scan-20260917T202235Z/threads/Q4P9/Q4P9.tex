@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Truthful Revelation and Contractual Obedience in AI Cooperation}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+\emph{Mechanism Design for Alignment and Control} (Q) studies agents whose preferences and capabilities are unknown.  Its abstract distinguishes incentives for honesty from incentives for obedience and assumes one-sided imitation: capability may be concealed but not counterfeited.  \emph{Commitment To Cooperation With Self-Negotiated Contracts} (P) studies observable, self-negotiated contracts in a bargaining-and-navigation game where cooperation has early costs and delayed benefits.  The connexion pursued is therefore an honesty--obedience wedge: contractual commitment may affect whether an agent performs an agreement without affecting whether it truthfully revealed its capability before agreement \ledger{13, 19}.
+
+\section{Supported findings}
+
+The abstracts support a conditional experimental proposal, not a ready-made implementation.  Give agents privately observed capability sets with known ground truth and a one-sided order in which a high-capability agent can imitate a low-capability agent but not conversely.  Independently randomize a fully specified elicitation or peer-scoring treatment and binding enforcement.  Measure truthful capability reports, refusal or signing, costly compliance after agreement, and welfare separately, analyzing all assigned agents rather than only signers.  A boundary finding would be that enforcement raises compliance while profitable downward misreporting persists; an affirmative alternative would be that valid peer scoring reduces such sandbagging and increases surplus beyond enforcement \ledger{16, 19}.
+
+This proposal is pair-specific at the conceptual level.  Q supplies the distinction between revelation and obedience and the one-sided capability structure; P supplies a setting with bargaining, delayed incentives to defect, and observable contracts.  Neither abstract alone establishes the proposed causal design or its feasibility \ledger{6, 9}.
+
+\section{Objections and unresolved issues}
+
+The evidence is thin: only abstracts and ledger notes are available, and the peer directories contain no additional notes.  Q provides no peer-scoring formula or empirical measurement scheme in the supplied text.  P provides no demonstrated code or API hooks, private-capability intervention, or post-agreement defection metric.  Consequently, claims of a directly implementable mechanism or a numerical feasibility assessment are unsupported \ledger{15, 20}.
+
+Formal versus natural contracts must not be treated as enforced versus unenforced.  P says that formal contracts compile to code whereas natural contracts require reinterpretation, but representation, executability, interpretation error, and enforcement strength may be bundled.  Enforcement must instead be manipulated independently while obligation content and representation are held fixed \ledger{14, 18}.
+
+Truthful-looking reports and high compliance would not by themselves validate Q's mechanism claims.  Reports may be cheap talk, enforcement may produce obedience after a false report, and conditioning on signed contracts introduces selection.  Peer-signal assumptions, Q's full mechanism definitions, P's intervention hooks, and an unconfounded enforcement manipulation all remain unresolved \ledger{7, 20}.
+
+\section{Smallest next step}
+
+Obtain the full Q mechanism definitions and P's artifacts, then verify just two prerequisites before building the experiment: that a concrete scoring rule has signals satisfying Q's stated conditions, and that P permits a ground-truthed private capability assignment plus an enforcement intervention independent of contract representation.  If either prerequisite fails, the proposed connexion remains conceptual rather than executable \ledger{5, 16}.
+
+\end{document}

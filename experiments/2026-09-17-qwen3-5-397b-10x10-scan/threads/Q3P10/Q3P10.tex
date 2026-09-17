@@ -1,0 +1,40 @@
+
+
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Memory Architecture for Market Mechanism Compatibility: Q3P10}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+Q studies LLM agents in double auction markets, finding slower convergence to equilibrium compared to humans, with Chain-of-Thought analysis revealing a shift from strategic to urgency-driven trading decisions. P introduces a survival economy where agents spend energy per token, finding that memory helps agents calibrate risk from past outcomes and action-recommendations support coordination.
+
+\section*{Connexion Pursued}
+
+The ledger pursues transferring P-style memory mechanisms into Q's double auction environment. Specifically: adding memory tracking (a) past transaction prices and (b) own successful/failed trades at different price points \ledger{2}. The hypothesis isolates memory as a single mechanism rather than attempting full cooperative objective transfer.
+
+\section*{Supported Findings}
+
+Memory-enabled agents should converge faster because they learn price discovery patterns rather than reacting urgently to market signals \ledger{2}. Memory provides reference points that reduce urgency-driven decisions \ledger{4}. The Q framework is publicly released, making memory additions feasible without rebuilding the environment \ledger{4}.
+
+\section*{Objections}
+
+Framing matters: ``add memory to Q'' appears incremental, while ``what cognitive architecture do LLMs need for market mechanism compatibility?'' addresses deployment-relevant questions \ledger{3}. A negative result (cooperative mechanisms don't generalize beyond survival economies) remains informative but lower impact. The Q double auction is structurally competitive (zero-sum: buyer gain equals seller loss) versus P's cooperative survival setting where group alignment is natural \ledger{1}.
+
+\section*{Unresolved Issues}
+
+What cooperation means in a zero-sum trading context remains unclear \ledger{1}. The Q environment may not support P mechanisms without modification due to different information structures between double auction and survival economy \ledger{3}. Whether action-recommendations (successful in P) translate to competitive trading is untested.
+
+\section*{Smallest Next Step}
+
+Implement memory tracking in Q agents for past transaction prices and own trade outcomes at different price points. Pre-register specific predictions about convergence speed to make negative results informative \ledger{3}. This isolates one mechanism with high feasibility and moderate gain: answering whether memory architecture affects market mechanism compatibility.
+
+\section*{Evidence Assessment}
+
+Evidence is thin for whether memory alone suffices. Q's CoT analysis establishes urgency-driven decisions but does not prove memory would counteract this. P's memory findings come from a fundamentally different incentive structure. The connexion rests on plausible cognitive architecture transfer rather than demonstrated mechanism compatibility.
+
+\end{document}

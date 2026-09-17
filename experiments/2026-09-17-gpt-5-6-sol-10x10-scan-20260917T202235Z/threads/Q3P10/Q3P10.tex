@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Token-Linked Survival Pressure in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+The first paper reports that double auctions populated by large language model (LLM) agents converge more slowly, or not at all, toward market equilibrium and allocate resources less efficiently than human-populated markets. It also finds that trade execution, rather than continued incremental repricing, is associated with a shift in chain-of-thought language from strategy toward urgency. The second paper supplies a manipulable survival economy: token generation consumes energy, agents can regain energy, and an agent deactivates at zero energy. Its cooperative incentives change donations and job allocation. These abstracts therefore motivate a narrow connexion: token-linked exit risk could intervene on the stopping margin between continued price search and trade execution. They do not show that survival pressure caused the first paper's baseline market failures. \ledger{13, 19}
+
+\section{Supported findings and proposed test}
+
+The supported findings are limited. The first paper establishes weak convergence, lower allocative efficiency, heterogeneous behaviour across models and market roles, and an association between urgency language and execution. The second establishes that inference can be made survival-relevant and that incentives alter behaviour, but it reports no auction, price-discovery, graded-scarcity, or welfare result. Evidence for the direction of the connexion is therefore thin. \ledger{7, 13}
+
+The strongest common research question is whether survival-framed, token-linked exit risk changes double-auction welfare beyond the effect of computational rationing. A preregistered hypothesis is non-monotonic: moderate pressure may reduce incremental repricing, while severe pressure may truncate price discovery and induce premature low-surplus trades or exit. This inverted-U is a falsifiable proposal, not an established or literature-supported result. The primary estimand should be
+\[
+  \frac{\text{realized surplus}}{\text{maximum feasible surplus in the fixed initial market}}.
+\]
+Secondary outcomes can include distance from the competitive-equilibrium price, quote-to-trade turns, token use, and exits. Urgency, measured before the action, is at most a mechanism measure. \ledger{10, 21}
+
+\section{Objections and controls}
+
+Faster execution is not improved convergence: quick trades can occur at dispersed and inefficient prices. Auction profit should not replenish energy in the confirmatory design, because doing so adds survival value to profit and changes the preferences under study. Efficiency among surviving agents alone is selected; the fixed initial opportunity set must define the main welfare denominator. Model comparisons must also account for model-size-linked energy consumption, or scarcity intensity will differ mechanically across models. \ledger{15, 22}
+
+A simple crossing of token charge and deactivation is not automatically a valid factorial design: token charges have no incentive effect in cells where energy has no payoff or consequence. A cleaner contrast uses an announced cumulative token budget with market exit, a yoked compute control that enforces the same token or output allowance without an announced survival countdown, and an unlimited-budget baseline. This separates anticipatory pressure from reduced reasoning capacity, subject to explicit reporting of truncation effects. \ledger{20}
+
+The causal claim must remain narrow. Randomized pressure can test whether imposed survival risk moves the acceptance margin and affects welfare. It cannot establish that naturally occurring survival pressure explains weak convergence in a baseline experiment that contained no established survival treatment. Lexical association alone also cannot prove mediation, and hidden reasoning may be unavailable or post-hoc; observable pre-action messages and action histories are the portable fallback. \ledger{16, 15}
+
+\section{Unresolved issues and smallest next step}
+
+Unresolved design choices include utility-valid control payoffs, pressure levels that avoid floor or ceiling exit rates, treatment-invariant handling of deactivation, auction horizon and repetition, power for model-family and buyer--seller interactions, and validation of a pre-action urgency measure. The abstracts provide no calibration evidence for these choices. \ledger{17, 23}
+
+The smallest next step is a preregistered pilot with one fixed model and market role, fixed private values and costs, a fixed horizon, and the three conditions above. Its purpose is only to calibrate token budgets, verify that the yoked control matches realized compute, and estimate exit rates without testing the proposed welfare shape. A later powered study can then treat fixed-market surplus as confirmatory and the non-monotonic pattern as the hypothesis. \ledger{14, 20}
+
+\end{document}

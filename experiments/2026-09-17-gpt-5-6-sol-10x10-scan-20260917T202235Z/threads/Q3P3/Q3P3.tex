@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Structured Disagreement Before LLM Market Execution}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+The first paper studies LLM agents in double auctions.  Its abstract reports slower or absent convergence to market equilibrium, and less efficient allocations, relative to human markets.  It also reports that executing a trade rather than continuing incremental price adjustment is associated with a shift in chain-of-thought language from strategy toward urgency.  The second paper studies Adversarial Review (AR) in code review: a reviewer evaluates a proposed action, a critic audits that review through structured disagreement, and the main agent then edits.  Its abstract reports benchmark gains from explicit, evidence-grounded disagreement and identifies false consensus in a naive protocol.
+
+The connexion pursued is a pre-execution intervention.  Immediately before an LLM trader accepts a quote, a reviewer would challenge the proposed action using only information then available to the trader, and a critic would audit whether that challenge is evidence-grounded.  The trader would then decide.  This is a proposed cross-domain test, not a result established by either paper. \ledger{1, 4, 7}
+
+\section{Supported findings and testable claim}
+
+The abstracts support three premises: LLM double-auction outcomes can be inefficient; urgency language is associated with execution but has not been shown to cause it; and structured, grounded disagreement can outperform less disciplined cooperation in code-review benchmarks.  They do not establish that AR transfers to markets. \ledger{7, 10, 13}
+
+The strongest study would randomize independent market sessions among standard trading, token/call/latency-matched self-reflection, agreeable three-agent review, and evidence-grounded AR.  It would block on model, seed, and market role and cluster inference by market.  Primary outcomes would be normalized realized surplus and convergence to competitive-equilibrium price and quantity.  A preregistered, contemporaneous measure of low-surplus early acceptance could test a stopping-rule account; lexical urgency should remain exploratory.  A particularly informative result would be an AR advantage over both matched controls accompanied by fewer low-surplus early acceptances, even if urgency-word frequency did not change. \ledger{3, 9, 13}
+
+\section{Objections and unresolved issues}
+
+Comparison only with an untreated trader would confound disagreement with additional agents, tokens, latency, and deliberation.  An agreeable-review arm is needed to separate adversarial structure from agent count, while matched reflection controls for additional inference.  Reviewer and critic must not receive privileged market information.  Moreover, ``premature'' acceptance cannot be labelled using future prices: it must be defined from the contemporaneous information set, for example by low private surplus when a feasible incremental counterquote remains, with sensitivity across thresholds or a continuous foregone-margin measure. \ledger{2, 8, 14}
+
+Evidence is thin: only abstracts and the peer ledger were available.  The record does not determine the premature-acceptance threshold, equilibrium-distance statistic, power calculation, exact prompts, or treatment of protocol latency in auction time.  Efficiency gains without fewer premature acceptances would reject the proposed stopping-rule mechanism; unchanged urgency language would undermine the lexical proxy, not AR itself.  No AR advantage over matched controls would reject the proposed cross-domain usefulness. \ledger{5, 11, 15}
+
+\section{Smallest next step}
+
+Before running agents, inspect the released market framework and full methods, then preregister one market-level pilot fixing the equilibrium-distance statistic, a contemporaneous low-surplus-acceptance measure, identical information and timing rules, and the two matched controls.  This is the smallest step that can turn the connexion into a discriminating test without overstating the present evidence. \ledger{11, 15}
+
+\end{document}

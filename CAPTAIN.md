@@ -43,3 +43,12 @@ Binding behaviour lives in `.feature` specs and referenced `assets/**`. History 
 - The workflow must retain the final verification outcome.
 - Verification MUST NOT inject an execution callback or construct stage replies. Every receipt must come from a real assigned backend.
 - The first end-to-end baseline assigns ELM and `Qwen/Qwen3.5-397B-A17B-FP8` independently to all four roles. Later comparison arms may change one role to Pi or Claude Code.
+
+## Direct Provider Findings
+
+- A successful direct-provider consolidation call may return article text without writing the requested note file because the backend has no filesystem tools.
+- `_stage_call` currently treats an error-free empty response as completion even when its `done` predicate remains false. This can prevent its documented retry and leave consolidation blocked with `consolidate: no note`.
+- Direct-provider consolidation must persist a returned article through the production workflow rather than through an experiment-local script.
+- Direct-provider verification must persist a parseable provider response and final outcome through the same production workflow.
+- Required verification must prove retry on an empty response while `done` is false, acceptance when `done` becomes true, persistence of returned consolidation text, and a final verdict for every shortlisted pair.
+- Preserve `experiments/2026-09-17-gpt-5-6-sol-10x10-scan-20260917T202235Z/` and `experiments/2026-09-17-qwen3-5-397b-10x10-scan/` as observed evidence. Their partial and repeated calls are not acceptance evidence for the corrected workflow.

@@ -1,0 +1,29 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{From Prompted Dissent to Incentive-Grounded Adversarial Review}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+\emph{Mechanism Design for Alignment and Control} studies agents with unknown preferences and capabilities, including capability concealment, peer scoring, and coupled rewards.  \emph{Adversarial Review: Structured Disagreement for Grounded Agentic Code Review} studies a reviewer--critic protocol: its abstract reports false consensus on SWE-PRBench under naive adversarial review and improved F1 after an explicit instruction to disagree.  The proposed connexion is to turn that protocol into a testbed that distinguishes prompted dissent from incentive-grounded critique.  In particular, the experiment would ask whether outcome-grounded, consequence-bearing peer scoring or competitive reward coupling helps specifically when a reviewer privately observes defects and is rewarded for concealing them \ledger{14, 18}.
+
+\section{Supported findings}
+
+The supplied evidence supports this connexion only at the level of a research hypothesis.  A mechanism-identification design should cross disagreement prompting with scoring or reward coupling and with aligned versus induced-misaligned incentives, while holding agents, context, and token budget fixed \ledger{1, 4, 6}.  Private defect information must be randomized so that concealment is observable.  The identifying result is a scoring-or-coupling by misalignment interaction beyond the effect of an instruction to disagree \ledger{9, 15}.
+
+Support would require less unsupported agreement, higher valid-defect recall and precision or F1, and a non-inferior final patch pass rate.  Independently verified defects, downstream tests, or adjudication should ground the score rather than self-reported peer ratings \ledger{3, 10}.  This would constitute behavioral evidence for incentive-grounded review, not a proof of incentive compatibility.
+
+\section{Objections and unresolved issues}
+
+Evidence is thin: the inputs contain only titles and abstracts, and the peer directories contain no additional notes beyond the ledger.  They do not establish Q's exact payoff formulas or implementability assumptions, P's detailed protocol or benchmark construction, an operational utility to which language-model agents respond, statistical power, or publication novelty \ledger{7, 19}.  P does not itself establish strategic preferences, private capability, sandbagging, or consequential rewards; merely mentioning a score in a prompt is insufficient \ledger{2, 12}.
+
+The interpretation is falsified by no reward-by-misalignment interaction, extra disagreement without better evidence, collusion, or loss of coding accuracy \ledger{15, 18}.  It also remains unresolved whether an exact scoring or coupling rule satisfies Q's assumptions and whether agents respond to a genuinely consequence-bearing objective.  If those gates fail, the claim must narrow to reward-conditioned structured critique and omit capability concealment and incentive compatibility \ledger{16, 19}.
+
+\section{Smallest next step}
+
+Obtain both full papers and derive one explicit peer-scoring or coupled-reward rule from Q, listing the assumptions needed to apply it to P's reviewer--critic setting.  Before a full benchmark run, use a small controlled pilot with randomized private defect information and an explicit concealment payoff to verify that the objective changes behavior and that concealment is measurable \ledger{12, 16}.  Only then is the larger factorial study warranted.
+
+\end{document}
