@@ -96,6 +96,29 @@ def execution_receipt(role, backend, model, execution_class, prompt_digest, prov
                 token_usage=token_usage, cost=cost)
 
 
+def run_assigned_comparison(campaign, assignments: dict) -> dict:
+    """@planks("When Pathfinder runs the assigned comparison workflow")"""
+    receipts = []
+    outcome = None
+    for role, assignment in assignments.items():
+        campaign.backend = assignment["backend"]
+        campaign.raw = {**campaign.raw, "codex": {"name": "elm", "env_key": "ELM_API_KEY"}}
+        prompt = f"Role: {role}. Review frozen pair Q1P1 and return a concise outcome."
+        reply = transport.call(
+            prompt, campaign=campaign, model=assignment["model"], tools=False, search=False,
+            cwd=campaign.path(f"comparison-{role}"), timeout=120, thread="Q1P1", stage=role, actor=role,
+        )
+        receipt = execution_receipt(
+            role, assignment["backend"], assignment["model"], assignment["execution_class"],
+            hashlib.sha256(prompt.encode()).hexdigest(), reply["session"], reply["text"], reply["text"],
+            reply["seconds"], {"input": reply["input_tokens"], "output": reply["output_tokens"]}, reply["cost"],
+        )
+        receipts.append(receipt)
+        if role == "verify":
+            outcome = reply["text"]
+    return {"receipts": receipts, "pairs": {"Q1P1": {"verification_outcome": outcome}}}
+
+
 def validate_assignment(assignment: dict) -> bool:
     """@planks("When the run manifest is validated")"""
     return assignment.get("provider") == "elm" and assignment.get("backend") in {"opencode", "pi"}

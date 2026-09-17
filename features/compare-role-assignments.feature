@@ -15,3 +15,11 @@ Feature: Compare models and backends by Pathfinder role
     Given a role assignment has been run against frozen campaign inputs
     When the same assignment is repeated
     Then both runs retain the information needed to compare variation in outcomes, cost, and latency
+
+  Scenario: One frozen pair completes through independently assigned roles
+    Given one frozen paper pair
+    And role "scan" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM
+    And roles "research", "consolidate", and "verify" are assigned model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM
+    When Pathfinder runs the assigned comparison workflow
+    Then each role leaves a provider-produced receipt for its assigned model and backend
+    And the comparison records the pair's final verification outcome

@@ -893,3 +893,42 @@ def validate_assignment(context):
 @then("the assignment is accepted")
 def assignment_accepted(context):
     assert context.accepted
+
+
+@given("one frozen paper pair")
+def one_frozen_pair(context):
+    prepared_corpora(context)
+
+
+@given('roles "research", "consolidate", and "verify" are assigned model "{model}" through ELM')
+def remaining_role_assignments(context, model):
+    context.assignments = assignments()
+    context.assignments["scan"] = {
+        "model": context.assignment["model"],
+        "backend": context.assignment["backend"],
+        "execution_class": "provider",
+        "prompt": "scan",
+        "tool_policy": [],
+        "budget": 1,
+    }
+    for role in ("research", "consolidate", "verify"):
+        context.assignments[role].update(model=model, backend="elm", execution_class="provider")
+
+
+@when("Pathfinder runs the assigned comparison workflow")
+def run_assigned_comparison(context):
+    context.workflow = runner.run_assigned_comparison(context.campaign, context.assignments)
+
+
+@then("each role leaves a provider-produced receipt for its assigned model and backend")
+def assigned_receipts(context):
+    receipts = context.workflow["receipts"]
+    assert {receipt["role"] for receipt in receipts} == set(context.assignments)
+    assert all(receipt["model"] == context.assignments[receipt["role"]]["model"] for receipt in receipts)
+    assert all(receipt["backend"] == context.assignments[receipt["role"]]["backend"] for receipt in receipts)
+    assert all(receipt["provider_job_id"] and receipt["raw_response"] for receipt in receipts)
+
+
+@then("the comparison records the pair's final verification outcome")
+def comparison_verification_outcome(context):
+    assert context.workflow["pairs"]["Q1P1"]["verification_outcome"]
