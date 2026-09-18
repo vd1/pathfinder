@@ -105,6 +105,7 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
     """@planks("When role \"scan\" executes a minimal frozen paper pair")
     @planks("When Pathfinder records the completed provider call")
     @planks("When Pathfinder completes the provider call without a parsed research account")
+    @planks("Then the receipt retains the raw response events")
     """
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
