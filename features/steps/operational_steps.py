@@ -895,6 +895,57 @@ def receipt_retains_response_events(context):
     assert context.provider_receipt[0] == ""
 
 
+@given("an OpenAI-compatible provider call completes with positive output tokens")
+def completed_provider_output(context):
+    context.provider_lines = [
+        json.dumps({"type": "thread.started", "thread_id": "thread-1"}),
+        json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": ""}}),
+        json.dumps({"type": "turn.completed", "usage": {"input_tokens": 3, "output_tokens": 7}}),
+    ]
+
+
+@when("Pathfinder completes the provider call without a parsed research account")
+def complete_without_parsed_account(context):
+    c = campaign(context)
+
+    # @exceptional-double: real provider process completion cannot produce this parser failure on demand.
+    class CompletedProcess:
+        returncode = 0
+        stdout = iter(line + "\n" for line in context.provider_lines)
+        stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()
+        stderr = type("Stderr", (), {"read": lambda self: ""})()
+
+        def wait(self, timeout=None):
+            return self.returncode
+
+    # @exceptional-double: real provider process completion cannot produce this parser failure on demand.
+    original = transport.subprocess.Popen
+    transport.subprocess.Popen = lambda *args, **kwargs: CompletedProcess()
+    try:
+        context.provider_result = transport.call(
+            "prompt", campaign=c, model="model", tools=False, search=False, cwd=c.root,
+            timeout=1, thread="Q1P1", stage="consolidate", actor="consolidator",
+        )
+    finally:
+        transport.subprocess.Popen = original
+    context.provider_receipt = transport.receipts(c)[-1]
+
+
+@then("the receipt records the process exit status")
+def receipt_records_exit_status(context):
+    assert context.provider_receipt["exit_status"] == 0
+
+
+@then("the receipt records the terminal response event")
+def receipt_records_terminal_event(context):
+    assert json.loads(context.provider_receipt["terminal_event"])["type"] == "turn.completed"
+
+
+@then("the receipt retains the raw response events")
+def receipt_retains_raw_events(context):
+    assert context.provider_receipt["raw_events"] == context.provider_lines
+
+
 @given('role "research" requires workspace tools or multiple turns')
 def tool_role(context):
     context.assignment = {"role": "research", "tools": True}

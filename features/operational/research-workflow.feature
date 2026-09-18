@@ -55,6 +55,14 @@ Feature: Operate a paper-pair research workflow
       Then the receipt identifies the process exit and terminal response event
       And the receipt retains the raw response events needed to account for the output tokens
 
+    @contract
+    Scenario: Completed provider output remains inspectable after parsing fails
+      Given an OpenAI-compatible provider call completes with positive output tokens
+      When Pathfinder completes the provider call without a parsed research account
+      Then the receipt records the process exit status
+      And the receipt records the terminal response event
+      And the receipt retains the raw response events
+
   Rule: Each assessment decision has one operational consequence
 
     Scenario: A draft decision completes the investigation

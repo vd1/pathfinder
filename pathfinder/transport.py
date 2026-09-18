@@ -104,6 +104,7 @@ def _parse(campaign, model, lines):
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
     """@planks("When role \"scan\" executes a minimal frozen paper pair")
     @planks("When Pathfinder records the completed provider call")
+    @planks("When Pathfinder completes the provider call without a parsed research account")
     """
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
@@ -143,6 +144,8 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
     with open(campaign.path("receipts.jsonl"), "a") as f:
         f.write(json.dumps({"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thread": thread,
                             "stage": stage, "actor": actor, "backend": campaign.backend, "model": model,
+                            "exit_status": proc.returncode, "terminal_event": lines[-1].rstrip("\n"),
+                            "raw_events": [line.rstrip("\n") for line in lines],
                             **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cache_write", "cache_read", "prefix_read", "cost", "error")}}) + "\n")
     return r
 
