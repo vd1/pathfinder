@@ -30,3 +30,9 @@ Feature: Shipshape verification conformance
     Given the binding scenarios and default tier from the rigging
     When the default tier coverage command runs
     Then at least one binding scenario executes
+
+  @conformance
+  Scenario: Provider-class execution verification routes from its assigned inputs
+    Given a provider-class execution scenario with an assigned backend, model, and execution class
+    When the verification invokes the provider-class execution seam
+    Then the invocation routing inputs match the scenario assignment

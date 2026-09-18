@@ -424,6 +424,30 @@ def consolidation_before_verification(context):
     assert roles.index("consolidate") < roles.index("verify")
 
 
+@given("a provider-class execution scenario with an assigned backend, model, and execution class")
+def provider_class_assignment(context):
+    context.assignment = {
+        "backend": "elm",
+        "model": "Qwen/Qwen3.5-397B-A17B-FP8",
+        "execution_class": "provider",
+    }
+
+
+@when("the verification invokes the provider-class execution seam")
+def invoke_provider_class_seam(context):
+    context.execution_route = runner.execution_route(context.assignment)
+
+
+@then("the invocation routing inputs match the scenario assignment")
+def routing_inputs_match_assignment(context):
+    assert context.execution_route == "openai-compatible"
+    assert context.assignment == {
+        "backend": "elm",
+        "model": "Qwen/Qwen3.5-397B-A17B-FP8",
+        "execution_class": "provider",
+    }
+
+
 @given("the implementation paths and executable scenarios from the rigging")
 def implementation_and_scenarios(context):
     context.root = repository_root(context)
