@@ -1,0 +1,226 @@
+\documentclass[11pt,a4paper]{article}
+\frenchspacing
+\usepackage[margin=22mm]{geometry}
+\usepackage{booktabs,tabularx,array}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parskip}{4pt}
+\setlength{\emergencystretch}{2em}
+
+\newcommand{\file}[1]{\texttt{#1}}
+
+\title{Comparing Claude, GPT, and Qwen Treatments\\of Pathfinder Campaigns}
+\author{Pathfinder campaign review}
+\date{19 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note compares the completed original Claude campaign with later
+GPT-5.6-sol and Qwen3.5-397B full-protocol campaigns.  It combines descriptive
+statistics with close reading of matched paper pairs.  Claude behaved most
+like an autonomous research programme: it derived, simulated, inspected
+sources, and frequently rejected its own proposed connexions.  GPT gave the
+strongest compact treatment from abstract-level evidence, especially in
+causal framing and experiment design, but sometimes promoted a polished
+proposal as a result.  Qwen was effective at detecting structural mismatches
+and triaging ideas, but usually stopped before producing a precise estimand,
+theorem, or empirical result.  These differences are informative but not a
+clean model benchmark because the Claude campaign had more rounds, peer
+research, and source access.
+\end{abstract}
+
+\section{Scope and comparability}
+
+The comparison uses 14 completed threads in the original Claude directory,
+12 in the GPT full-protocol campaign, and 10 valid threads in the Qwen
+full-protocol campaign.  Qwen threads Q4P3 and Q4P9 are excluded throughout:
+their own artifacts report that peer work terminated before the planned
+protocol completed.  Four pairs appear in all three valid sets: Q3P3, Q3P10,
+Q4P6, and Q4P10.  These matched pairs support direct qualitative
+comparison.  Campaign-wide counts describe each realised run but also reflect
+different shortlists.
+
+The treatment was unequal.  The original campaign commonly allowed two or
+three rounds, peer research, full-text or code inspection, and verifier-led
+continuations.  The GPT and Qwen campaigns used two seats, one round, no peer
+search, and predominantly abstract-only inputs.  Selection also differed:
+for example, GPT ranked Q4P3 first in its shortlist, while Qwen ranked it last
+among its twelve selections.  The statistics below are therefore descriptive
+diagnostics, not causal estimates of model quality.
+
+\section{Summary statistics}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+ & Claude & GPT & Qwen \\
+\midrule
+Valid completed threads & 14 & 12 & 10 \\
+Final DRAFT & 5 & 6 & 3 \\
+Final PAUSE & 8 & 6 & 0 \\
+Final ITERATE & 1 & 0 & 7 \\
+DRAFT rate & 35.7\% & 50.0\% & 30.0\% \\
+Ledger entries, total & 471 & 262 & 49 \\
+Ledger entries, median per thread & 33.5 & 21.5 & 4.5 \\
+Ledger entries, mean per thread & 33.6 & 21.8 & 4.9 \\
+Final note lines, median & 70.0 & 33.0 & 55.5 \\
+Final note lines, mean & 141.4 & 39.2 & 55.6 \\
+Peer research files under \file{ada/} or \file{emmy/} & 59 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Campaign-wide descriptive statistics after excluding known faulty-
+harness threads.  PAUSE-ON-ITERATE is counted as the final ITERATE verdict.
+File and line counts measure realised campaign activity, not intrinsic model
+capacity.}
+\end{table}
+
+The scale differences are large.  Claude produced about 1.5 times as many
+ledger entries per thread as GPT and about 6.9 times as many as Qwen.  GPT's
+median final note was half the length of Claude's, despite retaining a much
+larger ledger than Qwen.  Claude's very high mean note length relative to its
+median reflects several unusually deep investigations.  The 59 research files
+are the clearest operational difference: Claude generated simulations,
+analysis scripts, numerical outputs, theorem notes, and source inspections,
+whereas the one-round GPT and Qwen campaigns generated no corresponding peer
+research directories.
+
+Final decisions also differed.  GPT split evenly between DRAFT and PAUSE.
+Qwen kept seven of ten valid threads alive as ITERATE and drafted three.  Claude
+drafted five, paused eight, and left one at ITERATE.  Thus Qwen was not simply
+``more conservative'': it was less decisive, preferring another check to a
+terminal rejection.  GPT was most willing to treat an identification-ready
+design as draft-worthy.  Claude usually demanded a theorem, measurement, or
+other supported pair-level result.
+
+\section{Qualitative model signatures}
+
+\subsection{Claude: sustained research and falsification}
+
+Claude treated each pair most like an autonomous research programme.  It
+developed formal results, wrote and ran simulations, inspected released code,
+searched prior work, and tracked objections through correction or withdrawal.
+Its strongest habit was epistemic separation: association versus intervention,
+selection versus treatment, and measurement versus mechanism were kept
+distinct.  It was willing to derive a substantial result about one paper and
+still pause because the cross-paper bridge remained unsupported.
+
+Its weakness was cost and scope.  Some treatments became long technical
+investigations whose strongest contribution no longer belonged to the pair.
+The resulting notes were the most precise and auditable, but also the least
+accessible and the most expensive to produce.
+
+\subsection{GPT: compact causal design}
+
+GPT was the strongest one-round, abstract-only researcher.  Its characteristic
+move was to reject a broad analogy, isolate the identification problem, define
+matched treatment arms and estimands, list confounds, and state exactly what
+the available evidence could not establish.  The writing was concise,
+structured, and publication-oriented.  Relative to Qwen, GPT more often
+specified factorial designs, primary and secondary outcomes, non-inferiority
+criteria, and construct-validity checks.
+
+Its main weakness was an inconsistent acceptance threshold.  Several threads
+were promoted to DRAFT because they contained a rigorous mechanism-discrimination
+proposal or experimental design, even though the note itself acknowledged
+that no effect had been measured.  GPT therefore sometimes treated a strong
+research plan as a research result.
+
+\subsection{Qwen: conceptual triage}
+
+Qwen was effective at identifying broad structural mismatches: false consensus
+versus market heterogeneity, cooperative credit assignment versus strategic
+concealment, committed-principal mechanisms versus bilateral negotiation, and
+individual pathology versus market-level outcome.  This made it useful as an
+early critic and explains the high ITERATE rate.
+
+It usually stopped one level too early.  Its next step was often to inspect
+traces, formalise a model, or search for sandbagging without specifying the
+decisive estimand, counterfactual, theorem assumptions, or controlled contrast.
+It occasionally upgraded structural resemblance into direct applicability
+before verifying that the source theorem survived the reframing.  Several TeX
+files also retained Markdown fences.  The two known incomplete peer runs are
+excluded rather than interpreted as model behaviour.
+
+\section{Matched cases}
+
+\subsection{Q3P3: adversarial review and double auctions}
+
+Claude reframed the pair around institutions and stopping rules, implemented
+constrained zero-intelligence auction simulations, decomposed efficiency loss
+into omission and commission, and inspected source code for constraint
+differences.  It pursued a separate continuation and nevertheless paused when
+the matched code-review ablation could not be executed from the available
+materials.  See \file{threads/Q3P3/Q3P3.tex} and
+\file{experiments/2026-09-16-Q3P3-continuation/threads/Q3P3/}.
+
+GPT diagnosed the proposed intervention as underidentified: adding adversarial
+review changes deliberation, compute, tokens, delay, and disagreement at once.
+It proposed a matched naive-critic versus evidence-grounded-critic contrast,
+with allocative efficiency as the primary estimand, and paused because this
+was only a research design.  See
+\file{experiments/2026-09-18-gpt-5-6-sol-full-protocol/threads/Q3P3/Q3P3.tex}.
+
+Qwen identified the clean conceptual objection: the auction paper reports
+heterogeneity, whereas adversarial review addresses false consensus.  It
+suggested examining chain-of-thought traces for premature commitment, but did
+not develop an identification strategy or perform an empirical test.  See
+\file{experiments/2026-09-18-qwen3-5-397b-full-protocol/threads/Q3P3/Q3P3.tex}.
+
+\subsection{Q4P6: strategic credit assignment}
+
+Claude derived a population identification theorem.  With a shared latent
+comparison and conditionally independent symmetric observer noise,
+cross-observer moments identify observer reliability; calibrated first moments
+then identify comparison probabilities, and a connected Bradley--Terry graph
+identifies contribution scores up to translation.  It explicitly separated
+this result from unproved finite-sample, collusion, bootstrap, and churn claims.
+See \file{threads/Q4P6/Q4P6.tex}, especially lines 32--59.
+
+GPT produced a useful but shallower separation result: report-independent
+potential shaping cannot repair profitable sandbagging, while a transfer-based
+repair requires full-policy implementability constraints and identifiable
+signals.  It also made the key information-theoretic point that no mechanism
+can distinguish a sandbagger from a genuinely low-capability agent if they
+induce the same comparison distribution.  See
+\file{experiments/2026-09-18-gpt-5-6-sol-full-protocol/threads/Q4P6/Q4P6.tex}.
+
+Qwen recognised the cooperative-versus-strategic mismatch and proposed looking
+for sandbagging in the experimental tasks.  It did not derive a mechanism,
+identification condition, or theorem, and returned ITERATE.  See
+\file{experiments/2026-09-18-qwen3-5-397b-full-protocol/threads/Q4P6/Q4P6.tex}.
+
+\section{Interpretation}
+
+The models appear to optimise for different stopping questions:
+\begin{itemize}
+  \item Claude asks whether a demonstrated new pair-level result exists.
+  \item GPT asks whether a defensible and identifiable research contribution
+        has been specified.
+  \item Qwen asks whether a plausible connexion remains worth one more check.
+\end{itemize}
+
+This explains more of the verdict pattern than a simple optimistic-versus-
+pessimistic scale.  Claude can invest heavily and still reject.  GPT can draft
+a proposal while carefully denying that it is an established empirical effect.
+Qwen can identify a serious mismatch yet preserve the thread as ITERATE.
+
+\section{Operational conclusion}
+
+For Pathfinder, the models are potentially complementary.  Qwen is useful for
+cheap initial mismatch screening.  GPT is the best compact option for narrowing
+a connexion into an identifiable theorem or experiment.  Claude is strongest
+for expensive follow-through involving formal derivation, source auditing, or
+empirical work.  A model-independent verifier should enforce one acceptance
+criterion across all three: a polished proposal, a negative conceptual
+observation, and a demonstrated pair-level result should not all receive the
+same DRAFT status.
+
+The principal experimental follow-up is a controlled rerun with the same
+shortlist, source package, number of rounds, peer-search permissions, tool
+budget, and verifier.  Until then, the present results support qualitative
+workflow choices, but not a causal ranking of intrinsic model quality.
+
+\end{document}
