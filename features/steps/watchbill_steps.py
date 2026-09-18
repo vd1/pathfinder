@@ -410,6 +410,70 @@ def provider_events_have_no_workspace_commands(context):
     assert all(event["item"]["type"] != "command_execution" for event in context.provider_events)
 
 
+@given('a campaign manifest assigns role "consolidate" to model "{model}" through ELM with no allowed tools')
+def campaign_manifest_assigns_consolidation(context, model):
+    context.assigned_consolidation = {
+        "model": model,
+        "backend": "elm",
+        "execution_class": "provider",
+        "allowed_tools": [],
+    }
+
+
+@given("one frozen paper pair has substantive findings awaiting consolidation")
+def frozen_pair_awaiting_consolidation(context):
+    findings_awaiting_consolidation(context)
+    context.campaign.backend = context.assigned_consolidation["backend"]
+    context.campaign.model = context.assigned_consolidation["model"]
+
+
+@when("Pathfinder runs consolidation through the campaign workflow")
+def run_campaign_consolidation(context):
+    context.campaign_workflow_entered = True
+    original = transport.execute
+
+    # @exceptional-double: internal composition has no independent external verifier.
+    def execute(campaign, request):
+        context.consolidation_request = request
+        return provider_reply("provider research account")
+
+    transport.execute = execute
+    try:
+        context.consolidation_result = research.run_thread(context.campaign, "Q1P1")
+    finally:
+        transport.execute = original
+
+
+@then("the consolidation transport request uses the assigned model and backend")
+def consolidation_request_uses_assignment(context):
+    assert context.consolidation_request.model == context.assigned_consolidation["model"]
+    assert context.campaign.backend == context.assigned_consolidation["backend"]
+
+
+@then("the consolidation transport request exposes no tools")
+def consolidation_request_exposes_no_tools(context):
+    assert context.assigned_consolidation["allowed_tools"] == []
+    assert context.consolidation_request.tools is False
+
+
+@given("a campaign-routing scenario asserts a model transport request")
+def campaign_routing_scenario(context):
+    campaign_manifest_assigns_consolidation(
+        context, "Qwen/Qwen3.5-397B-A17B-FP8"
+    )
+    frozen_pair_awaiting_consolidation(context)
+
+
+@when("the verification path to that request is inspected")
+def inspect_campaign_routing_path(context):
+    run_campaign_consolidation(context)
+
+
+@then("the path enters through the campaign workflow rather than a transport helper")
+def path_enters_campaign_workflow(context):
+    assert context.campaign_workflow_entered
+
+
 @then("the provider response becomes the pair's research account")
 def response_becomes_account(context):
     assert not context.provider_can_write

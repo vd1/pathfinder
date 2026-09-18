@@ -36,3 +36,9 @@ Feature: Shipshape verification conformance
     Given a provider-class execution scenario with an assigned backend, model, and execution class
     When the verification invokes the provider-class execution seam
     Then the invocation routing inputs match the scenario assignment
+
+  @conformance
+  Scenario: Campaign routing verification exercises the production workflow
+    Given a campaign-routing scenario asserts a model transport request
+    When the verification path to that request is inspected
+    Then the path enters through the campaign workflow rather than a transport helper
