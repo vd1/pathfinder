@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Strategic Robustness of Comparison-Based Credit Assignment}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q studies mechanism design for agents with hidden preferences and capabilities. Its objective is to induce honesty and obedience when capability may be concealed but not counterfeited. It associates implementability with nested cyclical monotonicity (NCM) and considers sandbagging, peer scoring, coupled rewards, and reward shaping.
+
+P proposes MARS-RA, which converts multimodal-model pairwise comparisons of agent contributions into rank-aggregated scores for potential-based reward shaping (PBRS). It claims robustness to noisy comparisons and changing participation, together with learning convergence and effective cooperation.
+
+The pursued connexion is whether MARS-RA's comparison signal can support Q-style mechanisms against strategic capability concealment. The topical overlap is direct, but the supplied evidence consists only of abstracts and is therefore thin.
+
+\section{Supported findings}
+
+P provides a credit estimator and training signal, whereas Q requires an incentive-compatible policy over hidden types and instruments. Robust rank estimation does not itself establish honesty, obedience, or resistance to strategic manipulation.
+
+A conditional separation result is plausible. Under the standard discounted telescoping form
+\[
+F(s_t,s_{t+1})=\gamma\Phi(s_{t+1})-\Phi(s_t),
+\]
+with compatible terminal treatment and fixed underlying utility, report-independent PBRS preserves relevant return orderings. It therefore cannot make truthful capability revelation strictly optimal when sandbagging was already profitable. This conclusion is conditional because P's abstract does not give its precise potential, stationarity assumptions, terminal convention, or reward semantics \ledger{13,14}.
+
+A possible repair is to place comparison-derived scores inside a report- or type-contingent transfer or continuation contract. NCM must then constrain the induced allocation and transfer rule, not merely the rank vector. Implementation also requires the comparison channel to distinguish concealed capabilities.
+
+\section{Objections and limits}
+
+Neither abstract establishes that MARS-RA comparisons are proper peer scores, strategic reports, or NCM-compatible statistics. Applying Q's results directly to rank aggregation would consequently be unsupported.
+
+The sharpest limit is observational equivalence. If a high-capability sandbagger and a genuinely low-capability agent induce the same distribution of comparisons, no score-only mechanism can separate them. NCM restricts implementable policies but cannot create missing information \ledger{15,19}.
+
+Claims based on policy invariance must also remain qualified. Learned, nonstationary, action-dependent, agent-specific, or non-telescoping shaping may change incentives. In that case, the relevant problem is to characterize the induced strategic distortion rather than assume invariance.
+
+\section{Unresolved issues}
+
+The full papers are needed to specify MARS-RA's potential and Q's formal NCM inequalities. A complete model must additionally define agent utility, report and action spaces, rank normalization and ties, the effect of actions on comparison signals, and whether rewards are training aids or deployment payoffs. Robustness to unilateral contribution suppression, collusion, sybil or participation changes, and preference misalignment remains unestablished.
+
+\section{Smallest next step}
+
+Construct a finite model with two capability levels and two alignment types, together with an endogenous pairwise-comparison channel. First test whether truthful high capability and high-capability sandbagging are statistically distinguishable. Then compare three mechanisms while holding the comparison pipeline fixed: standard PBRS, an unconstrained rank bonus, and an NCM-constrained transfer. The first theorem should state the conditional shaping-only impossibility; the second should characterize repair using NCM plus signal identifiability. Unilateral sandbagging is the minimal experiment, with collusion and entry or exit deferred.
+
+\end{document}

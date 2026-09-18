@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Causal Prediction Interfaces for Dynamic Bimanual Manipulation}
+
+\begin{document}
+\maketitle
+
+\paragraph{Pair.}
+Q surveys learning-augmented algorithms that exploit fallible predictions while retaining formal guarantees. P presents DynaMAC, which models the opposite robot arm as a dynamic task parameter, and DynaBench, a benchmark on which it reports gains of more than \(35\) percentage points with \(20\times\) fewer samples.
+
+\paragraph{Connexion pursued.}
+The proposed connexion was to interpret DynaMAC's opposite-arm signal as a learning-augmented prediction and then seek a consistency--robustness guarantee, possibly through a baseline-gated fallback. The available evidence is thin: both supplied texts contain only titles and abstracts.
+
+\paragraph{Supported findings.}
+The abstracts support a narrower, falsifiable interface-identification study, not a theorem. Holding the policy class, demonstrations, and information budget fixed, DynaBench could compare:
+\begin{enumerate}
+    \item oracle or contemporaneous opposite-arm state;
+    \item delayed or noisy observations; and
+    \item genuine causal forecasts with declared horizons.
+\end{enumerate}
+Task success and sample efficiency should be tested against P's reported \(>35\)-point and \(20\times\) advantages. Trajectory-level endogenous forecast error is meaningful only in the forecast condition, because the robot's actions affect future opposite-arm trajectories. If the advantage survives only with contemporaneous state, the benefit is privileged dynamic context rather than learning augmentation. If it persists with causal forecasts, that would establish an empirical premise for later guarantee work \ledger{12, 15}.
+
+\paragraph{Objections.}
+P calls the opposite arm a ``dynamic task parameter,'' but does not say that this parameter is predicted rather than observed. It supplies no temporal precedence, prediction target, horizon, error variable, corruption model, acquisition cost, or feedback protocol. Treating instantaneous state as a prediction would therefore be a category error. Q names prediction interfaces, error measures, and consistency--robustness trade-offs, but its abstract provides no theorem whose assumptions can be instantiated for closed-loop bimanual control.
+
+A fallback gate does not by itself provide a task-level robustness floor. Switching one arm changes the endogenous input seen by the other, so a per-arm guarantee need not compose. A valid construction would require a joint invariant or comparator---for example, collision safety, constraint satisfaction, or reward regret---that remains valid under coupled switching \ledger{12, 15}.
+
+\paragraph{Unresolved issues.}
+The signal's timing and observability remain unknown, as do the forecast target and horizon, a matched information-budget protocol, trajectory-level error under policy-induced feedback, prediction cost, available feedback, and a jointly preserved fallback invariant. Consequently, no consistency--robustness bound follows from the supplied evidence.
+
+\paragraph{Smallest next step.}
+Inspect P's full method to determine whether the opposite-arm input is contemporaneous, delayed, or forecast. If forecasts are actually used, specify their target, horizon, availability, and information cost. Then run the three-condition DynaBench ablation above before attempting any theorem or fallback construction.
+
+\end{document}

@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Contracts as Tests of Alignment Mechanisms}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q develops mechanism design for agents with unknown preferences and capabilities, separating incentives for honest reporting from incentives for obedient action. Its one-sided imitation structure permits capabilities to be concealed but not counterfeited. P studies cooperation through self-negotiated contracts and compares formal contracts that compile to code with natural-language contracts that require reinterpretation.
+
+The pursued connexion is to embed Q's sandbagging problem within P's Contracting Game. Experimentally assigned capabilities would determine nested feasible-action sets; agents would first report their capability and then agree to a contracted action. Semantically matched natural and executable contracts would test whether representation and enforcement affect capability concealment and subsequent compliance.
+
+\section{Supported findings}
+
+The strongest design supported by the supplied abstracts has three arms: no contract, a natural-language contract, and a formal executable contract. Capability must be assigned by the experimenter so that report accuracy has independent ground truth. Honest capability reporting and completion of the contracted action must be separate co-primary outcomes, since truthfulness does not imply obedience.
+
+The informative result is not a generic benefit from contracting, which P already motivates, but a representation boundary. Executable contracts might reduce concealment and disobedience while equivalent natural contracts do not; alternatively, natural contracts might match executable enforcement. Either result would clarify when Q-inspired incentives can operate in P's empirical setting \ledger{12,15}.
+
+\section{Objections and evidentiary limits}
+
+Peer scoring is not the cleanest first intervention. Q lists it only as a stylized application, while P directly supplies the formal-code versus natural-reinterpretation axis.
+
+Behavioral success would not validate Q's revelation principle or other theorem-level claims merely because reports become more truthful or compliance rises. Likewise, profitable sandbagging or defection would show failure of the instantiated bridge, not refute Q generally. Such inferences require a faithful mapping from Q's assumptions and mechanism to P's reports, actions, incentives, and enforcement.
+
+Evidence is thin: only abstracts are available. They do not provide Q's exact mechanism or equilibrium conditions, P's implementation interface, latent-type ground truth, or enough detail to establish semantic equivalence between contract representations.
+
+\section{Unresolved issues and next step}
+
+The principal unresolved issues are how to operationalize nested capability sets, how to implement Q's incentive conditions, and how to ensure that natural and executable contracts differ only in representation or enforcement.
+
+The smallest next step is to obtain the full papers and P's code, then write a one-page mechanism-to-game mapping. It should identify the assigned capability, feasible actions, report, contracted action, payoff or enforcement rule, and separate honesty and obedience estimands. Only after that mapping passes an assumption check should the three-arm benchmark be preregistered.
+
+\end{document}

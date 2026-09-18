@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Reward Coupling and Structured Disagreement under Capability Concealment}
+
+\begin{document}
+\maketitle
+
+\section{The Pair}
+
+Q develops mechanism design for AI agents with unknown preferences and capabilities. Its abstract highlights one-sided capability concealment, sandbagging, higher-order beliefs, peer scoring, and competitive reward coupling. P introduces Adversarial Review (AR), a three-agent protocol comprising a main coding agent, reviewer, and critic. P reports false consensus under naive AR and improved review F1 after explicitly prompting disagreement \ledger{7,13}.
+
+\section{Connexion Pursued}
+
+The connexion is to use P's AR protocol as an empirical setting for testing whether Q-inspired competitive rewards make review robust to strategic concealment. The important comparison is not disagreement versus no disagreement: P already provides evidence that prompting disagreement changes outcomes. It is whether payoff-sensitive reward coupling adds robustness beyond that prompt effect when an agent is rewarded for concealing seeded defects \ledger{8,13}.
+
+The smallest supported design is a preregistered \(2\times2\times2\) factorial experiment crossing:
+
+\begin{enumerate}
+\item explicit-disagreement prompting,
+\item competitive reward coupling, and
+\item an induced concealment payoff.
+\end{enumerate}
+
+The primary estimand is the reward-coupling-by-concealment interaction. The three-way interaction tests whether coupling adds robustness specifically beyond explicit-disagreement prompting \ledger{17}.
+
+\section{Supported Findings}
+
+The abstracts support the ingredients of this experiment. Q supplies capability concealment, sandbagging, and coupled rewards among multiple agents. P supplies the reviewer--critic structure, a documented false-consensus failure, a prompt-only comparator, and review and coding outcomes \ledger{7,18}.
+
+Suitable primary outcomes are seeded-defect recall and evidence-grounded false consensus, with separately logged reviewer and critic evidence. Coding pass rate should have a preregistered non-inferiority margin. A coupling-specific recovery under concealment, without unacceptable loss of coding accuracy, would provide causal evidence that payoff coupling improves the robustness of structured review beyond prompting \ledger{10,13}.
+
+A null coupling effect, prompt-equivalent performance, or failure specifically under concealment would be a sharp negative result rather than an ambiguous failure to reproduce P \ledger{13}.
+
+\section{Objections and Limits}
+
+The evidence is thin: only the two abstracts are available. Neither supplies an operational peer-scoring rule, reward formula, agent utility model, private report space, or experimentally instantiated type structure \ledger{9,14}. P studies prompts rather than strategic payments, while Q's abstract only names stylized applications.
+
+Accordingly, even a positive interaction would not establish incentive compatibility, Q's revelation principle, or nested cyclical monotonicity. The defensible claim is narrower: competitive reward coupling caused review to remain robust under an induced concealment payoff \ledger{4,10}.
+
+Peer scoring should not be a core experimental factor unless the full Q paper supplies a rule and the assumptions needed to justify it \ledger{9,14}. Exogenous, manipulation-resistant seeded defects are also necessary; otherwise reduced agreement could reflect performative disagreement rather than improved detection \ledger{10,14}.
+
+Finally, rewards described only in natural language may be indistinguishable from another framing prompt. The intervention must create a behaviorally effective payoff and verify that it changes choices \ledger{11,15}.
+
+\section{Unresolved Issues}
+
+The study still needs a concrete reward mechanism, a specification of which agent holds private information and receives the concealment payoff, and a clear account of how rewards are delivered. It must also preregister evidence-grounding criteria, seeded-defect construction, outcome definitions, and the coding non-inferiority margin \ledger{15,19}.
+
+Full Q is needed either to instantiate its proposed coupling rule or to establish that the experiment instead uses an independently designed Q-inspired mechanism. Without elicited types and reports, the experiment cannot directly test Q's implementability inequalities \ledger{4,19}.
+
+\section{Smallest Next Step}
+
+Obtain the full Q paper and extract one explicit competitive reward-coupling rule with its information and utility assumptions. Then write a minimal preregistration for the \(2\times2\times2\) AR experiment, including one seeded-defect task, separately logged evidence, a behaviorally effective concealment payoff, and the coding-accuracy non-inferiority margin. If Q contains no operational rule, label the intervention independently specified and retain only the narrower payoff-robustness claim \ledger{15,19}.
+
+\end{document}

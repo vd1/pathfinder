@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Capability Elicitation under Survival Pressure}
+
+\begin{document}
+\maketitle
+
+\section{The Pair}
+
+Q develops mechanism design for AI agents with unknown preferences and capabilities. Its central structure permits capabilities to be concealed but not counterfeited, and it studies honesty, obedience, sandbagging, peer scoring, and coupled rewards.
+
+P introduces the Energy Society, where agents spend energy during inference, earn energy through jobs or donations, and deactivate at zero energy. Its experiments compare competitive, cooperative, and baseline incentives and find changes in donation and job-allocation behavior.
+
+The evidence available here is thin: both sources are represented only by their abstracts. It supports a research design, not a demonstrated empirical result or a claim of novelty \ledger{16,21,23}.
+
+\section{Connexion Pursued}
+
+The proposed connexion is to use P as a testbed for Q's mechanisms. The focal hypothesis is that Q-derived peer scoring or coupled rewards can improve truthful capability elicitation and energy-efficient job assignment when capability is private but cannot be counterfeited \ledger{1,8,16}.
+
+Two distinctions are essential. First, visible versus private capability is an information treatment. Second, whether capability can be counterfeited is a separate structural treatment: allowing counterfeiting deliberately violates Q's one-sided-imitation assumption \ledger{12,15}. Peer scoring and reward coupling must also be evaluated as separate mechanisms rather than bundled together \ledger{9,15}.
+
+\section{Supported Findings}
+
+The abstracts jointly support a concrete, falsifiable experiment. Q supplies the theoretical motivation for private capability reports, concealment, peer discipline, and coupled incentives. P supplies costly action, job rewards, transfers through donations, deactivation, multiple incentive regimes, and allocation-sensitive behavior \ledger{16,21}.
+
+A suitable design would compare cheap talk, peer scoring, and coupled rewards. Capability information would be visible or private, while a separate stress test would make counterfeiting possible. The predicted interaction is improvement under private, conceal-only capability, attenuation when capability is visible, and failure or reversal when counterfeiting is possible \ledger{18,21,22}. This prediction remains conjectural.
+
+Primary outcomes should be report calibration and oracle-relative net-energy assignment. Group survival is a downstream outcome because it also reflects inference cost, redistribution, and agents sacrificing themselves through donations \ledger{17,23}. Sandbagging must mean downward reporting or deliberate underperformance relative to independently measured capability, not large model size or high token expenditure \ledger{4,17}.
+
+\section{Objections and Limits}
+
+P's abstract does not establish a capability-report interface, private task-specific types, cross-reports, or programmable Q-compatible transfers. Q's abstract does not provide an operational payment formula. Consequently, merely adding treatments named ``peer scoring'' or ``coupled rewards'' would not constitute a test of Q \ledger{2,9}.
+
+Capability must be calibrated separately for every agent--job pair using success and cost frontiers. Types, reports, allocations, outcomes, and transfers must then be mapped explicitly. Collusion could undermine peer scoring, while coupled rewards could induce costly overcompetition \ledger{18,24}.
+
+No supplied evidence establishes statistical power, a construct-valid counterfeiting intervention, suitable code hooks, or novelty relative to empirical mechanism-design work \ledger{19,23,24}.
+
+\section{Smallest Next Step}
+
+Obtain Q's full mechanism specification and write down one peer-scoring contract as an explicit mapping from types, own reports, cross-reports, allocations, outcomes, and transfers. Then verify that P's code can implement that single mapping before designing or running a larger factorial experiment. This is the smallest step that distinguishes a Q-faithful test from a loosely inspired incentive intervention \ledger{19,24}.
+
+\end{document}

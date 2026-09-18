@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Token-Priced Survival in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q studies LLM agents in double auctions and reports slower or absent convergence toward market equilibrium and lower allocative efficiency than in human markets. It also associates trade execution, rather than continued incremental price adjustment, with a shift from strategic language toward urgency. P introduces an energy economy in which token generation consumes energy and agents deactivate at zero energy.
+
+The connexion pursued is whether making tokens survival-relevant changes the speed--efficiency frontier in Q-style auctions. The evidence motivates this intervention, but does not show that scarcity accelerates convergence or improves efficiency. Urgency is presently a correlate of trading, not an established mechanism \ledger{12}.
+
+\section{Supported findings}
+
+P supplies a manipulable form of survival pressure, while Q supplies a market mechanism and outcomes on which LLM agents underperform humans. Together they support a mechanism-discrimination experiment asking whether token-contingent mortality affects auction behavior beyond the effects of simply limiting deliberation.
+
+The strongest design holds the model and market fundamentals fixed, independently varies actual energy depletion and explicit survival framing, and includes pilot-calibrated token or round caps at at least two severities. Primary outcomes should be allocative efficiency and distance or rounds to competitive-price convergence. Trade timing, premature off-equilibrium trades, no-trade and deactivation rates, tokens consumed, surplus by role, and urgency language are secondary outcomes. Urgency should be preregistered as a possible mediator rather than assumed to be causal.
+
+No inverted-U effect is established by either abstract. Such curvature should remain exploratory unless the study includes a zero-pressure condition and at least three powered positive scarcity levels \ledger{15}.
+
+\section{Objections and limits}
+
+Realized energy depletion is behavior-dependent: verbose or deliberative agents pay more. P also reports model-related energy differences even when token cost is not size-dependent. Model identity must therefore be held fixed, and randomized treatment assignment should be analyzed by intention to treat.
+
+A fixed cap is not mechanically equivalent to a per-token price. The former is a quantity constraint, whereas the latter creates an adaptive marginal cost. Any residual difference is therefore only consistent with survival salience; it does not uniquely identify it. Explicit survival framing is needed to study perceived pressure, but framing may itself create demand effects, motivating its separate randomization.
+
+Jobs, donations, and energy transfers from P should be excluded from the core auction because they would change Q's payoff structure. Evidence remains thin: only abstracts and ledger assessments are available, not demonstrated integrations or experimental results.
+
+\section{Unresolved issues}
+
+The available material does not establish Q's exact definitions of equilibrium and efficiency, P's energy equation, prompt salience, access to token or Chain-of-Thought measurements, compatible software interfaces, effect sizes, costs, sample sizes, or statistical power. Consequently, feasibility is conditional, and ordinary implementation effort cannot yet be claimed.
+
+\section{Smallest next step}
+
+Inspect the full papers and public code to determine whether one fixed model can be run in Q's auction with externally metered token use and randomized energy depletion. Then conduct a small pilot comparing an unconstrained control, salient token-contingent depletion, and a pilot-yoked cap under identical market fundamentals. The pilot should validate instrumentation and estimate outcome variance; it should not be treated as evidence that survival pressure improves markets.
+
+\end{document}

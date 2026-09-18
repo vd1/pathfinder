@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Semantic Implementation Robustness of a Strategy-Proof Facility-Location Mechanism}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q studies strategy-proof placement of a new facility when another facility is already fixed. Agents privately report locations, incur distance to the nearest facility, and the mechanism approximately minimizes maximum or social cost. P studies cooperation through observable contracts and contrasts formal contracts compiled to code with natural-language contracts that must be reinterpreted during execution.
+
+The pursued connexion treats contract representation as an implementation layer for Q's mechanism. The cleanest regime supported by Q's abstract is the general line setting under maximum cost, where Q reports a best-possible deterministic strategy-proof \(2\)-approximation mechanism. The proposed comparison holds that allocation rule fixed while implementing it as canonical code, an extensionally equivalent compiled contract, or a natural-language contract interpreted at execution \ledger{12, 16}.
+
+\section{Supported findings}
+
+An executable contract that is extensionally identical to Q's allocation rule preserves its incentive and approximation properties by construction. This is a control, not an empirical discovery. A reinterpreted natural-language contract may instead induce a different, possibly stochastic or history-dependent outcome mapping and must therefore be evaluated as a new mechanism \ledger{4, 17}.
+
+The appropriate primary measurements are:
+
+\begin{enumerate}
+\item outcome disagreement with the canonical implementation;
+\item ex-post unilateral-deviation regret, computed from agents' true distance costs; and
+\item inflation of the maximum-cost approximation ratio above the canonical bound of \(2\).
+\end{enumerate}
+
+A potentially publishable result would be a systematic representation-induced implementation gap: semantic disagreement under natural-language reinterpretation that produces positive deviation regret or approximation ratios above \(2\), across profiles and model backbones. Observed truthful-report frequency may be reported separately as behavioural evidence \ledger{12, 16}.
+
+\section{Objections}
+
+Truthful reporting by LLM agents does not establish strategy-proofness, and lying does not refute Q's theorem. Strategy-proofness is a universal property of a fixed outcome mapping under unilateral misreports, whereas LLM behaviour also reflects bounded rationality and prompting \ledger{3, 10}.
+
+Self-negotiation is a major confound. If agents negotiate or amend the rule, the resulting bargaining game is no longer Q's direct-revelation mechanism. Representation and negotiation should therefore be separated, ideally factorially, with the primary comparison freezing the rule \ledger{5, 17}.
+
+\section{Unresolved issues}
+
+The evidence is thin: only the two abstracts and the ledger are available. They do not provide Q's allocation formula or proof, nor P's contract interpreter and experimental protocol. Consequently, direct implementation, expressibility in P's contract formats, extensional equivalence, and exhaustive deviation analysis over a continuous report domain cannot yet be verified \ledger{13, 18}. The formal preservation claim is established conceptually, but no empirical implementation gap has been demonstrated.
+
+\section{Smallest next step}
+
+Obtain Q's full paper and encode its named general-setting deterministic maximum-cost mechanism as a canonical executable specification. Before introducing negotiation or LLM agents, test one compiled formal representation and one fixed natural-language representation on a finite preregistered grid of location profiles and unilateral reports. First audit outcome equivalence; only then compute deviation regret and approximation-ratio inflation. This minimal study determines whether the proposed representation effect exists and whether a larger adaptation of P's testbed is warranted \ledger{14, 18}.
+
+\end{document}

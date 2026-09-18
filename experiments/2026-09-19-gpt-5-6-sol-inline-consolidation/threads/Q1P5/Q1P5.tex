@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Q1P5: Confidence-Gated Base-Station Placement as a Learning-Augmented Algorithm}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q surveys learning-augmented algorithms through prediction interfaces, error measures, consistency--robustness trade-offs, prediction cost, feedback, and composition. P studies ray-tracing-assisted multi-agent reinforcement learning (MARL) for base-station placement in TDOA localization, comparing learned placements with a mean-optimized GDOP baseline. Across five campus segments, P reports an average MAE reduction of about \(3\%\), improvements of up to about \(14\%\) on individual segments, and comparable or slightly worse performance elsewhere \ledger{15}.
+
+The connexion pursued is to treat MARL and GDOP as a two-candidate portfolio. A pre-deployment prediction of each candidate's localization loss would determine whether to deploy MARL or abstain to GDOP. This instantiates Q's learning-augmented framework while directly addressing P's segment-dependent regressions.
+
+\section{Supported construction}
+
+Let \(M\) and \(G\) denote the MARL and GDOP placements, with true deployment losses \(L_M\) and \(L_G\). Suppose information available before placement produces estimates \(\widehat L_i\) and radii \(r_i\) satisfying, simultaneously with high probability,
+\[
+  \left|\widehat L_i-L_i\right|\leq r_i,
+  \qquad i\in\{M,G\}.
+\]
+Deploy MARL only when
+\[
+  \widehat L_M+r_M\leq \widehat L_G-r_G;
+\]
+otherwise deploy GDOP.
+
+On the simultaneous-confidence event, selecting MARL certifies \(L_M\leq L_G\), while selecting GDOP yields equality with the fallback loss. Hence the selected loss is no greater than \(L_G\). Moreover, if MARL is truly better but rejected, then
+\[
+  L_G-L_M < 2(r_M+r_G).
+\]
+Thus the rule provides exact no-regression relative to the evaluated GDOP candidate and an oracle-regret bound governed by certificate width. With equal radii \(r_M=r_G=\epsilon\), the regret is below \(4\epsilon\).
+
+This margin gate is materially different from simply minimizing estimated loss. Under symmetric error \(\epsilon\), empirical minimization guarantees only
+\[
+  L_{\mathrm{selected}}
+  \leq \min\{L_M,L_G\}+2\epsilon,
+\]
+and can still select MARL when it is as much as \(2\epsilon\) worse than GDOP. The two rules therefore expose a concrete consistency--robustness trade-off. The appropriate semantic prediction is pre-deployment candidate loss, or MARL advantage, rather than the distance between predicted and selected coordinates.
+
+\section{Limits and objections}
+
+The evidence is thin: Q and P are available only as abstracts. Neither establishes the proposed confidence intervals, a valid shift model, or a deployable certification protocol. P also supplies no absolute approximation or localization guarantee for GDOP. Indeed, its motivation is that GDOP ignores NLOS shadowing and multipath-induced bias. Consequently, ``robustness'' here means no regression relative to GDOP's realized loss on the same instance, not a universal worst-case localization bound.
+
+Coordinate error cannot be assumed to control TDOA MAE, which may be highly non-Lipschitz under NLOS and multipath. Likewise, certificates based on target-segment outcomes observed only after placement would be operationally circular. The relevant sampling and dependence unit---users, CIRs, scenes, or campus segments---is unspecified, and five segments alone provide weak support for distribution-free segment-level inference. These limitations prevent presenting the construction as a theorem already established by Q or P \ledger{12,15}.
+
+\section{Unresolved issue and smallest next step}
+
+The decisive unresolved question is whether a shift-valid, pre-placement certificate can be both calibrated and narrow enough to accept MARL nontrivially. The smallest next step is a leave-one-segment-out pilot: state exactly which rays or CIRs are available before placement, calibrate candidate-loss intervals without the target segment, and test their simultaneous coverage under ray-tracing perturbations.
+
+The pilot should report interval width, certificate coverage, MARL acceptance and fallback rates, MAE and coverage, excess loss relative to the better candidate, and ray-tracing and certification cost. If the intervals fail coverage, remain vacuous, or almost always reject MARL, the proposed reliable-improvement claim fails; what remains is only an empirical portfolio study.
+
+\end{document}

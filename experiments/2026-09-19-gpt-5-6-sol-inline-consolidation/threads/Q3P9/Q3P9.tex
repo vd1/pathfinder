@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Competitive Markets and Self-Negotiated Commitment}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q studies LLM agents in double auctions and reports slower or absent convergence toward market equilibrium, lower allocative efficiency than human markets, and heterogeneity across model families and market roles. It also finds that executing a trade rather than incrementally revising prices is associated with a shift from strategic reasoning toward urgency \ledger{8, 9}.
+
+P studies cooperation in a spatial-temporal bargaining game. It motivates contracts as responses to intertemporal defection: cooperation imposes early costs while delivering later benefits, and enforcement makes commitments credible \ledger{10}.
+
+The connexion pursued is a boundary condition between these mechanisms. Enforcement that supports cooperation in P may suppress the adaptive quote revision needed for price discovery in Q. This is a falsifiable cross-paper hypothesis, not a finding established by either abstract \ledger{20, 26}.
+
+\section{Supported findings}
+
+The supplied evidence supports using convergence, allocative efficiency, quote revision, model family, and market role in a new experiment \ledger{8}. The clean primary comparison is among:
+
+\begin{enumerate}
+\item an ordinary repeated double auction;
+\item accepted negotiated terms represented as nonbinding cheap talk; and
+\item the identical terms under machine enforcement.
+\end{enumerate}
+
+The enforced-minus-cheap-talk contrast isolates enforceability only if economic terms, information, negotiation process, and token budgets are held constant. Natural versus formal representation is therefore a secondary robustness factor rather than part of the primary estimand \ledger{15, 24}.
+
+To preserve the auction mechanism, contracts should be public, time-limited constraints on each signer's own future admissible quotes or quantities. They should not select counterparties, allocate goods, establish side payments, or determine transfers \ledger{16, 22}. Primary outcomes should be quote-revision rate, time or distance to competitive equilibrium, and allocative efficiency. Price distortion, price dispersion, no-trade rates, and surplus distribution are necessary diagnostics \ledger{21, 23}.
+
+The experiment has three informative patterns. Better outcomes under enforcement than under matched cheap talk, without competitive-price distortion, would support a commitment mechanism. Similar performance would favor structured planning or communication. Fewer revisions accompanied by worse convergence or efficiency would support harmful rigidity or collusion \ledger{23, 27}.
+
+\section{Objections and limitations}
+
+Q does not show commitment failure. Its urgency result is observational and establishes neither that urgency causes inefficient trades nor that agents renege on promises \ledger{1, 9}. P's delayed-benefit cooperation problem also does not directly map onto a spot double auction \ledger{2, 10}. A generic contract-versus-auction comparison would therefore overstate the connexion.
+
+Contracts can additionally create a forward market or facilitate collusion, thereby replacing rather than repairing competitive price discovery \ledger{13, 22}. Self-selection into negotiation, differences in semantic content, and execution errors can also confound treatment effects \ledger{13}.
+
+Evidence is thin: only the two abstracts were supplied. Auction timing, offer persistence, equilibrium and efficiency definitions, enforcement capabilities, and the feasibility of prospective urgency coding remain unknown \ledger{18, 28}. No directional effect of enforcement is presently established.
+
+\section{Smallest next step}
+
+Before preregistration, inspect the full papers and released code to determine whether P's enforcement machinery can impose public constraints on a signer's own future admissible quotes or quantities within Q's auction protocol. If feasible, run a small matched-term pilot comparing cheap talk with enforcement while measuring quote revision, competitive-price distance, efficiency, and surplus distribution. This is the minimum test capable of separating credible commitment from planning, rigidity, and collusion \ledger{24, 28}.
+
+\end{document}

@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Learning-Augmented Carbon Scheduling: Evidence, Limits, and a Testable Next Step}
+
+\begin{document}
+\maketitle
+
+\section{Pair and Connection}
+
+Q surveys learning-augmented algorithms: methods that use fallible predictions while retaining formal performance guarantees. It emphasizes prediction error, consistency--robustness trade-offs, prediction cost, feedback, composition, and the separation of theorem-level guarantees from empirical systems evidence.
+
+P proposes day-ahead nodal carbon-intensity forecasting coupled to spatial-temporal scheduling of geographically dispatchable loads. Its abstract reports experiments on a modified IEEE 33-bus system and more than \(30\%\) emission reduction when carbon-scheduling latency is reduced by one hour.
+
+The connection pursued is whether P can be evaluated as a learning-augmented system whose benefit degrades gracefully with forecast error, delay, and prediction overhead. Q supplies the evaluation criteria; P supplies a relevant prediction-dependent application. Q does not itself provide a theorem applicable to P.
+
+\section{Supported Findings}
+
+The abstracts establish a precise conceptual gap. P's claimed operational benefit depends on accurate, timely forecasts, while Q identifies fallible-prediction guarantees and end-to-end accounting as central concerns. This supports studying a cost--delay--error break-even frontier for P.
+
+A suitable combined operational objective could be written schematically as
+\[
+J = E_{\mathrm{realized}} + \lambda P_{\mathrm{dispatch}} + C_{\mathrm{prediction}},
+\]
+where \(E_{\mathrm{realized}}\) denotes operational emissions, \(P_{\mathrm{dispatch}}\) is an explicitly defined dispatch or feasibility penalty, and \(C_{\mathrm{prediction}}\) measures inference and coordination overhead. The experiment would vary calibrated day-ahead NCI error and information delay jointly, comparing P with a causal, feasible prediction-free policy; an oracle should serve only as a ceiling.
+
+The concrete publishable target is a reproducible boundary at which forecast-based scheduling loses its net operational advantage, or a counterexample in which small forecast error produces sharply worse dispatch or emissions. This remains a falsifiable hypothesis, not an achieved result \ledger{12}.
+
+\section{Objections and Evidence Limits}
+
+Evidence is thin: both supplied papers are represented only by titles and abstracts. P's abstract does not expose its equations, constraints, decision chronology, recourse, forecast-error measure, perturbation protocol, robust baseline, or predictor overhead. It therefore does not establish systematic robustness, an error-dependent competitive or regret bound, or even that such a theorem can be obtained with ordinary effort.
+
+The reported \(30\%\) result is explicitly conditioned on a one-hour latency reduction. It cannot be generalized to forecast failures or interpreted as bounded robustness. Likewise, the phrase ``predictive resilience'' is an author characterization rather than evidence of robustness under controlled errors.
+
+Inference energy can support a claim about net operational emissions or another precisely defined operational objective. It does not justify a life-cycle emissions claim unless embodied impacts are also measured.
+
+\section{Unresolved Issues}
+
+The full formulation, code, and data for P are needed to determine:
+
+\begin{itemize}
+\item when predictions, decisions, feedback, and recourse occur;
+\item which objective and feasibility constraints govern scheduling;
+\item which NCI error measure is decision-relevant;
+\item how objective terms are scaled;
+\item whether a legitimate causal prediction-free comparator exists; and
+\item whether inference and multi-agent coordination overhead can be measured.
+\end{itemize}
+
+Without these details, neither bounded performance nor the practical feasibility of the proposed evaluation is established \ledger{15}.
+
+\section{Smallest Next Step}
+
+Obtain the full formulation of P and reconstruct one feasible scheduling instance with its decision chronology. Then define a causal prediction-free baseline and inject one calibrated family of NCI forecast errors while holding all other conditions fixed. This minimal experiment can determine whether a meaningful error-dependent comparison exists before attempting a full cost--delay--error frontier or a formal guarantee.
+
+\end{document}

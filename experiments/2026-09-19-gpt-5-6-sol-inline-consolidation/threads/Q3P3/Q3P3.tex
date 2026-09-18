@@ -1,0 +1,41 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Structured Adversarial Review in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+Q studies LLM agents in double auctions and reports slower or absent convergence toward market equilibrium and less efficient allocations than in human markets. P studies Adversarial Review (AR), in which a reviewer evaluates proposed code and a critic audits that review through structured disagreement before the main agent acts.
+
+The connexion pursued is whether P's explicit, evidence-grounded critic audit can improve Q's market outcomes by challenging contemplated trades before execution. This is a proposed transfer experiment, not an empirical result established by either paper \ledger{15,24}.
+
+\section{Supported findings}
+
+Q supports allocative efficiency and equilibrium convergence as outcomes. It also reports that executing a trade, rather than continuing incremental price adjustment, is associated with a lexical shift from strategic considerations toward urgency. This association does not show that urgency causes inefficient trading \ledger{2,8}.
+
+P supports structured disagreement as an intervention pattern in code review. Naive AR exhibited false consensus without sufficient evidence, while explicitly prompting disagreement achieved the highest reported F1 on SWE-PRBench. The transferable hypothesis is therefore narrower than ``more agents help'': an explicit critic may add value beyond ordinary review or additional deliberation \ledger{9,17}.
+
+The decisive estimand is the critic increment. Compare a naive reviewer--critic protocol with the same protocol augmented by explicit, evidence-grounded disagreement, while matching inference compute, token budget, and latency. The primary outcome should be realized surplus divided by maximum feasible surplus; convergence should be secondary. Solo-reflection and reviewer-only arms are useful diagnostic ablations \ledger{18,22}.
+
+\section{Objections}
+
+A comparison between standard traders and an unablated three-agent AR system is causally underidentified. It simultaneously changes deliberation, compute, tokens, and delay, so any improvement could not be attributed specifically to structured disagreement \ledger{4,10}.
+
+Urgency language should not be a primary endpoint or an assumed mediator. The intervention may mechanically alter chain-of-thought vocabulary, and conditioning on post-treatment language would not identify mediation without a separate design. Trades should instead be evaluated using preregistered behavioral and welfare criteria independent of generated wording \ledger{14,23}.
+
+Evidence for transfer is thin. P concerns code review, where the object of evidence is clearer; it does not supply an auction-specific evidence schema or establish benefits for market decisions. Proposed grounding fields---such as private value or cost, current bid and ask, feasible surplus, and remaining rounds---are design proposals rather than details established by P \ledger{3,18}.
+
+\section{Unresolved issues}
+
+Only abstracts are available. They do not establish Q's auction timing, surplus formula, convergence estimator, urgency classifier, or round constraints, nor P's exact prompts, evidence requirements, budgets, effect sizes, or sample sizes. Numerical power claims and faithful protocol replication are therefore unsupported \ledger{6,23}. Definitions such as ``premature'', ``dominated'', or ``avoidably low-surplus'' execution must be preregistered from the full protocol rather than inferred from these abstracts.
+
+Q also reports heterogeneity across model families and buyer--seller roles. Any eventual claim should therefore test whether the critic increment generalizes across those strata rather than relying only on an aggregate effect \ledger{19,22}.
+
+\section{Smallest next step}
+
+Consult the full methods to fix the auction outcomes, prompts, budgets, and evidence schema, then run a preregistered matched comparison between naive reviewer--critic deliberation and the same protocol with explicit evidence-grounded critic disagreement. Randomization should use identical private values and market seeds. A positive effect on normalized realized surplus would support transfer of P's false-consensus repair to economic choice; a precise null would establish a useful boundary. Either result should be reported without claiming that urgency mediated it \ledger{21,22}.
+
+\end{document}
