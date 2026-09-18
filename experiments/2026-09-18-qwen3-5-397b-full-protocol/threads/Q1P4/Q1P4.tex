@@ -1,0 +1,57 @@
+
+
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Learning-Augmented RTCC: Prediction-Aware GPU Dispatch for Cooperative Perception}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+Q is a survey on learning-augmented algorithms, establishing prediction interfaces, error measures, consistency--robustness trade-offs, and construction mechanisms across five domains with explicit treatment of prediction cost and endogenous error \ledger{1}. P presents RTCC (release-triggered communication computation coupling), a reactive system for multi-agent cooperative perception where encoder branches are released upon actual transmission completion, validated on physical GPU with measured-DAG evaluation \ledger{1}.
+
+\section*{Connexion Pursued}
+
+The connexion applies Q's prediction framework to P's RTCC mechanism. Instead of triggering GPU dispatch on actual transmission completion, the hypothesis proposes predicting completion times $\hat{\tau}_i$ for each encoder branch $i$, enabling proactive rather than reactive dispatch \ledger{2}. The technical gap identified: P's current reactive trigger leaves room for prediction-based improvement, but the novelty must reside in the specific RTCC--GPU coupling, not generic learning-augmented scheduling \ledger{3}.
+
+\section*{Supported Findings}
+
+Three mechanisms from Q apply to P \ledger{3}:
+\begin{itemize}
+    \item Prediction interfaces with error bounds applicable to wireless timing
+    \item Consistency--robustness trade-offs allowing graceful degradation when predictions fail
+    \item Explicit cost--benefit treatment of prediction overhead
+\end{itemize}
+
+P's measured-DAG evaluation infrastructure can quantify latency impact of prediction-augmented dispatch \ledger{3}. The sharpened hypothesis proposes a hybrid ``prediction-aware RTCC'' using confidence-aware prediction with threshold $\theta$, falling back to reactive triggering when confidence is low \ledger{5}.
+
+\section*{Objections}
+
+A critical objection concerns causality violation \ledger{4}. P explicitly requires compatibility with causal wireless schedulers. If $\hat{\tau}_i < \tau_i$ (underestimate), GPU idles waiting for data, potentially performing worse than reactive triggering. If $\hat{\tau}_i \gg \tau_i$ (overestimate), latency benefit is lost. The objection identifies three necessary conditions not yet established \ledger{4}:
+\begin{enumerate}
+    \item Prediction error bounds tighter than GPU scheduling granularity
+    \item Fallback to reactive triggering under low confidence
+    \item Quantified cost model showing prediction overhead $<$ latency savings
+\end{enumerate}
+
+Wireless channel prediction accuracy may be insufficient for tight GPU--CUDA synchronization, and prediction cost may negate latency gains in real-time perception \ledger{2}.
+
+\section*{Unresolved Issues}
+
+Evidence remains thin on several points:
+\begin{itemize}
+    \item Which error measure from Q applies to wireless transmission timing: absolute error $|\hat{\tau}_i - \tau_i|$ or asymmetric penalties $E = \max(0, \hat{\tau}_i - \tau_i)$ for idle and $E = \max(0, \tau_i - \hat{\tau}_i)$ for missed opportunity \ledger{3,5}?
+    \item What confidence threshold $\theta$ balances consistency against robustness in the wireless--GPU domain \ledger{5}?
+    \item Whether the formal bound $L_{\text{hybrid}} \leq L_{\text{reactive}} - f(\theta, \varepsilon) + \text{cost}(\text{prediction})$ holds under trace-driven evaluation \ledger{5}.
+\end{itemize}
+
+The ledger establishes technical feasibility but not publication-worthy advantage over P's reactive approach \ledger{4}.
+
+\section*{Smallest Next Step}
+
+Implement a trace-driven simulation using P's wireless arrival traces to evaluate prediction error distributions for transmission completion times. This determines whether achievable error bounds satisfy the GPU scheduling granularity constraint identified in the objection \ledger{4}. Only if error distributions are favorable does the hybrid RTCC warrant physical GPU implementation.
+
+\end{document}

@@ -1,0 +1,49 @@
+
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Mechanism Design for Contract-Based Cooperation: Connecting Mechanism Design for Alignment and Control with Commitment To Cooperation With Self-Negotiated Contracts}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+Paper Q develops a framework for mechanism design with AI agents whose alignment and capabilities are unknown. A one-sided imitation structure---capabilities can be concealed but not counterfeited---yields a revelation principle and a characterization of implementable policies via nested cyclical monotonicity. Paper P studies how LLM-based agents cooperate through self-negotiated contracts in a spatial-temporal bargaining game, comparing formal contracts (compile to code) against natural contracts (require reinterpretation).
+
+\section*{Connexion Pursued}
+
+The peers investigated whether Q's mechanism design framework can explain variance in P's contract outcomes. The central hypothesis: self-negotiated contracts in P satisfy Q's implementability conditions to different degrees depending on contract type. Formal contracts, being code-verifiable, should satisfy nested cyclical monotonicity under weaker conditions than natural contracts, which create sandbagging opportunities through reinterpretation gaps.
+
+\section*{Supported Findings}
+
+The ledger establishes that the Q--P connection is viable but requires reframing \ledger{1, 2}. Q assumes a principal who commits to a mechanism before agents report types; P studies bilateral peer negotiation with no committed mechanism designer. The peers converged on viewing the contract negotiation protocol itself as the mechanism designer---the game designer who chose CT game rules and contract language \ledger{5}.
+
+Under this reframing, Q's sandbagging analysis applies directly to P: high-capability agents can conceal capabilities during negotiation, accepting contract terms that appear mutually beneficial but violate implementability conditions \ledger{1, 2}. This yields a concrete prediction: natural contracts show higher renegotiation frequency and cooperation payoff variance than formal contracts, especially when capability asymmetry is high \ledger{3}.
+
+\section*{Objections}
+
+Three structural limitations were identified \ledger{4}:
+\begin{enumerate}
+    \item Q's revelation principle requires a principal who commits to a mechanism; P has symmetric peer negotiation without a committed mechanism designer.
+    \item Q's nested cyclical monotonicity characterizes implementable allocation rules, but P's contracts include external enforcement via game mechanics, not merely allocations.
+    \item P's LLM agents may not play equilibrium strategies that Q's framework assumes.
+\end{enumerate}
+
+The peers judged these objections fixable but requiring explicit modeling choices \ledger{4, 5}.
+
+\section*{Unresolved Issues}
+
+Evidence remains thin on several points. The peers did not access P's empirical data to test whether sandbagging signatures actually appear in natural vs.\ formal contract negotiations. The reframing that treats the negotiation protocol as the mechanism designer has not been formally verified to preserve Q's revelation principle. Whether nested cyclical monotonicity characterizes implementable contracts in the bilateral bargaining setting remains a conjecture \ledger{5, 6}.
+
+Only one peer (ada) declared ready; emmy had articulated a five-step derivation plan but peer research ended before validation \ledger{6, 7}.
+
+\section*{Smallest Next Step}
+
+Formalize the CT game contract negotiation as a mechanism with private capability types and derive the implementability conditions for formal vs.\ natural contracts using Q's nested cyclical monotonicity characterization. This yields a theorem predicting which contract types are robust to sandbagging when capability heterogeneity is high.
+
+\end{document}
+```

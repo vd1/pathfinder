@@ -1,0 +1,49 @@
+
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Mechanism Design for LLM Agent Economies: Q7P10 Consolidation}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+Q studies mechanism design for strategic agents with private stochastic satisfaction functions, constructing quadratic payment functions via linear matrix inequalities (LMI) that implement social welfare maximisation at unique Nash equilibrium while ensuring budget balance and individual rationality. The VS-PBR algorithm converges in mean-square to equilibrium using only aggregate information. Tested on EV routing (24 nodes, 55 links)~\ledger{3}.
+
+P introduces The Energy Society, a survival economy where LLM-based agents spend energy proportional to model size per token, regain energy through jobs or donations, and deactivate at zero energy. Cooperative incentives alter emergent behaviour: agents donate to reactivate others, coordinate on job allocation, and rarely engage in direct sabotage~\ledger{3}.
+
+\section*{Connexion Pursued}
+
+Initial hypothesis: apply Q's LMI mechanism and VS-PBR algorithm to P's Energy Society to test whether formal incentives improve welfare and survival outcomes~\ledger{1}.
+
+\section*{Supported Findings}
+
+The connexion reveals a fundamental architectural tension. Q assumes strategic agents with well-defined utility functions computing best-responses. P uses LLM agents with emergent behaviour not modelled as utility maximisation~\ledger{2}. Q's VS-PBR convergence guarantees require agents to compute proximal best-responses to aggregate information---a capability LLM agents do not possess~\ledger{2,5}.
+
+P already contains cooperative incentives that produce donations and coordination without formal mechanism design~\ledger{3}. The non-obvious question shifts from ``does Q improve P outcomes?'' to ``do LLM agents approximate game-theoretic rationality under structured incentives?''~\ledger{4}.
+
+\section*{Objections}
+
+The mismatch is not superficial. Applying Q's mechanism would require either: (1) engineering LLM prompts to approximate best-response behaviour---unproven and may not satisfy convergence assumptions; or (2) replacing LLM agents with game-theoretic agents---which invalidates P's core contribution on emergent LLM behaviour~\ledger{2}.
+
+\section*{Unresolved Issues}
+
+Two viable paths remain, neither straightforward:
+
+\begin{enumerate}
+    \item Drop VS-PBR, use Q's payment mechanism as a static incentive layer, measure empirically how LLMs respond. Contribution becomes characterisation of LLM behaviour under game-theoretic incentives. Feasibility \(\approx 60\).
+    \item Replace P's LLM agents with game-theoretic optimisers. Feasibility \(\approx 80\) but loses P's contribution entirely~\ledger{5}.
+\end{enumerate}
+
+Evidence is thin on whether LLM agents can be prompted to approximate proximal best-responses with sufficient regularity for convergence guarantees. No prior work establishes this bridge.
+
+\section*{Smallest Next Step}
+
+Implement Q's quadratic payment structure as an external incentive layer in P's environment. Run LLM agents with prompts framing decisions as best-response problems. Measure: (a) convergence behaviour toward predicted equilibria; (b) social welfare compared to P's baseline cooperative setting; (c) donation frequency under formal versus informal incentives. This tests the empirical claim without requiring VS-PBR convergence proofs~\ledger{4,5}.
+
+\end{document}
+```

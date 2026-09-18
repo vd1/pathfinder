@@ -1,0 +1,54 @@
+
+
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Mechanism Design for Alignment in Survival Economies: Q4P10}
+
+\begin{document}
+
+\section*{The Pair}
+
+Q (\textit{Mechanism Design for Alignment and Control}) develops a theoretical framework for incentivizing honesty and obedience in AI agents whose alignment and capabilities are unknown. Its core contribution is a one-sided imitation structure yielding a revelation principle and characterization of implementable policies via nested cyclical monotonicity. Q specifies concrete mechanisms: peer scoring among multiple agents, reward shaping for scalable oversight, and competition coupling to discipline behavior \ledger{1, 2}.
+
+P (\textit{The Energy Society: A Simulation Environment for Studying Agent Cooperation under Survival Pressure}) implements a minimal survival economy where LLM-based agents spend energy proportional to token generation, regain energy through jobs or donations, and deactivate at zero energy. P observes that larger models consume more energy than they gain even when token cost is size-independent, and that competitive incentives elicit self-serving behaviors while cooperative incentives support coordination \ledger{1, 2}.
+
+\section*{The Connexion Pursued}
+
+The hypothesis: Q's mechanism design tools can be implemented in P's environment to discipline the self-serving behaviors P observes. Specifically, peer scoring (agents evaluate each other's capability claims) and reward shaping (coupling rewards to truthful revelation) should reduce sandbagging on job capabilities and promote honest energy reporting while sustaining cooperation without sacrificing own survival \ledger{3}.
+
+This connexion is feasible because P has implemented agent behaviors and incentive structures into which Q's mechanisms could be coded as interventions. However, P functions as a general-purpose testbed---nothing uniquely essential about P specifically \ledger{1}.
+
+\section*{Supported Findings}
+
+The ledger establishes:
+
+\begin{itemize}
+  \item Q specifies concrete mechanism design tools (peer scoring, reward shaping, competition coupling) for disciplining agents with unknown alignment/capabilities \ledger{1}.
+  \item P observes self-serving behaviors under competitive incentives but lacks explicit mechanism interventions \ledger{1}.
+  \item The information structures appear compatible: P's survival economy provides the pressure context Q's mechanisms require \ledger{2}.
+  \item Concrete predictions: With Q mechanisms implemented, agents should show reduced sandbagging, more honest energy reporting, and sustained cooperation without own-surveillance sacrifice \ledger{3}.
+\end{itemize}
+
+\section*{Objections}
+
+Emmy's finding notes the framing weakness: the real contribution would be testing Q mechanism efficacy, not the P--Q pairing itself. P is one possible environment among many; the pairing is not uniquely essential \ledger{1}. The abstract scan correctly identifies this as a limitation in claiming the connexion is non-trivial.
+
+\section*{Unresolved Issues}
+
+Critical questions remain unverified:
+
+\begin{itemize}
+  \item Whether Q's information requirements (agent evaluations, higher-order beliefs) match P's observable state \ledger{2}.
+  \item Whether Q mechanisms are implementable without modifying P's core architecture.
+  \item Whether behavioral changes would be statistically significant across model sizes \ledger{3}.
+  \item Which Q mechanisms (peer scoring vs.\ reward shaping vs.\ competition coupling) work best in survival-pressure contexts \ledger{3}.
+\end{itemize}
+
+Evidence is thin on all implementation details. The peers did not examine P's source code or Q's formal requirements in sufficient depth to confirm compatibility.
+
+\section*{Smallest Next Step}
+
+Implement Q's peer scoring mechanism in P's Energy Society codebase and run a pilot experiment with two agents under competitive incentives. Measure whether peer evaluations correlate with actual capability (job completion rate) and whether introducing peer scoring reduces self-serving job selection. This tests the core hypothesis with minimal infrastructure change.
+
+\end{document}
