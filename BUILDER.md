@@ -110,11 +110,17 @@ you already have, or a description of where the papers come from].
 
 ### The decisions that matter
 
-- **Receipts are the only spend figure.** Every model call appends one line
-  with stage, actor, model, seconds, tokens, cost and error. Spend is the
-  sum. Costs from the CLI are API-equivalent even on a subscription.
-- **A budget guard, soft by design.** Before admitting a thread, spend plus
-  calls in flight times a per-call estimate must stay under the cap;
+- **Receipts are the only spend figure.** Every attempted model call appends
+  one line, failures included: stage, actor, backend, model, seconds,
+  outcome, error, the provider's usage counters exactly as reported, and the
+  cost with its basis, reported by the CLI or priced from the counters with
+  the rates applied. What was not reported is null, never zero and never an
+  estimate; providers count differently, so keep the raw counters. Known
+  cost is the sum; show the number of calls of unknown cost beside it.
+  Costs from the CLI are API-equivalent even on a subscription.
+- **A budget guard, soft by design.** Before admitting a thread, known cost
+  plus a per-call estimate for every call in flight and every call that
+  opened a session and whose cost is unknown must stay under the cap;
   otherwise write a stop marker. It does not interrupt a running thread.
 - **Every stop is a drain.** A stop marker (written by the operator, the
   guard, or the first Ctrl-C) stops admissions; calls in flight land and
@@ -122,8 +128,9 @@ you already have, or a description of where the papers come from].
   Restarting resumes every thread at its recorded stage.
 - **Transport.** One adapter over the agent CLI: prompt on stdin, streaming
   JSON out, session id parsed from the first event. No session within 60
-  seconds plus a second per 5 KB of prompt is a transport failure: no
-  receipt, thread marked stopped, no retry inside the thread. Two in a row
+  seconds plus a second per 5 KB of prompt is a transport failure, and so
+  is a CLI that cannot be launched: a receipt with no usage and no cost,
+  thread marked stopped, no retry inside the thread. Two in a row
   set a health flag; admissions pause until a probe call succeeds. Never
   fall back to another model or backend.
 - **Stage failures.** A consolidation or verification that times out or
@@ -147,8 +154,10 @@ you already have, or a description of where the papers come from].
 - **Prompts are files** in `prompts/`, overridable per campaign. They are
   the place to tune behaviour; the code should not need to change for that.
 - **Static material first, instruction last**, in the judges' prompts,
-  which are inline. The ledger is append-only, so a context that starts
-  with the papers and the ledger is a prefix of the next round's. Do not
+  which are inline. The ledger is append-only, so the papers and the
+  ledger entries of one round are the leading part of the next round's
+  context; the new entries, the note and the instruction after them
+  change. Nothing may depend on a cache hit. Do not
   push the papers inline to the researchers by default: given the whole
   text they audit the papers instead of working the pair, a tool-using
   session re-reads its context on every turn so a cache does not make
@@ -200,7 +209,10 @@ how long to wait before the session line, whether to hang, a shell command
 to run in the working directory before replying) and test every path with
 it: scan resume and retry, the cut, a thread reaching each terminal status,
 the iterate cap, REVISE repairing once then capping, the empty ledger, a
-stop draining a call in flight, the budget guard writing the marker, two
+stop draining a call in flight, the budget guard writing the marker, a
+call that never opens a session and one killed at its deadline each leaving
+a receipt with unknown usage and cost, the guard counting the second and not
+the first, two
 transport failures setting the health flag and a probe clearing it, both
 BLOCKED paths and reconcile clearing them, a killed runner leaving a dead
 lock, threshold selection keeping started threads, append-only paging,

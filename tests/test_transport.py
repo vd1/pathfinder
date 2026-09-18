@@ -38,11 +38,86 @@ def test_codex_call_prices_from_table(tmp_path, monkeypatch):
     assert r["text"] == "hi" and abs(r["cost"] - 110 / 1e6) < 1e-9
 
 
-def test_no_session_is_transport_failure(tmp_path, monkeypatch):
+def rows(tmp_path):
+    return [json.loads(l) for l in (tmp_path / "receipts.jsonl").read_text().splitlines()]
+
+
+def test_no_session_is_transport_failure_with_a_receipt(tmp_path, monkeypatch):
     monkeypatch.setenv("FAKE_HANG", "1")
     r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
                        timeout=10, thread="T", stage="scan", actor="judge")
-    assert r["transport_failed"] and r["cost"] == 0 and not (tmp_path / "receipts.jsonl").exists()
+    assert r["transport_failed"] and r["cost"] is None
+    row = rows(tmp_path)[0]
+    assert row["v"] == 2 and row["outcome"] == "no session" and row["usage"] is None and row["cost"] is None
+    assert row["input_tokens"] is None and row["cost_basis"] is None
+    assert transport.spend(campaign(tmp_path)) == 0                    # never reached a session: the guard does not charge it
+
+
+def test_missing_executable_is_a_transport_failure_with_a_receipt(tmp_path, monkeypatch):
+    monkeypatch.setenv("PATHFINDER_CLAUDE", str(tmp_path / "no-such-binary"))
+    r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="scan", actor="judge")
+    assert r["transport_failed"] and r["error"].startswith("launch failed")
+    row = rows(tmp_path)[0]
+    assert row["outcome"] == "launch failed" and row["usage"] is None and row["cost"] is None
+
+
+def test_killed_call_has_no_usage_and_no_estimate_in_the_receipt(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_RUN", "sleep 3")
+    c = campaign(tmp_path)
+    transport.call("p", campaign=c, model="m", tools=False, search=False, cwd=tmp_path,
+                   timeout=1, thread="T", stage="scan", actor="judge")
+    row = rows(tmp_path)[0]
+    assert row["outcome"] == "timeout" and row["usage"] is None and row["cost"] is None
+    assert transport.spend(c) == c.call_estimate_usd                   # the guard counts it; the receipt does not
+
+
+def test_killed_call_keeps_the_usage_that_was_reported(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_PARTIAL", "1"); monkeypatch.setenv("FAKE_RUN", "sleep 3")
+    transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
+                   timeout=1, thread="T", stage="scan", actor="judge")
+    row = rows(tmp_path)[0]
+    assert row["outcome"] == "timeout" and row["usage"] == {"input_tokens": 4, "output_tokens": 1}
+    assert row["cache_read"] is None                                   # not reported is not zero
+
+
+@pytest.mark.parametrize("backend", ["claude", "codex"])
+def test_missing_counter_is_unknown_and_reported_zero_is_zero(tmp_path, monkeypatch, backend):
+    monkeypatch.setenv("FAKE_MODE", backend); c = campaign(tmp_path, backend)
+    monkeypatch.setenv("FAKE_USAGE", json.dumps({"input_tokens": 100}))            # output not reported
+    transport.call("p", campaign=c, model="m", tools=False, search=False, cwd=tmp_path, timeout=10, thread="T", stage="s", actor="a")
+    monkeypatch.setenv("FAKE_USAGE", json.dumps({"input_tokens": 0, "output_tokens": 0}))
+    transport.call("p", campaign=c, model="m", tools=False, search=False, cwd=tmp_path, timeout=10, thread="T", stage="s", actor="a")
+    missing, zero = rows(tmp_path)
+    assert missing["output_tokens"] is None and missing["cost"] is None and missing["cost_basis"] is None
+    assert zero["output_tokens"] == 0 and zero["cost"] == 0 and zero["cost_basis"] == "priced"
+
+
+def test_codex_receipt_keeps_the_raw_counters_and_the_rates(tmp_path, monkeypatch):
+    raw = {"input_tokens": 85160, "cached_input_tokens": 9088, "cache_write_input_tokens": 0,
+           "output_tokens": 1156, "reasoning_output_tokens": 796}
+    monkeypatch.setenv("FAKE_MODE", "codex"); monkeypatch.setenv("FAKE_USAGE", json.dumps(raw))
+    transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=False, search=False, cwd=tmp_path,
+                   timeout=10, thread="T", stage="s", actor="a")
+    row = rows(tmp_path)[0]
+    assert row["usage"] == raw and row["cache_read"] == 9088 and row["cache_write"] == 0
+    assert row["cost_basis"] == "priced" and row["rates"] == {"input_per_m": 1.0, "output_per_m": 1.0}
+
+
+def test_codex_cached_input_is_priced_at_the_cached_rate_when_the_table_has_one(tmp_path, monkeypatch):
+    raw = {"input_tokens": 1_000_000, "cached_input_tokens": 900_000, "output_tokens": 0}
+    monkeypatch.setenv("FAKE_MODE", "codex"); monkeypatch.setenv("FAKE_USAGE", json.dumps(raw))
+    c = campaign(tmp_path, "codex"); c.prices = {"m": {"input_per_m": 10.0, "cached_input_per_m": 1.0, "output_per_m": 50.0}}
+    transport.call("p", campaign=c, model="m", tools=False, search=False, cwd=tmp_path, timeout=10, thread="T", stage="s", actor="a")
+    row = rows(tmp_path)[0]
+    assert abs(row["cost"] - 1.9) < 1e-9 and row["rates"]["cached_input_per_m"] == 1.0      # 0.1M at 10 plus 0.9M at 1, not 10.0
+
+
+def test_reported_cost_is_marked_reported(tmp_path, monkeypatch):
+    transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
+                   timeout=10, thread="T", stage="s", actor="a")
+    row = rows(tmp_path)[0]
+    assert row["cost"] == 0.5 and row["cost_basis"] == "reported" and "rates" not in row and row["outcome"] == "completed"
 
 
 def test_timeout_after_session_is_an_error_not_transport(tmp_path, monkeypatch):
