@@ -63,6 +63,17 @@ Feature: Define reproducible role comparisons
       Then each role follows its assigned execution route
       And consolidation completes before verification
 
+    Scenario: Provider execution uses the route selected from its assignment
+      Given role "consolidate" is assigned execution class "provider" through ELM
+      When Pathfinder runs the assigned comparison workflow
+      Then consolidation executes through the ELM provider interface
+
+    Scenario: Assigned research stages enter the campaign research workflow
+      Given one frozen paper pair
+      And each comparison role has a model, backend, and execution class assignment
+      When Pathfinder runs the assigned comparison workflow
+      Then consolidation and verification execute through the pair's research stages
+
   Rule: Receipts preserve comparable observations
 
     Scenario: Every role execution produces a comparable receipt

@@ -207,6 +207,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     @planks("When Pathfinder consolidates pair \"Q1P1\"")
     @planks("When Pathfinder evaluates the consolidation attempt")
     @planks("When Pathfinder consolidates the frozen paper pair")
+    @planks("When Pathfinder runs the assigned comparison workflow")
 
     Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
     """

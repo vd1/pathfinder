@@ -297,6 +297,10 @@ def provider_consolidation(context):
     context.campaign = seed_pair(context)
     context.campaign.backend = "elm"
     context.campaign.model = "consolidate-model"
+    context.assignments = assignments()
+    context.assignments["consolidate"].update(
+        backend="elm", model="consolidate-model", execution_class="provider"
+    )
 
 
 @given('retained provider events for pair "{pair_id}" include workspace command execution')
@@ -422,6 +426,12 @@ def assigned_routes(context):
 def consolidation_before_verification(context):
     roles = [receipt["role"] for receipt in context.workflow["receipts"]]
     assert roles.index("consolidate") < roles.index("verify")
+
+
+@then("consolidation and verification execute through the pair's research stages")
+def assigned_research_stages(context):
+    roles = {receipt["role"] for receipt in context.workflow["receipts"]}
+    assert {"consolidate", "verify"} <= roles
 
 
 @given("a provider-class execution scenario with an assigned backend, model, and execution class")
