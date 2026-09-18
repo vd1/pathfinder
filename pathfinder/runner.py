@@ -83,9 +83,48 @@ def execution_route(assignment: dict) -> str:
     """@planks("When the comparison run schedules role \"scan\"")
     @planks("When the comparison run schedules role \"research\"")
     @planks("When the comparison run schedules role \"consolidate\"")
-    @planks-provisional("features/operational/comparison-manifest.feature:Execution routing depends on assignment capabilities rather than provider identity")
+    @planks("When Pathfinder schedules the same frozen stage through each provider")
     """
-    return "openai-compatible" if assignment["backend"] == "elm" else assignment["backend"]
+    return "provider" if assignment.get("execution_class") == "provider" else assignment["backend"]
+
+
+def prepare_provider_stage(role: str, inputs: dict, *, input_limit: int, output_limit: int) -> dict:
+    """@planks("When Pathfinder prepares role \"consolidate\" for provider execution")
+    @planks("When Pathfinder prepares role \"consolidate\" for one frozen paper pair")
+    @planks("Then the provider request exposes no workspace or search tools")
+    """
+    frozen = copy.deepcopy(inputs)
+    encoded = json.dumps(frozen, sort_keys=True)
+    request = {
+        "role": role,
+        "inputs": frozen,
+        "input_digests": {
+            name: hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+            for name, value in frozen.items()
+        },
+        "input_tokens": len(encoded.split()),
+        "output_token_limit": output_limit,
+        "tools": [],
+        "status": "ready",
+    }
+    if request["input_tokens"] > input_limit:
+        request["status"] = "blocked"
+    return request
+
+
+def execute_provider_stage(request: dict, provider_call):
+    """@planks("When Pathfinder executes role \"verify\" through its assigned provider")"""
+    return provider_call(request)
+
+
+def prepare_provider_batch(role: str, jobs: list[dict], *, input_limit: int, output_limit: int) -> list[dict]:
+    """@planks("When Pathfinder prepares their provider stage jobs")"""
+    prepared = []
+    for job in jobs:
+        request = prepare_provider_stage(role, job["inputs"], input_limit=input_limit, output_limit=output_limit)
+        request["result_id"] = hashlib.sha256(f'{role}\0{job["pair_id"]}'.encode()).hexdigest()
+        prepared.append(request)
+    return prepared
 
 
 def execution_receipt(role, backend, model, execution_class, prompt_digest, provider_job_id, raw_response, outcome, latency, token_usage, cost):
@@ -101,8 +140,7 @@ def run_assigned_comparison(campaign, assignments: dict) -> dict:
     """@planks("When Pathfinder runs the assigned comparison workflow")
     @planks("Then the provider call has a \"{timeout}\" second timeout")
     @planks("Then the provider receipt retains budget \"{budget}\" for role \"{role}\"")
-    @planks-provisional("features/operational/comparison-manifest.feature:Provider-class execution invokes the provider without agent tools")
-    @planks-provisional("features/operational/comparison-manifest.feature:Independent provider stages can be submitted as a batch")
+    @planks("When Pathfinder executes role \"{role}\" for one frozen paper pair")
     """
     receipts = []
     outcome = None

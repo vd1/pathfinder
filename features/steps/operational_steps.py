@@ -1022,6 +1022,160 @@ def one_frozen_pair(context):
     prepared_corpora(context)
 
 
+@given("one frozen paper pair has source records, prompts, and prior stage outputs")
+def pair_with_stage_inputs(context):
+    one_frozen_pair(context)
+    context.stage_inputs = {
+        "sources": [paper("q1"), paper("p1")],
+        "prompts": {"consolidate": "Consolidate the evidence."},
+        "prior_outputs": {"research": "grounded finding"},
+    }
+
+
+@when('Pathfinder prepares role "consolidate" for provider execution')
+def prepare_consolidate_provider(context):
+    context.provider_request = runner.prepare_provider_stage(
+        "consolidate", context.stage_inputs, input_limit=getattr(context, "input_limit", 64000), output_limit=1000
+    )
+
+
+@then("the provider request identifies the digests of every supplied input")
+def provider_request_has_input_digests(context):
+    assert set(context.provider_request["input_digests"]) == set(context.stage_inputs)
+
+
+@then("later campaign changes do not alter that request")
+def prepared_request_is_immutable(context):
+    before = json.dumps(context.provider_request, sort_keys=True)
+    context.stage_inputs["prior_outputs"]["research"] = "changed"
+    assert json.dumps(context.provider_request, sort_keys=True) == before
+
+
+@given('one frozen paper pair contains all evidence required by role "verify"')
+def pair_with_verify_evidence(context):
+    one_frozen_pair(context)
+    context.stage_inputs = {
+        "sources": [paper("q1"), paper("p1")],
+        "prompts": {"verify": "Verify the account."},
+        "prior_outputs": {"consolidate": "research account"},
+    }
+
+
+@when('Pathfinder executes role "verify" through its assigned provider')
+def execute_prepared_verify(context):
+    request = runner.prepare_provider_stage("verify", context.stage_inputs, input_limit=64000, output_limit=1000)
+    context.provider_execution = runner.execute_provider_stage(request, lambda value: {"text": "DRAFT", "request": value})
+
+
+@then("the role completes without fetching or discovering additional evidence")
+def provider_execution_uses_prepared_evidence(context):
+    assert context.provider_execution["text"] == "DRAFT"
+    assert context.provider_execution["request"]["tools"] == []
+
+
+@given('role "consolidate" has an assigned input context limit of "{limit}" tokens and an output token limit')
+def assigned_provider_limits(context, limit):
+    context.input_limit = int(limit)
+    context.output_limit = 1000
+    context.stage_inputs = {"evidence": "short frozen evidence"}
+
+
+@when('Pathfinder prepares role "consolidate" for one frozen paper pair')
+def prepare_limited_provider_request(context):
+    context.provider_request = runner.prepare_provider_stage(
+        "consolidate", context.stage_inputs, input_limit=context.input_limit, output_limit=context.output_limit
+    )
+
+
+@then("the request stays within the assigned input context limit")
+def request_within_input_limit(context):
+    assert context.provider_request["input_tokens"] <= context.input_limit
+
+
+@then("the provider call enforces the assigned output token limit")
+def provider_output_limit_enforced(context):
+    assert context.provider_request["output_token_limit"] == context.output_limit
+
+
+@given('role "consolidate" has more than "{limit}" input tokens of frozen evidence')
+def oversized_provider_evidence(context, limit):
+    context.input_limit = int(limit)
+    context.stage_inputs = {"evidence": "word " * (context.input_limit + 1)}
+
+
+@then("Pathfinder uses a recorded compression result or blocks the request")
+def oversized_request_is_blocked(context):
+    assert context.provider_request["status"] == "blocked"
+
+
+@then("Pathfinder does not silently truncate the evidence")
+def oversized_request_preserves_evidence(context):
+    assert context.provider_request["inputs"]["evidence"] == context.stage_inputs["evidence"]
+
+
+@given('role "verify" is assigned execution class "provider"')
+def verify_provider_assignment(context):
+    context.campaign = seed_pair(context)
+    context.assignments = assignments()
+    context.assignments["verify"].update(execution_class="provider", backend="elm")
+    context.assignment = {"role": "verify", "execution_class": "provider", "backend": "elm"}
+    context.stage_inputs = {"evidence": "frozen account"}
+
+
+@then("the provider request exposes no workspace or search tools")
+def provider_request_has_no_tools(context):
+    request = runner.prepare_provider_stage("verify", context.stage_inputs, input_limit=64000, output_limit=1000)
+    assert request["tools"] == []
+
+
+@given("two providers support the same provider execution class")
+def equivalent_provider_assignments(context):
+    context.provider_assignments = [
+        {"backend": "elm", "execution_class": "provider"},
+        {"backend": "other", "execution_class": "provider"},
+    ]
+
+
+@when("Pathfinder schedules the same frozen stage through each provider")
+def schedule_equivalent_providers(context):
+    context.routes = [runner.execution_route(assignment) for assignment in context.provider_assignments]
+
+
+@then("both stages use the provider execution route")
+def both_use_provider_route(context):
+    assert context.routes == ["provider", "provider"]
+
+
+@given('several frozen paper pairs are ready for role "scan"')
+def several_scan_pairs(context):
+    context.stage_jobs = [
+        {"pair_id": pair_id, "inputs": {"evidence": pair_id}}
+        for pair_id in ("Q1P1", "Q1P2")
+    ]
+
+
+@when("Pathfinder prepares their provider stage jobs")
+def prepare_provider_jobs(context):
+    context.prepared_jobs = runner.prepare_provider_batch("scan", context.stage_jobs, input_limit=64000, output_limit=1000)
+
+
+@then("each job has independent immutable inputs and a stable result identity")
+def batch_jobs_are_independent(context):
+    assert len({job["result_id"] for job in context.prepared_jobs}) == len(context.prepared_jobs)
+    context.stage_jobs[0]["inputs"]["evidence"] = "changed"
+    assert context.prepared_jobs[0]["inputs"]["evidence"] == "Q1P1"
+
+
+@then("submitting the jobs together does not change their results")
+def batching_preserves_results(context):
+    original_jobs = [
+        {"pair_id": pair_id, "inputs": {"evidence": pair_id}}
+        for pair_id in ("Q1P1", "Q1P2")
+    ]
+    separate = [runner.prepare_provider_batch("scan", [job], input_limit=64000, output_limit=1000)[0] for job in original_jobs]
+    assert [job["result_id"] for job in context.prepared_jobs] == [job["result_id"] for job in separate]
+
+
 @given('roles "research", "consolidate", and "verify" are assigned model "{model}" through ELM')
 def remaining_role_assignments(context, model):
     context.assignments = assignments()
