@@ -98,6 +98,8 @@ def execution_receipt(role, backend, model, execution_class, prompt_digest, prov
 
 def run_assigned_comparison(campaign, assignments: dict) -> dict:
     """@planks("When Pathfinder runs the assigned comparison workflow")
+    @planks("Then the provider call has a \"{timeout}\" second timeout")
+    @planks("Then the provider receipt retains budget \"{budget}\" for role \"{role}\"")
     """
     receipts = []
     outcome = None
@@ -114,6 +116,7 @@ def run_assigned_comparison(campaign, assignments: dict) -> dict:
             hashlib.sha256(prompt.encode()).hexdigest(), reply["session"], reply["text"], reply["text"],
             reply["seconds"], {"input": reply["input_tokens"], "output": reply["output_tokens"]}, reply["cost"],
         )
+        receipt["budget"] = assignment["budget"]
         receipts.append(receipt)
         if role == "verify":
             outcome = reply["text"]

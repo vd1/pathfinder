@@ -64,9 +64,20 @@ Feature: Define reproducible role comparisons
       And consolidation completes before verification
 
     Scenario: Provider execution uses the route selected from its assignment
-      Given role "consolidate" is assigned execution class "provider" through ELM
-      When Pathfinder runs the assigned comparison workflow
+      Given role "consolidate" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" and execution class "provider" through ELM
+      When Pathfinder executes role "consolidate" for one frozen paper pair
       Then consolidation executes through the ELM provider interface
+
+    Scenario: Assigned provider execution has a focused timeout
+      Given role "consolidate" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" and execution class "provider" through ELM
+      When Pathfinder executes role "consolidate" for one frozen paper pair
+      Then the provider call has a "120" second timeout
+
+    Scenario: Assigned provider execution retains its tier budget
+      Given role "consolidate" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" and execution class "provider" through ELM
+      And role "consolidate" is assigned budget "1" in its comparison tier
+      When Pathfinder executes role "consolidate" for one frozen paper pair
+      Then the provider receipt retains budget "1" for role "consolidate"
 
     Scenario: Assigned research stages enter the campaign research workflow
       Given one frozen paper pair

@@ -25,7 +25,7 @@ Procedure lives in the skills. Every role reads this on open.
 - discover: `nix develop path:. -c uv run behave --dry-run --tags="not @captain and not @shipwright"`
 - focused: `set -a; . "$HOME/.aienv"; set +a; ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; nix develop path:. -c uv run behave "$file" --name "^${name}$" --tags="not @captain and not @shipwright"`
 - broad: `nix develop path:. -c uv run behave --tags="not @captain and not @shipwright"`
-- coverage: `nix develop path:. -c uv run coverage run --branch --source=pathfinder -m behave --tags="not @captain and not @shipwright"`
+- coverage: `set -a; . "$HOME/.aienv"; set +a; nix develop path:. -c uv run coverage run --branch --source=pathfinder -m behave --tags="not @captain and not @shipwright"`
 - broad-unit: `nix develop path:. -c uv run pytest -q`
 - coverage-unit: `nix develop path:. -c uv run pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
 - step-usage: `nix develop path:. -c uv run behave --steps-catalog --tags="not @captain and not @shipwright"`

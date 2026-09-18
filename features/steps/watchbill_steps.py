@@ -303,6 +303,53 @@ def provider_consolidation(context):
     )
 
 
+@given('role "{role}" is assigned model "{model}" and execution class "provider" through ELM')
+def assigned_provider_model(context, role, model):
+    context.campaign = seed_pair(context)
+    context.assignments = assignments()
+    context.assignments[role].update(backend="elm", model=model, execution_class="provider")
+
+
+@given('role "{role}" is assigned budget "{budget}" in its comparison tier')
+def assigned_role_budget(context, role, budget):
+    context.assignments[role]["budget"] = int(budget)
+
+
+@when('Pathfinder executes role "{role}" for one frozen paper pair')
+def execute_assigned_role(context, role):
+    # @exceptional-double: internal composition has no independent external verifier.
+    original = transport.call
+
+    def call(*args, **kwargs):
+        context.provider_call = kwargs
+        return {
+            **provider_reply("provider research account"),
+            "session": "provider-job",
+            "input_tokens": 1,
+            "output_tokens": 1,
+            "cost": 0,
+        }
+
+    transport.call = call
+    try:
+        context.workflow = runner.run_assigned_comparison(
+            context.campaign, {role: context.assignments[role]}
+        )
+    finally:
+        transport.call = original
+
+
+@then('the provider call has a "{timeout}" second timeout')
+def provider_call_timeout(context, timeout):
+    assert context.provider_call["timeout"] == int(timeout)
+
+
+@then('the provider receipt retains budget "{budget}" for role "{role}"')
+def provider_receipt_budget(context, budget, role):
+    receipt = next(item for item in context.workflow["receipts"] if item["role"] == role)
+    assert receipt["budget"] == int(budget)
+
+
 @given('retained provider events for pair "{pair_id}" include workspace command execution')
 def retained_workspace_events(context, pair_id):
     context.retained_provider_events = [
