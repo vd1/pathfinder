@@ -158,6 +158,12 @@ Feature: Define reproducible role comparisons
       When Pathfinder verifies execution routing
       Then every recorded campaign call follows its manifest assignment
 
+    Scenario: Manifest stage assignments reach the model transport request
+      Given a campaign manifest assigns role "verify" to model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM with no allowed tools
+      When Pathfinder submits the role's frozen stage
+      Then the model transport request uses the assigned model and backend
+      And the model transport request exposes no tools
+
     Scenario: Adapter selection does not depend on Codex command semantics
       Given an immutable model request and a non-Codex synchronous adapter
       When Pathfinder executes the request

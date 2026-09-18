@@ -189,6 +189,7 @@ def execute(campaign, request: ModelRequest):
 
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
+    """@planks("When Pathfinder submits the role's frozen stage")"""
     request = ModelRequest(
         identity=f"{thread}:{stage}", prompt=prompt, model=model, tools=tools, search=search,
         cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor,

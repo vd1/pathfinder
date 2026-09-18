@@ -1417,6 +1417,47 @@ def every_campaign_call_follows_assignment(context):
     peer_calls_follow_assignments(context)
 
 
+@given('a campaign manifest assigns role "verify" to model "{model}" through ELM with no allowed tools')
+def verify_stage_manifest_assignment(context, model):
+    context.campaign = campaign(context)
+    context.campaign.backend = "elm"
+    context.assignment = {"model": model, "backend": "elm", "allowed_tools": []}
+
+
+@when("Pathfinder submits the role's frozen stage")
+def submit_frozen_stage(context):
+    # @exceptional-double: internal composition has no independent external verifier.
+    original = transport.execute
+    transport.execute = lambda campaign, request: setattr(context, "transport_call", (campaign, request)) or {}
+    try:
+        transport.call(
+            "frozen verification stage",
+            campaign=context.campaign,
+            model=context.assignment["model"],
+            tools=bool(context.assignment["allowed_tools"]),
+            search=False,
+            cwd=context.campaign.path("verify-work"),
+            timeout=1,
+            thread="Q1P1",
+            stage="verify",
+            actor="verify",
+        )
+    finally:
+        transport.execute = original
+
+
+@then("the model transport request uses the assigned model and backend")
+def transport_request_uses_assignment(context):
+    submitted_campaign, request = context.transport_call
+    assert request.model == context.assignment["model"]
+    assert submitted_campaign.backend == context.assignment["backend"]
+
+
+@then("the model transport request exposes no tools")
+def transport_request_exposes_no_tools(context):
+    assert context.transport_call[1].tools is False
+
+
 @given("an immutable model request and a non-Codex synchronous adapter")
 def request_and_non_codex_adapter(context):
     context.request = model_request("peer")
