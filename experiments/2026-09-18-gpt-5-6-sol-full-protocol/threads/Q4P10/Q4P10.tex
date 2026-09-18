@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Capability Elicitation under Survival Pressure}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+\emph{Mechanism Design for Alignment and Control} studies mechanisms for agents whose preferences and capabilities are unknown.  Its key structural restriction is one-sided imitation: capability may be concealed but not counterfeited.  It motivates honesty and obedience, sandbagging tests, peer scoring, and coupled rewards.  \emph{The Energy Society} supplies a survival economy in which generation consumes energy, jobs and donations restore it, and agents deactivate at zero energy.  It also supplies baseline, competitive, and cooperative conditions, together with observed changes in allocation behavior.
+
+The supported connexion is a proposed mechanism-validity experiment: introduce a private capability-report stage into the Energy Society and test peer scoring and coupled rewards as separate treatments.  The central hypothesis is an interaction, not a result already in hand: these mechanisms may improve calibrated reports and net-energy-efficient job assignment when capability is private but cannot be counterfeited; making capability visible should reduce the value of elicitation, while permitting counterfeiting should stress-test the theory outside its maintained assumption.  The peers ultimately agreed that visibility is an information axis and counterfeiting an action-structure axis, so they should be crossed or studied in two stages rather than conflated. \ledger{15, 21, 22}
+
+\section{What is supported}
+
+The abstracts establish complementary ingredients.  The mechanism paper explicitly provides unknown capability, concealment without counterfeiting, and the peer-scoring and reward-coupling ideas.  The simulation paper explicitly provides energy costs, job rewards, donations, deactivation, incentive conditions, altered job allocation, and recommendation and memory ablations.  Together these ingredients make the proposed experiment concrete and falsifiable.  They do not establish that the mechanisms work in this environment. \ledger{16, 21}
+
+A defensible design would first estimate each agent--job success/cost frontier without incentives.  It would then elicit own reports before assignment, add cross-reports only in the peer-scoring treatment, and compare cheap talk, peer scoring, and coupled rewards with an oracle allocation.  Primary outcomes would be report calibration and oracle-relative assignment welfare or net energy; survival would be downstream.  Downward misreporting and deliberate underperformance should be measured separately, since neither model size nor high token use is itself sandbagging. \ledger{4, 17, 18, 23}
+
+\section{Objections and unresolved issues}
+
+Evidence is thin: the supplied inputs are abstracts, and the peer directories contain no additional notes.  Nothing supplied gives the exact transfer formulas, a capability-report interface, task-level ground truth, or evidence that the simulator can implement controlled counterfeit actions.  Group survival is also a confounded primary endpoint: larger models may spend more energy than they gain even without size-dependent token pricing, while cooperative donations may reduce the donor's own survival.  Possible collusion under peer scoring and costly overcompetition under coupled rewards are alternative mechanisms rather than details to ignore. \ledger{2, 9, 17, 23}
+
+Still unresolved are the mapping from types, reports, allocations, outcomes, and transfers to the simulator; the definition of oracle welfare independently of survival; statistical power across stochastic runs; construct-valid measures of counterfeiting and underperformance; and novelty relative to empirical mechanism-design work.  The peers report no substantive disagreement on this verdict. \ledger{19, 24}
+
+\section{Smallest next step}
+
+Retrieve the full mechanism paper and the simulator code, then perform one feasibility audit: write down one exact peer-scoring contract and verify that the environment can support pre-allocation own reports, cross-reports, transfers, and independently calibrated agent--job capability.  Until that mapping succeeds, the connexion remains a promising research design rather than a supported finding.
+
+\end{document}

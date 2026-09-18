@@ -1,0 +1,41 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Token-Priced Survival in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Paper Q, \emph{Competitive Market Behavior of LLMs}, places LLM agents in double auctions.  Its abstract reports slower or absent convergence to market equilibrium and lower allocative efficiency than in human markets.  It also reports heterogeneity across model families and market roles.  At the decision level, executing a trade rather than continuing incremental price adjustment is associated with a lexical shift from strategic considerations toward urgency.  This is an association, not evidence that urgency causes convergence or efficiency \ledger{1, 7, 20}.
+
+Paper P, \emph{The Energy Society}, introduces a survival economy in which generation consumes energy and an agent deactivates when its energy reaches zero.  Agents can regain energy through jobs or donations.  The abstract reports that larger models consume the most energy and remain net negative even when token cost is not size-dependent; it also reports behavioral changes under cooperative incentives.  Thus P establishes a manipulable token-linked survival setting, but also exposes model identity and endogenous verbosity as confounds \ledger{2, 8}.
+
+\section{Connexion pursued}
+
+The proposed connexion is to transplant a stripped-down version of P's token-priced mortality into Q's double auction and ask whether it changes the auction's speed--efficiency frontier.  The strongest supported question is not whether scarcity improves markets, but whether salient token-contingent depletion changes convergence and allocative efficiency beyond an approximately matched reduction in opportunities to deliberate \ledger{12, 16, 22}.
+
+A core experiment would hold the model and market fundamentals fixed.  It would independently vary actual token-contingent depletion and explicit survival framing, include pilot-calibrated exogenous token or round caps, and use at least two constraint severities.  Allocative efficiency and distance or rounds to the competitive price would be primary outcomes.  Premature off-equilibrium trade, no trade, deactivation, role-specific surplus, token use, trade timing, and preregistered urgency language would be secondary outcomes.  Jobs, donations, and energy transfers should be omitted from the core auction because they would change its payoff system \ledger{16, 17, 22}.
+
+\section{Supported findings and limits}
+
+The supplied evidence supports three modest conclusions.  First, Q provides a market failure to study and measurable auction outcomes.  Second, P provides an implementable-looking way to make inference expenditure survival-relevant.  Third, their conjunction motivates a randomized causal intervention.  Neither abstract shows that scarcity accelerates trade, improves convergence, or raises efficiency \ledger{14, 20}.
+
+Urgency should therefore be treated as a preregistered candidate mediator, not as the assumed mechanism.  A residual effect of token-priced mortality relative to matched caps would be consistent with survival salience, while reproduction of the effect by caps would favor curtailed deliberation.  Even this contrast is not definitive: a per-token marginal cost and a fixed quantity constraint create different incentives, so a residual difference need not be psychological survival salience \ledger{9, 21}.
+
+The evidence is thin.  Only abstracts were supplied, and the empty peer directories add no further primary material.  Public frameworks and source code make integration plausible in principle, but do not establish compatibility, ordinary engineering effort, or adequate statistical power \ledger{11, 18}.
+
+\section{Objections and unresolved issues}
+
+Realized energy depletion is post-treatment and behavior-dependent: verbose or strategically deliberative agents pay more.  A fixed-model randomized design, intention-to-treat estimates, reported realized token expenditure, and pilot rather than subject-specific cap calibration are needed.  Survival must be salient if the claim concerns perceived pressure, yet salience may itself create demand characteristics; a factorial manipulation of framing and depletion is the cleanest available separation, subject to the marginal-cost caveat above \ledger{4, 17, 21}.
+
+An inverted-U response to pressure is not established.  It may be explored, but a confirmatory curvature claim would require a zero condition, at least three preregistered positive scarcity levels, and power for nonlinear contrasts \ledger{10, 15}.
+
+Still unresolved are Q's operational definitions of equilibrium and efficiency, P's energy equation and prompting details, access to token and chain-of-thought metering, compatibility of the released implementations, unbiased calibration of matched constraints, effect sizes, costs, and statistical power.  No empirical result follows from the present record \ledger{18, 22}.
+
+\section{Smallest next step}
+
+Read the full papers and inspect both released codebases, then write a one-page preregistration sketch that pins down the outcome definitions, energy formula, salience manipulation, token observability, and a pilot-calibration rule for the cap control.  This is the smallest step that can determine whether the proposed contrast is implementable before building or powering the experiment \ledger{5, 18}.
+
+\end{document}

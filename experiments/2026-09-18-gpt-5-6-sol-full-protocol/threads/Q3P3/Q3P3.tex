@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{From Adversarial Review to Audited Trading: A Thin-Evidence Transfer Hypothesis}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+The first paper studies LLM agents in double auctions.  Its abstract reports slower or absent convergence toward market equilibrium, less efficient allocations than in human markets, and substantial heterogeneity across model families and market roles.  It also associates execution, rather than incremental price adjustment, with a lexical shift in chain-of-thought traces from strategic considerations toward urgency.  This last result is an association, not evidence that urgency causes inefficient trading \ledger{2, 8, 17}.
+
+The second paper studies Adversarial Review (AR) for code review: a reviewer evaluates code, a critic audits that review through structured disagreement, and the main agent then edits.  Its abstract reports a false-consensus failure for naive AR on SWE-PRBench and the highest tested F1 after disagreement was made explicit.  It characterizes useful disagreement as minimal, structured, and evidence-grounded, but supplies no auction-specific evidence schema \ledger{3, 9, 13, 21}.
+
+\section{Connexion pursued}
+
+The proposed connexion is to place an evidence-grounded critic audit immediately before a contemplated trade.  The transferable claim is deliberately narrow: explicit disagreement might prevent unsupported approval of a trade and thereby improve double-auction allocation.  This is a hypothesis about transfer from code review to economic choice, not a result already established by either paper \ledger{11, 18, 24}.
+
+The decisive comparison is the critic increment.  A naive reviewer--critic protocol should be compared with an otherwise matched protocol in which the critic must offer explicit, evidence-grounded disagreement.  Tokens, inference compute, and latency should be matched.  Realized surplus divided by maximum feasible surplus is the proposed primary estimand, with convergence secondary; solo-reflection and reviewer-only arms are diagnostic ablations.  Replication should cross model families and buyer/seller roles because the market paper reports heterogeneity \ledger{18, 22}.
+
+\section{Supported findings and objections}
+
+The pair supports the choice of allocative efficiency and convergence as outcomes, and supports structured critic disagreement as an intervention pattern.  It does not support a present claim that AR improves markets \ledger{17, 21}.  A simple comparison of a three-agent AR trader with a standard trader is underidentified: it changes deliberation, compute, token budget, and delay together with disagreement \ledger{4, 10}.  Reviewer and critic roles also lack an established evidentiary object in a private-value auction.  Suggested fields such as private value or cost, best bid or ask, expected surplus, and remaining rounds are proposed design choices, not details documented in the AR abstract \ledger{4, 18}.
+
+Urgency language should not be a primary endpoint or be treated as a mediator without a separate validated mediation design.  The auction abstract establishes only lexical association, while the intervention could mechanically alter chain-of-thought vocabulary.  A treatment-blind behavioural proxy or frozen classifier validated across arms would be needed even for a secondary analysis \ledger{14, 19, 23}.
+
+\section{Unresolved issues and smallest next step}
+
+Evidence is thin: only abstracts were supplied, and the peer-note directories contain no additional notes.  The record does not establish the auction timing and round constraints, efficiency and convergence formulas, urgency classifier, AR prompts and budgets, sample sizes, effect sizes, costs, or statistical power.  Nor does it define ``premature,'' ``dominated,'' or avoidably low-surplus trades.  Accordingly, no faithful implementation or numerical power claim is yet justified \ledger{6, 15, 19, 23}.
+
+The smallest next step is to obtain the full methods and released materials for both papers and write a preregistered two-arm specification for the matched naive-critic versus explicit-evidence-grounded-critic contrast.  Only after the surplus estimator, convergence rule, auction evidence fields, prompts, budgets, and stopping rules are fixed should the diagnostic ablations or urgency analysis be added.  A positive critic increment would support transfer; a precise null would locate a boundary of the code-review result.  The hypothesis should therefore be sharpened and tested, while the unablated causal interpretation should be rejected \ledger{15, 22, 24}.
+
+\end{document}

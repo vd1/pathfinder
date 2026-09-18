@@ -1,0 +1,13 @@
+{
+ "id": "2608.08330",
+ "title": "Uplink-Completion-Triggered Edge-GPU Inference for Multi-Agent Cooperative Perception",
+ "abstract": "This paper investigates the coupling between wireless input completion and graphics processing unit (GPU) execution in centralized multi-agent cooperative perception. Specifically, beyond the conceptual treatment of completion-triggered overlap, a complete execution path is realized and validated on a physical GPU for a cooperative-perception deep neural network (DNN). Each encoder branch is released immediately upon completion of its corresponding input transmission, while the original fusion dependencies and inference mapping are preserved. The resulting release-triggered communication computation coupling (RTCC) propagates validated wireless completion events through host-to-device (H2D) staging, CUDA synchronization, and dependency-preserving branch dispatch, while remaining compatible with causal wireless schedulers. Experiments combining trace-driven wireless arrivals, physical GPU execution, and measured-DAG evaluation show that RTCC reduces complete-detection latency across different communication loads and schedulers, while preserving identical detection outputs and average-precision performance relative to conventional execution.",
+ "authors": [
+  "Sai Xu",
+  "Yanan Du",
+  "Chong Tang",
+  "Gaojie Chen"
+ ],
+ "date": "2026-08-08",
+ "text": "sources/2608.08330.tex"
+}

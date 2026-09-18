@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{From Forecast Accuracy to a Cost--Delay--Error Frontier for Carbon-Aware Scheduling}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+The first paper surveys learning-augmented algorithms: algorithms that use fallible predictions while retaining formal guarantees.  Its abstract distinguishes theorem-level guarantees from empirical systems evidence and identifies prediction cost, feedback, endogenous error, composition, and benchmarking as central concerns.  The second paper proposes day-ahead nodal-carbon-intensity (NCI) forecasting and spatial--temporal scheduling for geographically dispatchable loads.  Its abstract reports experiments on a modified IEEE 33-bus system and more than \(30\%\) emission reduction when carbon-scheduling latency is reduced by one hour.
+
+The connexion is therefore evaluative rather than theorem-transfer.  The carbon scheduler is a concrete prediction-driven system whose reported benefit depends on accurate and timely forecasts; the learning-augmented survey supplies questions for testing whether that benefit survives fallible predictions and end-to-end prediction costs.  The ledger independently converges on this pair-specific gap \ledger{7, 13}.
+
+\section{What is supported}
+
+The supplied evidence supports three modest findings.  First, forecast error, information delay, and predictor overhead are jointly relevant to evaluating the carbon scheduler.  Second, P's headline result is conditional: it is a simulation claim associated with a one-hour latency reduction, not a robustness guarantee.  Third, the most defensible research target is a cost--delay--error break-even frontier.  One would compare forecast-based scheduling with a feasible causal prediction-free policy, using an oracle only as a ceiling, while varying calibrated NCI error and delay and measuring inference or coordination cost \ledger{3, 9, 17}.
+
+The operational quantity should be defined explicitly, for example as realized emissions plus dispatch or feasibility penalties plus measured prediction-system cost.  If only compute or energy used in operation is measured, the result concerns net operational emissions, not life-cycle emissions \ledger{10, 14}.  A reproducible boundary at which forecasting loses its advantage, or a counterexample in which small NCI error causes large decision loss, would be a concrete and potentially non-obvious result.  Neither has yet been established.
+
+\section{Objections and unresolved issues}
+
+Evidence is thin: both inputs contain only titles and abstracts, and the peer directories add no notes beyond the ledger.  P's abstract does not provide algorithmic equations, constraints, forecast-error definitions, perturbation experiments, robust baselines, or theorem assumptions.  It also does not establish the online chronology or feedback model needed for a learning-augmented analysis.  Consequently, one cannot infer an error-dependent competitive or regret bound, bounded emissions or dispatch performance, or even that such a proof is feasible with ordinary effort \ledger{2, 8, 15}.
+
+Several issues remain decisive.  The full formulation, code, and data must reveal decision chronology and recourse, feasibility constraints, objective scaling, a decision-relevant NCI error measure, a legitimate causal no-prediction comparator, and measurable predictor overhead.  Scheduling may be combinatorial, so discontinuous loss is plausible, but the abstracts do not establish it.  Likewise, P's description of ``predictive resilience'' is not evidence of robustness under systematic forecast error \ledger{11, 14, 17}.
+
+\section{Smallest next step}
+
+Obtain P's full formulation and identify, before running a large study, one reproducible scheduling instance together with its chronology, objective, constraints, and causal prediction-free comparator.  On that single instance, perturb the day-ahead NCI forecast along one calibrated error scale at two information delays, record feasibility and the explicitly defined operational objective, and measure predictor runtime or energy if available.  This minimal test can determine whether a break-even boundary is observable and whether the broader frontier study is well posed; until then, the connexion remains a sharpened, falsifiable hypothesis rather than a supported performance result \ledger{4, 13, 15}.
+
+\end{document}

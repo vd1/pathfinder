@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Confidence-Gated MARL for TDOA Base-Station Placement}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+The first work surveys learning-augmented algorithms: algorithms that use fallible predictions while retaining formal guarantees.  It emphasizes prediction interfaces and errors, consistency--robustness trade-offs, prediction cost, feedback, and composition.  The second work studies ray-tracing-assisted multi-agent reinforcement learning (MARL) for base-station placement in TDOA localization.  Its PPO agents use channel impulse responses from a three-dimensional campus model, while its geometric comparator is a mean-optimized GDOP placement.  Across five campus segments, MARL reduces mean localization MAE by about \(3\%\), improves some segments by as much as about \(14\%\), and is comparable or slightly worse on others.  These claims are available only at abstract level. \ledger{15}
+
+The defensible connexion is therefore a two-candidate, learning-augmented selector.  Regard MARL and GDOP as proposed placements; predict their deployment losses before placement; and abstain to GDOP unless the evidence certifies a MARL advantage.  The semantic prediction is candidate loss, or equivalently MARL advantage, rather than distance between predicted and selected coordinates. \ledger{18,22}
+
+\section{Supported conditional finding}
+
+Let \(L_M\) and \(L_G\) be the true TDOA losses of the MARL and GDOP placements.  Suppose information available before placement produces simultaneous confidence intervals
+\[
+  L_i \in [\widehat L_i-r_i,\widehat L_i+r_i],
+  \qquad i\in\{M,G\}.
+\]
+Deploy MARL only when
+\[
+  \widehat L_M+r_M \leq \widehat L_G-r_G;
+\]
+otherwise deploy GDOP.  On the simultaneous-coverage event, choosing MARL implies \(L_M\leq L_G\), while choosing GDOP gives equality with the fallback loss.  Hence the selected loss is at most \(L_G\).  If MARL is truly better but is rejected, then
+\[
+  L_G-L_M < 2(r_M+r_G),
+\]
+so oracle regret is at most \(2(r_M+r_G)\), or \(4\epsilon\) when both radii equal \(\epsilon\).  This elementary result expresses the consistency--robustness trade-off, but it is conditional on valid pre-placement intervals; neither input establishes such intervals. \ledger{16,21,23}
+
+For comparison, simply choosing the smaller estimated loss under
+
+\[
+  |\widehat L_i-L_i|\leq\epsilon
+\]
+
+only ensures
+\[
+  L_{\mathrm{selected}}\leq \min\{L_M,L_G\}+2\epsilon.
+\]
+It does not ensure literal non-regression relative to GDOP.  The confidence-margin gate is necessary for that stronger, fallback-relative statement. \ledger{8,16,22}
+
+\section{Objections and unresolved issues}
+
+Calling GDOP a ``provable fallback bound'' would overstate the evidence.  The placement abstract says GDOP ignores NLOS shadowing and multipath-induced timing bias and supplies empirical comparisons, not an approximation theorem or an absolute localization guarantee.  Robustness here can mean only no worse than the realized loss of the GDOP candidate on the confidence event. \ledger{1,4,19}
+
+Nor is action-coordinate error an established prediction error: under NLOS and multipath, coordinate distance need not control TDOA MAE.  Using realized target-segment outcomes would instead make selection post-hoc and circular.  A valid study must specify which rays or CIRs exist before an irreversible placement, what the independent or exchangeable unit is (users, CIRs, scenes, or segments), and what shift class is covered.  Five reported segments alone are thin evidence for distribution-free segment-level concentration. \ledger{3,17,22}
+
+Thus the proposed guarantee is a research target, not a theorem supplied by the pair.  The unresolved issue is whether out-of-segment, pre-deployment intervals can be simultaneously valid and narrow enough to accept MARL nontrivially after accounting for ray-tracing and certificate cost. \ledger{5,23,24}
+
+\section{Smallest next step}
+
+Run one leave-one-segment-out feasibility test.  State the pre-placement information and shift model; calibrate both loss intervals without the held-out segment; perturb the ray tracer to represent model mismatch; and measure simultaneous coverage, interval width, MARL acceptance and fallback rates, MAE and coverage, oracle regret, and computation cost.  If the intervals fail coverage, are vacuous, or almost never accept MARL, the claimed safe-improvement bridge fails and the result remains only an empirical portfolio study. \ledger{10,18,23}
+
+\end{document}

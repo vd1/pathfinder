@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Strategic Robustness of Comparison-Based Credit}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+\emph{Mechanism Design for Alignment and Control} studies agents with unknown preferences and capabilities.  It asks mechanisms to induce honesty and obedience when capability can be concealed but not counterfeited, and characterizes implementable policies using nested cyclical monotonicity (NCM).  \emph{MARS-RA} instead turns large-multimodal-model pairwise comparisons of agents' contributions into rank-aggregated scores for potential-based reward shaping, claiming convergence and robustness to noise and changing participation.  The supported connexion is therefore between strategic capability elicitation and comparison-based credit assignment, not an identity of their guarantees. \ledger{7, 13}
+
+The line pursued is a conditional separation-and-repair result.  Model the comparisons as an endogenous signal affected by actions and hidden capability.  Under a standard discounted telescoping potential-based shaping construction, compatible terminal treatment, and fixed underlying utility, report-independent shaping should preserve continuation-return orderings and thus cannot make truth-telling strict when sandbagging was already profitable.  A repair would place the comparison score inside a report- or type-contingent transfer or continuation contract, and test whether the resulting full allocation satisfies Q-style NCM and whether comparison distributions identify concealed capability.  This is a proposal, not a theorem established by the supplied texts. \ledger{14, 18}
+
+\section{Supported findings}
+
+The abstracts support a sharp distinction.  P supplies a contribution estimator and learning/reward-shaping claims; Q supplies strategic implementability concepts for hidden types.  Neither abstract says that MARS-RA is strategyproof, that its comparisons are proper peer scores, or that its ranks satisfy NCM.  Robustness to ordinary score noise or entry and exit does not itself imply robustness when agents strategically change the evidence being compared. \ledger{4, 13}
+
+The strongest supported design is consequently comparative: hold the comparison pipeline fixed and contrast shaping only, an unconstrained rank bonus, and an NCM-constrained transfer layer under unilateral capability suppression.  A finite model with two capability types and two alignment types is enough to state the candidate boundary and expose the necessary information assumptions.  Collusion and participation changes are useful secondary tests. \ledger{16, 20}
+
+\section{Objections and unresolved issues}
+
+NCM constrains an implementable policy over hidden types and instruments; a rank vector is only a signal.  Applying NCM to the ranks alone is therefore unsupported.  More decisively, if a high-capability sandbagger and a genuinely low-capability agent induce the same distribution of comparisons, no score-only mechanism can distinguish them: implementability restrictions cannot manufacture information. \ledger{15, 19}
+
+The policy-invariance objection is also conditional, not categorical.  P's abstract omits the exact potential, stationarity and terminal conventions, and whether shaped reward is a training aid or deployment utility.  Action-dependent, learned, nonstationary, agent-specific, or non-telescoping shaping may change incentives, in which case that deviation must be characterized directly.  Q's abstract likewise omits the formal NCM inequalities needed for the proposed finite model. \ledger{14, 20}
+
+Evidence is thin: the available record consists of the two abstracts and the ledger; no separate peer-note directories were available.  Agent utilities, report and action spaces, rank normalization and ties, the effect of actions on comparisons, identifiability, collusion, and adversarial participation all remain unspecified.  Claims beyond the conditional separation-and-repair programme would therefore be premature. \ledger{10, 11}
+
+\section{Smallest next step}
+
+Obtain the full definitions and write a two-capability, two-alignment model with one explicit endogenous comparison channel.  Then check just two facts: whether P's shaping has the discounted telescoping form required by the invariance argument, and whether truthful low capability and high-capability sandbagging induce distinct comparison distributions.  Only if both checks succeed should the NCM-constrained transfer proof and the three-arm experiment be attempted. \ledger{16, 20}
+
+\end{document}

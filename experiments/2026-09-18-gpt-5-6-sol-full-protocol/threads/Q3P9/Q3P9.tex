@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Credible Commitment versus Adaptive Price Discovery}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Paper Q, \emph{Competitive Market Behavior of LLMs}, studies LLM agents in double auctions.  Its abstract reports slower or absent convergence to market equilibrium, lower allocative efficiency than in human markets, and heterogeneity across model families and market roles.  It also associates executing a trade, rather than incrementally adjusting prices, with a shift from strategic language toward urgency.  That association does not establish that urgency causes inefficient trading \ledger{8, 9}.
+
+Paper P, \emph{Commitment To Cooperation With Self-Negotiated Contracts}, studies contracts in a spatial-temporal game combining bargaining and navigation.  Its motivating problem is intertemporal defection: cooperation costs arrive before benefits.  It reports that self-negotiated contracts, ranging from natural language to code-compiling forms, can improve cooperation beyond regular trading by making commitments enforceable \ledger{10, 26}.
+
+\section{Connexion pursued}
+
+The connexion is a boundary question: can the enforceability that supports cooperation in P impair the adaptive quote revision needed for competitive price discovery in Q?  The abstracts motivate this question but do not establish either that Q's inefficiency is a commitment failure or that contracts will improve or worsen it \ledger{14, 23}.
+
+The primary experiment should compare an ordinary repeated double auction with two matched contract overlays: identical accepted terms treated as nonbinding cheap talk, or machine-enforced.  Terms should be public, time-limited constraints on each signer's own future admissible bids, asks, or quantities; they should not choose counterparties, allocate goods, set transfers, or permit side payments.  Holding terms, information, negotiation, and token budgets fixed makes enforced minus non-enforced terms the credibility contrast.  Contract representation can be a secondary robustness factor, not the primary estimand \ledger{15, 16, 24}.
+
+\section{Supported findings, objections, and tests}
+
+The evidence supports convergence and allocative efficiency as primary outcomes, with model family and market role as moderators.  Quote-revision rate, price dispersion, distance from the competitive interval, no-trade, surplus division, and collusive price distortion are useful diagnostics.  Q's urgency language is at most a candidate secondary measure, because the reported relation is observational \ledger{1, 3, 18}.
+
+Three patterns distinguish explanations.  Better efficiency under enforcement than under matched cheap talk, without competitive-price distortion, supports a commitment benefit.  Equal performance favors structured planning or communication.  Fewer revisions together with worse convergence or efficiency supports harmful rigidity or collusion.  These are falsifiable outcomes, not findings already demonstrated by the pair \ledger{20, 27}.
+
+Important objections remain.  Future commitments introduce an auction overlay absent from Q; negotiation uptake is selective; natural and formal representations may differ in meaning or execution error; and price constraints may facilitate collusion.  The ordinary auction must remain the benchmark, uptake must be reported separately, and competitive-price distance and surplus distribution are required to distinguish coordination from market distortion \ledger{13, 22}.
+
+\section{Unresolved issues and smallest next step}
+
+Evidence is thin: the supplied inputs are abstracts only, and the peer directories contain no additional notes.  Auction timing, offer persistence, equilibrium and efficiency definitions, enforcement capabilities, feasibility of public own-quote constraints, and prospective urgency coding remain unknown.  Consequently, the boundary effect is an experiment proposal, not an empirical conclusion \ledger{28, 29}.
+
+The smallest next step is to inspect both full papers and released code, then run a minimal feasibility pilot implementing one public, time-limited own-quote constraint in Q's auction under matched cheap-talk and enforced conditions.  The pilot should verify instrumentation for quote revision, competitive-price distance, efficiency, and surplus distribution before preregistration or scaling \ledger{24, 28}.
+
+\end{document}

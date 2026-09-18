@@ -1,0 +1,48 @@
+
+
+Here is the complete research account for Q4P3:
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Mechanism Design for Adversarial Review: Incentive Compatibility in Agentic Code Review}
+
+\begin{document}
+
+\maketitle
+
+\section*{The Pair}
+
+This consolidation examines the connexion between two papers: \emph{Mechanism Design for Alignment and Control} (Q) and \emph{Adversarial Review: Structured Disagreement for Grounded Agentic Code Review} (P). Q develops a framework for mechanism design with AI agents whose alignment (preferences) and capabilities (feasible actions and information) are unknown, yielding a revelation principle, a characterization via cyclical monotonicity, and conditions for peer scoring discipline. P introduces Adversarial Review (AR), a minimal cooperative code-review protocol with three roles (main, reviewer, critic) that achieves strong empirical performance but exhibits a false-consensus failure mode on repository-level tasks.
+
+\section*{The Connexion Pursued}
+
+The central hypothesis, developed across ledger entries 1--4, proposes that P's false-consensus failure---where agents converge on agreement without sufficient evidence grounding---is not merely an architectural or prompting failure but an \emph{incentive compatibility} failure analyzable through Q's mechanism design framework \ledger{1, 2, 3, 4}. The connexion rests on mapping Q's sandbagging model (capable agents pretending less capable) onto AR's reviewer and critic roles: a critic might accept weak reviews while pretending low auditing capability, or a reviewer might produce superficial reviews expecting the critic won't catch errors \ledger{9}.
+
+The proposed analysis path applies Q's three core tools to AR: (1) the revelation principle to ask whether truth-telling is an equilibrium in AR's direct revelation mechanism; (2) cyclical monotonicity to check whether AR's allocation rule can implement an optimal code quality policy; and (3) peer scoring conditions to design a modified AR where critic rewards depend on catching reviewer errors rather than mere agreement \ledger{6, 8, 9}.
+
+\section*{Supported Findings}
+
+Two findings received mutual support in the peer exchange. First, the structural gap between P and Q is confirmed: P treats agents as tools with prompt-based behavior, describing false-consensus as behavioral or architectural, while Q assumes agents optimize preferences with private information about capabilities and alignment \ledger{5, 10}. Second, the mapping is concrete: Q's peer scoring conditions could formalize critic-reviewer discipline beyond P's prompt-engineering fix (adding ``disagreement explicitly''), potentially yielding a mechanism redesign more robust to distribution shifts \ledger{4, 6, 9}.
+
+The peers converged on a testable prediction: a peer-scoring variant of AR, where the critic is rewarded for catching reviewer false-positives/negatives and the reviewer for surviving competent audit, should reduce false-consensus more robustly than prompt-fix alone on benchmarks like SWE-PRBench \ledger{6, 9}.
+
+\section*{Objections}
+
+A critical objection emerged in ledger entry 5: Q's mechanism design framework assumes agents with stable preferences and strategic optimization, while P's LLM-based agents may lack genuine agency---they follow prompts rather than maximize utility functions \ledger{5}. If false-consensus is purely an information-flow problem (architectural) rather than an incentive problem, then Q's tools constitute a category error, and P's prompt fixes address the actual problem while mechanism fixes address a phantom one \ledger{5, 10}.
+
+This objection requires empirical or theoretical resolution: either demonstrate that emergent multi-agent behavior in P exhibits quasi-strategic patterns warranting mechanism analysis, or concede the hypothesis fails \ledger{5}.
+
+\section*{Unresolved Issues}
+
+The peer exchange terminated before resolving several questions. The ledger shows no formalization of AR as a mechanism with defined type spaces, action spaces, and outcome rules---only an intention to do so \ledger{6}. No verification was performed that P's empirical false-consensus matches Q's sandbagging equilibrium structure rather than simpler coordination failure \ledger{8}. The peers did not compute whether AR violates cyclical monotonicity under any capability asymmetry conditions, nor derive the specific peer-scoring rule that would restore incentive compatibility \ledger{6, 9}.
+
+Evidence for the hypothesis remains thin at the theoretical level: the connexion is plausible by abstract inspection, but no proof sketch or counterexample was produced. The empirical case is similarly incomplete: no experiment comparing prompt-fix AR versus peer-scoring AR was conducted.
+
+\section*{Smallest Next Step}
+
+The minimal continuation is to formalize AR as a direct revelation mechanism and check whether truth-telling constitutes a Bayesian Nash equilibrium under Q's assumptions. Specifically: define reviewer and critic type spaces as \( \theta_R, \theta_C \in \Theta \) (private signals about code quality and effort costs), specify the AR outcome rule \( g(\cdot) \) mapping reports to merge/revise decisions, and verify whether the revelation principle holds. If truth-telling fails to be an equilibrium, derive the peer-scoring transfer rule \( t(\cdot) \) that restores incentive compatibility. This theoretical check precedes empirical validation and determines whether the mechanism-design lens is applicable at all.
+
+\end{document}
+```

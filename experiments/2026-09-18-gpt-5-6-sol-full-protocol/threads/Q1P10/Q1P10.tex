@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Strategic Feedback in Token-Priced Advice}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+\emph{Learning-Augmented Algorithms} surveys algorithms that use fallible predictions while retaining formal guarantees.  Its abstract highlights prediction interfaces, error measures, consistency--robustness trade-offs, and the separation of formal guarantees from empirical systems evidence.  It explicitly treats prediction cost, feedback, and composition, and names cost-aware prediction, endogenous error, semantic predictors, and benchmarking as open problems.
+
+\emph{The Energy Society} is a multi-agent survival simulation in which token generation consumes energy, jobs and donations restore it, and agents deactivate at zero energy.  Its abstract reports that incentives change donation and job allocation, while recommendations support coordination and ambitious job selection.  It therefore makes inference cost and advice consequences endogenous to a social process \ledger{1, 7, 13}.
+
+\section{Connexion pursued}
+
+The supported connexion is an empirical stress test of a learning-augmented consistency--robustness frontier inside the Energy Society.  The proposed question is whether strategic, endogenous advice shifts a cost-adjusted frontier beyond what would be predicted from exogenously corrupted advice at controlled token cost.  This is an investigation of open-problem conditions identified by the survey, not an implementation or transfer of one of its guarantees \ledger{16, 18, 21}.
+
+A candidate experiment would compare a fixed advice-free fallback, accurate exogenous advice, preregistered levels of corrupted exogenous advice, cooperative endogenous advice, and competitive endogenous advice.  All recommendation tokens would be charged.  Primary outcomes would be group survival and net energy or completed-job welfare after inference cost.  The primary analysis should randomize incentive regime and advice availability or corruption in advance and estimate intention-to-treat effects with seeded paired trials and uncertainty intervals \ledger{10, 19}.
+
+\section{Supported findings}
+
+The record establishes only the motivation and a testable design.  Q establishes that prediction cost, feedback, endogenous error, and semantic prediction are relevant gaps in learning-augmented reasoning.  P establishes a setting where generation has survival cost, recommendations affect coordination, and incentives alter collective behavior.  Together they support asking whether an exogenously calibrated frontier survives strategic feedback \ledger{7, 18}.
+
+No frontier, efficiency gain, bounded loss, or strategic penalty has been measured.  A positive result would be a net gain under accurate advice with bounded degradation under corruption that persists in randomized endogenous regimes.  A negative result would be a frontier collapse under competitive endogenous advice after token cost and corruption assignment are controlled.  At present both are hypotheses \ledger{16, 21}.
+
+\section{Objections}
+
+The proposed mapping has a construct-validity problem: an action recommendation is not automatically a prediction with measurable error.  Recommendations should be forecast--action tuples, such as a proposed job together with predicted success probability or net-energy return.  Forecast quality and policy value must be scored separately.  Because outcomes may be observed only for selected jobs, calibration also requires randomized audits, predictions over feasible jobs with observable outcomes, or an explicit restriction to on-policy accuracy \ledger{15, 20}.
+
+Conditioning the main comparison on realized error would condition on a post-treatment quantity jointly shaped by incentives, feedback, and survival.  The primary estimate should therefore be intention-to-treat.  Trace replay can probe mechanisms, but history-dependent advice may become semantically infeasible when replayed; matching on realized error should remain descriptive sensitivity analysis \ledger{14, 19}.
+
+Most importantly, both supplied inputs are abstracts.  Q supplies no theorem statement, concrete interface, error metric, or fallback, and P supplies no offline comparator, intervention interface, or welfare guarantee.  Claims that Q's framework has already been implemented or that its guarantees are preserved are unsupported \ledger{2, 9}.  Evidence is thin, and the peer directories contain no notes beyond the ledger record.
+
+\section{Unresolved issues}
+
+The full survey conditions must be mapped to a concrete prediction interface.  The simulator must be checked for a deterministic or otherwise fixed advice-free comparator, controlled advice interventions, complete token-cost accounting, and reproducible seeded trials.  Welfare and any feasible comparator remain undefined.  Selective labels, corruption semantics, statistical power, and uncertainty reporting also remain open.  Thus no concrete research result is established by the available material \ledger{4, 20, 21}.
+
+\section{Smallest next step}
+
+Retrieve Q's full theorem and interface definitions and inspect P's code, then write one forecast--action tuple and verify that the simulator can log it, score it, charge its token cost, and compare it with a fixed advice-free fallback.  This single feasibility audit determines whether the proposed frontier is well-defined before preregistration or experimentation.  If either the semantic mapping or comparator fails, the present record supports no further claim \ledger{11, 15, 16}.
+
+\end{document}

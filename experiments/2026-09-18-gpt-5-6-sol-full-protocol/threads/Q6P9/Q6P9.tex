@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Semantic Implementation Robustness for Strategy-Proof Facility Location}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+The facility-location paper studies a direct mechanism in which agents privately know their positions and incur the expected distance to the nearer of a prelocated facility and a newly placed homogeneous facility.  Its aims are truthful elicitation and approximation of maximum or social cost.  In the general line setting, its headline maximum-cost result is a best-possible deterministic strategy-proof \(2\)-approximation.  The contracts paper studies cooperation by language-model agents and contrasts observable formal contracts that compile to code with natural contracts that must be reinterpreted at execution.  Its setting is a spatial-temporal bargaining and navigation game, not direct revelation.  These facts are established only at abstract level. \ledger{2, 8, 9}
+
+The useful connexion is therefore not that contracting supplies a new proof of truthfulness.  It is that contract representation can be treated as an implementation layer for a fixed facility-location mechanism.  The sharp question is whether changing that layer changes the outcome mapping whose incentive and approximation properties were proved. \ledger{1, 4, 12}
+
+\section{Supported findings}
+
+The cleanest study should select one theorem regime: the general-setting, deterministic, maximum-cost mechanism on the line with approximation factor \(2\).  For fixed instances and reports, it should compare canonical mechanism code, a formal contract compiled to extensionally identical code, and a natural contract reinterpreted during execution.  Semantic fidelity comes first: compare every executed facility location with the canonical output.  Then measure ex-post unilateral deviation regret under the stated distance cost and the approximation ratio computed from true locations.  Behavioural truth-telling may also be recorded, but only as a secondary outcome. \ledger{12, 16}
+
+If compiled code is extensionally identical to the canonical rule, it preserves the rule's strategy-proofness and approximation guarantee by construction.  This is a control, not a novel empirical result.  A potentially substantive result would instead be a systematic representation-induced implementation gap: natural-language reinterpretation disagrees with the intended output and thereby creates profitable deviations or maximum-cost ratios above \(2\).  Such a claim would need replication across profiles and model backbones and should condition the incentive and approximation gaps on semantic disagreement. \ledger{4, 6, 17}
+
+\section{Objections and limits}
+
+Truthful reports by language-model agents do not establish strategy-proofness, and untruthful reports do not refute it.  Strategy-proofness is a universal property of a fixed outcome mapping under unilateral misreports; observed reporting is also affected by bounded rationality and prompting.  Once reinterpretation changes the mapping, the implementation is a new, possibly stochastic or history-dependent mechanism and must be evaluated as such. \ledger{3, 10}
+
+Self-negotiation is a separate confound.  If agents can amend the allocation rule, bargaining, collusion, and commitment effects are mixed with representation effects.  The primary comparison must freeze the rule and vary only representation and execution; negotiation may then be introduced as a separate treatment. \ledger{5, 10, 18}
+
+Evidence is thin.  The supplied materials are abstracts, and the peer directories contain no additional notes beyond the ledger.  They do not provide the facility mechanism's allocation formula or proof, nor the contract interpreter and experimental protocol.  Consequently, direct adaptation, expressive adequacy, extensional equivalence, and exhaustive deviation auditing on a continuous report domain cannot yet be verified.  Both peers ultimately agreed on this boundary and on the narrowed theorem regime. \ledger{7, 13, 14, 15, 18, 19}
+
+\section{Smallest next step}
+
+Obtain the two full papers and extract just two artifacts: the exact allocation rule for the named deterministic line mechanism and the precise execution semantics of one compiled and one reinterpreted contract representation.  Before involving negotiating agents, implement the canonical rule and test, on a preregistered finite grid of location profiles and unilateral reports, whether each representation matches its outputs.  Only if this semantic-fidelity check is defined and reproducible should deviation regret and approximation-ratio inflation be measured. \ledger{12, 13, 18}
+
+\end{document}

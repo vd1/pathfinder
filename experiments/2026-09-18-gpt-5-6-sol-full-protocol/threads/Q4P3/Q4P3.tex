@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Reward-Coupled Adversarial Review under Capability Concealment}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion}
+
+Mechanism Design for Alignment and Control studies agents with unknown preferences and capabilities.  Its one-sided imitation premise allows capability to be concealed but not counterfeited, and its applications include sandbagging, peer scoring, and coupled rewards for multiple agents.  Adversarial Review studies a three-agent coding protocol comprising a main agent, a reviewer, and a critic.  Naive review exhibits false consensus, whereas an explicit-disagreement prompt improves review F1.
+
+The supported connexion is narrow but useful: Adversarial Review supplies an empirical setting in which to ask whether the first paper's competitive reward coupling adds robustness beyond prompt-induced disagreement when an agent is rewarded for concealing defects.  This bridge uses ingredients explicitly named by both abstracts; it does not yet connect the first paper's implementability theorem to an operational experiment \ledger{7, 13}.
+
+\section{Supported test and findings}
+
+The smallest defensible publication design is a preregistered \(2\times2\times2\) factorial experiment.  Its factors are explicit-disagreement prompting, competitive reward coupling, and an induced concealment payoff for seeded defects.  The primary mechanism estimand is the reward-coupling-by-concealment interaction on seeded-defect recall and evidence-grounded false consensus.  The three-way interaction tests whether coupling helps specifically beyond the prompt treatment already supported by Adversarial Review.  Coding pass rate should be subject to a preregistered non-inferiority margin \ledger{17, 18}.
+
+A coupling-specific recovery under concealment, without loss of coding accuracy, would support the claim that payoff-sensitive discipline makes structured review more robust.  No recovery, or an effect indistinguishable from prompting, would be a clear negative result.  Exogenous seeded defects and separately logged reviewer and critic evidence are necessary to distinguish genuine detection from merely performative disagreement \ledger{10, 14}.
+
+\section{Objections and limits}
+
+Evidence is thin: the supplied materials contain only abstracts.  They specify neither a reward formula nor agent utilities, private type reports, a report space, or the assumptions needed to check nested cyclical monotonicity.  Adversarial Review studies prompting rather than strategic payments.  Consequently, even a positive factorial result would not establish incentive compatibility, a revelation principle, or the first paper's implementability characterization \ledger{2, 9}.
+
+Peer scoring should therefore not be a core experimental factor on present evidence.  It is named only as a stylized application, with no operational scoring rule supplied.  Reward coupling is the cleaner intervention, but it too remains underspecified.  If rewards are only described in natural language, or fail to alter choices measurably, the experiment cannot separate a mechanism effect from another framing effect \ledger{14, 15}.
+
+\section{Unresolved issues and next step}
+
+The unresolved requirements are a justified reward rule, an explicit account of which agent holds private information and receives the concealment payoff, behaviorally effective reward delivery, manipulation-resistant ground truth, evidence-grounding criteria, and a coding-accuracy non-inferiority margin \ledger{15, 19}.  The smallest next step is to obtain the full mechanism-design paper and extract one parameterized reward-coupling rule together with its assumptions.  If no such rule can be instantiated, the project should be labelled an empirical study of payoff framing in Adversarial Review, not a validation of mechanism design.
+
+\end{document}

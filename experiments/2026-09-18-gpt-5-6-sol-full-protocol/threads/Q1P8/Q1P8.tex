@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Dynamic Bimanual Context Is Not Yet a Learning-Augmented Prediction}
+
+\begin{document}
+\maketitle
+
+\section{Pair and connexion}
+
+The first paper surveys learning-augmented algorithms: algorithms that use fallible predictions while retaining formal guarantees.  Its abstract emphasizes prediction interfaces, error measures, consistency--robustness trade-offs, prediction cost, feedback, composition, and endogenous error.  The second paper proposes DynaMAC for dynamic and bimanual manipulation.  It treats the opposite arm as a dynamic task parameter and reports gains of more than 35 percentage points with 20 times fewer samples, including zero-shot transfer from static demonstrations.
+
+The pursued connexion was to interpret the opposite-arm signal as a prediction and import a learning-augmented consistency--robustness guarantee.  That interpretation would be attractive because the two-arm system makes prediction error endogenous: either arm's action can change the future trajectory that the other arm observes or predicts.  The supplied evidence, however, does not establish the required prediction interface.
+
+\section{Supported findings and objections}
+
+The strongest supported conclusion is a reduction barrier.  The DynaMAC abstract calls the opposite arm a dynamic task parameter, but does not say that its value is available before the action it informs, nor does it specify a forecast target, horizon, error variable, adversary, corruption model, or acquisition cost.  It may therefore be contemporaneous context rather than a prediction.  Treating it as a fallible prediction would be a category error until temporal precedence and forecast semantics are demonstrated.  Consequently, no consistency--robustness theorem follows from the two abstracts \ledger{11, 15}.
+
+A fallback or gate does not by itself repair this gap.  Switching one arm's policy changes the other arm's endogenous input, so a per-arm guarantee need not compose.  A meaningful robustness floor would require a joint invariant or comparator---for example collision safety, constraint satisfaction, or task-level regret---that remains valid under coupled switching.  Neither abstract supplies such an object \ledger{7, 13}.
+
+What is supported is a concrete, falsifiable interface-identification experiment in DynaBench.  Holding policy class, demonstrations, and information budget fixed, compare (A) oracle or contemporaneous opposite-arm state, (B) delayed or noisy state observations, and (C) genuine causal forecasts at declared horizons.  Measure task success and sample efficiency against the reported 35-point and 20-fold advantages.  Define trajectory-level endogenous forecast error only for condition C.  If the gains disappear outside A, the benefit is evidence for privileged dynamic context rather than learning augmentation; persistence in C would supply an empirical premise for later theorem work \ledger{12, 16}.
+
+Evidence is thin: the supplied texts contain only titles and abstracts, and the peer directories contain no further notes.  Thus the proposed experiment is a research direction, not an established empirical result, and ordinary corruption of an instantaneous task parameter would not test learning-augmented prediction robustness \ledger{13, 17}.
+
+\section{Unresolved issues and smallest next step}
+
+Unresolved issues are the signal's timing and observability; the forecast target and horizon; a matched information-budget protocol; a trajectory-level error measure under policy-induced feedback; prediction cost and feedback; the assumptions of any applicable learning-augmented construction; and a joint invariant or comparator preserved under switching \ledger{9, 17}.
+
+The smallest next step is to inspect and instrument the DynaMAC interface to record exactly when the opposite-arm signal is produced and consumed.  Run one matched-information comparison between contemporaneous state and a declared-horizon causal forecast, with policy class and demonstrations fixed.  Only if the forecast is causally available and its target and error can be defined should work begin on a consistency--robustness bound.
+
+\end{document}

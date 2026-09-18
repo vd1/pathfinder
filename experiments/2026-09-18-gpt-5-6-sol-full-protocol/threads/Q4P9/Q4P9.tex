@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Contracts as a Test Bed for Alignment Mechanisms}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+The first paper studies mechanism design for AI agents whose preferences and
+capabilities are unknown.  Its abstract distinguishes incentives for honest
+reporting from incentives for obedient action, assumes a one-sided capability
+structure in which ability can be concealed but not counterfeited, and lists
+sandbagging and peer scoring among its applications.  The second paper studies
+self-negotiated contracts in a spatial--temporal bargaining and navigation
+game.  Its abstract treats observable, enforced agreements as commitment
+devices and compares representations ranging from formal contracts that
+compile to code to natural contracts that must be reinterpreted
+\ledger{7, 11}.
+
+\section{Connexion pursued}
+
+The supported connexion is an experimental one, not a claim that the second
+paper already implements the first paper's theory.  Put a controlled
+sandbagging problem inside the Contracting Game: assign agents independently
+known capability levels with nested feasible action sets, require a capability
+report before agreement, and then require a contracted action.  Compare a
+no-contract baseline with semantically matched natural-language and formally
+executable contracts.  Measure report truthfulness and completion of the
+contracted action separately, corresponding respectively to honesty and
+obedience \ledger{12, 15}.
+
+The informative result is the boundary between representation and enforcement,
+not merely a generic benefit from contracting: do natural contracts match
+executable ones, or does reinterpretation permit more concealment or later
+disobedience?  This uses the first paper's one-sided imitation structure and
+the second paper's explicit formal-to-natural contract axis
+\ledger{8, 12, 15}.
+
+\section{Supported findings and objections}
+
+The peer record converges on this design after retracting claims not supported
+by the supplied abstracts.  In particular, the available material does not
+establish a proper-scoring-regret measure, a transfer formula, detailed
+equilibrium conditions, an implementation API, or observed ground truth for
+latent agent types \ledger{7, 11}.  Consequently, truthful reports and greater
+compliance would support only the instantiated cross-paper mechanism, and only
+after its incentives had been checked against the full theory.  Profitable
+sandbagging, defection, or a null result would show failure of that
+instantiation rather than refute the first paper's theorem
+\ledger{9, 12, 16}.
+
+Peer scoring is not the best first intervention on this evidence.  It appears
+only as a stylized application in the first abstract, while the second abstract
+directly supplies the more diagnostic contrast between executable and
+reinterpreted contracts \ledger{13, 16}.  Likewise, compliance cannot stand in
+for truthful elicitation: the report stage and action stage need distinct
+outcomes \ledger{3, 12}.
+
+\section{Unresolved issues and next step}
+
+Evidence is thin: the supplied inputs are abstracts, and the peer directories
+contain no additional notes beyond the ledger record.  The exact mechanism,
+the Contracting Game interface, the construction of nested feasible-action
+sets, and the semantic equivalence of natural and executable terms remain
+unverified \ledger{13, 16}.  The smallest next step is therefore to obtain the
+full papers and game code and write a one-page mapping from each theoretical
+assumption and incentive to a concrete report, action, payoff, and enforcement
+operation.  Only if that mapping succeeds should the three-arm experiment and
+its two co-primary outcomes be preregistered.
+
+\end{document}
