@@ -97,6 +97,16 @@ Feature: Define reproducible role comparisons
       Then the provider request identifies the digests of every supplied input
       And later campaign changes do not alter that request
 
+    Scenario: Consolidation receives complete evidence independent of its harness
+      Given one frozen paper pair has source text "QUESTION-EVIDENCE" and "PROPOSAL-EVIDENCE"
+      And its peer ledger contains "LEDGER-EVIDENCE"
+      And its prior account contains "PRIOR-ACCOUNT"
+      And its campaign has no inline-evidence switches
+      When Pathfinder builds its consolidation model request
+      Then the request contains "QUESTION-EVIDENCE", "PROPOSAL-EVIDENCE", "LEDGER-EVIDENCE", and "PRIOR-ACCOUNT"
+      And the request asks for the complete research account
+      And the request contains no file-reading instruction
+
     Scenario: Provider stages consume prepared evidence without acquisition
       Given one frozen paper pair contains all evidence required by role "verify"
       When Pathfinder executes role "verify" through its assigned provider

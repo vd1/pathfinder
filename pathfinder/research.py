@@ -74,8 +74,10 @@ def judge_head(d, inp, note_name: str) -> str:
 
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
     """@planks("When Pathfinder requests consolidation from the direct provider")
+    @planks("When Pathfinder builds its consolidation model request")
     """
-    in_papers, in_ledger = bool(campaign.raw.get("inline_papers")), bool(campaign.raw.get("inline_ledger"))
+    in_papers = True
+    in_ledger = True
     above = [x for x, on in (("Q and P", in_papers), ("the ledger", in_ledger)) if on]
     read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
     material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."

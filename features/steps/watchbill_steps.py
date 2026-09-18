@@ -44,6 +44,96 @@ def findings_awaiting_consolidation(context):
     research._set(context.campaign, "Q1P1", stage="consolidate", status="running")
 
 
+@given("one frozen paper pair has two source papers, a peer ledger, and a prior account")
+def complete_consolidation_evidence(context):
+    context.campaign = seed_pair(context)
+    context.campaign.raw.update({"inline_papers": True, "inline_ledger": True})
+    context.thread_dir = context.campaign.thread_dir("Q1P1")
+    context.inputs = research._inputs(context.thread_dir)
+    research.Ledger(context.thread_dir / "ledger.jsonl").add(
+        context.campaign.peers[0], "finding", "complete peer finding"
+    )
+    context.prior_account = "prior research account"
+    prompts = context.campaign.path("prompts")
+    prompts.mkdir()
+    (prompts / "consolidate.md").write_text("Consolidate {{NOTE}}. {{PRIOR}}. {{MATERIAL}}")
+
+
+@given('one frozen paper pair has source text "{question}" and "{proposal}"')
+def frozen_pair_source_text(context, question, proposal):
+    context.campaign = seed_pair(context)
+    context.thread_dir = research.prepare(context.campaign, "Q1P1")
+    context.inputs = research._inputs(context.thread_dir)
+    (context.thread_dir / "inputs" / context.inputs["Q"]).write_text(question)
+    (context.thread_dir / "inputs" / context.inputs["P"]).write_text(proposal)
+
+
+@given('its peer ledger contains "{evidence}"')
+def peer_ledger_contains(context, evidence):
+    research.Ledger(context.thread_dir / "ledger.jsonl").add(
+        context.campaign.peers[0], "finding", evidence
+    )
+
+
+@given('its prior account contains "{account}"')
+def prior_account_contains(context, account):
+    context.prior_account = account
+
+
+@given("its campaign has no inline-evidence switches")
+def campaign_has_no_inline_switches(context):
+    context.campaign.raw.pop("inline_papers", None)
+    context.campaign.raw.pop("inline_ledger", None)
+    prompts = context.campaign.path("prompts")
+    prompts.mkdir()
+    (prompts / "consolidate.md").write_text("Consolidate {{NOTE}}. {{PRIOR}}. {{MATERIAL}}")
+
+
+@when("Pathfinder builds its consolidation model request")
+def builds_consolidation_request(context):
+    context.consolidation_prompt = research._consolidate_prompt(
+        context.campaign,
+        context.thread_dir,
+        context.inputs,
+        "Q1P1",
+        "consolidate evidence",
+        "Q1P1.tex",
+        context.prior_account,
+    )
+
+
+@then("the request contains both source papers, the complete ledger, the prior account, and the consolidation instruction")
+def consolidation_request_contains_complete_evidence(context):
+    prompt = context.consolidation_prompt
+    assert "Abstract q1" in prompt
+    assert "Abstract p1" in prompt
+    assert "complete peer finding" in prompt
+    assert context.prior_account in prompt
+    assert "Consolidate Q1P1.tex" in prompt
+
+
+@then("the request requires no file acquisition")
+def consolidation_request_requires_no_acquisition(context):
+    assert "Read inputs/" not in context.consolidation_prompt
+    assert "Read ledger.jsonl" not in context.consolidation_prompt
+
+
+@then('the request contains "{question}", "{proposal}", "{ledger}", and "{prior}"')
+def request_contains_complete_evidence(context, question, proposal, ledger, prior):
+    assert all(item in context.consolidation_prompt for item in (question, proposal, ledger, prior))
+
+
+@then("the request asks for the complete research account")
+def request_asks_for_complete_account(context):
+    assert "return the complete research account" in context.consolidation_prompt.lower()
+
+
+@then("the request contains no file-reading instruction")
+def request_contains_no_file_reading(context):
+    assert "read inputs/" not in context.consolidation_prompt.lower()
+    assert "read ledger.jsonl" not in context.consolidation_prompt.lower()
+
+
 @given("its first consolidation returns no account and no provider error")
 def empty_first_consolidation(context):
     context.replies = [provider_reply(), provider_reply("stored account")]
