@@ -75,13 +75,14 @@ def judge_head(d, inp, note_name: str) -> str:
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
     """@planks("When Pathfinder requests consolidation from the direct provider")
     @planks("When Pathfinder builds its consolidation model request")
+    @planks("Then the request states that its inline evidence is complete and no tools are available")
     """
     in_papers = True
     in_ledger = True
     above = [x for x, on in (("Q and P", in_papers), ("the ledger", in_ledger)) if on]
     read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
     material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
-                                                                          if read else "The peers' directories are beside you.")
+                                                                          if read else "Inline evidence is complete and no tools are available.")
     head = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if above else ""
     return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
 

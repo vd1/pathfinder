@@ -134,6 +134,13 @@ def request_contains_no_file_reading(context):
     assert "read ledger.jsonl" not in context.consolidation_prompt.lower()
 
 
+@then("the request states that its inline evidence is complete and no tools are available")
+def request_states_inline_evidence_is_complete(context):
+    prompt = context.consolidation_prompt.lower()
+    assert "inline evidence is complete" in prompt
+    assert "no tools are available" in prompt
+
+
 @given("its first consolidation returns no account and no provider error")
 def empty_first_consolidation(context):
     context.replies = [provider_reply(), provider_reply("stored account")]

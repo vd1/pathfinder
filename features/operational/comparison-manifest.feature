@@ -106,6 +106,7 @@ Feature: Define reproducible role comparisons
       Then the request contains "QUESTION-EVIDENCE", "PROPOSAL-EVIDENCE", "LEDGER-EVIDENCE", and "PRIOR-ACCOUNT"
       And the request asks for the complete research account
       And the request contains no file-reading instruction
+      And the request states that its inline evidence is complete and no tools are available
 
     Scenario: Provider stages consume prepared evidence without acquisition
       Given one frozen paper pair contains all evidence required by role "verify"
