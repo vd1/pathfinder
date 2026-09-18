@@ -1,12 +1,31 @@
 """One adapter over the Claude Code CLI and the Codex CLI. Streams JSON lines so the
 session id arrives early; a call with no session within SESSION_GRACE is a transport failure."""
 from __future__ import annotations
+from dataclasses import dataclass
 import json, os, shlex, signal, subprocess, threading, time
 from pathlib import Path
 
 SESSION_GRACE = 60
 SCRUB = ("API_KEY", "OPENAI_", "ANTHROPIC_API", "ELM_")
 CLAUDE_TOOLS = "Read,Write,Edit,Bash,Glob,Grep"
+
+
+@dataclass(frozen=True)
+class ModelRequest:
+    """@planks("Given a model request requires synchronous workspace tools")
+    @planks("Given several independent immutable model requests")
+    @planks("Given an immutable model request and a non-Codex synchronous adapter")
+    """
+    identity: str
+    prompt: str
+    model: str
+    tools: bool
+    search: bool
+    timeout: int
+    thread: str
+    stage: str
+    actor: str
+    cwd: Path | None = None
 
 
 class TransportFailed(Exception):
@@ -101,12 +120,30 @@ def _parse(campaign, model, lines):
     return text, session, inp, out, cost, err, cache
 
 
-def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
+def execute_sync(request: ModelRequest, adapter):
+    """@planks("When Pathfinder assigns the request to Pi")
+    @planks("When Pathfinder executes the request")
+    """
+    return adapter(request)
+
+
+def execute_batch(requests: list[ModelRequest], adapter):
+    """@planks("When Pathfinder assigns them to a batch adapter")"""
+    return [adapter(request) for request in requests]
+
+
+def execute(campaign, request: ModelRequest):
     """@planks("When role \"scan\" executes a minimal frozen paper pair")
     @planks("When Pathfinder records the completed provider call")
     @planks("When Pathfinder completes the provider call without a parsed research account")
     @planks("Then the receipt retains the raw response events")
+    @planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
+    @planks("When Pathfinder executes one stage attempt")
+    @planks("When Pathfinder verifies execution routing")
     """
+    prompt, model, tools, search = request.prompt, request.model, request.tools, request.search
+    timeout, thread, stage, actor = request.timeout, request.thread, request.stage, request.actor
+    cwd = request.cwd or campaign.path(f"{stage}-work")
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -149,6 +186,14 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
                             "raw_events": [line.rstrip("\n") for line in lines],
                             **{k: r[k] for k in ("seconds", "input_tokens", "output_tokens", "cache_write", "cache_read", "prefix_read", "cost", "error")}}) + "\n")
     return r
+
+
+def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
+    request = ModelRequest(
+        identity=f"{thread}:{stage}", prompt=prompt, model=model, tools=tools, search=search,
+        cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor,
+    )
+    return execute(campaign, request)
 
 
 def _kill(proc):

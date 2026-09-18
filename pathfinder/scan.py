@@ -38,6 +38,9 @@ def done(campaign) -> set[str]:
 def run(campaign, stop=lambda: False):
     """@planks("When the connection judge assesses pair \"{pair_id}\"")
     @planks("When the connection scan resumes")
+    @planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
+    @planks("When Pathfinder executes one stage attempt")
+    @planks("When Pathfinder verifies execution routing")
     """
     Q, P, seen = corpus.read(campaign.path("Q.jsonl")), corpus.read(campaign.path("P.jsonl")), done(campaign)
     for i, q in enumerate(Q, 1):
@@ -48,8 +51,11 @@ def run(campaign, stop=lambda: False):
             row = {"pair_id": pid, "q": q["id"], "p": p["id"], "feasibility": None, "gain": None,
                    "connexion": None, "rationale": None, "model": campaign.scan_model, "seconds": 0, "cost": 0, "error": None}
             for attempt in range(2):
-                r = transport.call(render(campaign, q, p), campaign=campaign, model=campaign.scan_model, tools=False,
-                                   search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid, stage="scan", actor="judge")
+                r = transport.execute(campaign, transport.ModelRequest(
+                    identity=f"{pid}:scan:{attempt}", prompt=render(campaign, q, p), model=campaign.scan_model,
+                    tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
+                    stage="scan", actor="judge",
+                ))
                 row["seconds"] += r["seconds"]; row["cost"] += r["cost"]
                 try:
                     v = parse_json(r["text"])

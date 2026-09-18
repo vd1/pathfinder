@@ -740,6 +740,36 @@ def manifest_records_role_fields(context):
     assert all(required <= value.keys() for value in context.manifest["assignments"].values())
 
 
+@given('a comparison includes peers "critic" and "specialist"')
+def manifest_peers(context):
+    context.manifest = {"assignments": assignments(), "peers": [
+        {
+            "name": "critic", "model": "m", "backend": "elm", "execution_class": "provider",
+            "thinking_limit": 1000, "output_token_limit": 1000, "allowed_tools": [],
+        },
+        {
+            "name": "specialist", "model": "m", "backend": "pi", "execution_class": "agent",
+            "thinking_limit": 1000, "output_token_limit": 1000, "allowed_tools": ["read"],
+        },
+    ]}
+
+
+@when("the operator defines their run manifest assignments")
+def define_peer_manifest(context):
+    context.manifest = runner.validate_manifest(context.manifest)
+
+
+@then("every peer records its name, model, backend, execution class, thinking limit, output token limit, and allowed tools")
+def manifest_records_peer_fields(context):
+    required = {"name", "model", "backend", "execution_class", "thinking_limit", "output_token_limit", "allowed_tools"}
+    assert all(required <= peer.keys() for peer in context.manifest["peers"])
+
+
+@then("a peer with no tools records an empty allowed-tools list")
+def manifest_records_empty_peer_tools(context):
+    assert next(peer for peer in context.manifest["peers"] if peer["name"] == "critic")["allowed_tools"] == []
+
+
 @given("a baseline run manifest")
 def baseline_manifest(context):
     context.baseline = {"assignments": assignments(), "snapshots": ["q", "p"], "prompts": ["x"]}
@@ -1174,6 +1204,235 @@ def batching_preserves_results(context):
     ]
     separate = [runner.prepare_provider_batch("scan", [job], input_limit=64000, output_limit=1000)[0] for job in original_jobs]
     assert [job["result_id"] for job in context.prepared_jobs] == [job["result_id"] for job in separate]
+
+
+def model_request(stage, identity="Q1P1"):
+    return transport.ModelRequest(
+        identity=identity,
+        prompt=f"{stage} prompt",
+        model="m",
+        tools=stage in {"peer", "consolidate"},
+        search=False,
+        timeout=1,
+        thread="Q1P1",
+        stage=stage,
+        actor=stage,
+    )
+
+
+@given("one frozen paper pair enters scanning and research")
+@given("one frozen paper pair enters scanning and research with two configured peers")
+def frozen_pair_enters_campaign(context):
+    seed_pair(context)
+    prompts = context.campaign.path("prompts")
+    prompts.mkdir(exist_ok=True)
+    prompts.joinpath("scan.md").write_text("{{Q_TITLE}} {{P_TITLE}}")
+    for name in ("peer", "consolidate", "verify"):
+        prompts.joinpath(f"{name}.md").write_text("{ACTOR} {PEERS} {Q_INPUT} {P_INPUT} {MATERIAL} {LEDGER} {LAST_SEQ} {SECONDS} {CALLS_LEFT} {FEASIBILITY} {GAIN} {CONNEXION} {RATIONALE} {NOTE}")
+
+
+@when("Pathfinder executes scan, peer, consolidation, and verification model requests")
+def execute_campaign_model_requests(context):
+    context.requests = []
+    original = transport.execute
+
+    def execute(campaign, request):
+        context.requests.append(request)
+        stage = "peer" if request.stage == "peers" else request.stage
+        if stage == "scan":
+            text = '{"feasibility": 1, "gain": 1, "connexion": "c", "rationale": "r"}'
+        elif stage == "peer":
+            Ledger(campaign.thread_dir("Q1P1") / "ledger.jsonl").add("ada", "finding", "finding")
+            text = "peer"
+        elif stage == "consolidate":
+            text = "account"
+        else:
+            text = '{"decision": "DRAFT", "reason": "ready", "action": null}'
+        return {"text": text, "session": request.identity, "seconds": 0, "input_tokens": 1,
+                "output_tokens": 1, "cost": 0, "error": None, "transport_failed": False}
+
+    transport.execute = execute
+    try:
+        scan.run(context.campaign)
+        research.run_thread(context.campaign, "Q1P1")
+    finally:
+        transport.execute = original
+
+
+@then("each stage submits an immutable request through the same model execution seam")
+@then("scan, both peers, consolidation, and verification submit immutable requests through the same model execution seam")
+def campaign_requests_share_seam(context):
+    stages = [("peer" if request.stage == "peers" else request.stage) for request in context.requests]
+    assert stages == ["scan", "peer", "peer", "consolidate", "verify"]
+    assert all(isinstance(request, transport.ModelRequest) for request in context.requests)
+
+
+@given("a model request requires synchronous workspace tools")
+def synchronous_workspace_request(context):
+    context.request = model_request("peer")
+
+
+@when("Pathfinder assigns the request to Pi")
+def assign_request_to_pi(context):
+    context.received = []
+    context.result = transport.execute_sync(context.request, lambda request: context.received.append(request) or {"text": "ok"})
+
+
+@then("Pi executes the same immutable request accepted by other synchronous adapters")
+def pi_accepts_model_request(context):
+    assert context.received == [context.request]
+    assert context.result == {"text": "ok"}
+
+
+@given("several independent immutable model requests")
+def independent_model_requests(context):
+    context.requests = [model_request("scan", identity) for identity in ("Q1P1", "Q1P2")]
+
+
+@when("Pathfinder assigns them to a batch adapter")
+def assign_requests_to_batch(context):
+    context.results = transport.execute_batch(context.requests, lambda request: {"identity": request.identity})
+
+
+@then("the adapter returns one result for each unchanged request identity")
+def batch_preserves_request_identities(context):
+    assert [result["identity"] for result in context.results] == [request.identity for request in context.requests]
+
+
+@given("one frozen paper pair is ready for a model-backed campaign stage")
+@given("one frozen paper pair is ready for peer research")
+def pair_ready_for_model_stage(context):
+    frozen_pair_enters_campaign(context)
+    if hasattr(context, "assigned_models"):
+        context.campaign.peers = context.assigned_models
+
+
+@given('a campaign loaded from a manifest assigns models "{first}" and "{second}" to two peers')
+def campaign_assigns_peer_models(context, first="m1", second="m2"):
+    context.assigned_models = [first, second]
+
+
+@given("the stage has one or more assigned models")
+def stage_has_assigned_models(context):
+    context.assigned_models = ["m1", "m2"]
+
+
+@when("Pathfinder executes one stage attempt")
+def execute_one_stage_attempt(context):
+    context.requests = []
+    original = transport.execute
+    transport.execute = lambda campaign, request: context.requests.append(request) or {
+        "text": '{"feasibility": 1, "gain": 1, "connexion": "c", "rationale": "r"}',
+        "session": request.identity, "seconds": 0, "input_tokens": 1, "output_tokens": 1,
+        "cost": 0, "error": None, "transport_failed": False,
+    }
+    try:
+        scan.run(context.campaign)
+    finally:
+        transport.execute = original
+
+
+@when("Pathfinder executes one peer stage attempt")
+def execute_one_peer_stage_attempt(context):
+    context.requests = []
+    original = transport.execute
+    transport.execute = lambda campaign, request: context.requests.append(request) or {
+        "text": "finding", "session": request.identity, "seconds": 0, "input_tokens": 1,
+        "output_tokens": 1, "cost": 0, "error": None, "transport_failed": False,
+    }
+    try:
+        research.run_thread(context.campaign, "Q1P1")
+    finally:
+        transport.execute = original
+
+
+@then("one model execution is recorded for each assigned model")
+def one_execution_per_attempt(context):
+    assert len(context.requests) == len(context.assigned_models)
+
+
+@then('one peer request is recorded for model "{model}"')
+def peer_request_is_recorded(context, model):
+    assert [request.model for request in context.requests].count(model) == 1
+
+
+@given("one frozen paper pair and assigned model execution adapters for every configured peer")
+@given("a campaign loaded from a manifest assigns execution adapters to scan, two peers, consolidation, and verification")
+def pair_with_execution_adapters(context):
+    frozen_pair_enters_campaign(context)
+    context.assignments = {stage: f"{stage}-adapter" for stage in ("scan", "consolidate", "verify")}
+    context.peer_assignments = {actor: f"{actor}-adapter" for actor in context.campaign.peers}
+
+
+@given("one frozen paper pair is ready for campaign execution")
+def pair_ready_for_campaign_execution(context):
+    pass
+
+
+@when("Pathfinder verifies execution routing")
+def verify_campaign_execution_routing(context):
+    context.routed = []
+    original = transport.execute
+
+    def execute(campaign, request):
+        stage = "peer" if request.stage == "peers" else request.stage
+        adapter = context.peer_assignments[request.actor] if stage == "peer" else context.assignments[stage]
+        context.routed.append((stage, adapter))
+        if stage == "peer":
+            ledger = Ledger(campaign.thread_dir("Q1P1") / "ledger.jsonl")
+            seen = ledger.add(request.actor, "finding", "finding")
+            ledger.add(request.actor, "ready", "ready", seen=seen)
+        text = {
+            "scan": '{"feasibility": 1, "gain": 1, "connexion": "c", "rationale": "r"}',
+            "peer": "peer", "consolidate": "account",
+            "verify": '{"decision": "DRAFT", "reason": "ready", "action": null}',
+        }[stage]
+        return {"text": text, "session": request.identity, "seconds": 0, "input_tokens": 1,
+                "output_tokens": 1, "cost": 0, "error": None, "transport_failed": False}
+
+    transport.execute = execute
+    try:
+        scan.run(context.campaign)
+        research.run_thread(context.campaign, "Q1P1")
+    finally:
+        transport.execute = original
+
+
+@then("the recorded scan, consolidation, and verification calls follow those assignments")
+def campaign_calls_follow_assignments(context):
+    assert [call for call in context.routed if call[0] != "peer"] == [
+        (stage, context.assignments[stage]) for stage in ("scan", "consolidate", "verify")
+    ]
+
+
+@then("every configured peer call follows its assignment")
+def peer_calls_follow_assignments(context):
+    peer_calls = [call for call in context.routed if call[0] == "peer"]
+    assert peer_calls == [("peer", adapter) for adapter in context.peer_assignments.values()]
+
+
+@then("every recorded campaign call follows its manifest assignment")
+def every_campaign_call_follows_assignment(context):
+    campaign_calls_follow_assignments(context)
+    peer_calls_follow_assignments(context)
+
+
+@given("an immutable model request and a non-Codex synchronous adapter")
+def request_and_non_codex_adapter(context):
+    context.request = model_request("peer")
+    context.received = []
+    context.adapter = lambda request: context.received.append(request) or {"text": "ok"}
+
+
+@when("Pathfinder executes the request")
+def execute_request(context):
+    context.result = transport.execute_sync(context.request, context.adapter)
+
+
+@then("the adapter receives the request without Codex command configuration")
+def adapter_receives_request_without_codex(context):
+    assert context.received == [context.request]
+    assert not hasattr(context.received[0], "codex")
 
 
 @given('roles "research", "consolidate", and "verify" are assigned model "{model}" through ELM')

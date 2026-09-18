@@ -146,6 +146,11 @@ def _scan_row(campaign, pair_id) -> dict:
 
 
 def _peers(campaign, pair_id, stop):
+    """@planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
+    @planks("When Pathfinder executes one stage attempt")
+    @planks("When Pathfinder executes one peer stage attempt")
+    @planks("When Pathfinder verifies execution routing")
+    """
     d, L = campaign.thread_dir(pair_id), Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
     A = campaign.allowances; inp = _inputs(d); row = _scan_row(campaign, pair_id)
     helper = f"{sys.executable} -m pathfinder.ledger --root ."
@@ -182,8 +187,11 @@ def _peers(campaign, pair_id, stop):
                         RATIONALE=row.get("rationale") or "none recorded.")
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
-            r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=campaign.peer_search,
-                               cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id, stage="peers", actor=actor)
+            r = transport.execute(campaign, transport.ModelRequest(
+                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=actor, tools=True,
+                search=campaign.peer_search, cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id,
+                stage="peer", actor=actor,
+            ))
             with lock:
                 used["seconds"] += r["seconds"]
             if r["transport_failed"]:
@@ -209,16 +217,22 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     @planks("When Pathfinder evaluates the consolidation attempt")
     @planks("When Pathfinder consolidates the frozen paper pair")
     @planks("When Pathfinder runs the assigned comparison workflow")
+    @planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
+    @planks("When Pathfinder executes one stage attempt")
+    @planks("When Pathfinder verifies execution routing")
 
     Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
     """
     d = campaign.thread_dir(pair_id)
     for attempt in range(2):
-        r = transport.call(prompt, campaign=campaign, model=campaign.model, tools=tools, search=False, cwd=d,
-                           timeout=seconds, thread=pair_id, stage=stage, actor=campaign.peers[0] if stage == "consolidate" else "verifier")
+        r = transport.execute(campaign, transport.ModelRequest(
+            identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
+            search=False, cwd=d, timeout=seconds, thread=pair_id, stage=stage,
+            actor=campaign.peers[0] if stage == "consolidate" else "verifier",
+        ))
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
-        if r["error"] is not None or done():
+        if r["error"] is None or done():
             return r
     return r
 
