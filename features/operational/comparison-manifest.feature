@@ -43,6 +43,13 @@ Feature: Define reproducible role comparisons
       When Pathfinder consolidates a frozen paper pair
       Then the provider response becomes the pair's research account
 
+    Scenario: Provider-class consolidation bypasses the workspace agent harness
+      Given retained provider events for pair "Q7P10" include workspace command execution
+      And role "consolidate" is assigned execution class "provider" through ELM
+      When Pathfinder consolidates the frozen paper pair
+      Then consolidation executes through the ELM provider interface
+      And the provider events contain no workspace command execution
+
     Scenario: Direct-provider verification assesses the consolidated account
       Given a direct-provider consolidation produced a research account
       And role "verify" is assigned execution class "provider" through ELM

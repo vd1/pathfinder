@@ -299,6 +299,13 @@ def provider_consolidation(context):
     context.campaign.model = "consolidate-model"
 
 
+@given('retained provider events for pair "{pair_id}" include workspace command execution')
+def retained_workspace_events(context, pair_id):
+    context.retained_provider_events = [
+        {"thread": pair_id, "type": "item.completed", "item": {"type": "command_execution"}}
+    ]
+
+
 @given("the provider cannot write campaign files")
 def provider_cannot_write(context):
     context.provider_can_write = False
@@ -320,6 +327,36 @@ def consolidate_pair(context):
         )
     finally:
         transport.call = original
+
+
+@when("Pathfinder consolidates the frozen paper pair")
+def consolidate_frozen_pair(context):
+    # @exceptional-double: internal composition has no independent external verifier.
+    original = transport.call
+
+    def call(*args, **kwargs):
+        context.provider_call = kwargs
+        context.provider_events = [{"type": "item.completed", "item": {"type": "agent_message"}}]
+        return provider_reply("provider research account")
+
+    transport.call = call
+    try:
+        research._stage_call(context.campaign, "Q7P10", "consolidate", "prompt", False, 1)
+    finally:
+        transport.call = original
+
+
+@then("consolidation executes through the ELM provider interface")
+def consolidation_uses_elm_provider(context):
+    assert context.campaign.backend == "elm"
+    assert context.provider_call["stage"] == "consolidate"
+    assert context.provider_call["tools"] is False
+
+
+@then("the provider events contain no workspace command execution")
+def provider_events_have_no_workspace_commands(context):
+    assert any(event["item"]["type"] == "command_execution" for event in context.retained_provider_events)
+    assert all(event["item"]["type"] != "command_execution" for event in context.provider_events)
 
 
 @then("the provider response becomes the pair's research account")
