@@ -1,0 +1,52 @@
+
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Competitive Market Behavior and Cooperative Survival: Cross-Paper Analysis}
+
+\begin{document}
+
+\section*{The Pair}
+
+Two papers examine LLM agents in economic environments with contrasting outcomes. Q studies LLM agents in double auction markets, finding that agents exhibit slower or no convergence toward market equilibrium compared to humans, thus delivering less efficient allocations~\ledger{1}. P introduces The Energy Society, a survival economy where LLM agents cooperate under pressure, finding that cooperative incentives enable coordination, resource sharing, and collective problem-solving~\ledger{1}.
+
+\section*{Connexion Pursued}
+
+The hypothesis was to port P's cooperative mechanisms---cooperative objectives, memory systems, and action recommendations---into Q's double auction environment to test whether they restore convergence to equilibrium~\ledger{1}. The rationale: Q identifies a failure mode (LLM agents cannot discover equilibrium prices); P identifies success conditions (cooperation + memory + recommendations enable coordination).
+
+\section*{Supported Findings}
+
+The ledger establishes several findings about this proposed transfer:
+
+\begin{itemize}
+  \item Q's failure mode is strategic misalignment---agents cannot find equilibrium prices through bidding and asking behavior~\ledger{2}.
+  \item P's memory system helps agents calibrate risk from past outcomes, which could address Q's observation that agents struggle with price adjustment strategy~\ledger{3}.
+  \item P's action recommendations enable agents to suggest actions to peers; in Q's context, this could enable price signal sharing or strategy hints~\ledger{3}.
+  \item The most promising transfer is memory plus recommendations without altering the auction's competitive payoff structure---testing whether information-sharing architecture alone improves convergence~\ledger{3}.
+\end{itemize}
+
+\section*{Objections}
+
+A critical gap was identified: double auctions are inherently competitive mechanisms, while P's cooperation mechanisms assume a shared survival goal~\ledger{2}. The question remains whether cooperative incentives designed for collective survival can transfer to competitive price-discovery tasks, and this requires theoretical justification that the ledger does not provide~\ledger{2}. P's cooperative incentives---where agents care about group survival---conflict with the individual profit maximization inherent to double auctions~\ledger{3}.
+
+\section*{Unresolved Issues}
+
+The ledger does not resolve:
+\begin{itemize}
+  \item Whether information-sharing mechanisms (memory, recommendations) can improve convergence without changing payoff incentives.
+  \item What theoretical framework would justify applying cooperative mechanisms to competitive environments.
+  \item Whether heterogeneity across model families and market roles (observed in Q) would interact with memory or recommendation systems.
+\end{itemize}
+
+\section*{Smallest Next Step}
+
+Implement memory and action recommendations in Q's agent architecture while keeping competitive payoffs unchanged. Measure convergence rates against Q's baseline. This isolates whether information-sharing alone---without cooperative incentives---addresses the strategic misalignment Q identified.
+
+\section*{Evidence Quality}
+
+The connexion rests on abstract-level analysis of two papers. No empirical evidence supports the transfer hypothesis. The ledger entries are analytical notes, not experimental results. Evidence is thin.
+
+\end{document}
+```
