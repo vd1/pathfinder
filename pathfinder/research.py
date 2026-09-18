@@ -249,6 +249,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("When the provider returns a research account for pair \"Q1P1\"")
     @planks("When both consolidation attempts produce no stored research account")
     @planks("When the direct provider returns a complete research account on its consolidation retry")
+    @planks("When Pathfinder runs consolidation through the campaign workflow")
+    @planks("When the verification path to that request is inspected")
     """
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
     note, verdicts = d / f"{pair_id}.tex", d / f"{pair_id}.verdict.json"
@@ -280,7 +282,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     prior = ""
                 write_meta(campaign, pair_id, d)                     # the note's title block: pair, papers, date, state
                 r = _stage_call(campaign, pair_id, "consolidate",
-                                _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior), True,
+                                _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
+                                False,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
                     if r["text"].strip():

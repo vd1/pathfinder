@@ -410,6 +410,7 @@ def provider_events_have_no_workspace_commands(context):
     assert all(event["item"]["type"] != "command_execution" for event in context.provider_events)
 
 
+@given('a campaign is loaded from a manifest that assigns role "consolidate" to model "{model}" through ELM with an empty allowed-tools list')
 @given('a campaign manifest assigns role "consolidate" to model "{model}" through ELM with no allowed tools')
 def campaign_manifest_assigns_consolidation(context, model):
     context.assigned_consolidation = {

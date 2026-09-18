@@ -159,7 +159,7 @@ Feature: Define reproducible role comparisons
       Then every recorded campaign call follows its manifest assignment
 
     Scenario: Provider consolidation executes without tools through the campaign workflow
-      Given a campaign manifest assigns role "consolidate" to model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM with no allowed tools
+      Given a campaign is loaded from a manifest that assigns role "consolidate" to model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM with an empty allowed-tools list
       And one frozen paper pair has substantive findings awaiting consolidation
       When Pathfinder runs consolidation through the campaign workflow
       Then the consolidation transport request uses the assigned model and backend
