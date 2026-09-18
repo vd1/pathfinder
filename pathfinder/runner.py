@@ -83,6 +83,7 @@ def execution_route(assignment: dict) -> str:
     """@planks("When the comparison run schedules role \"scan\"")
     @planks("When the comparison run schedules role \"research\"")
     @planks("When the comparison run schedules role \"consolidate\"")
+    @planks-provisional("features/operational/comparison-manifest.feature:Execution routing depends on assignment capabilities rather than provider identity")
     """
     return "openai-compatible" if assignment["backend"] == "elm" else assignment["backend"]
 
@@ -100,6 +101,8 @@ def run_assigned_comparison(campaign, assignments: dict) -> dict:
     """@planks("When Pathfinder runs the assigned comparison workflow")
     @planks("Then the provider call has a \"{timeout}\" second timeout")
     @planks("Then the provider receipt retains budget \"{budget}\" for role \"{role}\"")
+    @planks-provisional("features/operational/comparison-manifest.feature:Provider-class execution invokes the provider without agent tools")
+    @planks-provisional("features/operational/comparison-manifest.feature:Independent provider stages can be submitted as a batch")
     """
     receipts = []
     outcome = None

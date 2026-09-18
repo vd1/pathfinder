@@ -85,6 +85,45 @@ Feature: Define reproducible role comparisons
       When Pathfinder runs the assigned comparison workflow
       Then consolidation and verification execute through the pair's research stages
 
+    Scenario: Each provider stage receives an immutable evidence pack
+      Given one frozen paper pair has source records, prompts, and prior stage outputs
+      When Pathfinder prepares role "consolidate" for provider execution
+      Then the provider request identifies the digests of every supplied input
+      And later campaign changes do not alter that request
+
+    Scenario: Provider stages consume prepared evidence without acquisition
+      Given one frozen paper pair contains all evidence required by role "verify"
+      When Pathfinder executes role "verify" through its assigned provider
+      Then the role completes without fetching or discovering additional evidence
+
+    Scenario: Provider stages enforce their assigned context and output budgets
+      Given role "consolidate" has an assigned input context limit of "64000" tokens and an output token limit
+      When Pathfinder prepares role "consolidate" for one frozen paper pair
+      Then the request stays within the assigned input context limit
+      And the provider call enforces the assigned output token limit
+
+    Scenario: Oversized evidence is compressed or blocked before provider execution
+      Given role "consolidate" has more than "64000" input tokens of frozen evidence
+      When Pathfinder prepares role "consolidate" for provider execution
+      Then Pathfinder uses a recorded compression result or blocks the request
+      And Pathfinder does not silently truncate the evidence
+
+    Scenario: Provider-class execution invokes the provider without agent tools
+      Given role "verify" is assigned execution class "provider"
+      When Pathfinder executes role "verify" for one frozen paper pair
+      Then the provider request exposes no workspace or search tools
+
+    Scenario: Execution routing depends on assignment capabilities rather than provider identity
+      Given two providers support the same provider execution class
+      When Pathfinder schedules the same frozen stage through each provider
+      Then both stages use the provider execution route
+
+    Scenario: Independent provider stages can be submitted as a batch
+      Given several frozen paper pairs are ready for role "scan"
+      When Pathfinder prepares their provider stage jobs
+      Then each job has independent immutable inputs and a stable result identity
+      And submitting the jobs together does not change their results
+
   Rule: Receipts preserve comparable observations
 
     Scenario: Every role execution produces a comparable receipt

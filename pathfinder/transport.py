@@ -106,6 +106,8 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
     @planks("When Pathfinder records the completed provider call")
     @planks("When Pathfinder completes the provider call without a parsed research account")
     @planks("Then the receipt retains the raw response events")
+    @planks-provisional("features/operational/comparison-manifest.feature:Provider-class execution invokes the provider without agent tools")
+    @planks-provisional("features/operational/comparison-manifest.feature:Independent provider stages can be submitted as a batch")
     """
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
     proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),

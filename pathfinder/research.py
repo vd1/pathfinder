@@ -73,7 +73,11 @@ def judge_head(d, inp, note_name: str) -> str:
 
 
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
-    """@planks("When Pathfinder requests consolidation from the direct provider")"""
+    """@planks("When Pathfinder requests consolidation from the direct provider")
+    @planks-provisional("features/operational/comparison-manifest.feature:Each provider stage receives an immutable evidence pack")
+    @planks-provisional("features/operational/comparison-manifest.feature:Provider stages consume prepared evidence without acquisition")
+    @planks-provisional("features/operational/comparison-manifest.feature:Provider stages enforce their assigned context and output budgets")
+    """
     in_papers, in_ledger = bool(campaign.raw.get("inline_papers")), bool(campaign.raw.get("inline_ledger"))
     above = [x for x, on in (("Q and P", in_papers), ("the ledger", in_ledger)) if on]
     read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
