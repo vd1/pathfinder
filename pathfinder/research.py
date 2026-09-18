@@ -232,7 +232,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
         ))
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
-        if r["error"] is None or done():
+        if r["text"].strip() or done():
             return r
     return r
 

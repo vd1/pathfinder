@@ -18,18 +18,18 @@ def provider_reply(text="", error=None):
 
 def run_with_replies(context, replies, action):
     # @exceptional-double: provider conditions cannot be produced on demand.
-    original = transport.call
+    original = transport.execute
     context.provider_calls = []
 
-    def call(*args, **kwargs):
-        context.provider_calls.append(kwargs.get("stage"))
+    def execute(campaign, request):
+        context.provider_calls.append(request.stage)
         return replies.pop(0)
 
-    transport.call = call
+    transport.execute = execute
     try:
         return action()
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 def repository_root(context):
@@ -76,13 +76,13 @@ def requests_direct_consolidation(context):
     (prompts / "consolidate.md").write_text("Consolidate {{NOTE}}. {{PRIOR}}")
 
     # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.call
+    original = transport.execute
 
-    def call(prompt, *args, **kwargs):
-        context.direct_prompt = prompt
+    def execute(campaign, request):
+        context.direct_prompt = request.prompt
         return provider_reply("research account")
 
-    transport.call = call
+    transport.execute = execute
     try:
         research._stage_call(
             context.campaign,
@@ -101,7 +101,7 @@ def requests_direct_consolidation(context):
             1,
         )
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 @then("the request asks the provider to return the complete research account")
@@ -144,11 +144,11 @@ def provider_returns_account_on_retry(context):
     ]
 
     # @exceptional-double: provider conditions cannot be produced on demand.
-    original = transport.call
+    original = transport.execute
     context.provider_calls = []
 
-    def call(*args, **kwargs):
-        stage = kwargs.get("stage")
+    def execute(campaign, request):
+        stage = request.stage
         context.provider_calls.append(stage)
         if stage == "verify":
             context.account_at_verification = (
@@ -156,11 +156,11 @@ def provider_returns_account_on_retry(context):
             ).read_text()
         return replies.pop(0)
 
-    transport.call = call
+    transport.execute = execute
     try:
         context.result = research.run_thread(context.campaign, "Q1P1")
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 @then("Pathfinder stores that research account before verification")
@@ -318,10 +318,10 @@ def assigned_role_budget(context, role, budget):
 @when('Pathfinder executes role "{role}" for one frozen paper pair')
 def execute_assigned_role(context, role):
     # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.call
+    original = transport.execute
 
-    def call(*args, **kwargs):
-        context.provider_call = kwargs
+    def execute(campaign, request):
+        context.provider_call = request
         return {
             **provider_reply("provider research account"),
             "session": "provider-job",
@@ -330,13 +330,13 @@ def execute_assigned_role(context, role):
             "cost": 0,
         }
 
-    transport.call = call
+    transport.execute = execute
     try:
         context.workflow = runner.run_assigned_comparison(
             context.campaign, {role: context.assignments[role]}
         )
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 @then('the provider call has a "{timeout}" second timeout')
@@ -365,8 +365,8 @@ def provider_cannot_write(context):
 @when("Pathfinder consolidates a frozen paper pair")
 def consolidate_pair(context):
     # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.call
-    transport.call = lambda *args, **kwargs: {
+    original = transport.execute
+    transport.execute = lambda campaign, request: {
         "text": "provider research account",
         "error": None,
         "transport_failed": False,
@@ -377,31 +377,31 @@ def consolidate_pair(context):
             context.campaign, "Q1P1", "consolidate", "prompt", False, 1
         )
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 @when("Pathfinder consolidates the frozen paper pair")
 def consolidate_frozen_pair(context):
     # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.call
+    original = transport.execute
 
-    def call(*args, **kwargs):
-        context.provider_call = kwargs
+    def execute(campaign, request):
+        context.provider_call = request
         context.provider_events = [{"type": "item.completed", "item": {"type": "agent_message"}}]
         return provider_reply("provider research account")
 
-    transport.call = call
+    transport.execute = execute
     try:
         research._stage_call(context.campaign, "Q7P10", "consolidate", "prompt", False, 1)
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 @then("consolidation executes through the ELM provider interface")
 def consolidation_uses_elm_provider(context):
     assert context.campaign.backend == "elm"
-    assert context.provider_call["stage"] == "consolidate"
-    assert context.provider_call["tools"] is False
+    assert context.provider_call.stage == "consolidate"
+    assert context.provider_call.tools is False
 
 
 @then("the provider events contain no workspace command execution")
