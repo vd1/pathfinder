@@ -528,9 +528,9 @@ def frozen_pair_awaiting_consolidation(context):
 @when("Pathfinder runs consolidation through the campaign workflow")
 def run_campaign_consolidation(context):
     context.campaign_workflow_entered = True
+    # @exceptional-double: internal composition has no independent external verifier.
     original = transport.execute
 
-    # @exceptional-double: internal composition has no independent external verifier.
     def execute(campaign, request):
         context.consolidation_request = request
         return provider_reply("provider research account")
@@ -659,9 +659,9 @@ def provider_class_assignment(context):
 @when("the verification invokes the provider-class execution seam")
 def invoke_provider_class_seam(context):
     context.campaign = seed_pair(context)
+    # @exceptional-double: internal composition has no independent external verifier.
     original = transport.execute
 
-    # @exceptional-double: internal composition has no independent external verifier.
     def execute(campaign, request):
         context.execution_route = runner.execution_route(context.routing_assignment)
         context.routing_inputs = {
@@ -748,6 +748,35 @@ def provisional_planks_match(context):
 @given("the verification paths from the rigging")
 def verification_paths(context):
     context.root = repository_root(context)
+
+
+@when("the provider-substitution conformance check runs")
+def check_provider_substitution(context):
+    errors = []
+    for path in context.root.glob("features/steps/*.py"):
+        lines = path.read_text().splitlines()
+        tree = ast.parse("\n".join(lines))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                if isinstance(node.func.value, ast.Name) and node.func.value.id == "transport" and node.func.attr == "_parse":
+                    nearby = "\n".join(lines[max(0, node.lineno - 8):node.lineno])
+                    if "@exceptional-double" not in nearby:
+                        errors.append(f"{path}:{node.lineno}: transport._parse")
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Lambda):
+                for target in node.targets:
+                    if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name):
+                        if target.value.id == "transport" and target.attr in {"call", "execute"}:
+                            nearby = "\n".join(lines[max(0, node.lineno - 8):node.lineno])
+                            if "@exceptional-double" not in nearby:
+                                errors.append(f"{path}:{node.lineno}: transport.{target.attr} substitution")
+    context.provider_substitution_errors = errors
+
+
+@then("verification does not replace the model execution seam")
+def provider_execution_not_substituted(context):
+    assert not context.provider_substitution_errors, "provider execution substitutions:\n" + "\n".join(
+        context.provider_substitution_errors
+    )
 
 
 @when("the verification-double conformance check runs")

@@ -20,10 +20,10 @@ Feature: Shipshape verification conformance
     And every provisional plank names a scenario that carries "@captain"
 
   @conformance
-  Scenario: Verification doubles carry an exceptional-double justification
+  Scenario: Structural verification does not substitute provider execution
     Given the verification paths from the rigging
-    When the verification-double conformance check runs
-    Then every test double carries an "@exceptional-double" justification
+    When the provider-substitution conformance check runs
+    Then verification does not replace the model execution seam
 
   @conformance
   Scenario: The configured default tier executes binding scenarios

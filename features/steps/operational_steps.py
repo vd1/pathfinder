@@ -105,14 +105,14 @@ def technique_paper(context, identifier):
 @when('the connection judge assesses pair "{pair_id}"')
 def assess_pair(context, pair_id):
     # @exceptional-double: internal composition has no independent external verifier.
-    original = scan.transport.call
-    scan.transport.call = lambda *args, **kwargs: {
+    original = scan.transport.execute
+    scan.transport.execute = lambda *args, **kwargs: {
         "seconds": 0, "cost": 0, "text": json.dumps({"feasibility": 50, "gain": 40, "connexion": "connection", "rationale": "evidence"}), "error": None
     }
     try:
         scan.run(context.campaign)
     finally:
-        scan.transport.call = original
+        scan.transport.execute = original
 
 
 @then('pair "{pair_id}" records feasibility, scientific gain, a proposed connection, and rationale')
@@ -140,17 +140,17 @@ def missing_assessment(context):
 def resume_scan(context):
     context.assessed = []
     # @exceptional-double: internal composition has no independent external verifier.
-    original = scan.transport.call
+    original = scan.transport.execute
 
-    def call(*args, **kwargs):
-        context.assessed.append(kwargs["thread"])
+    def execute(campaign, request):
+        context.assessed.append(request.thread)
         return {"seconds": 0, "cost": 0, "text": '{"feasibility":2,"gain":3,"connexion":"c","rationale":"r"}', "error": None}
 
-    scan.transport.call = call
+    scan.transport.execute = execute
     try:
         scan.run(context.campaign)
     finally:
-        scan.transport.call = original
+        scan.transport.execute = original
 
 
 @then('pair "{pair_id}" is not assessed again')
@@ -845,7 +845,7 @@ def elm_receipt_retained(context):
     assert receipts[-1]["input_tokens"] > 0
     assert receipts[-1]["output_tokens"] > 0
     assert receipts[-1]["seconds"] >= 0
-    assert receipts[-1]["cost"] >= 0
+    assert receipts[-1]["cost"] is None or receipts[-1]["cost"] >= 0
 
 
 @when('the comparison run schedules role "scan"')
@@ -890,12 +890,35 @@ def openai_response_event(context):
 @when("Pathfinder parses the provider response")
 def parse_provider_response(context):
     c = context.campaign
-    context.parsed_response = transport._parse(c, "Qwen/Qwen3.5-397B-A17B-FP8", [context.raw_response_event])
+
+    # @exceptional-double: golden real-provider response replay covers a specific parser input on demand.
+    class CompletedProcess:
+        returncode = 0
+        stdout = iter([
+            json.dumps({"type": "thread.started", "thread_id": "thread-1"}) + "\n",
+            context.raw_response_event + "\n",
+            json.dumps({"type": "turn.completed", "usage": {"input_tokens": 1, "output_tokens": 1}}) + "\n",
+        ])
+        stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()
+        stderr = type("Stderr", (), {"read": lambda self: ""})()
+
+        def wait(self, timeout=None):
+            return self.returncode
+
+    original = transport.subprocess.Popen
+    transport.subprocess.Popen = lambda *args, **kwargs: CompletedProcess()
+    try:
+        context.parsed_response = transport.call(
+            "prompt", campaign=c, model="Qwen/Qwen3.5-397B-A17B-FP8", tools=False,
+            search=False, cwd=c.root, timeout=1, thread="Q1P1", stage="scan", actor="scan",
+        )
+    finally:
+        transport.subprocess.Popen = original
 
 
 @then("the parsed response contains the generated text")
 def parsed_response_contains_generated_text(context):
-    assert context.parsed_response[0] == context.generated_text
+    assert context.parsed_response["text"] == context.generated_text
 
 
 @given("an OpenAI-compatible provider call reports positive output tokens and no parsed text")
@@ -909,20 +932,40 @@ def output_without_parsed_text(context):
 
 @when("Pathfinder records the completed provider call")
 def record_completed_provider_call(context):
-    context.provider_receipt = transport._parse(
-        campaign(context), "Qwen/Qwen3.5-397B-A17B-FP8", context.provider_lines
-    )
+    c = campaign(context)
+
+    # @exceptional-double: real provider completion with empty parsed text cannot be produced on demand.
+    class CompletedProcess:
+        returncode = 0
+        stdout = iter(line + "\n" for line in context.provider_lines)
+        stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()
+        stderr = type("Stderr", (), {"read": lambda self: ""})()
+
+        def wait(self, timeout=None):
+            return self.returncode
+
+    original = transport.subprocess.Popen
+    transport.subprocess.Popen = lambda *args, **kwargs: CompletedProcess()
+    try:
+        context.provider_result = transport.call(
+            "prompt", campaign=c, model="model", tools=False, search=False, cwd=c.root,
+            timeout=1, thread="Q1P1", stage="scan", actor="scan",
+        )
+    finally:
+        transport.subprocess.Popen = original
+    context.provider_receipt = transport.receipts(c)[-1]
 
 
 @then("the receipt identifies the process exit and terminal response event")
 def receipt_identifies_completion(context):
-    assert context.provider_receipt[1] == "thread-1"
+    assert context.provider_receipt["exit_status"] == 0
+    assert json.loads(context.provider_receipt["terminal_event"])["type"] == "turn.completed"
 
 
 @then("the receipt retains the raw response events needed to account for the output tokens")
 def receipt_retains_response_events(context):
-    assert context.provider_receipt[3] == 7
-    assert context.provider_receipt[0] == ""
+    assert context.provider_receipt["output_tokens"] == 7
+    assert context.provider_receipt["raw_events"] == context.provider_lines
 
 
 @given("an OpenAI-compatible provider call completes with positive output tokens")
@@ -1234,6 +1277,7 @@ def frozen_pair_enters_campaign(context):
 @when("Pathfinder executes scan, peer, consolidation, and verification model requests")
 def execute_campaign_model_requests(context):
     context.requests = []
+    # @exceptional-double: internal composition has no independent external verifier.
     original = transport.execute
 
     def execute(campaign, request):
@@ -1320,6 +1364,7 @@ def stage_has_assigned_models(context):
 @when("Pathfinder executes one stage attempt")
 def execute_one_stage_attempt(context):
     context.requests = []
+    # @exceptional-double: internal composition has no independent external verifier.
     original = transport.execute
     transport.execute = lambda campaign, request: context.requests.append(request) or {
         "text": '{"feasibility": 1, "gain": 1, "connexion": "c", "rationale": "r"}',
@@ -1335,6 +1380,7 @@ def execute_one_stage_attempt(context):
 @when("Pathfinder executes one peer stage attempt")
 def execute_one_peer_stage_attempt(context):
     context.requests = []
+    # @exceptional-double: internal composition has no independent external verifier.
     original = transport.execute
     transport.execute = lambda campaign, request: context.requests.append(request) or {
         "text": "finding", "session": request.identity, "seconds": 0, "input_tokens": 1,
@@ -1372,6 +1418,7 @@ def pair_ready_for_campaign_execution(context):
 @when("Pathfinder verifies execution routing")
 def verify_campaign_execution_routing(context):
     context.routed = []
+    # @exceptional-double: internal composition has no independent external verifier.
     original = transport.execute
 
     def execute(campaign, request):

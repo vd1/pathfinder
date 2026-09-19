@@ -25,6 +25,7 @@ Procedure lives in the skills. Every role reads this on open.
 - discover: `nix develop path:. -c uv run behave --dry-run --tags="not @captain and not @shipwright"`
 - focused: `set -a; . "$HOME/.aienv"; set +a; ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; nix develop path:. -c uv run behave "$file" --name "^${name}$" --tags="not @captain and not @shipwright"`
 - broad: `nix develop path:. -c uv run behave --tags="not @captain and not @shipwright"`
+- broad-sandbox: `set -a; . "$HOME/.aienv"; set +a; nix develop path:. -c uv run behave --tags="@sandbox and not @captain and not @shipwright"`
 - coverage: `set -a; . "$HOME/.aienv"; set +a; nix develop path:. -c uv run coverage run --branch --source=pathfinder -m behave --tags="not @captain and not @shipwright"`
 - broad-unit: `nix develop path:. -c uv run pytest -q`
 - coverage-unit: `nix develop path:. -c uv run pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
@@ -42,8 +43,9 @@ Procedure lives in the skills. Every role reads this on open.
 ## Tiers
 
 - default: untagged
-- sandbox: none
-- policy: untagged local scenarios via `nix develop path:.`; direct ELM scenarios source `~/.aienv` and use `ELM_API_KEY`
+- sandbox: `@sandbox`
+- policy: untagged structural scenarios run locally via `nix develop path:.` without provider substitution
+- policy: `@sandbox` scenarios source `~/.aienv` and exercise ELM with `ELM_API_KEY`
 - weather: .shipshape/behave-timings.json
 - runrecord: .shipshape/runrecord.jsonl
 

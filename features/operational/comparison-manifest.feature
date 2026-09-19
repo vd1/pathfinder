@@ -26,6 +26,7 @@ Feature: Define reproducible role comparisons
 
   Rule: Execution class follows role requirements
 
+    @sandbox
     Scenario: A self-contained role uses its assigned provider interface
       Given role "scan" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM
       And ELM authenticates with environment variable "ELM_API_KEY"
