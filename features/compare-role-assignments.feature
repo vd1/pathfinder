@@ -16,6 +16,7 @@ Feature: Compare models and backends by Pathfinder role
     When the same assignment is repeated
     Then both runs retain the information needed to compare variation in outcomes, cost, and latency
 
+  @sandbox
   Scenario: One frozen pair completes through independently assigned roles
     Given one frozen paper pair
     And role "scan" is assigned model "Qwen/Qwen3.5-397B-A17B-FP8" through ELM

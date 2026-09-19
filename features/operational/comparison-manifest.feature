@@ -63,6 +63,7 @@ Feature: Define reproducible role comparisons
       When Pathfinder verifies the frozen paper pair
       Then the pair records the provider's verification decision
 
+    @sandbox
     Scenario: Assigned comparison execution honours each role's execution class
       Given one frozen paper pair
       And each comparison role has a model, backend, and execution class assignment
@@ -86,6 +87,7 @@ Feature: Define reproducible role comparisons
       When Pathfinder executes role "consolidate" for one frozen paper pair
       Then the provider receipt retains budget "1" for role "consolidate"
 
+    @sandbox
     Scenario: Assigned research stages enter the campaign research workflow
       Given one frozen paper pair
       And each comparison role has a model, backend, and execution class assignment
