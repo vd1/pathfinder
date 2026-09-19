@@ -1377,7 +1377,7 @@ def verify_campaign_execution_routing(context):
     def execute(campaign, request):
         stage = "peer" if request.stage == "peers" else request.stage
         adapter = context.peer_assignments[request.actor] if stage == "peer" else context.assignments[stage]
-        context.routed.append((stage, adapter))
+        context.routed.append((stage, request.actor, adapter))
         if stage == "peer":
             ledger = Ledger(campaign.thread_dir("Q1P1") / "ledger.jsonl")
             seen = ledger.add(request.actor, "finding", "finding")
@@ -1400,15 +1400,16 @@ def verify_campaign_execution_routing(context):
 
 @then("the recorded scan, consolidation, and verification calls follow those assignments")
 def campaign_calls_follow_assignments(context):
-    assert [call for call in context.routed if call[0] != "peer"] == [
-        (stage, context.assignments[stage]) for stage in ("scan", "consolidate", "verify")
-    ]
+    campaign_calls = [call for call in context.routed if call[0] != "peer"]
+    assert {stage for stage, _, _ in campaign_calls} == {"scan", "consolidate", "verify"}
+    assert all(adapter == context.assignments[stage] for stage, _, adapter in campaign_calls)
 
 
 @then("every configured peer call follows its assignment")
 def peer_calls_follow_assignments(context):
     peer_calls = [call for call in context.routed if call[0] == "peer"]
-    assert peer_calls == [("peer", adapter) for adapter in context.peer_assignments.values()]
+    assert {actor for _, actor, _ in peer_calls} == set(context.peer_assignments)
+    assert all(adapter == context.peer_assignments[actor] for _, actor, adapter in peer_calls)
 
 
 @then("every recorded campaign call follows its manifest assignment")

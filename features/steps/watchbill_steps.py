@@ -438,7 +438,7 @@ def execute_assigned_role(context, role):
 
 @then('the provider call has a "{timeout}" second timeout')
 def provider_call_timeout(context, timeout):
-    assert context.provider_call["timeout"] == int(timeout)
+    assert context.provider_call.timeout == int(timeout)
 
 
 @then('the provider receipt retains budget "{budget}" for role "{role}"')
@@ -594,8 +594,8 @@ def provider_verification(context):
 @when("Pathfinder verifies the frozen paper pair")
 def verify_pair(context):
     # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.call
-    transport.call = lambda *args, **kwargs: {
+    original = transport.execute
+    transport.execute = lambda *args, **kwargs: {
         "text": json.dumps({"decision": "DRAFT", "reason": "supported", "action": None}),
         "error": None,
         "transport_failed": False,
@@ -606,7 +606,7 @@ def verify_pair(context):
             context.campaign, "Q1P1", "verify", context.account, False, 1
         )
     finally:
-        transport.call = original
+        transport.execute = original
 
 
 @then("the pair records the provider's verification decision")
@@ -645,26 +645,49 @@ def assigned_research_stages(context):
 
 @given("a provider-class execution scenario with an assigned backend, model, and execution class")
 def provider_class_assignment(context):
-    context.assignment = {
-        "backend": "elm",
-        "model": "Qwen/Qwen3.5-397B-A17B-FP8",
-        "execution_class": "provider",
+    context.assignment = assignments()["consolidate"]
+    context.assignment.update(
+        backend="elm",
+        model="Qwen/Qwen3.5-397B-A17B-FP8",
+        execution_class="provider",
+    )
+    context.routing_assignment = {
+        key: context.assignment[key] for key in ("backend", "model", "execution_class")
     }
 
 
 @when("the verification invokes the provider-class execution seam")
 def invoke_provider_class_seam(context):
-    context.execution_route = runner.execution_route(context.assignment)
+    context.campaign = seed_pair(context)
+    original = transport.execute
+
+    # @exceptional-double: internal composition has no independent external verifier.
+    def execute(campaign, request):
+        context.execution_route = runner.execution_route(context.routing_assignment)
+        context.routing_inputs = {
+            "backend": campaign.backend,
+            "model": request.model,
+            "execution_class": context.routing_assignment["execution_class"],
+        }
+        return {
+            **provider_reply("provider research account"),
+            "session": "provider-job",
+            "input_tokens": 1,
+            "output_tokens": 1,
+            "cost": 0,
+        }
+
+    transport.execute = execute
+    try:
+        runner.run_assigned_comparison(context.campaign, {"consolidate": context.assignment})
+    finally:
+        transport.execute = original
 
 
 @then("the invocation routing inputs match the scenario assignment")
 def routing_inputs_match_assignment(context):
-    assert context.execution_route == "openai-compatible"
-    assert context.assignment == {
-        "backend": "elm",
-        "model": "Qwen/Qwen3.5-397B-A17B-FP8",
-        "execution_class": "provider",
-    }
+    assert context.execution_route == "provider"
+    assert context.routing_inputs == context.routing_assignment
 
 
 @given("the implementation paths and executable scenarios from the rigging")

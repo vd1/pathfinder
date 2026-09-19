@@ -235,7 +235,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
         ))
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
-        if r["text"].strip() or done():
+        if done() or (r["text"].strip() and not tools):
             return r
     return r
 
