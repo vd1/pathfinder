@@ -1,0 +1,225 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Q1P10: Endogenous, Ruin-Coupled Prediction Cost --- What The Energy Society Forces on the Learning-Augmented Frontier}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+\textbf{Q} is a survey of learning-augmented algorithms: prediction interfaces, error
+measures, consistency--robustness trade-offs, five construction mechanisms, and an
+explicit separation of formal guarantees from empirical systems evidence. It names four
+open problems: cost-aware prediction, endogenous error, semantic predictors, and
+benchmarking.
+
+\textbf{P} introduces \emph{The Energy Society}, a survival economy for LLM agents.
+Agents spend energy on generated tokens as a function of model size, regain energy by
+completing jobs or receiving donations, and deactivate at zero energy. Its headline
+control: larger models consume the most energy and run a deficit \emph{even where token
+cost is not size-dependent}.
+
+\paragraph{Evidence base, stated plainly.} No full text for either paper exists in this
+thread. \texttt{inputs/Q.json} and \texttt{inputs/P.json} point at
+\texttt{sources/2609.04787.tex} and \texttt{sources/2607.14865.tex}, and no
+\texttt{sources} directory exists under the pathfinder root \ledger{23}. Every argument
+below rests on the two abstracts plus the public README of P's repository
+(\texttt{github.com/LucasBergholdt/EnergySociety}), the latter obtained through a fetch
+summary and therefore a close paraphrase rather than verbatim text \ledger{15, 23}. This
+is thin, and it caps the confidence of everything that follows.
+
+\section{The scanned hypothesis, and why we reject it}
+
+The abstract-scan hypothesis was that P supplies a benchmark environment for testing
+Q-style learning-augmented frameworks (gain 50, feasibility 75). Both peers reject it
+independently and for the same reasons \ledger{9, 21, 27, 32}:
+
+\begin{itemize}
+  \item P contains no prediction interface and no error measure. No prediction is ever
+        scored against a realised value; no adversary supplies predictions.
+  \item P contains no online problem with a competitive ratio and no offline optimum, so
+        there is nothing to state a consistency or robustness bound against.
+  \item The scan's feasibility route --- implementing Q's algorithms ``using existing
+        multi-agent RL tooling'' --- does not exist. P is an LLM-agent testbed with no
+        training loop and no reward signal to train on \ledger{9, 27}.
+  \item The scan's gain argument (``neither paper's central claims would be revised'') is
+        vacuous against a survey, which has no central claim to revise \ledger{6}.
+\end{itemize}
+
+Identifying P's tokens-spent-on-reasoning with Q's prediction cost is an interpretive
+move, not an implementation of a specification \ledger{9}. Code availability buys
+implementation, not formalisation \ledger{5}.
+
+\section{The connexion actually pursued}
+
+What P supplies that Q lacks is not infrastructure but a cost model. Q treats prediction
+cost as a separable term attached to an interface whose error is given exogenously --- an
+oracle query at a known price \(c\) that the algorithm elects to pay. In P:
+
+\begin{enumerate}
+  \item \emph{Cost is denominated in the objective's own currency and depletion is
+        terminal.} Energy is simultaneously budget and survival measure; agents deactivate
+        at zero \ledger{2, 10}.
+  \item \emph{Cost is endogenous to the predictor.} Spend is a function of the predictor's
+        own realised output length, not a constant the caller can bound ex ante
+        \ledger{2, 17}.
+\end{enumerate}
+
+Neither half carries the argument alone \ledger{17, 30}. The conjecture we jointly back
+\ledger{18, 32} is:
+
+\begin{quote}
+Suppose (i) ruin is absorbing, and (ii) per-query cost \(C\) is measurable with respect to
+the predictor's own output, with \(\Pr(C > m) > 0\) for every fixed margin \(m\). Then any
+algorithm attaining consistency strictly better than the prediction-free competitive bound
+has strictly positive ruin probability over an unbounded horizon.
+\end{quote}
+
+The consequence for Q is that the two-way frontier must be re-indexed as a three-way
+object --- consistency, robustness, and survival probability \(\delta\) --- a surface
+rather than a curve \ledger{18}.
+
+\subsection{The corollary we regard as the result}
+
+The obvious remedy for unbounded endogenous cost is truncation: cap the predictor at \(k\)
+tokens, restoring \(C \le c(k)\) and with it the margin argument. But truncation degrades
+the prediction, so the cap converts an endogenous \emph{cost} into an endogenous
+\emph{error}. Q lists cost-aware prediction and endogenous error as two \emph{separate}
+open problems. Under ruin coupling with a generation cap they are one problem: \(k\) is a
+single control knob tracing a curve \(\bigl(c(k), \eta(k)\bigr)\) in cost--error space,
+and the design question is choosing \(k\), not choosing whether to query \ledger{19}.
+
+The two peers reached this collapse independently from the same two abstracts, by
+different knobs --- a generation cap \(k\) \ledger{19} and model size / reasoning effort
+\(\theta\) \ledger{24, 26} --- and emmy defers to \(k\) as the cleaner lead, since it is an
+exogenous parameter the experimenter sets whereas \(\theta\) confounds capacity with
+verbosity across different models \ledger{29}. Independent derivation is the strongest
+evidence in this thread that the claim is not an artifact of one reader's framing
+\ledger{29}. It is also the one thing neither paper states alone.
+
+A further consequence, argued but not established: with cost and error coupled through one
+effort parameter and an absorbing budget, the optimal effort level is interior and can move
+\emph{downward} as the available predictor family gets stronger, so a strictly more
+accurate predictor can be strictly worse for the objective. Q's framework cannot express
+this, because it scores predictors by error and prices queries separately \ledger{26}.
+
+\section{Supported findings}
+
+\begin{enumerate}
+  \item \textbf{P's size-cost-neutral control isolates volume from price.} With per-token
+        price held flat across predictors, larger models still run a deficit, which points
+        at emitted-token volume and induced behaviour rather than a price schedule
+        \ledger{3, 12}. Cite as a motivating observation only: LLM-agent-scale \(n\),
+        possible verbosity confounds, and no measured prediction error \ledger{12, 16}.
+  \item \textbf{A decision-quality signal separable from spend exists in P's traces.}
+        Jobs are multiple-choice and agents gain energy for answering correctly, so
+        per-job binary correctness necessarily exists --- the environment cannot run
+        without computing it. Per-run artefacts are \texttt{agents.json},
+        \texttt{config.json}, \texttt{transcript.json}, \texttt{token\_usage.json}, with a
+        token/energy accounting middleware \ledger{15, 23}. This clears the blocker raised
+        in \ledger{7} and raises feasibility: an error measure need not be built from
+        scratch \ledger{15, 23}.
+  \item \textbf{No generation cap is documented.} P currently sits at \(k = \infty\),
+        which is the mechanism \ledger{19} predicts produces its deficit \ledger{19}.
+  \item \textbf{Honest division of labour.} P supplies neither theorem nor benchmark, but
+        the empirical plausibility of precondition (ii): a measurement of the per-decision
+        spend distribution and its upper tail, which P's artefacts can support without any
+        adversarial prediction ever being present \ledger{18}.
+\end{enumerate}
+
+\section{Objections, including to our own line}
+
+\begin{enumerate}
+  \item \textbf{Ruin coupling alone does not give degeneracy.} If per-query cost is
+        bounded by a known \(c\), an algorithm facing an absorbing state reserves an
+        \(\epsilon\) fraction of current reserve for queries; adversarial predictions shift
+        the frontier but cannot themselves force ruin. This ``margin doctrine'' is folklore
+        in bandits-with-knapsacks, which has exactly this bounded-cost structure. The
+        original degeneracy claim \ledger{10} is withdrawn \ledger{17, 30}. Endogeneity is
+        what defeats the margin; the absorbing state is the amplifier, not the mechanism.
+  \item \textbf{Prior art must be located precisely.} Novelty cannot sit in ``budgets make
+        competitive ratios awkward'' (bandits-with-knapsacks) nor in ``pooling beats
+        self-insurance'' (classical economics). It sits in the prediction layer plus the
+        endogeneity of cost: here the cost of a query is generated by the oracle being
+        queried \ledger{13, 18}.
+  \item \textbf{Reward calibration is a live confound, and it is unanswered
+        \ledger{25, 31, 32}.} A correct multiple-choice job pays a fixed reward \(R\), so
+        the marginal value of accuracy is capped at \(R\) while token spend is unbounded. A
+        sufficiently verbose agent is then underwater \emph{by accounting} at any accuracy,
+        whenever \(R\) is small relative to its token bill. On this reading P's headline
+        finding is partly an artifact of how its designers calibrated reward against token
+        price. A second confound: ``recommendations support ambitious job selection,'' so
+        larger models may run deficits by attempting harder jobs and failing --- a
+        selection effect, not a verbosity effect \ledger{25}.
+
+        This objection is correct and I adopt it, with one clarification that narrows its
+        reach. It bites on the strong reading of P's control --- that a better predictor is
+        net-negative \ledger{3, 12} --- which must not be asserted until the deficit is
+        shown to survive rescaling of \(R/p\). It does \emph{not} bite on precondition (ii)
+        of the conjecture, which is a statement about the upper tail of the per-decision
+        spend distribution alone and is invariant to how rewards are priced. So the
+        theory's hypothesis survives the confound; the motivating empirical claim does not,
+        until measured.
+  \item \textbf{P cannot validate a robustness theorem.} Nothing in P is an
+        adversarially-supplied prediction, so experiments in P demonstrate mechanism
+        behaviour, not tightness \ledger{13, 18}.
+  \item \textbf{Pooled robustness is demoted.} The line that a donation channel lets a pool
+        sustain a strictly higher consistency operating point than any individually-robust
+        agent \ledger{11} is asserted rather than argued; under the three-way surface a
+        donation channel most naturally relaxes \(\delta\), which is the
+        variance-reduction reading it was meant to escape \ledger{4, 20, 30}. Discussion
+        section only, unless someone exhibits a model where the pool strictly dominates on
+        consistency at matched \(\delta\).
+\end{enumerate}
+
+\section{Unresolved}
+
+All of these need the full texts, which are absent \ledger{23, 27, 32}.
+
+\begin{enumerate}
+  \item \textbf{Whether Q's five construction mechanisms already contain a coupled
+        cost--error model.} This would sink the line outright. It is the first check anyone
+        should run \ledger{27, 32}.
+  \item Whether P's job rewards vary by difficulty --- required by the online-selection
+        mapping, currently inferred only from the phrase ``ambitious job selection''
+        \ledger{27}.
+  \item Whether P elicits any confidence; without it, calibration must be inferred from
+        attempt behaviour rather than measured \ledger{27}.
+  \item Whether \texttt{token\_usage.json} is per-decision or per-run aggregate. Only the
+        former supports the spend-tail measurement that precondition (ii) needs
+        \ledger{15}.
+\end{enumerate}
+
+\section{Smallest next step}
+
+Read Q's five construction mechanisms and check for an existing model in which prediction
+cost and prediction error are governed by a common parameter. This is a literature check on
+one paper, it requires no code, and a positive result ends the line \ledger{27, 32}.
+
+If it comes back negative, the next step is a two-dimensional sweep over generation cap and
+reward-to-token-price ratio, \((k, R/p)\), in P's public code, measuring per model size the
+three quantities the traces already contain --- tokens spent, jobs attempted, jobs correct
+\ledger{26, 31}. Both dimensions are config-level changes. The \(k\) axis traces the induced
+(accuracy, spend, survival-time) frontier and the \(R/p\) axis separates the three candidate
+explanations of P's deficit: verbosity at fixed accuracy \ledger{3}, risk-seeking job
+selection \ledger{25}, and reward miscalibration \ledger{25}. A one-dimensional cap sweep
+\ledger{19} cannot distinguish them; emmy's amendment \ledger{31} is accepted.
+
+\section{Verdict and scores}
+
+Scan hypothesis: \textbf{rejected}, jointly \ledger{9, 21, 27, 32}. Feasibility 75 is
+unearned for the construction described; gain 50 is mis-argued.
+
+Replacement line --- endogenous, ruin-coupled prediction cost forces a
+consistency--robustness--survival surface, and capping generation collapses two of Q's
+named open problems into a single design choice: feasibility \(\approx 60\text{--}65\)
+(theory from scratch, but the P-side measurement is cheap given logged per-job correctness
+and token accounting), gain \(\approx 60\) (it lands on two problems Q names explicitly and
+changes how the trade-off object is \emph{stated}, but Q is a survey, so this ceiling is
+structural) \ledger{21, 32}.
+
+Shape: a focused theory note with a motivating sweep. Not a benchmark paper, not a headline
+result, and resting on two abstracts plus one repository README. We would not oversell it.
+
+\end{document}

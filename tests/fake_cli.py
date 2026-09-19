@@ -20,9 +20,10 @@ if os.environ.get("FAKE_RUN"):
     subprocess.run(os.environ["FAKE_RUN"], shell=True, check=True)
 if mode == "claude":
     print(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 1, "cache_creation_input_tokens": 5, "cache_read_input_tokens": 2}}}))
-    print(json.dumps({"type": "result", "subtype": "success", "result": reply, "session_id": "fake-session",
-                      **({"total_cost_usd": 0.5} if final == "default" else {}),
-                      "usage": {"input_tokens": 100, "output_tokens": 10, "cache_creation_input_tokens": 7, "cache_read_input_tokens": 3} if final == "default" else final}))
+    is_error = bool(os.environ.get("FAKE_ERROR"))
+    print(json.dumps({"type": "result", "subtype": "success", "result": reply, "session_id": "fake-session", "is_error": is_error,
+                       **({"total_cost_usd": 0.5} if final == "default" else {}),
+                       "usage": {"input_tokens": 100, "output_tokens": 10, "cache_creation_input_tokens": 7, "cache_read_input_tokens": 3} if final == "default" else final}))
 else:
     print(json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": reply}}))
     print(json.dumps({"type": "turn.completed", "usage": {"input_tokens": 100, "output_tokens": 10} if final == "default" else final}))

@@ -63,13 +63,14 @@ def _command(campaign, model, tools, search, cwd):
             cmd += ["--tools", CLAUDE_TOOLS + (",WebSearch,WebFetch" if search else ""),
                     "--dangerously-skip-permissions"]
         else:
-            cmd += ["--tools", "", "--permission-prompts", "none"]
+            cmd += ["--tools", ""]
         return cmd
     cmd = shlex.split(os.environ.get("PATHFINDER_CODEX", "codex"))
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
-            "--sandbox", "workspace-write" if tools else "read-only",
-            "-c", f'web_search="{"live" if (tools and search) else "disabled"}"']
+            "--sandbox", "workspace-write" if tools else "read-only"]
+    if tools and search:
+        cmd += ["--search"]
     if tools and search:                           # the workspace sandbox has no network unless asked
         cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     prov = (campaign.raw or {}).get("codex") or {}
@@ -211,9 +212,16 @@ def execute(campaign, request: ModelRequest):
         proc.stdin.write(prompt); proc.stdin.close()
     except BrokenPipeError:
         pass
-    if not session_seen.wait(SESSION_GRACE + len(prompt) // 5000):      # a long prompt takes longer to open
-        _kill(proc)
-        return _failed(campaign, thread, stage, actor, model, started, "no session", "no session")
+    grace = SESSION_GRACE + len(prompt) // 5000
+    deadline = time.monotonic() + grace
+    while not session_seen.wait(min(0.1, max(0, deadline - time.monotonic()))):
+        if proc.poll() is not None:
+            t.join(1)
+            error = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode} before session"
+            return _failed(campaign, thread, stage, actor, model, started, "launch failed", error)
+        if time.monotonic() >= deadline:
+            _kill(proc)
+            return _failed(campaign, thread, stage, actor, model, started, "no session", "no session")
     try:
         proc.wait(timeout=max(1, timeout - (time.time() - started)))
         error = None
@@ -228,7 +236,7 @@ def execute(campaign, request: ModelRequest):
     r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "usage": usage, **counters,
           "prefix_read": prefix_read, "cost": cost, "cost_basis": basis, "rates": rates,
           "outcome": "timeout" if error else "error" if err else "completed", "error": error or err,
-          "transport_failed": False, "exit_status": proc.returncode,
+          "transport_failed": bool(err), "exit_status": proc.returncode,
           "terminal_event": lines[-1].rstrip("\n") if lines else None,
           "raw_events": [line.rstrip("\n") for line in lines]}
     _receipt(campaign, thread, stage, actor, model, r)

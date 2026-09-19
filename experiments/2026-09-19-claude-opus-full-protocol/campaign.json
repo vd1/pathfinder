@@ -1,0 +1,25 @@
+{
+  "backend": "claude",
+  "model": "claude-opus-5",
+  "scan_model": "claude-opus-5",
+  "peer_search": true,
+  "seats": 2,
+  "cut": 12,
+  "rounds": 4,
+  "allowances": {
+    "peer_seconds": 1800,
+    "peer_calls": 2,
+    "consolidate_seconds": 1800,
+    "verify_seconds": 900
+  },
+  "budget_usd": 200,
+  "call_estimate_usd": 5.0,
+  "prices": {
+    "claude-opus-5": {
+      "input_per_m": 15.0,
+      "output_per_m": 75.0
+    }
+  },
+  "scan": {"fulltext": null},
+  "repairs": 1
+}

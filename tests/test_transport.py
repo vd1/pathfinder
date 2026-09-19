@@ -31,6 +31,21 @@ def test_claude_call_returns_text_and_receipt(tmp_path, monkeypatch):
     assert rows[0]["stage"] == "scan" and transport.spend(campaign(tmp_path)) == 0.5
 
 
+def test_tool_free_claude_command_uses_supported_flags(tmp_path):
+    cmd = transport._command(campaign(tmp_path), "m", tools=False, search=False, cwd=tmp_path)
+    assert cmd[-2:] == ["--tools", ""]
+    assert "--permission-prompts" not in cmd
+
+
+def test_claude_api_error_is_a_transport_failure(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_ERROR", "1")
+    monkeypatch.setenv("FAKE_REPLY", "You've hit your session limit")
+    r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=True, search=True, cwd=tmp_path,
+                       timeout=10, thread="T", stage="peer", actor="ada")
+    assert r["transport_failed"] and r["outcome"] == "error"
+    assert r["error"] == "You've hit your session limit"
+
+
 def test_codex_call_prices_from_table(tmp_path, monkeypatch):
     monkeypatch.setenv("FAKE_MODE", "codex"); monkeypatch.setenv("FAKE_REPLY", "hi")
     r = transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=True, search=True, cwd=tmp_path,
@@ -138,5 +153,7 @@ def test_codex_custom_provider_flags_and_key(tmp_path):
 
 def test_codex_search_opens_the_sandbox_network(tmp_path):
     c = campaign(tmp_path, "codex")
-    assert "sandbox_workspace_write.network_access=true" in transport._command(c, "m", tools=True, search=True, cwd=tmp_path)
-    assert "sandbox_workspace_write.network_access=true" not in transport._command(c, "m", tools=True, search=False, cwd=tmp_path)
+    search = transport._command(c, "m", tools=True, search=True, cwd=tmp_path)
+    no_search = transport._command(c, "m", tools=True, search=False, cwd=tmp_path)
+    assert "--search" in search and "sandbox_workspace_write.network_access=true" in search
+    assert "--search" not in no_search and "sandbox_workspace_write.network_access=true" not in no_search

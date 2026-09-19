@@ -191,7 +191,7 @@ def _peers(campaign, pair_id, stop):
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
             r = transport.execute(campaign, transport.ModelRequest(
-                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=actor, tools=True,
+                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.model, tools=True,
                 search=campaign.peer_search, cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id,
                 stage="peer", actor=actor,
             ))

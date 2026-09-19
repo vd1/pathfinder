@@ -1,0 +1,26 @@
+{
+  "backend": "codex",
+  "model": "Qwen/Qwen3.5-397B-A17B-FP8",
+  "scan_model": "Qwen/Qwen3.5-397B-A17B-FP8",
+  "peer_search": true,
+  "seats": 2,
+  "cut": 12,
+  "rounds": 4,
+  "allowances": {
+    "peer_seconds": 1800,
+    "peer_calls": 2,
+    "consolidate_seconds": 1800,
+    "verify_seconds": 900
+  },
+  "budget_usd": 200,
+  "call_estimate_usd": 0.25,
+  "prices": {},
+  "scan": {"fulltext": null},
+  "repairs": 1,
+  "codex": {
+    "name": "elm",
+    "base_url": "https://elm.edina.ac.uk/api/v1",
+    "env_key": "ELM_API_KEY",
+    "wire_api": "responses"
+  }
+}
