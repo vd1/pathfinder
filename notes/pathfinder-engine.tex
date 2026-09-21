@@ -60,6 +60,8 @@ is supplemented with a seed note describing the putative connexion, supplied by
 the agent that scanned and scored the pair. The seed is a starting point, not a
 claim the researcher agents should support.
 
+
+
 Pathfinder is concerned with finding questions and connexions, rather than
 solving a conjecture fixed in advance. This is not a new idea. Swanson's
 \emph{undiscovered public knowledge} concerns implications that become visible
@@ -133,36 +135,34 @@ to establish what those links mean and whether they yield anything useful.
 
 % \subsection{Setup and experimental record}
 To test the engine on a small scale,
-we picked the ten most recent Arxiv papers (at the time of the call)
+we picked the ten most recent papers (at the time of query, Sep 15, 2026)
 returned by arxiv for the
-queries ``mechanism design'' (for $Q$) and ``agentic cooperation'' (for $P$). These
-papers are labelled $Q1,\ldots,Q10$ and $P1,\ldots,P10$. The $Q$-collection includes
+queries ``mechanism design'' (for Q) and ``agentic cooperation'' (for P). These
+papers are labelled Q1, \ldots, Q10 and P1, \ldots, P10. The Q-collection includes
 economic mechanisms, learning-augmented algorithms, robotic hardware, and
-astronomical instrumentation. The $P$ one includes multi-agent learning,
+astronomical instrumentation. The P one includes multi-agent learning,
 perception, distributed optimisation, and energy systems.\footnote{The question
 of how to choose the corpora is not discussed in this note.}
 
-The scanner agent (Sonnet 5) scored each of the $100$ pairs from $0$ to
-$100$ for feasibility and scientific-gain, and proposed a seed connexion.
-It did so being only given
-titles and abstracts thereby keeping contexts small.
-The ranking score is the product.
+The scanner agent (Sonnet 5) scored each of the $100$ pairs from $0$ to $100$
+for feasibility and scientific-gain, and proposed a seed connexion. It did so
+being only given titles and abstracts (thereby keeping contexts small). The
+ranking score is the product.
 % There were $99$ parseable scored pairs: the response for $Q1P7$ could not
 % be parsed (see failure recovery below).
 We picked a threshold of $1500$
 eliciting 13 pairs for the research phase. The shortlist also retained the
-existing $Q1P2$ investigation, whose score was $600$, giving fourteen research
+existing Q1P2 investigation, whose score was $600$, giving fourteen research
 threads. (Because it looked promising to the human in charge.)
 
 \begin{figure}[htbp]
 \centering
 \IfFileExists{notes/figures/2026-09-14-campaign-heatmap.tex}
   {\input{notes/figures/2026-09-14-campaign-heatmap.tex}}
-  {\input{figures/2026-09-14-campaign-heatmap.tex}} \caption{
-  100 pairs scanned, 14 retained for research (black outline), 5 accepted as papers (starred).
+  {\input{figures/2026-09-14-campaign-heatmap.tex}} \caption{100 pairs scanned,
+  14 retained for research (black outline), 
+  5 accepted as papers (starred).
   Numbers are the combined feasibility and gain score.
-  % Colours show initial scan judgements, not the assessed scientific quality of
-  % the eventual outputs.
   % we are lacking evalutions!!
   }
 \label{fig:pilot-heatmap}
@@ -190,8 +190,7 @@ Model recorded in receipts & Calls & Recorded cost (USD) \\
 Total & 330 & 186.58 \\
 \bottomrule
 \end{tabular}
-\caption{Root-campaign model usage. This mixture precludes attributing the
-scientific outcomes to a single model.}
+\caption{Root-campaign model usage.}
 \label{tab:pilot-models}
 \end{table}
 
@@ -206,9 +205,9 @@ Campaign stage or outcome & Number \\
 \midrule
 Candidate pairs & 100 \\
 Investigated pairs & 14 \\
-Research outcomes: \st{draft} & 5 \\
 Research outcomes: \st{pause} & 8 \\
 Research outcomes: \st{pause-on-iterate} & 1 \\
+Research outcomes: \st{draft} & 5 \\
 Accepted manuscripts & 5 \\
 % Readable notes built & 14 \\
 \bottomrule
@@ -1560,15 +1559,235 @@ proposed fix. The runner, rather than the judge, adds counters, timestamps and
 artifact digests. State labels are rendered uniformly in this note; their
 capitalisation and file-field names in the repository are serialization details.
 
-\begin{thebibliography}{9}
-\bibitem{swanson1986}
-Don R. Swanson. Undiscovered public knowledge. \emph{The Library Quarterly},
-56(2):103--118, 1986. \url{https://doi.org/10.1086/601720}.
+\section{Variability, evaluation and discovery comparison}
+\label{app:discovery-recovery}
 
-\bibitem{gentner1983}
-Dedre Gentner. Structure-mapping: A theoretical framework for analogy.
-\emph{Cognitive Science}, 7(2):155--170, 1983.
-\url{https://doi.org/10.1207/s15516709cog0702_3}.
-\end{thebibliography}
+Repeating an investigation can produce a different connexion (), a different
+connexion, or a different verdict. Moreover, judging the resulting science is
+itself uncertain. These are separate questions: how variable is the research,
+and how reliably can we assess it? The following related work motivates a
+proposed experiment, not a further result of the pilot.
+
+\subsection{What existing evaluations measure}
+
+\paragraph{Tasks with assessable answers.}
+The starting questions in the studies by Li et al., Choi et al., Kim et al.,
+Wunderlich et al., and Tran and Kiela below come from benchmark instances.
+Their agents generate candidate answers or action plans, not new research
+questions. There is therefore no research-seed generation stage to compare
+with Pathfinder's scan.
+\emph{More Agents Is All You Need} studies sampling and voting on benchmark
+tasks; its sampling-parameter robustness experiments average over twenty
+runs~\cite{li2024more}. \emph{Debate or Vote} compares independent voting with
+agent discussion against benchmark answers. Its main table reports five-run
+variation for the single-agent baseline, but not equivalent error bars for
+the multi-agent configurations~\cite{choi2025debate}. The broader comparison
+by Kim et al. uses task completion and correctness across agent architectures,
+with confidence intervals and robustness analyses~\cite{kim2026scaling}.
+Wunderlich et al. compare accuracy at comparable computational cost, reporting
+sampling uncertainty over benchmark questions~\cite{wunderlich2026compute};
+Tran and Kiela likewise show why controlling the reasoning budget
+matters~\cite{tran2026single}. In contrast, $\tau$-bench explicitly repeats tasks and distinguishes
+finding a successful attempt from succeeding consistently across attempts.
+Its tasks are constructed from human-designed domains, policies and annotated
+user requests, with model assistance for data generation. Evaluation relies
+on an annotated target database state~\cite{yao2024tau}, an advantage
+unavailable for an undiscovered result.
+
+\paragraph{Classifying scientific-research systems.}
+The closer comparisons concern systems that propose research rather than
+solve supplied benchmark tasks. We distinguish how the starting idea is
+generated, the protocol that develops it, the output produced, and how that
+output is evaluated. In describing the starting idea, supplying a broad topic
+is different from supplying the hypothesis to investigate. Likewise, review
+inside the generation protocol is distinct from evaluation of the system by
+its authors or independent readers.
+
+\paragraph{VirSci~\cite{su2025virsci}.}
+\emph{Seed generation:} agents represent scientists with publication-based
+profiles. A sampled leader recruits collaborators, and the team chooses a
+topic through discussion, then retrieves relevant papers and proposes ideas.
+\emph{Generation protocol:} agents take turns proposing or revising ideas and
+experimental plans, retain highly self-rated candidates, and vote on novelty
+against retrieved literature. They iteratively refine the selected idea's
+abstract. \emph{Output:} a research abstract describing proposed work and
+expected results, not an executed study. \emph{Evaluation:} literature-similarity
+metrics, agent reviews and human reviews. Scenarios are repeated twenty times;
+a 200-abstract validation uses three human assessments and three agent
+assessments per abstract.
+
+\paragraph{Si et al.~\cite{si2024ideas}.}
+\emph{Seed generation:} a human-supplied topic guides literature retrieval.
+The agent generates 4,000 candidate ideas per topic, using example proposals
+and, for some generations, retrieved titles and abstracts.
+\emph{Generation protocol:} generate many candidates, remove near-duplicates,
+expand ideas into structured project proposals, and rank them through pairwise
+agent comparisons. A separate condition uses human reranking.
+\emph{Output:} research proposals, not completed investigations.
+\emph{Evaluation:} blind expert comparison with human-written proposals,
+using novelty, feasibility, expected effectiveness and related criteria;
+the analysis accounts for topic, idea and reviewer variation and measures
+reviewer disagreement.
+
+\paragraph{The AI Scientist-v2~\cite{yamada2025scientist}.}
+\emph{Seed generation:} humans supply broad topical prompts, chosen for the
+workshop's scope in the reported experiment. The system formulates hypotheses
+and experimental plans while consulting literature through Semantic Scholar.
+The topic is human-provided; the specific research idea is agent-generated.
+\emph{Generation protocol:} an experiment manager coordinates code generation,
+execution and refinement through tree search, progressing from a working
+prototype through tuning, the research agenda and ablations. Selected
+experiments are replicated; the system generates figures and a manuscript,
+with model feedback and revision. No supplied experimental code template is
+required. \emph{Output:} full experimental papers.
+\emph{Evaluation:} internal model feedback, author inspection and external
+workshop peer review. The authors submitted three manuscripts and report that
+one met the acceptance threshold.
+
+\paragraph{Pathfinder.}
+\emph{Seed generation:} humans select corpora $Q$ and $P$. The scanner examines
+pairs in $Q\times P$, proposes connexions from titles and abstracts, and scores
+whether they warrant investigation. The specific question emerges from this
+encounter rather than from a supplied topic to elaborate.
+\emph{Generation protocol:} researchers investigate with a shared ledger;
+consolidation and verification lead to bounded cycles of further research or
+repair, or a terminal outcome. Researchers may abandon or reformulate the
+seed. Editing follows research, producing a reviewed manuscript when warranted
+and a readable account of terminal research outcomes.
+\emph{Output:} a research record and, where justified, a pre-publication paper;
+paused investigations also yield an account of what was learned.
+\emph{Evaluation:} internal agent verification and manuscript review, plus
+build checks. The pilot inventories resulting claims but does not establish
+an independently validated discovery rate. The experiments proposed below
+would compare scientific contributions across protocols.
+
+Generating ideas and producing papers both have precedents. Pathfinder's
+distinguishing design choice in this comparison is its systematic use of
+cross-corpus pairings to generate and select questions, making the candidate
+space and its coverage explicit. Other systems also use prior literature;
+the distinction is not simply ``ideas from papers''. This identifies a design
+difference, not a claim of priority over all literature-based discovery
+methods. In every case, assessment of scientific claims remains necessary
+beyond the output format or an acceptance decision.
+
+\subsection{Independent research runs, compared afterwards}
+
+Rather than ask reviewers to give every output an overall quality score, we
+could compare the specific contributions found by different protocols. The
+labels would be constructed afterwards from all protocols' findings, not
+fixed in advance or supplied by the current protocol alone. This experiment
+stops after the research phase, including consolidation and verification:
+neither the manuscript nor the readable-account editing branch is needed.
+
+\begin{enumerate}
+\item \textbf{Run independently.} Repeat each protocol on fixed example pairs,
+initially $Q3P3$ and $Q4P6$. Compare the current protocol with alternatives
+such as a single researcher, independent researchers followed by consolidation,
+and interacting researchers. Fix the papers, optional seed, model, tool access,
+resource allowances and number of runs before examining the outcomes. Retain
+the same final verification procedure and include coordination and verification
+in the budget. Keep every research record, including pauses and operational
+failures. No run receives another run's findings; access to published pilot
+outputs must also be controlled and documented.
+
+\item \textbf{Construct the labels.} Pool the completed research records and
+have assessors, blind to the producing protocol, identify and check their
+contributions. Each label specifies a claim, its assumptions, its supporting
+argument or experiment, and the criterion for an equivalent finding. Merge
+duplicate formulations without merging substantively different assumptions
+or guarantees. Fix the labelling rules in advance, although the labels
+themselves emerge afterwards. Double-assess a subset to measure disagreement.
+
+\item \textbf{Compare the findings.} Map each run to its checked labels, then
+report shared and protocol-specific contributions, their frequency across
+repeated runs, and the number of distinct contributions found at comparable
+total expenditure. Retain the evidence for each attribution: mentioning a
+conclusion is not equivalent to establishing it.
+\end{enumerate}
+
+For a pair $x$, let $L_{\pi,j}(x)$ be the checked labels found by run $j$ of
+protocol $\pi$, and define the pooled inventory and each run's coverage by
+\[
+  L_x=\bigcup_{\pi,j}L_{\pi,j}(x),
+  \qquad
+  \operatorname{coverage}_{\pi,j}(x)
+  =100\,\frac{|L_{\pi,j}(x)|}{|L_x|}
+  \quad\text{when }|L_x|>0.
+\]
+If no checked contribution is found for a pair, report that outcome rather
+than an undefined percentage. Give per-pair coverage distributions and
+per-label frequencies, not just the best run. A launch without a research
+output contributes no labels and is also recorded as an operational failure.
+Report actual tokens, cost and elapsed time alongside the scientific outcomes.
+
+The examples in Section~\ref{sec:pilot} and the talk's inventory illustrate
+possible labels: the conditional judge-free ranking construction for $Q4P6$,
+or the identification and design of a missing matched-budget control for
+$Q3P3$. The latter is an experimental-design contribution, not evidence that
+the critic is ineffective. Keep proposed tests distinct from proved or
+experimentally established results. Supported obstructions may count even
+when a run pauses; internal \st{draft} status alone establishes neither
+validity nor novelty.
+
+\paragraph{What this comparison would establish.}
+Coverage measures the share of the pooled findings, not the share of all
+possible discoveries. The inventory depends on the protocols and runs sampled;
+the comparison is therefore exploratory, not a held-out test against an
+independent answer key. It allows a new contribution from any protocol to
+enter on equal terms, while distinguishing repeated access to familiar
+findings from complementary discoveries. A protocol-specific label is not
+automatically more valuable, and counts depend on the agreed granularity.
+Record unsupported claims separately so that high coverage cannot conceal
+unreliable research. The inventory could subsequently be frozen for a fresh
+recovery experiment. Neither comparison establishes generalisation beyond
+the tested pairs, nor does evaluation before editing measure manuscript
+quality. It makes scientific assessment more specific, not unnecessary.
+
+\subsection{Virtual conferences and successive generations}
+
+A more ambitious experiment would turn each campaign into a virtual
+conference. Starting from the same source corpora, each protocol produces a
+batch of research papers, submits them to a common review procedure, and
+returns admitted papers to the pool of candidates for subsequent scans.
+Further generations can then investigate connexions involving earlier
+generated work. Fix an admission and pairing rule in advance: which papers
+enter $Q$, $P$, or both, and whether generated papers may be paired with
+each other. Preserve source versions and ancestry throughout. Admission is
+permission to investigate a paper further, not certification that its claims
+are true.
+
+This asks whether a protocol can sustain cumulative research, rather than
+recover a fixed inventory. For example, a later paper might relax the
+assumptions of the $Q4P6$ ranking construction, establish its finite-sample
+requirements, or find a counterexample. These are possible directions, not
+results already obtained. A contribution must add something beyond both the
+initial literature and its generated predecessors; a new pairing, title or
+restatement is not enough. Corrections and supported negative results also
+count, but an unsupported premise inherited from an earlier paper must not
+silently become an established fact.
+
+Compare separate protocol lineages from the same initial corpora, with the
+same review procedure and resource allowance per generation, and repeat each
+lineage independently. Count distinct, independently checked contributions
+and their evidential types, alongside invalidated claims, costs and human
+assessment effort. Plot cumulative contributions against total expenditure,
+not merely against generation number or paper count. Keep the assessors
+separate from the producing agents; agent review may screen candidates, but
+human audits and claim-specific checks remain necessary. If only a sample is
+audited, report that sampling and its uncertainty rather than describing all
+admitted papers as validated.
+
+The evolving corpora are themselves an outcome: a successful discovery may
+make later progress easier. Such a comparison measures a whole research
+lineage, including selection and accumulated opportunities. To distinguish
+this effect from a better research procedure on the same inputs, periodically
+test the protocols on a common frozen pool. Keep this longitudinal evaluation
+separate from the single-generation comparison: its aim is to measure additional
+supported ideas, not agreement with an ever-expanding answer key.
+
+\bibliographystyle{unsrt}
+\IfFileExists{notes/pathfinder-engine.bib}
+  {\bibliography{notes/pathfinder-engine}}
+  {\bibliography{pathfinder-engine}}
 
 \end{document}
