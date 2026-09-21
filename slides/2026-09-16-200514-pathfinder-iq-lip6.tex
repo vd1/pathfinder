@@ -38,7 +38,8 @@
 \setbeamertemplate{footline}{\hspace{7mm}{\color{Muted}\fontsize{6.7}{8}\selectfont
   % PATHFINDER\quad /\quad IQ LAB, LIP6\quad /\quad 17 SEPTEMBER 2026}
   % \hfill{\color{Muted}\fontsize{7}{8}\selectfont
-  \ifnum\value{framenumber}>14 BACKUP\else\insertframenumber\,/\,14\fi}\hspace{7mm}\vspace{3mm}}
+  \ifnum\value{framenumber}>14 %BACKUP
+  \else\insertframenumber\,/\,14\fi}\hspace{7mm}\vspace{3mm}}
 \hypersetup{pdftitle={Pathfinder: from seminar questions to research},
   pdfauthor={Vincent Danos, Elham Kashefi, William Waites},colorlinks=true,urlcolor=Teal}
 \ifdefined\SpeakerNotes
@@ -368,7 +369,7 @@ For calls using inline context, common paper text comes first, then the growing 
 call-specific instructions. Prefix reuse depends on provider cache behaviour; it is not guaranteed.
 Researchers also read new ledger entries before changing direction or declaring ready.}
 \end{frame}
-
+ 
 \begin{frame}[t]{Q4P6: when can we dispense with the judge?}
 \paperpair{\Qfour}{\Psix}
 \vspace{1mm}
@@ -516,7 +517,7 @@ Flat GPT-6 Standard rates: \$10/M input, \$50/M output.}
 \end{column}
 \end{columns}
 \vspace{2mm}
-\takeaway{\textbf{Scenario, not a bill:} cache usage was incompletely logged; exact repricing is unavailable.}
+\takeaway{\textbf{Caveat:} cache usage incompletely logged; exact repricing is unavailable.}
 \vspace{1mm}\smallprint{Common tariff, not an observed medium-effort run. Subscription quota is separate.
 \href{https://developers.openai.com/api/docs/models/gpt-6-astra}{OpenAI pricing, 16 September 2026}.}
 \note{Timing: 1 minute. All displayed model dollar figures use the same GPT-6 Standard
@@ -691,7 +692,7 @@ universal identification method. Private peer beliefs, calibration bootstrapping
 of contribution remain separate issues.}
 \end{frame}
 
-\begin{frame}[t]{Backup: what the dollar scenario does and does not say}
+\begin{frame}[t]{Dollar scenarios}
 \kicker{Original 330-call cohort; later runs excluded}
 \begin{center}\small
 \begin{tabular}{lrrr}
@@ -706,11 +707,19 @@ Probe & 1 & 4.4 s & 0.13\\
 \bottomrule
 \end{tabular}\end{center}
 \vspace{2mm}
-{\small GPT-6 Standard, per million tokens: input \$10; cache read \$1; cache write \$12.50; output \$50.}
+{\small GPT-6 Standard, per million tokens: input \$10; cache read \$1; 
+cache write \$12.50; output \$50.
+
+Only input and output counters were retained in these receipts. 
+
+Missing cache and per-request context data prevent exact normalisation.
+ 
+Scenario applies \$10/M and \$50/M to recorded counters only. Above 272K input tokens,
+the full request has higher rates.}
 \vspace{2mm}
-\takeaway{Only input and output counters were retained in these receipts. Missing cache and per-request context data prevent exact normalisation.}
-\vspace{2mm}\smallprint{Scenario applies \$10/M and \$50/M to recorded counters only. Above 272K input tokens,
-the full request has higher rates. Medium effort is not a multiplier that reconstructs a counterfactual run.}
+% \takeaway{
+%   }
+\vspace{2mm}\smallprint{}
 \note{Backup. The displayed stage values are an arithmetic scenario, not actual model charges.
 Claude input counters exclude unrecorded cache activity; Codex input may include cached tokens.
 Consequently the missing terms do not have a known net direction. A correct future cost logger
@@ -719,8 +728,8 @@ request-level context length, and separately billed tools. Source: OpenAI model 
 16 September 2026, and the original root receipts frozen into the slide assets.}
 \end{frame}
 
-\begin{frame}[t]{Backup: why did we pause?}
-\kicker{Proposed review distinction, separate from the stopping mechanism}
+\begin{frame}[t]{What's in a PAUSE?}
+% \kicker{Proposed review distinction, separate from the stopping mechanism}
 \begin{columns}[T,onlytextwidth]
 \begin{column}{.48\textwidth}
   \begin{beamercolorbox}[sep=9pt,wd=\linewidth]{paperbox}
@@ -737,7 +746,8 @@ request-level context length, and separately billed tools. Source: OpenAI model 
   \end{beamercolorbox}
 \end{column}
 \end{columns}
-\vspace{5mm}\takeaway{An exhausted iteration budget is a stopping reason, not a scientific assessment. Allow ``undetermined'' too.}
+\vspace{5mm}
+% \takeaway{An exhausted iteration budget is a reason to pause, not a scientific assessment. Allow ``undetermined'' too.}
 \note{Backup. This is a proposed addition to the final review, not a claim that the implementation
 already has these states. The two dimensions should remain separate: where the runner stopped,
 and what the researchers learned about the prospects of continuing. PAUSE-PLUS must name an
