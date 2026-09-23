@@ -1574,6 +1574,7 @@ def pair_finished_research(context, pair_id, status):
     d = c.thread_dir(pair_id)
     d.mkdir(parents=True, exist_ok=True)
     (d / "status.json").write_text(json.dumps({"pair_id": pair_id, "round": 3, "stage": "verify", "status": status}, indent=1))
+    (d / f"{pair_id}.tex").write_text("ACCEPTED RESEARCH ACCOUNT")
 
 
 @given('its "{q}" and "{p}" records have no full text present at their referenced path')
@@ -1602,8 +1603,9 @@ def prepares_pair_for_editing(context, pair_id):
     context.prepare_outcome = edit.prepare_for_editing(context.campaign, pair_id)
 
 
-@when('Pathfinder finishes running pair "{pair_id}"')
-def pathfinder_finishes_running_pair(context, pair_id):
+@when('the campaign processes pair "{pair_id}" to completion')
+def campaign_processes_pair_to_completion(context, pair_id):
+    stub_edit_dispatch(context, {"editor": "READABLE SHORT PAPER"})
     context.admitted = edit_stage.finish(context.campaign, pair_id)
 
 
@@ -1616,10 +1618,11 @@ def stub_edit_dispatch(context, replies=None):
 
     def dispatch(campaign, pair_id, role, prompt):
         text = replies.get(role, f"{role} output")
-        calls.append({"role": role, "prompt": prompt})
-        return {"role": role, "backend": "pi", "model": "m", "execution_class": "agent",
-                "prompt_digest": hashlib.sha256(prompt.encode()).hexdigest(), "provider_job_id": f"job-{role}-{len(calls)}",
-                "raw_response": text, "outcome": "ok", "latency": 1, "token_usage": 10, "cost": 0.01, "text": text}
+        receipt = {"role": role, "backend": "pi", "model": "m", "execution_class": "agent",
+                   "prompt_digest": hashlib.sha256(prompt.encode()).hexdigest(), "provider_job_id": f"job-{role}-{len(calls) + 1}",
+                   "raw_response": text, "outcome": "ok", "latency": 1, "token_usage": 10, "cost": 0.01, "text": text}
+        calls.append({"role": role, "prompt": prompt, "receipt": receipt})
+        return receipt
 
     context.dispatch_calls = calls
     original = edit_stage._dispatch
@@ -1693,9 +1696,35 @@ def pair_no_edited_artifact(context, pair_id):
     assert edit_stage.status(context.campaign, pair_id).get("draft") is None
 
 
+@then('pair "{pair_id}" has no readable short paper recorded')
+def pair_no_readable_short_paper(context, pair_id):
+    assert edit_stage.status(context.campaign, pair_id).get("draft") is None
+
+
 @then('pair "{pair_id}" has exactly one edited artifact recorded')
 def pair_has_one_edited_artifact(context, pair_id):
     assert edit_stage.status(context.campaign, pair_id).get("draft")
+
+
+@then("the edit stage's first draft is the readable short paper written from the accepted research account")
+def first_draft_is_readable_short_paper(context):
+    account = (context.campaign.thread_dir(context.pair_id) / f"{context.pair_id}.tex").read_text()
+    draft = edit_stage.status(context.campaign, context.pair_id).get("draft")
+    assert draft, "no first draft recorded for the pair"
+    call = next((c for c in context.dispatch_calls if c["role"] == "editor"), None)
+    assert call is not None, "no editor dispatch produced the first draft"
+    assert account in call["prompt"], "the first draft was not written from the accepted research account"
+
+
+@then("that first draft is the raw response recorded on a real dispatch's receipt, not a copy of the account itself")
+def first_draft_is_dispatch_raw_response(context):
+    account = (context.campaign.thread_dir(context.pair_id) / f"{context.pair_id}.tex").read_text()
+    draft = edit_stage.status(context.campaign, context.pair_id).get("draft")
+    call = next((c for c in context.dispatch_calls if c["role"] == "editor"), None)
+    assert call is not None, "no editor dispatch left a receipt for the first draft"
+    raw_response = call["receipt"]["raw_response"]
+    assert draft == raw_response, f"first draft is not the receipt's raw response: {draft!r} != {raw_response!r}"
+    assert draft != account, "first draft is a copy of the accepted research account"
 
 
 @when("the editor stage begins")
@@ -1724,6 +1753,26 @@ def pair_has_staged_brief(context, pair_id):
 @given('pair "{pair_id}" has a staged brief and source set')
 def pair_has_staged_brief_step(context, pair_id):
     pair_has_staged_brief(context, pair_id)
+
+
+@given('pair "{pair_id}"\'s staged brief and source set exceeds its assigned context limit')
+def oversized_edit_stage_brief(context, pair_id):
+    pair_has_staged_brief(context, pair_id)
+    evidence = context.brief["internal"] + "\n\n" + "\n\n".join(context.brief["external"])
+    context.stage_inputs = {"evidence": evidence}
+    context.input_limit = len(evidence.split()) - 1
+
+
+@when("the edit stage prepares a role dispatch")
+def edit_stage_prepares_dispatch(context):
+    context.provider_request = edit_stage.prepare_dispatch(
+        context.campaign, context.pair_id, "author", context.stage_inputs,
+        input_limit=context.input_limit, output_limit=1000)
+
+
+@then("Pathfinder uses a recorded compression result or blocks the dispatch")
+def oversized_dispatch_is_blocked(context):
+    assert context.provider_request["status"] == "blocked"
 
 
 @when("the author role executes")

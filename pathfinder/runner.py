@@ -94,7 +94,6 @@ def prepare_provider_stage(role: str, inputs: dict, *, input_limit: int, output_
     @planks("Then the provider request exposes no workspace or search tools")
     """
     frozen = copy.deepcopy(inputs)
-    encoded = json.dumps(frozen, sort_keys=True)
     request = {
         "role": role,
         "inputs": frozen,
@@ -102,7 +101,7 @@ def prepare_provider_stage(role: str, inputs: dict, *, input_limit: int, output_
             name: hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
             for name, value in frozen.items()
         },
-        "input_tokens": len(encoded.split()),
+        "input_tokens": sum(len(str(value).split()) for value in frozen.values()),
         "output_token_limit": output_limit,
         "tools": [],
         "status": "ready",

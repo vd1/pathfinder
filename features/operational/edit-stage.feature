@@ -5,14 +5,17 @@ Feature: Edit an accepted research account through PCE
     Scenario: A DRAFT pair with real full text starts the edit stage
       Given pair "Q3P10" finished research with status "DRAFT"
       And pair "Q3P10" has full text fetched from its original source for "Q" and "P"
-      When Pathfinder finishes running pair "Q3P10"
+      When the campaign processes pair "Q3P10" to completion
       Then the edit stage starts for pair "Q3P10"
+      And the edit stage's first draft is the readable short paper written from the accepted research account
+      And that first draft is the raw response recorded on a real dispatch's receipt, not a copy of the account itself
 
     Scenario: A non-DRAFT outcome does not enter editing
       Given pair "Q1P1" finished research with status "PAUSE-ON-ITERATE"
-      When Pathfinder finishes running pair "Q1P1"
+      When the campaign processes pair "Q1P1" to completion
       Then pair "Q1P1" does not enter the edit stage
       And pair "Q1P1" has no edited artifact recorded
+      And pair "Q1P1" has no readable short paper recorded
 
   Rule: The edit stage runs PCE's role loop against real evidence
 
@@ -38,6 +41,12 @@ Feature: Edit an accepted research account through PCE
       Given pair "Q3P10" has an archived draft
       When the critic gate runs
       Then the critic's review has no access to the editor's brief or prior reviews
+
+    Scenario: Oversized edit-stage evidence is compressed or blocked before dispatch
+      Given pair "Q3P10"'s staged brief and source set exceeds its assigned context limit
+      When the edit stage prepares a role dispatch
+      Then Pathfinder uses a recorded compression result or blocks the dispatch
+      And Pathfinder does not silently truncate the evidence
 
   Rule: Editing ends by editor acceptance or a fixed round limit
 

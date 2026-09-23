@@ -1,7 +1,7 @@
 """PCE role loop over an accepted research account: brief, draft, fact-check, critic review, editor decision."""
 from __future__ import annotations
 import hashlib, json, time
-from . import corpus, research, transport
+from . import corpus, research, runner, transport
 
 
 def _now():
@@ -39,16 +39,23 @@ def admit(campaign, pair_id: str) -> bool:
 
 
 def finish(campaign, pair_id: str) -> bool:
-    """@planks("When Pathfinder finishes running pair \"{pair_id}\"")
+    """@planks("When the campaign processes pair \"{pair_id}\" to completion")
+    @planks("Then the edit stage's first draft is the readable short paper written from the accepted research account")
+    @planks("Then that first draft is the raw response recorded on a real dispatch's receipt, not a copy of the account itself")
 
     A DRAFT outcome with real full text enters editing automatically; anything else
-    stays untouched. The fetched full text becomes the pair's first edited artifact,
-    the baseline the PCE role loop then revises round by round.
+    stays untouched. A real dispatch writes the readable short paper from the accepted
+    research account, and that dispatch's raw response, not the account itself, becomes
+    the pair's first edited artifact, the baseline the PCE role loop then revises round
+    by round.
     """
     admitted = admit(campaign, pair_id)
     if admitted:
-        q_text, p_text = _external_texts(campaign, pair_id)
-        _set(campaign, pair_id, draft=f"{q_text}\n\n{p_text}")
+        account = (campaign.thread_dir(pair_id) / f"{pair_id}.tex").read_text()
+        receipt = _dispatch(campaign, pair_id, "editor", account)
+        draft = receipt["text"]
+        _append_history(campaign, pair_id, 0, draft)
+        _set(campaign, pair_id, draft=draft)
     return admitted
 
 
@@ -76,6 +83,15 @@ def stage_brief(campaign, pair_id: str) -> dict:
     internal = (campaign.thread_dir(pair_id) / f"{pair_id}.tex").read_text()
     q_text, p_text = _external_texts(campaign, pair_id)
     return {"internal": internal, "external": [q_text, p_text]}
+
+
+def prepare_dispatch(campaign, pair_id: str, role: str, inputs: dict, *, input_limit: int, output_limit: int) -> dict:
+    """@planks("When the edit stage prepares a role dispatch")
+
+    Oversized staged evidence is blocked rather than silently truncated; reuses the
+    same provider-stage seam the comparison workflow uses for its own oversized evidence.
+    """
+    return runner.prepare_provider_stage(role, inputs, input_limit=input_limit, output_limit=output_limit)
 
 
 def _dispatch(campaign, pair_id, role, prompt) -> dict:
