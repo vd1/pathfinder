@@ -29,57 +29,86 @@
 \maketitle
 
 \begin{abstract}
-Pathfinder is an ``AI for science'' research program aiming a creating new
-research ideas at scale. Its engine scans and scores pairs
-from selected corpora for scientific
-connexions and attempts at developing the most promising into publishable notes
-which human experts can evaluate.\footnote{Eventually, in a world where agents
-dominate the scientific throughput, a publication-looking output may not be the
-better format; but that seems appropriate at the moment for a hybrid AI/human
-led research process.} No human is required during the process once the initial
-corpora and score threshold for eligibility are set up. Given a pair of papers with a potentially
-interesting connexion, the engine launches a team of AI agents to produce a
-research note. The note is then submitted to an agent verifier who
-decides whether to elaborate it into a publication output for external
-assessment.
+Pathfinder is an ``AI for science'' protocol aiming a creating new
+research ideas at scale by searching the
+scientific literature. Its engine scans and scores pairs of papers from selected
+corpora for potential connexions. Top scoring pairs are then given to AI agents
+to produce a research note, which is then submitted to an agent verifier who
+decides whether to elaborate the note into a publication output for external
+assessment. No human is required during the process once the initial corpora is
+defined.%
+% score threshold for eligibility are
+%  and attempts at developing the most promising ones into publishable notes
+% which human experts can evaluate.
+\footnote{Eventually, in a world where agents dominate the scientific
+throughput, a publication-looking output may not be the better format; but that
+seems appropriate at the moment for a hybrid AI/human led research process.}
 
-In this note we describe the Pathfinder engine as a state transition system
-at a level of details suitable
-for human and AI readers, so they can jointly and easily re-implement it, should
-they wish to, and adjust it to their specific needs.
+The purpose of this note is to describe the Pathfinder engine as a state
+transition system at a level of details suitable for human and AI readers, so
+they can jointly and easily re-implement it, should they wish to, and adjust it
+to their specific needs.
 \end{abstract}
 
 \section{The Pathfinder program}
 Pathfinder takes two corpora of scientific papers, concretely arXiv deposits,
 \(Q\) and \(P\), and, using AI agents (currently using OpenAI and Anthropic
-models), looks for pairs \((q,p)\in Q\times P\) with an interesting enough
-connexion to try to elaborate it as a pre-publication. Ideally, the
-pre-publication satisfies the usual constraints of correctness, novelty,
-relevance, readability, and exposition of related work. In some cases the pair
-is supplemented with a seed note describing the putative connexion, supplied by
-the agent that scanned and scored the pair. The seed is a starting point, not a
-claim the researcher agents should support.
+models), looks for pairs \((q,p)\in Q\times P\) with a scientific
+connexion which seems interesting enough to try to elaborate it as a publishable note.
+Ideally, the final output satisfies the usual constraints of correctness, novelty,
+relevance, readability, and exposition of related work.
 
+% The pair is supplemented
+% with a seed note describing the putative connexion, supplied by the agent that
+% scanned and scored the pair. If the pair shortlisted, it is passed on to a research
+% protocol which if successful may produce a publishable scientific contribution.
+% The seed is a starting point, not a claim the researcher agents should support.
 
+Note that Pathfinder is primarily concerned with finding and exploring connexions. In the
+course of exploring a connexion agents may state and prove propositions, but one is not
+given in advance a conjecture to prove/dis-prove. The idea of generating new
+ideas by exploring connexions is not new. Swanson's \emph{undiscovered public
+knowledge} is a direct precedent for this motivation: findings may already be
+published in separate literatures, yet what they imply together remains
+unnoticed until someone brings them into contact \cite{swanson1986}. The
+missing step is not necessarily a new observation, but recognising and
+investigating a connexion between existing findings. Pathfinder seeks to make
+that search systematic.
 
-Pathfinder is concerned with finding questions and connexions, rather than
-solving a conjecture fixed in advance. This is not a new idea. Swanson's
-\emph{undiscovered public knowledge} concerns implications that become visible
-when previously separate published findings are brought together
-\cite{swanson1986}. Gentner's account of analogy emphasises correspondences
-between relationships, rather than superficial resemblance \cite{gentner1983}.
-This offers one way to understand Pathfinder's search: a useful connexion
-may transfer an argument or mechanism between settings whose objects look
-quite different. The research phase must then establish whether that
-transfer is justified. What
-is new is that AI agents are now available that can plausibly stand in for human
-experts and search this space at scale. Whether the systematic search for connexions
-leads to useful scientific knowledge can now be tested. Pathfinder is a first step
-in this direction.
+Gentner's account of analogy describes a more specific way in which a
+connexion can work \cite{gentner1983}. Two settings may involve very different
+objects but share a pattern of relationships. Recognising that pattern can
+suggest transferring an argument or mechanism from one setting to the other;
+similar terminology alone is not enough. Analogy is therefore a possible
+route to a Pathfinder seed, not a description of every seed. A paper may
+instead provide a direct application of another's theorem, expose a failure
+of its assumptions, or suggest how to repair its formulation. Swanson
+motivates the broader search for knowledge between literatures; Gentner helps
+explain a particular form of reasoning within it. In each case, the research
+phase must establish what the proposed connexion actually supports.
+
+Closer computational precedents include Krenn and Zeilinger's
+\emph{SemNet}~\cite{krenn2020semnet}, which suggests new links between
+scientific concepts in a network extracted from the literature, and Gu and
+Krenn's \emph{SciMuse}~\cite{gu2025scimuse}, which combines a knowledge graph
+with a language model to propose research ideas, evaluated by experts for
+interest. Pathfinder starts instead from pairs of papers and asks what might
+follow from bringing their specific claims or methods together. Its aim is
+also to investigate the proposed connexion, not only suggest it: the research
+phase may establish a conditional result, expose an obstruction, or conclude
+that further evidence is needed. The distinction is therefore in the starting
+unit and the subsequent investigation, not in the general idea of using AI
+to find scientific connexions.
+
+What is new is that AI agents
+are now available that can plausibly stand in for human experts and search this
+space at scale. Whether the systematic search for connexions leads to useful
+scientific knowledge can now be tested. Pathfinder is a first step in this
+direction.
 
 % \subsection{Object of this note}
-The goal of this note is to specify Pathfinder at a level sufficient for an
-agent or a human programmer to reimplement the protocol, without prescribing
+The goal of this note is to specify the underlying protocol at a level sufficient for an
+agent or a human programmer to reimplement it, without prescribing
 every detail of its present implementation.
 
 % The experiment describes the setup, the observed
@@ -97,15 +126,11 @@ every detail of its present implementation.
 % limits. The purpose is to explore more candidate connexions, not to assume
 % that breadth replaces scientific judgement.
 
-
-
-
 % Thus the research phase is a sampler. Its verdict concerns the investigation
 % actually carried out, not all possible connexions between the pair. A fresh
 % run ending in \st{pause} does not withdraw a result established by a different
 % run. Reassessing that result requires supplying it as the object of review.
 % Independent reruns must therefore keep separate records.
-
 
 % Before we give examples two comparisons between Pathfinder
 % and existing practices may be useful.
@@ -160,7 +185,7 @@ threads. (Because it looked promising to the human in charge.)
 \IfFileExists{notes/figures/2026-09-14-campaign-heatmap.tex}
   {\input{notes/figures/2026-09-14-campaign-heatmap.tex}}
   {\input{figures/2026-09-14-campaign-heatmap.tex}} \caption{100 pairs scanned,
-  14 retained for research (black outline), 
+  14 retained for research (black outline),
   5 accepted as papers (starred).
   Numbers are the combined feasibility and gain score.
   % we are lacking evalutions!!
@@ -220,7 +245,7 @@ stages or different output branches.}
 The highest-scoring pair, $Q4P10$, did not reach \st{draft}: a generic incentive
 inequality was not enough to establish the proposed connexion to the energy
 simulation. Conversely, the retained low-scoring $Q1P2$ did produce an accepted
-manuscript (a false positive for the scanning phase). The scan ranking
+manuscript (a potential false negative for the scanning phase). The scan ranking
 was not a reliable ordering of the eventual outcomes in this small sample.
 Other paused
 threads lacked a controlled experiment, an executable interface, or evidence
@@ -402,6 +427,28 @@ where it looks for doors.
 The seed asks: could \(q\)'s approach to fallible predictions give \(p\)'s
 door detector a guarantee when the estimated walls are wrong?
 \end{quote}
+
+This pair also illustrates how the scanner can overlook a promising connexion.
+Sonnet 5 assigned feasibility $30$ and gain $20$, giving $600$, below the
+shortlist threshold of $1500$. On 21 September, a fresh Astra instance
+(\file{gpt-6-astra}) received only the same titles and abstracts and the current
+scanning rubric, without the earlier score, seed or research outcome. It
+assigned feasibility $64$ and gain $58$, giving $3712$: the pair would have
+passed the threshold. Astra proposed combining the robot's room-based
+predictions with a fallback exploration strategy, then asking whether correct
+predictions save work while incorrect ones cause only a bounded extra cost.
+It also identified a difficulty specific to this setting: exploration changes
+the information on which subsequent predictions depend.
+
+In this instance, Astra recognised substantially more promise in the connexion.
+Its proposal was broader than the selective perception guarantee developed
+below; it did not independently recover or validate that result. The rescore
+is an encouraging example of recovering a candidate missed by the original
+threshold, rather than evidence of generally superior detection from a single
+comparison.\footnote{The rescore used a fresh agent instructed to use no tools,
+not the original scanner transport. The current prompt was not checked against
+a historical snapshot. Inputs, response and provenance are saved in
+\file{experiments/2026-09-21-174126-astra-blind-Q1P2/}.}
 
 Concept-guided exploration uses estimated walls to decide which scan points to
 retain for subsequent door detection. Its first gate accepts a point $z$ when
@@ -1571,28 +1618,26 @@ proposed experiment, not a further result of the pilot.
 \subsection{What existing evaluations measure}
 
 \paragraph{Tasks with assessable answers.}
-The starting questions in the studies by Li et al., Choi et al., Kim et al.,
-Wunderlich et al., and Tran and Kiela below come from benchmark instances.
-Their agents generate candidate answers or action plans, not new research
-questions. There is therefore no research-seed generation stage to compare
-with Pathfinder's scan.
+The starting questions in the studies below come from benchmark instances. There
+is no research-seed generation stage to compare with Pathfinder's scan. Their
+agents generate candidate answers or action plans, not new research questions.
 \emph{More Agents Is All You Need} studies sampling and voting on benchmark
 tasks; its sampling-parameter robustness experiments average over twenty
 runs~\cite{li2024more}. \emph{Debate or Vote} compares independent voting with
 agent discussion against benchmark answers. Its main table reports five-run
-variation for the single-agent baseline, but not equivalent error bars for
-the multi-agent configurations~\cite{choi2025debate}. The broader comparison
-by Kim et al. uses task completion and correctness across agent architectures,
-with confidence intervals and robustness analyses~\cite{kim2026scaling}.
-Wunderlich et al. compare accuracy at comparable computational cost, reporting
-sampling uncertainty over benchmark questions~\cite{wunderlich2026compute};
-Tran and Kiela likewise show why controlling the reasoning budget
-matters~\cite{tran2026single}. In contrast, $\tau$-bench explicitly repeats tasks and distinguishes
-finding a successful attempt from succeeding consistently across attempts.
-Its tasks are constructed from human-designed domains, policies and annotated
-user requests, with model assistance for data generation. Evaluation relies
-on an annotated target database state~\cite{yao2024tau}, an advantage
-unavailable for an undiscovered result.
+variation for the single-agent baseline, but not equivalent error bars for the
+multi-agent configurations~\cite{choi2025debate}. The broader comparison by Kim
+et al. uses task completion and correctness across agent architectures, with
+confidence intervals and robustness analyses~\cite{kim2026scaling}. Wunderlich
+et al. compare accuracy at comparable computational cost, reporting sampling
+uncertainty over benchmark questions~\cite{wunderlich2026compute}; Tran and
+Kiela likewise show why controlling the reasoning budget
+matters~\cite{tran2026single}. In contrast, $\tau$-bench explicitly repeats
+tasks and distinguishes finding a successful attempt from succeeding
+consistently across attempts. Its tasks are constructed from human-designed
+domains, policies and annotated user requests, with model assistance for data
+generation. Evaluation relies on an annotated target database
+state~\cite{yao2024tau}, an advantage unavailable for an undiscovered result.
 
 \paragraph{Classifying scientific-research systems.}
 The closer comparisons concern systems that propose research rather than

@@ -1,0 +1,21 @@
+{
+  "pair_id": "Q1P2",
+  "q": "2609.04787",
+  "p": "2608.23650",
+  "date": "2026-09-21",
+  "model_requested": "gpt-6-astra",
+  "mechanism": "collaboration.spawn_agent",
+  "agent_task": "/root/blind_pair_score",
+  "fork_turns": "none",
+  "reasoning_effort": "inherited; not explicitly overridden",
+  "input_scope": "Only supplied titles and abstracts, rendered into the saved current scanner template. No earlier score, seed, research outcome, manuscript or parent conversation was supplied.",
+  "isolation_instruction": "Perform this self-contained scoring task. Use no tools, files, repository context, browsing, or external sources. Do not inspect the workspace. Return only the requested JSON. The scoring prompt follows verbatim with its paper-title and abstract substitutions.",
+  "tools_policy": "No tools permitted by task instruction; this is a fresh sub-agent run, not the original scanner transport.",
+  "prompt_provenance": "Current prompts/scan.md; not independently compared with a historical prompt snapshot.",
+  "product": 3712,
+  "original_comparison": {"model": "claude-sonnet-5", "feasibility": 30, "gain": 20, "product": 600},
+  "usage": null,
+  "cost_usd": null,
+  "accounting_note": "Token usage and cost were not returned by the delegation tool. Missing values are unknown, not zero.",
+  "interpretation": "A single blind rescore above the pilot threshold of 1500. It proposes a broader exploration-policy guarantee, not the same specific result as the later first-gate calibration paper. This is scorer disagreement, not independent validation of a false negative."
+}
