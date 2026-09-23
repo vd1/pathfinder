@@ -1,7 +1,7 @@
 """After a terminal verdict: an editor rewrites the consolidated note as a readable short paper with BibTeX."""
 from __future__ import annotations
 import json
-from . import research, transport
+from . import corpus, research, transport
 from .paper import build, check_references
 from .research import _inputs, _prompt, _now
 
@@ -9,6 +9,27 @@ from .research import _inputs, _prompt, _now
 def status(campaign, pair_id) -> dict:
     p = campaign.thread_dir(pair_id) / "edited" / "edit.json"
     return json.loads(p.read_text()) if p.exists() else {"status": "none"}
+
+
+def prepare_for_editing(campaign, pair_id: str) -> str:
+    """@planks("When Pathfinder prepares pair \"{pair_id}\" for editing")
+
+    Editing requires real full text for both sides; fetch it where missing, or
+    block rather than let editing silently proceed on the abstract alone.
+    """
+    i, j = (int(n) for n in pair_id[1:].split("P"))
+    for side, idx in (("Q", i - 1), ("P", j - 1)):
+        path = campaign.path(f"{side}.jsonl")
+        rows = corpus.read(path)
+        row = rows[idx]
+        if row.get("text") and campaign.path(row["text"]).exists():
+            continue
+        try:
+            row["text"] = corpus.flatten(row["id"], campaign.path("sources"))
+        except Exception as e:
+            return _set(campaign, pair_id, status="blocked", reason=f"{side}: fetching full text failed ({e})")["status"]
+        corpus.write(rows, path)
+    return _set(campaign, pair_id, status="ready")["status"]
 
 
 def _set(campaign, pair_id, **kw):

@@ -5,7 +5,11 @@ from pathlib import Path
 
 from behave import given, then, when
 
-from pathfinder import corpus, research, runner, scan, select, transport
+from pathfinder import corpus, edit, research, runner, scan, select, transport
+try:
+    from pathfinder import edit_stage
+except ImportError:
+    edit_stage = None
 from pathfinder.config import Campaign
 from pathfinder.ledger import Ledger
 
@@ -666,10 +670,10 @@ def provenance_has_snapshot_digests(context):
     assert len(context.result["snapshot_digests"]) == 2
 
 
-def assignments():
+def assignments(roles=("scan", "research", "consolidate", "verify")):
     return {
         role: {"model": "m", "backend": "claude", "execution_class": "agent", "prompt": role, "tool_policy": [], "budget": 1}
-        for role in ("scan", "research", "consolidate", "verify")
+        for role in roles
     }
 
 
@@ -724,9 +728,9 @@ def receipts_comparable(context):
     assert all({"outcome", "latency", "cost"} <= receipt.keys() for receipt in context.receipts)
 
 
-@given('a comparison includes roles "scan", "research", "consolidate", and "verify"')
+@given('a comparison includes roles "scan", "research", "consolidate", "verify", and "edit"')
 def manifest_roles(context):
-    context.manifest = {"assignments": assignments()}
+    context.manifest = {"assignments": assignments(("scan", "research", "consolidate", "verify", "edit"))}
 
 
 @when("the operator defines a run manifest")
@@ -1556,3 +1560,330 @@ def assigned_receipts(context):
 @then("the comparison records the pair's final verification outcome")
 def comparison_verification_outcome(context):
     assert context.workflow["pairs"]["Q1P1"]["verification_outcome"]
+
+
+@given('pair "{pair_id}" finished research with status "{status}"')
+def pair_finished_research(context, pair_id, status):
+    c = campaign(context)
+    i, j = (int(n) for n in pair_id[1:].split("P"))
+    q_rows = [paper(f"q{n}") for n in range(1, i)] + [paper("0704.0001")]
+    p_rows = [paper(f"p{n}") for n in range(1, j)] + [paper("0704.0002")]
+    write_rows(c.path("Q.jsonl"), q_rows)
+    write_rows(c.path("P.jsonl"), p_rows)
+    context.pair_id = pair_id
+    d = c.thread_dir(pair_id)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "status.json").write_text(json.dumps({"pair_id": pair_id, "round": 3, "stage": "verify", "status": status}, indent=1))
+
+
+@given('its "{q}" and "{p}" records have no full text present at their referenced path')
+def records_no_fulltext_at_path(context, q, p):
+    i, j = (int(n) for n in context.pair_id[1:].split("P"))
+    for side, idx in ((q, i - 1), (p, j - 1)):
+        path = context.campaign.path(f"{side}.jsonl")
+        rows = corpus.read(path)
+        rows[idx]["text"] = f"sources/{rows[idx]['id']}.tex"
+        corpus.write(rows, path)
+
+
+@given('fetching full text for "{side}" fails')
+def fetching_fulltext_fails(context, side):
+    i, j = (int(n) for n in context.pair_id[1:].split("P"))
+    idx = i - 1 if side == "Q" else j - 1
+    path = context.campaign.path(f"{side}.jsonl")
+    rows = corpus.read(path)
+    rows[idx]["id"] = "0000.00000"
+    rows[idx]["text"] = f"sources/{rows[idx]['id']}.tex"
+    corpus.write(rows, path)
+
+
+@when('Pathfinder prepares pair "{pair_id}" for editing')
+def prepares_pair_for_editing(context, pair_id):
+    context.prepare_outcome = edit.prepare_for_editing(context.campaign, pair_id)
+
+
+@when('Pathfinder finishes running pair "{pair_id}"')
+def pathfinder_finishes_running_pair(context, pair_id):
+    context.admitted = edit_stage.finish(context.campaign, pair_id)
+
+
+# --- edit-stage.feature: PCE role loop over an accepted research account ---
+
+# @exceptional-double: internal composition has no independent external verifier.
+def stub_edit_dispatch(context, replies=None):
+    replies = replies or {}
+    calls = []
+
+    def dispatch(campaign, pair_id, role, prompt):
+        text = replies.get(role, f"{role} output")
+        calls.append({"role": role, "prompt": prompt})
+        return {"role": role, "backend": "pi", "model": "m", "execution_class": "agent",
+                "prompt_digest": hashlib.sha256(prompt.encode()).hexdigest(), "provider_job_id": f"job-{role}-{len(calls)}",
+                "raw_response": text, "outcome": "ok", "latency": 1, "token_usage": 10, "cost": 0.01, "text": text}
+
+    context.dispatch_calls = calls
+    original = edit_stage._dispatch
+    edit_stage._dispatch = dispatch
+    context.add_cleanup(lambda: setattr(edit_stage, "_dispatch", original))
+    return dispatch
+
+
+def pair_has_fulltext(context, pair_id):
+    i, j = (int(n) for n in pair_id[1:].split("P"))
+    for path, idx in ((context.campaign.path("Q.jsonl"), i - 1), (context.campaign.path("P.jsonl"), j - 1)):
+        rows = corpus.read(path)
+        text_path = f"sources/{rows[idx]['id']}.tex"
+        context.campaign.path(text_path).parent.mkdir(parents=True, exist_ok=True)
+        context.campaign.path(text_path).write_text(f"Full text of {rows[idx]['id']}")
+        rows[idx]["text"] = text_path
+        corpus.write(rows, path)
+
+
+@given('pair "{pair_id}" has full text fetched from its original source for "Q" and "P"')
+def pair_has_fulltext_step(context, pair_id):
+    pair_has_fulltext(context, pair_id)
+
+
+def pair_enters_edit_stage(context, pair_id):
+    pair_finished_research(context, pair_id, "DRAFT")
+    pair_has_fulltext(context, pair_id)
+    d = context.campaign.thread_dir(pair_id)
+    d.mkdir(parents=True, exist_ok=True)
+    (d / f"{pair_id}.tex").write_text("ACCEPTED RESEARCH ACCOUNT")
+    context.admitted = edit_stage.admit(context.campaign, pair_id)
+
+
+@given('pair "{pair_id}" enters the edit stage')
+def pair_enters_edit_stage_step(context, pair_id):
+    pair_enters_edit_stage(context, pair_id)
+
+
+@given('pair "{pair_id}" is in its edit stage')
+def pair_is_in_edit_stage(context, pair_id):
+    pair_enters_edit_stage(context, pair_id)
+
+
+@when('the campaign admits pair "{pair_id}" for editing')
+def campaign_admits_pair(context, pair_id):
+    context.admitted = edit_stage.admit(context.campaign, pair_id)
+
+
+@then('the edit stage starts for pair "{pair_id}"')
+def edit_stage_started(context, pair_id):
+    assert context.admitted is True
+    assert edit_stage.status(context.campaign, pair_id)["status"] != "none"
+
+
+@when("the campaign admits investigations for editing")
+def campaign_admits_all(context):
+    context.admitted_all = edit_stage.admit_all(context.campaign)
+
+
+@then('pair "{pair_id}" does not enter the edit stage')
+def pair_not_entered(context, pair_id):
+    if hasattr(context, "admitted_all"):
+        assert pair_id not in context.admitted_all
+    else:
+        assert context.admitted is False
+    assert edit_stage.status(context.campaign, pair_id)["status"] == "none"
+
+
+@then('pair "{pair_id}" has no edited artifact recorded')
+def pair_no_edited_artifact(context, pair_id):
+    assert edit_stage.status(context.campaign, pair_id).get("draft") is None
+
+
+@then('pair "{pair_id}" has exactly one edited artifact recorded')
+def pair_has_one_edited_artifact(context, pair_id):
+    assert edit_stage.status(context.campaign, pair_id).get("draft")
+
+
+@when("the editor stage begins")
+def editor_stage_begins(context):
+    context.brief = edit_stage.stage_brief(context.campaign, context.pair_id)
+
+
+@then("the editor's brief cites the accepted research account as internal source")
+def brief_cites_internal(context):
+    assert "ACCEPTED RESEARCH ACCOUNT" in context.brief["internal"]
+
+
+@then('the editor\'s brief cites the fetched full text of "Q" and "P" as external source')
+def brief_cites_external(context):
+    i, j = (int(n) for n in context.pair_id[1:].split("P"))
+    q_text = context.campaign.path(corpus.read(context.campaign.path("Q.jsonl"))[i - 1]["text"]).read_text()
+    p_text = context.campaign.path(corpus.read(context.campaign.path("P.jsonl"))[j - 1]["text"]).read_text()
+    assert q_text in context.brief["external"] and p_text in context.brief["external"]
+
+
+def pair_has_staged_brief(context, pair_id):
+    pair_enters_edit_stage(context, pair_id)
+    context.brief = edit_stage.stage_brief(context.campaign, pair_id)
+
+
+@given('pair "{pair_id}" has a staged brief and source set')
+def pair_has_staged_brief_step(context, pair_id):
+    pair_has_staged_brief(context, pair_id)
+
+
+@when("the author role executes")
+def author_role_executes(context):
+    stub_edit_dispatch(context, {"author": "DRAFT TEXT ROUND 1"})
+    context.author_result = edit_stage.run_author(context.campaign, context.pair_id)
+
+
+@then("a draft is produced")
+def draft_is_produced(context):
+    assert context.author_result.get("draft")
+
+
+@then("the archivist records the draft in its revision history before review")
+def archivist_records_draft(context):
+    hist = edit_stage.history(context.campaign, context.pair_id)
+    assert hist and hist[-1]["draft"] == context.author_result["draft"]
+
+
+@given('pair "{pair_id}" has an archived draft')
+def pair_has_archived_draft(context, pair_id):
+    pair_has_staged_brief(context, pair_id)
+    stub_edit_dispatch(context, {"author": "DRAFT TEXT ROUND 1"})
+    context.author_result = edit_stage.run_author(context.campaign, pair_id)
+
+
+@when("the fact-checker gate runs")
+def fact_checker_gate_runs(context):
+    stub_edit_dispatch(context, {"fact-checker": "no issues found"})
+    context.fact_check_result = edit_stage.run_fact_checker(context.campaign, context.pair_id)
+
+
+@then('it checks the draft\'s claims against the fetched full text of "Q" and "P"')
+def fact_checker_checks_external(context):
+    call = next(c for c in context.dispatch_calls if c["role"] == "fact-checker")
+    i, j = (int(n) for n in context.pair_id[1:].split("P"))
+    q_text = context.campaign.path(corpus.read(context.campaign.path("Q.jsonl"))[i - 1]["text"]).read_text()
+    p_text = context.campaign.path(corpus.read(context.campaign.path("P.jsonl"))[j - 1]["text"]).read_text()
+    assert q_text in call["prompt"] and p_text in call["prompt"]
+
+
+@then("it does not read the accepted research account")
+def fact_checker_no_internal(context):
+    call = next(c for c in context.dispatch_calls if c["role"] == "fact-checker")
+    assert "ACCEPTED RESEARCH ACCOUNT" not in call["prompt"]
+
+
+@when("the critic gate runs")
+def critic_gate_runs(context):
+    stub_edit_dispatch(context, {"critic": "looks fine"})
+    context.critic_result = edit_stage.run_critic(context.campaign, context.pair_id)
+
+
+@then("the critic's review has no access to the editor's brief or prior reviews")
+def critic_no_brief_access(context):
+    call = next(c for c in context.dispatch_calls if c["role"] == "critic")
+    assert "ACCEPTED RESEARCH ACCOUNT" not in call["prompt"]
+
+
+@when('the editor accepts the draft on or before round "{limit}"')
+def editor_accepts_within_limit(context, limit):
+    stub_edit_dispatch(context, {"author": "FINAL DRAFT", "editor": "accept"})
+    context.round_result = edit_stage.run_round(context.campaign, context.pair_id, round=1, limit=int(limit))
+
+
+@then('the edit stage finishes with outcome "{outcome}"')
+def edit_stage_finishes_with(context, outcome):
+    assert edit_stage.status(context.campaign, context.pair_id)["status"] == outcome
+
+
+@then("the accepted draft is recorded as the pair's edited artifact")
+def accepted_draft_recorded(context):
+    assert edit_stage.status(context.campaign, context.pair_id)["draft"] == "FINAL DRAFT"
+
+
+@given('pair "{pair_id}" has completed round "{n}" of editing without acceptance')
+def pair_completed_rounds_without_acceptance(context, pair_id, n):
+    pair_enters_edit_stage(context, pair_id)
+    stub_edit_dispatch(context, {"author": "DRAFT AT LIMIT", "editor": "revise"})
+    context.round_limit = int(n)
+    for rnd in range(1, int(n) + 1):
+        context.round_result = edit_stage.run_round(context.campaign, pair_id, round=rnd, limit=int(n))
+
+
+@when('the editor evaluates round "{n}"')
+def editor_evaluates_round(context, n):
+    context.evaluation = edit_stage.evaluate_round(context.campaign, context.pair_id, round=int(n), limit=context.round_limit)
+
+
+@then("the last produced draft is recorded as the pair's edited artifact")
+def last_draft_recorded(context):
+    assert edit_stage.status(context.campaign, context.pair_id)["draft"] == "DRAFT AT LIMIT"
+
+
+@given("the edit stage dispatches the editor, author, fact-checker, and critic for one round")
+def dispatches_editor_author_fc_critic(context):
+    pair_enters_edit_stage(context, "Q3P10")
+    stub_edit_dispatch(context, {"editor": "brief ready", "author": "draft text", "fact-checker": "ok", "critic": "ok"})
+
+
+@when("each dispatch finishes")
+def each_dispatch_finishes(context):
+    context.round_result = edit_stage.run_round(context.campaign, context.pair_id, round=1, limit=3)
+
+
+@then("each dispatch's receipt records role, backend, model, execution class, prompt digest, provider job identifier, raw response, outcome, latency, token usage, and cost")
+def receipts_have_required_fields(context):
+    required = {"role", "backend", "model", "execution_class", "prompt_digest", "provider_job_id",
+                "raw_response", "outcome", "latency", "token_usage", "cost"}
+    receipts = context.round_result["receipts"]
+    assert {"editor", "author", "fact-checker", "critic"} <= {r["role"] for r in receipts}
+    assert all(required <= r.keys() for r in receipts)
+
+
+@given('pair "{pair_id}" has an archived round "{n}" draft')
+def pair_has_archived_round_draft(context, pair_id, n):
+    pair_has_staged_brief(context, pair_id)
+    stub_edit_dispatch(context, {"author": f"DRAFT ROUND {n}"})
+    context.author_result = edit_stage.run_author(context.campaign, pair_id, round=int(n))
+
+
+@when('the author produces a round "{n}" draft')
+def author_produces_round_draft(context, n):
+    stub_edit_dispatch(context, {"author": f"DRAFT ROUND {n}"})
+    context.author_result = edit_stage.run_author(context.campaign, context.pair_id, round=int(n))
+
+
+@then('the round "{n}" draft remains recorded in revision history')
+def round_draft_in_history(context, n):
+    hist = edit_stage.history(context.campaign, context.pair_id)
+    assert any(h["round"] == int(n) and h["draft"] == f"DRAFT ROUND {n}" for h in hist)
+
+
+@then('the round "{n}" draft becomes the current draft')
+def round_draft_is_current(context, n):
+    assert context.author_result["draft"] == f"DRAFT ROUND {n}"
+
+
+@then("both records have full text fetched from their original source")
+def both_records_fetched(context):
+    i, j = (int(n) for n in context.pair_id[1:].split("P"))
+    q_row = corpus.read(context.campaign.path("Q.jsonl"))[i - 1]
+    p_row = corpus.read(context.campaign.path("P.jsonl"))[j - 1]
+    context.fetched_rows = (q_row, p_row)
+    assert q_row.get("text") and p_row.get("text")
+
+
+@then("that full text is present at its referenced path")
+def fulltext_present_at_path(context):
+    for row in context.fetched_rows:
+        p = context.campaign.path(row["text"])
+        assert p.exists() and p.stat().st_size > 0
+
+
+@then('pair "{pair_id}" is blocked before entering editing')
+def pair_blocked_before_editing(context, pair_id):
+    assert edit.status(context.campaign, pair_id)["status"] == "blocked"
+
+
+@then('the block names "{side}" as the record missing full text')
+def block_names_missing_side(context, side):
+    st = edit.status(context.campaign, context.pair_id)
+    assert side in (st.get("reason") or "")

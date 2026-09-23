@@ -30,3 +30,19 @@ Feature: Consume prepared corpus snapshots
       When the result provenance is inspected
       Then it identifies both source record identifiers
       And it identifies both source snapshot digests
+
+  Rule: Editing requires real full text, not the abstract alone
+
+    Scenario: A DRAFT pair is prepared for editing with real full text
+      Given pair "Q3P10" finished research with status "DRAFT"
+      And its "Q" and "P" records have no full text present at their referenced path
+      When Pathfinder prepares pair "Q3P10" for editing
+      Then both records have full text fetched from their original source
+      And that full text is present at its referenced path
+
+    Scenario: A failed source fetch blocks editing rather than silently using only the abstract
+      Given pair "Q3P10" finished research with status "DRAFT"
+      And fetching full text for "Q" fails
+      When Pathfinder prepares pair "Q3P10" for editing
+      Then pair "Q3P10" is blocked before entering editing
+      And the block names "Q" as the record missing full text
