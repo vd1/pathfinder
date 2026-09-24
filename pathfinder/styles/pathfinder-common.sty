@@ -1,55 +1,123 @@
 % pathfinder-common: what the three Pathfinder documents share. Not loaded directly;
 % pathfinder-note, pathfinder-readable and pathfinder-paper load it and set the colour and kind.
+% The typography follows notes/pathfinder-engine.tex: Charter for text and mathematics, Source Sans
+% for structure, a measure of about seventy characters, one accent colour per kind of document.
+% Agents are told not to load packages, but some do: everything here is loaded without options
+% where a second \usepackage could clash, and headings and captions use no extra package.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{pathfinder-common}[2026/09/13 shared preamble for Pathfinder documents]
-\RequirePackage[a4paper,margin=24mm,headheight=14pt,headsep=8mm]{geometry}
-\RequirePackage{amsmath,amssymb,amsthm}
+\ProvidesPackage{pathfinder-common}[2026/09/24 shared preamble for Pathfinder documents]
+\RequirePackage[a4paper,textwidth=138mm,hmarginratio=1:1,top=30mm,bottom=36mm,
+  headheight=14pt,headsep=10mm,footskip=14mm]{geometry}
+\RequirePackage{amsmath,amsthm}
 \RequirePackage[T1]{fontenc}
-\RequirePackage{lmodern}
+\RequirePackage{XCharter}
+\RequirePackage[xcharter,vvarbb]{newtxmath}
+% newtxmath provides the amssymb symbols; a document that still asks for them gets a no-op
+\@namedef{ver@amssymb.sty}{2013/01/14 v3.01 provided by newtxmath}
+\@namedef{ver@amsfonts.sty}{2013/01/14 v3.01 provided by newtxmath}
+\@namedef{ver@lmodern.sty}{2009/10/30 v1.6 superseded by the Pathfinder fonts}
+\RequirePackage[semibold,scale=0.98]{sourcesanspro}
+\RequirePackage[varqu,varl,scaled=0.96]{zi4}
 \RequirePackage{microtype}
 \RequirePackage{xcolor}
 \RequirePackage{fancyhdr}
 \RequirePackage{url}
-\RequirePackage[hidelinks]{hyperref}
-\urlstyle{same}
-\emergencystretch=2em
-\setlength{\parskip}{3pt}
+\RequirePackage{xurl}
+\RequirePackage{hyperref}
+\urlstyle{tt}
+\linespread{1.07}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\emergencystretch=1.5em
+\widowpenalty=10000
+\clubpenalty=10000
+\raggedbottom
 % identity of the document: kind is set by the loading package, pair by the author
 \newcommand{\pathfinder@kind}{Pathfinder}
 \newcommand{\pathfinder@pair}{}
 \newcommand{\pathfinderpair}[1]{\renewcommand{\pathfinder@pair}{#1}}
+% colours: pathfinder@ink is the kind's accent, set by the loading package; the rest are shared
+\definecolor{pathfinder@ink}{HTML}{555555}
+\definecolor{pathfinder@text}{RGB}{40,40,40}
+\definecolor{pathfinder@muted}{RGB}{110,110,110}
+\hypersetup{colorlinks=true,linkcolor=pathfinder@ink,citecolor=pathfinder@ink,urlcolor=pathfinder@ink}
+\newcommand{\pathfinder@headfont}{\sffamily\bfseries\color{pathfinder@text}}
 % the two papers, printed under the title with links to their arXiv abstracts, and a status line;
 % the pipeline writes them to pathfinder-meta.tex beside the document, read at the end of this file
 \newcommand{\pathfinder@papers}{}
 \newcommand{\pathfinderpapers}[4]{\renewcommand{\pathfinder@papers}{%
-  \noindent{\small\textbf{Q}\quad\href{https://arxiv.org/abs/#1}{#2}\quad{\color{pathfinder@ink}\sffamily\scriptsize arXiv:#1}\par}%
-  \noindent{\small\textbf{P}\quad\href{https://arxiv.org/abs/#3}{#4}\quad{\color{pathfinder@ink}\sffamily\scriptsize arXiv:#3}\par}}}
+  \pathfinder@paper{Q}{#1}{#2}\par\vspace{3pt}\pathfinder@paper{P}{#3}{#4}\par}}
+\newcommand{\pathfinder@paper}[3]{%
+  \noindent\hangindent=1.6em\hangafter=1
+  \makebox[1.6em][l]{\sffamily\bfseries\small\color{pathfinder@ink}#1}%
+  {\small\href{https://arxiv.org/abs/#2}{\color{pathfinder@text}#3}\quad
+   {\ttfamily\footnotesize\color{pathfinder@muted}arXiv:#2}}}
 \newcommand{\pathfinder@status}{}
 \newcommand{\pathfinderstatus}[1]{\renewcommand{\pathfinder@status}{#1}}
-\definecolor{pathfinder@ink}{HTML}{555555}
-% running header: a thin rule in the document's colour, the kind on the left, the pair on the right
+% running head: the kind on the left, the pair and date on the right, the folio centred below
 \pagestyle{fancy}
 \fancyhf{}
-\renewcommand{\headrulewidth}{0.6pt}
-\renewcommand{\headrule}{{\color{pathfinder@ink}\hrule width\headwidth height\headrulewidth}}
-\fancyhead[L]{\color{pathfinder@ink}\sffamily\scriptsize\MakeUppercase{\pathfinder@kind}}
-\fancyhead[R]{\color{pathfinder@ink}\sffamily\scriptsize\pathfinder@pair\ifx\@date\@empty\else\quad\textperiodcentered\quad\@date\fi}
-\fancyfoot[C]{\sffamily\scriptsize\thepage}
-\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\sffamily\scriptsize\thepage}\renewcommand{\headrulewidth}{0pt}}
-% title block: kind above the title, no author line unless given
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{\sffamily\footnotesize\color{pathfinder@muted}\pathfinder@kind}
+\fancyhead[R]{\sffamily\footnotesize\color{pathfinder@muted}\pathfinder@pair\ifx\@date\@empty\else\quad\textperiodcentered\quad\@date\fi}
+\fancyfoot[C]{\sffamily\footnotesize\color{pathfinder@muted}\thepage}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\sffamily\footnotesize\color{pathfinder@muted}\thepage}}
+% title block: kind, pair and date above a large sans title, then the papers and the state
 \renewcommand{\maketitle}{%
   \begingroup
-  \thispagestyle{plain}
-  \noindent{\color{pathfinder@ink}\sffamily\scriptsize\MakeUppercase{\pathfinder@kind}%
-    \ifx\pathfinder@pair\@empty\else\quad\textperiodcentered\quad\pathfinder@pair\fi%
-    \ifx\@date\@empty\else\quad\textperiodcentered\quad\@date\fi}\par
-  \vspace{2pt}{\color{pathfinder@ink}\hrule height 0.6pt}\vspace{10pt}
-  {\raggedright\LARGE\bfseries\@title\par}
-  \ifx\@author\@empty\else\vspace{6pt}{\large\@author\par}\fi
-  \ifx\pathfinder@papers\@empty\else\vspace{8pt}\pathfinder@papers\fi
-  \ifx\pathfinder@status\@empty\else\vspace{4pt}\noindent{\color{pathfinder@ink}\sffamily\scriptsize\pathfinder@status\par}\fi
-  \vspace{14pt}
+  \thispagestyle{plain}\raggedright
+  \vspace*{2mm}%
+  \noindent{\sffamily\footnotesize\bfseries\color{pathfinder@ink}\MakeUppercase{\pathfinder@kind}%
+    \ifx\pathfinder@pair\@empty\else\quad\textperiodcentered\quad\pathfinder@pair\fi}%
+  \ifx\@date\@empty\else{\sffamily\footnotesize\color{pathfinder@muted}\quad\textperiodcentered\quad\@date}\fi\par
+  \vspace{3mm}%
+  {\pathfinder@headfont\fontsize{22}{26}\selectfont\@title\par}%
+  \ifx\@author\@empty\else\vspace{4mm}{\large\@author\par}\fi
+  \ifx\pathfinder@papers\@empty\else\vspace{5mm}\pathfinder@papers\fi
+  \ifx\pathfinder@status\@empty\else\vspace{3mm}\noindent{\sffamily\footnotesize\color{pathfinder@muted}\pathfinder@status\par}\fi
+  \vspace{5mm}%
+  \noindent{\color{pathfinder@ink}\rule{\linewidth}{0.5pt}}\par
+  \vspace{6mm}%
   \endgroup}
+% abstract: a labelled block at text size minus one, closed by a thin rule
+\renewenvironment{abstract}
+  {\par\noindent{\sffamily\bfseries\small\color{pathfinder@ink}Abstract}\par\vspace{0.3\baselineskip}%
+   \small\setlength{\parindent}{0pt}\setlength{\parskip}{0.5\baselineskip}}
+  {\par\vspace{0.6\baselineskip}\noindent{\color{pathfinder@ink}\rule{\linewidth}{0.5pt}}\par\vspace{0.8\baselineskip}}
+% headings: Source Sans, the number hanging in the margin in the accent colour
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+  {-2.2\baselineskip \@plus -0.5\baselineskip \@minus -0.2\baselineskip}%
+  {0.8\baselineskip}{\pathfinder@headfont\Large\raggedright}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+  {-1.5\baselineskip \@plus -0.4\baselineskip \@minus -0.2\baselineskip}%
+  {0.5\baselineskip}{\pathfinder@headfont\large\raggedright}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+  {-1.2\baselineskip \@plus -0.3\baselineskip \@minus -0.1\baselineskip}%
+  {0.4\baselineskip}{\pathfinder@headfont\normalsize\raggedright}}
+\renewcommand{\paragraph}{\@startsection{paragraph}{4}{\z@}%
+  {1.0\baselineskip \@plus 0.3\baselineskip \@minus 0.1\baselineskip}%
+  {-0.6em}{\sffamily\bfseries\normalsize\color{pathfinder@ink}}}
+\def\@seccntformat#1{\llap{\color{pathfinder@ink}\csname the#1\endcsname\hspace{0.7em}}}
+% theorem heads in Source Sans; bodies as amsthm sets them
+\newtheoremstyle{plain}{0.8\baselineskip}{0.8\baselineskip}{\itshape}{}{\sffamily\bfseries}{.}{0.5em}{}
+\newtheoremstyle{definition}{0.8\baselineskip}{0.8\baselineskip}{\normalfont}{}{\sffamily\bfseries}{.}{0.5em}{}
+\newtheoremstyle{remark}{0.6\baselineskip}{0.6\baselineskip}{\normalfont}{}{\sffamily}{.}{0.5em}{}
+\theoremstyle{plain}
+% captions: label in the accent colour, text one size down, centred when short
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  {\small\sbox\@tempboxa{{\sffamily\bfseries\color{pathfinder@ink}#1}\quad #2}%
+   \ifdim\wd\@tempboxa>\hsize
+     {\sffamily\bfseries\color{pathfinder@ink}#1}\quad #2\par
+   \else
+     \global\@minipagefalse\hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+   \fi}%
+  \vskip\belowcaptionskip}
+% lists, tables, footnotes
+\renewcommand{\labelitemi}{{\color{pathfinder@ink}\textbullet}}
+\renewcommand{\arraystretch}{1.15}
+\renewcommand{\footnoterule}{\vspace*{-3pt}{\color{pathfinder@muted}\hrule width 3em height 0.4pt}\vspace*{2.6pt}}
+\renewcommand{\@makefntext}[1]{\noindent\makebox[1.1em][l]{\@thefnmark}#1}
 % the date of production; the prompts pass it explicitly, \today is the fallback at build time
 \date{\today}
 \author{}

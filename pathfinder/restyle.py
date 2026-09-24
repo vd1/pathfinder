@@ -9,8 +9,8 @@ import json, re, shutil
 from pathlib import Path
 from . import edit, paper, research
 
-PROVIDED_PACKAGES = {"geometry", "amsmath", "amssymb", "amsthm", "fontenc", "lmodern", "microtype", "xcolor",
-                     "fancyhdr", "url", "hyperref"}
+PROVIDED_PACKAGES = {"geometry", "amsmath", "amssymb", "amsfonts", "amsthm", "fontenc", "lmodern", "microtype", "xcolor",
+                     "fancyhdr", "url", "xurl", "hyperref"}
 PROVIDED_ENVS = {"pathfinder-note": {"claim", "objection"},
                  "pathfinder-readable": {"theorem", "proposition", "lemma", "corollary", "definition", "remark"},
                  "pathfinder-paper": {"theorem", "proposition", "lemma", "corollary", "definition", "assumption", "remark"}}
