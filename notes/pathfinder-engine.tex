@@ -1,28 +1,186 @@
 \documentclass[11pt,a4paper]{article}
 \frenchspacing
-\usepackage[margin=22mm]{geometry}
-\usepackage{amsmath,amssymb}
+
+% --- Fonts: Charter for text and maths, Source Sans for structure, Inconsolata for code
+\usepackage[T1]{fontenc}
+\usepackage{XCharter}
+\usepackage[xcharter,vvarbb]{newtxmath}
+\usepackage[semibold,scale=0.98]{sourcesanspro}
+\usepackage[varqu,varl,scaled=0.96]{zi4}
+\usepackage[protrusion=true,expansion=true,tracking=smallcaps]{microtype}
+\SetTracking{encoding=*,shape=sc}{40}
+\linespread{1.07}
+
+% --- Page: a 138mm measure (about 70 characters of Charter at 11pt)
+\usepackage[a4paper,textwidth=138mm,hmarginratio=1:1,top=30mm,bottom=36mm,
+  headsep=10mm,footskip=14mm]{geometry}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{1.5em}
+\widowpenalty=10000
+\clubpenalty=10000
+\raggedbottom
+
+% --- Colour: one accent, the teal of the campaign heatmap
+\usepackage{xcolor}
+\definecolor{accent}{RGB}{21,102,121}
+\definecolor{accentdark}{RGB}{14,70,84}
+\definecolor{ink}{RGB}{40,40,40}
+\definecolor{muted}{RGB}{110,110,110}
+\definecolor{panel}{RGB}{242,247,248}
+\definecolor{stateFill}{RGB}{240,245,246}
+\definecolor{termFill}{RGB}{206,229,232}
+\definecolor{pauseFill}{RGB}{250,236,214}
+\definecolor{blockFill}{RGB}{246,221,218}
+
+\usepackage{amsmath}
 \usepackage{booktabs,tabularx,array}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
-\usepackage[hidelinks]{hyperref}
-\usepackage{xcolor}
-\usepackage[affil-it]{authblk}
-\setlength{\parskip}{4pt}
-\setlength{\emergencystretch}{2em}
+\usepackage{etoolbox}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[explicit]{titlesec}
+\usepackage[font={small},labelfont={sf,bf,color=accentdark},labelsep=quad,
+  justification=justified,singlelinecheck=true,skip=8pt]{caption}
+
+% --- Headings: Source Sans semibold, numbers in the accent colour
+\newcommand{\headfont}{\sffamily\bfseries\hyphenpenalty=10000\exhyphenpenalty=10000}
+\titleformat{\section}
+  {\headfont\Large\color{ink}}
+  {\llap{\color{accent}\thesection\hspace{0.7em}}}{0pt}{#1}
+\titleformat{name=\section,numberless}
+  {\headfont\Large\color{ink}}{}{0pt}{#1}
+\titleformat{\subsection}
+  {\headfont\large\color{ink}}
+  {\llap{\color{accent}\thesubsection\hspace{0.7em}}}{0pt}{#1}
+\titleformat{\paragraph}[runin]
+  {\headfont\color{accentdark}}{}{0pt}{\mbox{#1}}
+\titlespacing*{\section}{0pt}{2.4\baselineskip plus 0.6\baselineskip minus 0.3\baselineskip}{0.9\baselineskip}
+\titlespacing*{\subsection}{0pt}{1.6\baselineskip plus 0.4\baselineskip minus 0.2\baselineskip}{0.6\baselineskip}
+\titlespacing*{\paragraph}{0pt}{1.0\baselineskip plus 0.3\baselineskip minus 0.1\baselineskip}{0.6em}
+
+% --- Running heads: title left, current section right, folio in the footer
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{\sffamily\footnotesize\color{muted}The Pathfinder engine}
+\fancyhead[R]{\sffamily\footnotesize\color{muted}\nouppercase{\leftmark}}
+\fancyfoot[C]{\sffamily\footnotesize\color{muted}\thepage}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\sffamily\footnotesize\color{muted}\thepage}}
+
+% --- Lists, floats, tables
+\setlist{itemsep=0.25\baselineskip,topsep=0.5\baselineskip,parsep=0pt}
+\setlist[itemize]{label={\color{accent}\textbullet},leftmargin=1.4em}
+\setlist[enumerate]{label={\sffamily\bfseries\color{accent}\arabic*},leftmargin=1.6em}
+\renewcommand{\arraystretch}{1.18}
+\AtBeginEnvironment{tabular}{\small}
+\AtBeginEnvironment{tabularx}{\small}
+\setlength{\textfloatsep}{16pt plus 4pt minus 4pt}
+\setlength{\floatsep}{14pt plus 4pt minus 4pt}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.12}
+\renewcommand{\bottomfraction}{0.5}
+\renewcommand{\floatpagefraction}{0.75}
+
+% --- Diagrams: natural size, allowed to extend 10mm into each margin
+\newenvironment{widefigure}
+  {\par\bigskip\noindent\begin{lrbox}{0}}
+  {\end{lrbox}\makebox[\linewidth][c]{\usebox{0}}%
+   \typeout{PFWIDE \the\wd0}\par\smallskip}
+\newcommand{\guard}[1]{{\scriptsize\color{muted}#1}}
+\newcommand{\diagramnote}[1]{{\centering\small\color{muted}#1\par}\bigskip}
+\tikzset{
+  pf/.style={x=1cm,y=1cm,every node/.style={font=\footnotesize,text=ink},
+    >={Stealth[length=2mm,width=1.6mm]}},
+  state/.style={draw=accent!75!black,line width=0.5pt,rounded corners=2.5pt,
+    minimum height=6.5mm,inner xsep=5pt,fill=stateFill},
+  term/.style={state,fill=termFill},
+  pause/.style={state,fill=pauseFill,draw=orange!55!black},
+  blocked/.style={state,fill=blockFill,draw=red!55!black},
+  edge/.style={->,line width=0.6pt,draw=ink!85},
+  lab/.style={font=\scriptsize,fill=white,inner sep=1.5pt,text=ink}}
+
+% --- Solid extensible arrows: newtxmath's relbar pieces leave visible gaps
+\makeatletter
+\def\rightarrowfill@#1{\m@th\setbox\z@\hbox{$#1\rightarrow$}%
+  $#1\mkern2mu\leaders\hbox{\vrule height \dimexpr\fontdimen22\textfont2+0.24pt\relax
+    depth -\dimexpr\fontdimen22\textfont2-0.24pt\relax width 1pt}\hfill
+  \kern-0.8\wd\z@\copy\z@$}
+\makeatother
+
+% --- Pair descriptions (quote): a tinted panel with an accent rule
+\tcbset{pairpanel/.style={enhanced,breakable,frame hidden,boxrule=0pt,
+  sharp corners,colback=panel,borderline west={1.6pt}{0pt}{accent},
+  left=1.8em,right=0.8em,top=0.55\baselineskip,bottom=0.45\baselineskip,
+  before skip=0.7\baselineskip,after skip=0.9\baselineskip,
+  parbox=false,fontupper=\small,
+  before upper={\setlength{\parindent}{0pt}\setlength{\parskip}{0.45\baselineskip}}}}
+\renewenvironment{quote}{\tcolorbox[pairpanel]}{\endtcolorbox}
+% q and p hang to the left of the paper they label
+\newcommand{\pl}[1]{\noindent\llap{\makebox[1.5em][l]{\color{accent}\(#1\)}}}
+\newcommand{\pair}[1]{\mbox{#1}}
+
+% --- Footnotes
+\renewcommand{\footnoterule}{\vspace*{-3pt}{\color{muted}\hrule width 3em height 0.4pt}\vspace*{2.6pt}}
+\setlength{\footnotesep}{9pt}
+\makeatletter
+\renewcommand{\@makefntext}[1]{\noindent\makebox[1.1em][l]{\@thefnmark}#1}
+\makeatother
+
+% --- Links
+\usepackage[colorlinks=true,linkcolor=accentdark,citecolor=accentdark,
+  urlcolor=accent,pdftitle={The Pathfinder engine},
+  pdfauthor={Vincent Danos, Elham Kashefi, William Waites}]{hyperref}
+\urlstyle{tt}
 
 \newcommand{\st}[1]{\textsc{#1}}
 \newcommand{\file}[1]{\texttt{#1}}
 
-\title{The Pathfinder engine\\ {\small\file{github.com/vd1/pathfinder}}}
+% --- Title block
+\makeatletter
+\renewcommand{\maketitle}{%
+  \thispagestyle{plain}%
+  \begingroup\raggedright
+  \vspace*{6mm}%
+  {\sffamily\footnotesize\bfseries\color{accent}\MakeUppercase{\pf@kicker}\par}%
+  \vspace{3mm}%
+  {\headfont\fontsize{26}{30}\selectfont\color{ink}\@title\par}%
+  \vspace{2.5mm}%
+  {\ttfamily\small\color{accent}\href{https://\pf@repo}{\pf@repo}\par}%
+  \vspace{7mm}%
+  {\large\@author\par}%
+  \vspace{1.5mm}%
+  {\small\color{muted}\pf@affil\par}%
+  \vspace{1.5mm}%
+  {\small\color{muted}\@date\par}%
+  \endgroup
+  \vspace{9mm}}
+\newcommand{\kicker}[1]{\def\pf@kicker{#1}}
+\newcommand{\repo}[1]{\def\pf@repo{#1}}
+\newcommand{\affiliations}[1]{\def\pf@affil{#1}}
+\renewenvironment{abstract}
+  {\par\noindent{\color{accent}\rule{\linewidth}{0.5pt}}\par\vspace{0.6\baselineskip}%
+   \noindent{\headfont\small\color{accentdark}Abstract}\par\vspace{0.3\baselineskip}%
+   \small\setlength{\parindent}{0pt}\setlength{\parskip}{0.5\baselineskip}}
+  {\par\vspace{0.4\baselineskip}\noindent{\color{accent}\rule{\linewidth}{0.5pt}}\par}
+\makeatother
 
-\author[1]{Vincent Danos}
-\author[2,3]{Elham Kashefi}
-\author[3]{William Waites}
-\affil[1]{CNRS, ENS}
-\affil[2]{CNRS, LIP6}
-\affil[3]{University of Edinburgh}
+% --- Bibliography: smaller, with a little air between entries
+\makeatletter
+\let\pf@oldbib\thebibliography
+\renewcommand{\thebibliography}[1]{\pf@oldbib{#1}\small\setlength{\itemsep}{0.3\baselineskip}}
+\makeatother
 
+\newcommand{\sref}[1]{\textsuperscript{#1}}
+
+\kicker{Specification note}
+\title{The Pathfinder engine}
+\repo{github.com/vd1/pathfinder}
+\author{Vincent Danos\sref{1}\quad Elham Kashefi\sref{2,3}\quad William Waites\sref{3}}
+\affiliations{\sref{1}CNRS, ENS\qquad \sref{2}CNRS, LIP6\qquad \sref{3}University of Edinburgh}
 \date{16 September 2026}
 
 \begin{document}
@@ -173,7 +331,7 @@ The scanner agent (Sonnet 5) scored each of the $100$ pairs from $0$ to $100$
 for feasibility and scientific-gain, and proposed a seed connexion. It did so
 being only given titles and abstracts (thereby keeping contexts small). The
 ranking score is the product.
-% There were $99$ parseable scored pairs: the response for $Q1P7$ could not
+% There were $99$ parseable scored pairs: the response for \pair{Q1P7} could not
 % be parsed (see failure recovery below).
 We picked a threshold of $1500$
 eliciting 13 pairs for the research phase. The shortlist also retained the
@@ -224,7 +382,7 @@ Total & 330 & 186.58 \\
 Table~\ref{tab:pilot-outcomes} gives the outcomes.
 \begin{table}[htbp]
 \centering
-\begin{tabularx}{\linewidth}{Xr}
+\begin{tabularx}{0.72\linewidth}{@{}Xr@{}}
 \toprule
 Campaign stage or outcome & Number \\
 \midrule
@@ -242,19 +400,19 @@ stages or different output branches.}
 \label{tab:pilot-outcomes}
 \end{table}
 
-The highest-scoring pair, $Q4P10$, did not reach \st{draft}: a generic incentive
+The highest-scoring pair, \pair{Q4P10}, did not reach \st{draft}: a generic incentive
 inequality was not enough to establish the proposed connexion to the energy
-simulation. Conversely, the retained low-scoring $Q1P2$ did produce an accepted
+simulation. Conversely, the retained low-scoring \pair{Q1P2} did produce an accepted
 manuscript (a potential false negative for the scanning phase). The scan ranking
 was not a reliable ordering of the eventual outcomes in this small sample.
 Other paused
 threads lacked a controlled experiment, an executable interface, or evidence
 that the proposed transfer added something specific to the pair. For example,
-$Q3P10$ required unavailable market experiments. For $Q3P3$, the researchers
-identified a missing comparison in $P3$: does adversarial review outperform
+\pair{Q3P10} required unavailable market experiments. For \pair{Q3P3}, the researchers
+identified a missing comparison in \pair{P3}: does adversarial review outperform
 repeated review by a single agent given the same computational budget? They
 proposed this control, but lacked the task instances and execution setup needed
-to reproduce and extend $P3$'s experiments. A pause
+to reproduce and extend \pair{P3}'s experiments. A pause
 therefore need not mean that the underlying scientific idea is false.
 
 The accepted outputs are summarised in Table~\ref{tab:pilot-papers}. Their
@@ -264,25 +422,25 @@ construction, or a conditional perturbation bound. The following excerpts
 present the mathematical content in condensed notation rather than reproduce the
 manuscripts. Their stated assumptions are part of the results.
 
-\begin{table}[htbp]
+\begin{table}[b]
 \centering
 \small
 \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
 \toprule
 Pair & Source connexion & Accepted manuscript's main result \\
 \midrule
-$Q1P2$ & Learning-augmented algorithms and concept-guided exploration &
+\pair{Q1P2} & Learning-augmented algorithms and concept-guided exploration &
 Room-level calibration certifies the non-abstained decisions of a first
 wall-distance gate. \\
-$Q1P6$ & Learning-augmented algorithms and MARS-RA credit assignment & A
+\pair{Q1P6} & Learning-augmented algorithms and MARS-RA credit assignment & A
 fixed-population reward ledger repairs potential shaping under changing
 coalitions. \\
-$Q4P6$ & Mechanism design for alignment and MARS-RA credit assignment & A
+\pair{Q4P6} & Mechanism design for alignment and MARS-RA credit assignment & A
 conditional interface recovers contribution rankings from noisy peer signals. \\
-$Q7P1$ & Stochastic-stability mechanism design and distributed CVaR optimisation
+\pair{Q7P1} & Stochastic-stability mechanism design and distributed CVaR optimisation
 & A uniform surrogate-error bound controls static welfare loss and conditional
 participation loss. \\
-$Q7P7$ & Stochastic-stability mechanism design and carbon-response forecasting &
+\pair{Q7P7} & Stochastic-stability mechanism design and carbon-response forecasting &
 A voluntary workload-migration formulation and a directional forecast-error
 certificate. \\
 \bottomrule
@@ -302,11 +460,11 @@ Acceptance records a workflow judgement, not established novelty or validity.}
 \subsection{Example 1: Q4P6} %From truthful reports to contribution rankings.}
 Consider the pair:
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2609.01595}{\file{arXiv:2609.01595}},
+\pl{q}\href{https://arxiv.org/abs/2609.01595}{\file{arXiv:2609.01595}},
 \emph{Mechanism Design for Alignment and Control}, studies how to reward agents
 so that they have an interest in reporting what they know truthfully.
 
-\(p:\) \href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
+\pl{p}\href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
 \emph{MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons
 in Embodied Multi-Agent Cooperation}, uses an external AI model to look at
 images from cooperating agents and compare who contributed more. These
@@ -358,12 +516,12 @@ conditions, not yet a complete mechanism for making those conditions hold.
 Consider another example:
 % input, whose seed was supplied by a scanning agent:
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}}, \emph{A
+\pl{q}\href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}}, \emph{A
 Systematic Approach to Mechanism Design with Stochastic Dynamic Stability},
 proposes payments and a learning procedure intended to make self-interested
 agents share limited resources efficiently.
 
-\(p:\) \href{https://arxiv.org/abs/2609.04460}{\file{arXiv:2609.04460}},
+\pl{p}\href{https://arxiv.org/abs/2609.04460}{\file{arXiv:2609.04460}},
 \emph{Distributed risk-averse optimization via CVaR}, uses noisy loss
 observations to optimise conditional value-at-risk (CVaR): the average loss in a
 chosen worst fraction of cases, rather than over all cases.
@@ -414,12 +572,12 @@ result may survive while its intended application still needs substantial work.
 \subsection{A selective perception guarantee: Q1P2}
 
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2609.04787}{\file{arXiv:2609.04787}},
+\pl{q}\href{https://arxiv.org/abs/2609.04787}{\file{arXiv:2609.04787}},
 \emph{Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and
 System-Level Implications}, surveys algorithms that use predictions while
 retaining guarantees when those predictions are wrong.
 
-\(p:\) \href{https://arxiv.org/abs/2608.23650}{\file{arXiv:2608.23650}},
+\pl{p}\href{https://arxiv.org/abs/2608.23650}{\file{arXiv:2608.23650}},
 \emph{Concept-Guided Exploration: Building Persistent, Actionable Scene Graphs},
 lets a robot build a map of rooms and doors. Its estimated room walls guide
 where it looks for doors.
@@ -494,12 +652,12 @@ and a validation protocol, not a demonstrated safer robot.
 \subsection{An accounting repair for changing coalitions: Q1P6}
 
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2609.04787}{\file{arXiv:2609.04787}},
+\pl{q}\href{https://arxiv.org/abs/2609.04787}{\file{arXiv:2609.04787}},
 \emph{Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and
 System-Level Implications}, surveys how algorithms can benefit from predictions
 without losing their guarantees when the predictions are inaccurate.
 
-\(p:\) \href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
+\pl{p}\href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
 \emph{MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons
 in Embodied Multi-Agent Cooperation}, uses an outside AI judge to compare
 cooperating agents' contributions. The resulting scores adjust their training
@@ -550,11 +708,11 @@ sufficient repair, not a new general reward-shaping theorem.
 \subsection{From peer signals to rankings: Q4P6}
 
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2609.01595}{\file{arXiv:2609.01595}},
+\pl{q}\href{https://arxiv.org/abs/2609.01595}{\file{arXiv:2609.01595}},
 \emph{Mechanism Design for Alignment and Control}, studies rewards that give
 agents an interest in reporting what they know truthfully.
 
-\(p:\) \href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
+\pl{p}\href{https://arxiv.org/abs/2607.27967}{\file{arXiv:2607.27967}},
 \emph{MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons
 in Embodied Multi-Agent Cooperation}, uses an outside AI judge to compare
 agents' contributions from images, then combines those comparisons into
@@ -609,12 +767,12 @@ requiring local corrections; it did not establish publication readiness.
 \subsection{A static risk bound, and what subsequent scrutiny changed}
 
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}},
+\pl{q}\href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}},
 \emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic
 Stability}, proposes messages, payments and a learning procedure intended to
 make self-interested participants share limited resources efficiently.
 
-\(p:\) \href{https://arxiv.org/abs/2609.04460}{\file{arXiv:2609.04460}},
+\pl{p}\href{https://arxiv.org/abs/2609.04460}{\file{arXiv:2609.04460}},
 \emph{Distributed risk-averse optimization via CVaR}, learns from noisy
 observations while paying particular attention to losses in the worst
 fraction of cases.
@@ -623,7 +781,7 @@ The seed asks: could \(p\)'s way of learning about risk make \(q\)'s
 resource-sharing scheme risk-averse while preserving its guarantees?
 \end{quote}
 
-The original $Q7P1$ proposal sought to combine distributed risk-averse
+The original \pair{Q7P1} proposal sought to combine distributed risk-averse
 optimisation with a mechanism possessing strategic and dynamic guarantees. The
 accepted root-campaign paper established a more limited statement. Let $C_n$ be
 an agent's population CVaR cost at tail level $\alpha_n$ and $\widetilde C_n$
@@ -651,7 +809,7 @@ dynamics can be interchanged, or that restricting the feasible domain for
 smoothing is harmless.
 
 Subsequent Astra investigations, stored separately from the root campaign, show
-why those distinctions matter. The $Q7P1$ follow-up identified an obstruction to
+why those distinctions matter. The \pair{Q7P1} follow-up identified an obstruction to
 the mechanism source's strict matrix certificate and a counterexample to its
 explicit payment's participation guarantee. A direct source audit on 14
 September confirmed these defects and a separate printed sign inconsistency in
@@ -668,12 +826,12 @@ fourteen-thread denominator.
 \subsection{A directional emissions guarantee: Q7P7}
 
 \begin{quote}
-\(q:\) \href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}},
+\pl{q}\href{https://arxiv.org/abs/2608.29130}{\file{arXiv:2608.29130}},
 \emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic
 Stability}, proposes payments and a learning procedure intended to coordinate
 participants who pursue their own interests.
 
-\(p:\) \href{https://arxiv.org/abs/2607.26560}{\file{arXiv:2607.26560}},
+\pl{p}\href{https://arxiv.org/abs/2607.26560}{\file{arXiv:2607.26560}},
 \emph{Emission-Forecasting-Based Spatial-Temporal Carbon Response: A Multi-Agent
 Attention-Enhanced Deep Learning Framework}, forecasts the carbon intensity
 of electricity and moves flexible demand across locations and times to
@@ -698,9 +856,9 @@ A positive right-hand side certifies a reduction under the exogenous-intensity
 model. This application of the dual-norm inequality does not depend on the
 mechanism's stability certificate. By contrast, the paper's proposed
 implementation of voluntary migration explicitly assumes that certificate. The
-later $Q7P1$ obstruction therefore raises a dependency concern for that
+later \pair{Q7P1} obstruction therefore raises a dependency concern for that
 conditional implementation claim too; this is an implication of the follow-up,
-not a completed reassessment of $Q7P7$.
+not a completed reassessment of \pair{Q7P7}.
 
 \subsection{What the pilot evaluates}
 
@@ -812,34 +970,34 @@ and an empty ledger, sets \(\rho=\st{research}\), and sets \(r=1\), \(u=w=e=0\).
 Candidate selection precedes this research position; it is not another state of
 the research machine.
 
-\begin{center}
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[x=1cm,y=1cm, every node/.style={font=\footnotesize},
-  state/.style={draw,rounded corners=2pt,minimum height=6.5mm,inner
-  xsep=6pt,fill=gray!8}, term/.style={state,fill=green!12},
-  pause/.style={state,fill=orange!14},
-  edge/.style={-{Stealth[length=2mm]},semithick},
-  lab/.style={font=\scriptsize,fill=white,inner sep=1.5pt}] \node[align=center]
-  (input) at (2.4,0) {incoming message \((q,p,c)\)\\\(c\): optional seed
-  connexion}; \node[state] (peers) at (6.2,0) {\st{research}}; \node[state]
-  (cons) at (11.4,0) {\st{consolidate}}; \node[state] (ver) at (15.6,0)
-  {\st{verify}}; \node[pause] (poi) at (21,1.6) {\st{pause-on-iterate}};
-  \node[pause] (por) at (21,0) {\st{pause-on-revise}}; \node[pause] (pause) at
-  (21,-1.6) {\st{pause}}; \node[term] (draft) at (21,-3.2) {\st{draft}};
-  \draw[edge] (input) -- (peers); \draw[edge] (peers) --
-  node[lab,above,align=center] {all ready, or\\allowance out} (cons);
-  \draw[edge] (cons) -- node[lab,above] {note written} (ver); \draw[edge] (ver)
-  to[out=120,in=60,looseness=0.7] node[lab,above] {\st{iterate}, rounds left}
-  (peers); \draw[edge] (ver) to[out=225,in=315,looseness=1.0] node[lab,below]
-  {\st{revise}, repairs left} (cons); \draw[edge] (ver.east) --
-  node[lab,sloped,below,pos=0.6] {\st{draft}} (draft.west); \draw[edge]
-  (ver.east) -- node[lab,sloped,below,pos=0.6] {\st{pause}} (pause.west);
-  \draw[edge] (ver.east) -- node[lab,above,pos=0.6] {\st{revise}, repairs out}
-  (por.west); \draw[edge] (ver.east) -- node[lab,sloped,above,pos=0.6]
-  {\st{iterate}, rounds out} (poi.west); \draw[edge] (peers.south) -- (6.2,-4.4)
-  -- node[lab,below] {no substantive ledger entry} (23.4,-4.4) |- (pause.east);
-  \end{tikzpicture}}
-\end{center}
+\begin{widefigure}
+\begin{tikzpicture}[pf]
+  \node[align=center] (input) at (0,0) {input\\\((q,p,c)\)};
+  \node[state] (peers) at (2.2,0) {\st{research}};
+  \node[state] (cons) at (6.3,0) {\st{consolidate}};
+  \node[state] (ver) at (9.8,0) {\st{verify}};
+  \node[pause,align=center,anchor=west] (poi) at (11.5,1.7)
+    {\st{pause-on-iterate}\\[-1pt]\guard{\st{iterate}, rounds out}};
+  \node[pause,align=center,anchor=west] (por) at (11.5,0.45)
+    {\st{pause-on-revise}\\[-1pt]\guard{\st{revise}, repairs out}};
+  \node[term,anchor=west] (draft) at (11.5,-0.6) {\st{draft}};
+  \node[pause,anchor=west] (pause) at (11.5,-1.5) {\st{pause}};
+  \draw[edge] (input) -- (peers);
+  \draw[edge] (peers) -- node[lab,above,align=center] {all ready, or\\allowance out} (cons);
+  \draw[edge] (cons) -- node[lab,above] {note written} (ver);
+  \draw[edge] (ver.north) to[out=115,in=65,looseness=0.5]
+    node[lab,above] {\st{iterate}, rounds left} (peers.north);
+  \draw[edge] (ver.south) to[out=245,in=295,looseness=0.8]
+    node[lab,below] {\st{revise}, repairs left} (cons.south);
+  \draw[line width=0.6pt,draw=ink!85] (ver.east) -- (10.75,0);
+  \fill[ink!85] (10.75,0) circle (1.1pt);
+  \foreach \t in {poi,por,draft,pause}
+    \draw[edge] (10.75,0) |- (\t.west);
+  \draw[edge] (peers.south) -- (2.2,-2.35)
+    -- node[lab,above,pos=0.45] {no substantive ledger entry} (pause.south |- 0,-2.35) -- (pause.south);
+\end{tikzpicture}
+\end{widefigure}
+\diagramnote{Research phase. The input \((q,p,c)\) carries an optional seed connexion \(c\).}
 
 \paragraph{Research.}
 Upon receiving a tuple, the runner creates a directory for this investigation,
@@ -1002,34 +1160,31 @@ attempt. The second rule has no condition on \(\pi\): an account can precede the
 paper or be produced when no paper will be requested. Neither request changes
 \(\rho\).
 
-\begin{center}
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[x=1cm,y=1cm, every node/.style={font=\footnotesize},
-  state/.style={draw,rounded corners=2pt,minimum height=6.5mm,inner
-  xsep=6pt,fill=gray!8}, term/.style={state,fill=green!12},
-  pause/.style={state,fill=orange!14}, blocked/.style={state,fill=red!10},
-  edge/.style={-{Stealth[length=2mm]},semithick},
-  lab/.style={font=\scriptsize,fill=white,inner sep=1.5pt}] \node[term] (draft)
-  at (0.8,0) {\st{draft}}; \node[state] (author) at (3.8,0) {\st{author}};
-  \node[state] (review) at (8.4,0) {\st{review}}; \node[term] (accepted) at
-  (14,0) {\st{accepted}}; \node[pause] (paused) at (8.4,-1.9)
-  {\st{pause-on-amend}}; \draw[edge] (draft) -- node[lab,above] {request}
-  (author); \draw[edge] (author) -- node[lab,above] {manuscript checked}
-  (review); \draw[edge] (review) -- node[lab,above] {\st{accept}, build
-  succeeds} (accepted); \draw[edge] (review) to[out=140,in=40,looseness=0.9]
-  node[lab,above] {\st{amend}, rounds left} (author); \draw[edge] (review) --
-  node[lab,right] {\st{amend}, rounds out} (paused);
-  \node[state,align=center,text width=32mm] (terminal) at (1.5,-3.8) {terminal
-  research\\outcome}; \node[state] (editor) at (6.4,-3.8) {\st{editor}};
-  \node[term] (readable) at (12.9,-3.8) {\st{readable account}}; \node[blocked]
-  (blocked) at (12.9,-5.4) {\st{blocked}}; \draw[edge] (terminal) --
-  node[lab,above] {request} (editor); \draw[edge] (editor) -- node[lab,above]
-  {build and checks pass} (readable); \draw[edge] (editor)
-  to[out=240,in=300,looseness=4] node[lab,below] {check failure, retry left}
-  (editor); \draw[edge] (editor.east) -- ++(1,-0.45) --
-  node[lab,above,align=center,pos=0.5] {check failure,\\attempts out}
-  (blocked.west); \end{tikzpicture}}
-\end{center}
+\begin{widefigure}
+\begin{tikzpicture}[pf]
+  \node[term] (draft) at (0,0) {\st{draft}};
+  \node[state] (author) at (2.9,0) {\st{author}};
+  \node[state] (review) at (7.6,0) {\st{review}};
+  \node[term] (accepted) at (12.4,0) {\st{accepted}};
+  \node[pause] (paused) at (7.6,-1.6) {\st{pause-on-amend}};
+  \draw[edge] (draft) -- node[lab,above] {request} (author);
+  \draw[edge] (author) -- node[lab,above] {manuscript checked} (review);
+  \draw[edge] (review) -- node[lab,above,align=center] {\st{accept},\\build succeeds} (accepted);
+  \draw[edge] (review.north) to[out=120,in=60,looseness=0.8]
+    node[lab,above] {\st{amend}, rounds left} (author.north);
+  \draw[edge] (review) -- node[lab,right] {\st{amend}, rounds out} (paused);
+  \node[state,align=center] (terminal) at (0.35,-3.6) {terminal research\\outcome};
+  \node[state] (editor) at (5.2,-3.6) {\st{editor}};
+  \node[term] (readable) at (11.6,-3.6) {\st{readable account}};
+  \node[blocked] (blocked) at (11.6,-5.0) {\st{blocked}};
+  \draw[edge] (terminal) -- node[lab,above] {request} (editor);
+  \draw[edge] (editor) -- node[lab,above] {build and checks pass} (readable);
+  \draw[edge] ([xshift=-2.5mm]editor.north) to[out=115,in=65,looseness=5]
+    node[lab,above] {check failure, retry left} ([xshift=2.5mm]editor.north);
+  \draw[edge] ([xshift=3mm]editor.south) |- node[lab,above,pos=0.72] {check failure, attempts out} (blocked.west);
+\end{tikzpicture}
+\end{widefigure}
+\diagramnote{Editing phase: the paper branch (top) and the readable-account branch (bottom).}
 
 \paragraph{Author.}
 The author receives the research note, ledger, verdicts, source papers and
@@ -1225,7 +1380,7 @@ ledger freshness must never depend on a cache hit.
 \paragraph{Allowances.}
 The resource settings attach to different loops and should not be conflated.
 \begin{center}
-\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
 \toprule
 Allowance & Scope & Exhaustion effect \\
 \midrule
@@ -1408,12 +1563,14 @@ The notation also exposes useful invariants of the automatic machine:
 \[
  \begin{aligned}
  \eta\in\{\st{editor},\st{readable\ account}\}
-    &\ \Longrightarrow\ \rho\in T_R,\\
+    &;\Longrightarrow;\rho\in T_R,\\
  \pi\ne\st{idle}
-    &\ \Longrightarrow\ \rho=\st{draft},\\
+    &;\Longrightarrow;\rho=\st{draft},\\
  \pi=\st{accepted}
-    &\ \Longrightarrow\ \text{an accepting review and successful build}\\
-    &\hspace{28mm}\text{identify the same manuscript version.}
+    &;\Longrightarrow;\begin{array}[t]{@{}l@{}}
+       \text{an accepting review and successful build}\\
+       \text{identify the same manuscript version.}
+     \end{array}
  \end{aligned}
 \]
 They follow from the launch and completion guards, preservation of the research
@@ -1595,7 +1752,7 @@ described in the corresponding transition paragraph.
 
 \begin{center}
 \small
-\begin{tabularx}{\textwidth}{@{}lX@{}}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X@{}}
 \toprule
 Record or operation & Reference representation \\
 \midrule
@@ -1745,7 +1902,7 @@ neither the manuscript nor the readable-account editing branch is needed.
 
 \begin{enumerate}
 \item \textbf{Run independently.} Repeat each protocol on fixed example pairs,
-initially $Q3P3$ and $Q4P6$. Compare the current protocol with alternatives
+initially \pair{Q3P3} and \pair{Q4P6}. Compare the current protocol with alternatives
 such as a single researcher, independent researchers followed by consolidation,
 and interacting researchers. Fix the papers, optional seed, model, tool access,
 resource allowances and number of runs before examining the outcomes. Retain
@@ -1785,9 +1942,9 @@ output contributes no labels and is also recorded as an operational failure.
 Report actual tokens, cost and elapsed time alongside the scientific outcomes.
 
 The examples in Section~\ref{sec:pilot} and the talk's inventory illustrate
-possible labels: the conditional judge-free ranking construction for $Q4P6$,
+possible labels: the conditional judge-free ranking construction for \pair{Q4P6},
 or the identification and design of a missing matched-budget control for
-$Q3P3$. The latter is an experimental-design contribution, not evidence that
+\pair{Q3P3}. The latter is an experimental-design contribution, not evidence that
 the critic is ineffective. Keep proposed tests distinct from proved or
 experimentally established results. Supported obstructions may count even
 when a run pauses; internal \st{draft} status alone establishes neither
@@ -1822,7 +1979,7 @@ are true.
 
 This asks whether a protocol can sustain cumulative research, rather than
 recover a fixed inventory. For example, a later paper might relax the
-assumptions of the $Q4P6$ ranking construction, establish its finite-sample
+assumptions of the \pair{Q4P6} ranking construction, establish its finite-sample
 requirements, or find a counterexample. These are possible directions, not
 results already obtained. A contribution must add something beyond both the
 initial literature and its generated predecessors; a new pairing, title or
