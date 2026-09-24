@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Independent Judgment in Reviewer--Critic Code Review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies how rewards and verifiable claims can guide agents with private information, while P
+studies a reviewer and critic who discuss code changes. We looked for a link between Q's peer
+scoring and P's reported false agreement. A checked example shows that Q's scoring argument can fail
+when the peer copies a public report, and P describes a critic who withdrew a sound concern after a
+weak reply. The thread paused because P neither uses that score nor shows that lost independent
+judgment caused its wider results. A blind first judgment by the critic would make the proposed
+cause testable.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Mechanism Design for Alignment and Control}, asks how to direct AI agents when their aims,
+abilities and information are private \cite{Q}. It describes which claims can be backed by evidence
+and which actions can be induced with rewards. One result uses other agents' reports to reward an
+agent for reporting its own private type accurately. That result needs distinct beliefs about those
+reports and a reward rule that can be enforced.
+
+P, \emph{Adversarial Review}, studies a coding agent helped by a reviewer and a critic \cite{P}. The
+reviewer flags possible bugs, the critic challenges or adds findings, and the reviewer can reply
+before a final review. P reports gains on coding tasks. On a set of 100 pull-request reviews, its
+initial protocol scores 0.457 in F1, a measure that balances matched findings and missed or spurious
+ones. A revised prompt scores 0.533. P also gives examples in which the exchange ends in agreement
+without adequate support.
+
+The question was whether Q's theory explains such agreement, and whether making the critic's first
+judgment independent would help. The shared concern is information that one agent could supply to
+another. The two settings differ: Q specifies reports, feasible deviations and rewards; P uses
+review text and prompts.
+
+\section{What was done}
+
+The peers first checked whether Q's rule for implementable single-agent policies, called nested
+cyclical monotonicity, or its peer-scoring result applied directly to P. They found no direct
+transfer. P specifies neither Q's private type reports and conditional beliefs nor an enforceable
+score. They then narrowed the question to the order of P's conversation: the critic sees the
+reviewer's latest review and earlier exchange before giving its final verdict.
+
+The peers pursued two related boundaries. One was whether a peer's response remains an independent
+source of information after seeing the first agent's report. The other was whether a code citation
+has the force of Q's hard evidence, in which a certificate may be withheld but cannot be forged.
+They checked a small scoring example, read P's failed review case, and compared the original and
+revised review prompts. A later cross-check corrected the scope of the citation rule: it directly
+governs a critic's challenge to an \emph{existing} reviewer flag. The critic is separately asked to
+name missed bugs, which the reviewer is told to incorporate.
+
+\clearpage
+\section{Results}
+
+Q's peer-scoring proof gives a gain from truthful reporting proportional to the squared distance
+between two conditional peer-report laws. Here a law is the probability of each possible peer report
+given the first agent's private type. The calculation requires that the peer's report law stay fixed
+when the first agent changes its own report. The peers checked that dependence on that report can
+defeat the score, even when the original conditional laws differ.
+
+For their example, let \(A\) and \(B\) be two private types and possible reports. Let
+\(\beta_A=(0.9,0.1)\) and \(\beta_B=(0.4,0.6)\) be the respective conditional probabilities of peer
+reports \((A,B)\). If \(r\) is the first report and \(z\) the peer report, Q's quadratic score
+without its scale factor is
+\[
+q(r,z)=2\beta_r(z)-\lVert\beta_r\rVert_2^2.
+\]
+The symbol \(\lVert\beta_r\rVert_2^2\) is the sum of the squared probabilities in \(\beta_r\). If a
+sequential peer simply copies the public report, a true \(B\)-type gets \(q(A,A)=0.98\) by reporting
+\(A\), but \(q(B,B)=0.68\) by reporting \(B\). The peers checked both scores and that the two stated
+conditional laws can come from one joint distribution. Copying changes the peer's response when the
+first report changes, so this example does not contradict Q. It marks the boundary of a proposed
+transfer to a sequential exchange.
+
+P supplies a reason to examine that boundary, not proof that it drives the benchmark result. In P's
+Case B, the critic raised a real concern, the reviewer gave a weak rebuttal without a code citation,
+and the critic then agreed; the final review omitted the bug. The peers proposed recording the
+critic's blind, sealed first judgment on the same code change before showing the reviewer's view,
+then allowing the usual exchange. This would reveal the critic's pre-exposure signal and remove the
+reviewer's direct influence at that stage. It would not ensure that the signals differ, that either
+report is true, or that Q's scoring rule can be enforced.
+
+The evidence check gives a second limit. Q's certificate cannot be counterfeited under its model. A
+citation to a line in P shows that the line exists, but does not itself establish that a bug claim
+is correct. The peers' boundary argument was simple: if two cases have the same visible code change
+and problem statement but differ in hidden repository context, a rule using only the visible
+material must treat them alike. If the right review differs, that rule cannot get both cases right.
+This is a conditional information limit, not an observed failure rate in P. Emmy's
+\emph{Verification boundary in adversarial review} records this argument and its proposed
+witness-location check.
+
+\section{Objections and limits}
+
+The first objection was that a second model in P is not automatically a peer-scoring instrument in
+Q's sense. The peers settled it by dropping the direct theorem claim. Their example instead shows
+what can go wrong if scoring is imported into a sequential setting where a peer copies the first
+report. They did not establish that P's critics usually copy, or that preserving an initial dissent
+improves accuracy.
+
+The peers also corrected an overbroad reading of P's revised prompt. Its demand for a code-backed
+reply to a concern applies directly to an existing reviewer flag challenged by the critic. A newly
+suggested missed bug follows a separate instruction, and the final formatting step can also change
+what is reported. A test of citation rules must keep these paths separate. It should also
+distinguish bugs decidable from the visible code change from bugs that need another file, a
+specification or a test. The material contains neither that breakdown nor a measure of how often
+dissent is lost.
+
+\clearpage
+\section{Why the thread stopped}
+
+The verifier paused the thread after one round. The score example is valid, but it only limits a
+transfer of Q's proof to a peer who reacts to the first report. P has no such score, and its case
+studies do not establish lost independent critic information as the cause of false agreement. The
+proposed connection is therefore a testable explanation, not a result about the pair.
+
+The smallest step towards restarting it is a paired pilot on the same pull requests. Cross a sealed
+blind critic judgment with P's original and revised evidence prompts while keeping the model,
+supplied context and token budget fixed. Record initial and final dissent, independently checked
+bug-level precision and recall, and the patch outcome. Separate challenged flags from new
+suggestions and note whether each bug needs evidence beyond the visible code change. If sealing
+preserves dissent but does not improve accuracy, the proposed information-loss explanation is
+insufficient.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

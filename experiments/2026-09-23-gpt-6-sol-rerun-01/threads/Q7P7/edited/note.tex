@@ -1,0 +1,142 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Strategic Carbon Response: The Limit of a Direct Transfer}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies payments that steer private resource requests towards a welfare optimum, while P forecasts
+carbon intensity and schedules flexible electricity demand. The thread asked whether Q's mechanism could
+make strategic participants carry out P's carbon-aware dispatch. The peers found a balanced charge for a
+restricted, fixed-forecast problem and a simple test for whether a predicted emissions reduction survives
+forecast error. Neither result covers P's coupled, partly binary dispatch, and a conflict between two of
+Q's printed conditions further weakens a direct transfer. The verifier therefore paused the thread
+pending a valid mechanism for P's constraints and counterfactual emissions evidence.
+\end{abstract}
+
+\section{Introduction}
+
+Q considers people or organisations that request shares of limited resources and know their own
+satisfaction better than the manager does. It proposes quadratic payments so that each participant's best
+response leads to the allocation that maximises total satisfaction. Its stated results include a unique
+Nash equilibrium, budget balance at that equilibrium, voluntary participation, and convergence of a
+sample-based learning rule, each under stated assumptions. Its example concerns electric vehicle users
+choosing routes and charging stations \cite{Q}.
+
+P addresses a different problem in an electricity network. It forecasts the carbon intensity of power at
+each node for the next day, then schedules flexible loads, including mobile energy storage systems and
+distributed data centres, to reduce emissions. It tests the approach on a modified IEEE 33-bus network.
+The ``agents'' in its forecasting workflow clean inputs and respond to forecast errors; they are not
+modelled as self-interested owners of the scheduled loads \cite{P}.
+
+The proposed connexion was to add private owners to P's dispatch and use Q's payments to make their
+choices follow a carbon-aware plan. This raised two questions. Could P's decisions and constraints fit
+Q's resource-allocation model? If they could, would a plan based on forecast carbon intensity still
+reduce emissions after the changed dispatch altered power flows?
+
+\section{What was done}
+
+The peers first compared the two optimisation problems. Q allows continuous requests in convex local
+sets, with a componentwise upper limit on their sum. P requires a workload balance across data centres
+and uses binary decisions for storage locations and travel. The peers therefore set aside a direct
+application to P's full model. They explored a smaller model in which owners allocate splittable workload
+batches across destinations. That model can have convex local sets and destination capacities, but it
+changes who the agents are and what they control \cite{Q,P}.
+
+Next, one peer proposed a carbon charge for a fixed forecast; the other checked its algebra. They then
+distinguished the forecast objective from emissions after dispatch, and derived an error test for
+comparing a proposed dispatch with a baseline. Finally, they checked Q's printed payment and learning
+rules and compared the proposed connexion with earlier work. The verifier's last check found an
+additional conflict between Q's printed implementation and uniqueness conditions.
+
+\section{Results within the restricted model}
+
+Suppose there are \(N>1\) participants. Participant \(n\) chooses a nonnegative allocation vector
+\(x_n\). Let \(\widehat e\) be a fixed vector of forecast carbon intensities and \(\beta\geq 0\) the
+weight placed on forecast emissions. The peers checked the charge
+\[
+\tau_n^C(x)=\beta\widehat e^{\mathsf T}x_n
+-\frac{\beta}{N-1}\sum_{m\ne n}\widehat e^{\mathsf T}x_m.
+\]
+Here \(m\) indexes the other participants. Each forecast term appears once as a charge and \(N-1\) times
+in rebates, so the charges sum to zero for every allocation. A participant's own marginal charge is
+\(\beta\widehat e\), because the rebate depends only on others' choices. Thus, \emph{if} a valid version
+of Q's mechanism applies to this restricted allocation, adding the charge gives the same best responses
+as replacing each private satisfaction function \(u_n(x_n)\) by \(u_n(x_n)-\beta\widehat e^{\mathsf
+T}x_n\). The resulting objective trades satisfaction against forecast emissions; it is not P's pure
+emissions objective. This is an algebraic construction, not an implementation result for P's dispatch.
+
+The peers also obtained a comparison that does not depend on how a dispatch is chosen. Let \(C(x)\) be
+emissions after power flows are recomputed for dispatch \(x\), and let \(\widehat C(x)\) be its forecast
+value. For a proposed dispatch \(x^M\) and a baseline \(x^0\), suppose the absolute forecast error at
+\emph{each} dispatch is at most \(\delta\). Then
+\[
+C(x^0)-C(x^M)
+\geq \widehat C(x^0)-\widehat C(x^M)-2\delta.
+\]
+The argument is just the two error bounds: the baseline's realised emissions can be at most \(\delta\)
+below its forecast, and the proposed dispatch's can be at most \(\delta\) above. A forecast reduction
+greater than \(2\delta\) therefore certifies a realised reduction for those two decisions. P's historical
+forecast error does not supply this error bound for dispatches chosen under a new incentive scheme. Nor
+does maximising satisfaction less weighted forecast emissions, on its own, guarantee an emissions
+reduction.
+
+\section{Objections and unsettled points}
+
+The first obstacle is the agent model. P's balance equality links data centres, while Q's shared
+constraint is an upper capacity. Giving each workload batch its own choice over destinations could absorb
+the balance into local constraints, but it creates a new market. A mandatory batch also rules out the
+zero allocation used in Q's voluntary-participation argument. The nonnegative rebate in the charge above
+is therefore insufficient to establish participation without a feasible outside option. P's binary
+storage routes remain outside that restricted model \cite{Q,P}.
+
+The second obstacle is the carbon signal. P's carbon-flow calculation makes nodal intensity depend on
+dispatch, whereas its scheduling objective uses forecast intensities as fixed coefficients. A fixed
+charge can match the forecast objective but need not match the marginal effect on realised emissions. The
+peers' illustrative two-location example showed that a forecast can favour one location even when moving
+all demand there makes realised emissions larger. This example was a logical check, not a fit to P's
+network. P describes a closed-loop assessment and reports a 33.86\% reduction between its Cases 2 and 3;
+the supplied text does not establish whether that result survives private costs and counterfactual
+forecast error \cite{P}. The peers did not infer that P's reported comparison was wrong.
+
+Checks of Q raised separate cautions. The reduced payment printed beside its learning update has an
+own-price quadratic sign that differs from its full payment; a peer expanded both expressions and
+recorded corrected blocks. Q's convergence theorem requires a growing sample size, but its numerical
+schedule gives one sample at every iteration. These discrepancies call for correction and verification
+before transferring its learning claim; they do not show that its plotted trajectories fail \cite{Q}.
+
+The verifier identified a more direct conflict in Q's printed conditions. Let \(\Psi\) be Q's matrix of
+payment curvature, let \(K\) be the number of resource coordinates, and let \(A_{nm}^{n}\) denote its
+price-to-price block for participant \(n\) and participant \(m\). Q's implementation condition P2(i) says
+\(\sum_m A_{nm}^{n}=0\). For any nonzero \(K\)-vector \(p\), take a direction \(v\) that changes every
+participant's proposed price by \(p\) and leaves every resource request unchanged. The price blocks then
+give \(v^{\mathsf T}(\Psi+\Psi^{\mathsf T})v=0\). Yet Q's uniqueness condition P1(ii) requires this
+quantity to be at most \(-\upsilon\lVert v\rVert^2<0\), for a positive constant \(\upsilon\). As printed,
+these two conditions cannot both hold. This does not rule out a corrected mechanism, but the thread
+contains no such correction or replacement proof \cite{Q}.
+
+The prior-work check also narrowed any novelty claim. Earlier work covers incentives for spatial
+data-centre demand response \cite{chen_idc}, marginal emissions signals for demand response
+\cite{ieee_marginal}, and carbon-aware scheduling under uncertain grid signals \cite{ieee_uncertain}. It
+also covers equilibrium effects of average carbon signals \cite{jiang}, joint electricity-carbon pricing
+with budget balance \cite{chen_zhao}, and carbon-flow-aware demand response \cite{chen_carbon_flow}. The
+peers did not establish that the proposed combination is absent from this literature. The balanced charge
+and the \(2\delta\) inequality are useful checks, but neither is a new result for P's full setting.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the conditional charge and error test do not connect Q's stated
+mechanism to P's coupled, partly binary dispatch; the prior-work check also left novelty unproved. The
+conflict between Q's P2(i) and P1(ii) makes a direct appeal to its printed conditions untenable. The
+smallest useful restart is a worked restricted data-centre case: specify the strategic owners and their
+outside option, repair and verify the needed Q conditions or supply another mechanism for the balance
+constraint, and measure forecast and realised emissions for its dispatch and a comparator on P's network.
+A claim about the full storage and data-centre system would then still need to handle its routing
+decisions.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

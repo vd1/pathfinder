@@ -1,0 +1,69 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Scored Peer Forecasts in a Costly Agent Society}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q develops mechanisms for AI agents with private preferences and capabilities, including a peer-scoring result that uses correlated type reports to discipline actions. P studies LLM agents in a survival economy where public recommendations precede action choices and generating messages consumes energy. \ledger{3, 4, 7}
+
+\section*{The connexion pursued}
+
+The initial question was whether Q's peer-discipline mechanism could govern P's discussion phase. The narrower question that survived scrutiny is whether scoring a forecast of a peer's next action still elicits information when that forecast is shown to the peer before it acts. \ledger{4, 13, 19}
+
+\section*{What was found}
+
+Q scores reports about pre-existing co-player types. Its result assumes a known map from types to beliefs, distinct conditional beliefs across supported types, cancellation of reported utility, and rewards large enough to deter false reports and off-target actions. P establishes none of that private correlated type structure. Its recommendations concern future actions that recipients may change after reading them; its token charges and finite survival energy also make scoring costly. P's competitive agents recommend potentially colliding jobs more often, but duplicate recommendations need not be deceptive. \ledger{4, 7, 13, 15, 21}
+
+The distinction matters even for a proper score. For a binary peer action \(Y\), Q's full quadratic score for a forecast \(q\) is
+\[
+S_Q(q,Y)
+=2\bigl[qY+(1-q)(1-Y)\bigr]
+-\bigl[q^2+(1-q)^2\bigr].
+\]
+If the distribution of \(Y\) is fixed, expected score is maximized by reporting its probability. If disclosure instead makes \(\Pr(Y=1\mid q)=q\), then
+\[
+\mathbb{E}[S_Q(q,Y)]=q^2+(1-q)^2,
+\]
+which is maximized at \(q=0\) or \(q=1\). This is a counterexample to transferring the fixed-target scoring argument to public action forecasts, not an observed effect in P. \ledger{9, 10, 11, 21}
+
+P also makes communication's resource cost consequential. Removing discussion raises competitive collisions from \(12.80\pm3.90\) to \(21.00\pm4.36\) per run, while raising the larger agents' active rounds. Collision counts alone therefore cannot establish a net benefit. Over a fixed horizon, the proposed task-surplus measure is
+\[
+W_{\mathrm{task}}
+=\sum \text{job rewards paid}
+-\sum \text{token charges}
+-\sum \text{idle charges}.
+\]
+Donations and internally funded scores cancel in aggregate; externally supplied score energy must be reported separately. \ledger{5, 23, 24}
+
+\section*{Objections and resolution}
+
+Sandbagging is not established in P: it has no capability evaluation that selects a later permission cap. Q's coupled-reward theorem also requires continuous actions and a known relation between agents' biases, neither of which P supplies. The proposed study is consequently a mechanism-inspired experiment, not an implementation of either theorem. \ledger{3, 8, 13}
+
+A hidden forecast drawn from a regime that might disclose it is not a private-forecast benchmark: the sender chose it knowing disclosure was possible. The revised comparison gives private-only scoring its own preannounced arm, fixes ordinary recommendations before forecasting, and uses post-submission display randomization within a separate possible-disclosure arm. That randomization identifies the effect of displaying submitted forecasts, but does not identify the response to every possible forecast value, since senders choose \(q\). \ledger{12, 18, 26}
+
+\section*{Outside sources}
+
+Oesterheld and coauthors study how performative predictions can defeat ordinary proper-score incentives; Chakraborty and Das study outcome influence in prediction markets. Hudson studies joint scoring designed to limit manipulation. These sources rule out presenting score endogeneity or joint scoring as a new theoretical discovery here. \ledger{14, 16, 17}
+
+\noindent
+\url{https://proceedings.mlr.press/v216/oesterheld23a.html}
+
+\noindent
+\url{https://arxiv.org/abs/1407.7015}
+
+\noindent
+\url{https://ojs.aaai.org/index.php/AAAI/article/view/34944}
+
+\section*{What remains open}
+
+No scoring intervention has been run. Whether disclosure changes recipient actions, whether bounded scores change forecasts, and whether either effect improves task surplus or survival remain unknown. P's five-seed results are too thin to establish small effects, and observed forecast calibration would not reveal an agent's latent belief. \ledger{18, 19, 21, 26}
+
+\section*{Smallest next step}
+
+Run a matched-seed pilot that commits ordinary recommendations, elicits a forecast of a protocol-selected peer action, and randomizes whether the submitted forecast is displayed before that action. Record the recipient's action, job rewards, token and idle charges, score funding, and active rounds. Add a separately announced private-only arm if the pilot shows an action effect and the aim is to compare forecasting incentives; analyze outcomes by run because rounds share memory and energy balances. \ledger{18, 23, 24, 26}
+
+\end{document}

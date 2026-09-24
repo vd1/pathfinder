@@ -1,0 +1,5 @@
+Round 1 is complete. [The paper](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q3P10/paper/paper.tex) derives Q’s gross surplus ceiling of 7.5 per round and sets out how to measure net welfare when quote decisions incur token costs. It presents earlier spread crossing as a testable mechanism, not an observed result.
+
+I ran eight targeted searches, recorded in [search.md](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q3P10/paper/search.md). They led me to cite adjacent work on auctioning reasoning tasks and communication, while limiting the contribution claim to this proposed fixed-value trader test. The [BibTeX references](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q3P10/paper/references.bib) were verified against arXiv abstract pages.
+
+`latexmk` produced a three-page [PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q3P10/paper/paper.pdf). I inspected it; there are no build errors or undefined citations. The style gate found no errors and reported only source line-length warnings.

@@ -1,0 +1,5 @@
+Round 1 is complete. The [paper](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q8P8/paper/paper.tex) gives a conditional limit: when an object rotates within the donor’s grasp, wrist pose alone need not determine its orientation. It does **not** claim a measured DynaMAC failure.
+
+The eight targeted queries are recorded in [search.md](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q8P8/paper/search.md). They identified prior work on [pose-aware handover](https://www.tandfonline.com/doi/full/10.1080/01691864.2017.1380535) and [occluded in-hand pose tracking](https://arxiv.org/abs/2002.12160), so the paper states those precedents plainly.
+
+The three-page [PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q8P8/paper/paper.pdf) builds with `latexmk`. I inspected it; citations resolve, and the style gate passes without warnings. Build files remain in `paper/`.

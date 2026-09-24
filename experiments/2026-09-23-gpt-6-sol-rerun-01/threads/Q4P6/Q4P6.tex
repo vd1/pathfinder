@@ -1,0 +1,54 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Rank-Based Credit and Strategic Incentives in Open Teams}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies mechanisms that induce AI agents to report private types truthfully and obey prescribed actions. P uses multimodal pairwise comparisons and rank aggregation to assign credit during cooperative multi-agent learning.
+
+\section*{Connexion pursued}
+
+The initial question was whether Q's revelation and peer-scoring results could establish strategic robustness for P's credit pipeline. They cannot be applied directly: P asks an external model to compare agents' egocentric images, whereas Q scores agents' own type reports and checks joint report-and-action deviations \ledger{1, 2}. The more precise connexion concerns whether P's rank-derived reward shaping changes strategic incentives, especially when agents leave and re-enter an active team \ledger{3, 5}.
+
+\section*{What was found}
+
+P defines a potential from rank-aggregated scores and shapes each transition by \(F_t^i=\gamma\psi_{t+1}^i-\psi_t^i\), with zero terminal potential. If every transition is credited to agent \(i\), the discounted shaping return telescopes:
+\[
+\sum_{t=0}^{T-1}\gamma^t F_t^i
+=
+-\psi_0^i+\gamma^T\psi_T^i
+=
+-\psi_0^i.
+\]
+For a fixed initial potential, this changes no unilateral-deviation payoff difference, even when actions affect intermediate images and ranks. It therefore cannot, by itself, supply Q-style incentives for honesty or obedience. It may still change finite-training dynamics, which P studies empirically \ledger{3, 4, 9}.
+
+P defines scores for active agents, skips comparisons when fewer than two are active, and allows battery-driven exit and re-entry. The paper does not specify how its variable-length potential is extended to inactive agents or which transitions receive shaping rewards \ledger{5, 6}. Conditional on a fixed-coordinate potential and an indicator \(m_t^i\) for whether transition \(t\) is credited, the exact accounting identity is
+\[
+\sum_{t=0}^{T-1}\gamma^t m_t^i
+  \bigl(\gamma\psi_{t+1}^i-\psi_t^i\bigr)
+=
+-m_0^i\psi_0^i+
+\sum_{t=1}^{T-1}\gamma^t
+  (m_{t-1}^i-m_t^i)\psi_t^i,
+\]
+again using \(\psi_T^i=0\). Thus participation boundaries can leave path-dependent terms when rewards are credited only on selected transitions \ledger{6, 9}. For example, with \(T=2\), \(m_0^i=0\), \(m_1^i=1\), \(\psi_0^i=\psi_2^i=0\), and \(\psi_1^i=q>0\), the entering transition's positive term is omitted and the credited shaping return is \(-\gamma q\). This establishes a boundary effect, not a profitable strategy for inflating rank \ledger{12, 14, 16}.
+
+P's statistical robustness claim also has a narrower scope. It concerns estimation of a stable Bradley--Terry preference vector from comparisons. In a two-agent example, if manipulable observations systematically change the probability of a comparison win to \(p\), additional queries make the fitted score difference approach \(\operatorname{logit}(p)\), rather than the score associated with contribution-grounded probability \(p^*\). More queries reduce sampling variation around the changed target; they do not remove that systematic change. Whether P's agents can alter visible cues independently of useful contribution remains untested \ledger{7}.
+
+\section*{Objections and resolution}
+
+The peers rejected the broad claim that P already contains strategic reporting or that Q certifies its robustness \ledger{1, 2}. They also corrected an exit example whose generic payment mask did not match the natural convention of zero potential while inactive; the entry example above is the supported conditional witness \ledger{10, 12, 14}. No implementation defect in P has been established, because its inactive-transition bookkeeping is unspecified \ledger{14, 16}. Q's peer-scoring construction requires distinct beliefs about co-player types and strong report-contingent rewards, neither of which P supplies \ledger{8, 9, 10}.
+
+\section*{Sources and remaining question}
+
+No sources outside Q and P were used for this account; the arguments above come from the papers and the numbered ledger. The material is thin on implementation and behavior: the actual reward ledger, the controllability of LMM-visible cues or battery timing, and the feasibility of a bounded report-contingent incentive mechanism remain open \ledger{16}.
+
+The smallest next step is to inspect P's reward bookkeeping at exit and re-entry, embed its potential in fixed agent coordinates, and check the discounted shaping sum on one recorded trajectory. That would determine whether the participation-boundary term arises in its implementation. A subsequent controlled comparison could test whether changing camera views or participation alters ranks without improving contribution \ledger{8, 9, 16}.
+
+\end{document}
+```

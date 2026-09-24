@@ -1,0 +1,20 @@
+# Prior-work search for Q7P1
+
+Search date: 23 September 2026. Searches targeted finite-sample CVaR errors in strategic mechanisms and equilibrium, rather than CVaR in general. The results below describe the returned material, not a claim of exhaustive coverage.
+
+| Query | Relevant return and reading | Effect on paper |
+| --- | --- | --- |
+| `empirical CVaR fixed sample bias equilibrium individual rationality mechanism design risk averse` | Returned Cherukuri's [CVaR variational-inequality paper](https://doi.org/10.1007/s11590-023-01996-9), Wang et al.'s [risk-averse game paper](https://arxiv.org/abs/2403.10399), and broader mechanism papers. I read the two relevant papers' abstract and result sections. | Cite both. Do not claim that CVaR equilibrium sampling error or loss of uniqueness is new. |
+| `CVaR sample average approximation mechanism design approximate incentive compatibility individual rationality bound` | Returned Cherukuri's paper, work on approximate incentive compatibility, and broader risk-averse mechanisms. The approximate-incentive paper concerns private-value mechanism design, not this CVaR resource-allocation game. | Narrow the paper's claim to true-risk Nash deviation and participation at a surrogate equilibrium. |
+| `fixed batch empirical CVaR minimizer differs true CVaR optimizer counterexample` | Returned CVaR sample-approximation work and P's fixed-batch setting, but no identical quadratic participation example. | Present the ledger's quadratic example without a priority claim. |
+| `risk averse mechanism design CVaR empirical approximation budget balance Nash implementation` | Returned risk-averse mechanism and game work, including Wang et al.; no returned result combined Q's quadratic tax with P's fixed-batch surrogate. | Explain the specific synthesis and its conditions. |
+| `"empirical CVaR" "individual rationality" "mechanism"` | Returned no directly matching verified paper. | No extra reference added. |
+| `"CVaR" "participation" "sample average" equilibrium mechanism` | Returned sample-approximation and energy-market material, without the same mechanism result. | No extra reference added. |
+| `"fixed batch" "CVaR" "individual rationality"` | Returned no directly matching verified paper. | No extra reference added. |
+| `"risk-averse" "mechanism" "empirical CVaR" budget balance` | Returned broad energy-market and risk-averse optimisation material. | No extra reference added. |
+
+Bibliographic details were checked against the arXiv abstract pages for [Q](https://arxiv.org/abs/2608.29130), [P](https://arxiv.org/abs/2609.04460), and [Wang et al.](https://arxiv.org/abs/2403.10399), and against the [DOI landing page](https://doi.org/10.1007/s11590-023-01996-9) for Cherukuri. The DOI page says online publication was in 2023 and the journal volume is 2024; the bibliography uses the volume year.
+
+## Round 2 check
+
+On 23 September 2026 I reran `"empirical CVaR" "individual rationality" "mechanism"`, `"fixed batch" "CVaR" "individual rationality"`, and `"CVaR" "budget balance" "sample average" mechanism equilibrium`. These returned Cherukuri's CVaR variational-inequality paper and broader optimisation or mechanism material, without an identifiable statement of the quadratic-tax participation counterexample. I also searched `"Sample average approximation of conditional value-at-risk based variational inequalities" Cherukuri` and `site:link.springer.com/article/10.1007/s11590-023-01996-9 Cherukuri 2024`; these returned the [arXiv abstract](https://arxiv.org/abs/2208.11403) and [journal landing page](https://link.springer.com/article/10.1007/s11590-023-01996-9). The journal page confirms the cited title, author, volume and year. I reread the arXiv abstracts for [Q](https://arxiv.org/abs/2608.29130), [P](https://arxiv.org/abs/2609.04460), and [Wang et al.](https://arxiv.org/abs/2403.10399); their titles, authors and years match the bibliography. The check left the contribution narrow: sampling sensitivity and risk-averse game learning already appear in prior work, whereas no identical mechanism-specific example was identified in these searches.

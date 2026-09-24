@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pathfinder monitor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/contrib/auto-render.min.js"></script>
+<style>
+:root { --bg:#f4f5f7; --fg:#1c1e21; --muted:#6b7280; --line:#e3e5e8; --card:#ffffff; --accent:#2f6fed; --accent-soft:rgba(47,111,237,.10);
+  --ok:#1a7f4b; --ok-soft:rgba(26,127,75,.12); --warn:#b7791f; --warn-soft:rgba(183,121,31,.14); --bad:#c0392b; --bad-soft:rgba(192,57,43,.12);
+  --grey-soft:rgba(107,114,128,.14); --radius:10px; --shadow:0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04); }
+@media (prefers-color-scheme: dark) { :root { --bg:#111214; --fg:#e7e8ea; --muted:#9aa0a6; --line:#2a2d31; --card:#1a1c1f; --accent:#7aa2ff; --accent-soft:rgba(122,162,255,.16);
+  --ok:#5fd38d; --ok-soft:rgba(95,211,141,.16); --warn:#e6b45c; --warn-soft:rgba(230,180,92,.18); --bad:#ff7b6b; --bad-soft:rgba(255,123,107,.16); --grey-soft:rgba(154,160,166,.18); --shadow:none; } }
+* { box-sizing:border-box; }
+body { margin:0; padding:0 0 48px; font:14px/1.5 -apple-system, "Segoe UI", system-ui, sans-serif; background:var(--bg); color:var(--fg); font-variant-numeric:tabular-nums; }
+a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+.wrap { max-width:1500px; margin:0 auto; padding:0 28px; }
+header { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); box-shadow:var(--shadow); }
+header .wrap { display:flex; align-items:center; gap:18px; height:56px; }
+header h1 { font-size:17px; margin:0; font-weight:650; letter-spacing:-.01em; } header h1 small { color:var(--muted); font-weight:400; margin-left:8px; }
+.spacer { flex:1; } .upd { color:var(--muted); font-size:12px; }
+.alert { padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; } .alert.stop { background:var(--warn-soft); color:var(--warn); } .alert.health { background:var(--bad-soft); color:var(--bad); }
+h2 { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin:28px 0 10px; font-weight:600; }
+h3 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:18px 0 8px; font-weight:600; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px 16px; }
+.pipeline { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-top:20px; }
+.step { position:relative; } .step b { display:block; font-size:26px; font-weight:650; line-height:1.1; } .step span { color:var(--muted); font-size:12px; } .step small { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+.budget { margin-top:12px; display:grid; grid-template-columns: 2fr repeat(4, 1fr); gap:12px; align-items:center; }
+.bar { height:8px; background:var(--grey-soft); border-radius:999px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--accent); border-radius:999px; } .bar i.over { background:var(--bad); }
+.kv b { display:block; font-size:16px; font-weight:600; } .kv span { color:var(--muted); font-size:12px; }
+.cols { display:grid; grid-template-columns:minmax(0, 11fr) minmax(0, 9fr); gap:24px; align-items:start; } @media (max-width:1150px) { .cols { grid-template-columns:1fr; } }
+.sticky { position:sticky; top:72px; max-height:calc(100vh - 88px); overflow:auto; }
+table { border-collapse:collapse; width:100%; font-size:13px; } th { text-align:left; color:var(--muted); font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.05em; padding:6px 8px; border-bottom:1px solid var(--line); }
+td { padding:7px 7px; border-bottom:1px solid var(--line); vertical-align:middle; } td.nw { white-space:nowrap; } tr:last-child td { border-bottom:0; }
+.heat { width:auto; } .heat th, .heat td { border:0; padding:2px; } .heat th a { color:var(--muted); font-size:11px; font-weight:600; padding:0 4px; }
+.heat td.cell { width:42px; height:30px; text-align:center; font-size:11px; border-radius:5px; cursor:default; }
+.heat td.short { box-shadow:inset 0 0 0 2px var(--accent); font-weight:700; } .heat td.term { cursor:pointer; }
+.heat td.accepted { box-shadow:none; outline:2px dotted var(--accent); outline-offset:-2px; }
+.legend { display:flex; gap:14px; align-items:center; color:var(--muted); font-size:12px; margin-top:8px; flex-wrap:wrap; }
+.pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; font-weight:650; letter-spacing:.02em; white-space:nowrap; }
+.s-DRAFT { background:var(--ok-soft); color:var(--ok); } .s-PAUSE { background:var(--grey-soft); color:var(--muted); } .s-PAUSE-ON-ITERATE, .s-PAUSE-ON-REVISE { background:var(--warn-soft); color:var(--warn); }
+.s-running { background:var(--accent-soft); color:var(--accent); } .s-stopped, .s-new { border:1px solid var(--line); color:var(--muted); } .s-BLOCKED { background:var(--bad-soft); color:var(--bad); }
+.s-ACCEPTED { background:var(--ok-soft); color:var(--ok); } .s-PAUSE-ON-AMEND, .s-writing, .s-reviewing { background:var(--warn-soft); color:var(--warn); }
+tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } tr.sel td { background:var(--accent-soft); }
+.score { display:flex; align-items:center; gap:6px; } .score i { display:inline-block; height:6px; background:var(--accent); border-radius:3px; opacity:.7; }
+.btn { display:inline-block; padding:2px 7px; border:1px solid var(--line); border-radius:6px; font-size:11px; color:var(--fg); background:var(--card); margin-right:4px; white-space:nowrap; } .btn:hover { border-color:var(--accent); text-decoration:none; color:var(--accent); }
+.b-thread { background:rgba(80,120,200,.10); border-color:rgba(80,120,200,.45); color:#3b6bc4; }
+.b-note { background:rgba(60,160,150,.12); border-color:rgba(60,160,150,.5); color:#1f8a7d; }
+.b-readable { background:rgba(230,150,40,.14); border-color:rgba(230,150,40,.55); color:#b8730f; }
+.b-paper { background:rgba(220,70,50,.13); border-color:rgba(220,70,50,.55); color:#c23a2b; }
+.b-paper.pending { background:transparent; border-style:dashed; }
+@media (prefers-color-scheme: dark) { .b-thread { color:#8fb1ff; } .b-note { color:#5fd0c0; } .b-readable { color:#f0b45a; } .b-paper { color:#ff8a78; } }
+.chips { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 10px; } .chip { padding:2px 9px; border-radius:999px; border:1px solid var(--line); font-size:11px; cursor:pointer; color:var(--muted); background:var(--card); } .chip.on { border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+.badge { display:inline-block; padding:0 7px; border-radius:999px; font-size:11px; font-weight:600; margin-right:5px; }
+.a-ada { background:rgba(160,79,192,.14); color:#a04fc0; } .a-emmy { background:rgba(40,136,136,.14); color:#288888; } .a-grace { background:rgba(200,120,30,.14); color:#b0661a; } .a-verifier { background:var(--warn-soft); color:var(--warn); }
+.k { border:1px solid var(--line); color:var(--muted); font-weight:500; } .k-finding { border-color:var(--accent); color:var(--accent); } .k-objection, .k-correction { border-color:var(--bad); color:var(--bad); } .k-ready { border-color:var(--ok); color:var(--ok); }
+.entry { padding:10px 0; border-bottom:1px solid var(--line); } .entry .meta { color:var(--muted); font-size:11px; } .entry .t { white-space:pre-wrap; overflow-wrap:anywhere; margin-top:4px; font-size:13px; }
+.entry .t.clip { max-height:6.5em; overflow:hidden; -webkit-mask-image:linear-gradient(#000 70%, transparent); mask-image:linear-gradient(#000 70%, transparent); } .more { color:var(--accent); cursor:pointer; font-size:12px; }
+.verdict { border-left:3px solid var(--muted); padding:8px 12px; margin:8px 0; background:var(--bg); border-radius:0 8px 8px 0; } .verdict.DRAFT { border-color:var(--ok); } .verdict.ITERATE, .verdict.REVISE { border-color:var(--warn); } .verdict.PAUSE { border-color:var(--muted); }
+.verdict .next { color:var(--muted); font-size:12px; margin-top:4px; }
+.abs { margin-top:6px; } .abs summary { cursor:pointer; } .abs div { margin-top:6px; line-height:1.5; }
+.muted { color:var(--muted); } .small { font-size:12px; } .titles a { color:var(--fg); } .titles a:hover { color:var(--accent); }
+tr.sub td { background:var(--bg); padding:10px 14px 12px 28px; font-size:12px; } tr.sub .titles { line-height:1.45; margin-bottom:6px; } tr.sub .why { color:var(--muted); margin-bottom:8px; }
+td.caret { width:18px; color:var(--muted); font-size:11px; padding-right:0; }
+.files { columns:2; font-size:12px; column-gap:20px; } .files a { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.empty { color:var(--muted); padding:20px; text-align:center; }
+code { font:12px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--grey-soft); padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Pathfinder <small id="name"></small></h1><span class="pill" id="phase"></span><span id="flags"></span><span class="spacer"></span><span class="upd" id="gen"></span></div></header>
+<div class="wrap">
+  <div class="pipeline" id="pipeline"></div>
+  <div class="card budget" id="budget"></div>
+  <div id="attention"></div>
+  <div class="cols">
+    <div>
+      <h2>Scan</h2><div class="card" id="scan"></div>
+      <h2>Shortlist</h2><div class="card" style="padding:0 0 4px;overflow:auto" id="shortlist"></div>
+    </div>
+    <div class="sticky">
+      <h2 id="thread-title">Thread</h2><div class="card" id="thread"><div class="empty">Select a pair in the shortlist or the scan.</div></div>
+    </div>
+  </div>
+</div>
+<script>
+let selected = null, last = null; const open = new Set(), expanded = new Set(); let actorFilter = "all";
+const ROOT = window.STATIC ? "" : "/";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = (n, d=2) => (Number(n) || 0).toFixed(d);
+const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)} h ${Math.round((s%3600)/60)} min` : `${Math.round(s/60)} min`; };
+const pill = s => `<span class="pill s-${esc(s ?? "new")}">${esc(s ?? "new")}</span>`;
+const abs = id => `https://arxiv.org/abs/${id}`;
+const TERMINAL = new Set(["DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"]);
+function heat(v, max) { if (v == null) return "background:transparent;color:var(--muted)"; const a = max ? Math.min(1, v / max) : 0;
+  return `background:rgba(47,111,237,${(0.05 + 0.85 * a).toFixed(2)});color:${a > 0.5 ? "#fff" : "inherit"}`; }
+function elapsed(c) { return c.first_call && c.last_call ? mins((new Date(c.last_call) - new Date(c.first_call)) / 1000) : ""; }
+function select(id) { selected = id; try { history.replaceState(null, "", "#" + id); } catch (e) {} render(last); }
+function render(s) {
+  last = s; const c = s.campaign, sc = s.scan, th = s.threads;
+  document.getElementById("name").textContent = c.name || "";
+  document.getElementById("phase").textContent = c.phase; document.getElementById("phase").className = "pill s-running";
+  document.getElementById("gen").textContent = "updated " + s.generated.replace("T", " ").replace("Z", " UTC");
+  document.getElementById("flags").innerHTML = (c.stop ? `<span class="alert stop">stop: ${esc(c.stop.reason)}</span> ` : "") + (c.health ? `<span class="alert health">health: ${esc(c.health.reason)}</span>` : "");
+  const terminal = s.shortlist.filter(p => TERMINAL.has(p.status)).length, drafts = s.shortlist.filter(p => p.status === "DRAFT").length;
+  const papers = Object.values(th).filter(t => t.paper && t.paper.status === "ACCEPTED").length, readable = Object.values(th).filter(t => t.edited && t.edited.status === "done").length;
+  const step = (n, label, sub) => `<div class="card step"><b>${n}</b><span>${label}</span><small>${sub || ""}</small></div>`;
+  document.getElementById("pipeline").innerHTML = step(`${sc.done}<span class="muted" style="font-size:16px"> / ${sc.total}</span>`, "pairs scanned", `${fmt(sc.cost)} USD`)
+    + step(s.shortlist.length, "shortlisted", sc.cut != null ? `top ${sc.cut}%` : sc.min_score != null ? `score at or above ${sc.min_score}` : "")
+    + step(`${terminal}<span class="muted" style="font-size:16px"> / ${s.shortlist.length}</span>`, "threads finished", Object.entries(c.by_status).map(([k, v]) => `${k} ${v}`).join(", "))
+    + step(drafts, "drafts", `${readable} readable notes`) + step(papers, "papers accepted", "");
+  const pct = Math.min(100, 100 * c.spend / (c.budget || 1));
+  document.getElementById("budget").innerHTML = `<div><div class="small" style="display:flex;justify-content:space-between"><span><b>${fmt(c.spend)}</b> of ${fmt(c.budget)} USD${c.spend > c.budget ? ' <span style="color:var(--bad)">over the cap</span>' : ""}</span><span class="muted">known cost, API-equivalent${c.unknown_cost_calls ? `; ${c.unknown_cost_calls} call${c.unknown_cost_calls > 1 ? "s" : ""} of unknown cost not included` : ""}</span></div><div class="bar" style="margin-top:6px"><i class="${c.spend > c.budget ? "over" : ""}" style="width:${pct}%"></i></div></div>`
+    + `<div class="kv"><b>${c.calls}</b><span>model calls${c.errors ? `, ${c.errors} with errors` : ""}</span></div><div class="kv"><b>${mins(c.seconds)}</b><span>model time</span></div><div class="kv"><b>${elapsed(c)}</b><span>wall time, first to last call</span></div><div class="kv"><b>${esc(c.backend)}</b><span>${esc(c.model)}, ${c.seats} seats</span></div>`;
+  const age = t => { if (!t) return ""; const h = (Date.now() - new Date(t)) / 3600000; return h < 1 ? `${Math.round(h * 60)} min` : h < 48 ? `${Math.round(h)} h` : `${Math.round(h / 24)} d`; };
+  document.getElementById("attention").innerHTML = (s.attention || []).length ? `<h2>Decision queue</h2><div class="card" style="padding:0"><table><tr><th>pair</th><th>what</th><th>why</th><th>for</th><th>what can be done</th></tr>`
+    + s.attention.map(a => `<tr><td class="nw"><b>${esc(a.pair)}</b></td><td class="nw">${a.kind.includes(" ") && !a.kind.startsWith("held") ? `<span class="muted small">${esc(a.kind.split(" ")[0])}</span> ${pill(a.kind.split(" ").slice(1).join(" "))}` : pill(a.kind)}</td><td class="small">${esc(a.reason || "")}</td><td class="nw muted">${age(a.since)}</td><td class="small">${esc(a.action)}</td></tr>`).join("") + `</table></div>` : "";
+  const short = new Map(s.shortlist.map(p => [p.pair_id, p])), max = Math.max(1, ...sc.scores);
+  let h = "";
+  if (sc.q.length && sc.p.length) {
+    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${j+1}</a></th>`).join("")}</tr>`;
+    sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${i+1}</a></th>` + row.map((v, j) => {
+      const id = `Q${i+1}P${j+1}`, p = short.get(id); return `<td class="cell ${p ? "short term" : ""}${p && p.paper === "ACCEPTED" ? " accepted" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + (p.paper === "ACCEPTED" ? ", paper accepted" : "") + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
+    h += `</table></div><div class="legend"><span>score = feasibility x gain, 0 to 10,000</span><span>outlined: shortlisted, click to open</span><span>dotted: paper accepted</span><span>row and column labels open the arXiv abstract</span></div>`;
+  } else h = `<div class="empty">no corpora yet</div>`;
+  document.getElementById("scan").innerHTML = h;
+  let t = `<table><tr><th></th><th>pair</th><th>score</th><th>status</th><th>round</th><th>calls</th><th>time</th><th>usd</th><th>open</th></tr>`;
+  for (const p of s.shortlist) {
+    const x = th[p.pair_id] || {}, base = `${ROOT}threads/${p.pair_id}/`, st = x.status || {}, isOpen = expanded.has(p.pair_id);
+    const links = [x.note ? `<a class="btn b-note" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "",
+      x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
+      x.paper ? `<a class="btn b-paper ${x.paper.status === "ACCEPTED" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
+    t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td class="caret">${isOpen ? "&#9660;" : "&#9654;"}</td><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td class="nw">${pill(p.status)}${x.paper ? ` <span class="muted small">paper</span> ${pill(x.paper.status)}` : ""}</td><td class="nw" title="stage ${esc(p.stage ?? "")}">${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs}r</span>` : ""}${!TERMINAL.has(p.status) && p.stage ? `<span class="muted"> ${esc(p.stage)}</span>` : ""}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
+    if (isOpen) t += `<tr class="sub"><td colspan="9"><div class="titles"><b>Q</b> <a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
+      + (st.reason ? `<div class="why"><b>verdict, round ${p.round ?? 0}:</b> ${esc(st.reason)}</div>` : "") + (x.paper && x.paper.reason ? `<div class="why"><b>paper review, ${esc(x.paper.status)}:</b> ${esc(x.paper.reason)}</div>` : "")
+      + `<a class="btn b-thread" href="#" data-show="${p.pair_id}">thread</a></td></tr>`;
+  }
+  document.getElementById("shortlist").innerHTML = s.shortlist.length ? t + "</table>" : `<div class="empty">no shortlist yet</div>`;
+  document.querySelectorAll("tr.pair").forEach(r => r.onclick = e => { if (e.target.closest("a")) return; const id = r.dataset.id; expanded.has(id) ? expanded.delete(id) : expanded.add(id); select(id); });
+  document.querySelectorAll("td.term").forEach(r => r.onclick = () => select(r.dataset.id));
+  document.querySelectorAll("a[data-show]").forEach(a => a.onclick = e => { e.preventDefault(); select(a.dataset.show); document.getElementById("thread-title").scrollIntoView({behavior: "smooth"}); });
+  renderThread();
+}
+function renderThread() {
+  const el = document.getElementById("thread"), x = last && last.threads[selected];
+  document.getElementById("thread-title").textContent = selected ? `Thread ${selected}` : "Thread";
+  if (!x) { el.innerHTML = `<div class="empty">Select a pair in the shortlist or the scan.</div>`; return; }
+  const st = x.status || {}, base = `${ROOT}threads/${selected}/`, sl = last.shortlist.find(p => p.pair_id === selected) || {};
+  let h = `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${pill(st.status)}<span class="muted small">stage ${esc(st.stage)}, round ${st.round ?? 0}${st.repairs ? `, ${st.repairs} repair` : ""}</span></div>`;
+  if (st.reason) h += `<div class="small" style="margin-top:6px">${esc(st.reason)}</div>`;
+  h += `<div class="titles" style="margin-top:10px"><b>Q</b> <a href="${abs(sl.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(sl.p)}" target="_blank">${esc(x.p_title)}</a></div>`;
+  h += `<details class="abs"><summary class="muted small">abstracts</summary><div class="small tex-dollar"><b>Q.</b> ${esc(x.q_abstract)}</div><div class="small tex-dollar" style="margin-top:6px"><b>P.</b> ${esc(x.p_abstract)}</div></details>`;
+  if (x.connexion) h += `<div class="muted small" style="margin-top:8px"><b>the scan saw:</b> ${esc(x.connexion)}</div>`;
+  h += `<div style="margin-top:10px"><a class="btn" href="${base}ledger.jsonl" target="_blank">raw ledger</a>`
+    + (x.note ? `<a class="btn b-note" href="${base}${selected}.pdf" target="_blank">note</a><a class="btn" href="${base}${selected}.tex" target="_blank">tex</a>` : `<span class="muted small">no note yet</span>`)
+    + (x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper ? `<a class="btn b-paper ${x.paper.status === "ACCEPTED" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper (${esc(x.paper.status)})</a>` : "") + `</div>`;
+  const stg = Object.entries(x.by_stage || {});
+  if (stg.length) h += `<h3>Calls by stage</h3><table><tr><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>errors</th></tr>` + stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
+  h += `<h3>Verdicts</h3>` + (x.verdicts.length ? x.verdicts.map(v => `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted small">${esc((v.at || "").slice(11, 16))} UTC</span><div class="small" style="margin-top:3px">${esc(v.reason)}</div>${v.action ? `<div class="next"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : `<div class="muted small">none yet</div>`);
+  if (x.paper && x.paper.reason) h += `<h3>Paper review</h3><div class="verdict ${x.paper.status === "ACCEPTED" ? "DRAFT" : "REVISE"}"><b>${esc(x.paper.status)}, round ${x.paper.round}</b><div class="small" style="margin-top:3px">${esc(x.paper.reason)}</div><div style="margin-top:6px"><a class="btn" href="${base}paper/paper.tex" target="_blank">tex</a><a class="btn" href="${base}paper/references.bib" target="_blank">bib</a><a class="btn" href="${base}paper/search.md" target="_blank">searches</a><a class="btn" href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
+  const actors = ["all", ...Object.keys(x.by_actor)];
+  h += `<h3>Ledger, ${x.entries} entries</h3><div class="chips">${actors.map(a => `<span class="chip ${actorFilter === a ? "on" : ""}" data-actor="${esc(a)}">${esc(a)}${a !== "all" ? ` ${x.by_actor[a]}` : ""}</span>`).join("")}<span class="muted small" style="align-self:center">${Object.entries(x.by_kind).map(([k, v]) => `${k} ${v}`).join(", ")}</span></div>`;
+  h += x.ledger.filter(e => actorFilter === "all" || e.actor === actorFilter).map(e => { const long = (e.text || "").length > 500, id = `${selected}#${e.seq}`, isOpen = open.has(id);
+    return `<div class="entry"><span class="badge a-${esc(e.actor)}">${esc(e.actor)}</span><span class="badge k k-${esc(e.kind)}">${esc(e.kind)}</span><span class="meta">#${e.seq} ${esc((e.at || "").slice(11, 16))}${e.supersedes ? ` supersedes #${e.supersedes}` : ""}${e.seen ? ` read to #${e.seen}` : ""}</span><div class="t ${long && !isOpen ? "clip" : ""}">${esc(e.text)}</div>${long ? `<span class="more" data-id="${id}">${isOpen ? "show less" : "show more"}</span>` : ""}</div>`; }).join("") || `<div class="muted small">empty</div>`;
+  h += `<h3>Files</h3><div class="files">${x.files.map(f => `<a href="${base}${f}" target="_blank" title="${esc(f)}">${esc(f)}</a>`).join("")}</div>`;
+  el.innerHTML = h;
+  if (window.renderMathInElement) el.querySelectorAll(".tex-dollar").forEach(a => renderMathInElement(a, { throwOnError: false,
+    delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}] }));
+  if (window.renderMathInElement) renderMathInElement(el, { throwOnError: false, delimiters: [
+    {left: "$$", right: "$$", display: true}, {left: "\\[", right: "\\]", display: true}, {left: "\\(", right: "\\)", display: false}],
+    ignoredTags: ["script", "style", "textarea", "pre", "code", "a"] });
+  el.querySelectorAll(".more").forEach(m => m.onclick = () => { open.has(m.dataset.id) ? open.delete(m.dataset.id) : open.add(m.dataset.id); renderThread(); });
+  el.querySelectorAll(".chip").forEach(ch => ch.onclick = () => { actorFilter = ch.dataset.actor; renderThread(); });
+}
+if (location.hash.length > 1) { selected = location.hash.slice(1); expanded.add(selected); }
+async function tick() { try { render(await (await fetch("/state")).json()); } catch (e) { document.getElementById("gen").textContent = "state unavailable: " + e; } }
+if (window.STATE) { render(window.STATE); document.getElementById("gen").textContent = "exported " + window.STATE.generated.replace("T", " ").replace("Z", " UTC"); }
+else { tick(); setInterval(tick, 5000); }
+</script>
+</body>
+</html>

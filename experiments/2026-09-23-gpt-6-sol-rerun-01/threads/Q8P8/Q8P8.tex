@@ -1,0 +1,37 @@
+```tex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Occluded Handover with an In-Hand Rotating Object}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+Q presents Aero Hand Open, a tendon-driven hand with sixteen joints, seven motor encoders, and a demonstrated in-hand cube rotation policy \ledger{6, 7}. P presents DynaMAC, a multi-stream manipulation framework that uses the other arm's end-effector pose as a task frame and proposes it as a substitute for a held object's pose during an occluded handover \ledger{6, 9}.
+
+\section*{Connexion pursued}
+The question is whether the carrying arm's pose remains an adequate object-pose reference when its hand can reorient an object within the grasp \ledger{6, 11}. This is a narrower test than replacing a gripper in DynaBench, which would also require substantial simulator and action-space integration \ledger{9, 13}.
+
+\section*{What was found}
+Write the object pose as
+\[
+T_o = T_w G,
+\]
+where \(T_w\) is the carrying wrist pose and \(G\) is the object's pose relative to that wrist. The substitution proposed in P works when \(G\) stays sufficiently fixed for the receiving task. Q's in-hand rotation demonstrates that its actuation can change \(G\), even while the wrist is fixed \ledger{6, 11}. Q does not, however, report the physical cube's pose trace or the conditional uncertainty of \(G\) \ledger{9, 10}.
+
+This yields a testable information limit. If two trials have indistinguishable wrist poses and motor-encoder and action histories, but different hidden object orientations that require different receiving approaches, a receiver using only those observations must choose the same approach in both trials. It cannot guarantee orientation-specific success in both. External reseating under occlusion could construct such matched observations; the papers do not establish how often they arise without that intervention \ledger{7, 14, 17}.
+
+A separate candidate concerned P's kinematic-link detector. Its geometric mean standard deviation measures dispersion in a learned object-frame policy stream across demonstrations at a given phase. It is not the online variance of the object-to-wrist transform during one rollout. Compliant motion alone therefore neither proves that the detector will retain a grasped-object stream nor proves that it will mask one \ledger{3, 5, 8}. Detector accuracy against controlled contact or motor-perturbation labels remains a secondary experiment \ledger{5, 18}.
+
+\section*{Objections and limits}
+P sets gripper actions aside in its pose-level exposition for brevity; this is no evidence that its implementation cannot command a hand \ledger{9, 10}. Q's motor encoders alone do not establish a measured object-pose ambiguity, and no DynaMAC failure on Q's hardware has been observed \ledger{9, 13}. An orientation-invariant receiving grasp could also remove the proposed distinction between object orientations \ledger{14, 17}. Under complete occlusion with genuinely identical observation histories, an uncertainty-aware policy cannot recover the hidden orientation without obtaining new information; it could instead seek a view or use a grasp robust to both possibilities \ledger{14, 17}.
+
+\section*{Outside sources and open question}
+The ledger identifies Liang and colleagues' work on in-hand object tracking under occlusion, \url{https://arxiv.org/abs/2002.12160}, and Vezzani and colleagues' pose-aware bimanual handover work, \url{https://doi.org/10.1080/01691864.2017.1380535} \ledger{12, 15, 16}. Thus pose estimation and pose-aware handover are prior work. The distinct possible contribution is a controlled test of P's wrist-frame substitution, followed by calibrated stream selection or a way to obtain a new observation if the substitution fails. Novelty beyond these sources has not been established \ledger{13, 18}.
+
+\section*{Smallest next step}
+Hold the donor wrist pose fixed, use a marked object, and externally measure \(G\) while creating different in-hand orientations or reseated contact states. First determine whether materially different object poses occur within matched bins of wrist pose, motor readings, and action history. If they do, use an orientation-sensitive receiving target to compare wrist-only inference with visible-object and last-seen-object controls, while checking that a single orientation-invariant grasp does not solve both cases \ledger{7, 11, 14, 17, 18}. The current material supports this experiment and its information-limit argument, but no measured performance claim \ledger{13, 18}.
+
+\end{document}
+```

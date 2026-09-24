@@ -1,0 +1,59 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Strategic Carbon Response: What Q and P Establish Together}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q designs quadratic payments that implement a separable, strongly concave resource-allocation problem with aggregate capacity limits at a Nash equilibrium, and proposes stochastic learning for that game. P forecasts day-ahead nodal carbon intensity and uses it to schedule mobile energy storage systems (MESSs) and distributed data centers (DDCs) on a modified IEEE 33-bus network. \ledger{1, 2}
+
+\section*{The connexion pursued}
+
+The initial idea was to use Q's mechanism to make self-interested participants carry out P's carbon-aware dispatch. This is a research question rather than a direct application: P's agents are forecasting-workflow operators, not strategic MESS or DDC owners, and its dispatch model differs from Q's allocation problem. \ledger{1, 2, 26}
+
+\section*{What was found}
+
+Q assumes convex local strategy sets, separable private valuations, continuous requests, and componentwise aggregate upper-capacity constraints. P minimizes forecast-weighted emissions subject to a cross-DDC workload-balance equality and binary MESS location and travel decisions. Q's implementation theorem therefore does not cover P's full dispatch problem. Recasting participants as owners of splittable workload batches could produce a convex restricted problem, but it would define a new market; a mandatory batch also excludes the zero action used in Q's individual-rationality proof. \ledger{1, 2, 12, 14}
+
+For a restricted problem with fixed nonnegative forecast \(\widehat e\), nonnegative carbon weight \(\beta\), and \(N>1\), the following charge has the algebraic properties needed to add a forecast-carbon signal:
+\[
+\tau_n^C(x)
+ =\beta\widehat e^\top x_n
+ -\frac{\beta}{N-1}\sum_{m\ne n}\widehat e^\top x_m.
+\]
+Its sum is zero at every action profile, while agent \(n\)'s own marginal charge is \(\beta\widehat e\). Combined with Q's payment, it gives the best responses for effective valuations \(u_n(x_n)-\beta\widehat e^\top x_n\), conditional on Q's other assumptions. It implements a \emph{welfare and forecast-carbon tradeoff}, not P's pure carbon-minimization objective. Individual rationality transfers only where a feasible zero or outside action and Q's other individual-rationality premises hold. \ledger{8, 10, 11, 14, 16, 17}
+
+The central carbon question remains counterfactual. P's carbon-flow equation makes nodal intensity depend on dispatch, whereas its scheduling objective uses forecast intensity as fixed coefficients. For realized emissions \(C(x)=e(x)^\top x\), the marginal signal is
+\[
+\nabla C(x)=e(x)+J_e(x)^\top x.
+\]
+A fixed-intensity charge omits the second term. This observation diagnoses a possible gap between implementing a forecast objective and reducing realized emissions; it does not establish that P's reported simulation reduction is wrong. P describes a closed-loop assessment and reports a \(33.86\%\) reduction between its Cases 2 and 3, but the supplied text does not settle how robust that result is to strategic private costs and counterfactual forecast error. \ledger{3, 5, 17, 24, 26}
+
+A narrow certificate is available for any implemented dispatch \(x^M\) and comparator \(x^0\). If each decision's forecast-carbon error is at most \(\delta\), then
+\[
+C(x^0)-C(x^M)
+\geq
+\widehat C(x^0)-\widehat C(x^M)-2\delta.
+\]
+Thus a forecasted reduction exceeding \(2\delta\) certifies a realized reduction. Historical forecast MAPE alone does not supply the required error bound under alternative dispatches. Nor does welfare optimality alone preserve P's reported emissions percentage. \ledger{13, 15, 17}
+
+\section*{Objections and their status}
+
+Two source-specific issues prevent treating Q's stochastic-learning result as ready for transfer. The reduced payment printed beside Q's learning update has an own-price quadratic coefficient with the opposite sign from its full payment; direct expansion gives the corrected blocks recorded in the ledger. Also, Q's theorem requires growing sample sizes, while its numerical schedule \(Q_i=\lceil 0.96^{i+1}\rceil\) equals one throughout. These are textual inconsistencies requiring correction and verification, not proofs that the simulations fail. \ledger{6, 7, 9}
+
+For dispatch-dependent, nonseparable carbon, the simple off-equilibrium balanced rebate cannot generally give every participant the full realized-carbon marginal. The ledger's two-agent example \(C(x)=x_1x_2\) yields a contradiction by mixed differentiation. This limits that rebate construction, not all possible mechanisms: Q requires budget balance only at equilibrium. \ledger{11}
+
+\section*{Outside sources and novelty}
+
+The prior-work check identified incentive-compatible spatial data-center demand response by Chen and colleagues (\url{https://ieeexplore.ieee.org/document/9330574/}), equilibrium analysis of carbon-aware load shifting and average-intensity signals by Jiang and colleagues (\url{https://arxiv.org/html/2504.07248v2}), and joint electricity-carbon pricing with budget balance by Chen and Zhao (\url{https://arxiv.org/abs/2308.08195}). The ledger also records work on marginal emission signals and uncertain carbon-aware scheduling. Consequently, neither a generic incentive layer nor the average-intensity feedback critique is established here as novel. The material supports a bounded research program, not yet a publication claim. \ledger{4, 18, 19, 20, 22, 24}
+
+\section*{What remains open and the smallest next step}
+
+A joint result still needs a valid strategic model for P's cross-DDC equality and MESS logistics, an implementation and participation argument for that model, and counterfactual emission evidence under dispatch-conditioned carbon-flow calculations. The smallest decisive next step is to fix a convex DDC-only subproblem, specify who owns each decision and its outside option, correct and verify Q's payment and learning update, then recompute realized carbon for the strategic dispatch and a comparator on the same IEEE 33-bus instance. A measured counterfactual error bound would show whether the predicted reduction survives strategic implementation; failure at this restricted step would rule out the proposed direct transfer. \ledger{20, 24, 26}
+
+\end{document}
+```

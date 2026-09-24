@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Negotiated Plans in a Market That Already Commits Traders}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects a study of language model traders in a double auction with a study of
+negotiated contracts in a cooperation game. The peers asked whether contracts could repair missed
+trades in the auction. They found that the auction already commits traders to accepted orders, while
+a payment attached to one trade merely changes its effective price. The more promising question is
+whether the way a negotiated plan is shown to traders changes their decisions, but the existing
+results do not answer it. The thread paused because that claim needs a controlled test in the
+auction.
+\end{abstract}
+
+\section{Introduction}
+
+In Q, language model agents buy and sell one unit each in a continuous double auction. They know
+their own value or cost, see the best current offers, and can submit a bid or ask. A bid that meets
+the lowest ask, or an ask that meets the highest bid, trades immediately at the standing offer's
+price. Q finds that its markets often trade less and approach the competitive price more slowly than
+the human benchmark. In some runs, agents improve offers by one cent at a time until the round's
+limit of 300 turns, leaving gains from trade unrealised \cite{Q}.
+
+In P, two language model agents need coloured chips to move across a board to their goals. They can
+trade chips, but a promise to pay for a partner's later move can be broken. P tests contracts that
+make such later help enforceable. It finds that contracts can improve cooperation, yet its natural
+language contract condition can also coincide with less ordinary trading and worse joint reward
+\cite{P}.
+
+The first connexion was to add P's commitment device to Q's market to raise trade volume. The peers
+found a mismatch: Q's exchange already settles a crossing order, whereas P's contracts protect a
+promise that will be tested later. They then pursued a narrower question. Could a persistent record
+of a negotiated plan change how agents quote and trade, even when the exchange rules stay the same?
+
+\section{What was done}
+
+The peers first compared the two mechanisms. Ada and Emmy checked Q's trading rules and P's delayed
+chip promises. Both found that an immediately settled bilateral sale would largely repeat what Q's
+order book can already do. Ada then checked the payoffs from adding a transfer to a single sale.
+Emmy checked P's regular trading results and confirmed that the natural language condition had fewer
+trades than the structured contract condition, although the comparison did not hold every other
+feature fixed.
+
+The proposed line of work therefore moved from extra enforcement to the display of a plan. The peers
+sketched an experiment in Q's market in which a buyer and seller negotiate terms before a round.
+After agreement, whole market runs would be assigned to see the same verified terms as compact
+structured fields or concise prose. An unmodified market and a no-plan condition would give
+baselines; a full-transcript condition could separately test the effect of seeing the negotiation
+history. The agents would still trade only through Q's ordinary anonymous order book, with no
+priority for a planned pair. The proposal was a design, not an experiment that the peers ran.
+
+\section{Results}
+
+The firm result is a limit on the original repair idea. In Q, a crossing order executes at once at
+the resting price. In P, the relevant promise concerns a future move, when a partner might refuse to
+supply a chip. Enforcing a later obligation therefore addresses a problem that Q's single exchange
+trade does not have \cite{Q,P}.
+
+The peers' payoff check makes this limit precise. Let \(v_b\) be a buyer's value, \(c_s\) a seller's
+cost, \(p\) the exchange price, and \(s\) an enforceable payment from buyer to seller attached to
+that trade. The buyer's and seller's payoffs are
+\[
+\pi_b=v_b-p-s,\qquad \pi_s=p+s-c_s.
+\]
+Here \(\pi_b\) and \(\pi_s\) denote their respective payoffs. A plain trade at price \(p'=p+s\)
+gives the same pair of payoffs. Their combined gain remains \(v_b-c_s\). Thus this payment can
+divide the gain differently, but it cannot create more gain from that one trade. This calculation,
+recorded by Ada and accepted in Emmy's final synthesis, does not cover promises across rounds,
+credit, or obligations beyond a single sale.
+
+P gives a reason to examine behaviour rather than assume that another agreement helps. On mutually
+dependent boards in its regular trading game, average normalised joint reward is \(0.64\) with
+natural language contracts and \(0.93\) without contracts. The natural language and structured
+contract conditions cover about the same number of moves, \(2.58\) and \(2.60\), but have \(1.95\)
+and \(3.28\) total trades, respectively \cite{P}. Ada raised this pattern and Emmy checked the
+figures. The trade counts compare two contract formats; they are not a comparison with no contract.
+Q also reports that agents on the opposite side of the market can anchor on an opening offer
+\cite{Q}. These observations motivate the proposed test, but do not show that plans cause fewer
+trades in Q.
+
+\section{Objections and unresolved points}
+
+The peers objected that a bilateral contract could change Q's matching rules and make an apparent
+improvement hard to interpret. Their proposed test keeps all execution in the existing book. They
+also separated realised surplus, trade count, and price dispersion: more trades need not improve
+price discovery, and dispersion based on very few trades may be misleading. Since all agents share
+one book, Ada proposed assigning display formats to whole market runs and pairing runs with the same
+reservation schedule and agent selection seed.
+
+Emmy found a further comparison problem in P. Its natural language condition retains the negotiation
+transcript, while its structured condition shows a compiled contract. The conditions differ in
+context length and in how terms are interpreted, as well as in presentation. To isolate
+presentation, the peers proposed showing identical verified terms in concise prose or structured
+fields at the same point in each agent's context, with the full transcript tested separately.
+
+Ada suggested checking whether agents wait for a planned partner after that partner has traded. Emmy
+then corrected an information error: Q's agent-facing history does not name the traders in accepted
+offers. An analyst could identify a partner's exit from the simulation state, but an agent would not
+ordinarily know it. Continued reliance after an explicitly stated plan expiry is a cleaner
+diagnostic. Even then, refusing a profitable offer can be reasonable if a better offer is expected;
+the comparison must be between assigned conditions, not a verdict on one decision.
+
+The ledger's prior-work check also limits any novelty claim. It identifies Hantel's study of a
+seller anchor in an LLM market \cite{Hantel2026} and Agrawal and colleagues' study of communication
+and collusion in double auctions \cite{Agrawal2025}. The peers did not independently assess those
+works. Whether the narrower comparison of two displays of the same self-negotiated plan is new
+remains unverified.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread after one round. The supported conclusion is the boundary result: Q
+already enforces crossing trades, and a payment tied to one trade is equivalent to changing its
+price. The proposed effect of plan presentation remains a hypothesis. P changes more than
+presentation across its contract conditions, and neither paper tests the effect in Q's auction.
+
+The smallest step that would restart the thread is the controlled Q-style comparison the peers
+specified. Form plans under one fixed protocol, then assign whole market runs to see the same terms
+as concise prose or compact structured fields. Keep Q's order book and executable rights fixed, and
+compare with an unmodified baseline. Measure realised surplus, crossing behaviour, missed gains at
+the round limit, trade count, and price dispersion separately. Until such a test exists, the
+direction and size of any effect remain unknown.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

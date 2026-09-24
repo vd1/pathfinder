@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What Would Costly Thinking Do to an LLM Auction?}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies language-model traders in a double auction, while paper P charges language-model
+agents for the tokens they generate \cite{Q,P}. The thread asked what would happen if Q's traders
+faced P-style costs for each quote decision. The peers derived a gross surplus ceiling of \(7.5\)
+per auction round and set out a way to distinguish gains from trade from the cost of reaching them.
+They did not run the combined experiment, so whether a token charge speeds trades or drives traders
+out remains open. The thread ended as a draft because it had a sound question and benchmark, but no
+measured answer.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q gives buyers private values and sellers private costs, then lets language-model traders post
+bids and asks in a continuous double auction. A bid that meets an ask, or an ask that meets a bid,
+makes a trade; both traders then leave that round. The values and costs give a known measure of
+gains from trade. Q reports slow or incomplete movement towards the market benchmark: traders often
+improve a standing quote by one cent without making a trade \cite{Q}.
+
+Paper P studies agents choosing jobs in a simulated economy. Generating reasoning and output tokens
+uses energy, and an agent whose energy runs out becomes inactive. Jobs can restore energy, and
+agents can also donate it. P uses survival as an analogy for remaining active within a token budget;
+its jobs are uncertain and have no sellers of the kind in Q \cite{P}.
+
+The peers first considered putting an auction into P's job economy. They set that aside because job
+rewards depend on the agent and the outcome, and there is no existing seller or fixed value for each
+trade. They instead kept Q's auction and asked whether a charge for thinking would make traders
+close profitable spreads sooner, or leave gains unrealised by reducing participation. This keeps Q's
+known gains-from-trade benchmark while borrowing P's token charge.
+
+\section{What was done}
+
+The peers checked Q's trading rules and P's cost rule, then worked out an accounting measure for the
+proposed auction. In Q, eleven buyers and eleven sellers face fixed values and costs, and a random
+scheduler can call a trader again after that trader declines to quote. A round has a stated limit of
+300 decisions. In P, each model call costs energy according to the number of tokens it generates
+and, in the full rule, a model-size factor \cite{Q,P}.
+
+They next checked the efficient trades against Q's value schedule. The five pairs with strictly
+positive gains contribute \(2.5\), \(2\), \(1.5\), \(1\), and \(0.5\) value units. A sixth trade at
+the stated equilibrium quantity contributes zero. They then separated the value created by trades
+from the energy spent on calls. The peers also checked the proposed incentive against Q's rule that
+a completed trade removes both traders for the rest of the round. A trader might therefore avoid
+later calls by crossing a standing quote, although the saved calls cannot be read from one realised
+run.
+
+Finally, the peers revised the comparison design. They proposed an unchanged-Q replication, followed
+by matched runs in which all comparison arms have the same option to withdraw for the rest of a
+round. Within those arms, the stated token charge would be zero or positive; a later arm would add a
+finite budget and a matched removal control. They checked a few neighbouring auction papers, but did
+not run the combined auction or make an exhaustive search \cite{Agora,DALA,Bandwidth,TokenStudy}.
+
+\section{Results}
+
+The main established result is an accounting benchmark, not a measured effect of charging traders.
+Let \(M\) be the set of completed buyer--seller matches in a round, \(v_b\) buyer \(b\)'s value, and
+\(c_s\) seller \(s\)'s cost. Gross surplus is
+\[
+G=\sum_{(b,s)\in M}(v_b-c_s).
+\]
+The peers' check of Q's schedule gives a maximum gross surplus of \(G^{\star}=7.5\) per round. Its
+stated equilibrium quantity is six trades, but the sixth adds no surplus. Thus six trades alone is a
+poor target for an auction that also pays for inference.
+
+For a token charge, let \(T_{it}\) be the generated tokens in trader \(i\)'s call \(t\), \(k\) the
+energy cost per token, \(S_i\) its model size, and \(\alpha\) the exponent on size. P's rule would
+give total energy cost
+\[
+C=\sum_{i,t} kT_{it}S_i^{\alpha}.
+\]
+If \(\lambda\) converts energy into Q's value units, net welfare is \(W_{\lambda}=G-\lambda C\). The
+peers concluded that an experiment must report \(G\), \(C\), and \(W_{\lambda}\) separately. Higher
+gross surplus could still come with lower net welfare. These formulas and the \(7.5\) bound follow
+from Q's schedule and P's charging rule; the ledger records both peers' checks of the bound and the
+zero-surplus sixth trade \cite{Q,P}.
+
+The mechanism remained a hypothesis. Under Q's rules, crossing a quote trades at once and ends both
+traders' participation in the round. If traders paid for each call, ending a search could become
+more attractive to the trader who crosses; it could also spare the other trader future calls. The
+private and total savings need not coincide. Randomised runs with the same value schedules and seeds
+would be needed to estimate changes in calls, tokens, trades, and surplus. A single path cannot
+establish how many future calls either party avoided.
+
+\section{Objections and limits}
+
+Q lets a trader decline a particular prompt, but the scheduler may call that trader again. The peers
+therefore added persistent withdrawal to every modified comparison arm and kept its first scheduled
+call chargeable. A cost-aware trader's payoff would have to include its own token charges;
+subtracting cost only in the analyst's final calculation would not change its incentive. They also
+left two rules to specify before a run: whether a resting order stays after voluntary withdrawal,
+and what happens to an order and submitted action when a charge exhausts a budget. Orders should be
+cancelled on budget exhaustion. Q's prompt and mechanism give different descriptions of when a round
+ends, so its released implementation needs checking before a replication is called faithful
+\cite{Q}.
+
+P's energy has no natural exchange rate with Q's auction values. The peers proposed fixing the
+tariff after a pilot and examining a declared range of \(\lambda\). Q uses closed API models whose
+parameter counts are unavailable, so a common per-token charge with \(\alpha=0\) is the workable
+first test, rather than P's size-weighted rule. A finite-budget arm and a matched exogenous-removal
+control would help separate a changed choice to quote from the loss of active traders. The peers had
+not verified that Q's released records contain reliable per-call reasoning-token counts \cite{Q,P}.
+
+Q's association between reasoning language and urgency covers Gemini Large and is not causal
+evidence for this proposed effect \cite{Q}. P's results about model size and its job economy do not
+establish an auction effect \cite{P}. The limited outside-source check found auctions for task
+allocation, communication opportunities, or related token costs, but the cited descriptions did not
+establish this particular fixed-value test \cite{Agora,DALA,Bandwidth,TokenStudy}. That check cannot
+support a broad novelty claim.
+
+\section{Why the thread stopped}
+
+The verifier accepted the connection and the peers' \(7.5\) calculation, including the zero-surplus
+sixth trade. It left the thread at \textsc{Draft} because the behavioural claims were explicitly
+untested. The smallest restart is to check Q's released scheduler and token records, set one
+affordable tariff in a pilot, then compare matched auctions with zero and disclosed per-token
+charges, no binding budget, and the same withdrawal rule. The comparison would record gross surplus,
+token use, net welfare, crossings, withdrawals, and calls per trade. Only after that comparison
+could a finite-budget arm test whether exhaustion changes the answer.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

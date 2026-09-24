@@ -1,0 +1,35 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Evidence-Grounded Review in a Private-Value Market}
+
+\begin{document}
+\maketitle
+
+Q studies LLM traders in a double auction with private reservation prices and measures trades, price dispersion, and allocative efficiency against a human benchmark. P studies a reviewer--critic protocol for coding agents and reports that requiring evidence-grounded disagreement improved review F1 in its SWE-PRBench experiment.
+
+\section*{Connexion pursued}
+
+The proposed connexion was a test of whether P's review rule improves decisions in Q's market. The initial analogy between Q's urgency language and P's false consensus did not hold: Q associates urgency terms with crossing the spread, which can complete profitable trades, while P documents agreement that caused a real code concern to be dropped. Q also cautions that its Gemini-only reasoning traces do not establish a causal decision mechanism. \ledger{1, 2, 3}
+
+\section*{What the pair establishes}
+
+Q supplies an unusually clear outcome test for an intervention: its trading rules, agent information set, and bounded trading horizon make completed trades, surplus, and price dispersion measurable. P supplies a specific intervention: a critic distinguishes agreement, disagreement backed by cited evidence, and concern that still needs evidence. Its reported F1 gain, from \(0.457\) to \(0.533\), concerns review quality; it does not establish an effect on market welfare. \ledger{5, 9, 13}
+
+A market adaptation would freeze a trader's proposed quote while a reviewer and critic examine it using only that trader's permitted information. The trader could then revise the quote. A reservation value and standing opposite quote can establish whether crossing would yield immediate positive private profit. They cannot establish whether crossing is better than waiting under uncertainty about later opportunities. Reviewers must therefore assess the trader's private-profit objective, leaving market welfare as an external experimental outcome. \ledger{9, 17}
+
+The proposed comparison assigns entire market runs to baseline trading, an equal-call-budget unconstrained audit, or an evidence-constrained audit. The same prespecified rule triggers audits within each run, and analysis includes every assigned run. Whole-run assignment is necessary because a revised quote changes later market states. A separate replay of an identical saved decision can isolate the immediate effect on a quote before histories diverge. Each trader decision still counts as one of Q's \(300\) iterations; review calls, tokens, and wall time are recorded separately. \ledger{13, 15, 17}
+
+\section*{Objections and limits}
+
+Changing an opening quote also changes the book and potentially the rational trading opportunity, so a response cannot by itself establish anchoring or deference. Varying a now-dominated historical quote while holding the current book fixed is a cleaner probe, although that history may still inform beliefs. This remains a secondary mechanism test, not evidence that Q and P share one bias. \ledger{4, 6, 7, 10}
+
+P's SWE-PRBench result comes from a review-only procedure with no main-agent edit. Allowing a trader to revise after review adapts P's general outer loop and needs its own evaluation. The supplied material contains no market intervention results or reusable P review transcripts. The proposed effect's direction, cost, and reliability remain open. \ledger{8, 15, 17}
+
+\section*{Outside sources and next step}
+
+No sources outside Q, P, and the ledger were used. The smallest experiment that would settle the market-outcome question is a preassigned, whole-run comparison of the three policies on Q's simulator, holding model, market configuration, and seed schedule fixed across assignments and reporting allocative efficiency and completed trades for all runs. A saved-state replay can first check that the audit changes the immediate quote, but cannot settle its effect on the market. \ledger{13, 15, 17}
+
+\end{document}
+```

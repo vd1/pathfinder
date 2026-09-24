@@ -1,0 +1,49 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Room-Conditioned Door Search as a Learning-Augmented Interface}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q surveys learning-augmented algorithms and requires an explicit prediction, error measure, objective, and benchmark before consistency or robustness can be claimed. P describes a robot whose estimated room walls constrain door detection, but reports geometric and topological experiments rather than a prediction-independent door-search guarantee \ledger{1, 2, 15}.
+
+\section*{Connection pursued}
+
+The question became whether P can save search work by using room walls while retaining visible door evidence when its room model is wrong. Q supplies a way to specify the required guarantee and warns that component guarantees do not compose without interface sensitivity and benchmark relations; it supplies no ready-made theorem for P \ledger{3, 14, 15}.
+
+\section*{What was found}
+
+P's door agent activates only after a current room is established. Its detector first retains LiDAR points within \(0.15\,\mathrm{m}\) of the estimated walls, then applies range-derivative, edge-pair, width, and wall-membership tests. Accepted room models currently remain fixed even if later evidence contradicts them \ledger{3, 11, 15}.
+
+This creates a conditional obstruction. Suppose a wrong, persistent room model excludes the evidence for a visible door on every visit, while a prediction-independent full-field detector would find it in finite time. The gated detector never examines that evidence, so its discovery latency is infinite relative to that comparator. Consequently, no finite prediction-independent discovery-latency ratio follows from P's current architecture under these assumptions \ledger{5, 15}.
+
+A limited positive statement follows from geometry. Let \(W^*\) be the true walls, \(\widehat W\) the estimated walls, and \(p\) a relevant door point. If
+\[
+\sup_{w\in W^*}\operatorname{dist}(w,\widehat W)\leq\epsilon
+\quad\text{and}\quad
+\operatorname{dist}(p,W^*)\leq b,
+\]
+then the triangle inequality gives
+\[
+\operatorname{dist}(p,\widehat W)\leq b+\epsilon.
+\]
+A gate of width at least \(b+\epsilon\) therefore retains \(p\). This is a candidate-retention result, not a door-recall result: every later detection test needs its own completeness or margin assumption \ledger{4, 9, 11, 15}.
+
+\section*{Objections and resolution}
+
+The hard gate can change its retained set abruptly at the threshold, so Q's Lipschitz error-propagation condition cannot be invoked without an additional margin or a revised gate \ledger{9, 15}. P's reported mean room-dimension error cannot serve as the required wall-offset bound, because the quantities differ \ledger{11}.
+
+Periodic full-field audits are a possible fallback only under stated sensing assumptions. If a complete audit occurs within every window of \(\tau\) scans and a door stays visible throughout such a window, discovery takes at most that window. A door visible for only one unaudited scan defeats this argument unless raw observations can be replayed under additional storage and completeness assumptions \ledger{12, 18, 20}. None of these statements establishes a navigation-level competitive ratio \ledger{20}.
+
+\section*{Outside sources and remaining work}
+
+The peers checked Eberle et al., \emph{Robustification of Online Graph Exploration Methods} (\url{https://arxiv.org/abs/2112.05422}), which already studies learning-augmented exploration, and Xu et al., \emph{Deep GrabCut for Object Selection} (\url{https://arxiv.org/abs/1707.00243}), which gives an analogous reason to soften a hard predicted region. These checks limit any novelty claim: the prospective contribution is specific to P's geometric gate and downstream detection pipeline \ledger{7, 10, 13, 15}.
+
+The evidence is thin on the central feasibility question. It remains unknown whether P can obtain a sound online wall-error certificate, whether a full-field detector can be complete under realistic sensing, and whether the resulting search-work and detection-delay trade-off improves relevant prior methods \ledger{14, 15, 20}. The smallest next step is to specify a visible-door test model and a complete full-field comparator, then perturb accepted room walls in P's detector and measure which doors survive each stage of the pipeline. That experiment would determine whether a useful margin or audit theorem is worth pursuing \ledger{14, 15}.
+
+\end{document}
+```

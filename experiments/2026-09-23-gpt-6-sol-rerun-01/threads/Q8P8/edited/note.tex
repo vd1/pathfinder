@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When a Donor Wrist Cannot Locate a Held Object}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account reads Aero Hand Open and DynaMAC together at an occluded handover. The thread asked
+whether the donor arm's wrist pose can stand in for the pose of an object that its hand rotates
+within the grasp. The papers and the peers' checks establish a conditional information limit: a
+fixed wrist does not fix the orientation of such an object, and identical available observations
+cannot distinguish two orientations that call for different receiving approaches. They do not
+establish that this ambiguity occurs often on the physical hand or that DynaMAC fails there. The
+verifier therefore left the thread at DRAFT, with a controlled pose measurement and handover
+comparison as the next step.
+\end{abstract}
+
+\section{Introduction}
+
+Aero Hand Open, paper Q, presents a tendon-driven hand with sixteen joints driven by seven motors
+\cite{q}. Its only proprioception comes from the motor encoders. The paper supplies a simulation
+model and a learned policy that rotates a cube within the grasp. It reports rotation in simulation
+and on the physical hand, but does not log the cube's physical pose during that run.
+
+DynaMAC, paper P, learns manipulation from demonstrations using several reference frames, including
+object frames and the other arm's end-effector frame \cite{p}. It selects useful streams as a task
+unfolds and uses a moving arm as a reference for bimanual work. For a handover, P says that the held
+object's pose and the carrying arm's pose provide redundant information to the receiver. Since the
+object can be hidden from view, P proposes the other arm's forward-kinematic pose as a substitute.
+
+The thread pursued that last claim in the particular case where Q's hand carries and rotates the
+object. The question was whether the carrying wrist still gives the receiver enough information
+about the hidden object. This is a narrower question than installing Q's hand in P's benchmark: the
+papers use different simulators and action spaces, so that change would require substantial
+integration.
+
+\section{What was done}
+
+The peers first considered a broad swap of Q's hand into P's bimanual tasks. They then examined P's
+kinematic-link detector. An early suggestion was that motion within a compliant grasp would make the
+detector retain an object stream that should be removed. On checking P's definition, both peers
+withdrew that inference. Its geometric mean standard deviation measures the spread of a learned
+policy stream across demonstrations at a given phase. It is not a measurement of object motion
+relative to the wrist during one execution. A repeatable in-hand movement could therefore leave that
+stream precise.
+
+The peers then focused on P's handover argument. They compared P's claim about the donor arm's pose
+with Q's demonstrated in-hand cube rotation. They formulated a matched-observation test, checked the
+limits of the proposed inference, and proposed controls that would expose them. A prior-work check
+found in-hand tracking under occlusion by Liang and colleagues \cite{liang2020} and pose-aware
+bimanual handover work by Vezzani and colleagues \cite{vezzani2017}. The ledger does not contain an
+exhaustive novelty search.
+
+\section{Results}
+
+Let \(T_o\) be the object's pose, \(T_w\) the carrying wrist's pose, and \(G\) the object's pose relative to that wrist. Then
+\[
+T_o = T_w G.
+\]
+The wrist is a sufficient stand-in for the object only to the extent that \(G\) stays fixed, or
+changes too little to matter to the receiving task. P's handover discussion relies on this practical
+redundancy \cite{p}. Q's rotation task supplies a concrete way for \(G\) to change while the wrist
+remains still \cite{q}. The peers identified this as a limit on the wrist substitution, not as an
+observed failure of P's system.
+
+The stronger statement is conditional. Suppose two trials give the receiver the same wrist pose and
+the same histories of motor readings and actions, but the hidden object has different orientations.
+Suppose also that those orientations require different receiving approaches. A receiver given only
+those histories has the same input in both trials, so it cannot reliably choose the
+orientation-specific approach in both. This is the peers' matched-state argument. Reseating a marked
+object under occlusion could create such a test; its natural frequency is unknown.
+
+Q does not log physical cube pose or measure the spread of \(G\) at matched motor readings \cite{q}.
+Neither paper reports DynaMAC receiving an object from Q's hand. The result is a possible failure
+mode, not a measured handover loss.
+
+\section{Objections and unresolved points}
+
+P's stream spread across demonstrations may or may not alter its link decision under varied grasps
+\cite{p}. Detector decisions need comparison with controlled contact states or motor perturbations.
+No detector error rate is available.
+
+P omits gripper actions from its pose-level exposition for brevity; that omission does not show that
+its implementation cannot command a hand \cite{p}. Q's seven encoders do not, by themselves, prove
+that object pose is ambiguous after a known action history. Moreover, if one grasp safely receives
+every tested orientation, the proposed orientation distinction has no practical effect. Under
+genuinely identical observations and complete occlusion, an uncertainty-aware policy can represent
+doubt, seek a new view, or use a robust grasp, but it cannot recover the hidden orientation without
+new information.
+
+Object-pose tracking and pose-aware handover precede this thread \cite{liang2020,vezzani2017}. A
+controlled test of P's wrist substitution with Q's hand might be distinctive; that remains
+unestablished.
+
+\section{Why the thread stopped}
+
+The verifier judged the pose relation and its qualification to be a specific result of reading these
+two papers together. It kept the status at DRAFT because the result is a conditional limit, not a
+measured DynaMAC failure. The smallest restart is to hold the donor wrist fixed, use a marked
+object, and measure \(G\) externally while varying its in-hand orientation or contact state. The
+first check is whether materially different object poses remain within matched wrist, encoder, and
+action-history conditions. If they do, an orientation-sensitive receiving task can compare
+wrist-only inference with visible-object and last-seen-object controls, while checking whether a
+single grasp succeeds for both orientations.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

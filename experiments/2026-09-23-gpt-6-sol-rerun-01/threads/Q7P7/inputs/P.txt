@@ -1,0 +1,1687 @@
+ Emission-Forecasting-Based Spatial-Temporal Carbon Response: A
+
+      Multi-Agent Attention-Enhanced Deep Learning Framework
+                                                  Feiyu Cai
+    School of Electrical and Computer Engineering, The University of Sydney, Sydney NSW 2006, Australia
+                                        fcai9023@uni.sydney.edu.au
+                                                  Jing Qiu
+    School of Electrical and Computer Engineering, The University of Sydney, Sydney NSW 2006, Australia
+                                         jeremy.qiu@sydney.edu.au
+                                                  Yi Yang*
+  Electric Power Research Institute, State Grid Fujian Electric Power Co., Ltd., Fuzhou Fujian, 350108, China.
+                                           nathanyang.yi@gmail.com
+                                               Chenxi Zhang
+     College of Electrical Engineering and Automation, Fuzhou University, Fuzhou Fujian, 350108, China.
+                                             czha2586@163.com
+                                                Xinlei Wang
+    School of Electrical and Computer Engineering, The University of Sydney, Sydney NSW 2006, Australia
+                                        xinlei.wang@sydney.edu.au
+                                               Baichuan Liu
+         School of Science and Engineering, The Chinese University of Hong Kong, Shenzhen, China
+                                      baichuanliu@link.cuhk.edu.cn
+                                                Junhua Zhao
+         School of Science and Engineering, The Chinese University of Hong Kong, Shenzhen, China
+                                         zhaojunhua@cuhk.edu.cn
+
+
+Abstract: As a major contributor to carbon emissions, the decarbonization of power systems has
+garnered significant societal attention. Nodal carbon intensity (NCI), a critical factor in carbon-
+oriented demand response, has traditionally been determined through “ex-post” calculations.
+However, this ex-post approach introduces latency in low-carbon dispatch. To address this, this
+paper presents a proactive “ex-ante” spatial-temporal carbon response framework. At its core, we
+develop a novel deep learning-based hierarchical design, enhanced by a dual-stage attention
+mechanism and a large language model (LLM)-based multi-agent cooperation system, to accurately
+forecast day-ahead NCI. This design effectively mitigates the impact of renewable energy
+uncertainty and enhances predictive resilience. On the demand side, the framework proposes a
+spatial-temporal carbon scheduling model that integrates geographically dispatchable loads (GDLs),
+including mobile energy storage systems (MESSs) and distributed data centers (DDCs). Leveraging
+high-accuracy day-ahead NCI predictions, the framework can effectively reduce system emissions
+by quickly responding to carbon intensity fluctuations. The proposed framework is tested on the
+modified IEEE 33-bus system. According to the simulation results, the impacts of proposed
+framework on dispatching latency and emission outcomes are analyzed. The results demonstrate
+that under a one-hour reduction in carbon scheduling latency, the proposed model and methodology
+can achieve over 30% emission reduction. This research breaks through the limitations of passive
+carbon accounting, advancing toward proactive carbon management. It offers an intelligent solution
+that accelerates the transition to cleaner power systems while directly supporting sustainable
+production goals.
+
+
+                                                       1
+Highlights:
+   An ex-ante carbon-response framework enables proactive low-carbon dispatch.
+   Hierarchical deep learning forecasts carbon intensity via renewable decoupling.
+   Language-model agents improve data processing and forecasting resilience.
+   Mobile storage and data centers cut emissions using predictive carbon signals.
+
+Keywords: Carbon intensity forecasting, spatial-temporal carbon response, hierarchical design,
+dual-stage attention mechanism, multi-agent cooperation mechanism
+
+Nomenclature:
+
+A. Abbreviation
+ ACGD                 ANN-CNN-GRU-DSAM hierarchical forecasting model
+ CGD                  CNN-GRU-DSAM forecasting model
+ CEF                  Carbon Emission Flow
+ DDC                  Distributed Data Center
+ DSAM                 Dual-Stage Attention Mechanism
+ FAM                  Feature Attention Mechanism
+ GDL                  Geographically Dispatchable Load
+ MESS                 Mobile Energy Storage System
+ NCI                  Nodal Carbon Intensity
+ RES                  Renewable Energy Source
+ TAM                  Temporal Attention Mechanism
+
+B. Indexes and Sets
+ 𝑖, 𝑗                 Index and set of bus locations
+        ,   ,
+ Ω    ,Ω              Set of bus locations of MESSs and DDCs
+ 𝑡, 𝑇                 Index and set of time periods
+ 𝑑                    Index of forecasting day
+ 𝑚, Ω                 Index and set of MESSs
+ 𝑔, Ω                 Index and set of generators
+ 𝑆                    Set of bus inflowing power
+
+C. Parameters
+ 𝐹                    Number of input features
+ 𝐻                    Forecasting horizon, set to 24 h in the case study
+ 𝑊, 𝑏                 Weight matrix and bias term
+ 𝑣 ,𝑊 ,𝑈              Learnable parameters in the feature attention structure
+ 𝜃, 𝜃                 ACGD model parameters and RES-specific ANN parameters
+ 𝛩                    Frozen parameters of the pre-trained LLM
+ 𝑢 ,𝑢    ,𝑢           Prompt instructions for the pre-processing agent, evaluation agent, or task 𝑘
+ 𝜔 ,𝜔                 Weighting coefficients balancing RES-output and NCI loss terms
+ 𝜇                    Temporal window size in the temporal attention mechanism
+ 𝑇𝐷                   Travel-time interval required for moving a MESS between buses
+  •                   Upper bound of variables
+                                                    2
+  •               Lower bound of variables
+ 𝜄,               Baseline power consumption of DDC
+ 𝜙                Increased power load when processing a unit amount of workload with the minimum QoS
+ 𝜙                Increased power load of an active server in DDC handling the maximum workload with the
+                  minimum QoS
+ 𝜙,               Increased power consumption of DDC when processing a baseline amount of workload with the
+                  minimum QoS
+ 𝛤 ,              Number of inactive servers in DDC
+ 𝑒 , 𝑒            Empirical constants of cooling system
+ 𝑒                Equivalent thermal resistance of DDC
+ 𝑞, , 𝑞,          Preset outdoor and indoor temperature
+ 𝑜,               Load of lighting and other equipment
+ 𝑁𝐸 , 𝑁𝐴 , 𝑁𝐶 ,   Numbers and rated power of edge, aggregate, and core switches in a DDC
+ 𝐸𝐸 , 𝐸𝐴 , 𝐸𝐶
+ 𝑁𝑆               Number of servers in DDC
+ 𝐸𝑃 , 𝐸𝐼          Peak and idle power of each server
+ 𝑢, 𝑤             Average service rate of servers and tolerated service delay of workload
+
+D. Variables
+ 𝑋 ,𝑋              Original historical energy-production and weather-information feature matrices
+ 𝑋                 Flattened input matrix of the first-tier ANN
+ ℎ                 Output of the n–th hidden layer
+ 𝑌                 Predicted renewable energy production values for next 24 h
+ 𝑋                 Tier-2 input data including historical NCI and Tier-1 renewable forecasts
+ 𝑥                 k–th input feature series
+ 𝑥                 Feature-weighted input at time t
+ 𝑒                 Weight of the k–th feature at time t in FAM
+ 𝛼                 Attention weight of the k–th input feature at time t
+ 𝑧 ,𝑟              Update and reset gates of the GRU cell
+ ℎ ,ℎ              Hidden state and new memory state of the GRU cell at time t
+ 𝛾                 Spearman rank correlation coefficient
+ 𝛾                 Positively shifted Spearman correlation coefficient
+ 𝜌 ,               Pearson correlation coefficient between rank sequences
+ 𝜎 ,𝜎              Standard deviations of the rank sequences
+ 𝛼                 Temporal attention weight
+ 𝜅                 Context vector obtained from TAM at time t-1
+ 𝜗                 LLM-based agent generator
+ 𝐴 ,𝐴              Input-stage data pre-processing agent and output-stage performance evaluation agent
+ 𝑃 , 𝑃             Power flow, generation power
+ 𝐸 ,,              Energy storage of MESS
+ 𝑒 ,               Internal carbon intensity of MESS
+ 𝑒,                Calculated nodal carbon intensity
+ 𝑒̃ ,              Intermediate forecasted NCI by ACGD
+ 𝑒̂ ,              Corrected final forecasted NCI by Agent+ACGD
+
+                                               3
+         ,            ,   Charging and discharging power of MESS
+ 𝑃 ,,        ,𝑃 , ,
+
+ ℓ,                       DDC load
+ 𝜏 , ,                    Whether MESS travels from bus 𝑖 to 𝑗 at time 𝑡.
+ 𝜉 ,,                     Whether MESS parks at bus 𝑖 at time 𝑡
+ 𝜄,                       Regulated power load of DDC
+ 𝛼 ,, , 𝛿 ,,              Whether a MESS arrives at or departs from bus 𝑖
+ 𝛿 ,,                     Auxiliary binary variable
+
+1.   Introduction
+     With the intensification of carbon dioxide emissions, extreme climatic events have become
+increasingly prominent worldwide, posing significant threats to the sustainable development of
+human society [1]. In response, more than 120 countries, including the United Kingdom, China,
+Germany, Japan, and Australia, have pledged to achieve “net-zero carbon” and “carbon neutrality”
+as central measures to combat climate change [2]. As the largest contributor, accounting for
+approximately 40% of global energy-related CO2 emissions [3], the decarbonization of the power
+industry is a critical imperative for mitigating climate change [4]. This energy transition is
+characterized by the integration of variable renewable energy sources (RESs), such as wind and
+solar power. Although essential for reducing reliance on fossil fuels, this transition introduces
+significant operational challenges and requires unprecedented grid flexibility to manage the
+intermittency and uncertainty of RES generation [5].
+     In this context, demand-side carbon response has emerged as a pivotal and cost-effective
+mechanism for enhancing grid flexibility, aligning electricity consumption with fluctuating
+renewable generation, and supporting system stability [6]. To guide demand response programs
+toward tangible decarbonization outcomes, a precise carbon signal is essential. Nodal carbon
+intensity (NCI), which quantifies the carbon emissions associated with electricity consumption at
+specific grid locations, has been identified as a critical metric for carbon-aware demand-side
+response [7]. By revealing the grid’s carbon footprint, NCI enables flexible loads to shift
+consumption to times and locations with cleaner energy, thereby contributing to system-level
+emission reduction [8].
+     However, a fundamental bottleneck currently limits the full potential of NCI-driven carbon
+response. Conventional methods for determining system NCI rely on calculations based on post-
+consumption or real-time power-flow data, which are then used to finalize low-carbon dispatch.
+From an economic perspective, this calculation method is an “ex-post” approach. The ex-post
+mechanism introduces inherent latency, creating a critical time lag between carbon-signal
+calculation and the dispatch of flexible loads. Consequently, demand-side actions remain reactive
+rather than proactive, often missing optimal low-carbon windows and leading to suboptimal
+emission reduction outcomes.
+     To bridge this gap, this paper proposes a novel “ex-ante” spatial-temporal carbon response
+framework that enables proactive scheduling through forward-looking NCI forecasting in power
+systems with geographically dispatchable loads (GDLs), such as mobile energy storage systems
+(MESSs) and distributed data centers (DDCs). Specifically, the framework uses a multi-agent-
+assisted hybrid deep neural network for day-ahead NCI forecasting to mitigate uncertainty and
+                                                      4
+improve model resilience. It captures temporal fluctuations in carbon intensity during the scheduling
+phase instead of passively relying on ex-post data. Through this ex-ante framework, power systems
+can proactively schedule the optimal allocation of GDLs and reduce system emissions. Compared
+with existing studies, the contribution of this work is not merely an incremental improvement to a
+standalone forecasting model. Rather, it establishes an integrated ex-ante spatial-temporal carbon
+response framework that connects carbon-signal prediction with operational decarbonization. The
+distinctive contributions of this paper are summarized as follows:
+ 1) Unlike conventional NCI calculation and carbon emission flow tracing methods that mainly
+provide ex-post carbon signals, this paper proposes an ex-ante spatial-temporal carbon response
+framework. The proposed framework converts day-ahead NCI forecasts into proactive scheduling
+signals for MESSs and DDCs, thereby reducing the latency between carbon-signal generation and
+low-carbon dispatch.
+ 2) Compared with conventional hybrid forecasting frameworks that directly map historical features
+to future carbon intensity, this paper develops a hierarchical deep learning forecasting structure. The
+first tier forecasts renewable generation outputs in the grid, and the second tier uses these structured
+renewable forecasts as auxiliary inputs for NCI prediction. This design explicitly decouples
+renewable generation uncertainty from downstream carbon-intensity forecasting.
+ 3) This paper introduces an LLM-based multi-agent cooperation mechanism that operates at the
+input and output stages of the forecasting model. A data pre-processing agent operates on the input
+side, while a performance evaluation agent works at the output stage. This mechanism improves the
+model’s resilience and automation capabilities compared with traditional approaches.
+ 4) Unlike temporal-only carbon-aware demand response, the proposed framework explicitly
+exploits both the temporal and spatial flexibility of GDLs, including MESSs and DDCs. This design
+enables carbon response across both time periods and network locations rather than shifting demand
+only along the time axis.
+     The rest of this paper is organized as follows. Section 2 presents a literature review on carbon-
+oriented operations and forecasting techniques. Section 3 details the methodology workflow,
+including the proposed hierarchical forecasting model and the spatial-temporal low-carbon dispatch
+model for GDLs. Section 4 presents the case studies and results, followed by the discussion in
+Section 5. Section 6 concludes the paper.
+
+2.   Literature Review
+     As a major source of carbon emissions, the power system plays an indispensable role in
+achieving carbon neutrality through decarbonization. Existing research has made substantial
+advances in emission reduction strategies, primarily on the supply side. The authors in [9] propose
+a retirement plan for aging coal-fired generators to support carbon neutrality. Reference [10]
+presents a detailed model that considers gas-electricity coupling and gas storage. However, demand-
+side carbon response also plays an important role in aligning energy consumption with carbon
+reduction targets. Reference [11] proposes a bi-level low-carbon scheme on the demand side that
+considers users’ energy consumption levels and low-carbon demand response. In [12], a two-stage
+low-carbon dispatch model for an integrated electricity-gas system is established. In this context,
+NCI serves as a core metric for demand-side carbon response. It enables precise identification of
+
+                                                   5
+carbon emissions throughout the power grid, providing essential data support for carbon-oriented
+demand response.
+     Conventional methods for obtaining system NCI rely on calculation. A carbon emission flow
+(CEF) model is proposed in [13] to specify corresponding emissions on the consumer side.
+Reference [14] proposes a research framework for the low-carbon transition from the perspectives
+of carbon metering and carbon tracing. However, these conventional NCI calculation methods are
+ex-post from an operational perspective because they rely on real-time or post-consumption data to
+calculate NCI and finalize low-carbon dispatch. This ex-post analysis introduces latency into
+scheduling decisions, making it difficult for demand-side actions to respond promptly to dynamic
+system changes. This limitation is particularly critical for emerging industrial applications. For
+instance, Google’s “Carbon-Intelligent Computing” relies on shifting flexible compute loads to low-
+carbon windows [15], a process that requires timely signals similar to the marginal emissions data
+being piloted by PJM and WattTime [16]. However, the efficiency of such practices is currently
+constrained by the lack of accurate, forward-looking NCI guidance.
+     To overcome the latency of ex-post calculation, recent research has begun to explore data-
+driven methods for generating the “ex-ante” NCI signals needed for proactive scheduling. Reference
+[17] proposes a regression carbon-flow tracing model to assist demand response in reducing carbon
+emissions. In these data-driven approaches, deep learning, a subset of machine learning that trains
+deep neural networks, has emerged as an effective tool for time-series forecasting [18]. In particular,
+hybrid models that couple convolutional neural networks (CNNs) with long short-term memory
+(LSTM) or gated recurrent unit (GRU) architectures have demonstrated superior performance in
+capturing non-linear dependencies across industrial domains [19, 20]. The authors in [21] present a
+CNN-LSTM hybrid design for multi-day whole-grid carbon-intensity forecasting. More recently,
+the study in [22] proposes an ensemble model combining quantile regression and attention-based
+BiLSTM for daily CO2 emission forecasting. The authors in [23] further developed a hybrid
+forecasting model under carbon reduction targets, indicating the continuing importance of hybrid
+learning structures in carbon-emission forecasting. Meanwhile, large language models (LLMs),
+such as GPT [24] and LLaMa [25], and LLM-based agents have broad application prospects in low-
+carbon energy transitions [26]. Li et al. [27] propose the CarbonGPT model and improve carbon-
+emission prediction accuracy in distributed networks by integrating causal relationship mining with
+a feature alignment mechanism. Reference [28] demonstrates an LLM-based agent for forecasting
+day-ahead bidding behavior in the energy market.
+     To clarify the position of this study relative to recent AI-driven carbon forecasting and
+scheduling studies, Table I compares representative related works with the proposed framework in
+terms of forecasting target, uncertainty handling, LLM/agent role, dispatch coupling, and
+operational emission validation.
+                   Table I. Comparison Between Representative Related Studies and This Work.
+
+     Ref.           Year            ECS       HDL       HRD        Att.     LLMA         STDC    OEV
+
+     [13], [14]     2015, 2022      –         –         –          –        –            Part.   ✓
+     [17]           2022            Part.     –         –          –        –            Temp.   ✓
+     [21]           2022            ✓         ✓         –          –        –            –       –
+
+
+                                                    6
+     [22]            2024             ✓          ✓          –          ✓         –            –            –
+
+     [23]            2025             ✓          ✓          –          Part.     –            –            –
+
+     [27]            2026             ✓          ✓          Part.      –         ✓            –            –
+
+     [28]            2025             ✓          ✓          –          –         ✓            –            –
+
+     [34]–[37]       2021–2024        –          –          –          –         –            ✓            ✓
+
+     This work       –                ✓          ✓          ✓          ✓         ✓            ✓            ✓
+
+     Notes: ECS = ex-ante carbon signal; HDL = hybrid deep learning; HRD = hierarchical RES-NCI decoupling;
+Att. = attention mechanism; LLMA = LLM/agent assistance; STDC = spatial-temporal dispatch coupling; OEV =
+     operational emission validation; Part. = partially considered; Temp. = temporal-only dispatch coupling.
+     As summarized in Table I, several important gaps remain unresolved in the existing literature.
+First, most NCI-related studies still rely on ex-post carbon calculation or real-time tracing, which
+limits their ability to support proactive low-carbon scheduling. As a result, carbon-aware demand
+response often remains reactive rather than anticipatory. Second, the limited number of ex-ante
+carbon-aware studies mainly focus on temporal shifting, while the spatial flexibility of emerging
+GDLs has not been sufficiently exploited. This restricts the ability of current methods to achieve
+broader system-level emission reduction through coordinated spatial-temporal response. Third, in
+NCI forecasting, the impact of renewable generation uncertainty is often not addressed through a
+dedicated structure. Many existing models treat renewable outputs as ordinary input features,
+without explicitly decoupling their uncertainty or enhancing the adaptability of the forecasting
+workflow. To address these gaps, this paper proposes an ex-ante spatial-temporal carbon response
+framework driven by a hierarchical multi-agent attention-enhanced deep learning model. The
+proposed framework not only generates day-ahead NCI signals for proactive scheduling but also
+directly links these predictive carbon signals with the low-carbon dispatch of MESSs and DDCs,
+thereby translating forecasting capability into operational decarbonization outcomes.
+
+3.   Methodology
+
+3.1 Proposed System Framework
+
+     To achieve ex-ante spatial-temporal carbon response, two key challenges must be addressed.
+The first is accurate NCI forecasting in power systems, specifically day-ahead prediction with
+hourly resolution. The second is the construction of a spatial-temporal low-carbon dispatch model
+that incorporates GDLs and uses the forecasting outcomes from the first stage. The complete
+workflow of the cooperative ANN-CNN-GRU-DSAM (ACGD)-based hierarchical multi-agent
+spatial-temporal carbon response framework is illustrated in Fig. 1. In this abbreviation, ANN refers
+to the first-tier artificial neural network used for renewable-generation forecasting; CNN and GRU
+refer to the convolutional neural network and gated recurrent unit used in the second-tier NCI
+forecasting module; and DSAM refers to the dual-stage attention mechanism used to enhance
+feature and temporal dependency learning. The hierarchical forecasting structure is adopted to
+explicitly address the strong coupling between renewable generation uncertainty and NCI variation.
+In power systems with high renewable penetration, NCI is influenced not only by its own historical
+evolution but also by short-term fluctuations in wind and solar outputs. A direct end-to-end
+forecasting scheme may entangle these heterogeneous effects, thereby reducing robustness when
+
+                                                       7
+renewable generation changes rapidly. To alleviate this issue, the proposed framework first estimates
+the day-ahead outputs of renewable sources and then introduces these forecasts as auxiliary inputs
+for downstream NCI prediction. This design represents renewable uncertainty in a more structured
+manner, improves the interpretability of the forecasting pipeline, and provides a clearer information
+flow from renewable generation to carbon-signal formation.
+
+                       ACGD-based hierarchical multi-agent model                               Spatial-temporal carbon
+                                                                                                  response of GDLs
+                                                           Historical renewable
+                      Tier 1 data input
+                                                            source production
+                         X tann
+                              ANN                                                                  Distributed data center
+                                                       Data pre-processing agent                   Real time carbon
+                      Tier 1 data output               data filtering                              dispatching of DDCs
+                                                       data cleaning
+                          y tann
+                                                       data normalization
+
+                                                         Historical nodal carbon
+                      Tier 2 data input
+                                                              intensity data
+                       X icgd                                                                      Mobile energy storage
+                          ,t
+                                                                                                   system
+                    CNN-GRU-DSAM
+                                                                                                   Low carbon operation
+                                                               Performance evaluation agent
+                                                                                                   optimization of MESS
+                      Tier 2 data output                       error calculation
+                                                               error analyzing
+                  eiEle     acgd  acgd           acgd
+                     ,t = { yi ,t , yi ,t +1 ,..., yi ,t + H } parameters fine-tune
+
+
+
+
+                    Final forecasting result: eˆiEle    ˆ acgd ˆ acgd          ˆ acgd
+                                                 ,t = { yi ,t , yi ,t +1 ,..., yi ,t + H }
+
+
+
+
+                                           Day-Ahead Phase                                         Operating Day Phase
+
+     Fig. 1. Overview of the proposed ACGD-based multi-agent spatial-temporal carbon response framework.
+     The first model is a hierarchical multi-agent collaborative day-ahead hourly NCI forecasting
+model for microgrids based on ACGD. This hierarchical architecture consists of a first-tier ANN
+and a second-tier hybrid neural network that integrates CNN and GRU modules enhanced by DSAM.
+In the first tier, renewable generation in the power system, including wind turbines (WTs) and
+photovoltaic (PV) panels, is forecast. Each renewable source has a corresponding lightweight ANN
+model. The input to Tier 1 is historical generation data {𝑋 } from RESs, while the predicted
+output 𝑦       is transmitted to Tier 2 as auxiliary features to mitigate the impact of variability in
+renewable generation on carbon intensity prediction. Tier 2 constitutes the core of the proposed
+forecasting model. Its input data {𝑋 } includes the calculated NCI values as historical data,
+augmented by Tier 1 output as auxiliary features. The architecture of this hybrid model will be
+
+comprehensively described later. The output 𝑒̃ ,                            = {𝑦 ,           ,𝑦,      ,...,𝑦,       } of Tier 2 represents
+
+hourly-resolution day-ahead NCI predictions. However, this output serves as an intermediate result
+rather than the final forecast.
+     The introduction of a multi-agent cooperation mechanism aims to enhance the predictive
+performance and resilience of ACGD. Here, two distinct agents operate at the input and output
+stages of ACGD, respectively. The input-stage data pre-processing agent performs data filtering,
+cleaning, and normalization tasks on all inputs to ACGD, including those from both Tier 1 and Tier
+2. The output-stage performance evaluation agent calculates the error between the 𝑑 –th day
+intermediate NCI prediction 𝑒̃ , and the 𝑑–th day calculated value 𝑒 , at the end of 𝑑–th day,
+analyzes the error, and fine-tunes the parameters of the ACGD model. After fine-tuning, the refined
+
+                                                                        8
+(𝑑 + 1)–th day NCI prediction 𝑒̂ ,     = {𝑦 ,    ,𝑦,    ,...,𝑦,       } is generated as the model’s final
+
+output. This prediction will subsequently drive the spatial-temporal low-carbon response model
+based on GDLs.
+     After the forecasting task of the first model is completed, the final predicted NCI 𝑒̂ , for the
+corresponding bus in the power system is substituted into the spatial-temporal carbon response
+model. In the second phase, two classes of GDLs are considered: MESSs and DDCs. Effective
+spatial-temporal carbon-aware demand response is achieved by strategically shifting GDLs
+according to bus-level carbon intensity within the network. For example, if the forecast indicates a
+significant increase in NCI during the afternoon, MESSs can be pre-scheduled to relocate to the
+target node earlier, thereby using the low-carbon window for charging and discharging operations.
+
+3.2 Proposed ACGD-Based Hierarchical Forecasting Model
+
+     Among various deep learning models, CNNs are widely applied in tasks such as computer
+vision, speech recognition, and natural language processing [29]. In these domains, CNNs have
+achieved strong performance in extracting local features from input series [30]. When a one-
+dimensional convolutional (Conv1d) kernel is used, CNNs can automatically extract features from
+time-series data while filtering noisy information during convolution. In the conventional CNN-
+GRU model, the Conv1d layer serves as the first module for extracting temporal features. Conv1d
+uses convolutional layers to extract features from the input data, while max-pooling layers help the
+model handle long time-series data more efficiently and preserve key temporal features.
+     Predicting carbon intensity in power grids is fundamentally a time-series forecasting problem,
+and both GRU and LSTM models are effective for such tasks. Compared with LSTM, GRU has a
+simpler structure. Whereas LSTM consists of input, forget, and output gates, GRU contains only
+reset and update gates. As a result, GRU trains faster, has higher computational efficiency, and
+achieves comparable performance to LSTM in many applications [31, 32]. Therefore, GRU is
+adopted as the core forecasting module. The conventional GRU structure consists of an update gate
+(𝑧 ), a reset gate (𝑟 ), new memory (ℎ′ ), and a hidden state (ℎ ).
+
+     Conventional forecasting methods in power systems may overlook the impact of other
+uncertainties on final NCI forecasts. For instance, renewable energy output fluctuations can
+substantially affect carbon intensity. To address this issue, ACGD adopts a hierarchical deep neural
+network for day-ahead NCI forecasting. As shown in Fig. 1, the first tier uses a set of ANNs to
+predict power generation from all RESs over the next 24 h, with each renewable energy source
+equipped with an independent ANN to generate power-output predictions.
+
+     The prediction model in Tier 1 is based on a modified multilayer perceptron (MLP)
+architecture with four fully connected layers. Dropout layers and the LeakyReLU activation
+function are applied to prevent overfitting and address the vanishing-gradient problem. The model
+input includes historical power-production data for the corresponding renewable energy source,
+with weather forecasts introduced as auxiliary input features because weather conditions
+significantly affect renewable generation capacity. For example, higher precipitation typically
+
+
+
+                                                   9
+leads to greater hydropower generation, while cloudy days with less sunlight result in lower solar
+power output. The mathematical expression of this process is defined as follows:
+
+                                X E = { X tE−T +1 , X tE−T + 2 ,..., X tE } ∈ T × F
+                                                                                       E
+                                                                                                           (1)
+
+                                     X tW = { X tW+1 ,..., X tW+T } ∈ T × F
+                                                                               W
+                                                                                                           (2)
+
+                                            X tann =  X tE  X tW                                      (3)
+
+                                   h1 = LeakyReLU (W1 ⋅ X tann + b1 )                                      (4)
+
+                                     h2 = LeakyReLU (W 2 ⋅ h1 + b2 )                                       (5)
+
+                                              y tann = W 3 ⋅ h2 + b3                                      (6)
+
+where {𝑋 } and {𝑋 } denote the original feature time-series matrix containing the historical
+energy production and weather information, respectively; 𝑇 represents the length of the time
+window; 𝐹 is the number of features; the symbol ∥ means the concatenation operation; {𝑋                     }
+denotes the unified input matrix of the ANN; {𝑋                     } is the one-dimensional feature matrix
+composed of the calculation results of {𝑋           } after flattening operations; ℎ       denotes the output
+of the 𝑛–th hidden layer; 𝑊 and 𝑏 are the weight and bias, respectively; the final output {𝑌                }
+is a vector containing the predicted renewable energy production values for the next 24 hours,
+which also serves as one of the feature inputs to the second-tier model. The first-tier model is
+relatively lightweight, avoiding structures like LSTM and CNN to prioritize speed and scalability
+for multiple renewable sources.
+
+     The objective of Tier 2 is to predict the hourly carbon intensity of MESS and DDC nodes in
+the power system for the next 24 hours. It uses historical NCI data calculated by the conventional
+CEF tracking method as the primary feature input and combines the hourly electricity production
+forecasts 𝑦      of each renewable energy source generated by Tier 1 as additional features. In the
+proposed second-tier model, a modified CNN-GRU hybrid model, combined with a DSAM, is
+employed to process the time-series prediction task.
+
+     When processing long sequences, models like GRU may struggle to retain critical information
+from earlier time steps. The attention mechanism addresses this problem by directly connecting
+the output to all relevant input data points, regardless of their position in the sequence [33]. The
+DSAM includes the feature attention mechanism (FAM) and the temporal attention mechanism
+(TAM). Fig. 2 illustrates the overall structure of the ACGD. The second-tier hybrid model is fed
+with the historical calculated carbon intensity data and the prediction results from the first tier. In
+the first stage, the mixed input historical data undergoes processing by two convolutional layers
+with a size of 3×1, aimed at extracting local features. These local features are subsequently input
+into the feature attention module to identify global connections. The modified GRU network
+comprises three layers with 128, 128, and 64 neurons, respectively. The temporal attention module
+serves as the decoder, which captures correlations within continuous time periods. The model is
+
+
+
+                                                        10
+then connected to an output layer with a linear activation function. Finally, the predicted NCI value
+
+{𝑌 ,                      } is obtained. The following subsections introduce each attention mechanism separately.
+
+                        Data-Preprocessing Agent                                                     Tier-1: ANN                                              Performance Evaluation Agent
+
+
+
+
+                                                                  Historical
+                                                              renewable source                                 ...         ...
+                                                                 production
+                              Data filtering                                                                                                                           Error calculation
+                                                                                                       ...
+                              Data cleaning                                                                                                                            Error Analyzing
+                                                                                                                                  Renewable source
+                           Data normalization                                                                                    production forecasts                 Parameter fine-tune
+                                                                   Weather
+                                                                 information
+
+                                                                                   Feature extract      Fully connected
+                                                                                    & flattening             layers
+
+
+                                                                                          Tier-2: CNN-GRU-DSAM
+
+                                                                     Convolution                 Max-pooling                        Flattening
+
+
+
+
+  Mixed Input Feature                                                                                                                                                             Final Predicted Value
+                                                                                                                                                                ...     ...
+                                                                        FAM                GRU         GRU           GRU            TAM
+
+                                                                                                                                                        ...
+
+
+
+
+                                  Convolutional and pooling layers                        DSAM-enhanced GRU layers                                      Fully connected layers
+
+
+                                               Fig. 2. Flow diagram of the hierarchical ANN-CNN-GRU-DSAM hybrid model.
+
+                        The FAM is proposed to serve as an encoder between the output layer of CNN and the input
+layer of the GRU. FAM learns the correlation between each input feature and the actual NCI to be
+forecast, and adaptively processes the input features to strengthen the influence of relevant features
+while weakening the influence of irrelevant ones. Given the 𝑘 –th input series 𝑥 =
+(𝑥 , 𝑥 , . . . , 𝑥 ) ∈ ℝ . The mathematical formulation of the FAM is defined as follows:
+
+                                                                     etk = ν eΤ tanh (We [ ht −1 ; st −1 ] + U e x k + be )                                                                               (7)
+
+                                                                                                             exp etk
+                                                                                          αtk = n                                                                                                         (8)
+                                                                                                       exp e
+                                                                                                        i =1
+                                                                                                                            i
+                                                                                                                            t
+
+
+
+                                                                                                                                   Τ
+                                                                               xt = α t1 xt1 , α t2 xt2 ,..., α tm xtm                                                                               (9)
+
+where 𝑒                          is the weight of different features at time 𝑡; 𝜈 , 𝑊 , and 𝑈 denote the learnable
+parameters in the feature attention structure; 𝑏                                                                 represents the bias value; 𝛼                                  denotes the
+attention weight measuring the importance of the 𝑘 –th input feature at time 𝑡. By combining
+different feature weights with their corresponding feature values at each time step, the associated
+features 𝑥 are obtained, which serve as the input to the GRU network for time-series modeling.
+Eq. (8) calculates the attention weights for different input features. In the context of NCI
+forecasting, not all input variables contribute equally at all times. For instance, wind power
+                                                                                                        11
+output may be the dominant factor determining carbon intensity during the night, while solar
+irradiance becomes critical during the day. The FAM dynamically assigns higher weights to these
+dominant features based on the specific time-step context, effectively suppressing the noise from
+irrelevant variables. The output of the encoder at time 𝑡 can be updated as:
+
+                                                  ht = f GRU ( ht −1 , x t )                                                (10)
+
+
+where 𝑓      represents the non-linear activation function in GRU cells; 𝑥 is replaced with the
+feature-weighted input 𝑥 computed by FAM.
+
+     To effectively capture the temporal dependencies in long-sequence NCI data, the Spearman
+rank correlation coefficient is employed within the TAM to evaluate the relevance of historical
+hidden states. Unlike the conventional Pearson correlation which assumes linear relationships, the
+Spearman coefficient is employed to capture the non-linear dependencies inherent in NCI data.
+Since nodal carbon intensity is driven by the stochastic nature of renewable energy, it often exhibits
+non-Gaussian volatility (e.g., a sudden drop in solar output may trigger a disproportionate spike in
+carbon intensity due to thermal ramp-up). The Spearman correlation allows the model to focus on
+historical moments with similar structural fluctuation trends rather than just numerical proximity,
+thereby improving robustness against renewable uncertainty. We use the Spearman rank
+correlation coefficient 𝛾 to characterize the correlation between two hidden states. The Spearman
+coefficient is defined as the Pearson correlation coefficient between the rank variables. It ranks the
+variables in ascending order and records the rank differences for each data point. We flatten the
+hidden state matrices ℎ and ℎ                 into one-dimensional arrays of length 𝑛. These flattened
+matrices are then transformed into rank sequences 𝑟𝑔𝐴 and 𝑟𝑔𝐵. The parameter 𝛾 is computed
+using the Pearson correlation coefficient ( 𝜌                    ,      ), which is derived from the covariance
+(𝐶𝑜𝑣(𝑟𝑔𝐴, 𝑟𝑔𝐵)) and the product of standard deviations (𝜎                                  𝜎       ). The value of 𝑟 lies within
+the interval [−1,1]. The whole process can be formulated as:
+
+                                                              Cov ( rgA, rgB )
+                                      γ = ρrgA,rgB =                                                                         (11)
+                                                                     σ rgAσ rgB
+                                                         γ ′ =1+ γ                                                           (12)
+                                                                                  t −1
+                             α m = softmax ( γ m ) = exp ( γ m )                   exp(γ )
+                                                                                i =t − μ
+                                                                                                   i
+                                                                                                                             (13)
+
+
+                                          αm ∈{αt −μ ,...,αt −2 ,αt −1}                                                      (14)
+
+                                              γ m ∈{γ t − μ ,..., γ t −2 , γ t −1}                                           (15)
+                                       t −1
+                             ht −1 =  α m hm , α m ∈ {α t − μ ,..., α t − 2 , α t −1 }                                      (16)
+                                     m =t − μ
+
+
+                                                hm ∈{ht −μ ,..., ht −2 , ht −1}                                              (17)
+
+where 𝛾 is the Spearman rank correlation coefficient; 𝜌                                        ,        represents the Pearson
+correlation coefficient between the rank sequences 𝑟𝑔𝐴 and 𝑟𝑔𝐵 ; 𝜎                                           and 𝜎       are the
+standard deviations of the rank sequences 𝑟𝑔𝐴 and 𝑟𝑔𝐵 , respectively;                                       𝛾′   is defined as a
+                                                              12
+positively shifted version of 𝛾; 𝛼                         is the attention weight assigned to the hidden state ℎ                                              at
+time step 𝑚; 𝜇 denotes the temporal window size.
+                                                                                           Reset Gate Update Gate
+                                            α t −μ ht −μ                                                                                        ht
+
+
+
+                         Add Weights
+                                          α t − μ −1ht −μ −1                                                          −1 zt
+                                                 ...                                                      rt                               output
+                                                                                                                                  h′t
+                                            α t −2 ht −2                                                 σ            σ        tanh
+                                            α t −1ht −1
+
+                                                                                         xt         b
+
+                                             α t −μ                         γ t −μ                  score(ht −μ , ht −1 )        ht −μ
+
+                                            α t −μ +1                      γ t − μ +1              score(ht − μ +1 , ht −1 )    ht −μ +1
+
+                                                                softmax
+                                               ...                            ...                              ...                ...
+                                             α t −2                         γ t −2                  score ( ht − 2 , ht −1 )     ht −2
+
+                                             α t −1                         γ t −1                  score ( ht −1 , ht −1 )       ht −1
+
+
+
+                             Point-wise addition                          Hadamard product                             Vector transfer
+
+                                       Fig. 3. Flow diagram of the DSAM-enhanced GRU cell.
+
+     The improved structure of the DSAM-enhanced GRU cell is illustrated in Fig. 3. Combining
+the FAM and TAM discussed above, the modified mathematical model of the GRU cell can be
+formulated as follows:
+
+                                                z t = Sigmoid ( xtW xz + κ t −1W hz + bz )                                                                  (18)
+
+
+                                               rt = Sigmoid ( xtW xr + κ t −1W hr + br )                                                                    (19)
+
+
+                                                           t xh + ( rt  κt −1 ) Whh + bh 
+                                           ht′ = tanh  xW                                                                                                (20)
+
+                                                               ht = z t ht′ + (1 − z t ) ht −1                                                               (21)
+
+
+where 𝑥 is the feature-weighted input generated by the FAM, and 𝜅                                                                          represents the context
+vector obtained from the TAM. Moreover, to ensure stable convergence during training, the weight
+matrices in the proposed DSAM are initialized using Xavier (Glorot) uniform initialization, drawn
+
+from a uniform distribution within −                            (                )
+                                                                                     ,         (                  )
+                                                                                                                      , while biases are initialized to zero.
+
+This initialization strategy helps maintain the variance of activations throughout the deep attention
+layers, preventing gradient vanishing.
+
+3.3 LLM-Based Multi-Agent Cooperation Mechanism
+
+     The proposed multi-agent mechanism consists of two LLM-based functional agents
+embedded at different stages of the ACGD forecasting workflow, rather than a standalone multi-
+agent decision-making system. Specifically, one agent is deployed at the input stage and the other
+at the output stage of the hierarchical forecasting framework. The input-stage agent is designed to
+
+                                                                                13
+improve data quality before forecasting, while the output-stage agent is responsible for
+performance assessment and model-oriented refinement after prediction. Thus, the two agents
+serve as auxiliary workflow-enhancement modules that support the ACGD backbone from both
+ends of the forecasting pipeline, while the core prediction task is still performed by the hierarchical
+ACGD model. Although multi-agent systems are well established in power and energy systems,
+this work introduces the multi-agent mechanism in a task-oriented manner to enhance the ACGD
+forecasting workflow at the input and output stages. This approach bridges human operational
+expertise with AI-driven automation, as formalized by:
+
+                                       Agentk = ϑLLM ( uk ; Θ )
+                                                                                                                         (22)
+                                       k ∈ {Preprocessing, Evaluation}
+
+where 𝜗        denotes the LLM-based agent generator; 𝑢                             represents task-specific natural
+language prompt instructions; 𝛩 refers to the frozen parameters of the pre-trained LLM.
+
+
+                    Prompt 1: Initial Data Cleaning Logic
+                    Q1. ...Base on historical raw data {weather_conditions,
+                    renewable_source_production} before {prediction_date}
+
+
+
+
+                                                                                          Data pre-processing agent
+                    start, perform data preprocessing tech...
+                    A1. JSON with {cleaned_data, outlier_report,
+                    feature_definitions}
+                    Prompt 2: Adaptive Feature Refinement
+                    Q2. ...Based on the forecasting errors {MAE, RMSE}
+                    from ACGD’s predictions for {prediction_date} and
+                    evaluation agent’s feedback {flagged_issues}, update the
+                    preprocessing logic...
+                    A2. Updated JSON with {new_features, resolved_issues}
+
+
+
+                    Prompt 3: Forecast Validation & Feedback
+                     Q1. ...Base on historical data, I have predicted the future
+
+
+
+
+                                                                                          Performance evaluation agent
+                     {forecasting_time_series_domain} in
+                     {forecasting_period_T}. Given forecast NCI values,
+                     calculated actual values, assess the forecasting accuracy...
+                     A1. JSON report with {metrics, error_intervals,
+                     recommendations}
+                    Prompt 4: Logic Consolidation
+                     Q2. Improve and summarize the performance evaluation
+                     logic that affects the {forecasting_time_series_domain}
+                     based on two agents interactions. ...
+                     A2. Final JSON with {optimized_steps,
+                     forecasting_time_series}
+
+
+
+          Fig. 4. Example prompt designs for LLM-based forecasting-performance enhancement agents.
+
+     Example prompt designs for this LLM-based multi-agent cooperation mechanism are
+presented in Fig. 4. The proposed multi-agent system is instantiated using the GPT–4 foundation
+model (version gpt–4–0613), accessed via API, with the temperature parameter set to 0.2 to ensure
+deterministic responses. This model scale was selected to provide the high-level logical reasoning
+capability required for error analysis. The prompt engineering is based on role-playing and chain-
+of-thought (CoT) principles. As illustrated in the prompt examples, agents are instructed to adopt
+specific expert personas (e.g., Data Analyst) and follow a step-by-step reasoning process before
+providing final parameter adjustments in a strictly structured JSON format. To clarify the role of
+                                                           14
+the LLM-based agents in the ACGD forecasting pipeline, the agents are defined as task-oriented
+auxiliary operators rather than trainable neural-network layers. Specifically, they assist the
+forecasting workflow by receiving task-specific prompts and structured model/data states and then
+returning structured responses in a predefined format. The input-stage agent focuses on improving
+data quality before model training and prediction, while the output-stage agent focuses on
+evaluating forecasting errors and providing model-refinement suggestions. The neural-network
+weights of ACGD are still optimized through standard gradient-based training, while the agents
+support the workflow only through data-processing rules and parameter-adjustment
+recommendations.
+
+       At the input stage of ACGD, the data pre-processing agent automates time-series data pre-
+processing for historical renewable source (PV and WT) production data at the input of Tier 1 and
+the historical NCI data at the input of Tier 2. This data pre-processing agent is designed to
+automatically perform data filtering, data cleaning, and data normalization operations. For example,
+it checks each row for completeness (no empty values) and removes samples that are irrelevant to
+the task (e.g., samples with feature values outside expected ranges). It fills missing values with the
+mean, removes outliers based on statistical methods (e.g., three standard deviations), and
+normalizes numerical features to [0, 1].
+
+       At the output stage of the ACGD framework, a performance evaluation agent is deployed to
+quantify the error between the actual calculated 𝑒 ,                             and predicted NCI values 𝑒̃ , . Based on
+this error, the agent dynamically optimizes the ACGD model parameters to enhance predictive
+performance. The mathematical model in Eq. (23) and (24) is the MESS-based modified CEF
+model [34], which provides the calculated value used for comparison with the forecasted value
+when evaluating forecasting performance. Moreover, at the output stage of Tier 1, the mean
+absolute error (MAE) is a metric for forecasting performance between predicted (𝑃 ,                                    ) and actual
+(𝑃 ,   ) renewable source production. 𝑃                        consists of 𝑃 , and 𝑃 ,                  in our design. At the output
+stage of Tier 2, weighted MAPE is used as the final metric for NCI forecasting performance
+evaluation, as defined in Eq. (25).
+
+                       eiEle
+                                (PG
+                                 g ,i ,t   ⋅ e gG, i , t + PmMESS
+                                                             ,i ,t
+                                                                   , dis
+                                                                         ⋅ emMESS
+                                                                              ,t               (
+                                                                                  +  j∈ S + Pij , t ⋅ ρ ij , t   ))            (23)
+                         ,t =
+                                     (P     G
+                                           g ,i ,t   + Pi W, t + Pi ,PV
+                                                                     t  + PmMESS
+                                                                            ,i ,t
+                                                                                  , dis
+                                                                                        +  j∈ S + Pij , t   )
+                                                                 ei ,t , if Pij ,t ≥ 0
+                                                       ρij ,t =                                                                (24)
+                                                                  e j ,t , if Pij ,t ≤ 0
+
+                            1 T  RES Pi ,t − Pi ,t                           
+                                          RES      RES
+                                                               eiEle      Ele
+                                                                  , t − ei , t
+                       L=         
+                                   
+                            T t =1 
+                                     ω         RES
+                                            Pi ,t
+                                                       + ω NCI
+                                                                       ELe
+                                                                     ei ,t
+                                                                                × 100%
+                                                                               
+                                                                                                                                (25)
+                                                                               
+
+where 𝑒 ,     denotes the calculated NCI at bus 𝑖 and time 𝑡; 𝑃 , , and 𝑒 , , stand for the active
+                                                                                                                           ,
+power output from generation 𝑖 at time 𝑡 and its carbon intensity, respectively; 𝑃 , ,                                          and
+
+𝑒 ,      represent the discharge power of MESS and its internal carbon intensity; 𝑆                                     denotes the
+power inflowing into bus 𝑗; 𝑃 , denotes the active power flow from bus 𝑖 to bus 𝑗 at time 𝑡;
+
+                                                                      15
+𝜌 , is the branch carbon intensity of line 𝑖 − 𝑗 at time 𝑡; 𝑃 ,                        and 𝑃 ,     denote the output
+power of wind energy and solar power, respectively; 𝜔                    and 𝜔           are the weight parameters
+used to balance the influence of RESs output and NCI in the loss calculations. After model-
+parameter optimization is completed, the initial NCI forecast value 𝑒̃ ,                   of 𝑑–th day is replaced
+by the final NCI forecast value 𝑒̂ ,     of (𝑑 + 1)–th day. The final day-ahead NCI predicted data
+𝑒̂ ,    is delivered to the subsequent spatial-temporal carbon response model to complete the ex-
+ante low-carbon dispatching.
+
+       To make the integration of the DSAM module and LLM-based agents more explicit, the
+complete multi-agent ACGD forecasting workflow is summarized in Algorithm 1.
+Algorithm 1: Multi-Agent ACGD-Based Day-Ahead NCI Forecasting Workflow.
+  1: Data Input: historical RES output 𝑋 , weather features 𝑋 , historical calculated NCI 𝑒
+     RES set 𝑅, target bus set 𝐵, forecasting horizon 𝐻 = 24, LLM prompts 𝑢 , 𝑢         , and
+       initialized ACGD parameters 𝜃;
+  2: Initialize: LLM-based agents 𝐴        =𝜗             𝑢     ; 𝛩 and 𝐴              =𝜗        (𝑢     ; 𝛩);
+  3: for each forecasting day 𝑑 do
+  4:     Use 𝐴       to filter task-irrelevant samples, impute missing values, remove outliers, and
+         normalize ACGD inputs to [0, 1];
+  5:     for each renewable source 𝑟 ∈ 𝑅 do
+  6:         Construct the Tier-1 ANN input 𝑋 ,           = 𝑋 , ∥𝑋 ,              and flatten the time-series
+             window;
+  7:         Predict day-ahead RES output 𝑃 ,     :            = 𝐴𝑁𝑁 𝑋 , ; 𝜃 ;
+  8:     end for
+  9:     Build the Tier-2 input 𝑍 , = 𝐸 , , 𝑃         :        ,𝑃    :           for each 𝑖 ∈ 𝐵;
+10:      for each target bus 𝑖 ∈ 𝐵 do
+11:          Extract local temporal features from 𝑍 , using the CNN module;
+12:          Calculate FAM weights 𝛼 ,     and obtain feature-weighted input 𝑥 ;
+13:          Calculate Spearman-based TAM weights 𝛼                 and context vector 𝜅               from historical
+             hidden states;
+14:          Update DSAM-GRU hidden states ℎ = 𝑓                    (𝑥 , ℎ        ,𝜅    ) over the forecasting
+             horizon;
+15:          Generate preliminary day-ahead NCI forecast 𝑒̃ ,                :      through the linear output layer;
+16:      end for
+17:      When observations are available, calculate RES MAE and NCI weighted MAPE using
+         𝑃     and calculated 𝑒    ;
+18:      Let 𝐴 analyze forecasting errors and return structured refinement suggestions for
+         𝜔 , 𝜔 , and model parameters;
+19:      Fine-tune ACGD by gradient-based optimization under the agent-recommended settings;
+20:      Replace the preliminary forecast with the refined NCI forecast 𝑒̂ ,                 :     ;
+21: end for
+22: Return 𝐸        :    = 𝑒̂ , |𝑖 ∈ 𝐵, 𝜏 ∈ [𝑡 + 1, 𝑡 + 𝐻] for the spatial-temporal carbon response
+    model.
+
+                                                          16
+3.4 Low-Carbon Operation with the Spatial-Temporal Carbon Response Model of GDLs
+
+     After the multi-agent-enhanced ACGD model is applied, the predicted NCI values 𝑒̂ , of
+each bus in the power system are obtained, and low-carbon spatial-temporal scheduling of GDLs is
+conducted as follows.
+
+     In this section, the minimum total CO2 emissions of GDLs are considered as the objective
+function, as represented by the following equation:
+
+                                                                                                                  
+         min J =   eˆiEle     ,t ⋅ li ,t +  ei ,t ⋅ Pm,i ,t
+                                        ddc
+                                                       ˆEle MESS ,ch ⋅ ξm,i,t −  eˆiEle       MESS , dis
+                                                                                         ,t ⋅ Pm,i ,t     ⋅ ξm,i,t    (26)
+                 t∈T  i∈ΩD ,bus             i∈ΩM ,bus                         i∈ΩM ,bus                           
+
+where 𝛺 ,       and 𝛺 ,           denote the set of bus locations of MESSs and DDCs, respectively; 𝑒̂ ,
+                                                                  ,                  ,
+is the predicted NCI at bus 𝑖 , time 𝑡 ; 𝑃 , ,                           and 𝑃 , ,        represent the charging and
+
+discharging power of a MESS. 𝜉 , , denotes whether 𝑚–th MESS parks at bus 𝑖, time 𝑡. The
+objective function in Eq. (26) aims to minimize the total system carbon emissions. Unlike traditional
+economic dispatch, which prioritizes operational costs, this formulation explicitly internalizes the
+environmental externality of power generation. By guiding MESSs and DDCs to shift their load
+demands to periods with lower predicted NCI (e.g., high renewable penetration periods), the model
+actively facilitates the consumption of excess renewable energy and reduces the reliance on carbon-
+intensive thermal power plants.
+
+      DDCs offer spatial flexibility by migrating computing workloads and the associated power
+consumption across the network. To model this flexibility, we first define the workload balance.
+Intuitively, workload shifting must follow the conservation of data processing: the total computing
+tasks shifted out of high-carbon nodes must equal the tasks received by low-carbon nodes, ensuring
+that the total service volume remains unchanged. This spatial coupling is described by Eq. (27) and
+(28):
+
+
+                                                     ,t = ιi,t +ιi,t
+                                                   Diddc   base  GLB
+                                                                                                                       (27)
+
+                                                     (ι
+                                                     D,bus
+                                                             GLB
+                                                             i,t, y   φ1i ) = 0                                        (28)
+                                                  i∈Ω
+
+     To ensure quality of service (QoS) and satisfy physical hardware limits, the regulated workload
+cannot exceed the computing capacity of the data center or the allowable service-delay tolerance,
+as constrained by Eq. (29) and (30):
+
+                                                        ιiGLB
+                                                          ,t  ≤ φ1Bi                                                   (29)
+
+                                                    −ιiGLB
+                                                       ,t  φ2i ≤ Γ1i,t                                                 (30)
+
+In Eq. (27), the load of DDCs 𝐷 ,                 is composed of baseline power consumption under the
+minimum QoS 𝜄 ,          and the regulated power load 𝜄 ,                   . In equations (28)–(30), 𝜙          denotes the
+increased power consumption when a unit amount of workload is processed under the minimum
+QoS; 𝜙      represents the increased power load of an active server in DDC handling the maximum
+workload with the minimum QoS; 𝜙 , is the increased power consumption of DDC when
+                                                              17
+processing a baseline amount of workload with the minimum QoS; 𝛤 , denotes the number of
+inactive servers in DDC. Equation (28) describes the spatial load regulation potential among various
+DDCs; equations (29) and (30) illustrate the maximum dispatchable load and load-regulation limits
+of DDCs under limited computing resources, respectively.
+        Finally, we map the logical computing workload to physical power consumption. The energy
+conversion model in Eq. (31)–(34) considers the non-linear relationship between server utilization
+and power usage, specifically accounting for cooling-system overhead and server idle states:
+
+                                             NEi EEi + NAi EAi + NCi ECi          
+                                                                           + EI i  
+                                                           NSi
+                          φ1i = (1 + e1i )                                                                                     (31)
+                                                        1   EPi − EI i           
+                                                    ui −  +                      
+                                                       ω       ui               
+
+                                                                                  1
+                                                   φ2i = φ1i ⋅  ui −                                                              (32)
+                                                                                  ω 
+
+                            ιibase
+                              ,t   = φiB,t + ( e1i e3i ) ( qiO,t − qiI,t ) + (1 + e1i ) oi ,t + e2i                                (33)
+
+                                                 Γ1i,t = NSi − φiB,t φ2i                                                           (34)
+
+In equations (31)–(34), the constraints of DDC power consumption related to factors such as server,
+workload, and environment are formulated, where 𝑒                                   and 𝑒             are defined as empirical constants
+of the cooling system; 𝑒      is the equivalent thermal resistance of DDC; 𝑞 , and 𝑞 , describe the
+preset outdoor and indoor temperatures, respectively; 𝑜 , denotes the load of lighting and other
+equipment; 𝑁𝐸 , 𝑁𝐴 , and 𝑁𝐶 represent the numbers of edge, aggregate, and core switches in a
+DDC; 𝐸𝐸 , 𝐸𝐴 , and 𝐸𝐶 describe the corresponding rated power loads, respectively; 𝑁𝑆
+denotes the number of servers in each DDC; 𝐸𝐼 and 𝐸𝑃 are the peak and idle power of each
+server, respectively; lastly, 𝑢 denotes the average service rate of servers and 𝜔 describes the
+tolerated service delay of the workload. For a thorough proof and derivation process, further details
+can be found in [35] and [36].
+        Unlike stationary batteries, MESSs introduce complex spatial-temporal logistics. To ensure the
+physical feasibility of the dispatch plan, the model must strictly enforce location continuity. First,
+the single-location principle ensures that a MESS can only reside at one specific bus at any given
+time and cannot be in a parked state while traveling. This binary logic is enforced by Eq. (35) and
+(36):
+                                          ζ m,i,t ≤ 1−                       τ          MESS
+                                                                                          m,i, j ,t                                (35)
+                                                                   M ,bus        M ,bus
+                                                              i∈Ω            j∈Ω
+
+
+                                                                 ζ          m ,i ,t   ≤1                                         (36)
+                                                 m ∈ Ω M E SS i ∈Ω M ,b us
+
+
+        Second, the state-transition logic links parking status with arrival and departure actions.
+Equations (37)–(41) mathematically describe that a MESS appearing at a new node must have
+physically departed from a previous node, thereby maintaining flow continuity in the spatial-
+temporal graph:
+
+                                           α m ,i ,t − δ m , i ,t = ζ m ,i ,t − ζ m ,i ,t −1                                       (37)
+
+                                                                    18
+                                           (α              m ,i ,t   + δ m ,i ,t ) ≤ 1          (38)
+                                       i ∈ Ω M ,b u s
+
+
+
+                                                τ M ,bus
+                                                              MESS
+                                                              m,i , j ,t   ≥ δm,i,t              (39)
+                                            j∈Ω
+
+                                αm,i,t − λm,i,t =  (τmMESS
+                                                        ,ij,t −τm,ij,t −1 )
+                                                                MESS
+                                                                                                 (40)
+                                                            i∈ΩM ,bus
+
+                                           (α              m ,i ,t   + λ m ,i ,t ) ≤ 1          (41)
+                                       i∈ Ω m ,b u s
+
+
+     Finally, to account for the transportation latency, Eq. (42) imposes a travel time constraint. It
+prevents a MESS from discharging at a destination bus before the required travel time (𝑇𝐷) has
+elapsed, preventing “teleportation” in the scheduling model:
+
+                                      τ mMESS
+                                          ,ij ,t ≥ τ m,ij ,t −1 − τ m,ij ,t −TD
+                                                     MESS           MESS
+                                                                                                 (42)
+
+
+Equations (35)–(42) describe the constraints of MESS in GDLs, reference [37] shows the detailed
+proof process. Equation (35) describes that each MESS can only park at one bus simultaneously,
+and cannot be parked while traveling; constraint (36) enforces that different MESSs cannot park at
+the same bus; equations (37)–(39) restrict that the arrival and departure of MESS cannot occur at
+the same time and place. In these constraints, 𝛼 , , and 𝛿 , , denote whether the m–th MESS
+arrives at or departs from bus 𝑖 at time 𝑡; 𝜏 , , , indicates whether a MESS travels from bus 𝑖
+to bus 𝑗 at time 𝑡. In equations (40) and (41), the change of 𝜏 , , , is physically consistent with
+that of 𝛼 , , and 𝛿 , , is an auxiliary binary variable. Constraint (42) indicates the travel time
+limitation, and 𝑇𝐷 represents the time interval required for moving MESS from bus 𝑖 to bus 𝑗.
+Here, 𝑇𝐷 represents the travel time derived from the physical road distance between bus 𝑖 and
+bus 𝑗, assuming a conservative average speed to account for potential traffic delays.
+
+4.   Case Studies and Results
+
+4.1 Experimental Setup and Implementation Details
+
+     Within the proposed ACGD-assisted spatial-temporal carbon response framework, the carbon-
+intensity forecasting model includes the hierarchical design, DSAM, and the multi-agent
+cooperation mechanism. In the demand-side carbon response phase, the geographical
+dispatchability of MESSs and DDCs is assessed.
+
+      The ACGD prediction model is implemented in Python 3.8 using the PyTorch framework in
+Visual Studio Code (VS Code) and is run on a PC with an AMD® Ryzen 7 6800H CPU, 16 GB
+RAM, and an NVIDIA® GeForce RTX 3060 GPU. The model is trained using the Adam optimizer.
+To avoid overfitting, early stopping is adopted during training. The key architecture and parameter
+settings are summarized in Table II. These settings were selected according to validation-set
+performance, convergence stability, computational efficiency, and the requirements of day-ahead
+carbon-aware scheduling. Specifically, the MAE of renewable-generation forecasting is used to
+evaluate the first-tier ANN model, while the weighted MAPE of NCI forecasting is used as the
+primary validation criterion for the second-tier model. For fairness, all comparative forecasting
+models are trained under the same training/validation/testing split and consistent evaluation settings
+whenever applicable. The complete training process for the hierarchical framework takes
+                                                                 19
+approximately 35 min on the specified hardware, satisfying the time-window requirement of day-
+ahead dispatch.
+
+                                    Table II. Key Architecture and Parameter Settings.
+
+   Component / parameter                Final setting          Component / parameter             Final setting
+
+      Forecasting horizon                   24 h                Early-stopping patience               20
+
+        Time resolution                     1h                       LLM platform                GPT-4-0613
+
+  Train / validation / test split    70% / 10% / 20%               LLM temperature                    0.2
+
+       GRU hidden units                128 / 128 / 64             Agent output format               JSON
+
+           Optimizer                       Adam               Attention-layer initialization    Xavier uniform
+
+      Initial learning rate                0.001           Prompt engineering methodology      Role-playing, CoT
+
+           Batch size                        64                 Computational overhead              35 min
+
+      The proposed framework is validated using real-world data from the New South Wales (NSW)
+region of Australia. The dataset starts on July 1, 2021, has a temporal resolution of 1 h, and satisfies
+the requirements for day-ahead hourly dispatch. The total number of samples is 8760. The dataset
+is split into training (70%), validation (10%), and testing (20%) sets. Data acquisition involves two
+primary sources. First, historical electricity demand and fuel-specific generation-mix data were
+acquired from the Australian Energy Market Operator (AEMO) [38]. These data serve as the ground
+truth for calculating historical NCI via the CEF model, which is then used as the training target for
+the Tier-2 ACGD model. To support Tier-1 renewable energy forecasting, historical weather data,
+specifically solar irradiance, ambient temperature, and wind speed, were obtained from the
+Australian Bureau of Meteorology (BOM) [39]. For heterogeneous data alignment, the AEMO
+electricity data and BOM weather data are merged based on UTC+10 timestamps. To handle minor
+time mismatches or missing values (<0.5%), linear interpolation is applied, and consistency is
+checked using the Z-score method (threshold = 3.0). The code for the ACGD framework is available
+at https://github.com/George9171014/ACGD-NCI-Forecasting for practitioners and researchers to
+incorporate into carbon optimization and accounting-related solutions.
+
+    The proposed ex-ante power-system decarbonization approach is simulated on a modified
+IEEE 33-bus distribution system. The optimization programs are simulated in MATLAB on the
+same laptop hardware described above. Gurobi within the YALMIP toolbox is used as the solver.
+The remaining basic system parameters are taken from [40]. To validate the effectiveness of the
+proposed framework, four distinct cases are established:
+
+  1) Case 1: Base case in which the system does not consider ex-ante scheduling, but GDLs can
+     be spatial-temporally dispatched.
+
+  2) Case 2: The system considers ex-ante scheduling, but GDLs cannot be spatial-temporally
+     dispatched.
+
+  3) Case 3: The system considers ex-ante scheduling, and GDLs can be spatial-temporally
+     dispatched.
+
+  4) Case 4: The system considers ACGD-based ex-ante scheduling, and GDLs can be spatial-
+                                                         20
+      temporally dispatched.
+
+     Among these cases, Case 1 is selected as the base case to complete conventional ex-post carbon
+scheduling through the NCI calculation method. Cases 2 and 3 serve as comparative cases to
+evaluate the effect of the spatial-temporal carbon response of GDLs on system emissions. The
+simulation environment also allows us to construct parallel scenarios (Case 1 vs. Case 3) in which
+the only variable is the dispatch signal (predicted vs. calculated NCI), thereby isolating the
+contribution of the proposed framework. Furthermore, because the spatial coordination of MESSs
+and DDCs represents a future grid paradigm with limited real-world deployment, simulation
+provides a necessary testbed for these emerging technologies. Finally, Case 4 is used to verify the
+effectiveness of the ACGD hierarchical design and multi-agent cooperation mechanism in
+improving carbon-intensity forecasting performance.
+
+     Unlike conventional studies that treat forecasting and optimization as separate tasks, this
+simulation establishes a closed-loop workflow. The output of the Tier-2 ACGD forecasting model
+is directly used as the input parameter for the spatial-temporal scheduling model. This integrated
+approach allows us to assess not only the statistical accuracy (e.g., MAE) of the forecast but also its
+operational value, namely how well the AI-generated signals guide GDLs to reduce actual system
+carbon emissions in a dynamic environment.
+
+
+                                          23 24 25           26 27 28 29 30 31 32 33
+
+
+                                              MESS 1                               MESS 2
+                                                                         G
+                           1      2   3   4   5   6      7    8   9 10 11 12 13 14 15 16 17 18
+
+                     Substation
+
+
+                                      19 20 21 22
+
+
+
+                       PV panel           Wind turbine            DDC        Candidate MESS location
+                            Candidate MESS movement path
+
+
+     Fig. 5. Topology of the tested IEEE 33-bus distribution network and MESS movement paths.
+
+    The topology of the IEEE 33-bus distribution network is illustrated in Fig. 5. In the system,
+two MESSs are expected to be equipped. The candidate movement routes are shown by orange
+dashed lines with arrows.
+
+4.2 Numerical Analysis of IEEE 33-Bus Simulation Results
+
+     To verify the effectiveness of ex-ante carbon response, we compare the MESS operation
+behavior in Cases 1 and 3. The operation of MESS2 is used as an example, and the MESS2 operation
+results are shown in Fig. 6.
+
+
+
+                                                             21
+                                 0.7    Charging                   Case 1                               0.8
+                                 0.5
+
+                                                                                                            Nodal carbon intensity
+                                 0.3                                                                    0.6
+
+
+
+                   Power (MW)
+                                 0.1
+                                                                                                        0.4
+                                -0.1
+
+                                                                                                               (tCO2/MWh)
+                                -0.3                                                                    0.2
+                                -0.5
+                                -0.7    Discharging                                                     0
+                                       1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+                                            MESS 2 ex-post      Time (h)        NCI bus 9 calculated
+                                            NCI bus 18 calculated               NCI bus 31 calculated
+
+                                0.7    Charging                   Case 3                                0.8
+
+
+                                                                                                            Nodal carbon intensity
+                                0.5
+                                0.3                                                                     0.6
+
+
+
+                   Power (MW)
+                                0.1
+                                                                                                        0.4
+
+                                                                                                               (tCO2/MWh)
+                                -0.1
+                                -0.3                                                                    0.2
+                                -0.5
+                                -0.7    Discharging                                                    0
+                                       1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+                                             MESS 2 ex-ante     Time (h)             NCI bus 9 predict
+                                             NCI bus 18 predict                      NCI bus 31 predict
+
+
+                                 Fig. 6. Spatial-temporal carbon response of MESS2 in Cases 1 and 3.
+
+      The bars in the figure represent the charging and discharging power of MESS2. The bar colors
+indicate the bus to which MESS2 moves for charging or discharging according to its movement
+path. The different-colored solid and dashed lines represent the calculated and predicted carbon-
+intensity values at buses 9, 18, and 31, respectively. In Case 1, MESS2 charges at bus 9, which has
+relatively low carbon intensity at noon, and discharges at bus 31, which has the highest nodal carbon
+intensity in the evening. However, this calculation-dependent ex-post scheduling can lead to load-
+scheduling lag because the NCI at the target bus may change significantly over time under dynamic
+power-system operation. By the time MESS2 arrives, the actual system carbon intensity may no
+longer match the value assumed when the dispatch decision was made, resulting in suboptimal
+emission reduction.
+
+     The principle of ex-ante scheduling is to forecast nodal carbon intensity for the next day based
+on historical carbon-intensity fluctuation patterns, allowing GDLs in the system to prepare for pre-
+scheduling according to the forecast results. Case 3 in Fig. 6 shows the MESS2 operation result with
+ex-ante scheduling. As shown in the figure, the predicted NCI curve consistently shifts earlier in
+time than the calculated NCI values. Under ex-ante scheduling, MESS2 has already moved to bus
+9 for charging at 10:00 and to bus 31 for discharging at 17:00. Compared with Case 1, MESS2 can
+be pre-scheduled to relocate to the target bus earlier, thereby using the low-carbon window for
+charging and discharging operations. However, the charging power at 10:00 under ex-post
+scheduling is relatively low. This result may be partly attributable to the one-hour resolution of the
+prediction model.
+
+
+
+
+                                                                 22
+                             0.6                                                                 0.7
+
+
+
+
+                                                                                                       Nodal carbon intensity (tCO2/MWh)
+                             0.5                                                                 0.6
+
+                                                                                                 0.5
+                             0.4
+
+
+
+
+             DDC load (MW)
+                                                                                                 0.4
+                             0.3
+                                                                                                 0.3
+                             0.2
+                                                                                                 0.2
+                             0.1                                                                 0.1
+
+                              0                                                                   0
+                                   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+                                                         Time (h)
+                                      DDC bus 15            DDC bus 28                    DDC bus 22
+                                      NCI bus 15            NCI bus 28                    NCI bus 22
+
+
+                                   Fig. 7. Spatial-temporal carbon response of DDCs in Case 3.
+
+
+
+
+    Fig. 8. System carbon-emission distribution with and without spatial carbon response over 24 h.
+
+Compared with the movement mechanism of MESSs, DDCs achieve spatial-temporal
+
+                                                            23
+scheduling through data-flow transmission. Fig. 7 demonstrates the spatial carbon response of DDC
+loads in Case 3. The DDC operation results indicate that, during the noon period, when buses 22
+and 28 exhibit low carbon intensity, the load primarily aggregates on the corresponding DDC units.
+As the carbon intensity of bus 28 rises overnight, the load dynamically adjusts by transferring from
+the DDC at bus 28 to the unit at bus 15.
+
+     Cases 2 and 3 are comparative cases used to verify the emission-reduction capability of the
+spatial-temporal carbon response of GDLs. Fig. 8 compares the emission distributions of Cases 2
+and 3 over 24 h. The comparison shows that the proposed scheduling method incorporating the
+spatial carbon response of GDLs reduces emissions at each bus to some extent and makes bus-level
+carbon emissions more uniform across the system. Compared with Case 2, Case 3 reduces emissions
+by 33.86%.
+
+     Case 4 is designed to validate the effectiveness of the proposed ACGD model and multi-agent
+cooperation mechanism. Three subcases are designed within Case 4: Case 4-a evaluates ex-ante
+carbon-intensity forecasting performance without the hierarchical design; Case 4-b evaluates ex-
+ante carbon-intensity forecasting with the hierarchical design but without the LLM-based multi-
+agent cooperation mechanism; and Case 4-c demonstrates the forecasting performance of the
+cooperative ACGD-based hierarchical multi-agent model.
+
+                                                                Case 4-a
+                               600
+
+
+                                                                                                          Nodal carbon intensity
+                                                                                                    0.7
+
+
+
+                 Power (MW)
+                               400                                           Q
+                                                                                                    0.6
+
+
+                                                                                                             (tCO2/MWh)
+                               200
+                                              P                                                     0.5
+
+
+                                0                                                                   0.4
+                                     1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+                                                             Time (h)
+                                     Load       Wind         PV            NCI_actual             NCI_predict
+
+                                                                Case 4-b
+                               600
+
+
+
+                                                                                                          Nodal carbon intensity
+                                                                                                    0.7
+
+
+
+                  Power (MW)
+                               400
+                                                                                                    0.6
+
+
+                                                                                                             (tCO2/MWh)
+                               200
+                                                                                                    0.5
+
+
+                                 0                                                                  0.4
+                                     1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
+                                                             Time (h)
+                                     Load       Wind         PV            NCI_actual             NCI_predict
+
+
+                 Fig. 9. Day-ahead carbon-intensity forecasting performance in Cases 4-a and 4-b.
+
+     Within Case 4, Case 4-a is used as the baseline prediction model. In Case 4-a, only a CNN-
+GRU-DSAM hybrid neural network is used to complete the day-ahead NCI forecasting task. The
+forecasting result is illustrated in Fig. 9. The green line NCI_predict denotes the NCI forecasting
+result over the next 24 h. The Case 4-a forecasting result shows that the overall fluctuation trend of
+                                                                24
+            the next-day NCI predicted by CGD closely aligns with the calculated NCI values. However, during
+            the early morning and noon periods, renewable energy generation operates near its peaks, causing
+            the error between the predicted and calculated NCI values to become more pronounced. This
+            phenomenon is exemplified by points P and Q marked in Fig. 9.
+
+                 To quantitatively evaluate the performance of the proposed framework, the observed values
+            serve as the ground truth. In this study, the observed NCI is defined as the theoretical carbon
+            intensity calculated via the CEF model using actual historical generation and load data. Forecasting
+            accuracy is measured by the deviation between the predicted NCI and this observed NCI. In Case
+            4-b, the hierarchical design with renewable energy output forecasting is introduced to address this
+            limitation. The orange line “NCI_predict” denotes the NCI forecasting result from ACGD. The
+            results of Case 4-b show that incorporating RES output forecasting within the power grid improves
+            NCI predictive performance, particularly when renewable energy output approaches peak levels.
+            However, this conclusion cannot be easily drawn from visual comparison alone. Appropriate
+            metrics are required to demonstrate the improvement in predictive performance through data-driven
+            comparisons.
+
+                               Table III. Forecasting performance comparison and ablation results across models.
+
+   Models            Hierarchical          DSAM           Agents          MAE        MSE×𝟏𝟎𝟑            RMSE            MAPE     MaxAE
+
+   LSTM                                                               0.02535         1.0233        0.03199         15.123%   0.214
+    GRU                                                               0.02722         1.2148        0.03485         15.087%   0.198
+ CNN+LSTM                                                             0.01988         0.7952        0.02820         13.985%   0.156
+ CNN+GRU                                                              0.02190         0.8928        0.02988         14.492%   0.165
+   CGD*                                                               0.01792         0.6985        0.02643         12.476%   0.132
+   ACGD*                                                              0.01589         0.5963        0.02442         10.954%   0.105
+Agents+ACGD*                                                          0.01396         0.4923        0.02219          9.483%   0.078
+
+             *Rows marked with an asterisk indicate models presented in this work, corresponding to Cases 4-a, 4-b, and 4-c.
+
+                  Furthermore, to provide a more comprehensive experimental evaluation, this study includes
+            three complementary validation perspectives. First, benchmark comparisons are conducted against
+            representative recurrent and hybrid deep learning models, including LSTM, GRU, CNN-LSTM,
+            and CNN-GRU, which are widely used in recent time-series and energy forecasting studies. Second,
+            Case 4-a, Case 4-b, and Case 4-c are structured as an ablation study to separately evaluate the
+            contributions of the hierarchical design and the LLM-based multi-agent mechanism. Third, the
+            noise-injection experiment in Fig. 10 serves as a robustness/sensitivity analysis, where increasing
+            levels of Gaussian white noise are introduced to assess the stability of the proposed framework
+            under uncertain input conditions. Table III reports mean absolute error (MAE), mean squared error
+            (MSE), root mean squared error (RMSE), mean absolute percentage error (MAPE), and maximum
+            absolute error (MaxAE). The results in Table III confirm that our proposed framework achieves the
+            lowest error metrics compared to these models. To validate the effectiveness of two LLM agents in
+            Case 4-c, we utilized Gaussian white noise (𝜀~𝑁(0, 𝜎 )) to simulate random errors and forecast
+            uncertainties. The noise was added to the normalized input features of the ACGD model during the
+            test phase. Moreover, to ensure statistical reliability and avoid randomness, the robustness test at
+            each noise level (10%–50%) was repeated 10 times, and the average performance metric MAPE
+            was reported. In general, as the forecasting period increases, the accuracy of the forecast deteriorates.
+                                                                   25
+This phenomenon can also be observed in the predictive performance during the latter half of the
+time period (18:00-24:00) in Fig. 9. In Case 4-c, to systematically evaluate robustness, gradually
+increasing noise levels (from 10% to 50%) were introduced to the input of ACGD. We then
+conducted a comparative analysis by observing the MAPE of the baseline ACGD versus the agent-
+assisted ACGD. The comparison result is shown in Fig. 10. This experiment can also be regarded
+as a sensitivity analysis with respect to input uncertainty, since it evaluates how the forecasting
+performance changes as the noise level increases. This approach highlights how the intelligent agent
+mechanism mitigates performance degradation under noisy conditions, thereby demonstrating the
+effectiveness of the proposed assistance mechanism in enhancing predictive stability.
+
+                            25
+
+                            20
+
+
+
+                 MAPE (%)
+                            15
+
+                            10
+
+                             5
+
+                             0
+                                     10            20            30             40            50
+                                                            Noise (%)
+                                              Baseline ACGD       Agents-assisted ACGD
+
+
+             Fig. 10. Noise-resilience comparison between baseline ACGD and agent-assisted ACGD.
+
+      Because the objective of this work is not only standalone forecasting accuracy but also
+forecasting-driven carbon response, a multi-criteria trade-off analysis is further conducted in Fig.
+11. Forecasting accuracy is calculated from the normalized error metrics in Table III. The
+iTransformer model [41] is introduced as a state-of-the-art (SOTA) comparator. Robustness is
+evaluated using the relative MAPE degradation under Gaussian noise perturbation. Computational
+efficiency is evaluated using training and inference time under the same hardware platform. RES-
+NCI extensibility reflects whether the model explicitly supports the hierarchical integration of
+renewable generation forecasting into NCI prediction. Carbon-response integration reflects whether
+the model output can be directly coupled with the proposed MESS/DDC spatial-temporal
+scheduling framework.
+
+
+
+
+                             Fig. 11. Multi-criteria trade-off comparison among forecasting models.
+
+
+                                                            26
+     Recent general-purpose time-series forecasting models may achieve very strong point-wise
+accuracy in certain settings. However, the value of Agents+ACGD lies in its task-specific
+integration with carbon-aware power-system operation. Its hierarchical structure explicitly separates
+renewable generation forecasting from downstream NCI forecasting, while the agent-assisted
+workflow improves robustness under input uncertainty. Therefore, the proposed framework offers
+a practical trade-off among forecasting accuracy, computational feasibility, renewable-source
+extensibility, and direct compatibility with spatial-temporal carbon response scheduling.
+
+5. Discussion
+     The simulation results from the modified IEEE 33-bus system demonstrate the effectiveness
+of the proposed ex-ante spatial-temporal carbon response framework in achieving proactive low-
+carbon scheduling. Key findings include significant emission reductions, improved predictive
+accuracy, and reduced response latency. For instance, in Case 3, which incorporates ex-ante NCI
+forecasting and GDL spatial-temporal dispatch, the framework enables MESS2 to pre-schedule
+charging at bus 9 (a low-carbon window around 10:00) and discharging at bus 31 (a high-carbon
+period around 17:00), mitigating the latency inherent in ex-post methods (Case 1, Fig. 6). Similarly,
+DDCs in Case 3 dynamically transfer loads from high-carbon buses (e.g., bus 28 overnight) to
+lower-carbon buses (e.g., bus 15), resulting in a more uniform emission distribution across the
+system (Fig. 8). Overall, the framework achieves more than 30% emission reduction under a one-
+hour latency reduction.
+
+     These results have broader implications for carbon-aware power systems. By shifting from
+reactive ex-post calculations to proactive ex-ante forecasting, the framework aligns demand-side
+actions with fluctuating renewable generation, enhances grid flexibility, and supports carbon market
+mechanisms such as quota trading. The integration of GDLs (MESSs and DDCs) maximizes spatial
+optimization, addressing limitations in temporal-only approaches. Compared with existing ex-post
+carbon accounting and carbon-flow tracing studies, the proposed framework shifts the role of NCI
+from a retrospective analytical metric to a predictive operational signal. This distinction is important
+because it changes the function of carbon information in power systems: instead of being used only
+for post-event assessment or real-time observation, NCI is used here to support proactive day-ahead
+low-carbon scheduling. In addition, compared with prior carbon-aware demand response studies
+that mainly emphasize temporal load shifting, the proposed method further exploits the spatial
+flexibility of GDLs, allowing both MESSs and DDCs to respond to carbon-intensity variations
+across network locations and time periods. From a forecasting perspective, unlike conventional
+CNN-LSTM or CNN-GRU-based models that directly map historical inputs to future carbon signals,
+the proposed hierarchical structure explicitly separates renewable generation forecasting from
+downstream NCI prediction, which improves robustness in high-renewable scenarios. Therefore,
+the value of this work lies not only in improving forecasting accuracy but also in establishing a
+forecasting-driven operational decarbonization framework that better links predictive intelligence
+with practical emission reduction.
+
+     A systematic analysis of the ACGD model’s performance reveals its superiority in handling
+uncertainties. The ablation study (Table III) shows that the full Agents+ACGD model outperforms
+baselines: MAPE is reduced to 9.483%, MSE to 0.4923 × 10 , and MaxAE to 0.078. The
+hierarchical design contributes by decoupling RES uncertainties through Tier-1 ANN forecasting,
+
+                                                  27
+lowering MAPE by 12% compared to CGD (Fig. 9, where errors at peaks P and Q are maximum).
+DSAM further enhances feature and temporal correlations, while the LLM-based multi-agent
+mechanism (data pre-processing and performance evaluation agents) boosts resilience, as evidenced
+by the noise robustness test (Fig. 10): under 50% Gaussian noise, MAPE degradation is limited to
+15% for agent-assisted ACGD vs. 30% for baseline ACGD.
+
+     Compared with prior models such as CNN-LSTM, the ACGD hybrid architecture performs
+well in high-RES scenarios, where renewable fluctuations (e.g., PV peaks at noon) dominate. This
+improvement is attributed to the agents' automated fine-tuning, which adapts to real-time errors and
+makes the model suitable for dynamic environments. The one-hour resolution, although effective
+for day-ahead scheduling, explains minor discrepancies in charging power (e.g., lower at 10:00 in
+ex-ante versus ex-post), highlighting the trade-off between granularity and computational feasibility.
+
+      Although the modified IEEE 33-bus system provides a controlled benchmark for evaluating
+the proposed ex-ante carbon response framework, the current validation remains simulation-based.
+Therefore, the reported emission-reduction performance should be interpreted within this
+benchmark setting. Within this setting, the framework shows promising computational scalability.
+The tested IEEE 33-bus network contains 8760 hourly samples, and the complete training process
+is finished within approximately 35 min on the specified hardware platform. The inference time is
+less than 1 min for each day-ahead forecast, satisfying the practical time-window requirement of
+distribution-level carbon-aware scheduling. For scalability to larger networks, such as IEEE 118-
+bus or utility-scale distribution systems, the hierarchical design allows Tier-1 RES forecasting tasks
+to be processed in parallel. However, larger systems may increase the computational burden because
+of multi-source data alignment, higher-dimensional NCI forecasting, and more complex spatial
+optimization for GDL dispatch. Carbon-reduction performance may also vary with network
+topology, renewable penetration, communication delays, and data quality. Preliminary scaling
+observations suggest that the forecasting component can remain computationally tractable as the
+bus number increases, but distributed computing and more extensive validation would be required
+for systems with more than 100 nodes. Future work will therefore extend the framework to larger
+distribution networks and practical field data with communication delays, imperfect measurements,
+and heterogeneous flexible resources.
+
+      Despite these promising results, the conclusions of this study should be interpreted within the
+scope of the current simulation setting. First, the proposed framework is validated under a day-ahead
+scheduling context with hourly temporal resolution, which limits its ability to capture finer intra-
+hour carbon fluctuations and faster operational responses. Second, the forecasting framework
+assumes the availability of relatively complete and well-aligned electricity and weather data,
+whereas data quality and accessibility may be more challenging in practical applications. Third, the
+present study focuses on two representative types of GDLs, namely MESSs and DDCs, and their
+operational models are simplified for the system-level analysis in this paper. In addition, although
+the framework shows promising computational performance on the modified IEEE 33-bus system,
+its scalability and effectiveness in larger or more heterogeneous networks still require further
+validation. Finally, the integration of LLM-based agents improves workflow adaptability, but issues
+related to interpretability and sensitivity to model configuration remain worthy of further
+investigation.
+
+                                                 28
+     Future work will focus on extending the framework in several directions. One important
+direction is to develop finer-resolution forecasting and dispatch strategies to better address short-
+term carbon fluctuations and dispatch latency. Another is to incorporate broader classes of flexible
+loads, such as EV fleets, 5G base stations, and other distributed flexible resources, to further explore
+spatial-temporal carbon response potential. It would also be valuable to validate the proposed
+framework in larger-scale distribution systems and more diverse operating environments and to
+investigate more realistic deployment settings with imperfect data, communication delays, and
+practical operational constraints.
+
+6. Conclusion
+  This paper proposes an ex-ante low-carbon response framework for spatial-temporal integrated
+systems based on the ACGD carbon-intensity prediction model. The framework combines day-
+ahead NCI forecasting with the proactive low-carbon response of GDLs, including MESSs and
+DDCs, to support carbon-aware demand-side scheduling. Case studies on the modified IEEE 33-
+bus system show that ex-ante scheduling can reduce the lag associated with ex-post NCI calculation,
+while spatial-temporal carbon response can further improve system-level emission reduction
+performance. Under the considered simulation setting, the proposed framework achieves more than
+30% emission reduction when one-hour scheduling latency is mitigated. The limitations of this
+research include the restriction of finer scheduling by the one-hour resolution, sensitivity to
+hyperparameters, and remaining interpretability issues associated with LLM-based agents. Future
+work should develop mathematical models of dispatch latency, use adaptive feedback to achieve
+finer resolution, incorporate additional GDLs (e.g., 5G base stations or EV fleets), and extend the
+framework to larger systems or multi-region carbon trading settings. Overall, this work provides a
+promising forecasting-driven framework for proactive carbon-aware scheduling and offers useful
+insights for the further development of intelligent demand-side carbon management.
+
+References
+
+[1] A. Slameršak, G. Kallis, and D. W. O’Neill, “Energy Requirements and Carbon Emissions for
+    a Low-Carbon Energy Transition,” Nat. Commun., vol. 13, no. 1, p. 6932, Nov. 2022.
+[2] U. N. E. Programme, We are All in this Together-Annual Report 2024, Feb. 2025. [Online].
+    Available: https://wedocs.unep.org/20.500.11822/47082
+[3] DCCEEW, National Greenhouse Gas Inventory Quarterly Update: March 2022, Aug. 2022.
+    [Online].     Available:     https://www.dcceew.gov.au/climatechange/publications/national–
+    greenhouse–gas–inventory–quarterly–update–march–2022.
+[4] Congressional Budget Office, “Emissions of Carbon Dioxide in the Electric Power Sector,”
+    Congressional Budget Office, D.C., USA, Dec. 2022.
+[5] L. Xu, et al., “Resilience of renewable power systems under climate risks,” Nature Reviews
+    Electr. Eng. 1, 53–66, 2024.
+[6] Y. Wang, J. Qiu, Y. Tao, and J. Zhao, “Carbon-Oriented Operational Planning in Coupled
+    Electricity and Emission Trading Markets,” IEEE Trans. Power Syst., vol. 35, no. 4, pp. 3145–
+    3157, Jul. 2020.
+[7] M. Ma, et al., “Calculating Probabilistic Carbon Emission Flow: An Adaptive Regression-
+    Based Framework,” IEEE Trans. Sustain. Energy, vol. 15, no. 3, pp. 1576–1588, Jul. 2024.
+                                                  29
+[8] Z. Lu, L. Yan, J. Wang, C. Kang, M. Shahidehpour, and Z. Li, “A Market-Clearing-Based
+     Sensitivity Model for Locational Marginal and Average Carbon Emission,” IEEE Trans.
+     Energy Markets, Policy Regulat., vol. 2, no. 4, pp. 579–582, Dec. 2024.
+[9] M. Farhoumandi, F. Aminifar, and M. Shahidehpour, “Generation Expansion Planning
+     Considering the Rehabilitation of Aging Generating Units,” IEEE Trans. Smart Grid, vol. 11,
+     no. 4, pp. 3384–3393, Jul. 2020.
+[10] Z. Zeng, T. Ding, Y. Xu, Y. Yang, and Z. Dong, “Reliability Evaluation for Integrated Power-
+     Gas Systems with Power-to-Gas and Gas Storages,” IEEE Trans. Power Syst., vol. 35, no. 1,
+     pp. 571–583, Jan. 2020.
+[11] Z. Yan, et al., “Bi-Level Carbon Trading Model on Demand Side for Integrated Electricity-
+     Gas System,” IEEE Trans. Smart Grid, vol. 14, no. 4, pp. 2681–2696, Jul. 2023.
+[12] C. Li, Z. Yan, Y. Yao, Y. Deng, C. Shao, and Q. Zhang, “Coordinated Low-Carbon
+     Dispatching on Source-Demand Side for Integrated Electricity-Gas System Based on
+     Integrated Demand Response Exchange,” IEEE Trans. Power Syst., vol. 39, no. 1, pp. 1287–
+     1303, Jan. 2024.
+[13] C. Kang, et al., “Carbon Emission Flow from Generation to Demand: A Network-Based
+     Model,” IEEE Trans. Smart Grid, vol. 6, no. 5, pp. 2386–2394, Sep. 2015.
+[14] C. Kang, et al., “Key Scientific Problems and Research Framework for Carbon Perspective
+     Research of New Power Systems,” Power Syst. Technol., vol. 46, no. 3, pp. 821–833, 2022.
+[15] A. Radovanovic, et al., “Carbon-Aware Computing for Datacenters,” arXiv preprint
+     arXiv:2106.11750, 2021.
+[16] WattTime, “Automated Emissions Reduction (AER) methodology,” WattTime, Oakland, CA,
+     USA, Tech. Rep., 2022. [Online]. Available: https://www.watttime.org
+[17] Y. Wang, J. Qiu, and Y. Tao, “Optimal Power Scheduling Using Data-Driven Carbon Emission
+     Flow Modelling for Carbon Intensity Control,” IEEE Trans. Power Syst., vol. 37, no. 4, pp.
+     2894–2905, Jul. 2022.
+[18] T. Hong, P. Pinson, Y. Wang, R. Weron, D. Yang, and H. Zareipour, “Energy Forecasting: A
+     Review and Outlook,” IEEE Open Access J. Power Energy, vol. 7, pp. 376–388, 2020.
+[19] N. Chen, et al., “Intelligent Wireless Tool Wear Monitoring System Based on Chucked Tool
+     Condition Monitoring Ring and Deep Learning,” Adv. Eng. Inform., 65, 103176, May. 2025.
+[20] Z. Gao, N. Chen, and L. Li, “A Novel Algorithm for Tool Wear Monitoring Utilizing Model
+     and Knowledge-Guided Multi-Expert Weighted Adversarial Deep Transfer Learning,” Mech.
+     Syst. Signal Process., 228, 112456, Apr. 2025.
+[21] D. Maji, P. Shenoy and R. K. Sitaraman, “Carboncast: Multi-Day Forecasting of Grid Carbon
+     Intensity,” in Proc. 9th ACM Int. Conf. Syst. Energy-Efficient Buildings, Cities, Transportation
+     (BuildSys), pp. 198–207, 2022.
+[22] Z. Zhou, L. Yu, Y. Wang, Y. Tian, and X. Li, “Innovative approach to daily carbon dioxide
+     emission forecast based on ensemble of quantile regression and attention BILSTM,” J. Clean.
+     Prod., vol. 460, 142605, 2024.
+[23] B. Zhao and W. Yang, “Carbon emissions forecasting based on a new hybrid model under
+     carbon reduction target: a case study of eastern region in China,” J. Clean. Prod., vol. 494,
+     144957, 2025.
+[24] J. Achiam, et al., “Gpt-4 Technical Report,” arXiv preprint arXiv:2303.08774, 2023.
+
+
+                                                 30
+[25] H. Touvron, et al., “Llama: Open and Efficient Foundation Language Models,” arXiv preprint
+     arXiv:2302.13971, 2023.
+[26] Y. Cheng, X. Zhou, H. Zhao, J. Gu, X. Wang, and J. Zhao, “Large Language Model for Low-
+     Carbon Energy Transition: Roles and Challenges,” in 2024 4th Power System and Green
+     Energy Conference (PSGEC), Shanghai, China, pp. 810–816, 2024.
+[27] S. Li, J. Lai, H. Li, W. Tang, Y. Xue, and H. Jiang, “CarbonGPT: meta causal graph-enhanced
+     large language models for carbon emission forecasting in large-scale power distribution
+     networks,” IEEE Trans. Smart Grid. Early access: Feb. 03, 2026, doi:
+     10.1109/TSG.2026.3660905.
+[28] X. Lu, J. Qiu, Y. Yang, C. Zhang, J. Lin, and S. An, “Large Language Model-Based Bidding
+     Behavior Agent and Market Sentiment Agent-Assisted Electricity Price Prediction,” IEEE
+     Trans. Energy Markets, Policy Regulat., vol. 3, no. 2, pp. 223–235, Jun. 2025.
+[29] M. I. Jordan and T. M. Mitchell, “Machine Learning: Trends, Perspectives, and Prospects,”
+     Science, vol. 349, no. 6245, pp. 255–260, 2015.
+[30] A. Bochkovskiy, C.-Y. Wang, and H.-Y. M. Liao, “Yolov4: optimal speed and accuracy of
+     object detection,” arXiv Preprint arXiv:2004.10934, 2020.
+[31] J. Ruan, et al., “Deep learning for cybersecurity in smart grids: review and perspectives,”
+     Energy Convers. Econ., vol. 4, no. 4, pp. 233–251, Aug. 2023.
+[32] Y. Liu, Y. Su, S. Zhang, V. Terzija, and Z. Cheng, “Application of deep learning image
+     recognition for lithium battery state of health assessment,” Energy Convers. Econ., vol. 6, no.
+     4, pp. 246–255, Jul. 2025.
+[33] Y. Qin, D. Song, H. Chen, W. Cheng, G. Jiang, and G. Cottrell, “A dual-stage attention-based
+     recurrent neural network for time series prediction,” arXiv preprint arXiv:1704.02971, 2017.
+[34] Y. Yang, J. Qiu and C. Zhang, “Distribution Network Planning Towards a Low-Carbon
+     Transition: A Spatial-Temporal Carbon Response Method,” IEEE Trans. Sustain. Energy, vol.
+     15, no. 1, pp. 429–442, Jan. 2024.
+[35] M. Chen, et al., “Aggregated Model of Data Network for the Provision of Demand Response
+     in Generation and Transmission Expansion Planning,” IEEE Trans. Smart Grid, vol. 12, no. 1,
+     pp. 512–523, Jan. 2021.
+[36] M. Chen, C. Gao, M. Shahidehpour and Z. Li, “Incentive-Compatible Demand Response for
+     Spatially Coupled Internet Data Centers in Electricity Markets,” IEEE Trans. Smart Grid, vol.
+     12, no. 4, pp. 3056–3069, Jul. 2021.
+[37] G. He, J. Michalek, S. Kar, Q. Chen, D. Zhang, and J. F. Whitacre, “Utility-Scale Portable
+     Energy Storage Systems,” Joule, vol. 5, no. 2, pp. 379–392, 2021.
+[38] Australian Energy Market Operator (AEMO) [Online]. Available: http://www.aemo.com.au/
+[39] Australian Government Bureau of Meteorology [Online]. Available: http://www.bom.gov.au/
+[40] Y. Yang, J. Qiu, C. Zhang, J. Zhao and G. Wang, “Flexible Integrated Network Planning
+     Considering Echelon Utilization of Second Life of Used Electric Vehicle Batteries,” IEEE
+     Trans. Transp. Electrif., vol. 8, no. 1, pp. 263–276, Mar. 2022.
+[41] Y. Liu, et al., “itransformer: Inverted transformers are effective for time series forecasting,” in
+     Proc. 12th Int. Conf. Learn, Represent. (ICLR), Vienna, Austria, May 7–11, 2024.
+
+
+
+
+                                                  31
+

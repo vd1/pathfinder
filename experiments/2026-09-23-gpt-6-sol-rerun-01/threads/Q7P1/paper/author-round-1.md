@@ -1,0 +1,7 @@
+Round 1 is complete: [paper.tex](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q7P1/paper/paper.tex), [references.bib](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q7P1/paper/references.bib), and the [PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q7P1/paper/paper.pdf) are in `paper/`.
+
+The paper shows that an exact fixed-batch CVaR surrogate equilibrium can fail true-risk participation despite strong curvature. It gives conditional bounds for incentives, participation and separable-risk welfare, while keeping strategic learning convergence open.
+
+I recorded eight targeted queries in [search.md](/Users/v/Code_2026/pathfinder/experiments/2026-09-23-gpt-6-sol-rerun-01/threads/Q7P1/paper/search.md). [Wang et al.](https://arxiv.org/abs/2403.10399) already establish the loss-of-uniqueness step, and [Cherukuri](https://doi.org/10.1007/s11590-023-01996-9) studies sample-based CVaR equilibrium error; the paper acknowledges both.
+
+`latexmk` built the three-page PDF successfully. I checked its rendering and found no undefined citations or build warnings. Style gates passed with source line-length warnings only.

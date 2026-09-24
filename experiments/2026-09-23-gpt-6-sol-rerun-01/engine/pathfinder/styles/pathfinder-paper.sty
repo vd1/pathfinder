@@ -1,0 +1,18 @@
+% pathfinder-paper: the reviewed paper written from a DRAFT thread, for referees.
+% The full article apparatus: numbered sections and theorems, an abstract, a bibliography.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{pathfinder-paper}[2026/09/13 Pathfinder paper]
+\RequirePackage{pathfinder-common}
+\renewcommand{\pathfinder@kind}{Pathfinder paper}
+\definecolor{pathfinder@ink}{HTML}{C23A2B}
+\setcounter{secnumdepth}{2}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\renewenvironment{abstract}{\noindent\small\begin{quotation}\noindent\textbf{Abstract.}\ }{\end{quotation}\medskip}

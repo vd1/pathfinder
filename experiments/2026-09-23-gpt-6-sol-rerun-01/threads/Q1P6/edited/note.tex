@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What comparison-based reward shaping can tell us about learning with predictions}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note reads a survey of learning-augmented algorithms alongside a method that uses visual comparisons to shape rewards for cooperating agents. We looked for a useful guarantee linking comparison error to the quality or cost of learning. The shaping rule preserves ideal policy choices under its stated boundary conditions, while a small example shows that accurate contribution rankings need not reduce gradient noise. A critic with an explicit potential offset also makes the proposed shaping disappear from matched MAPPO updates. The thread paused because the supplied work does not establish what causes the reported finite-training gains or whether they repay the cost of comparison queries.
+\end{abstract}
+
+\section{Introduction}
+
+Q is a survey of algorithms that take predictions as advice while retaining a performance guarantee. It distinguishes performance with accurate predictions, protection against poor ones, and the change in performance as prediction error grows. It also asks analysts to count the time or money spent obtaining predictions. These guarantees need a stated decision objective, benchmark, and measure of error \cite{Q}.
+
+P studies cooperative agents that receive sparse shared rewards. Its MARS-RA method asks a large multimodal model to compare agents' visual observations, fits Bradley--Terry scores to the pairwise judgements, and turns the scores into a potential that shapes the reward used in training. P reports better task success in its experiments and uses multi-agent proximal policy optimisation (MAPPO) with generalised advantage estimation (GAE) \cite{P}.
+
+The connection pursued was whether Q's language of consistency, robustness, and prediction cost could explain P's response to mistaken comparisons. The peers first checked what P's guarantee measures. They then asked whether comparison quality could affect the final policy at all under exact shaping, and moved to the narrower question of finite-training progress per comparison query.
+
+\section{What was done}
+
+The first check separated three possible targets for comparison accuracy. P's statistical proposition concerns estimated scores relative to a latent preference attributed to the multimodal model. Its Shapley interpretation, where a Shapley value means an agent's average marginal contribution to a coalition, assumes that this latent preference already equals the Shapley values. P's experimental accuracy measure instead uses agreement with dense task rewards. The record supplies no equivalence between these targets \cite{P}.
+
+Next, the peers checked the shaping rule directly. For one agent, let \(r_t\) be its original reward at step \(t\), \(\psi_t\) its realised pre-action potential, \(\gamma\) the discount factor, and \(\rho\) the shaping weight. P adds \(\rho(\gamma\psi_{t+1}-\psi_t)\) to \(r_t\). Over an episode ending at \(T\), with \(\psi_T=0\), the added rewards cancel:
+\[
+\sum_{t=0}^{T-1}\gamma^t\bigl[r_t+\rho(\gamma\psi_{t+1}-\psi_t)\bigr]
+=\sum_{t=0}^{T-1}\gamma^t r_t-\rho\psi_0.
+\]
+At a fixed initial condition, and with the same realised potential reused at each boundary, comparison outcomes therefore do not yield a useful error-dependent guarantee for the return of an exactly optimised policy. The peers then looked for an effect on learning before optimisation is complete; Ada's derivation records the boundary conditions in detail.
+
+They considered a one-step policy-gradient model. For agent \(i\), let \(h_i\) be its history before acting, \(a_i\) its sampled action, \(\pi_i\) its policy, \(g_i=\nabla\log\pi_i(a_i\mid h_i)\) its policy score, and \(R\) the team reward. If a comparison produces a baseline \(b_i\) before the action is sampled, and the baseline is conditionally independent of that action, \(g_i(R-b_i)\) has the same expected gradient as \(g_iR\). Its conditional second moment is smallest at
+\[
+b_i^*=\frac{\mathbb E[R\lVert g_i\rVert^2\mid h_i]}
+{\mathbb E[\lVert g_i\rVert^2\mid h_i]}.
+\]
+Here \(b_i^*\) is the variance-relevant target, provided the denominator is positive. For a random action-independent baseline, the excess second moment is \(\mathbb E[\lVert g_i\rVert^2\mid h_i]\mathbb E[(b_i-b_i^*)^2\mid h_i]\). Ada derived this conditional identity; Emmy and Ada checked the example below. Prior work already studies optimal policy-gradient baselines \cite{greensmith2004,settling2021}.
+
+Finally, the peers returned to P's actual MAPPO and GAE setup. Let \(U_t\) be any unshaped critic estimate, and define the shaped critic by the explicit offset \(V_t^\psi=U_t-\rho\psi_t\). If rewards and critic use the same stored potentials, their temporal-difference residual satisfies
+\[
+\delta_t^\psi=r_t+\rho(\gamma\psi_{t+1}-\psi_t)
++\gamma V_{t+1}^\psi-V_t^\psi
+=r_t+\gamma U_{t+1}-U_t.
+\]
+This is an algebraic identity for any parameters of \(U_t\); it does not require an exact critic. With matching rollout bootstraps and value targets, GAE advantages and value-loss residuals match too. Ada checked the extension in the ledger. Related multi-agent work already studies potential-based difference rewards \cite{li2022}.
+
+\section{Results}
+
+The cancellation results delimit the possible claim. Under terminal zero potential, consistent potential reuse, fixed agent coordinates, and matched bootstraps, ideal policy choice is unaffected, and an explicit-offset MAPPO control has the same actor and critic updates as its unshaped counterpart. The control would still pay for any comparison queries. These are conditional identities, not an account of P's implementation or a new training guarantee.
+
+The one-step model shows why ranking accuracy is an insufficient learning metric. Emmy used two agents, with team reward equal to the first agent's Bernoulli action, whose probability of being one is \(0.9\). The first agent's Shapley value is \(0.9\), but its variance-minimising baseline is \(0.1\). With shaping weight one, softmax of the correct contribution scores gives a baseline of about \(0.711\) and excess gradient second moment about \(0.0336\). Reversing the scores gives about \(0.289\) and \(0.0032\), respectively. Ada independently checked the arithmetic. Thus even the correct Shapley order can give more one-step gradient noise than the wrong order. This example does not establish a result for MAPPO.
+
+P reports that training for 50 million environment steps took 30 hours for MARS-RA and 16 hours for MAPPO in its setup. It also reports a marked effect of the shaping weight on task success \cite{P}. Those observations make Q's query-cost question concrete, but do not identify whether the benefit comes from critic approximation, optimisation, or a boundary detail. Active preference-query research is relevant background, not evidence that this particular query policy works \cite{active2025}.
+
+\section{Objections and open points}
+
+Emmy raised a separate problem with P's finite-error proposition for its unregularised Bradley--Terry estimator. A connected comparison graph need not give a finite maximum-likelihood estimate. In her three-agent example, all latent scores are equal and each pair receives two independent fair judgements. The graph is complete, yet with probability \(3/16\) some agent wins every judgement involving it, making its fitted score diverge. This exceeds the proposition's stated failure allowance of \(1/9\). P's proof sketch invokes regularised estimation, while its displayed estimator is unregularised. The supplied record does not settle this gap \cite{P}.
+
+More comparisons may reduce sampling error around the model's latent preference, but they cannot remove a systematic difference between that preference and task contribution. Nor does the one-step baseline identity give a MAPPO sample-complexity result. The record does not establish whether P reuses identical potentials at boundaries, how it handles changing active-agent sets, or how its critic and truncated rollouts treat the offset. These points determine whether the exact cancellation applies to its training code.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread after one round. The algebra and the estimator objection were supported, but they did not produce a new finite-training result for this pair. The smallest discriminating next step is a paired MAPPO run with an explicit-offset critic, identical stored potentials and bootstraps, and measurements of GAE updates, success, query count, and performance at equal wall-clock time against standard MARS-RA and no shaping. The supplied material contains no such run or implementation audit.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

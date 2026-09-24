@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Rank-based credit and incentives in open teams}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies how to induce AI agents to report private information truthfully and follow instructions, while P assigns credit to cooperating agents by comparing their images. The thread asked whether Q's incentive results apply to P's ranking method. The peers found that P's shaping reward leaves exact discounted incentives unchanged when every transition is credited, but that selective credit can leave a participation-boundary term. P does not state the inactive-agent reward bookkeeping needed to tell which case its implementation follows. The verifier therefore paused the thread pending a recorded reward ledger or implementation details.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Mechanism Design for Alignment and Control}, treats an AI agent's preferences and capabilities as private information. It asks how a designer can reward the agent so that it reports its type truthfully and then takes the recommended action. A false report followed by a different action is one deviation the mechanism must deter. Q gives conditions for doing this, including a peer-scoring construction that uses what agents' reports reveal about one another \cite{Q}.
+
+P, \emph{MARS-RA}, addresses a different problem: how to assign credit when a team of embodied agents receives shared feedback. An external multimodal model compares the agents' camera views in pairs. A Bradley--Terry model turns those comparisons into scores, which P uses to shape training rewards. Its benchmark allows agents to leave when their batteries run out and later return \cite{P}.
+
+The thread first asked whether Q's results make P's credit assignment robust to strategic behaviour. That broad link failed because P does not ask agents to report their types. The narrower question was whether P's rank-based shaping changes an agent's incentive to act, especially across exit and re-entry.
+
+\section{What was done}
+
+The peers first compared what the two papers actually reward. They found that Q tests honesty and obedience together, whereas P obtains comparisons from an external model of images. They then examined P's shaping formula over a complete episode. Both peers independently found that its terms cancel when the same agent's potential is used consistently and every transition is credited \cite{Q,P}.
+
+They next checked the open-team case. P scores only active agents, skips comparisons with fewer than two active agents, and allows battery-driven absence and return. The peers therefore introduced a fixed coordinate for each agent and a marker for whether that agent receives shaping on each transition. They derived the remaining terms when some transitions receive no credit. An early exit example used a generic payment pattern; the peers corrected it because it did not fit the natural convention of zero potential while inactive. Their later entry example did fit that conditional convention. They also checked the scope of P's statistical robustness claim and Q's peer-scoring assumptions. The derivation and proposed test are recorded in the peers' check in \texttt{ada/pair\_note.md} and in the thread ledger.
+
+\section{Results}
+
+Fix an agent \(i\) and an episode of \(T\) transitions. Let \(\gamma\) be the discount factor and \(\psi_t^i\) that agent's rank-derived potential at time \(t\). P sets the terminal potential \(\psi_T^i\) to zero and uses the shaping term \(F_t^i=\gamma\psi_{t+1}^i-\psi_t^i\) \cite{P}. If the same value of \(\psi_t^i\) is used in its two neighbouring terms and every transition is credited, then
+\[
+\sum_{t=0}^{T-1}\gamma^t F_t^i
+=-\psi_0^i+\gamma^T\psi_T^i
+=-\psi_0^i.
+\]
+If the initial potential is fixed before the agent can deviate, this is the same offset for every course of action. Thus this shaping term alone cannot change exact discounted payoff differences between unilateral deviations. It does not supply Q's incentive for truthful reports or obedient actions. P's observed training effects can still arise because intermediate feedback affects learning over a finite training run.
+
+For selective credit, let \(m_t^i\) be one when transition \(t\) credits agent \(i\) with shaping and zero otherwise. With a fixed agent coordinate and consistent potential values, the peers obtained
+\[
+\sum_{t=0}^{T-1}\gamma^t m_t^i F_t^i
+=-m_0^i\psi_0^i
++\sum_{t=1}^{T-1}\gamma^t(m_{t-1}^i-m_t^i)\psi_t^i.
+\]
+The second term records changes in credit at participation boundaries. For example, take two transitions, with no credit on the first and credit on the second. If the potentials at the start and finish are zero and the potential on entry is \(q>0\), the credited shaping sum is \(-\gamma q\). The omitted entry payment would have cancelled it. This is a possible boundary effect under the stated accounting rule. A higher entry rank lowers the sum in this example; it does not show profitable rank inflation. P does not say whether its implementation uses this rule \cite{P}.
+
+P's comparison result concerns estimation of a stable underlying Bradley--Terry preference from noisy comparisons \cite{P}. The peers noted that, in a two-agent case, repeated comparisons would estimate a systematically changed comparison probability if visible cues changed that probability. More queries would reduce sampling error around the changed target. Whether an agent can change such cues without making a useful contribution was left untested.
+
+\section{Objections and limits}
+
+The peers rejected the claim that P already elicits strategic reports or that Q certifies its robustness. Q's peer-scoring construction needs distinct beliefs about other agents' types, report-contingent scores and sufficiently strong rewards. P supplies none of these as part of its ranking method \cite{Q,P}. The corrected entry example also settled an overstatement in the first boundary argument: it shows an accounting term, not an exploitable defect. The papers and peer checks do not establish P's actual reward delivery during inactivity, a controllable way to manipulate image-based rank, or a practical bounded transfer satisfying Q's incentive conditions.
+
+\section{Why the thread stopped}
+
+The verifier accepted the two accounting identities and their conditional reading. It paused because P does not specify how inactive-agent potentials and rewards are recorded, so the material cannot show that the boundary term appears in MARS-RA or changes behaviour. The smallest restart step is to inspect P's implementation or a recorded reward ledger for one exit and re-entry trajectory, place its potentials in fixed agent coordinates, and check the discounted sum. That would decide whether the proposed connection applies to P's actual reward bookkeeping.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}
