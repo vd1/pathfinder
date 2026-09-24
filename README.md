@@ -95,7 +95,11 @@ shortlist.json     the frozen cut, with a digest of scan.jsonl
 receipts.jsonl     one line per attempted model call, failures included; the only
                    source of spend figures (see Receipts below)
 stop.json          present while a stop is requested
-health.json        present while admissions are paused after transport failures
+health.json        first operational failure of the latest research run
+runner.json        run identity, PID, scheduler heartbeat, last completed investigation
+runner.lock        OS-held research-runner lock; file existence is not ownership
+active-calls/      per-attempt identity, owner/child PIDs, start time and nominal deadline
+failures.jsonl     append-only runner failure records, retained across restarts
 threads/<pair>/    inputs/, ledger.jsonl, ada/, emmy/, <pair>.tex,
                    <pair>.verdict.json, status.json, lock
 threads/<pair>/paper/   paper.tex, references.bib, paper.pdf, search.md,
@@ -163,11 +167,109 @@ your own campaign directory and edit the models and the budget.
   session and whose cost is unknown, must stay under `budget_usd`, otherwise it writes the stop marker itself.
 - A call that produces no session within 60 seconds, plus a second per
   5 KB of prompt, is a transport failure, and so is an agent CLI that cannot
-  be launched: a receipt with no usage and no cost, the thread is marked stopped. Two in a row set `health.json`;
-  admissions pause until a probe call succeeds.
+  be launched: a receipt with no usage and no cost, the thread is marked stopped.
+  Session-started timeouts also count as operational failures. The first failure
+  observed by the research scheduler sets `health.json`, stops admissions, and
+  drains active work before exiting nonzero. There are no automatic health probes.
+  Editor failures propagate too; terminal research with unfinished editing stays
+  pending. An explicit `research` invocation resumes it without repeating research.
+  The previous failure remains in `failures.jsonl` and the new run's metadata.
 - Threads are locked by a pid file. `pathfinder reconcile [pair]` names the
   one safe action for a thread (start, resume peers, run consolidate, run
   verify, or nothing) and `--apply` performs it.
+
+### Five-minute supervising-agent audit
+
+Run `uv run pathfinder --root CAMPAIGN health --json` at each audit, or omit
+`--json` for a short human-readable view. This command is read-only. It exposes
+the research runner's identity and heartbeat, active model calls with exact
+pair/stage/actor and child PID, nominal deadlines, last successful call,
+completed-investigation progress, unfinished editing, and recent errors with
+paths to the evidence. Compare snapshots: a heartbeat or a completed model call
+does not establish scientific progress. Repeated calls on the same stage can
+still indicate a livelock. Old campaigns without instrumentation report unknown
+runner liveness rather than healthy status.
+
+The supervising Astra agent owns diagnosis, intervention, and the incident
+ledger. The optional session-local timer below supplies its clock; nothing is
+installed as a permanent service. At each
+audit, inspect warnings and changes since the previous snapshot. A missing PID,
+heartbeat older than five minutes, or overdue call is evidence for investigation,
+not an instruction to kill a process. PID reuse, slow tools, and host suspension
+can complicate interpretation. The deadline is the requested call allowance;
+the existing transport's startup and cleanup can overrun it. The audit exposes
+that overrun rather than promising a hard termination bound.
+
+After a confirmed crash, inspect orphaned calls and any surviving child processes
+before restarting. The research runner uses an exclusive OS lock, released on
+process death, and refuses restart while recorded call owner or child PIDs remain
+alive. Do not remove an active-call record to bypass this check. Descendants and
+PID identity still require operator inspection before termination or restart.
+Standalone `edit`, `paper`, and `reconcile --apply` commands retain their existing
+coordination rules; do not run them concurrently with a research runner.
+
+Record each intervention in the supervising agent's incident ledger: campaign
+and run ID, detection time, evidence paths, observed versus suspected cause,
+action taken, and the later evidence that progress resumed. `failures.jsonl`
+records runtime errors, not the agent's diagnosis. Clear an operator stop with
+`stop --clear` only when resumption is intended, then run `research` explicitly.
+No five-minute audit schedule is enabled merely by adding this command.
+
+### Campaign-scoped supervision session
+
+From this checkout, launch the runner and its timer together:
+
+```sh
+uv run python -m pathfinder.supervise \
+  --root /absolute/path/to/campaign \
+  --scope 'Research and readable editing for the selected pairs' \
+  --resume-command 'uv run pathfinder --root /absolute/path/to/campaign research' \
+  -- uv run pathfinder --root /absolute/path/to/campaign research
+```
+
+The start command follows `--`. The resume command is parsed as arguments and
+executed without a shell. For a campaign that includes author/reviewer stages,
+supply its full pipeline launcher and resume command and name those stages in
+`--scope`; research completion alone is not full pipeline completion. Preserve
+a frozen experiment's launcher and engine rather than substituting this example.
+
+The timer is a foreground process for this campaign session, not a desktop task,
+cron job, or installed service. It launches GPT-6 Astra through
+[Codex non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
+at five-minute intervals, with an earlier audit when its original runner exits.
+Each audit receives saved snapshots and process evidence; the incident ledger
+carries context between audit invocations. Audits are serial, missed ticks are
+skipped, and the timer ends when Astra reports completion or needs operator input.
+It refuses a completion report that conflicts with a recorded live runner/call.
+
+Keep the terminal session and Mac available. `--interval` defaults to 300 seconds,
+`--audit-timeout` to 240 seconds, and `--hours` to a six-hour session ceiling.
+These limits bound the timer's activity, not model billing. A timed-out or failed
+audit ends supervision visibly; it does not kill the campaign runner. Ctrl-C
+requests a campaign stop and ends the timer; active work may still be draining.
+A killed timer or sleeping host does not provide an independent watchdog.
+
+Evidence lives under `supervision/`: `latest-session.json`, a session directory
+with runner logs and state, per-audit before/after snapshots, filtered process
+evidence, agent event logs and structured results, and `incidents.jsonl` written
+by Astra. A campaign-level timer lock prevents overlapping supervision sessions.
+The audit stays sandboxed. If the timer cannot obtain process evidence, or the
+audit lacks permission to perform a safe recovery, it must ask the operator.
+
+The reusable audit instructions are in [prompts/supervisor.md](prompts/supervisor.md).
+Assign the campaign directory and its documented resume command when creating
+the task. The [scheduled-task documentation](https://learn.chatgpt.com/docs/automations?surface=app)
+places task management in the desktop app or web, not the Codex CLI. A task
+auditing local campaign files needs access to this checkout and those files.
+
+For an isolated recovery drill, `tests/supervision_trial.py` accepts `prepare`,
+`crash`, or `resume`, followed by an empty test directory for preparation or the
+prepared directory thereafter. The drill runs the real research scheduler with
+a deterministic editor double: `crash` exits the runner with code 23 during
+editing, and `resume` finishes only that fixture stage. It produces no scientific
+result or model calls. An agent audit can diagnose the failure and record an
+incident before invoking resume. This proves neither recurring task delivery
+nor recovery of an arbitrary infrastructure fault.
 
 ## Receipts
 

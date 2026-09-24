@@ -1,0 +1,133 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When a Scored Forecast Becomes Advice}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies how rewards can make agents report private information and follow a chosen plan, while P studies
+language-model agents whose messages and actions consume a finite energy budget. The thread asked whether Q's
+peer scoring could govern P's public discussion, then focused on forecasts of a peer's next action. A simple
+calculation showed that a proper score can favour extreme forecasts if showing the forecast changes the action
+being scored, but this is a conditional example rather than a finding about P. The peers also found that Q's
+assumptions do not hold as stated in P and that the scoring problem has prior work. The verifier paused the
+thread because no intervention had shown an action effect or a gain after communication and scoring costs.
+\end{abstract}
+
+\section{Introduction}
+
+Bergemann, Koh and Morris's Q asks how to direct agents when their preferences and abilities are private
+\cite{Q}. Its peer-scoring result uses what an agent knows about other agents' fixed, private types. Under a
+known link between each type and its beliefs about the others, the designer can reward accurate reports and
+make departures from a chosen action plan unattractive. The paper treats free, unbounded rewards as a
+benchmark, rather than a feature of every practical setting.
+
+Hansen and coauthors' P puts language-model agents in a small survival economy \cite{P}. Each agent spends
+energy to generate tokens and can attempt a job, donate energy, or idle. Successful agents share a job's
+reward if they attempt the same job. Before choosing actions, agents publicly recommend actions to one
+another. Those recommendations are optional, and producing them costs energy. An agent that runs out of energy
+stops acting unless another agent donates to it.
+
+The thread first considered putting Q's peer discipline into P's discussion phase. The central difference soon
+became clear. Q scores reports about types that exist before reporting. P's public recommendations concern
+actions that peers choose after seeing them. The question therefore narrowed to a scored forecast of a peer's
+next action: would disclosure help elicit information, or change the outcome against which the forecast is
+scored?
+
+\section{What was done}
+
+The peers first checked Q's assumptions against P's rules. Q requires different supported types to imply
+different beliefs about other agents' types. It also uses the reported type to cancel an agent's utility, very
+large score rewards, and an unbounded penalty for actions or reports outside the intended set \cite{Q}. P
+gives agents finite energy and charges for the messages that would carry a report \cite{P}. P does not
+establish the private, correlated type structure or the known belief map that Q needs. Its competitive and
+cooperative conditions change agents' prompted objectives, rather than installing Q's reward schedule.
+
+They then examined P's evidence for problematic advice. Competitive agents more often recommended that several
+peers attempt the same job, but P says such duplicate recommendations can be reasonable \cite{P}. The peers
+consequently treated these observations as a reason to test influence, not as evidence of deception. They also
+ruled out two broader links: P has no capability evaluation that determines later permissions, as Q's
+sandbagging example requires; and P's discrete actions do not meet the continuous-action and known-bias
+conditions of Q's coupled-reward result \cite{Q,P}.
+
+The work next turned to the scoring calculation below. A first version used one coordinate of a quadratic
+score. The peers corrected it to Q's full binary score, since dropping an outcome-dependent term can change
+incentives when the report affects the outcome. They then checked the experiment's timing. If agents know a
+forecast might be shown, a forecast hidden by a later random draw is still chosen under possible-disclosure
+incentives. A separate, preannounced private-only regime is needed for that comparison. The last revision
+added energy accounting: fewer job collisions by themselves do not show a gain when communication and payments
+use scarce resources.
+
+\section{Results}
+
+Q's scoring argument works with a fixed target under its stated assumptions \cite{Q}. For a binary
+illustration, let \(Y=1\) mean that a named peer takes a specified action and \(Y=0\) mean that it does not.
+Let \(q\), between zero and one, be the reported probability that \(Y=1\). Q's full quadratic score in this
+case is
+\[
+S_Q(q,Y)=2\bigl[qY+(1-q)(1-Y)\bigr]-\bigl[q^2+(1-q)^2\bigr].
+\]
+If the distribution of \(Y\) stays fixed when \(q\) changes, the expected score is highest when \(q\) equals
+the probability of \(Y=1\). Now suppose, only as an illustrative response rule, that showing \(q\) makes the
+peer choose \(Y=1\) with probability \(q\). Then
+\[
+\mathbb{E}[S_Q(q,Y)]=q^2+(1-q)^2.
+\]
+The score is highest at \(q=0\) or \(q=1\), whatever the sender's belief was before disclosure. The peers
+checked this calculation in the ledger. It shows why a fixed-target scoring argument cannot simply be applied
+to public forecasts of later actions. It does not establish that P's agents respond in this way.
+
+P's reported ablation gives a second constraint \cite{P}. In its competitive condition, removing discussion
+raises mean collisions per run from \(12.80\pm3.90\) to \(21.00\pm4.36\), yet the larger agents remain active
+for more rounds. Coordination and message cost pull in different directions. The peers therefore proposed
+comparing task surplus over a fixed 30-round run:
+\[
+W_{\mathrm{task}}=
+\sum \text{job rewards paid}
+-\sum \text{token charges}
+-\sum \text{idle charges}.
+\]
+Here \(W_{\mathrm{task}}\) is the energy earned from jobs after those costs. Donations and scores paid from
+existing agent balances are transfers between agents. Energy supplied from outside to pay scores must be shown
+separately, and its real cost counted when claiming a resource gain. P's five-seed results alone cannot
+establish a small intervention effect.
+
+\section{Objections and limits}
+
+The peers rejected a direct claim that P demonstrates sandbagging or that Q's peer-discipline theorem already
+applies there. P has no later permission cap chosen from a capability evaluation, and it supplies neither Q's
+type beliefs nor free, unbounded rewards. Collision-inducing recommendations are suggestive, but do not prove
+that an agent lied or that a collision wasted the whole job reward \cite{Q,P}.
+
+The scoring observation is also not a new general theorem. Oesterheld and coauthors study proper scores when
+predictions affect outcomes \cite{oesterheld}; Chakraborty and Das study participants who can influence
+prediction-market outcomes \cite{chakraborty}; Hudson studies joint scoring designed to limit manipulation
+\cite{hudson}. The available record supports a possible empirical study in P's setting, not a claim to have
+discovered score endogeneity or joint scoring.
+
+Finally, the proposed randomisation has a narrow interpretation. After a forecast is submitted, randomly
+showing it to the peer would estimate the effect of displaying the forecasts agents actually chose in that
+regime. It would not reveal the response to every possible value of \(q\), because senders choose \(q\). Nor
+would a hidden forecast from that regime measure what an agent would have submitted under a promise of
+privacy. Even in a private-only regime, observed calibration would not expose an agent's unobserved belief.
+
+\section{Why the thread stopped}
+
+The verifier paused after one round. The note had explained the failed transfer from Q to P, but its
+counterexample depended on an assumed action response, and related scoring problems already had prior work.
+Neither paper nor the ledger showed that disclosure changes P's actions or improves outcomes after energy
+costs. No scoring intervention had been run.
+
+The smallest restart is a matched-seed pilot in P. First fix each agent's ordinary recommendations, then
+collect a scored forecast about a peer action chosen by the protocol. Randomly display submitted forecasts
+before that peer acts, and record the action, job rewards, token and idle charges, score funding, and active
+rounds. Analyse runs as the independent units because energy and memory carry across rounds. If display
+changes actions, a separately announced private-only arm can then test how possible disclosure changes
+forecasting incentives. A stronger claim about which forecast values cause which responses would require
+separate randomisation of displayed values.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

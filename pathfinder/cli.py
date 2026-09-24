@@ -2,7 +2,7 @@
 from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path
-from . import config, corpus, edit, monitor, paper, reconcile, research, runner, scan, select, transport
+from . import config, corpus, edit, health, monitor, paper, reconcile, research, runner, scan, select, transport
 
 
 def main(argv=None):
@@ -25,6 +25,7 @@ def main(argv=None):
     sub.add_parser("research", help="run the shortlisted threads")
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
     sub.add_parser("status", help="print campaign and shortlist state")
+    sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
     w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
@@ -64,7 +65,7 @@ def main(argv=None):
         for p in out["pairs"]:
             print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']})")
     elif ns.cmd == "research":
-        runner.run(c)
+        return runner.run(c)
     elif ns.cmd == "stop":
         if ns.clear:
             c.path("stop.json").unlink(missing_ok=True); print("stop marker cleared")
@@ -72,6 +73,8 @@ def main(argv=None):
             runner.request_stop(c, "operator"); print("stop requested; running commands will drain and exit")
     elif ns.cmd == "status":
         print(monitor.status_text(c))
+    elif ns.cmd == "health":
+        print(json.dumps(health.snapshot(c), indent=2) if ns.json else health.text(c))
     elif ns.cmd == "serve":
         monitor.serve(c, ns.port)
     elif ns.cmd == "paper" and ns.review:

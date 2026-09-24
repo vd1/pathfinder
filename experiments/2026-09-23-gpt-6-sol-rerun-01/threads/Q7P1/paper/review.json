@@ -1,0 +1,63 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-23T21:54:41Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "546884dee30281b4fd733125a8183ff17c7e2ef26a9970bae8a048f50b46ae4f",
+  "decision": "AMEND",
+  "summary": "The central counterexample and value-error bounds are within the stated conditional scope. Two claims need correction before the paper is sent to referees.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Conditional value-level guarantees, second proposition",
+    "issue": "The budget-balance sentence invokes Q's budget-balance conditions alone. Q's proof also uses symmetric equilibrium prices and planner complementarity, obtained through its implementation conditions; an arbitrary surrogate-game equilibrium is not covered.",
+    "fix": "Require the relevant Q implementation and budget-balance conditions for the surrogate game, or state price symmetry and complementarity explicitly."
+   },
+   {
+    "id": "F2",
+    "severity": "major",
+    "where": "Interpretation",
+    "issue": "The exact aggregate-risk regret is attributed to \u201cthe ledger's\u201d example, but the paper gives no losses, scenarios, or constraint from which a reader can verify it.",
+    "fix": "Include the two-agent construction already recorded in the ledger, with its capacity constraint and parameter ranges, or remove the numerical regret claim."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "where": "Fixed-batch participation failure, proof",
+    "issue": "The proof does not show the reduction of Q's tax when other agents bid zero, leaving the unilateral price-deviation check implicit.",
+    "fix": "State the reduced tax and note that capacity c=N makes it nonnegative for every feasible unilateral allocation and price bid."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-23T21:57:38Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "f7075a418006a0c39b5ec5ed2216997bcc3e021cc2ca168346a25c9ead5353e9",
+  "decision": "ACCEPT",
+  "summary": "The claims stay within the stated conditional scope, and the counterexamples and bounds check out. The cited metadata is consistent with the available source records. Two clarifications would help readers follow the argument.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Conditional value-level guarantees",
+    "issue": "The equilibrium-distance formula uses d_n without defining it; Q uses that symbol for the uncertainty dimension, while P's gradient bound uses the decision dimension.",
+    "fix": "Define d_n as the dimension of agent n's perturbed allocation, or use a different symbol."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "A fixed-batch participation failure",
+    "issue": "The example uses an unsmoothed expected empirical CVaR, whereas P's fixed-batch oracle smooths it. The text distinguishes the algorithms but does not state this distinction at the example.",
+    "fix": "State that the example takes the unsmoothed surrogate and makes no claim about a feasible implementation of P's smoothing oracle on [0,1]."
+   }
+  ]
+ }
+]

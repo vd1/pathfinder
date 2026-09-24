@@ -59,7 +59,7 @@ The telescoping calculation above holds for P's finite-episode, terminal-zero po
 
 \subsection{Conditional label-free identification}
 
-Under the shared-comparison model, the latent ranking is identified at the population level.  For two distinct observers $r$ and $s$ judging the same realised comparison, conditional independence gives
+Under the shared-comparison model, the latent ranking is identified at the population level.  The label-free reliability calculation follows the symmetric-noise crowdsourcing model studied by Ma et al. \cite{ma2017crowdsourcing}.  For two distinct observers $r$ and $s$ judging the same realised comparison, conditional independence gives
 \begin{equation}
 q_{rs}:=\mathbb{E}[Y_{er}Y_{es}]=a_ra_s.
 \end{equation}
@@ -77,7 +77,7 @@ Once $a_r$ is known, this equation identifies $m_e$, and hence the edge probabil
 \begin{equation}
 \log\!\left(\frac{p_e}{1-p_e}\right)=c_i-c_j.
 \end{equation}
-If the graph of compared agents is connected, these differences identify all scores $c_i$ up to adding the same constant to every score.  Thus the ordering is identified.  This rank-one moment argument is the substantive bridge supplied by the peer derivation; it is not a result stated in either Q or P.
+If the graph of compared agents is connected, these differences identify all scores $c_i$ up to adding the same constant to every score.  Thus the ordering is identified.  The rank-one reliability calculation is established in label-free crowdsourcing \cite{ma2017crowdsourcing}; the bridge here is its connection to P's Bradley--Terry contribution ranking, which neither Q nor P states.
 
 The conclusion is deliberately limited.  It establishes identification from exact population moments, not an estimator with a proved finite-sample rate.  The peer notes sketched the needed route through concentration of empirical moments and inversion of two graph systems, but they did not track the minimum samples or the separate condition numbers of the observer-overlap graph and the agent-comparison graph.  No quantitative robustness claim is therefore made here.
 

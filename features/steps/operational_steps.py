@@ -904,6 +904,7 @@ def parse_provider_response(context):
 
     # @exceptional-double: golden real-provider response replay covers a specific parser input on demand.
     class CompletedProcess:
+        pid = None  # Parser replay has no operating-system child.
         returncode = 0
         stdout = iter([
             json.dumps({"type": "thread.started", "thread_id": "thread-1"}) + "\n",
@@ -947,6 +948,7 @@ def record_completed_provider_call(context):
 
     # @exceptional-double: real provider completion with empty parsed text cannot be produced on demand.
     class CompletedProcess:
+        pid = None  # Parser replay has no operating-system child.
         returncode = 0
         stdout = iter(line + "\n" for line in context.provider_lines)
         stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()
@@ -994,6 +996,7 @@ def complete_without_parsed_account(context):
 
     # @exceptional-double: real provider process completion cannot produce this parser failure on demand.
     class CompletedProcess:
+        pid = None  # Parser replay has no operating-system child.
         returncode = 0
         stdout = iter(line + "\n" for line in context.provider_lines)
         stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()

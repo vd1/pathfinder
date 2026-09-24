@@ -1,0 +1,156 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Risk-Averse Learning in a Strategic Allocation Mechanism}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The pair joins a paper on payments and learning in a strategic resource-allocation game with a paper on
+cooperative optimisation of conditional value at risk (CVaR). The thread asked whether the second paper's
+sampled CVaR method could make the first paper's mechanism risk-averse while preserving its guarantees. The
+peers found a fixed-batch example in which an exact surrogate equilibrium fails to implement the true risk
+objective and fails true-risk participation, even though both objectives have strong curvature. They also
+derived conditional bounds on this error, but found no feasible oracle or convergence proof for the
+resulting strategic learning process. The verifier therefore left the thread at DRAFT.
+\end{abstract}
+
+\section{Introduction}
+
+In Q, agents choose private resource allocations and submit price bids. A manager uses quadratic payments to
+align the game's equilibrium with the allocation that maximises the sum of their expected valuations. Under
+the paper's conditions, the equilibrium is unique, payments balance, agents can do at least as well as
+opting out, and a stochastic proximal best-response procedure converges to that equilibrium \cite{Q}.
+
+In P, agents cooperate over one shared decision. Each aims to limit the upper tail of a local random loss
+using CVaR, a measure of severe losses. They estimate CVaR from sampled losses, perturb decisions to
+estimate gradients, exchange decisions with neighbours, and take projected steps. The paper bounds sampling
+and smoothing errors and studies the limiting decision when batch sizes stay fixed \cite{P}.
+
+The proposed connexion was to value Q's allocations by the negative CVaR of each agent's loss and use P's
+empirical estimator to learn them. This raises two separate questions. Can Q's payment argument still
+support the desired risk objective? If so, does learning from finite batches lead to an equilibrium with the
+same properties? The peers tested both questions, without treating P's cooperative update as an algorithm
+for Q's strategic game.
+
+\section{What was done}
+
+The peers first compared the decision problems. Q gives each agent its own allocation and price bid, whereas
+P has agents work on copies of one shared decision. They therefore treated P as a possible source of risk
+estimates and error bounds, not as a ready-made best-response procedure for Q.
+
+Next they defined an agent's risk valuation. Let \(x_n\) be agent \(n\)'s allocation, \(\xi_n\) its random
+input, and \(\psi_n(x_n,\xi_n)\) its satisfaction. Write \(J_n=-\psi_n\) for its loss, and let \(\beta_n\)
+be the fraction of the worst losses used by CVaR. The proposed valuation was
+\[
+R_n(x_n)=-\operatorname{CVaR}_{\beta_n}
+  \bigl(J_n(x_n,\xi_n)\bigr).
+\]
+For a deterministic payment \(t_n\), CVaR's response to adding a fixed amount gives risk-adjusted utility
+\(R_n(x_n)-t_n\). This makes the sum of local risk valuations a possible target for Q's payment
+construction, subject to Q's remaining conditions.
+
+The peers then checked curvature and found that Q's assumption on expected valuation does not carry over
+automatically. They constructed a flat CVaR valuation from a strongly curved expected valuation. To repair
+that step, they considered the stronger assumption that every sampled loss is uniformly strongly convex.
+They also tested what a fixed empirical batch changes, checked whether P's perturbations are feasible on Q's
+allocation sets, and separated the sum of agents' risks from the risk of their aggregate loss. Last, they
+used P's value error estimate to derive conditional guarantees at an exact equilibrium of a surrogate game.
+
+\section{Results}
+
+\subsection{Curvature and payments}
+
+The curvature failure is elementary. For an allocation \(x\in[0,1]\), take two equally likely losses, \(0\)
+and \(x^2-1\). Their mean is strongly convex in \(x\). With a worst-half tail, CVaR is zero for every \(x\)
+in the interval. The associated risk valuation is flat. Thus the strong concavity that Q assumes for
+expected valuation cannot simply be reused for CVaR. This is the counterexample checked by Ada and Emmy in
+the ledger.
+
+There is a conditional repair. If every sampled loss \(J_n(\cdot,\xi_n)\) is \(m\)-strongly convex for the
+same \(m>0\), then its CVaR is \(m\)-strongly convex, so \(R_n\) is \(m\)-strongly concave. Indeed,
+subtracting \(m\|x_n\|^2/2\) from every sampled loss leaves a convex function, and CVaR moves by the same
+deterministic amount. This does not settle the mechanism on its own: the risk valuation can have corners,
+and Q's other payment and constraint conditions still need to hold. Ada's curvature and cash-translation
+checks support this narrower claim.
+
+\subsection{A fixed-batch failure}
+
+The central example keeps strong curvature. Let \(x\in[0,1]\), let \(\xi\) be equally likely to be zero or one, and set
+\[
+J(x,\xi)=\frac{x^2}{2}-\frac{3x}{4}+\xi x,
+\qquad \beta=\frac12.
+\]
+Here \(\beta\) is the worst-half tail fraction. True CVaR loss is \(x^2/2+x/4\), with its minimum at
+\(x=0\). With one observation in each batch, expected empirical CVaR loss is instead \(x^2/2-x/4\), with its
+minimum at \(x=1/4\). Both losses are strongly convex. Under Q's payment rule with a zero price bid and
+slack capacity, the latter allocation is an exact equilibrium of the surrogate game in the peers'
+construction. Its true risk utility is \(-3/32\), below the zero-allocation outside utility of zero. Emmy
+gave the example and then clarified that the participation failure concerns true CVaR utility, not every
+realised payoff. It is an equilibrium counterexample; it is not a proof that Q's learning algorithm
+converges to that equilibrium.
+
+\subsection{Conditional accuracy at a surrogate equilibrium}
+
+The peers also bounded what a well-defined surrogate could guarantee. Suppose all perturbation queries are
+valid, the absolute loss for agent \(n\) is at most \(U_n\), and its CVaR is \(L_n\)-Lipschitz. Let
+\(\delta_n\) be the smoothing radius, \(s_n\) the batch size, and \(\widetilde R_n\) the expected smoothed
+empirical risk valuation. P's smoothing and empirical-distribution estimates give the uniform value error
+\[
+\sup_{x_n}|\widetilde R_n(x_n)-R_n(x_n)|\leq e_n,
+\qquad
+e_n=L_n\delta_n+
+\frac{U_n\sqrt{2\pi}}{\beta_n\sqrt{s_n}}.
+\]
+The supremum is over the allocation domain on which the queries and bounds apply. Ada and Emmy independently
+checked the ensuing payoff argument. At an exact equilibrium of Q's surrogate game, replacing \(\widetilde
+R_n\) by \(R_n\) changes each comparison between the chosen action and a unilateral deviation by at most
+\(2e_n\), because the payment is the same in each comparison. Q's opt-out comparison then places true risk
+utility at least \(-2e_n\) below \(R_n(0)\), the risk valuation of allocating nothing. If the mechanism
+exactly implements the surrogate optimum under Q's conditions, its gap from the best feasible sum of true
+local risk valuations is at most \(2\sum_n e_n\). The payment balance still holds at that exact surrogate
+equilibrium under the same mechanism conditions. None of these statements proves a bound for an unfinished
+learning run.
+
+The peers also obtained a conditional distance estimate from P's gradient-error bound. If a feasible
+smoothing oracle exists and the smoothed strategic game's equilibrium operator is strongly monotone with
+constant \(\nu>0\), comparison of its two equilibrium inequalities bounds the distance between the
+fixed-batch and true-smoothed equilibria by
+\[
+\frac{1}{\nu}\left(\sum_n
+\frac{2\pi d_n^2U_n^2}{\beta_n^2\delta_n^2s_n}
+\right)^{1/2},
+\]
+where \(d_n\) is agent \(n\)'s allocation dimension. This estimate needs the stated strategic-game
+conditions; it supplies no convergence theorem for a learning algorithm.
+
+\section{Objections and limits}
+
+P's perturbation method assumes that the feasible set contains a ball centred at the origin. Q's allocations
+are nonnegative, and its electric-vehicle example includes flow equalities, so that assumption can fail even
+before strategic learning is considered. The peers left open a perturbation method within the feasible set
+or a justified extension of the loss outside it. Their fixed-batch example identifies the surrogate
+objective's error without claiming that P's one-point update runs directly on Q's set.
+
+There is also a choice of welfare target. Deterministic payments with individual CVaR valuations target the
+sum of local CVaRs. This can differ from CVaR of total loss. Ada checked a two-agent example with strongly
+convex sample losses: the local-risk optimum is \((0,1)\), the aggregate-risk optimum is \((1/3,2/3)\), and
+the latter has an aggregate-risk advantage of \(1/3+4q/9>0\), where \(q\) is a positive curvature parameter
+below \(1/2\). Ada also derived a pooling identity using payments contingent on realised losses. That
+identity needs verifiable losses and is not yet an incentive-compatible mechanism. The thread did not check
+outside literature, so it supports no claim of novelty.
+
+\section{Why the thread stopped}
+
+The verifier kept the work at DRAFT because the fixed-batch example is a substantive result and the
+conditional error bounds are supported, but neither establishes the promised risk-averse strategic learning
+guarantee. The smallest step that would restart this line is a feasible CVaR oracle for Q's nonnegative and
+affine allocation sets, followed by an inexact proximal best-response convergence argument that tracks batch
+and smoothing errors. That would connect the equilibrium statements above to an outcome agents can actually
+learn.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

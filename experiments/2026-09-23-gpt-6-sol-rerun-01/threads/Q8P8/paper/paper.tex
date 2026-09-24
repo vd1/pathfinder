@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{When a Donor Wrist Cannot Locate a Rotating Held Object}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+DynaMAC proposes the donor arm's forward-kinematic pose as a task frame when a held object is occluded during handover.
+Aero Hand Open demonstrates rotation of a cube within a grasp using a tendon-driven hand. Reading these results together
+gives a conditional limit: if the object-to-wrist transform changes, the wrist pose alone does not determine the
+object's orientation. If two trials also have indistinguishable motor-encoder and action histories but require different
+receiving approaches, no receiver restricted to those observations can guarantee the correct approach in both. The
+papers provide a physical mechanism and the handover claim, but no matched-history object-pose measurements or DynaMAC
+handover test on this hand. We specify the measurement needed to decide whether the limit has practical force.
+% ledger: 6,7,9,10,11,13,14,17,18
+\end{abstract}
+
+\section{Introduction}
+
+DynaMAC (paper P) treats the other arm's end-effector pose as a moving task frame for bimanual coordination. In its
+handover discussion, it calls the held-object pose and donor-arm pose redundant for the receiver, and proposes the donor
+arm's precise forward kinematics when object tracking suffers occlusion \cite{p}. % ledger: 6,9
+Aero Hand Open (paper Q) provides a hand with sixteen joints, seven motors and only motor-encoder proprioception. Its
+learned policy rotates a cube within the grasp in simulation and on hardware \cite{q}. % ledger: 6,7,9,10
+
+The question here is whether P's wrist frame remains an adequate substitute for object pose if Q's hand rotates the
+object while the wrist remains fixed. This concerns a particular claim about information at handover, rather than a
+tested combination of the two systems. Their simulation and action interfaces differ, and neither paper reports this
+handover. % ledger: 6,9,11,13
+
+\section{What the source papers establish}
+
+P models arm end-effector poses and uses the opposite arm as a candidate task parameter. Its account of handover
+explicitly appeals to redundancy between donor-arm and held-object poses under occlusion \cite{p}. P disregards gripper
+actions in its pose-level exposition for brevity; this says nothing about whether its implementation could command Q's
+hand. % ledger: 6,9,10
+Q reports in-hand cube rotation with hardware observations restricted to the seven motor encoders and the previous
+action. The physical cube's pose trace is not logged, so Q establishes visible rotation, not a measured distribution of
+object poses conditional on encoder and action histories \cite{q}. % ledger: 6,7,9,10
+
+\section{Conditional limit of the wrist frame}
+
+Let \(T_w\) denote donor wrist pose, \(T_o\) object pose and \(G\) the object pose relative to the wrist. By definition, % ledger: 11
+\[
+T_o=T_wG.
+\]
+For a receiving task, the wrist can stand in for object pose when \(G\) remains sufficiently stable for the required
+approach. Q's in-hand rotation gives a concrete way for \(G\) to change while \(T_w\) stays fixed. It does not quantify
+how uncertain \(G\) is at a given motor history. Thus the result is a limit on P's stated substitution, not evidence of
+a DynaMAC failure. % ledger: 6,9,10,11,13
+
+\begin{proposition}[Matched-observation limit]
+Suppose two occluded handover trials have indistinguishable donor wrist poses, motor-encoder histories and action
+histories at the receiver's decision, but their hidden object orientations require different receiving approaches. A
+receiver using only those observations cannot guarantee an orientation-specific successful approach in both trials.
+% ledger: 7,14,17
+\end{proposition}
+
+\begin{proof}
+The receiver receives the same information in both trials. A deterministic selection is therefore the same in both; a
+randomised selection has the same distribution in both. Neither can guarantee two different required approaches from
+that information. % ledger: 7,14,17
+\end{proof}
+
+This proposition is conditional on the existence of such matched trials and an orientation-sensitive receiving task. Q's
+seven encoders and its rotation demonstration do not establish that naturally occurring trials have indistinguishable
+full histories but different object poses. Controlled reseating under occlusion is one way to construct candidate pairs;
+its frequency in ordinary manipulation is unknown. If one safe grasp works for both orientations, the proposed approach
+distinction disappears. % ledger: 7,9,10,14,17
+
+\section{Related work and interpretation}
+
+The main step has a precedent in pose-aware handover: Vezzani and colleagues estimate in-hand object pose from vision
+and tactile information and use it to choose the receiving hand's pose \cite{vezzani2017}. Liang and colleagues track a
+moving in-hand object's pose under visual occlusion using contact feedback and simulation \cite{liang2020}. Object-pose
+estimation and pose-aware receiving are therefore already published. The contribution here is the conditional,
+pair-specific reading of P's donor-wrist substitution against Q's in-hand rotation, together with a discriminating test.
+We do not claim that this logical limit or a remedy is novel in general. % ledger: 11,12,13,15,16,18
+
+P's kinematic-link detector presents a separate question. Its geometric mean standard deviation describes dispersion of
+a learned object-frame policy stream across phase-aligned demonstrations, not online variation in \(G\) during one
+rollout. In-hand motion or compliance alone therefore does not show that the detector would retain or mask the object
+frame incorrectly. Testing detector decisions against controlled contact or motor-perturbation labels remains distinct
+from the wrist-frame claim \cite{p}. % ledger: 3,5,8,18
+
+An uncertainty-aware receiver faced with exactly matched histories under full occlusion could represent the ambiguity,
+seek a new view, or use a grasp robust to both orientations. It could not recover which hidden orientation occurred
+without new information. These are possible responses to the limit, not methods evaluated here. % ledger: 14,17
+
+\section{A decisive test}
+
+Hold the donor wrist fixed and externally measure \(G\) for a marked object while varying its in-hand orientation or
+reseated contact state. First ask whether materially different object poses occur within matched bins of wrist pose,
+motor readings and action history. Then, only if they do, use an orientation-sensitive receiving target and check that
+no single orientation-invariant grasp succeeds across the matched conditions. Compare a receiver using only the donor
+wrist frame with visible-object and last-seen-object controls; a rigid-grasp or no-reorientation condition would help
+isolate the role of \(G\). Occlude the object at receiver inference while retaining external pose measurement for
+analysis. This is a proposed experiment, not an outcome reported by either paper. % ledger: 7,11,14,17,18
+
+\section{Limitations and open questions}
+
+No physical trace of Q's cube pose, conditional spread of \(G\), detector error rate, or handover success with DynaMAC
+on Q's hardware is available. Constructing matched encoder and action histories may require external reseating, which
+might not represent routine use. The papers' distinct simulators and action spaces make a direct benchmark swap
+substantial work. The practical question is whether measured ambiguity is large enough to change a receiving decision,
+and whether obtaining another observation improves that decision. Neither answer follows from the current material.
+% ledger: 5,9,10,13,14,17,18
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

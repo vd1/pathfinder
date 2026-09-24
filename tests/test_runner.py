@@ -66,28 +66,22 @@ def test_first_interrupt_drains(tmp_path, monkeypatch):
     assert signal.getsignal(signal.SIGINT) is before
 
 
-def test_two_transport_failures_set_health_and_probe_clears_it(tmp_path, monkeypatch):
+def test_transport_failure_stops_without_probing(tmp_path, monkeypatch):
     import sys
     from pathlib import Path
     from pathfinder import transport
     monkeypatch.setenv("PATHFINDER_CLAUDE", f"{sys.executable} {Path(__file__).parent / 'fake_cli.py'}")
-    monkeypatch.setenv("FAKE_HANG", "1"); monkeypatch.setenv("FAKE_REPLY", "nothing")
-    monkeypatch.setattr(transport, "SESSION_GRACE", 1); monkeypatch.setattr(runner, "PROBE_INTERVAL", 0.2)
+    monkeypatch.setenv("PATHFINDER_CLAUDE", str(tmp_path / "missing-executable"))
     c = make(tmp_path, seats=1)
     (tmp_path / "shortlist.json").write_text(json.dumps({"pairs": [{"pair_id": "Q1P1"}, {"pair_id": "Q1P2"}]}))
     (tmp_path / "Q.jsonl").write_text('{"id":"a","title":"A","abstract":"aa","text":null}\n')
     (tmp_path / "P.jsonl").write_text('{"id":"b","title":"B","abstract":"bb","text":null}\n{"id":"c","title":"C","abstract":"cc","text":null}\n')
-    seen = {"health": False}
-
-    def watch():
-        for _ in range(200):
-            if (tmp_path / "health.json").exists():
-                seen["health"] = True; monkeypatch.delenv("FAKE_HANG"); return
-            time.sleep(0.1)
-    threading.Thread(target=watch, daemon=True).start()
-    runner.run(c, interval=0.05)
-    assert seen["health"] and not (tmp_path / "health.json").exists()
-    assert {research.status(c, p)["status"] for p in ("Q1P1", "Q1P2")} == {"PAUSE"}
+    assert runner.run(c, interval=0.05) == 1
+    failure = json.loads((tmp_path / "health.json").read_text())
+    assert failure["pair"] == "Q1P1" and failure["stage"]
+    assert all(row["stage"] != "probe" for row in transport.receipts(c))
+    assert not c.thread_dir("Q1P2").exists()
+    assert json.loads((tmp_path / "runner.json").read_text())["status"] == "failed"
 
 
 def test_blocked_threads_are_not_readmitted(tmp_path):

@@ -334,9 +334,12 @@ def continues_from_account(context):
 
 @given("the shortlist contains terminal and blocked investigations")
 def terminal_and_blocked_shortlist(context):
+    from pathfinder import edit
     context.campaign = seed_pair(context)
     context.campaign.path("shortlist.json").write_text(json.dumps({"pairs": [{"pair_id": "Q1P1"}, {"pair_id": "Q1P2"}]}))
     research._set(context.campaign, "Q1P1", stage="done", status="DRAFT")
+    (context.campaign.thread_dir("Q1P1") / "edited").mkdir(exist_ok=True)
+    edit._set(context.campaign, "Q1P1", status="done")
     context.campaign.thread_dir("Q1P2").mkdir(parents=True)
     research._set(context.campaign, "Q1P2", stage="consolidate", status="BLOCKED", reason="consolidate: no note")
 

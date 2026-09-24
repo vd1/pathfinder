@@ -1,13 +1,10 @@
 """The research loop: seats, rolling admission, budget guard, stop as a drain, health flag."""
 from __future__ import annotations
-import copy, hashlib, json, os, signal, time
+import copy, hashlib, json, os, signal, time, uuid
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
 from . import research, transport
-from . import corpus
-
-
-PROBE_INTERVAL = 60
+from . import corpus, health
 
 
 def _digest(path: Path) -> str:
@@ -224,30 +221,62 @@ def pending(campaign) -> list[str]:
     @planks("When the operator runs the research command")
     """
     pairs = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]]
-    return [p for p in pairs if research.status(campaign, p).get("status") not in research.TERMINAL | {"BLOCKED"}
-            and not Lock.holder(campaign.thread_dir(p))]          # BLOCKED waits for reconcile, never re-admission
+    from . import edit
+    return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
+            and research.status(campaign, p).get("status") != "BLOCKED"
+            and (research.status(campaign, p).get("status") not in research.TERMINAL
+                 or edit.status(campaign, p).get("status") != "done")]
 
 
 def _work(campaign, pair_id):
     """@planks("When the campaign processes pair \"{pair_id}\" to completion")"""
     with Lock(campaign.thread_dir(pair_id)):
-        result = research.run_thread(campaign, pair_id, stop=lambda: stopped(campaign))
-        if result in research.TERMINAL and not stopped(campaign):
-            from . import edit                      # the readable account, written once the verdict is final
-            try:
-                edit.run(campaign, pair_id, stop=lambda: stopped(campaign))
-            except transport.TransportFailed:
-                print(f"{_now()} {pair_id}: editor transport failure; run `pathfinder edit {pair_id}` later")
+        stop = lambda: stopped(campaign) or unhealthy(campaign)
+        result = research.status(campaign, pair_id).get("status")
+        stage = research.status(campaign, pair_id).get("stage")
+        try:
+            if result not in research.TERMINAL:
+                result = research.run_thread(campaign, pair_id, stop=stop)
+            if result in research.TERMINAL and not stop():
+                from . import edit
+                stage = "edit"
+                if edit.status(campaign, pair_id).get("status") != "done":
+                    edited = edit.run(campaign, pair_id, stop=stop)
+                    if edited != "done" and not stop():
+                        raise RuntimeError(f"editor {edited}: {edit.status(campaign, pair_id).get('reason')}")
+        except Exception as error:
+            error.stage = stage if stage == "edit" else research.status(campaign, pair_id).get("stage")
+            raise
         return result
 
 
-def _probe(campaign) -> bool:
-    r = transport.call("Reply with the single word ok.", campaign=campaign, model=campaign.model, tools=False, search=False,
-                       cwd=campaign.path("scan-work"), timeout=120, thread="probe", stage="probe", actor="probe")
-    return not r["transport_failed"]
-
-
 def run(campaign, interval: float = 5.0):
+    """Run under exclusive ownership; an explicit invocation starts a new run."""
+    with health.owner(campaign):
+        if stopped(campaign):
+            print("stop marker exists; clear it explicitly before restarting")
+            return 1
+        campaign.run_id = uuid.uuid4().hex
+        old = health.read(campaign.path("health.json"))
+        metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
+                    "started_at": time.time(), "heartbeat_at": time.time(),
+                    "last_progress": None, "previous_failure": old}
+        campaign.path("health.json").unlink(missing_ok=True)
+        health.write(campaign.path("runner.json"), metadata)
+        try:
+            result = _run(campaign, interval, metadata)
+            metadata["status"] = "failed" if unhealthy(campaign) else "stopped" if stopped(campaign) else "blocked" if result else "finished"
+            return result
+        except BaseException as error:
+            metadata.update(status="failed", error=repr(error))
+            raise
+        finally:
+            metadata.update(heartbeat_at=time.time(), finished_at=time.time())
+            health.write(campaign.path("runner.json"), metadata)
+            del campaign.run_id
+
+
+def _run(campaign, interval, metadata):
     """@planks("When the operator runs the research command")"""
     futures = {}
     interrupted = {"n": 0}
@@ -262,45 +291,51 @@ def run(campaign, interval: float = 5.0):
     previous = signal.signal(signal.SIGINT, on_int)
     try:
         with ThreadPoolExecutor(campaign.seats) as ex:
-            _loop(campaign, ex, interval, futures)
+            _loop(campaign, ex, interval, futures, metadata)
     finally:
         signal.signal(signal.SIGINT, previous)
     blocked = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]
                if research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"]
     if blocked:
         print(f"blocked investigations require reconcile: {', '.join(blocked)}")
+    return 1 if unhealthy(campaign) or blocked else 0
 
 
-def _loop(campaign, ex, interval, futures):
+def _loop(campaign, ex, interval, futures, metadata):
     """@planks("When the operator requests a stop")"""
-    failures = 0
     while True:
-        if unhealthy(campaign) and not futures:
-            if _probe(campaign):
-                campaign.path("health.json").unlink(); failures = 0; print("health restored")
-            else:
-                time.sleep(PROBE_INTERVAL); continue
+        metadata.update(heartbeat_at=time.time(), active_pairs=list(futures.values()),
+                        status="draining" if stopped(campaign) or unhealthy(campaign) else "running")
+        health.write(campaign.path("runner.json"), metadata)
         queue = [] if (stopped(campaign) or unhealthy(campaign)) else pending(campaign)
         for pair_id in queue:
-            if len(futures) >= campaign.seats or pair_id in futures.values():
+            if len(futures) >= campaign.seats:
                 break
+            if pair_id in futures.values():
+                continue
             if not guard_ok(campaign, inflight=len(futures) + 1):
                 break
             futures[ex.submit(_work, campaign, pair_id)] = pair_id
             print(f"{_now()} admitted {pair_id} ({len(futures)}/{campaign.seats} seats)")
         if not futures:
-            if stopped(campaign) or not pending(campaign):
-                print("stopped" if stopped(campaign) else "all threads terminal"); return
+            if stopped(campaign) or unhealthy(campaign) or not pending(campaign):
+                print("failure: inspect `pathfinder health`" if unhealthy(campaign) else "stopped" if stopped(campaign) else "all threads terminal"); return
             time.sleep(interval); continue
         done, _ = wait(list(futures), timeout=interval, return_when=FIRST_COMPLETED)
         for f in done:
             pair_id = futures.pop(f)
             try:
-                print(f"{_now()} {pair_id}: {f.result()}"); failures = 0
-            except transport.TransportFailed:
-                failures += 1; print(f"{_now()} {pair_id}: transport failure ({failures})")
-                if failures >= 2 and not unhealthy(campaign):
-                    campaign.path("health.json").write_text(json.dumps({"at": _now(), "reason": "two consecutive transport failures"}))
-                    print("health flag set: admissions paused until a probe call succeeds")
+                result = f.result()
+                print(f"{_now()} {pair_id}: {result}")
+                from . import edit
+                if result in research.TERMINAL and edit.status(campaign, pair_id).get("status") == "done":
+                    metadata["last_progress"] = {"pair": pair_id, "result": result, "at": _now()}
             except Exception as e:
                 print(f"{_now()} {pair_id}: error {e!r}")
+                failure = {"run_id": campaign.run_id, "at": _now(), "pair": pair_id,
+                           "stage": getattr(e, "stage", None), "reason": repr(e),
+                           "receipts": "receipts.jsonl"}
+                with campaign.path("failures.jsonl").open("a") as stream:
+                    stream.write(json.dumps(failure) + "\n")
+                if not unhealthy(campaign):
+                    health.write(campaign.path("health.json"), failure)

@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{When Reviewer--Critic Interaction Loses Independent Evidence}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q develops mechanisms for AI agents with private preferences and capabilities, including a peer-scoring result that uses distinct beliefs about other agents' types to induce truthful reports. P studies a reviewer--critic protocol for code review and reports both improved benchmark performance and cases of false consensus.
+
+\section*{Connexion pursued}
+
+The initial question was whether Q's peer scoring or nested cyclical monotonicity explains P's reviewer--critic loop. Both peers rejected a direct application: Q's results require specified reports, feasible deviations, and enforceable rewards, while P's agents exchange prompt-guided review text without those instruments \ledger{3, 4}. The narrower connexion concerns whether interaction causes a critic to lose information it could have supplied independently, and whether evidence requirements preserve useful dissent \ledger{5, 6, 14}.
+
+\section*{What was found}
+
+Q's peer-scoring construction assumes distinct conditional laws over co-player reports and uses a quadratic score, utility cancellation, and penalties for off-target actions. Its truth-telling gain from the score is proportional to the squared distance between the relevant conditional laws \ledger{4, 14}. That calculation treats the peer's report law as unaffected by the report of the agent being scored. P instead shows the critic the reviewer's review and later exchange before the critic reaches a final verdict. P's Case B describes a critic dropping a real concern after the reviewer gives an unsupported rebuttal \ledger{6, 14}. The case suggests a possible information-loss mechanism, but it does not establish its prevalence or causal contribution to P's aggregate results.
+
+A small counterexample makes the boundary precise. Let types be \(A\) and \(B\), with conditional peer-report laws
+\[
+\beta_A=(0.9,0.1),\qquad \beta_B=(0.4,0.6).
+\]
+For Q's score \(q(r,z)=2\beta_r(z)-\lVert\beta_r\rVert_2^2\), \(q(A,A)=0.98\) and \(q(B,B)=0.68\). If a sequential peer copies the first agent's public report, a true \(B\)-type receives \(0.98\) by reporting \(A\), versus \(0.68\) by reporting \(B\), despite the distinct conditional laws. Joint masses proportional to \(9:1:1:1.5\) for \((A,A),(A,B),(B,A),(B,B)\) generate the stated laws. This does not contradict Q: copying makes the peer report endogenous to the first report, outside the proof's premise \ledger{7, 11}.
+
+The peers therefore proposed recording a critic's blind, sealed first judgment before showing it the reviewer's judgment, then allowing the ordinary interaction. The seal would make the critic's initial signal observable without influence from that review. It would not establish Q's belief-separation condition, truthful reporting, or enforceable scoring; shared errors could still make the two judgments uninformative \ledger{6, 10, 11, 14}.
+
+A second boundary concerns evidence. Q's verification order models a certificate that can be withheld but cannot be counterfeited. P's revised prompt requests code citations, yet the presence of a cited line does not certify that the alleged bug is real \ledger{5, 10}. The peers corrected the scope of this observation: P's explicit diff-citation response rule applies to a critic's challenge to an existing reviewer flag. The prompt separately tells the critic to name missed bugs and the reviewer to incorporate them. Any test must distinguish challenged flags, newly suggested bugs, and final formatting, as well as bugs with diff-local versus repository- or specification-dependent witnesses \ledger{13, 16}.
+
+\section*{Objections and status}
+
+The principal objection was that a second model is not automatically Q's peer-scoring instrument. This was resolved by treating Q as a source of a conditional prediction and a counterexample, rather than claiming that its implementation theorem applies to P \ledger{3, 4, 14}. The proposed blind commitment addresses one dependency in P's sequence, but the peers left open whether critics have sufficiently distinct initial information and whether conversational copying explains more than the reported case studies \ledger{10, 11, 14}. The evidence argument was narrowed after the correction about which flags P's citation rule governs \ledger{13, 16}.
+
+\section*{Outside sources}
+
+None were used beyond Q, P, and the ledger.
+
+\section*{What remains open and the next step}
+
+The material is thin on causality: P reports aggregate scores and illustrative failures, not a measurement of how often initial dissent is lost or whether preserving it improves correctness \ledger{8, 14}. The smallest decisive study is a paired pilot on the same pull requests, crossing a sealed blind critic judgment with P's original versus three-way evidence prompt while holding model, context, and token budget fixed. Record initial and final dissent, adjudicated bug-level precision and recall, and patch outcome; separate challenged flags from new suggestions and classify witness location. If sealing preserves dissent without improving accuracy, the proposed information-loss account is insufficient \ledger{8, 13, 14}.
+
+\end{document}

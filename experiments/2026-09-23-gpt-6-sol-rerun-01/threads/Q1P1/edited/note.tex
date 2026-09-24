@@ -1,0 +1,141 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Quantile Advice and Distributed CVaR Optimisation: A Paused Connexion}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note considers a survey of learning-augmented algorithms, Q, alongside a paper on distributed
+optimisation of conditional value at risk, P. The thread asked whether a predicted tail threshold could
+reduce the loss queries used by P. A threshold prediction alone does not reduce P's batch size, but the
+peers derived a different, one-query method and a bound for one agent. They did not prove that advice
+improves that method or that its bound extends to P's network. The verifier paused the thread pending a
+causal, cost-aware comparison with a method that receives no advice.
+\end{abstract}
+
+\section{Introduction}
+
+Q surveys algorithms that use fallible predictions while retaining guarantees when predictions fail
+\cite{Q}. It asks what is predicted, how error is measured, and what it costs to obtain and use a
+prediction. Its consistency and robustness language is framed mainly through cost ratios. Those questions
+guide the present enquiry, but its ratio guarantees do not directly describe a risk-minimisation gap.
+
+P studies agents that jointly minimise the average of their local conditional values at risk (CVaR) over
+a changing communication network \cite{P}. CVaR measures the mean of the adverse tail of a loss
+distribution. Each agent sees noisy loss values, rather than a risk gradient. P evaluates a batch of
+losses at a perturbed decision, forms an empirical CVaR, and uses that estimate in a distributed update.
+It proves consensus and risk bounds under its stated convexity and regularity assumptions.
+
+The proposed connexion was to give each agent a predicted value at risk (VaR), a threshold near the start
+of the adverse tail, and spend fewer loss queries. The peers first tested that idea against P's actual
+sampling procedure. When it failed, they examined whether keeping the threshold as part of the
+optimisation state could make advice useful in a different method.
+
+\section{What was done}
+
+The peers first checked where P spends its queries. P obtains independent full-loss observations before
+minimising its empirical CVaR over a scalar threshold. A predicted threshold might speed that scalar
+minimisation, but does not supply missing tail observations or remove the batch's sampling error. The
+peers therefore stopped treating a VaR seed as a query-saving change to P's algorithm.
+
+They next used the threshold representation of CVaR that P already states. For an agent \(i\), let \(x\)
+be its decision, \(J^i(x,\xi^i)\) its random loss, \(\alpha_i\) its upper-tail probability, and \(t_i\) a
+threshold. With \((a)_+=\max\{a,0\}\), the lifted objective is
+\[
+F_i(x,t_i)=t_i+\frac{1}{\alpha_i}
+\mathbb E\bigl[(J^i(x,\xi^i)-t_i)_+\bigr].
+\]
+Minimising \(F_i\) over \(t_i\) gives the agent's CVaR. Instead of recomputing empirical CVaR from a
+batch, the proposed method keeps \(t_i\) as a local state and updates it with \(x\). It mixes decisions
+between neighbours as P does; the network update itself was not proved.
+
+For each proposed update, the agent drew one fresh loss at a randomly perturbed decision. The peers used
+the observed excess over \(t_i\) for the decision update and an indicator of whether the loss exceeded
+\(t_i\) for the threshold update. Subtracting the known threshold from the decision estimator removed a
+direction-independent term. It did not change the estimator's mean, because the perturbation direction
+has mean zero. This construction used one loss evaluation per agent per step and avoided the error from
+plugging a finite-batch CVaR estimate into the gradient. The detailed estimator and its
+conditional-expectation check are in \texttt{ada/quantile\_lift\_note.md}.
+
+The peers then bounded the estimator's second moment, proved a projected-update bound for one agent, and
+corrected its smoothing term. They compared sufficient query bounds under homogeneous tuning. Finally,
+they tested whether the variance improvement could actually be credited to predictions, and whether the
+one-agent argument carried over to P's network. Both questions remained open.
+
+\section{Results supported by the checks}
+
+The one-query construction has a prediction-independent variance bound. To state the sharper conditional
+form, let \(d\) be the dimension of \(x\), \(\delta_i\) the perturbation radius, and \(U_i\) a bound on
+the absolute loss and on the clipped threshold. Let \(p_{i,k}\) be the probability, conditional on the
+past, that the fresh perturbed loss at step \(k\) exceeds the current threshold. The peers showed that
+the decision estimator's conditional second moment is at most
+\[
+\frac{4d^2U_i^2p_{i,k}}{\alpha_i^2\delta_i^2}.
+\]
+The threshold estimator's conditional second moment equals \(1-2p_{i,k}/\alpha_i+p_{i,k}/\alpha_i^2\).
+Since \(p_{i,k}\leq 1\), both expressions have a bound even for arbitrary advice. If thresholds remain
+calibrated so that \(p_{i,k}\) is of order \(\alpha_i\), their risk-level dependence improves from order
+\(\alpha_i^{-2}\) to order \(\alpha_i^{-1}\), with other quantities fixed. This is a condition on the
+whole trajectory, not a proved effect of a predictor. The derivation appears in the peer check
+\texttt{ada/quantile\_lift\_note.md}.
+
+For one agent, the peers applied convexity and the projected stochastic-subgradient recursion to the
+joint decision and threshold. They bounded the expected CVaR gap of the step-size-weighted average by
+three terms: the initial squared distance from a shrunken comparator and its optimal smoothed threshold,
+divided by the sum of step sizes; a step-size-weighted sum of the two second moments above; and a
+smoothing and domain-shrink term. Here the comparator is an optimal decision moved into the shrunken
+feasible domain required for perturbation. If \(L\) bounds the samplewise loss change per unit decision
+distance, \(\delta\) is the smoothing radius, \(D_x\) bounds the comparator's distance from the origin,
+and \(r\) is P's interior-ball radius, the last term is at most \(L\delta(2+D_x/r)\). The peers obtained
+this sharper term by choosing the optimal threshold \emph{after} smoothing at the shrunken comparator.
+The complete inequality and assumptions are in \texttt{ada/quantile\_lift\_note.md}. In particular, this
+is a one-agent additive gap bound, not a distributed theorem or an advice advantage.
+
+With homogeneous tuning, the one-agent bound gives a sufficient query count of order
+\(\alpha^{-2}\varepsilon^{-4}\) for target gap \(\varepsilon\) in the worst case, or
+\(\alpha^{-1}\varepsilon^{-4}\) if calibrated tail occupancy persists. Here \(\alpha\) is the common tail
+probability. For context, tuning P's displayed polynomial-step guarantee gives \(\widetilde
+O(\alpha^{-2}\varepsilon^{-10})\) loss queries; reoptimising its underlying ergodic inequality gives the
+different comparison \(\widetilde O(\alpha^{-2}\varepsilon^{-8})\). The tilde hides logarithmic factors.
+These are sufficient upper-bound calculations under different analyses, not lower bounds or a matched
+comparison of algorithms. The correction to P's displayed rate is recorded in the peers' checks and the
+ledger.
+
+\section{Objections and limits}
+
+Low tail-activation probability does not establish that advice helped. The prediction-free threshold
+\(t_i=U_i\) starts with \(p_{i,0}=0\). A threshold set too high can also make the decision estimator
+quiet while worsening the lifted objective. A meaningful advice error must therefore reflect quantile
+accuracy or excess lifted objective, and any gain must be measured against a matched rule that receives
+no prediction and pays the same query budget, including predictor calls.
+
+An accurate VaR at the observable initial decision need not equal the optimal smoothed threshold at the
+unknown comparator decision. It therefore need not remove the initial-distance term in the one-agent
+bound. Predictions issued at later decisions might help, but resetting thresholds from them would require
+a separate tracking argument. The peers did not supply one.
+
+The network step poses a further obstacle. With a threshold held fixed, the lifted local objective can be
+\(L_i/\alpha_i\)-Lipschitz in the decision, where \(L_i\) is the agent's samplewise loss Lipschitz
+constant. CVaR after minimising over thresholds has the sharper \(L_i\) bound. P's disagreement proof
+uses local-objective regularity, and the agents' thresholds vary, so the one-agent rate cannot simply be
+copied into a distributed claim. The full network recursion, matched-budget tests, and a broader
+prior-work check remain outstanding.
+
+The peers also checked two cited precedents. Soma and Yoshida already use joint decision-threshold CVaR
+optimisation with one sample in a first-order setting \cite{somaYoshida}. Wang, Shen, and Zavlanos study
+residual feedback for one-point CVaR estimates \cite{wangShenZavlanos}. Those checks limit novelty
+claims; the peers' searches did not establish that an identical distributed result is absent.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the supported one-query argument did not establish a benefit from
+quantile advice, and the distributed guarantee was unproved. The smallest step that could restart the
+connexion is a one-agent theorem specifying when a prediction is available, what it costs, and how its
+error affects an additive CVaR gap against a matched method with no advice. If that comparison shows a
+benefit, the network extension becomes a concrete next question.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,43 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Negotiated Plans in an Already Committed Market}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies LLM traders in a continuous double auction and finds incomplete convergence, with missed gains from trade especially when agents make small quote improvements instead of crossing the spread. P studies cooperation in a navigation and bargaining game and finds that enforceable contracts can help, while natural-language contracts can suppress additional trading. \ledger{3, 5, 9}
+
+\section*{Connexion pursued}
+
+The initial idea was to bring P-style commitment into Q's market to repair its low trade volume. The peers instead identified a narrower question: when the exchange already commits traders to executable quotes, does the persistent representation of a negotiated plan change their willingness to trade? \ledger{1, 2, 9, 10, 19}
+
+\section*{What was found}
+
+Q's resting quotes are executable: a crossing bid or ask settles immediately at the resting price. Its reported bottleneck is slow spread closure, including repeated one-cent improvements before the iteration cap. P's contracts address a different problem: promised chip transfers occur later and may otherwise be refused. Enforcement of a future obligation therefore does not directly address Q's atomic trades. \ledger{3, 4, 19}
+
+There is also a payoff equivalence for a single trade. If a buyer with value \(v_b\) trades with a seller of cost \(c_s\) at price \(p\), and an enforceable payment \(s\) goes from buyer to seller, their payoffs are
+\[
+\pi_b=v_b-p-s,\qquad \pi_s=p+s-c_s.
+\]
+Setting \(p'=p+s\) gives the payoffs of an ordinary trade at \(p'\); joint surplus remains \(v_b-c_s\). Such a payment changes the division of gains, but cannot by itself create additional gains from that trade. A benefit in Q would have to arise through changed search, information, timing, or behavior. This equivalence does not cover obligations across rounds or other changes to Q's market. \ledger{7, 19}
+
+P offers a warning about behavior. On mutually dependent boards in its regular-trading game, normalized joint reward is reported as \(0.64\) with natural-language contracts versus \(0.93\) without contracts. Natural-language and programmatic contracts cover about the same number of moves, \(2.60\) versus \(2.58\), while total trades are \(1.95\) versus \(3.28\), respectively. The trade counts compare the two contract formats, not natural-language contracts with no contract. P suggests over-reliance on the agreement, but its formats also differ in transcript length and interpretation, so these observations do not isolate a representation effect. Q independently reports anchoring on opening quotes; that is an analogy, not evidence of the same cause. \ledger{5, 6, 8, 12, 19}
+
+\section*{Objections and limits}
+
+A bilateral sale contract with immediate settlement would largely duplicate Q's order book. A plan must therefore leave matching and execution in the original book, without pair priority or an off-book trade. Surplus, trade volume, and price dispersion must be reported separately: more trades need not mean better price discovery, and dispersion based on very few trades may mislead. \ledger{4, 5, 8, 15}
+
+The peers also considered whether agents keep waiting after a planned counterparty has traded. Q's agent-facing market history omits trader identities, so an agent cannot ordinarily know that this happened. Reliance after an explicitly stated plan expiry is a cleaner diagnostic. Even then, declining a currently profitable quote can be rational if a better opportunity is expected; the relevant evidence is a difference between randomized conditions, not a judgment about one refusal. \ledger{14, 17}
+
+\section*{Outside sources}
+
+One peer reported a prior-work check identifying Hantel's \href{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7095458}{\emph{Small Bias, Large Failure}} and Agrawal and colleagues' \href{https://arxiv.org/abs/2507.01413}{\emph{Evaluating LLM Agent Collusion in Double Auctions}} as overlapping with broad claims that communication or textual anchors can harm LLM markets. The ledger supplies this check, but no independent assessment of those works. Novelty of the specific representation comparison remains unverified. \ledger{18, 19}
+
+\section*{What remains open and the smallest next step}
+
+The material establishes a mismatch between the proposed commitment repair and Q's bottleneck. It does not establish that negotiated-plan wording changes auction outcomes. The next step is a controlled Q-style experiment: form buyer--seller plans under one fixed protocol, then assign whole market runs to display the same verified terms as compact structured fields or concise prose. Keep execution in Q's anonymous order book and include an unmodified baseline; a full-transcript condition can separately test the effect of negotiation history. Paired runs should use the same reservation schedule and selection seed. Measure realized surplus, trade count, crossing behavior, missed gains at the cutoff, and price dispersion, with behavior after explicit plan expiry as a diagnostic. Whether this effect exists, extends to other models or schedules, or makes pre-round bilateral plans useful in an anonymous market remains open. \ledger{9, 10, 12, 15, 19}
+
+\end{document}

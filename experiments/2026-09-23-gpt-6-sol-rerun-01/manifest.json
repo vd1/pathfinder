@@ -1,0 +1,80 @@
+{
+  "created_utc": "2026-09-23T19:33:02Z",
+  "base_commit": "bf9d9cbd309e07b4bc43d2437079290ca9dd7929",
+  "model": "gpt-6-sol",
+  "reasoning_effort": "high",
+  "backend": "codex",
+  "replicate": 1,
+  "pairs": [
+    "Q4P10",
+    "Q3P9",
+    "Q4P6",
+    "Q3P10",
+    "Q7P1",
+    "Q4P3",
+    "Q1P1",
+    "Q3P3",
+    "Q4P9",
+    "Q7P7",
+    "Q8P8",
+    "Q3P6",
+    "Q1P6",
+    "Q1P2"
+  ],
+  "scope": "Fresh research, readable accounts, and paper author/reviewer stage for DRAFT outcomes. No reinjection.",
+  "inputs": {
+    "Q.jsonl": "2768f1feda35331d4332cffaa50c8877a53ce1a926f934265e8a0a88b70dbdb7",
+    "P.jsonl": "e1799e8b4abe3e3308a07b0c13a44f49767f32e222df23fa9dedb28d201301e5",
+    "scan.jsonl": "3416fe6d39d1b940b27984c7e94fd1aa41016dba8b8b0cabfa82dbbae1b40949",
+    "shortlist.json": "4da472403f75ac4c6a6b44b25f1e6ebd74ee45a9065292d46a6581328e631268"
+  },
+  "prompts": {
+    "scan.md": "11512214be3d182dd90a1b33ac5b215be5b52a662e2e20103788acfc13b0f607",
+    "peer.md": "77050dd33d027d20464cc7cd23535b403cb43e91da743001f33affcabe6ca276",
+    "verify.md": "d5eac491407344c1cdf68377881abf05cb8dec52e1d2ca801de4819f0babdafd",
+    "editor.md": "c5c1932d0a0de572c73d8894d635ddeb649f6303724625e9a8bf33e021824704",
+    "consolidate.md": "4fb04de20d5d860e7e3f88b8bd20db997171246d21fc052d8dace3c2e899dde5",
+    "author.md": "cda3925282f0c43df25063f2dbb97a4ca79b5560282f8d9e67d72ca955fe2633",
+    "review.md": "6a0c19e369c407a45ded7d229f18e57cccd33b66aeee2d60b0da4434f36dc049"
+  },
+  "configuration": {
+    "backend": "codex",
+    "model": "gpt-6-sol",
+    "scan_model": "gpt-6-sol",
+    "codex": {},
+    "peer_search": true,
+    "peers": [
+      "ada",
+      "emmy"
+    ],
+    "seats": 2,
+    "cut": 12,
+    "rounds": 4,
+    "repairs": 1,
+    "paper_rounds": 3,
+    "allowances": {
+      "peer_seconds": 1800,
+      "peer_calls": 2,
+      "consolidate_seconds": 1800,
+      "verify_seconds": 900,
+      "paper_seconds": 1800,
+      "review_seconds": 900,
+      "edit_seconds": 900
+    },
+    "budget_usd": 200,
+    "call_estimate_usd": 5.0,
+    "prices": {
+      "gpt-6-sol": {
+        "input_per_m": 2.0,
+        "cached_input_per_m": 0.2,
+        "output_per_m": 10.0
+      }
+    },
+    "scan": {
+      "fulltext": null
+    }
+  },
+  "blinding": "Fresh thread directories, unchanged source prompts, disabled inherited project documents, and explicit restriction against reading prior campaign outputs. This is instruction-based isolation, not an OS read barrier. Web access may expose prior public findings.",
+  "cost_basis": "Official GPT-6-sol standard token prices checked 2026-09-23; API-equivalent accounting, not subscription charges.",
+  "pricing_source": "https://developers.openai.com/api/docs/models/gpt-6-sol"
+}

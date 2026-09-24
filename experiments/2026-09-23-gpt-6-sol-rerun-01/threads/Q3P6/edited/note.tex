@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Context in Trading and Credit Assignment: An Unconfirmed Connection}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note considers Q's study of language-model traders alongside P's method for assigning credit to cooperating agents from image-based comparisons. The thread asked whether a context-sensitive comparison error could survive P's rank aggregation when agents leave or re-enter a task. The peers showed that aggregation can accurately recover a referee's preference even when that preference differs from contribution. They found no evidence that P's referee makes the proposed error. The thread paused because testing that connection needs judgments on actual task states near changes in participation, with a defensible contribution target.
+\end{abstract}
+
+\section{Introduction}
+
+Q puts language-model buyers and sellers in a double auction, where they make and revise offers. It asks whether they approach the efficient outcome seen with human traders. They do so slowly or not at all. Traders on the side opposite the first offer often anchor to it, although the rules do not force them to do so. In one model's reasoning traces, urgency words occur more often when traders complete a trade. Q treats that pattern as suggestive, not causal \cite{Q}.
+
+P asks which cooperating agent deserves credit when a team receives sparse feedback. Its MARS-RA method uses a multimodal referee to compare two agents from their current egocentric images and a task prompt. It asks in both image orders, combines the answers into relative scores, and uses those scores to shape training rewards. In MARS-Bench, battery depletion temporarily removes an agent, which later returns. P reports team performance and pooled comparison accuracy and fit \cite{P}.
+
+The proposed connection was that a visible cue near removal or re-entry might systematically affect the referee's comparison. Q's opening-offer result motivated the question. But Q studies traders making their own choices, whereas P's referee judges other agents. The transfer remained a hypothesis.
+
+\section{What was done}
+
+The peers first checked the proposed transfer. Q's urgency analysis concerns only one trader model and cannot explain P's referee. They kept the narrower observation that Q's opposing-side traders respond to the first offer without a mechanical need. They then examined P's inputs and guarantee. The guarantee concerns recovery of the referee's latent preference under a Bradley--Terry model. It does not validate that preference as true contribution \cite{Q,P}.
+
+Next, the peers constructed a hypothetical systematic error to test the distinction. Let \(v_i\) be agent \(i\)'s actual contribution at a step, and let \(u_i\) be the value of a visible cue for that agent. Let \(\beta\) measure the cue's influence, and let \(\sigma(x)=1/(1+\exp(-x))\) be the logistic function. A referee could compare agents \(i\) and \(j\) according to
+\[
+\Pr(i\succ j)=\sigma\bigl((v_i-v_j)+\beta(u_i-u_j)\bigr).
+\]
+Here \(\Pr(i\succ j)\) is the chance that the referee prefers \(i\) to \(j\). This is itself a Bradley--Terry model, with latent score \(v_i+\beta u_i\). If the cue points away from contribution, more independent comparisons make the estimate of that wrong score more precise. This was a mathematical counterexample, not a measurement of P's referee.
+
+Finally, the peers narrowed the proposed test to real MARS-Bench states just before and after battery removal or re-entry, with matched states in which participation is stable. They proposed repeated judgments in both image orders. They would compare errors by distance from the participation change and by query count, while accounting for task, reward gap, visibility, progress, and agent identity. They also proposed checking whether a short, verified history of actions and outcomes changes the judgments, because P's simultaneous images do not give the referee that history.
+
+\section{Results and their limits}
+
+The formal example shows why P's statistical guarantee and a claim about correct credit are different. The latent ordering in the example is transitive and its comparison probabilities can fit held-out data well, even if the ordering disagrees with contribution. Individual sampled comparisons may still form cycles. Thus P's reported cycle rate, held-out fit, pooled accuracy, and gains from more queries do not by themselves rule out a systematic error local to participation changes \cite{P}. The peers' derivation is recorded in the ledger findings and correction on this example.
+
+P shows battery level in an agent's observation and uses depletion to change participation \cite{P}. This gives the proposed test a concrete setting, but it does not show that the referee uses battery as a shortcut. Nor does a change in a third agent's status necessarily affect a fixed pair: the referee receives the pair's images and the task prompt, so that change would have to appear in what it sees. P's score normalisation can also change when the active set changes. That mechanical effect alone does not establish wrong credit or a failure of policy invariance. These limits were checked by the peers against P's input and reward definitions.
+
+\section{Objections and unresolved questions}
+
+An early proposal changed a battery icon while holding simulator state fixed. The peers objected that the icon reflects a battery level that affects future participation. Such an edited image is inconsistent with the underlying state. A changed judgment could show sensitivity to the cue, but could not on its own show a credit error. Real states near participation changes became the primary comparison; icon edits remained only a possible probe of the mechanism.
+
+P measures pairwise accuracy against each agent's step-wise dense progress reward \cite{P}. The peers noted that this is a useful immediate-progress proxy, not necessarily the agent's contribution: a past action, current progress, and future ability to help can differ near battery depletion. A disagreement with that proxy would establish only disagreement with the proxy. A stronger target would estimate the effect of an agent on later team return using matched simulator counterfactuals. The missing action history poses another explanation for a transition-local error, so verified history could help separate lack of evidence from cue reliance. Neither issue was settled by the material in this thread.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread after one round. Q supplies a reason to ask about context, and the peers identified a genuine limit of P's aggregation guarantee, but neither paper nor the ledger shows a transition-specific comparison bias in P's referee. There are no judgments on the relevant MARS-Bench states, contribution targets for those states, or downstream training results. The smallest restart is to archive actual states around removal and re-entry, collect repeated ordered judgments, and compare their error with matched stable-participation states against P's dense-reward proxy. If an error persists, a counterfactual contribution target is needed before calling it wrong credit; a later matched-budget training test would address its effect on team success. A null transition effect would end this particular proposed connection.
+
+\enlargethispage{2\baselineskip}
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

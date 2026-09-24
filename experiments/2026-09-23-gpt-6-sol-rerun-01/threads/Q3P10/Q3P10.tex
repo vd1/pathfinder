@@ -1,0 +1,36 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Costly Price Discovery in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+Q studies LLM traders in a continuous double auction with private buyer values, seller costs, and a known surplus benchmark; it reports repeated small quote improvements and incomplete convergence. P studies a survival economy that charges agents for generated tokens and deactivates them when their energy is exhausted. \ledger{2, 3, 10}
+
+\section*{Connexion pursued}
+The useful transplant is P's cost of inference into Q's fixed-value auction, rather than an auction over P's jobs. P's jobs have uncertain, agent-dependent value and no existing sellers, so that alternative would lose Q's clean welfare counterfactual. The question is whether charging traders for deliberation leads them to close profitable spreads sooner, or instead reduces participation and leaves more gains from trade unrealized. \ledger{2, 3, 5, 10}
+
+\section*{What was found}
+Q's symmetric value and cost schedules imply a gross surplus ceiling of \(G^\star=7.5\) per round: the five strictly profitable pairs yield \(2.5+2+1.5+1+0.5\), while the sixth equilibrium trade adds zero. For executed buyer--seller matches \(M\), gross surplus is
+\[
+G=\sum_{(b,s)\in M}(v_b-c_s).
+\]
+A P-style token charge gives total inference cost \(C=\sum_{i,t}kT_{it}S_i^\alpha\), where \(T_{it}\) is generated tokens. Net welfare is \(W_\lambda=G-\lambda C\), with a declared conversion \(\lambda\) between energy and Q's value units. Gross surplus, token cost, and net welfare must be reported separately: reaching Q's equilibrium quantity of six is not itself a cost-aware welfare target. \ledger{6, 8, 11}
+
+The charge must also enter each trader's stated payoff if it is meant to change behavior. Under Q's rules, crossing a standing quote executes a trade and removes both parties from the round, so closing a spread may avoid later inference calls. A single realized run cannot reveal how many calls that decision saved; randomized runs can estimate effects on total calls and tokens. This is a proposed mechanism, not an observed cross-paper result. \ledger{17, 19, 20}
+
+\section*{Objections and limits}
+Q's scheduler can call an agent again after it declines to quote. All causal comparison arms therefore need the same persistent option to withdraw for the rest of a round; the first scheduled call still has a cost. An unchanged-Q arm can establish replication, while comparisons among modified arms isolate the effect of pricing. The experiment must specify whether a resting order survives voluntary withdrawal, cancel orders on budget exhaustion, and resolve Q's differing descriptions of round termination against the released implementation. An exogenous-removal control would help separate changed quoting from the loss of active traders under a finite budget. \ledger{12, 13, 17, 19}
+
+P's energy scale has no natural conversion to Q's prices, and Q's closed API models do not supply the parameter counts needed to copy P's size factor directly. The primary test can use a common per-token tariff, \(\alpha=0\), with its scale fixed after a pilot and \(\lambda\) examined over a declared range. Neither paper establishes a shared model-size effect. Q's Gemini-only reasoning-trace association is noncausal and cannot establish why a charged trader crosses a spread. \ledger{4, 8, 9, 10}
+
+\section*{Outside sources and open question}
+A limited prior-work check identified adjacent auctions for model task allocation or communication opportunities, but no cited abstract established this fixed-value test of costly price discovery. It was not an exhaustive novelty search. No combined experiment has been run; the direction of the behavioral and welfare effects remains open. \ledger{7, 9, 10}
+
+The smallest decisive next step is to verify Q's released scheduler and token-usage records, calibrate one affordable tariff in a pilot, then run matched-seed auctions with identical values, prompts, order-book rules, and withdrawal options under zero versus disclosed per-token charges without a binding budget. Compare \(G\), \(C\), \(W_\lambda\), crossings, withdrawals, and calls per trade. A finite-budget arm can then test whether exhaustion reverses any effect. \ledger{10, 13, 15, 20}
+
+\end{document}
+```

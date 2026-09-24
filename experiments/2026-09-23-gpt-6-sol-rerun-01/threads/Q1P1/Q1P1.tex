@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Quantile Advice for Distributed Zeroth-Order CVaR Optimization}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q surveys learning-augmented algorithms and emphasizes that prediction cost, error measures, and downstream guarantees require explicit models. P studies distributed zeroth-order optimization of CVaR using batches of independent loss evaluations at each perturbed decision \ledger{1, 7}.
+
+\section{The connexion pursued}
+
+The proposed connexion was to use a predicted value at risk (VaR) to reduce P's loss-query budget. The peers instead examined whether a predicted threshold could improve a single-query, lifted CVaR method while retaining a prediction-independent bound \ledger{2, 3, 5}.
+
+\section{What was found}
+
+\begin{objection}
+A VaR prediction alone does not reduce the number of queries in P's algorithm. P obtains a full batch of losses and minimizes the empirical Rockafellar--Uryasev objective over its threshold afterward; its finite-sample error comes from the empirical distribution. Seeding that scalar minimization changes neither the batch nor the distribution-free sampling term \ledger{1, 2}.
+\end{objection}
+
+A concrete alternative jointly optimizes the decision \(x\) and a local threshold \(t_i\):
+\[
+F_i(x,t_i)
+=t_i+\frac{1}{\alpha_i}
+\mathbb E\!\left[(J^i(x,\xi^i)-t_i)_+\right].
+\]
+For one fresh loss at \(y_i+\delta_i u_i\), the threshold-subtracted one-point estimators are
+\[
+g_x^i=
+\frac{d}{\alpha_i\delta_i}
+(J^i(y_i+\delta_i u_i,\xi^i)-t_i)_+u_i,
+\qquad
+g_t^i=1-\frac{\mathbf 1\{J^i(y_i+\delta_i u_i,\xi^i)>t_i\}}{\alpha_i}.
+\]
+Taking zero as the hinge subgradient at equality makes the second expression valid there. Conditional expectations give a gradient in \(x\) of the smoothed lifted objective and a subgradient in \(t_i\). Subtracting the direction-independent threshold from \(g_x^i\) leaves its expectation unchanged \ledger{3, 5, 11}.
+
+Let \(p_{i,k}\) be the conditional probability that the sampled loss exceeds \(t_i\). With losses bounded by \(U_i\) and thresholds clipped to \([-U_i,U_i]\), the conditional second moments obey
+\[
+\mathbb E[\|g_x^i\|^2\mid\mathcal F_k]
+\leq
+\frac{4d^2U_i^2p_{i,k}}{\alpha_i^2\delta_i^2},
+\qquad
+\mathbb E[(g_t^i)^2\mid\mathcal F_k]
+=
+1-\frac{2p_{i,k}}{\alpha_i}
++\frac{p_{i,k}}{\alpha_i^2}.
+\]
+Thus \(p_{i,k}\leq 1\) supplies a prediction-independent moment cap, while maintained \(p_{i,k}=O(\alpha_i)\) improves its dependence on \(\alpha_i\) \ledger{5, 7, 11}.
+
+The peers worked out a single-agent projected stochastic-subgradient bound. Write \(H_T=\sum_{k<T}\eta_k\), let \(z_\delta=(1-\delta/r)x^\ast\), and choose \(t_\delta^\ast\) to minimize the smoothed lifted objective at \(z_\delta\). The expected CVaR gap of the step-size-weighted decision average is bounded by an initial-distance term
+\[
+\frac{\|x_0-z_\delta\|^2+|t_0-t_\delta^\ast|^2}{2H_T},
+\]
+a second-moment term obtained by summing the displayed moment bounds with weights \(\eta_k^2/(2H_T)\), and a smoothing and domain-shrink term at most \(L\delta(2+D_x/r)\) \ledger{13, 14, 17}. The last term has no \(1/\alpha\): minimizing the lifted objective over \(t\) gives CVaR of the perturbed loss, which differs from CVaR of the original loss by at most \(L\delta\) under the samplewise Lipschitz coupling \ledger{12, 14}. This is an additive CVaR-gap argument; Q's competitive-ratio definitions do not apply verbatim \ledger{7}.
+
+Under homogeneous tuning, the single-agent argument suggests sufficient query bounds of order \(O(\alpha^{-2}\varepsilon^{-4})\) in the worst case and \(O(\alpha^{-1}\varepsilon^{-4})\) if the tail-activation condition persists. These are upper-bound calculations, not lower bounds or a proved distributed improvement. For comparison, tuning P's displayed polynomial-step corollary gives a sufficient budget of \(\widetilde O(\alpha^{-2}\varepsilon^{-10})\); reoptimizing its underlying ergodic inequality gives a different comparison, \(\widetilde O(\alpha^{-2}\varepsilon^{-8})\) \ledger{19, 22}.
+
+\section{Objections and their status}
+
+A small tail probability does not certify useful advice. The prediction-free choice \(t_i=U_i\) initially gives \(p_{i,0}=0\), while an excessively high threshold can lower gradient variance and worsen the lifted objective. A prediction-dependent claim therefore needs a causal quantile-error or excess-objective measure, predictor cost, and comparison with a matched prediction-free threshold rule \ledger{23, 26}.
+
+An exact VaR prediction at the observable initial decision need not equal \(t_\delta^\ast\) at the unknown shrunken comparator. It cannot generally erase the initial-distance term. Advice queried at later decisions would need a separate tracking argument \ledger{15, 17}. Also, the lifted objective at a fixed threshold can be \(L_i/\alpha_i\)-Lipschitz in \(x\), even though optimized CVaR is \(L_i\)-Lipschitz. P's network-disagreement proof therefore cannot simply inherit the single-agent rate \ledger{25}. The full distributed theorem and maintained-calibration result remain unproved \ledger{16, 20}.
+
+\section{Outside sources}
+
+The peers checked Soma and Yoshida's \emph{Statistical Learning with Conditional Value at Risk} (\url{https://arxiv.org/abs/2002.05826}), which already uses joint decision-threshold optimization with one sample in a first-order setting. They also checked Wang, Shen, and Zavlanos (\url{https://proceedings.mlr.press/v162/wang22w.html}), which studies residual feedback for one-point CVaR estimates. These checks limit novelty claims; the reported searches did not establish that an identical distributed theorem is absent \ledger{6, 10}.
+
+\section{What remains open}
+
+The supported contribution is a single-agent one-query argument and a candidate distributed construction. Evidence for a learning-augmented query advantage is thin: there is no proof that causal quantile advice maintains calibration as decisions move, beats a matched no-advice threshold trajectory, or offsets its own cost. The distributed recursion, matched-budget experiments, and broader prior-work check are also outstanding \ledger{16, 20, 23, 25}.
+
+The smallest decisive next step is to specify a causal threshold-prediction interface and prove, for one agent, an error-dependent bound against a matched no-advice threshold rule that charges prediction calls. That result would establish whether the advice adds value before extending the argument to P's changing communication network \ledger{15, 20, 26}.
+
+\end{document}

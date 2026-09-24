@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Risk-Averse Learning and Strategic Resource Allocation}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q designs quadratic payments for a resource-allocation game with private expected valuations and proposes stochastic proximal best-response learning. P studies cooperative minimization of local conditional value-at-risk (CVaR) objectives using empirical CVaR estimates and zeroth-order projected updates over a communication network \ledger{1, 2}.
+
+\section{Connexion pursued}
+
+The question is whether P's empirical CVaR method can give Q a risk-averse mechanism with a learning guarantee. A candidate risk valuation is
+\[
+R_n(x_n)=-\operatorname{CVaR}_{\beta_n}\!\left[-\psi_n(x_n,\xi_n)\right].
+\]
+For a deterministic payment \(t_n\), CVaR cash translation makes the agent's risk-adjusted utility \(R_n(x_n)-t_n\). Thus Q's payment construction can target the sum of local risk valuations if those valuations satisfy the curvature and constraint conditions needed by its mechanism results \ledger{4}.
+
+\section{What was established}
+
+Q's strong concavity assumption on expected valuation does not transfer to CVaR. On \(x\in[0,1]\), let two equiprobable losses be \(0\) and \(x^2-1\). Their expected loss is strongly convex, but their CVaR with tail mass \(1/2\) is zero throughout the interval. The resulting risk valuation is flat, so Q's uniqueness condition cannot retain the curvature constant from the expected valuation \ledger{3, 5}. A sufficient repair is uniform samplewise strong convexity: if every loss \(J_n(\cdot,\xi_n)\) is \(m\)-strongly convex, cash translation implies that \(\operatorname{CVaR}_{\beta_n}(J_n)\) is \(m\)-strongly convex, even when it is nonsmooth \ledger{4}.
+
+Fixed batches create a second, distinct error. Suppose \(x\in[0,1]\), capacity is slack, \(\xi\) is equally likely to be zero or one, and
+\[
+J(x,\xi)=\frac{x^2}{2}-\frac{3x}{4}+\xi x,
+\qquad \beta=\frac12.
+\]
+The true CVaR loss is \(x^2/2+x/4\), minimized at zero. With one observation per batch, the expected empirical CVaR is \(x^2/2-x/4\), minimized at \(1/4\). Both objectives are strongly convex. Under Q's payment with zero prices and slack capacity, the surrogate allocation \(1/4\) gives true risk utility \(-3/32\), below the zero-allocation outside utility. This establishes that an exact surrogate equilibrium can fail true-risk implementation and individual rationality; it does not establish convergence of Q's learning algorithm to that equilibrium \ledger{6, 9}.
+
+There is nevertheless a conditional quantitative guarantee. When all smoothing queries are valid, losses are bounded by \(U_n\), and local CVaR is \(L_n\)-Lipschitz, P's smoothing and empirical-distribution bounds give
+\[
+\sup_x\lvert\widetilde R_n(x)-R_n(x)\rvert
+\le e_n
+:=L_n\delta_n+
+\frac{U_n\sqrt{2\pi}}{\beta_n\sqrt{s_n}}.
+\]
+At an exact equilibrium of Q's surrogate game, replacing the surrogate valuation by the true valuation changes the payoff comparison for any unilateral deviation by at most \(2e_n\). Q's nonpositive-tax opt-out deviation then gives true-risk participation of at least \(-2e_n\) relative to \(R_n(0)\). If Q's mechanism exactly implements the surrogate social optimum, its true sum-of-local-risk welfare gap is at most \(2\sum_n e_n\). Budget balance remains exact at that surrogate equilibrium, conditional on Q's mechanism conditions holding for the surrogate valuations \ledger{14, 15, 16}.
+
+A stronger, conditional equilibrium-distance route uses P's gradient-error bound. If a feasible smoothing oracle exists and the smoothed strategic game has strong monotonicity constant \(\nu>0\), its fixed-batch expected-empirical equilibrium differs from the true-smoothed equilibrium by at most
+\[
+\frac{1}{\nu}
+\sqrt{\sum_n
+\frac{2\pi d_n^2U_n^2}
+{\beta_n^2\delta_n^2s_n}}.
+\]
+This follows by comparing the two variational inequalities and applying strong monotonicity. It suggests decreasing \(\delta_n\) while making \(\delta_n\sqrt{s_n}\) diverge, but it is not a convergence theorem for a strategic learning algorithm \ledger{11}.
+
+\section{Objections and scope}
+
+P's consensus update solves a cooperative problem with one shared decision; it cannot be placed directly inside Q's proximal best-response game \ledger{1, 2}. Its origin-centered-ball assumption is also incompatible with Q's nonnegative allocation sets, and Q's electric-vehicle flow equalities may leave no ambient interior for perturbations. A feasible relative-interior oracle or a justified loss extension is still needed \ledger{8}.
+
+The welfare target must be stated precisely. Q's deterministic payments with individual CVaR valuations target the sum of local CVaRs, which can differ from CVaR of aggregate loss even under samplewise strong convexity. A two-agent example in the ledger gives respective optimal allocations \((0,1)\) and \((1/3,2/3)\), with aggregate-risk regret \(1/3+4q/9>0\) at the local-CVaR solution. Scenario-contingent pooling transfers provide a risk-aggregation identity, but require verifiable realized losses and do not yet constitute an incentive-compatible mechanism \ledger{7, 10}. The proposed participation failure concerns true CVaR utility, not every realized payoff \ledger{9}.
+
+\section{Sources, open work, and next step}
+
+No source outside Q and P was checked; no external novelty claim is supported by this record \ledger{12, 17}. The material establishes conditional mechanism bounds and counterexamples, but remains thin on an implementable oracle and strategic dynamic stability. The smallest decisive next step is to construct a feasible CVaR oracle for Q's nonnegative and affine allocation sets, then prove an inexact proximal best-response convergence result with its batch and smoothing error schedule. That would connect the value-level guarantees above to the actual learned outcome \ledger{11, 12, 17}.
+
+\end{document}

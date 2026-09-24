@@ -1,0 +1,117 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When a Contract Leaves Cooperation Unfinished}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note connects a theory of incentives for AI agents with a study of language model agents making contracts
+in a two-player game. The thread asked whether the weaker results for natural-language contracts reveal a
+problem with the theory's rule about verifiable capabilities. That link did not hold, but a closer question
+emerged: whether an incomplete contract discourages the further cooperation needed to finish. The peers
+established a path-based lower bound on that remaining need, while the reported game outcomes suggest, but do
+not prove, such a discouragement effect. The verifier paused the thread because the accepted obligations and
+game histories needed to test the explanation were not available.
+\end{abstract}
+
+\section{Introduction}
+
+Bergemann, Koh and Morris study how a designer can induce an AI agent to report what it can do and then follow
+instructions \cite{Q}. An agent may hide evidence of a capability, but cannot manufacture evidence it lacks.
+The paper separates actions an agent can physically take from actions it has an incentive to take. It also
+asks how much a reward can depend on what the designer can observe. Its main mechanism results concern a
+static setting, even though the authors discuss the difficulty of extending it to long sequences of actions.
+
+Wyse, Bustos, Volkova and Kleiman-Weiner study language model agents on a coloured board \cite{P}. Each player
+wants to reach a goal but starts without chips of the other player's colour. Players can arrange to pay for
+each other's moves and can negotiate a binding tile contract before play. In one format, the agreed tile
+obligations appear as structured data and are checked by code. In another, the negotiation remains in prose
+and a judge decides whether each proposed move is covered. A promised transfer occurs only if its giver has
+the chip.
+
+The thread began with the thought that prose interpretation might violate the first paper's rule against
+counterfeit capability claims. The peers rejected that link: the rule governs evidence for reports about an
+agent's type, whereas the judge in the board game interprets an agreement about a later move. The more useful
+connection is the distinction between a feasible plan and incentives to carry it out, together with the
+question of what an agreement's enforcement can recognise.
+
+\section{What was done}
+
+The peers first checked what the board-game results actually say. On boards where each player needs the
+other's help, both players finish in \(46\%\) of games with natural-language tile contracts, \(79\%\) with
+programmatic tile contracts, and \(61\%\) without contracts \cite{P}. The two contract formats cover about
+\(2.6\) tiles per game on average. Yet players proposed later pay-for-partner arrangements less often with
+prose contracts than with programmatic ones, \(1.4\) rather than \(3.0\) proposals per game, and accepted
+fewer, \(0.7\) rather than \(1.4\). When declining to trade, players cited an existing contract more often in
+the prose setting, \(94\%\) rather than \(74\%\) of those refusals. The peers took these observations as a
+reason to examine whether an incomplete contract crowds out later cooperation.
+
+They then replaced the average number of covered tiles with a test for each board and contract. Let \(i\)
+denote one player, \(C\) the accepted tile obligations, and \(\mathcal P_i\) the simple paths from that
+player's start to its goal. For a tile \(v\), an obligation in \(C\) \emph{covers} \(i\) at \(v\) if it pays
+for that player's move onto \(v\). They defined the uncovered path requirement
+\[
+\delta_i(C)=\min_{p\in\mathcal P_i}
+\#\{v\in p:\ v\text{ has the other player's colour and }C
+\text{ does not cover }i\text{ at }v\}.
+\]
+Here \(p\) is one path and \(\#\) counts its qualifying tile visits. This is a lower bound on the further help
+player \(i\) needs, not a forecast of which path the agents will choose. The peers next checked why the bound
+cannot by itself certify that a contract suffices. Finally, they proposed comparing the same obligations shown
+as structured data or as faithfully generated prose, with identical enforcement, while checking enforcement
+separately.
+
+\section{Results}
+\enlargethispage{3\baselineskip}
+
+The path bound holds under the game's stated chip and contract rules \cite{P}. A player begins with no chips
+of the other colour. Any successful walk contains a simple start-to-goal path. On every such path, each
+other-colour tile not covered by the contract must be paid for through later voluntary help. Thus a player who
+finishes needs at least \(\delta_i(C)\) such payments or transfers. In particular, \(\delta_i(C)>0\) proves
+that the contract alone cannot get that player to the goal. The two peers independently checked this argument
+in the ledger, with the qualification that it counts a necessary minimum, not a sufficient plan.
+
+The reverse implication fails. Even when \(\delta_i(C)=0\), the giver may have spent a promised chip when the
+covered move occurs. The two players' individually suitable routes may also be incompatible in timing or
+inventory. A stronger physical test would search joint states containing both positions, both inventories,
+remaining obligations and turn order, asking whether both goals can be reached with no further voluntary
+exchange. Such a search would establish possibility only. It would not show that either player prefers to
+follow that route. This is the practical form of the feasibility-versus-obedience distinction in the first
+paper \cite{Q}.
+
+\section{Objections and unresolved questions}
+
+The initial claim about counterfeit capability reports failed because no such reports are shown in the
+board-game evidence. The judge observes the proposed destination; the uncertain issue is whether the prose
+agreement covers it. The first paper's discussion of imperfectly measured, payoff-relevant conditions offers a
+way to think about that issue, but gives no predicted ranking between the two contract formats \cite{Q}.
+
+The board-game paper audits \(1{,}155\) approved prose-contract moves and finds three judge errors, all
+mistaken approvals \cite{P}. This weakens an account based on frequent mistaken approvals. It does not measure
+mistaken denials, and a genuinely ambiguous clause may have no single correct reading until its meaning is
+fixed independently. Similar average numbers of covered tiles also do not show that the formats promise the
+same tiles or cover equally useful paths.
+
+The lower bound has not been calculated for the observed contracts. The supplied paper and thread contain
+neither the accepted obligations and game histories needed for that calculation nor an audit of denied judge
+decisions. The peers therefore did not establish that unfinished obligations caused the completion gap. Even a
+gap under matched obligations and enforcement could reflect changed beliefs, planning or a choice among
+equilibria. The first paper's static results, with broad reward instruments, do not settle play in this
+sequential game with limited contract terms \cite{Q,P}.
+
+\section{Why the thread stopped}
+
+The verifier accepted the path bound but paused the thread because the proposed explanation remained a
+research design, not a supported finding about this pair. The smallest restart is to obtain the accepted
+contracts and game histories, translate each contract into tile obligations, calculate \(\delta_i(C)\), and
+compare later trading and completion by the resulting shortfall. A joint reachability check would sharpen the
+physical classification. If the claim is specifically that prose presentation causes the gap, the next
+experiment must hold the board, obligations, information and enforcement fixed while varying only their
+display; a separate audit must include denied as well as approved judge decisions.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

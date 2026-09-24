@@ -1,0 +1,61 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Comparison-Derived Reward Shaping Through a Learning-Augmented Lens}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+Q surveys learning-augmented algorithms, separating prediction error, decision guarantees, and the cost of obtaining predictions. P uses multimodal pairwise comparisons and Bradley--Terry rank aggregation to construct potential-based rewards for cooperative multi-agent learning.
+
+\section*{The connexion pursued}
+The initial question was whether Q's consistency, robustness, and smoothness framework could characterize P's response to inaccurate comparisons. The peer discussion found that this mapping is mostly a matter of terminology for ideal policy quality, but it exposes a testable question about finite-training benefit per comparison query \ledger{1, 3, 6, 12, 14}.
+
+\section*{What was found}
+P's score-estimation proposition concerns error relative to an assumed latent LMM preference vector. It does not bound error relative to task contribution or the quality of a learned policy; its Shapley interpretation assumes that the latent preferences already equal Shapley values \ledger{2, 3, 8}. P's measured comparison accuracy instead uses agreement with dense task rewards, another target whose equivalence to Shapley values is unproved \ledger{8}.
+
+For a trajectory with terminal potential \(\psi_T=0\), P's shaping rule gives the pathwise identity
+\[
+\sum_{t=0}^{T-1}\gamma^t
+\left[r_t+\rho\left(\gamma\psi_{t+1}-\psi_t\right)\right]
+=
+\sum_{t=0}^{T-1}\gamma^t r_t-\rho\psi_0.
+\]
+At a fixed initial condition, arbitrary comparison outcomes therefore do not produce a useful error-dependent curve for the optimal policy's return under the stated boundary assumptions \ledger{3, 9}. The relevant empirical question is how shaping changes finite training.
+
+A one-step policy-gradient reduction makes the choice of error measure precise. If comparisons produce a pre-action baseline \(b_i\), independent of agent \(i\)'s sampled action conditional on its history, then \(g_i(R-b_i)\), with \(g_i=\nabla\log\pi_i(a_i\mid h_i)\), has unchanged expected gradient. Its conditional second moment is minimized by
+\[
+b_i^*
+=
+\frac{\mathbb{E}[R\lVert g_i\rVert^2\mid h_i]}
+     {\mathbb{E}[\lVert g_i\rVert^2\mid h_i]}.
+\]
+The excess second moment is
+\(\mathbb{E}[\lVert g_i\rVert^2\mid h_i]\,
+\mathbb{E}[(b_i-b_i^*)^2\mid h_i]\) when the baseline randomness is conditionally action-independent \ledger{5, 6}. Thus recovering a comparison ranking need not reduce gradient noise. In the ledger's two-agent Bernoulli example, the correct Shapley order yields baseline \(0.711\) and excess second moment about \(0.0336\); reversing that order yields \(0.289\) and about \(0.0032\), because the variance-optimal baseline is \(0.1\) \ledger{7, 9}. This example is a reduction, not a result for P's MAPPO implementation.
+
+For MAPPO with generalized advantage estimation, there is a stronger control. Write the shaped critic explicitly as \(V_t^\psi=U_t-\rho\psi_t\), and reuse the same realized potentials in rewards and critic offsets. Then, for any parameters of \(U\),
+\[
+\delta_t^\psi
+=
+r_t+\rho(\gamma\psi_{t+1}-\psi_t)
++\gamma V_{t+1}^\psi-V_t^\psi
+=
+r_t+\gamma U_{t+1}-U_t.
+\]
+With matching rollout bootstraps and value targets, advantages and value-loss residuals also match the unshaped run. Paired updates should therefore agree apart from comparison-query cost, subject to consistent agent coordinates and trajectory boundaries \ledger{16, 18, 19}. P reports 30 hours for MARS-RA versus 16 hours for MAPPO at 50 million environment steps, and a substantial dependence on shaping weight, but those observations do not identify the mechanism producing the gain \ledger{5, 16, 19}.
+
+\section*{Objections and their status}
+Connectedness alone does not ensure P's stated finite-error bound for its unregularized Bradley--Terry maximum-likelihood estimator. With three equal-score agents and two independent fair judgments per pair, the graph is complete, yet the probability that some agent wins every judgment involving it is \(3/16>1/9\), exceeding the proposition's failure allowance \(n^{-2}\); the fitted score can then diverge \ledger{4}. The proof sketch invokes regularized estimation, while P defines an unregularized estimator. This estimator issue is unresolved in the supplied material and is distinct from the proposed training question.
+
+Repeated comparisons may reduce sampling error around the LMM's latent preference, but cannot remove a systematic gap between that preference and task contribution \ledger{8}. The one-step baseline result also does not establish MAPPO sample complexity. P does not specify enough about potential reuse, critic representation, changing active coalitions, and truncation to determine whether the cancellation identity holds in its implementation \ledger{12, 18, 19}.
+
+\section*{Outside sources and remaining question}
+The peers checked prior work on optimal policy-gradient baselines, including \url{https://jmlr.csail.mit.edu/papers/volume5/greensmith04a/greensmith04a.pdf} and \url{https://arxiv.org/abs/2108.08612}; potential-based difference rewards in multi-agent learning, \url{https://proceedings.mlr.press/v162/li22w/li22w.pdf}; and active preference queries, \url{https://arxiv.org/abs/2506.09508} \ledger{10, 11}. Accordingly, neither baseline optimality nor shaping invariance is a new contribution here.
+
+The material supports a research question, not a publication result: can a comparison-specific query and aggregation rule improve finite-training progress enough to justify its cost, and through which critic or optimization effect \ledger{12, 14, 19}? The smallest discriminating next step is a paired MAPPO experiment with an explicit-offset critic, identical stored potentials and bootstraps, and measurements of GAE updates, success, query count, and equal-wall-clock performance against standard MARS-RA and no shaping \ledger{16, 18, 19}. If the offset control cancels the gain, the next analysis should locate how the unconstrained critic uses the potential. No such experiment or implementation audit appears in the supplied record.
+
+\end{document}
+```

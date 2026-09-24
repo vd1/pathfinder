@@ -1,0 +1,49 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Contracts, Residual Cooperation, and Representation in Multi-Agent AI}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q develops a mechanism-design framework for AI agents with uncertain preferences and capabilities, separating feasible reports from incentives to obey after reporting. P studies LLM agents negotiating and using contracts in a sequential bargaining game, and finds that programmatic tile contracts outperform natural-language tile contracts on mutually dependent boards \ledger{1, 2, 10}.
+
+\section*{The connexion pursued}
+
+The initial question was whether P's natural-language contracts expose a failure of Q's assumption that capabilities can be concealed but not counterfeited. That connexion does not hold: Q's restriction concerns evidence supporting \emph{type reports}, whereas P's judge decides whether a proposed move falls within a negotiated agreement. P does not demonstrate counterfeit capability reports. The closer connexion is Q's distinction between feasible actions and obedience, together with its discussion of what a mechanism can measure and enforce \ledger{1, 2, 8, 20}.
+
+\section*{What was found}
+
+P reports that, on mutually dependent boards, both players finish in \(46\%\) of natural-language contract games, compared with \(79\%\) under programmatic tile contracts and \(61\%\) without contracts. The two contract formats cover about \(2.6\) tiles per game on average, but natural-language contract games have fewer subsequent pay-for-partner proposals and acceptances. Agents declining to trade also cite an existing contract more often. These observations motivate a \emph{residual-cooperation crowd-out} hypothesis: agents may treat an incomplete contract as sufficient and neglect the further exchanges needed to finish. They do not establish that hypothesis causally \ledger{2, 3, 15}.
+
+The board permits a sharper diagnostic than average contract size. For player \(i\) and accepted tile obligations \(C\), let \(\mathcal P_i\) be the simple paths from start to goal and define
+\[
+\delta_i(C)
+=
+\min_{p\in\mathcal P_i}
+\sum_{v\in p}
+\mathbf 1\{\text{\(v\) has the opponent's color and \(C\) does not cover \(i\) at \(v\)}\}.
+\]
+Each player starts with no chips of the opponent's color, and a contractual coverage pays for its specified move. Any successful route therefore needs at least \(\delta_i(C)\) further voluntary opposite-color payments or transfers. In particular, \(\delta_i(C)>0\) certifies that the contract alone cannot get player \(i\) to the goal \ledger{14, 17}.
+
+The converse fails. A contract may cover every required tile on some individual path yet leave its giver without the chip when the obligation is triggered; the players' chosen paths may also conflict in timing or inventory. An exact certificate that both can finish without further voluntary exchange requires a joint reachability search over positions, inventories, outstanding obligations, and turn order. Even that certificate establishes physical possibility, not that following the route is strategically optimal \ledger{7, 17, 19}.
+
+\section*{Objections and limits}
+
+P's judge audit found three errors among \(1{,}155\) approved natural-language contract moves, all false positives. This weighs against frequent erroneous approvals as the explanation, but it says nothing about denied moves or false negatives. Ambiguous clauses may lack a unique correct interpretation until their meaning is fixed independently \ledger{3, 12, 20}.
+
+The observed formats also need not contain identical obligations: similar mean coverage does not establish equal path relevance or contractual sufficiency. Q's revelation and peer-discipline results do not predict P's format ranking. Q uses a static mechanism with broadly available rewards, while P has sequential negotiation, inventory constraints, and restricted contract instruments \ledger{6, 8, 10}. A remaining presentation effect under matched obligations and enforcement could reflect planning, beliefs, or equilibrium selection; it would not refute Q's theorem \ledger{12, 15}.
+
+\section*{Sources and open question}
+
+This account uses only Q, P, and the numbered ledger entries. No outside source was consulted. The supplied material lacks the accepted contracts and path-level trajectories needed to determine how often either format left essential cooperation uncovered. It also lacks an audit of denied judge decisions \ledger{12, 15, 20}.
+
+\section*{Smallest next step}
+
+For the existing games, compile each accepted contract into tile obligations and compute \(\delta_i(C)\), followed by the joint no-extra-trade reachability flag where possible. Compare later trade requests and completion within these certified groups. To settle whether representation itself causes a difference, replay the same board and fixed obligations with equivalent JSON and mechanically generated prose, keeping enforcement and game information identical; audit both approved and denied moves if judge enforcement is tested separately \ledger{11, 12, 14, 15}.
+
+\end{document}
+```

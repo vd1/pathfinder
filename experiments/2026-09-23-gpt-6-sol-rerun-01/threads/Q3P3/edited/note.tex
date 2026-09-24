@@ -1,0 +1,118 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Evidence-grounded review in a private-value market}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies how language-model traders behave in a double auction, while P studies a reviewer and
+critic who examine a coding agent's work. The peers looked for a way to test P's evidence rule in
+Q's market, where trades and their gains can be measured. They found a workable comparison of review
+policies, but no result showing that review improves trading. An initial analogy between urgent
+trading language and false agreement in code review did not survive scrutiny. The thread paused
+because answering the market question requires new simulations with model access.
+\end{abstract}
+
+\section{Introduction}
+
+Struski and colleagues, here called Q, place language-model agents in a double auction \cite{Q}.
+Buyers and sellers submit prices, and a trade occurs when an offer reaches the best price on the
+other side. Each trader knows its own reservation price, the standing bid and ask, and market
+history, but not the other traders' reservation prices. The paper compares completed trades, prices
+and total gains with a human benchmark. Its model markets do not fully reach the competitive
+outcome. In particular, some agents keep improving an offer by a small amount until the round ends
+without a trade.
+
+Qiu and Gill, here called P, study a coding agent whose work is checked by a reviewer and then by a
+critic of that review \cite{P}. The work stays fixed while the reviewer and critic exchange views.
+In a code-review experiment, the critic sometimes accepted a weak reply and dropped a real concern.
+P therefore asks the critic to distinguish agreement, disagreement supported by a code citation, and
+a concern still needing evidence. That change improves the reported review score on the paper's
+benchmark.
+
+The connection pursued was practical: could this rule make a trader's decisions better, and would
+any change improve the market as a whole? The peers first considered whether Q's language of urgency
+and P's false agreement reflected the same mistake. They rejected that explanation and focused
+instead on a test of the review rule under Q's private-information trading conditions.
+
+\section{What was done}
+
+The first check compared what the two papers actually observe. Q links urgency words in one model's
+internal traces with decisions to accept a trade rather than keep adjusting a quote. It calls this
+an association, not a cause. P shows a critic yielding to an uncited rebuttal in a code-review case.
+The peers noted that accepting a trade in Q can be useful, while yielding in P lost a real finding.
+They therefore dropped the proposed common mechanism.
+
+The peers next identified what could be transferred. Q has a fixed trading horizon and measurable
+outcomes. P has a review procedure that asks for evidence when agents disagree. They proposed
+freezing a trader's candidate quote while a reviewer examines it and a critic examines the review.
+Both would see only what the trader may see: its own reservation price, the standing bid and ask,
+and the allowed history. After the exchange, the trader could revise the quote. This last step is an
+adaptation of P's general coding workflow; P's reported code-review score comes from a review-only
+task without an edit step.
+
+The suggested audit would use a rule fixed in advance, such as a small quote improvement when an
+immediate, privately profitable trade is available. The peers refined the comparison to three
+policies: ordinary trading, review without P's evidence rule but with a comparable review-call
+budget, and review with the rule. Entire market runs would be assigned to policies, with the same
+model, market settings and planned random-seed schedule. Each policy would generate a candidate
+quote, apply the same audit trigger in its own market history, and count every assigned run in the
+analysis. A reviewed decision would still consume one of Q's 300 trading iterations; review calls,
+tokens and elapsed time would be recorded separately. A change to one quote can change all later
+market states, so later decisions across policies cannot be treated as identical cases.
+
+Finally, the peers proposed a narrower check. The same saved market state could be replayed under
+different review policies to measure the immediate change to a quote, before market histories
+diverge. This would test whether the audit changes a decision, but it would not establish its effect
+on total market gains.
+
+\section{Results and what they support}
+
+The supported result is a testable design, not a measured benefit of review. Q reports incomplete
+convergence in its model markets and, for its GPT Large traders, only 2.2 to 3.8 trades per round
+and allocative efficiency between 0.36 and 0.67 \cite{Q}. Here allocative efficiency means realised
+gains from trade divided by the maximum gains available in that market. P reports that its
+evidence-constrained review raises its SWE-PRBench F1 score from 0.457 to 0.533 \cite{P}. F1 is its
+score for matching review comments to reference feedback. Neither result tells us whether the
+proposed market audit would increase trades or efficiency. The peers' checks of the trading rules,
+information set and review-only benchmark support that limit.
+
+There is one useful local check for the proposed reviewer. For a buyer with reservation value \(v\)
+and a standing ask \(a\), buying at that ask gives immediate profit \(v-a\); a seller with
+reservation value \(v\) who accepts a standing bid \(b\) gets \(b-v\). Thus a trader's allowed
+information can show when crossing the standing quote gives positive immediate profit. It cannot
+show whether waiting for a better price is preferable, or whether this one trade improves
+market-wide efficiency. The reviewer and critic would assess the trader's private-profit aim. Market
+efficiency would be measured afterwards across assigned runs.
+
+\section{Objections and limits}
+
+The peers also considered Q's observation that an opening offer affects the other side's first
+quote. Changing an active opening offer changes the standing price and hence the immediate trading
+opportunity. A response to that change does not by itself prove anchoring or deference. They
+suggested varying an earlier offer that no longer sets the best price while holding the current
+order book fixed. Even then, the earlier offer may convey information about other traders. This
+remains a secondary probe, not proof that Q's traders and P's critic share a bias.
+
+The proposed review may also impose a cost or delay a useful trade. Evidence about the current book
+can verify immediate profit, but cannot justify a certain claim about future opportunities. P's
+benchmark score depends on a judge that matches comments to human feedback, which P says may miss
+valid comments or reward surface similarity. The provided materials contain neither a market run
+using the proposed audit nor reusable reviewer--critic transcripts for a fresh analysis of P's
+cases. The direction, size and cost of any market effect remain open.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the note traced a plausible experiment, but neither paper had
+tested whether evidence-grounded review changes trading or market welfare. The smallest step that
+could restart the market-outcome question is to run the prespecified, whole-market comparison on Q's
+simulator with access to the model APIs, then report efficiency and completed trades for every
+assigned run. A saved-state replay could first show whether review changes the immediate quote, but
+could not settle the market question alone.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

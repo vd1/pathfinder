@@ -1,0 +1,53 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Context-Dependent Comparisons and Credit Assignment}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q studies LLM traders in a double auction and finds context-sensitive trading behavior, including opening-offer anchoring and uneven willingness to complete trades. P uses LMM judgments of agents' relative contributions as inputs to rank aggregation and reward shaping in cooperative embodied tasks. \ledger{3, 4}
+
+\section{The connexion pursued}
+
+The question is whether a systematic, context-dependent comparison error could survive P's rank aggregation when agents leave or re-enter a task. Q motivates that question through observed trader behavior, but its traders and P's LMM referee perform different tasks; Q supplies no evidence that P's referee makes such an error. \ledger{3, 6, 12}
+
+\section{What was found}
+
+P's guarantee concerns recovery of a latent Bradley--Terry preference of the LMM, not recovery of true contribution. Suppose true step contribution is \(v_i\), while a visible cue has value \(u_i\), and the comparator follows
+\[
+\Pr(i\succ j)
+=
+\sigma\bigl((v_i-v_j)+\beta(u_i-u_j)\bigr).
+\]
+These probabilities are themselves Bradley--Terry probabilities with latent scores \(v_i+\beta u_i\). More independent comparisons can therefore estimate a biased ranking more precisely. Its latent ordering remains transitive and its held-out probability fit can be good; sampled comparisons can still contain cycles. This is a counterexample to the inference from aggregation fit to contribution accuracy, not a finding that P's comparator has this bias. \ledger{7, 9}
+
+P shows each agent's battery level in its observation, and depletion changes participation. That makes battery or visible teammate context a concrete cue to examine near removal and re-entry. P's referee receives two egocentric images and a task prompt, so a change in a third agent's status need not affect a frozen pair unless that change is visible in the inputs. A changing active set also changes P's softmax potential mechanically; this alone establishes neither incorrect credit nor a failure of policy invariance. \ledger{5, 11, 12}
+
+Q's opening-offer anchoring provides the stronger example of context sensitivity: opposing-side traders respond to an initial offer despite having no mechanical obligation to do so. Q's association between urgency words and spread crossing comes from one trader model's reasoning traces and is explicitly suggestive rather than causal. Neither observation establishes an urgency heuristic in P's referee. \ledger{3, 4, 11}
+
+\section{Objections and resolution}
+
+Editing a battery icon while holding simulator state fixed creates an inconsistent observation, because battery level affects future participation. Such an edit could probe cue sensitivity, but a changed judgment would not by itself establish a credit error. The primary comparison should use actual states near participation changes and matched stable-roster states. \ledger{8, 10}
+
+P evaluates pairwise accuracy against per-agent dense progress rewards. That is a useful immediate-progress proxy, not necessarily the contribution an agent made: current progress, past action, and future ability to help can diverge near battery depletion. A simulator counterfactual effect on downstream team return would provide a stronger credit target. Moreover, the referee's simultaneous images omit action history, so any transition-local error might reflect missing evidence rather than cue reliance. A comparison that adds verified prior actions and outcomes, without leaking reward labels, could help distinguish those explanations. \ledger{16, 18}
+
+P's pooled accuracy, cycle rate, held-out likelihood, and improvement with more queries do not isolate transition-local systematic error. They also mean that a generic demonstration of judge noise would add little to P. The proposed connexion remains a specific, unverified hypothesis. \ledger{12, 14}
+
+\section{Sources outside the pair}
+
+No source outside Q, P, and the numbered ledger entries was used.
+
+\section{What remains open}
+
+It is unknown whether P's judgments become systematically less aligned with contribution near agent removal or re-entry, whether repeated queries reduce that error, and whether any such error changes learned team success. An observed disagreement with dense rewards alone would settle only disagreement with P's proxy. \ledger{12, 18}
+
+\section{Smallest next step}
+
+Archive real MARS-Bench states immediately around battery removal and re-entry, together with matched stable-roster states. Obtain repeated judgments in both image orders and compare their error against P's dense-reward proxy by distance to the transition, controlling for task, reward gap, visibility, progress, and agent identity. If a transition-specific error persists as query count grows, estimate counterfactual contribution on those states before attributing it to incorrect credit. A null transition effect would defeat this specific proposed connexion; a confirmed error would justify a subsequent matched-budget training test of its effect on team success. \ledger{12, 14, 18}
+
+\end{document}
+```

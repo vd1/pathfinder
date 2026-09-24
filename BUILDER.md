@@ -130,8 +130,11 @@ you already have, or a description of where the papers come from].
   JSON out, session id parsed from the first event. No session within 60
   seconds plus a second per 5 KB of prompt is a transport failure, and so
   is a CLI that cannot be launched: a receipt with no usage and no cost,
-  thread marked stopped, no retry inside the thread. Two in a row
-  set a health flag; admissions pause until a probe call succeeds. Never
+  thread marked stopped, no retry inside the thread. The first operational
+  failure observed by the research scheduler sets a health flag, stops admission,
+  and produces a nonzero exit after active work drains. Session-started timeouts
+  and editor failures also propagate. An external supervising agent diagnoses
+  the error and explicitly resumes work; there is no health-probe loop. Never
   fall back to another model or backend.
 - **Stage failures.** A consolidation or verification that times out or
   returns nothing is rerun once, unless its output already exists. An
@@ -212,8 +215,10 @@ the iterate cap, REVISE repairing once then capping, the empty ledger, a
 stop draining a call in flight, the budget guard writing the marker, a
 call that never opens a session and one killed at its deadline each leaving
 a receipt with unknown usage and cost, the guard counting the second and not
-the first, two
-transport failures setting the health flag and a probe clearing it, both
+the first, a
+transport failure stopping admission without a probe, unfinished editing resuming
+without repeated research, and read-only health snapshots exposing stale
+heartbeats and overdue calls without diagnosing deadlock, both
 BLOCKED paths and reconcile clearing them, a killed runner leaving a dead
 lock, threshold selection keeping started threads, append-only paging,
 the paper and editor round trips with a real latexmk. Make the fake write
