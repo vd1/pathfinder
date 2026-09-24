@@ -1,6 +1,6 @@
 # Pathfinder supervising-agent audit
 
-Use GPT-6 Astra. The scheduled task must supply an absolute campaign directory
+Use GPT-6 Astra. The supervising session must supply an absolute campaign directory
 and the Pathfinder checkout containing the maintained health command. If either
 is missing, ask the operator rather than choosing a campaign. Run every five
 minutes while the explicitly assigned campaign is active. Do not create a
@@ -61,6 +61,8 @@ open and check it on the next run.
 
 Report failures, interventions, blockers, and final completion concisely. A
 healthy unchanged audit needs no interruption. Once the entire assigned
-pipeline is complete, report completion and end or pause this campaign's
+pipeline is complete, report completion. With the session-local timer, return
+the requested terminal status; the parent ends the timer. With a separately
+installed schedule, end or pause this campaign's
 schedule through the scheduling interface. If that interface is unavailable,
 ask the operator to disable it and do not start more work.

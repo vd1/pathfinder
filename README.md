@@ -190,8 +190,9 @@ does not establish scientific progress. Repeated calls on the same stage can
 still indicate a livelock. Old campaigns without instrumentation report unknown
 runner liveness rather than healthy status.
 
-The supervising Astra agent owns the recurring schedule, diagnosis, intervention,
-and incident ledger. This package does not install or run that agent. At each
+The supervising Astra agent owns diagnosis, intervention, and the incident
+ledger. The optional session-local timer below supplies its clock; nothing is
+installed as a permanent service. At each
 audit, inspect warnings and changes since the previous snapshot. A missing PID,
 heartbeat older than five minutes, or overdue call is evidence for investigation,
 not an instruction to kill a process. PID reuse, slow tools, and host suspension
@@ -213,6 +214,47 @@ action taken, and the later evidence that progress resumed. `failures.jsonl`
 records runtime errors, not the agent's diagnosis. Clear an operator stop with
 `stop --clear` only when resumption is intended, then run `research` explicitly.
 No five-minute audit schedule is enabled merely by adding this command.
+
+### Campaign-scoped supervision session
+
+From this checkout, launch the runner and its timer together:
+
+```sh
+uv run python -m pathfinder.supervise \
+  --root /absolute/path/to/campaign \
+  --scope 'Research and readable editing for the selected pairs' \
+  --resume-command 'uv run pathfinder --root /absolute/path/to/campaign research' \
+  -- uv run pathfinder --root /absolute/path/to/campaign research
+```
+
+The start command follows `--`. The resume command is parsed as arguments and
+executed without a shell. For a campaign that includes author/reviewer stages,
+supply its full pipeline launcher and resume command and name those stages in
+`--scope`; research completion alone is not full pipeline completion. Preserve
+a frozen experiment's launcher and engine rather than substituting this example.
+
+The timer is a foreground process for this campaign session, not a desktop task,
+cron job, or installed service. It launches GPT-6 Astra through
+[Codex non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
+at five-minute intervals, with an earlier audit when its original runner exits.
+Each audit receives saved snapshots and process evidence; the incident ledger
+carries context between audit invocations. Audits are serial, missed ticks are
+skipped, and the timer ends when Astra reports completion or needs operator input.
+It refuses a completion report that conflicts with a recorded live runner/call.
+
+Keep the terminal session and Mac available. `--interval` defaults to 300 seconds,
+`--audit-timeout` to 240 seconds, and `--hours` to a six-hour session ceiling.
+These limits bound the timer's activity, not model billing. A timed-out or failed
+audit ends supervision visibly; it does not kill the campaign runner. Ctrl-C
+requests a campaign stop and ends the timer; active work may still be draining.
+A killed timer or sleeping host does not provide an independent watchdog.
+
+Evidence lives under `supervision/`: `latest-session.json`, a session directory
+with runner logs and state, per-audit before/after snapshots, filtered process
+evidence, agent event logs and structured results, and `incidents.jsonl` written
+by Astra. A campaign-level timer lock prevents overlapping supervision sessions.
+The audit stays sandboxed. If the timer cannot obtain process evidence, or the
+audit lacks permission to perform a safe recovery, it must ask the operator.
 
 The reusable audit instructions are in [prompts/supervisor.md](prompts/supervisor.md).
 Assign the campaign directory and its documented resume command when creating
