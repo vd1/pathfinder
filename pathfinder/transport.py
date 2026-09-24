@@ -66,14 +66,20 @@ def _command(campaign, model, tools, search, cwd):
             cmd += ["--tools", ""]
         return cmd
     cmd = shlex.split(os.environ.get("PATHFINDER_CODEX", "codex"))
+    if tools and search:
+        cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
             "--sandbox", "workspace-write" if tools else "read-only"]
-    if tools and search:
-        cmd += ["--search"]
     if tools and search:                           # the workspace sandbox has no network unless asked
         cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     prov = (campaign.raw or {}).get("codex") or {}
+    if prov.get("persist_sessions"):
+        cmd.remove("--ephemeral")
+    if prov.get("reasoning_effort"):
+        cmd += ["-c", f'model_reasoning_effort="{prov["reasoning_effort"]}"']
+    if prov.get("disable_toolless_shell") and not tools:
+        cmd += ["-c", "features.shell_tool=false"]
     if campaign.backend == "elm":
         prov = {**prov, "name": "elm", "base_url": "https://elm.edina.ac.uk/api/v1"}
     if prov.get("base_url"):                       # a custom OpenAI-compatible provider, e.g. a university proxy

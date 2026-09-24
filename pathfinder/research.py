@@ -119,6 +119,11 @@ def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str |
     t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{date or time.strftime('%Y-%m-%d')}}}\n"
          f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}{{{m['P_ID']}}}{{{m['P_TITLE']}}}\n"
          f"\\pathfinderstatus{{{_tex_escape(line)}}}\n")
+    if campaign.raw.get("pair_kind") == "paper-strategy":
+        # The strategy dossier is not an arXiv paper. Its provenance belongs
+        # in the introduction and bibliography, not a fabricated arXiv link.
+        t = "\n".join(line for line in t.splitlines()
+                      if not line.startswith("\\pathfinderpapers")) + "\n"
     where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
 
 
