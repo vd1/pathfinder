@@ -79,7 +79,10 @@ def _words(s):
 
 
 def check_references(tex: str, bib: str, fetch=None) -> list[str]:
-    """Cited keys exist, every entry is cited, arXiv entries match the arXiv API by title."""
+    """@planks("Then every cited reference passes Pathfinder's reference checks")
+
+    Cited keys exist, every entry is cited, arXiv entries match the arXiv API by title.
+    """
     entries, notes = bib_entries(bib), []
     cited = set(k.strip() for m in re.findall(r"\\(?:no)?cite\w*\s*(?:\[[^\]]*\])?\{([^}]+)\}", tex) for k in m.split(","))
     for k in sorted(cited - set(entries)):
@@ -92,7 +95,7 @@ def check_references(tex: str, bib: str, fetch=None) -> list[str]:
         m = re.search(r"(\d{4}\.\d{4,5})(?:v\d+)?", blob)
         if m:
             ids[k] = m.group(1)
-        elif not re.search(r"https?://|doi", blob, re.I):
+        elif "doi" not in e and not re.search(r"https?://|doi", blob, re.I):
             notes.append(f"{k}: no URL, DOI or arXiv identifier")
     if ids:
         fetch = fetch or _arxiv_titles

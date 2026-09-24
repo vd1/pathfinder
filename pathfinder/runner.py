@@ -44,9 +44,10 @@ def result_provenance(campaign, pair_id: str) -> dict:
 def validate_manifest(manifest: dict) -> dict:
     """@planks("When the operator defines a run manifest")
     @planks("When the operator defines a run")
+    @planks("Then role \"{role}\" records its own model, backend, execution class, prompt arrangement, tool policy, and budget")
     """
     required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
-    for role in ("scan", "research", "consolidate", "verify"):
+    for role in ("scan", "research", "consolidate", "verify", "edit"):
         if required - manifest["assignments"][role].keys():
             raise ValueError(f"incomplete assignment for {role}")
     return manifest
@@ -228,6 +229,7 @@ def pending(campaign) -> list[str]:
 
 
 def _work(campaign, pair_id):
+    """@planks("When the campaign processes pair \"{pair_id}\" to completion")"""
     with Lock(campaign.thread_dir(pair_id)):
         result = research.run_thread(campaign, pair_id, stop=lambda: stopped(campaign))
         if result in research.TERMINAL and not stopped(campaign):

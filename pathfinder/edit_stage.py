@@ -1,7 +1,7 @@
 """PCE role loop over an accepted research account: brief, draft, fact-check, critic review, editor decision."""
 from __future__ import annotations
 import hashlib, json, time
-from . import corpus, research, runner, transport
+from . import corpus, paper, research, runner, transport
 
 
 def _now():
@@ -42,6 +42,7 @@ def finish(campaign, pair_id: str) -> bool:
     """@planks("When the campaign processes pair \"{pair_id}\" to completion")
     @planks("Then the edit stage's first draft is the readable short paper written from the accepted research account")
     @planks("Then that first draft is the raw response recorded on a real dispatch's receipt, not a copy of the account itself")
+    @planks("When Pathfinder runs the edit stage through its assigned agent runtime")
 
     A DRAFT outcome with real full text enters editing automatically; anything else
     stays untouched. A real dispatch writes the readable short paper from the accepted
@@ -111,6 +112,16 @@ def _dispatch(campaign, pair_id, role, prompt) -> dict:
     }
 
 
+def validate_artifact(path) -> dict:
+    """@planks("When Pathfinder validates the edited artifact")"""
+    ok, log = paper.build(path)
+    findings = paper.check_references(
+        (path / "paper.tex").read_text(),
+        (path / "references.bib").read_text(),
+    )
+    return {"build_ok": ok, "build_log": log, "reference_findings": findings}
+
+
 def history(campaign, pair_id) -> list:
     """@planks("Then the archivist records the draft in its revision history before review")
     @planks("Then the round \"{n}\" draft remains recorded in revision history")
@@ -127,62 +138,10 @@ def _append_history(campaign, pair_id, round, draft):
     return hist
 
 
-def run_author(campaign, pair_id: str, round: int | None = None) -> dict:
-    """@planks("When the author role executes")
-    @planks("When the author produces a round \"{n}\" draft")
-
-    Drafts from the full staged brief, internal and external together, and the archivist
-    appends the result to append-only revision history before any gate reviews it.
-    """
-    brief = stage_brief(campaign, pair_id)
-    round = round if round is not None else status(campaign, pair_id).get("round", 0) + 1
-    prompt = "## internal\n\n" + brief["internal"] + "\n\n## external\n\n" + "\n\n".join(brief["external"])
-    receipt = _dispatch(campaign, pair_id, "author", prompt)
-    draft = receipt["text"]
-    _append_history(campaign, pair_id, round, draft)
-    _set(campaign, pair_id, status="in-progress", round=round, draft=draft)
-    return {**receipt, "draft": draft, "round": round}
-
-
-def run_fact_checker(campaign, pair_id: str) -> dict:
-    """@planks("When the fact-checker gate runs")
-
-    Checks the current draft against the fetched external full text only; the accepted
-    research account never enters this prompt.
-    """
-    q_text, p_text = _external_texts(campaign, pair_id)
-    draft = status(campaign, pair_id).get("draft") or ""
-    prompt = f"## draft\n\n{draft}\n\n## external source Q\n\n{q_text}\n\n## external source P\n\n{p_text}\n"
-    return _dispatch(campaign, pair_id, "fact-checker", prompt)
-
-
-def run_critic(campaign, pair_id: str) -> dict:
-    """@planks("When the critic gate runs")
-
-    Reviews the current draft blind: no editor brief, no internal notes, no prior reviews.
-    """
-    draft = status(campaign, pair_id).get("draft") or ""
-    prompt = f"## draft\n\n{draft}\n"
-    return _dispatch(campaign, pair_id, "critic", prompt)
-
-
-def run_round(campaign, pair_id: str, round: int, limit: int) -> dict:
-    """@planks("When the editor accepts the draft on or before round \"{limit}\"")
-    @planks("When each dispatch finishes")
-
-    One round dispatches author, fact-checker, critic, then the editor's accept or revise
-    decision; each dispatch produces its own receipt.
-    """
-    author_receipt = run_author(campaign, pair_id, round=round)
-    fact_receipt = run_fact_checker(campaign, pair_id)
-    critic_receipt = run_critic(campaign, pair_id)
-    editor_prompt = (f"## draft\n\n{author_receipt['draft']}\n\n## fact-check\n\n{fact_receipt['raw_response']}"
-                      f"\n\n## critic\n\n{critic_receipt['raw_response']}\n")
-    editor_receipt = _dispatch(campaign, pair_id, "editor", editor_prompt)
-    accepted = "accept" in (editor_receipt.get("raw_response") or "").lower()
-    _set(campaign, pair_id, status="accepted" if accepted else "in-progress", round=round, draft=author_receipt["draft"])
-    return {"receipts": [author_receipt, fact_receipt, critic_receipt, editor_receipt],
-            "decision": "accepted" if accepted else "revise", "round": round, "limit": limit}
+def receipts(campaign, pair_id) -> list[dict]:
+    """@planks("When the campaign is inspected after the edit stage")"""
+    path = campaign.thread_dir(pair_id) / "edit_stage" / "receipts.json"
+    return json.loads(path.read_text()) if path.exists() else []
 
 
 def evaluate_round(campaign, pair_id: str, round: int, limit: int) -> dict:

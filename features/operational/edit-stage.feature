@@ -19,6 +19,13 @@ Feature: Edit an accepted research account through PCE
 
   Rule: The edit stage runs PCE's role loop against real evidence
 
+    Scenario: Pathfinder delegates editing to the installed PCE workflow
+      Given pair "Q3P10" enters the edit stage
+      When Pathfinder runs PCE's installed bounded-pass runner through the assigned runtime
+      Then the PCE workflow directory contains its current draft, archived draft, gate reviews, and state
+      And PCE accounting records the author, archivist, fact-checker, and critic dispatches in workflow order
+      And Pathfinder contains no local PCE role prompts or editorial dispatch sequence
+
     Scenario: The editor stages a brief separating internal and external evidence
       Given pair "Q3P10" enters the edit stage
       When the editor stage begins
@@ -50,6 +57,19 @@ Feature: Edit an accepted research account through PCE
 
   Rule: Editing ends by editor acceptance or a fixed round limit
 
+    Scenario: Campaign completion runs the PCE edit stage for a DRAFT pair
+      Given pair "Q3P10" finished research with status "DRAFT"
+      And pair "Q3P10" has full text fetched from its original source for "Q" and "P"
+      When the campaign processes pair "Q3P10" to completion
+      Then PCE produces pair "Q3P10"'s edited artifact
+      And the campaign records PCE's final edit outcome
+
+    Scenario: The edited paper passes the existing LaTeX and BibTeX checks
+      Given PCE has produced pair "Q3P10"'s edited paper and references
+      When Pathfinder validates the edited artifact
+      Then the edited paper builds successfully with its bibliography
+      And every cited reference passes Pathfinder's reference checks
+
     Scenario: The editor accepts the draft within the round limit
       Given pair "Q3P10" is in its edit stage
       When the editor accepts the draft on or before round "3"
@@ -68,6 +88,11 @@ Feature: Edit an accepted research account through PCE
       Given the edit stage dispatches the editor, author, fact-checker, and critic for one round
       When each dispatch finishes
       Then each dispatch's receipt records role, backend, model, execution class, prompt digest, provider job identifier, raw response, outcome, latency, token usage, and cost
+
+    Scenario: PCE role receipts persist in the campaign evidence
+      Given PCE completes one edit pass for pair "Q3P10"
+      When the campaign is inspected after the edit stage
+      Then every PCE role dispatch remains recorded in the campaign receipts
 
   Rule: Draft history is append-only
 

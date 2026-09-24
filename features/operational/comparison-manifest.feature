@@ -2,6 +2,11 @@ Feature: Define reproducible role comparisons
 
   Rule: A manifest freezes all comparison factors
 
+    Scenario: A run manifest assigns the edit stage independently
+      Given a comparison includes roles "scan", "research", "consolidate", "verify", and "edit"
+      When the operator defines a run manifest
+      Then role "edit" records its own model, backend, execution class, prompt arrangement, tool policy, and budget
+
     Scenario: A run manifest assigns execution independently by role
       Given a comparison includes roles "scan", "research", "consolidate", "verify", and "edit"
       When the operator defines a run manifest

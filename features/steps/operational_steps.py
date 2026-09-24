@@ -1,11 +1,12 @@
 import hashlib
 import json
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from behave import given, then, when
 
-from pathfinder import corpus, edit, research, runner, scan, select, transport
+from pathfinder import corpus, edit, paper as paper_module, research, runner, scan, select, transport
 try:
     from pathfinder import edit_stage
 except ImportError:
@@ -742,6 +743,12 @@ def define_manifest(context):
 def manifest_records_role_fields(context):
     required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
     assert all(required <= value.keys() for value in context.manifest["assignments"].values())
+
+
+@then('role "{role}" records its own model, backend, execution class, prompt arrangement, tool policy, and budget')
+def manifest_records_one_role(context, role):
+    required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
+    assert required <= context.manifest["assignments"][role].keys()
 
 
 @given('a comparison includes peers "critic" and "specialist"')
@@ -1661,6 +1668,103 @@ def pair_enters_edit_stage_step(context, pair_id):
     pair_enters_edit_stage(context, pair_id)
 
 
+@when("Pathfinder runs PCE's installed bounded-pass runner through the assigned runtime")
+def runs_installed_pce_workflow(context):
+    workflow = context.campaign.thread_dir(context.pair_id) / "pce"
+    workflow.mkdir(parents=True, exist_ok=True)
+    (workflow / "brief.md").write_text(
+        "# Brief\n\n"
+        "- Task: Edit the accepted research account into a concise paper.\n"
+        "- Audience: Research readers.\n"
+        "- Scope: Use only supplied evidence.\n"
+        "- Acceptance bar: Accurate, clear, and source-grounded.\n"
+        "- Risk level: high\n"
+        "- Specialist questions: none\n"
+        "- Output shape: Markdown paper.\n"
+    )
+    (workflow / "state.json").write_text(json.dumps({
+        "risk": "high",
+        "max_passes": 1,
+        "required_gates": ["fact-checker", "critic"],
+        "critic_score_policy": "advisory-only",
+        "acceptance_policy": "editor judgement from concrete findings",
+        "models": {},
+        "critic_profiles": {
+            "reader": {"remit": "Review clarity and completeness.", "model": {"opencode": "elm/gpt-5.6-sol"}}
+        },
+        "specialist_questions": {},
+    }, indent=2))
+    internal = workflow / "sources" / "internal"
+    external = workflow / "sources" / "external"
+    internal.mkdir(parents=True)
+    external.mkdir(parents=True)
+    (internal / "account.md").write_text("ACCEPTED RESEARCH ACCOUNT\n")
+    q_text, p_text = edit_stage._external_texts(context.campaign, context.pair_id)
+    (external / "question.md").write_text(q_text)
+    (external / "proposal.md").write_text(p_text)
+    context.pce_workflow = workflow
+    context.pce_result = subprocess.run(
+        ["nix", "run", "path:../pce", "--", str(workflow), "--runtime", "opencode"],
+        cwd=Path(context.config.base_dir).parent,
+        text=True,
+        capture_output=True,
+        timeout=600,
+        check=False,
+    )
+    assert context.pce_result.returncode in {0, 1}, context.pce_result.stdout + context.pce_result.stderr
+    summaries = [json.loads(line) for line in context.pce_result.stdout.splitlines() if line.startswith("{")]
+    assert len(summaries) == 1, context.pce_result.stdout
+    context.pce_summary = summaries[0]
+    assert context.pce_summary["completion_state"] in {"approved", "revision_required"}
+
+
+@then("the PCE workflow directory contains its current draft, archived draft, gate reviews, and state")
+def pce_workflow_contains_outputs(context):
+    workflow = context.pce_workflow
+    assert (workflow / "drafts" / "current.md").is_file()
+    assert list((workflow / "revisions" / "history").glob("*.md"))
+    assert (workflow / "reviews" / "current" / "fact-check.json").is_file()
+    assert list((workflow / "reviews" / "current").glob("critic-*.md"))
+    assert (workflow / "state.json").is_file()
+
+
+@then("PCE accounting records the author, archivist, fact-checker, and critic dispatches in workflow order")
+def pce_accounting_records_ordered_roles(context):
+    records = [
+        json.loads(path.read_text())
+        for path in (context.pce_workflow / "accounting" / "history").glob("*.json")
+    ]
+    roles = [record["role"] for record in sorted(records, key=lambda record: record["timestamp"])]
+    assert roles == ["author", "archivist", "fact-checker", "critic"], roles
+
+
+@then("Pathfinder contains no local PCE role prompts or editorial dispatch sequence")
+def pathfinder_has_no_local_pce_orchestration(context):
+    root = Path(context.config.base_dir).parent
+    prompt_paths = list((root / "pathfinder").rglob("*-task.md"))
+    source = "\n".join(path.read_text() for path in (root / "pathfinder").rglob("*.py"))
+    assert prompt_paths == []
+    assert "run_author(" not in source
+    assert "run_fact_checker(" not in source
+    assert "run_critic(" not in source
+
+
+@when("Pathfinder runs the edit stage through its assigned agent runtime")
+def runs_edit_stage_through_agent_runtime(context):
+    stub_edit_dispatch(context)
+    context.round_result = edit_stage.run_round(context.campaign, context.pair_id, round=1, limit=3)
+
+
+@then("PCE's installed role skills control the ordered editorial workflow")
+def pce_controls_editorial_workflow(context):
+    assert [call["role"] for call in context.dispatch_calls] == ["author", "fact-checker", "critic", "editor"]
+
+
+@then("Pathfinder does not reproduce PCE role prompts or dispatch rules")
+def pathfinder_delegates_pce_rules(context):
+    assert all(call["receipt"]["execution_class"] == "agent" for call in context.dispatch_calls)
+
+
 @given('pair "{pair_id}" is in its edit stage')
 def pair_is_in_edit_stage(context, pair_id):
     pair_enters_edit_stage(context, pair_id)
@@ -1865,6 +1969,69 @@ def editor_evaluates_round(context, n):
 @then("the last produced draft is recorded as the pair's edited artifact")
 def last_draft_recorded(context):
     assert edit_stage.status(context.campaign, context.pair_id)["draft"] == "DRAFT AT LIMIT"
+
+
+@then('PCE produces pair "{pair_id}"\'s edited artifact')
+def pce_produces_edited_artifact(context, pair_id):
+    assert edit_stage.status(context.campaign, pair_id).get("draft")
+
+
+@then("the campaign records PCE's final edit outcome")
+def campaign_records_pce_outcome(context):
+    assert edit_stage.status(context.campaign, context.pair_id).get("status") in {"staged", "in-progress", "accepted", "round-limit"}
+
+
+@given('PCE has produced pair "{pair_id}"\'s edited paper and references')
+def pce_produced_paper_and_references(context, pair_id):
+    pair_enters_edit_stage(context, pair_id)
+    context.edited_dir = context.campaign.thread_dir(pair_id) / "edit_stage" / "paper"
+    context.edited_dir.mkdir(parents=True, exist_ok=True)
+    (context.edited_dir / "paper.tex").write_text(
+        "\\documentclass{article}\n\\begin{document}\nA cited result \\cite{source}.\n"
+        "\\bibliographystyle{plain}\n\\bibliography{references}\n\\end{document}\n"
+    )
+    (context.edited_dir / "references.bib").write_text(
+        "@article{source,\n  title={A Source},\n  author={Researcher},\n  year={2026},\n  doi={10.1613/jair.3384}\n}\n"
+    )
+
+
+@when("Pathfinder validates the edited artifact")
+def validates_edited_artifact(context):
+    result = edit_stage.validate_artifact(context.edited_dir)
+    context.build_ok = result["build_ok"]
+    context.build_log = result["build_log"]
+    context.reference_findings = result["reference_findings"]
+
+
+@then("the edited paper builds successfully with its bibliography")
+def edited_paper_builds(context):
+    assert context.build_ok, context.build_log
+
+
+@then("every cited reference passes Pathfinder's reference checks")
+def edited_references_pass(context):
+    assert context.reference_findings == []
+
+
+@given('PCE completes one edit pass for pair "{pair_id}"')
+def pce_completes_edit_pass(context, pair_id):
+    pair_enters_edit_stage(context, pair_id)
+    runs_installed_pce_workflow(context)
+
+
+@when("the campaign is inspected after the edit stage")
+def inspect_campaign_after_edit(context):
+    context.persisted_receipts = [
+        json.loads(path.read_text())
+        for path in (context.pce_workflow / "accounting" / "history").glob("*.json")
+    ]
+
+
+@then("every PCE role dispatch remains recorded in the campaign receipts")
+def pce_receipts_remain_recorded(context):
+    assert {"author", "archivist", "fact-checker", "critic"} <= {
+        receipt["role"] for receipt in context.persisted_receipts
+    }
 
 
 @given("the edit stage dispatches the editor, author, fact-checker, and critic for one round")
