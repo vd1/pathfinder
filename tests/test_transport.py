@@ -135,11 +135,11 @@ def test_reported_cost_is_marked_reported(tmp_path, monkeypatch):
     assert row["cost"] == 0.5 and row["cost_basis"] == "reported" and "rates" not in row and row["outcome"] == "completed"
 
 
-def test_timeout_after_session_is_an_error_not_transport(tmp_path, monkeypatch):
+def test_timeout_after_session_is_an_operational_failure(tmp_path, monkeypatch):
     monkeypatch.setenv("FAKE_DELAY", "0"); monkeypatch.setenv("FAKE_RUN", "sleep 3")
     r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
                        timeout=1, thread="T", stage="scan", actor="judge")
-    assert r["error"] == "timeout" and not r["transport_failed"]
+    assert r["error"] == "timeout" and r["transport_failed"]
 
 
 def test_codex_custom_provider_flags_and_key(tmp_path):

@@ -1317,8 +1317,11 @@ enabled merely because research was interrupted.
 
 \paragraph{Failure and recovery.}
 Failure to establish a model session is a transport failure: the scientific
-decision has not been made. The thread is stopped; repeated transport failures
-pause campaign admission until a probe succeeds. A call that starts but times
+decision has not been made. The first operational failure observed by the research
+scheduler stops campaign admission. Active work drains before a nonzero exit;
+there is no automatic health-probe loop. Editor failures propagate as operational
+failures, and terminal research with an unfinished account remains pending for
+an explicit restart. A call that starts but times
 out may already have written useful files. Recovery therefore considers both the
 saved position and the required artifacts, rather than treating every timeout as
 a fresh investigation. Bounded call retries are distinct from the verifier's
@@ -1332,6 +1335,19 @@ separately, so a crash between them can require repeating a call. Researcher
 time and call counters within a round are not durable across every restart. The
 guarantee is preservation of recorded work, not exactly-once execution or an
 unchanged remaining allowance after arbitrary failures.
+
+An external supervising agent can audit the runner every five minutes through
+\texttt{pathfinder health --json}. The read-only snapshot separates scheduler
+heartbeat from completed-investigation progress and lists active call identities,
+owner and child process identifiers, nominal deadlines, and recent failures.
+Overdue work or a stale heartbeat warrants investigation; neither proves a
+deadlock. Existing transport startup and cleanup can exceed the nominal call
+allowance. An exclusive operating-system lock prevents concurrent research
+runners, and restart refuses recorded calls whose owner or child process remains
+alive. Process identity and surviving descendants still require inspection.
+The supervising agent owns scheduling, diagnosis, and an incident ledger of
+evidence, action, and subsequent progress. The package does not itself install
+that recurring audit or guarantee delivery to an agent.
 
 For example, a returned but unparsable judge reply \(z\) has the rule
 \[
@@ -1545,8 +1561,11 @@ and \st{pause-on-revise}.
 \item A stop request draining a call in flight, and a resume continuing from the
 recorded stage.
 \item The admission guard writing the stop marker when the budget is reached.
-\item Two consecutive transport failures setting the health marker, and a
-successful probe call clearing it.
+\item An operational failure setting the health marker and stopping admission
+without probing, even when another investigation succeeds.
+\item Terminal research resuming unfinished editing without repeating research.
+\item Read-only health snapshots distinguishing stale heartbeats, missing runner
+processes, and overdue calls, with exclusive ownership released on process death.
 \item An agent that cannot be launched, and a call that never establishes a
 session, each leaving a receipt with no usage and no cost.
 \item A call ended at its deadline leaving a receipt that keeps whatever usage

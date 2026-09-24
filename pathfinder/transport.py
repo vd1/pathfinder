@@ -4,7 +4,7 @@ Every attempted call appends one receipt. What the provider did not report stays
 zero, never an estimate."""
 from __future__ import annotations
 from dataclasses import dataclass
-import json, os, shlex, signal, subprocess, threading, time
+import json, os, shlex, signal, subprocess, threading, time, uuid
 from pathlib import Path
 
 SESSION_GRACE = 60
@@ -180,6 +180,28 @@ def execute_batch(requests: list[ModelRequest], adapter):
 
 
 def execute(campaign, request: ModelRequest):
+    """Record an active attempt before launching it, including abrupt-exit evidence."""
+    from . import health
+    attempt = uuid.uuid4().hex
+    path = campaign.path(f"active-calls/{attempt}.json")
+    started = time.time()
+    activity = {"attempt_id": attempt, "run_id": getattr(campaign, "run_id", None),
+                "pid": os.getpid(), "thread": request.thread, "stage": request.stage,
+                "actor": request.actor, "started_at": started,
+                "deadline_at": started + request.timeout, "timeout_seconds": request.timeout,
+                "cwd": str(request.cwd) if request.cwd else None}
+    health.write(path, activity)
+    try:
+        result = _execute(campaign, request, path, activity)
+    except BaseException as error:
+        health.write(path, {**activity, "exception": repr(error)})
+        raise
+    else:
+        path.unlink(missing_ok=True)
+        return result
+
+
+def _execute(campaign, request: ModelRequest, activity_path, activity):
     """@planks("When role \"scan\" executes a minimal frozen paper pair")
     @planks("When Pathfinder records the completed provider call")
     @planks("When Pathfinder completes the provider call without a parsed research account")
@@ -199,6 +221,9 @@ def execute(campaign, request: ModelRequest):
                                 text=True, start_new_session=True)
     except OSError as e:
         return _failed(campaign, thread, stage, actor, model, started, "launch failed", f"launch failed: {e}")
+    from . import health
+    activity["child_pid"] = proc.pid
+    health.write(activity_path, activity)
     lines, session_seen = [], threading.Event()
 
     def reader():
@@ -236,7 +261,7 @@ def execute(campaign, request: ModelRequest):
     r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "usage": usage, **counters,
           "prefix_read": prefix_read, "cost": cost, "cost_basis": basis, "rates": rates,
           "outcome": "timeout" if error else "error" if err else "completed", "error": error or err,
-          "transport_failed": bool(err), "exit_status": proc.returncode,
+          "transport_failed": bool(error or err), "exit_status": proc.returncode,
           "terminal_event": lines[-1].rstrip("\n") if lines else None,
           "raw_events": [line.rstrip("\n") for line in lines]}
     _receipt(campaign, thread, stage, actor, model, r)

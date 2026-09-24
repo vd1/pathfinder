@@ -4,7 +4,7 @@ import json, mimetypes, re, shutil, subprocess, tempfile, time
 from collections import Counter
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from . import corpus, edit, paper, reconcile, research, transport
+from . import corpus, edit, health, paper, reconcile, research, transport
 
 
 def _jsonl(p: Path):
@@ -86,7 +86,8 @@ def state(campaign) -> dict:
                      "p": [p.get("title") for p in P], "q_ids": [q.get("id") for q in Q], "p_ids": [p.get("id") for p in P], "cost": round(sum(r.get("cost") or 0 for r in scan), 4),
                      "scores": sorted((r["feasibility"] * r["gain"] for r in scan if r.get("feasibility") is not None), reverse=True),
                      "cut": sl.get("cut"), "min_score": sl.get("min_score"), "n_selected": len(sl["pairs"])},
-            "shortlist": shortlist, "threads": threads, "attention": attention}
+            "shortlist": shortlist, "threads": threads, "attention": attention,
+            "operational": health.snapshot(campaign)}
 
 
 def status_text(campaign) -> str:
@@ -97,7 +98,7 @@ def status_text(campaign) -> str:
     for p in s["shortlist"]:
         lines.append(f"{p['pair_id']:>8} {str(p['status']):>17} round {p['round'] or 0} {str(p['stage']):>11} "
                      f"calls {p['calls']:>3} {p['seconds']:>6.0f}s {p['spend']:>7.2f} USD")
-    return "\n".join(lines)
+    return "\n".join(lines) + "\n\n" + health.text(campaign)
 
 
 PAGE = Path(__file__).parent / "monitor.html"
