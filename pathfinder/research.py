@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib, json, re, shutil, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import urlsplit
 from dataclasses import asdict
 from . import corpus, transport
 from .ledger import Ledger
@@ -75,6 +76,56 @@ class EvidenceUnavailable(Exception):
     """@planks("Then the assessment is blocked before a provider call with the unreadable evidence identified")"""
 
 
+def _external_citations(d):
+    """@planks("Vera receives the ledger and its external citation declaration")
+    @planks("research blocks before provider dispatch because the citation binding is stale")
+    @planks("the joint researcher receives the citation URL and unavailable status")
+    """
+    declaration = d / "external-references.json"
+    if declaration.is_symlink():
+        raise EvidenceUnavailable("Aliased evidence declaration: external-references.json")
+    if not declaration.exists():
+        return None, set()
+    try:
+        content = declaration.read_text()
+        data = json.loads(content)
+        if not isinstance(data, dict) or data.get("version") != 1 or not isinstance(data.get("references"), list):
+            raise ValueError("external-references.json requires version 1 and a references array")
+        citations = set()
+        for record in data["references"]:
+            if not isinstance(record, dict):
+                raise ValueError("external citation must be a record")
+            for field in ("document", "path"):
+                name = record[field]
+                if not isinstance(name, str) or not name or Path(name).is_absolute() or ".." in Path(name).parts:
+                    raise ValueError(f"Unsafe external citation {field}: {name}")
+            document = Path(record["document"])
+            if any((d / parent).is_symlink() for parent in (document, *document.parents)):
+                raise ValueError(f"Aliased external citation document: {document}")
+            url = urlsplit(record["url"])
+            if url.scheme not in ("http", "https") or not url.netloc or record["status"] not in ("external", "unavailable"):
+                raise ValueError("external citation requires an absolute HTTP(S) URL and availability status")
+            bound = (d / document).read_bytes()
+            seq = None
+            if str(document) == "ledger.jsonl":
+                seq = record["ledger_seq"]
+                if type(seq) is not int:
+                    raise ValueError("ledger.jsonl citation requires an integer ledger_seq")
+                rows = [json.loads(line) for line in bound.decode("utf-8").splitlines() if line.strip()]
+                matches = [row for row in rows if row["seq"] == seq]
+                if len(matches) != 1:
+                    raise ValueError(f"Stale citation binding: ledger.jsonl entry {seq}")
+                bound = matches[0]["text"].encode("utf-8")
+            if hashlib.sha256(bound).hexdigest() != record["text_sha256"]:
+                raise ValueError(f"Stale citation binding: {document}")
+            if record["path"] not in bound.decode("utf-8"):
+                raise ValueError(f"Citation path absent from bound text: {document}")
+            citations.add((str(document), seq, record["path"]))
+        return content, citations
+    except (OSError, UnicodeError, ValueError, KeyError, TypeError) as error:
+        raise EvidenceUnavailable(f"Invalid external citation declaration: {error}") from error
+
+
 def _assessment_evidence(d, peers, references=None):
     """@planks("the request contains the complete calculation evidence with its source paths")
     @planks("the request contains the complete prior account and peer artefact contents")
@@ -84,17 +135,33 @@ def _assessment_evidence(d, peers, references=None):
     @planks("the assessment is blocked before reading the aliased evidence or calling a provider")
     @planks("the workflow prepares tool-less consolidation and verification requests")
     @planks("the scholarly figure locator is not read as a local file")
+    @planks("Vera receives the ledger and its external citation declaration")
+    @planks("research blocks before provider dispatch and identifies \"{path}\"")
+    @planks("research blocks before reading the aliased citation file")
+    @planks("the external citation is resolved only in its originating branch namespace")
     """
     paths = {p for actor in peers for p in (d / actor).rglob("*") if p.is_file()}
+    declaration, citations = _external_citations(d)
+    # Present declared files retain ordinary read and alias checks.
+    for _, _, name in citations:
+        relative = Path(name)
+        path = d / relative
+        if path.exists() or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
+            paths.add(path)
     ledger = d / "ledger.jsonl"
     if references is None:
         references = ledger.read_text() if ledger.exists() else ""
-    # Ledger references identify additional calculation files outside peer directories.
-    for name in re.findall(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+", references):
-        if re.match(r"10\.\d{4,9}/", name) or re.search(r"/Fig\.\d+$", name):
+    # Exempt only the declared entry; another entry may require the same path locally.
+    for line in references.splitlines():
+        if not line.strip():
             continue
-        paths.add(d / name)
-    parts = []
+        row = json.loads(line)
+        for name in re.findall(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+", row["text"]):
+            if re.match(r"10\.\d{4,9}/", name) or re.search(r"/Fig\.\d+$", name):
+                continue
+            if ("ledger.jsonl", row["seq"], name) not in citations:
+                paths.add(d / name)
+    parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
     for path in sorted(paths):
         relative = path.relative_to(d)
         if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
