@@ -217,13 +217,14 @@ def guard_ok(campaign, inflight: int) -> bool:
 
 
 def pending(campaign) -> list[str]:
-    """@planks("When Pathfinder admits pending investigations")
-    @planks("When the operator runs the research command")
+    """@planks("Pathfinder admits pending investigations")
+    @planks("the operator runs the research command")
+    @planks("it records the branch handoff without invoking account editing")
     """
     pairs = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]]
     from . import edit
     return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
-            and research.status(campaign, p).get("status") != "BLOCKED"
+            and research.status(campaign, p).get("status") not in {"BLOCKED", "HANDOFF"}
             and (research.status(campaign, p).get("status") not in research.TERMINAL
                  or edit.status(campaign, p).get("status") != "done")]
 

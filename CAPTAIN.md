@@ -78,3 +78,9 @@ Binding behaviour lives in `.feature` specs and referenced `assets/**`. History 
 - Direct-provider verification must persist a parseable provider response and final outcome through the same production workflow.
 - Required verification must prove retry on an empty response while `done` is false, acceptance when `done` becomes true, persistence of returned consolidation text, and a final verdict for every shortlisted pair.
 - Preserve `experiments/2026-09-17-gpt-5-6-sol-10x10-scan-20260917T202235Z/` and `experiments/2026-09-17-qwen3-5-397b-10x10-scan/` as observed evidence. Their partial and repeated calls are not acceptance evidence for the corrected workflow.
+
+## EVA composition custody exception, 25 September 2026
+
+The new EVA verification support passed its full 24-scenario scope and relevant existing research/evidence regressions, 43 scenarios and 163 steps total. Boatswain confirmed all 75 touched-seam planks resolve and compilation passes. The default-tier enumeration cannot establish offline readiness: RIGGING records untagged tests invoking live providers and an ineffective old transport double, which already caused two model-not-found requests with zero recorded tokens/cost during tooling refit.
+
+Named decision under Captain's authority at sea: waive the default-tier enumeration requirement for this bounded voyage only. Retain the fresh focused EVA and relevant regression results, static all-step discovery and touched-seam checks as the custody evidence. Record full default-tier regression as unrun, not passing. This avoids unrelated provider calls outside the controlled experiment. No production behaviour, scientific validation or launch allowance is waived. Boatswain may finish local custody of role-advanced files using that evidence, leaving unrelated operator state unchanged. The user authorised implementing the reviewed EVA variant; another user approval is not needed for this offline verification choice.
