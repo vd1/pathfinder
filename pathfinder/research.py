@@ -1,6 +1,6 @@
 """One research thread: peers on a shared ledger, consolidate, verify, up to `rounds` rounds."""
 from __future__ import annotations
-import hashlib, json, shutil, sys, threading, time
+import hashlib, json, re, shutil, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from . import corpus, transport
@@ -67,6 +67,50 @@ def thread_head(d, inp, papers: bool = True, ledger: bool = True) -> str:
     return "\n\n".join(parts)
 
 
+class EvidenceUnavailable(Exception):
+    """@planks("Then the assessment is blocked before a provider call with the unreadable evidence identified")"""
+
+
+def _assessment_evidence(d, peers):
+    """@planks("Then the request contains the complete calculation evidence with its source paths")
+    @planks("Then the request contains the complete prior account and peer artefact contents")
+    @planks("Then the request contains the complete current account and peer artefact contents")
+    @planks("Then the assessment is blocked before a provider call with the unreadable evidence identified")
+    @planks("Then the assessment is blocked before reading outside evidence or calling a provider")
+    @planks("Then the assessment is blocked before reading the aliased evidence or calling a provider")
+    """
+    paths = {p for actor in peers for p in (d / actor).rglob("*") if p.is_file()}
+    ledger = d / "ledger.jsonl"
+    references = ledger.read_text() if ledger.exists() else ""
+    # Ledger references identify additional calculation files outside peer directories.
+    for name in re.findall(r"(?<![\w:/])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+", references):
+        paths.add(d / name)
+    parts = []
+    for path in sorted(paths):
+        relative = path.relative_to(d)
+        if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
+            raise EvidenceUnavailable(f"Aliased evidence path: {relative}")
+        if not path.resolve().is_relative_to(d.resolve()):
+            raise EvidenceUnavailable(f"Evidence outside investigation: {path.relative_to(d)}")
+        try:
+            content = path.read_text()
+        except (OSError, UnicodeError) as error:
+            raise EvidenceUnavailable(f"Unreadable evidence {path.relative_to(d)}: {error}") from error
+        parts.append(f"## {path.relative_to(d)}\n\n{content}")
+    return "\n\n".join(parts)
+
+
+def _stage_attempts(campaign):
+    """@planks("Given a campaign sets \"stage_attempts\" to 1")
+    @planks("Given a campaign omits \"stage_attempts\"")
+    @planks("Then configuration validation fails before any provider call")
+    """
+    attempts = campaign.raw.get("stage_attempts", 2)
+    if type(attempts) is not int or attempts < 1:
+        raise ValueError("stage_attempts must be a positive integer")
+    return attempts
+
+
 def judge_head(d, inp, note_name: str) -> str:
     """The thread head plus the note, for the verifier and the paper reviewer."""
     return thread_head(d, inp) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
@@ -76,6 +120,7 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
     """@planks("When Pathfinder requests consolidation from the direct provider")
     @planks("When Pathfinder builds its consolidation model request")
     @planks("Then the request states that its inline evidence is complete and no tools are available")
+    @planks("When the research workflow prepares its consolidation request")
     """
     in_papers = True
     in_ledger = True
@@ -83,7 +128,10 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
     read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
     material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
                                                                           if read else "Inline evidence is complete and no tools are available.")
-    head = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if above else ""
+    head = thread_head(d, inp, in_papers, in_ledger)
+    if (d / note_name).exists():
+        head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text()
+    head += "\n\n" + _assessment_evidence(d, campaign.peers) + "\n\n## your task\n\n"
     return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
 
 
@@ -224,16 +272,22 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     @planks("When Pathfinder executes one stage attempt")
     @planks("When Pathfinder verifies execution routing")
 
-    Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
+    @planks("When its consolidation response is empty or failed")
+    @planks("When its first consolidation response is empty and its next response contains an account")
+    @planks("When every fresh repair response reports a provider failure")
+
+    Run a bounded number of stage attempts; accept only successful responses.
     """
     d = campaign.thread_dir(pair_id)
-    for attempt in range(2):
+    for attempt in range(_stage_attempts(campaign)):
         r = transport.execute(campaign, transport.ModelRequest(
             identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
             search=False, cwd=d, timeout=seconds, thread=pair_id, stage=stage,
             actor=campaign.peers[0] if stage == "consolidate" else "verifier",
         ))
-        if r["transport_failed"]:
+        if r["transport_failed"] or r.get("error"):
+            if stage == "consolidate":
+                continue
             raise transport.TransportFailed(pair_id)
         if done() or (r["text"].strip() and not tools):
             return r
@@ -254,7 +308,17 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("When the direct provider returns a complete research account on its consolidation retry")
     @planks("When Pathfinder runs consolidation through the campaign workflow")
     @planks("When the verification path to that request is inspected")
+    @planks("When the research workflow receives a nonempty repair account after \"REVISE\"")
+    @planks("When the research workflow receives a nonempty next-round account after \"ITERATE\"")
+    @planks("When the interrupted research workflow resumes")
+    @planks("When every fresh repair response is empty")
+    @planks("When every fresh repair response reports a provider failure")
+    @planks("When the research workflow prepares its verification request")
+    @planks("When the research workflow prepares the assessment request")
+    @planks("When the research workflow starts")
+    @planks("Then the previous account remains available as an immutable version")
     """
+    _stage_attempts(campaign)
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
     note, verdicts = d / f"{pair_id}.tex", d / f"{pair_id}.verdict.json"
     inp = _inputs(d)
@@ -284,20 +348,33 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 write_meta(campaign, pair_id, d)                     # the note's title block: pair, papers, date, state
-                r = _stage_call(campaign, pair_id, "consolidate",
-                                _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
-                                False,
-                                A["consolidate_seconds"], done=note.exists)
-                if not note.exists():
-                    if r["text"].strip():
-                        note.write_text(r["text"])
-                    else:
-                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r['error'] or 'no note'}"); return "BLOCKED"
+                responses = d / "consolidation"
+                response = responses / f"round-{s['round']}-repair-{s.get('repairs', 0)}.json"
+                if response.exists():
+                    r = json.loads(response.read_text())
+                else:
+                    r = _stage_call(campaign, pair_id, "consolidate",
+                                    _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
+                                    False, A["consolidate_seconds"])
+                    if r.get("transport_failed") or r.get("error") or not r["text"].strip():
+                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r.get('error') or 'no note'}")
+                        return "BLOCKED"
+                    responses.mkdir(exist_ok=True)
+                    response.write_text(json.dumps(r))
+                if note.exists():
+                    previous = note.read_bytes()
+                    versions = d / "account-versions"
+                    versions.mkdir(exist_ok=True)
+                    version = versions / f"{hashlib.sha256(previous).hexdigest()}.tex"
+                    if not version.exists():
+                        with version.open("xb") as archive:
+                            archive.write(previous)
+                note.write_text(r["text"])
                 _set(campaign, pair_id, stage="verify", repair=None)
             elif s["stage"] == "verify":
                 _check(stop)
                 # static material first, the instruction last: the head is shared with every other judge call
-                p = judge_head(d, inp, note.name) + "\n\n## your task\n\n"
+                p = judge_head(d, inp, note.name) + "\n\n" + _assessment_evidence(d, campaign.peers) + "\n\n## your task\n\n"
                 p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
                 r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"], done=lambda: True)
                 try:
@@ -320,6 +397,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
                     _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
+    except EvidenceUnavailable as error:
+        _set(campaign, pair_id, status="BLOCKED", reason=str(error)); return "BLOCKED"
     except Stopped:
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:

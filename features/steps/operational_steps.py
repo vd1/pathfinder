@@ -76,8 +76,7 @@ def run_research(context, decisions, substantive=True):
         if stage == "consolidate":
             repair = research.status(campaign, pair_id).get("repair") or {}
             correction = repair.get("action", "initial account")
-            (d / f"{pair_id}.tex").write_text(correction)
-            return {"text": "written", "error": None}
+            return {"text": correction, "error": None}
         if stage == "verify":
             decision, reason, action = next(replies)
             return {"text": json.dumps({"decision": decision, "reason": reason, "action": action}), "error": None}
