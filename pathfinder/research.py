@@ -72,18 +72,22 @@ class EvidenceUnavailable(Exception):
 
 
 def _assessment_evidence(d, peers):
-    """@planks("Then the request contains the complete calculation evidence with its source paths")
-    @planks("Then the request contains the complete prior account and peer artefact contents")
-    @planks("Then the request contains the complete current account and peer artefact contents")
-    @planks("Then the assessment is blocked before a provider call with the unreadable evidence identified")
-    @planks("Then the assessment is blocked before reading outside evidence or calling a provider")
-    @planks("Then the assessment is blocked before reading the aliased evidence or calling a provider")
+    """@planks("the request contains the complete calculation evidence with its source paths")
+    @planks("the request contains the complete prior account and peer artefact contents")
+    @planks("the request contains the complete current account and peer artefact contents")
+    @planks("the assessment is blocked before a provider call with the unreadable evidence identified")
+    @planks("the assessment is blocked before reading outside evidence or calling a provider")
+    @planks("the assessment is blocked before reading the aliased evidence or calling a provider")
+    @planks("the workflow prepares tool-less consolidation and verification requests")
+    @planks("the scholarly figure locator is not read as a local file")
     """
     paths = {p for actor in peers for p in (d / actor).rglob("*") if p.is_file()}
     ledger = d / "ledger.jsonl"
     references = ledger.read_text() if ledger.exists() else ""
     # Ledger references identify additional calculation files outside peer directories.
-    for name in re.findall(r"(?<![\w:/])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+", references):
+    for name in re.findall(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+", references):
+        if re.match(r"10\.\d{4,9}/", name) or re.search(r"/Fig\.\d+$", name):
+            continue
         paths.add(d / name)
     parts = []
     for path in sorted(paths):

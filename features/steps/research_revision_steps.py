@@ -409,3 +409,135 @@ def aliases_blocked(context):
                for case in context.alias_cases]
     assert all(row['status'] == 'BLOCKED' and not row['alias_reads'] and row['provider_calls'] == 0
                for row in results), results
+
+
+def reference_cases(context):
+    from types import SimpleNamespace
+    context.reference_cases = []
+    for stage in ('consolidate', 'verify'):
+        case = SimpleNamespace(add_cleanup=context.add_cleanup, stage=stage, reads=[])
+        revision_setup(case, stage=stage)
+        context.reference_cases.append(case)
+    context.reference_evidence = {}
+    context.reference_provenance = []
+
+
+def record_references(context, text):
+    context.reference_provenance.append(text)
+    for case in context.reference_cases:
+        Ledger(case.d / 'ledger.jsonl').add('ada', 'finding', text)
+
+
+def calculation_reference(context, name, content):
+    context.reference_evidence[name] = content
+    for case in context.reference_cases:
+        path = case.d / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+    record_references(context, f'Calculation: {name}')
+
+
+@given('a research ledger cites "{first}" and "{second}" as bare DOIs and resolver URLs')
+def cited_dois(context, first, second):
+    reference_cases(context)
+    context.dois = (first, second)
+    record_references(context, f'Bibliography: {first}, https://doi.org/{first}; {second}, https://doi.org/{second}')
+
+
+@given('the ledger references a readable local calculation artefact')
+def readable_calculation(context):
+    calculation_reference(context, 'calculations/results/variance.json', '{"variance": 0.125, "samples": 128}\n')
+
+
+@given('a research ledger cites "{locator}" as the location of a published finding')
+def scholarly_locator(context, locator):
+    reference_cases(context)
+    context.locator = locator
+    record_references(context, f'The published finding appears in {locator}.')
+
+
+@given('a research ledger records the command "{command}"')
+def interpreter_command(context, command):
+    reference_cases(context)
+    context.command = command
+    record_references(context, f'Command: {command}')
+
+
+@given('the referenced calculation script is readable')
+def readable_script(context):
+    calculation_reference(context, 'ada/check_sector.py', 'from fractions import Fraction\nprint(Fraction(1, 3) + Fraction(2, 3))\n')
+
+
+@given('a research ledger references calculation artefacts under "{nested}" and "{shared}" outside peer directories')
+def non_peer_calculations(context, nested, shared):
+    reference_cases(context)
+    calculation_reference(context, f'{nested}/sector.json', '{"sector": 2, "checked": true}\n')
+    calculation_reference(context, f'{shared}/derivation.tex', '\\section{Calculation}\n' + 'x = x + 1;\n' * 1800 + 'CALCULATION END\n')
+
+
+@given('a research ledger references the missing local calculation "{name}"')
+def missing_non_peer_calculation(context, name):
+    reference_cases(context)
+    record_references(context, f'Calculation: {name}')
+    assert all(not (case.d / name).exists() for case in context.reference_cases)
+
+
+@when('the workflow prepares tool-less consolidation and verification requests')
+@when('the workflow prepares a tool-less assessment request')
+def prepare_reference_requests(context):
+    original_read = Path.read_text
+
+    # @exceptional-double: delegated filesystem spy observes internal read
+    # ordering; real local files and transport-controlled workflow remain in use.
+    def observe_reference_read(path, *args, **kwargs):
+        for case in context.reference_cases:
+            if path.is_relative_to(case.d):
+                case.reads.append(str(path.relative_to(case.d)))
+        return original_read(path, *args, **kwargs)
+
+    with patch.object(Path, 'read_text', observe_reference_read):
+        for case in context.reference_cases:
+            revision_run(case)
+
+
+@then('both requests retain the DOI citations and complete local calculation contents')
+@then('both requests retain the scholarly locator and complete local calculation contents')
+@then('both requests contain the complete calculation script and command provenance')
+@then('both requests contain every referenced local calculation artefact in full')
+def complete_reference_requests(context):
+    for case in context.reference_cases:
+        requests = [request for request in case.requests if request.stage == case.stage]
+        assert len(requests) == 1, (case.stage, research.status(case.c, 'Q1P1'))
+        request = requests[0]
+        assert request.tools is False
+        for provenance in context.reference_provenance:
+            assert provenance in request.prompt, (case.stage, provenance)
+        for name, content in context.reference_evidence.items():
+            assert name in request.prompt and content in request.prompt, (case.stage, name)
+
+
+@then('no DOI or fragment of a resolver URL is read as a local file')
+def citations_not_read(context):
+    for case in context.reference_cases:
+        assert not [name for name in case.reads if any(part in name for doi in context.dois for part in doi.split('/'))], case.reads
+
+
+@then('the scholarly figure locator is not read as a local file')
+def locator_not_read(context):
+    for case in context.reference_cases:
+        assert context.locator not in case.reads, case.reads
+
+
+@then('no fragment of the interpreter path is read as local evidence')
+def interpreter_not_read(context):
+    interpreter = context.command.split()[0]
+    for case in context.reference_cases:
+        assert not [name for name in case.reads if any(part in name for part in interpreter.split('/') if part)], case.reads
+
+
+@then('assessment blocks before provider dispatch and identifies "{name}"')
+def missing_reference_blocks(context, name):
+    for case in context.reference_cases:
+        state = research.status(case.c, 'Q1P1')
+        assert state['status'] == 'BLOCKED' and name in state.get('reason', ''), (case.stage, state)
+        assert not case.requests, (case.stage, case.requests)
