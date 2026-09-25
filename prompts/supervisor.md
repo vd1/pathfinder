@@ -40,6 +40,15 @@ scientific verdicts, or protocol limits. Do not launch a new research campaign,
 commit, push, install a service, or perform broad process termination as part of
 an audit. If recovery requires such an action, ask for direction.
 
+When the campaign explicitly authorizes a mechanical checkpoint or output-format
+repair and supplies a guarded repair command, you may use it after checking
+owners, calls and descendants. Preserve the raw output, record before-state and
+the exact stage identity, and apply only the judgment already present in that
+output. This does not authorize a fresh model judgment, inference of missing
+content, scientific changes, or bypassing a rejected safety check. Follow the
+campaign's repair scope; ambiguous or unsupported cases require operator input.
+After repair, resume through the authorized command and verify stage progress.
+
 For suspected deadlock or livelock, collect evidence identifying the exact
 process and stalled stage. Intervene only when the cause and safe action are
 established within the assigned authority; otherwise report the evidence and
