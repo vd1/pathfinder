@@ -422,7 +422,7 @@ def pair_complete(campaign, pair_id, stages=("research", "edit", "paper")) -> bo
 
 
 def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), interval: float = 5.0,
-             accept_change: str | None = None) -> dict:
+             accept_change: str | None = None, links: dict | None = None) -> dict:
     """One shortlisted pair through the requested stages, resuming where it stands: research and edit as a
     bounded run, then, for a DRAFT, the paper under campaign ownership and the thread lock. Returns each
     stage's status and the research run's exit code."""
@@ -432,7 +432,7 @@ def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), inter
         raise ValueError(f"stages must be one of {sorted(STAGE_SETS)}, got {stages}")
     _validate_selection(campaign, [pair_id])       # always, before any completion shortcut or paper resume
     from . import provenance
-    with provenance.run_context(campaign, accept_change):     # one run for research, edit and paper; may refuse
+    with provenance.run_context(campaign, accept_change, links):   # one run for research, edit and paper; may refuse
         return _run_pair(campaign, pair_id, stages, interval)
 
 

@@ -26,6 +26,8 @@ def main(argv=None):
     s.add_argument("--cut", type=float); s.add_argument("--min-score", type=float); s.add_argument("--force", action="store_true")
     rs = sub.add_parser("research", help="run the shortlisted threads")
     rs.add_argument("--pairs", nargs="+", help="a bounded run over exactly these shortlisted pairs")
+    co = sub.add_parser("coordinate", help="run a schedule of (arm, pair) entries across child campaigns, one pair at a time")
+    co.add_argument("schedule"); co.add_argument("--status", action="store_true", help="print the aggregated snapshot instead")
     fz = sub.add_parser("freeze", help="write the engine's runtime files at a commit into a new directory")
     fz.add_argument("dest"); fz.add_argument("--ref", required=True); fz.add_argument("--repo")
     vf = sub.add_parser("verify-frozen", help="compare a frozen copy with its commit: verified, modified or unverifiable")
@@ -47,6 +49,16 @@ def main(argv=None):
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
     ns = ap.parse_args(argv)
+    if ns.cmd == "coordinate":
+        from . import coordinator
+        if ns.status:
+            print(json.dumps(coordinator.snapshot(Path(ns.schedule)), indent=1, default=str)); return 0
+        try:
+            state = coordinator.run(Path(ns.schedule), accept_change=ns.accept_change)
+        except coordinator.ScheduleChanged as refused:
+            print(f"refusing to coordinate: {refused}"); return 1
+        print(json.dumps(state, indent=1, default=str))
+        return 0 if state["status"] in ("complete", "censored") else 1
     if ns.cmd in ("freeze", "verify-frozen"):
         from . import freeze
         repo = Path(ns.repo) if ns.repo else Path(__file__).resolve().parent.parent

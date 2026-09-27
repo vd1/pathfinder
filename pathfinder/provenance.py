@@ -154,7 +154,7 @@ def loaded_matches_disk(campaign) -> list[str]:
     return stale
 
 
-def start(campaign, run_id: str, accept_change: str | None = None) -> tuple[dict | None, list[str]]:
+def start(campaign, run_id: str, accept_change: str | None = None, links: dict | None = None) -> tuple[dict | None, list[str]]:
     """Write the run record, or refuse: returns (record, []) when written, (None, changed components)
     when the previous run differs and no change was accepted. Raises RestartRequired when the loaded
     engine or extension code no longer matches the files on disk."""
@@ -167,6 +167,8 @@ def start(campaign, run_id: str, accept_change: str | None = None) -> tuple[dict
     changed = changes(previous, current) if previous else []
     if changed and not accept_change:
         return None, changed
+    if links:
+        current["links"] = links                     # e.g. the coordination this run belongs to; not compared
     if previous:
         current["previous_run_id"] = previous.get("run_id")
     if changed:
@@ -187,7 +189,7 @@ class ChangeRefused(Exception):
 
 
 @contextmanager
-def run_context(campaign, accept_change: str | None = None):
+def run_context(campaign, accept_change: str | None = None, links: dict | None = None):
     """Every entry point that dispatches model calls runs inside one of these: it takes exclusive campaign
     ownership, then writes the run record or raises ChangeRefused, and sets campaign.run_id so every receipt
     names the run. Ownership is held for the whole dispatch. Nested entries (a bounded run inside run_pair,
@@ -200,7 +202,7 @@ def run_context(campaign, accept_change: str | None = None):
         return
     with health.owner(campaign, nested=True):   # ownership first: nothing is read or written unless we own it
         run_id = uuid.uuid4().hex
-        rec, changed = start(campaign, run_id, accept_change)
+        rec, changed = start(campaign, run_id, accept_change, links)
         if rec is None:
             raise ChangeRefused(changed)
         campaign.run_id = run_id

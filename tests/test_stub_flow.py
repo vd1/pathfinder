@@ -32,7 +32,7 @@ SMOKE = r'''
 import json, sys
 from pathlib import Path
 root = Path(sys.argv[1])
-from pathfinder import config, edit, research, resources, runner
+from pathfinder import config, edit, research, resources, runner, transport
 raw = {"backend": "stub", "model": "stub", "peers": ["ada"], "seats": 1, "rounds": 1, "repairs": 0,
        "budget_usd": 100, "call_estimate_usd": 1,
        "allowances": {"peer_seconds": 600, "peer_calls": 2, "consolidate_seconds": 60, "verify_seconds": 60,
@@ -51,7 +51,9 @@ code = runner.run(c, interval=0.05)
 print(json.dumps({"code": code, "research": research.status(c, "Q1P1")["status"],
                   "edit": edit.status(c, "Q1P1")["status"], "overlay": "DEPLOYMENT-BRIEF for ada" in peer,
                   "engine_verify": verify == (resources.engine_prompts() / "verify.md").read_text(),
-                  "prompts": str(resources.engine_prompts())}))
+                  "prompts": str(resources.engine_prompts()),
+                  "run_ids": sorted({r.get("run_id") or "" for r in transport.receipts(c)}),
+                  "stages": sorted({r["stage"] for r in transport.receipts(c)})}))
 '''
 
 
@@ -72,3 +74,5 @@ def test_installed_wheel_runs_research_and_edit_outside_the_checkout(tmp_path):
     info = json.loads(out.stdout.strip().splitlines()[-1])
     assert info == {**info, "code": 0, "research": "DRAFT", "edit": "done", "overlay": True, "engine_verify": True}
     assert "site-packages" in info["prompts"]
+    assert len(info["run_ids"]) == 1 and info["run_ids"][0]                          # one run, named on every receipt
+    assert set(info["stages"]) >= {"peer", "consolidate", "verify", "edit"}
