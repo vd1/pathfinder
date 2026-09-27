@@ -97,9 +97,10 @@ def test_run_pair_rechecks_paper_state_under_the_lock(tmp_path, monkeypatch):
 
     from contextlib import contextmanager
     @contextmanager
-    def owner_after_another_finished(campaign):
-        paper._set(campaign, "Q1P1", status="ACCEPTED", round=1)    # finished elsewhere before we own the campaign
-        with real_owner(campaign):
+    def owner_after_another_finished(campaign, **kw):
+        if kw.get("nested") and runner.health.owned_run(campaign):    # the paper's own acquisition, inside the run
+            paper._set(campaign, "Q1P1", status="ACCEPTED", round=1)  # finished elsewhere meanwhile
+        with real_owner(campaign, **kw):
             yield
     monkeypatch.setattr(runner.health, "owner", owner_after_another_finished)
     monkeypatch.setattr(paper, "run", lambda *a, **k: pytest.fail("paper rerun after it finished"))

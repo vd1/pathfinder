@@ -271,7 +271,7 @@ def _validate_selection(campaign, pairs) -> list[str]:
     return pairs
 
 
-def run(campaign, interval: float = 5.0, pairs=None):
+def run(campaign, interval: float = 5.0, pairs=None, accept_change: str | None = None):
     """Run under exclusive ownership; an explicit invocation starts a new run.
     pairs: a bounded run over exactly these shortlisted pairs, through research and edit. Unlisted pairs are
     ignored, BLOCKED ones included; when no listed pair has research or edit work left, the run returns at
@@ -279,14 +279,14 @@ def run(campaign, interval: float = 5.0, pairs=None):
     if pairs is not None:
         campaign.selection = _validate_selection(campaign, pairs)
     try:
-        return _owned_run(campaign, interval)
+        return _owned_run(campaign, interval, accept_change)
     finally:
         if pairs is not None:
             del campaign.selection
 
 
-def _owned_run(campaign, interval):
-    with health.owner(campaign):
+def _owned_run(campaign, interval, accept_change=None):
+    with health.owner(campaign, nested=True):
         if stopped(campaign):
             print("stop marker exists; clear it explicitly before restarting")
             return 1
@@ -294,27 +294,35 @@ def _owned_run(campaign, interval):
         if selection is not None and not pending(campaign) and not _blocked(campaign):
             print("nothing to run: every selected pair has finished research and edit")
             return 0
-        campaign.run_id = uuid.uuid4().hex
-        old = health.read(campaign.path("health.json"))
-        metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
-                    "started_at": time.time(), "heartbeat_at": time.time(),
-                    "last_progress": None, "previous_failure": old}
-        campaign.path("health.json").unlink(missing_ok=True)
-        health.write(campaign.path("runner.json"), metadata)
+        from . import provenance
         try:
-            result = _run(campaign, interval, metadata)
-            metadata["status"] = "failed" if unhealthy(campaign) else "stopped" if stopped(campaign) else "blocked" if result else "finished"
-            if getattr(campaign, "selection", None) is not None:
-                metadata["selection"] = list(campaign.selection)
-            return result
-        except BaseException as error:
-            metadata.update(status="failed", error=repr(error))
-            alerts.emit(campaign, "runner failed", campaign.path("runner.json"))
-            raise
-        finally:
-            metadata.update(heartbeat_at=time.time(), finished_at=time.time())
-            health.write(campaign.path("runner.json"), metadata)
-            del campaign.run_id
+            with provenance.run_context(campaign, accept_change):
+                return _recorded_run(campaign, interval)
+        except provenance.ChangeRefused as refused:
+            print(f"refusing to resume: {refused}")
+            return 1
+
+
+def _recorded_run(campaign, interval):
+    old = health.read(campaign.path("health.json"))
+    metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
+                "started_at": time.time(), "heartbeat_at": time.time(),
+                "last_progress": None, "previous_failure": old}
+    campaign.path("health.json").unlink(missing_ok=True)
+    health.write(campaign.path("runner.json"), metadata)
+    try:
+        result = _run(campaign, interval, metadata)
+        metadata["status"] = "failed" if unhealthy(campaign) else "stopped" if stopped(campaign) else "blocked" if result else "finished"
+        if getattr(campaign, "selection", None) is not None:
+            metadata["selection"] = list(campaign.selection)
+        return result
+    except BaseException as error:
+        metadata.update(status="failed", error=repr(error))
+        alerts.emit(campaign, "runner failed", campaign.path("runner.json"))
+        raise
+    finally:
+        metadata.update(heartbeat_at=time.time(), finished_at=time.time())
+        health.write(campaign.path("runner.json"), metadata)
 
 
 def _run(campaign, interval, metadata):
@@ -413,7 +421,8 @@ def pair_complete(campaign, pair_id, stages=("research", "edit", "paper")) -> bo
     return True
 
 
-def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), interval: float = 5.0) -> dict:
+def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), interval: float = 5.0,
+             accept_change: str | None = None) -> dict:
     """One shortlisted pair through the requested stages, resuming where it stands: research and edit as a
     bounded run, then, for a DRAFT, the paper under campaign ownership and the thread lock. Returns each
     stage's status and the research run's exit code."""
@@ -422,6 +431,13 @@ def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), inter
     if stages not in STAGE_SETS:
         raise ValueError(f"stages must be one of {sorted(STAGE_SETS)}, got {stages}")
     _validate_selection(campaign, [pair_id])       # always, before any completion shortcut or paper resume
+    from . import provenance
+    with provenance.run_context(campaign, accept_change):     # one run for research, edit and paper; may refuse
+        return _run_pair(campaign, pair_id, stages, interval)
+
+
+def _run_pair(campaign, pair_id, stages, interval) -> dict:
+    from . import edit, paper
     code = 0
     if not pair_complete(campaign, pair_id, ("research", "edit")):
         code = run(campaign, interval=interval, pairs=[pair_id])
@@ -433,7 +449,7 @@ def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), inter
                 and paper.status(campaign, pair_id).get("status") not in PAPER_DONE
                 and not stopped(campaign) and not unhealthy(campaign))
     if "paper" in stages and code == 0 and paper_due():
-        with health.owner(campaign), Lock(campaign.thread_dir(pair_id)):
+        with health.owner(campaign, nested=True), Lock(campaign.thread_dir(pair_id)):
             if paper_due():                          # re-read under ownership: state may have moved meanwhile
                 out["paper"] = paper.run(campaign, pair_id, stop=lambda: stopped(campaign) or unhealthy(campaign))
             else:

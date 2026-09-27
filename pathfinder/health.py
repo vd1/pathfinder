@@ -6,8 +6,29 @@ import json
 import os
 import time
 import uuid
+import threading
 from contextlib import contextmanager
 from pathlib import Path
+
+
+_held: dict = {}                  # (runner.lock path, thread) -> nesting depth and the run it serves
+
+
+def bind_run(campaign, run_id):
+    """Record which run the current thread's ownership serves; None clears it."""
+    key = (str(campaign.path("runner.lock").resolve()), threading.get_ident())
+    with _held_lock:
+        if key not in _held:
+            raise RuntimeError("bind_run outside ownership")
+        _held[key]["run_id"] = run_id
+
+
+def owned_run(campaign):
+    """The run id this thread's ownership of the campaign serves, or None."""
+    key = (str(campaign.path("runner.lock").resolve()), threading.get_ident())
+    with _held_lock:
+        return (_held.get(key) or {}).get("run_id")
+_held_lock = threading.Lock()
 
 
 def write(path, value):
@@ -41,8 +62,24 @@ def alive(pid):
 
 
 @contextmanager
-def owner(campaign):
-    """An OS-held lock protects research runs; metadata alone is not ownership."""
+def owner(campaign, nested: bool = False):
+    """An OS-held lock protects research runs; metadata alone is not ownership. With nested=True, a thread
+    that already owns the campaign may enter again without releasing it (a dispatch running its stages);
+    any other thread, and any caller not asking for nesting, is refused as a second owner."""
+    key = (str(campaign.path("runner.lock").resolve()), threading.get_ident())
+    with _held_lock:
+        mine = key in _held
+        if mine and nested:
+            _held[key]["depth"] += 1
+    if mine and nested:
+        try:
+            yield
+        finally:
+            with _held_lock:
+                _held[key]["depth"] -= 1
+        return
+    if mine:
+        raise RuntimeError("campaign research runner already owns runner.lock")
     with campaign.path("runner.lock").open("a+") as handle:
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -54,7 +91,13 @@ def owner(campaign):
                 call = read(path)
                 if call and (alive(call.get("pid")) or alive(call.get("child_pid"))):
                     raise RuntimeError(f"unresolved active call: inspect {path} before restarting")
-            yield
+            with _held_lock:
+                _held[key] = {"depth": 1, "run_id": None}
+            try:
+                yield
+            finally:
+                with _held_lock:
+                    _held.pop(key, None)
         finally:
             fcntl.flock(handle, fcntl.LOCK_UN)
 

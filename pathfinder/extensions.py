@@ -50,15 +50,43 @@ def _within(module, root: Path) -> bool:
     return bool(origin) and Path(origin).resolve().is_relative_to(root)
 
 
-def digests(campaign) -> dict:
-    """For the run record: each configured extension's target and the sha256 of its module source."""
+_first_seen: dict = {}
+
+
+def _tree_digest(root: Path) -> dict:
+    """sha256 of every Python file under a deployment's extension path, helpers included."""
+    return {f.relative_to(root).as_posix(): hashlib.sha256(f.read_bytes()).hexdigest()
+            for f in sorted(root.rglob("*.py")) if "__pycache__" not in f.parts}
+
+
+def digests(campaign, fresh: bool = False) -> dict:
+    """For the run record: each configured extension's target and module file, and the digest of every
+    Python file under the extension path. Digests are taken when this process first loads a campaign's
+    extensions and kept, so a file edited later, which the process has not re-imported, does not pass for
+    the code actually running."""
+    spec = _spec(campaign)
+    key = (str(Path(campaign.root).resolve()), json_key(spec))
+    if key in _first_seen and not fresh:
+        return _first_seen[key]
     out = {}
-    for name in sorted(set(_spec(campaign)) & SUPPORTED):
+    for name in sorted(set(spec) & SUPPORTED):
+        if not spec[name]:
+            continue
         obj = load(campaign, name)
         try:
             source = Path(inspect.getfile(obj if inspect.ismodule(obj) else inspect.getmodule(obj)))
+            source = source if source.exists() else None
             digest = hashlib.sha256(source.read_bytes()).hexdigest()
         except (TypeError, OSError):
             source, digest = None, None
-        out[name] = {"target": _spec(campaign)[name], "file": str(source) if source else None, "sha256": digest}
+        out[name] = {"target": spec[name], "file": str(source) if source else None, "sha256": digest}
+    if spec.get("path"):
+        out["path_files"] = _tree_digest((Path(campaign.root) / spec["path"]).resolve())
+    if not fresh:
+        _first_seen[key] = out
     return out
+
+
+def json_key(spec) -> str:
+    import json
+    return json.dumps(spec, sort_keys=True)

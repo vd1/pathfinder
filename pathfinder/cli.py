@@ -10,6 +10,8 @@ def main(argv=None):
     @planks("When the operator applies reconciliation to the shortlist")
     """
     ap = argparse.ArgumentParser(prog="pathfinder"); ap.add_argument("--root", default=".")
+    ap.add_argument("--accept-change", metavar="REASON",
+                    help="dispatch although the run record changed since the previous run; the reason is recorded")
     sub = ap.add_subparsers(dest="cmd", required=True)
     f = sub.add_parser("fetch", help="fill Q.jsonl and P.jsonl from the arXiv API, or append older papers with --more")
     f.add_argument("--q"); f.add_argument("--p"); f.add_argument("--n", type=int, default=5)
@@ -22,7 +24,12 @@ def main(argv=None):
     sub.add_parser("scan", help="phase A: score every pair")
     s = sub.add_parser("select", help="freeze the top cut, or every pair at or above --min-score, as shortlist.json")
     s.add_argument("--cut", type=float); s.add_argument("--min-score", type=float); s.add_argument("--force", action="store_true")
-    sub.add_parser("research", help="run the shortlisted threads")
+    rs = sub.add_parser("research", help="run the shortlisted threads")
+    rs.add_argument("--pairs", nargs="+", help="a bounded run over exactly these shortlisted pairs")
+    fz = sub.add_parser("freeze", help="write the engine's runtime files at a commit into a new directory")
+    fz.add_argument("dest"); fz.add_argument("--ref", required=True); fz.add_argument("--repo")
+    vf = sub.add_parser("verify-frozen", help="compare a frozen copy with its commit: verified, modified or unverifiable")
+    vf.add_argument("dest"); vf.add_argument("--repo")
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
     sub.add_parser("status", help="print campaign and shortlist state")
     sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
@@ -39,7 +46,30 @@ def main(argv=None):
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
-    ns = ap.parse_args(argv); c = config.load(Path(ns.root))
+    ns = ap.parse_args(argv)
+    if ns.cmd in ("freeze", "verify-frozen"):
+        from . import freeze
+        repo = Path(ns.repo) if ns.repo else Path(__file__).resolve().parent.parent
+        if ns.cmd == "freeze":
+            print(json.dumps({k: v for k, v in freeze.freeze(repo, ns.ref, Path(ns.dest)).items() if k != "files"}, indent=1))
+            return 0
+        result = freeze.verify(Path(ns.dest), repo); print(json.dumps(result, indent=1))
+        return 0 if result["status"] == "verified" else 1
+    c = config.load(Path(ns.root))
+    if ns.cmd in DISPATCHING and ns.cmd != "research":       # research opens its own run inside runner.run
+        from . import provenance
+        try:
+            with provenance.run_context(c, ns.accept_change):
+                return _dispatch(ns, c)
+        except provenance.ChangeRefused as refused:
+            print(f"refusing to dispatch: {refused}"); return 1
+    return _dispatch(ns, c)
+
+
+DISPATCHING = {"scan", "explore", "research", "paper", "edit"}
+
+
+def _dispatch(ns, c):
     if ns.cmd == "fetch" and ns.more:
         for side in ("Q", "P"):
             for row in corpus.more(c, side, ns.more):
@@ -66,7 +96,7 @@ def main(argv=None):
         for p in out["pairs"]:
             print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']})")
     elif ns.cmd == "research":
-        return runner.run(c)
+        return runner.run(c, pairs=ns.pairs, accept_change=ns.accept_change)
     elif ns.cmd == "repair-verdict":
         from . import recovery
         print(json.dumps(recovery.repair_verdict(c, ns.pair), indent=2))
