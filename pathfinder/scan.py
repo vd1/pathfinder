@@ -6,15 +6,17 @@ from . import corpus, transport
 
 
 def prompts_dir(campaign) -> Path:
+    """Kept for callers of the old directory-wide lookup; prompts now resolve per file (resources.prompt)."""
+    from . import resources
     local = campaign.path("prompts")
-    return local if local.exists() else Path(__file__).resolve().parent.parent / "prompts"
+    return local if local.exists() else resources.engine_prompts()
 
 
 def render(campaign, q: dict, p: dict) -> str:
+    from . import resources
     ft = campaign.scan_fulltext
-    t = (prompts_dir(campaign) / "scan.md").read_text()
-    return (t.replace("{{Q_TITLE}}", q["title"]).replace("{{Q_BODY}}", corpus.body(campaign, q, ft in ("q", "both")))
-             .replace("{{P_TITLE}}", p["title"]).replace("{{P_BODY}}", corpus.body(campaign, p, ft in ("p", "both"))))
+    return resources.prompt(campaign, "scan", Q_TITLE=q["title"], Q_BODY=corpus.body(campaign, q, ft in ("q", "both")),
+                            P_TITLE=p["title"], P_BODY=corpus.body(campaign, p, ft in ("p", "both")))
 
 
 def parse_json(text: str) -> dict:

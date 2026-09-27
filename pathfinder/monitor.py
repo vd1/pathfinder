@@ -110,8 +110,10 @@ def pdf(tex: Path) -> tuple[bytes, str]:
     """Compile a note with pdflatex in a scratch directory, in the note style whatever its preamble;
     cached by the mtimes of the note and its metadata. Returns (pdf bytes, log)."""
     from .restyle import restyle
+    from . import resources
     meta = tex.parent / "pathfinder-meta.tex"
-    key, mtime = str(tex), (tex.stat().st_mtime, meta.stat().st_mtime if meta.exists() else 0)
+    styles = tuple(sorted(resources.style_digests(where=tex.parent).items()))    # a style change rebuilds
+    key, mtime = str(tex), (tex.stat().st_mtime, meta.stat().st_mtime if meta.exists() else 0, styles)
     if key in _pdf_cache and _pdf_cache[key][0] == mtime:
         return _pdf_cache[key][1], _pdf_cache[key][2]
     with tempfile.TemporaryDirectory() as tmp:
@@ -120,7 +122,7 @@ def pdf(tex: Path) -> tuple[bytes, str]:
             shutil.copy(meta, tmp)
         for _ in range(2):
             subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", tex.name], cwd=tmp,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120, env=paper.tex_env())
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120, env=paper.tex_env(tex.parent))
         out, log = Path(tmp) / tex.with_suffix(".pdf").name, Path(tmp) / tex.with_suffix(".log").name
         data = out.read_bytes() if out.exists() else b""
         text = log.read_text(errors="replace") if log.exists() else "pdflatex produced no log"

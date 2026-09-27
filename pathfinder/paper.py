@@ -29,10 +29,12 @@ def _set(campaign, pair_id, **kw):
 STYLES = Path(__file__).parent / "styles"
 
 
-def tex_env() -> dict:
-    """The environment for TeX runs: the pipeline's style files are visible to every document."""
+def tex_env(where=None) -> dict:
+    """The environment for TeX runs: the pipeline's style files are visible to every document, and the
+    styles/ of the campaign holding `where`, when there is one, come first."""
+    from . import resources
     env = dict(os.environ)
-    env["TEXINPUTS"] = f"{STYLES}{os.pathsep}" + env.get("TEXINPUTS", "")
+    env["TEXINPUTS"] = resources.texinputs(existing=env.get("TEXINPUTS", ""), where=where)
     return env
 
 
@@ -51,7 +53,7 @@ def build(d: Path, main: str = "paper.tex", restyle: str | None = None) -> tuple
         src = _restyle(src, restyle)
     (scratch / main).write_text(src)
     r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", main], cwd=scratch,
-                       capture_output=True, text=True, timeout=300, env=tex_env())
+                       capture_output=True, text=True, timeout=300, env=tex_env(d))
     log = (scratch / f"{stem}.log").read_text(errors="replace") if (scratch / f"{stem}.log").exists() else r.stdout + r.stderr
     ok = r.returncode == 0 and (scratch / f"{stem}.pdf").exists()
     if ok:

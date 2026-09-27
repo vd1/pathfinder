@@ -144,11 +144,9 @@ def _inputs(d: Path) -> dict:
 
 
 def _prompt(campaign, name, **vars):
-    t = (prompts_dir(campaign) / f"{name}.md").read_text()
+    from . import resources
     vars.setdefault("DATE", time.strftime("%Y-%m-%d"))          # every document bears its date of production
-    for k, v in vars.items():
-        t = t.replace("{{" + k + "}}", str(v))
-    return t
+    return resources.prompt(campaign, name, **vars)
 
 
 def _check(stop):
