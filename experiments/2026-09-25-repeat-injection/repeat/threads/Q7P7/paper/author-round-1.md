@@ -1,0 +1,5 @@
+Round 1 is complete. [The paper](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P7/paper/paper.tex) shows failures in Q’s displayed uniqueness and individual-rationality claims, then proves a corrected payment result for optional convex loads using P’s frozen forecast. Its regret bounds are explicitly conditional; it makes no claim to implement P’s full scheduler or reduce physical emissions without further assumptions.
+
+The [search log](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P7/paper/search.md) records the queries and findings. Prior work already establishes efficient allocations with multiple equilibrium messages and claims balanced carbon-aware pricing, so the paper narrows its contribution to the specific repair of Q’s payment.
+
+[The PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P7/paper/paper.pdf) builds successfully: four pages, no undefined citations or references. I checked the rendered first page and ran the artifact style gates with no errors.

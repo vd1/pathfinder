@@ -1,0 +1,39 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Proposal Order and Bargaining Power in LLM Markets}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies LLM traders in a continuous double auction and reports incomplete convergence, including an effect of opening offers on later quotes. P studies self-negotiated contracts in a resource-trading game and reports gains from enforceable contracts alongside an apparent advantage for the player who proposes first. \ledger{3,8,15}
+
+\section*{Connexion pursued}
+
+The question is how much apparent bargaining power in P's enforceable contracts comes from a genuine outside option, and how much comes from moving first. Q makes this distinction worth testing: in its symmetric market, agents on the opposite side respond to an opening quote even though no exchange rule requires that response. \ledger{8,15}
+
+\section*{What the material establishes}
+
+P fixes P-Red as both the independent player on asymmetric boards and the first contract proposer. It also reports that P-Red receives about \(60\%\) of negotiated points on Independent and Mutually Dependent boards, where the asymmetric outside option is absent. These observations suggest an order effect, but they cannot separate it from player role on asymmetric boards. P's finding that full state visibility improves P-Red's asymmetric contract terms likewise does not separate those factors. \ledger{8,15}
+
+A direct contract remedy for Q's undertrading has a mechanism problem. Q executes a crossing quote immediately; no later promise needs enforcement. For a buyer with value \(v\), seller with cost \(c\), and immediate trade at price \(p\), a transfer \(t\) from buyer to seller contingent only on that trade changes payoffs from \((v-p,\;p-c)\) to \((v-p-t,\;p+t-c)\). This is equivalent to trading at price \(p+t\), under the stated single-unit, feasible-price assumptions. P's contracts instead address delayed performance. Q attributes low trade volume to incremental quote improvements and reluctance to cross before its iteration cap. \ledger{3,5,13}
+
+\section*{Objections and limits}
+
+An alternative proposal was to compare aggregate gains with individual losses. Q's exchange permits loss-making offers, but its prompts explicitly forbid bids above a buyer's reservation value and asks below a seller's. Negative realized profit would therefore require prompt noncompliance; Q does not report its incidence. P's strict ``both beat baseline'' measure can also be zero when a player merely matches their outside option. Neither paper establishes widespread participation violations. \ledger{6,7,9,11}
+
+Q's opening-quote pattern and P's contract outcomes are observational evidence from different games. They establish neither a causal anchoring effect in P nor an effect of contracts in Q. The cross-paper evidence is thin, and the proposed connection remains a hypothesis. \ledger{13,15}
+
+\section*{Outside sources and open question}
+
+Exploratory prior-work searches found studies of LLM negotiation anchoring at \url{https://aclanthology.org/2025.findings-emnlp.240/} and \url{https://arxiv.org/abs/2512.09254}, plus adjacent work on binding offers and natural-language contracts at \url{https://arxiv.org/abs/2604.16472} and \url{https://arxiv.org/abs/2608.10475}. These searches support no claim that the proposed design is novel. A separate, unresolved question is whether contract-like language changes trading in Q even when execution is already guaranteed. \ledger{10,12,13}
+
+\section*{Smallest decisive next step}
+
+Run P's programmatic points contract on paired original and red/blue-swapped asymmetric boards, independently randomizing which player proposes first. Keep the model pairing, board geometry, negotiation limit, and judge fixed; repeat matched runs. Compare net point transfers and final rewards to the independent player across the four role-by-order cells, while recording agreement rates, joint reward, each player's gain over baseline, and opening proposals. An independent-player premium when that player proposes second would support an outside-option effect; a proposer premium within either role would identify an order effect. The crossed design can estimate their interaction, though opening proposals alone would not prove cognitive anchoring. \ledger{15}
+
+\end{document}
+```

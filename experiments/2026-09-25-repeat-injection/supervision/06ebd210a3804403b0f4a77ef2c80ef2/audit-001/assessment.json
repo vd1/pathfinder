@@ -1,0 +1,65 @@
+{
+  "observed_at": "2026-09-25T17:17:07.199180+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "facts": {
+    "finished_threads": 7,
+    "scheduled_threads": 28,
+    "active": "repeat/Q3P10 peers ada and emmy",
+    "active_calls_within_deadlines": true,
+    "unstarted_threads": 20,
+    "draft_paper": "repeat/Q4P10 ACCEPTED, build_ok=true; review ACCEPT",
+    "prior_completed_work_unchanged": true,
+    "comparison": "Previous audit blocked at reinjection/Q3P2 verifier; saved repair and full-pipeline resume now verified through editing and next pair admission. Supplied current before snapshot has same pair and call attempts as observed snapshot.",
+    "process_identity": "Parent session runner_pid 24244 matches health, call owners and supplied executable/PPID tree. Two recorded codex children match current calls; no duplicate runner in supplied related tree. Point-in-time evidence cannot exclude unrecorded reparented groups.",
+    "outcomes_caveat": "outcomes.json retains pre-repair BLOCKED state; launch.py writes outcomes in finalization, so current aggregate, progress and receipts establish current advancement.",
+    "stops": {
+      "repeat": null,
+      "reinjection": null
+    },
+    "receipts": {
+      "repeat": {
+        "last": {
+          "at": "2026-09-25T16:05:45Z",
+          "thread": "Q4P6",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "seconds": 191.7,
+          "error": null
+        },
+        "errors": [],
+        "failure_files": {
+          "failures.jsonl": false,
+          "failure.json": false
+        }
+      },
+      "reinjection": {
+        "last": {
+          "at": "2026-09-25T17:13:48Z",
+          "thread": "Q3P2",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "seconds": 204.3,
+          "error": null
+        },
+        "errors": [],
+        "failure_files": {
+          "failures.jsonl": false,
+          "failure.json": false
+        }
+      }
+    },
+    "intervention": "none"
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-001/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-001/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-001/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

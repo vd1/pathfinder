@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Balanced risk-aware allocation from an empirical CVaR oracle}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We examine the resource-allocation payment of Garjani, Shokri and Kebriaei together with the sampled conditional value at risk (CVaR) estimator of Wang, Huang, Xu and Johansson. The original payment implements an optimal allocation, but its stated strict uniqueness certificate is incompatible with its implementation condition, prices can be non-unique, and individual rationality can fail. An explicit transfer depending only on other agents' messages preserves the equilibrium set and gives exact budget balance and individual rationality at every equilibrium. For a fixed expected empirical-CVaR surrogate, the resulting equilibrium has true regularised-CVaR welfare loss at most \(2\sum_n h_n\), true unilateral regret at most \(2h_n\), and true participation shortfall at most \(2h_n\), subject to oracle-neighbourhood and multiplier assumptions. These are static guarantees; no sampled learning rule is established. % Ledger: 5, 7, 8, 10, 12-14, 17, 20, 22, 24, 26, 34
+\end{abstract}
+
+\section{The two source problems}
+Garjani, Shokri and Kebriaei, denoted Q, consider \(N\geq2\) agents choosing separate allocations \(x_n\in\mathcal X_n\subseteq\mathbb R_+^K\) and price messages \(p_n\in\mathbb R_+^K\). Their planner maximises \(\sum_n V_n(x_n)\) subject to \(\sum_nx_n\leq c\), with compact convex local sets and strongly concave valuations. Q proposes a quadratic payment, Eq.~(40), and states unique Nash implementation, budget balance and individual rationality, together with a sample-based best-response convergence result under its stated conditions~\cite{garjani2026mechanism}. % Ledger: 1, 5, 8, 14, 19, 26
+
+Wang, Huang, Xu and Johansson, denoted P, instead minimise an average of local CVaR losses over \emph{one shared decision} replicated across a network. They construct empirical CVaR estimates from sampled local losses and prove consensus and optimisation guarantees for that problem~\cite{wang2026distributed}. Its consensus iteration does not implement Q's heterogeneous allocation problem: even a two-agent quadratic example has optimal allocation \((1,0)\), while the equal allocation \((1/2,1/2)\) loses \(1/4\) of welfare. We use P's local value estimate, not its iteration. % Ledger: 3, 20, 22, 26
+
+\section{The Q payment: outcome and defect}
+Write \(t_n\) for Q's Eq.~(40), \(z=\sum_mx_m-c\), and \(P=\sum_mp_m\). The own-price derivative of agent \(n\)'s payoff is, coordinatewise,
+\[
+\partial_{p_n^k}U_n=-\frac{\alpha}{N-1}(Np_n^k-P^k-z^k).
+\]
+At a price best response, if one price in coordinate \(k\) is positive, all prices there are positive and equal and \(z^k=0\); if all are zero, the boundary conditions give \(z^k\leq0\). Thus every equilibrium has a common \(p\geq0\), \(z\leq0\), and \(p^\top z=0\). At common prices, allocation best responses maximise \(V_n(x_n)-\alpha p^\top x_n\). These are the planner's optimality conditions with \(\lambda=\alpha p\), so every equilibrium allocation is optimal; strong concavity makes that allocation unique. Conversely, a planner primal-dual solution gives an equilibrium when a multiplier exists and Q's strong-concavity assumption makes each own payoff jointly concave in \((x_n,p_n)\). This conclusion concerns allocations, not uniqueness of price messages. % Ledger: 8, 9, 14, 22, 26
+
+Q's stated strict P1(ii) inequality cannot hold together with its P2(i) condition. The latter requires \(\sum_mA_{nm}^n=0\) for each \(n\). On a direction changing all prices by the same nonzero vector \(h\), with allocations fixed, the quadratic form of Q's symmetric matrix bound is
+\[
+v^\top(\Psi+\Psi^\top)v
+=-2\sum_nh^\top\Bigl(\sum_m A_{nm}^n\Bigr)h=0,
+\]
+contrary to P1(ii)'s strict negative bound. This disproves the proposed joint certificate, not implementation itself. Indeed, with \(N=2\), \(c=2\), \(\mathcal X_n=[0,1]\), \(\alpha=1\), and \(V_n(x)=2x-x^2/2\), every common price \(p\in[0,1]\) supports the same equilibrium allocation \((1,1)\). % Ledger: 5-7, 14, 22, 26
+
+The original payment can also violate participation. For \(N=2\), \(c=1\), \(\mathcal X_n=[0,1]\), \(\alpha=1\), \(V_1(x)=4x-x^2/2\) and \(V_2(x)=x-x^2/2\), the message profile \((x_1,p_1,x_2,p_2)=(1,3,0,3)\) is an equilibrium. Q's payment charges agent 1 \(9/2\), although its valuation is \(7/2\). This example can be realised with bounded convex stochastic losses compatible with P's local loss assumptions. % Ledger: 10, 22
+
+\section{An others-only transfer correction}
+For Q's notation \(\bar p_{-n}=\sum_{m\ne n}p_m\) and \(\bar x_{-n}=\sum_{m\ne n}x_m\), set
+\[
+\kappa_N=1+\frac{N}{(N-1)^2},\qquad
+g_n(s_{-n})=\frac{\alpha N}{(N-1)^3}\bar p_{-n}^{\top}
+\left(\bar x_{-n}-\frac{N-1}{N}c\right),
+\qquad \widehat t_n=t_n+g_n.
+\]
+The rebate \(g_n\) depends only on other agents' messages, so the corrected game has exactly the same best responses and equilibria. % Ledger: 12-14, 24, 29, 32, 34
+
+\begin{proposition}
+Suppose Q's compact convex local allocation sets, \(c\geq0\), \(0\in\mathcal X_n\), and \(\alpha\)-strongly concave valuations with \(V_n(0)=0\). If a planner multiplier exists, the corrected game has an equilibrium. At every equilibrium its allocation is the unique planner optimum, \(\sum_n\widehat t_n=0\), and \(V_n(x_n)-\widehat t_n\geq0\) for every agent. The equilibrium price need not be unique.
+\end{proposition} % Ledger: 8, 9, 12-14, 22, 24, 30, 32, 34
+
+\begin{proof}
+The outcome and existence claims follow from the price and allocation best-response conditions above, since adding \(g_n\) changes no best response. To check the transfer coefficient for arbitrary \(N\), let \(d_n=x_n-c/N\). Direct expansion of all terms in Q's Eq.~(40) at a common-price profile gives
+\[
+\frac{t_n}{\alpha}=\kappa_Np^\top d_n-\frac{N}{(N-1)^2}p^\top z,
+\qquad
+\frac{g_n}{\alpha}=\frac{N}{(N-1)^2}p^\top(z-d_n).
+\]
+Consequently \(\widehat t_n=\alpha p^\top(x_n-c/N)=\lambda^\top(x_n-c/N)\) at every common-price profile. At equilibrium, complementarity yields \(\sum_n\widehat t_n=\lambda^\top z=0\). Since the allocation best response compares \(x_n\) with \(0\),
+\[
+V_n(x_n)-\widehat t_n
+=\bigl(V_n(x_n)-\lambda^\top x_n\bigr)+\lambda^\top c/N
+\geq V_n(0)+\lambda^\top c/N\geq0.
+\]
+The price example in the preceding section proves the last assertion. % Ledger: 7-9, 12-14, 24, 29, 30, 32, 34
+\end{proof}
+
+\section{Fixed empirical-CVaR surrogate}
+For each agent let \(J_n(x,\xi)\) be convex, \(L_n\)-Lipschitz and bounded in absolute value by \(U_n\) on the entire \(\delta_n\)-neighbourhood queried below. Let \(\beta_n\in(0,1)\) be the upper-tail risk level, and define \(C_n(x)=\operatorname{CVaR}_{\beta_n}J_n(x,\xi)\). With an independent fresh batch of size \(s_n\) and a uniform unit-ball perturbation \(\nu\), define the deterministic expected surrogate
+\[
+H_n(x)=\mathbb E_{\nu,\xi^{1:s_n}}
+\widehat{\operatorname{CVaR}}_{\beta_n}
+J_n(x+\delta_n\nu,\xi^{1:s_n}).
+\]
+These definitions require counterfactual loss queries throughout that neighbourhood, including near a nonnegative boundary. P's convexity and smoothing arguments make \(H_n\) convex and differentiable on the required domain. Its bounded-loss CVaR comparison and integrated empirical-distribution estimate give, at each point,
+\[
+|H_n(x)-C_n(x)|\leq h_n,
+\qquad h_n=L_n\delta_n+
+\frac{U_n\sqrt{2\pi}}{\beta_n\sqrt{s_n}}.
+\]
+The constant is independent of \(x\), so this is a deterministic value bound for the expected surrogate on the stated domain; it is not a simultaneous high-probability bound for one realised batch. % Ledger: 15, 17, 18, 22, 24, 26
+
+Set \(\alpha=\gamma>0\) in the corrected game and use normalized valuations
+\[
+V_n^0(x)=C_n(0)-C_n(x)-\frac\gamma2\|x\|^2,
+\qquad
+\widetilde V_n(x)=H_n(0)-H_n(x)-\frac\gamma2\|x\|^2.
+\]
+Thus \(V_n^0(0)=\widetilde V_n(0)=0\), and the surrogate valuations are \(\gamma\)-strongly concave. The planner objective here is the \emph{sum of individual regularised CVaR losses}, not the CVaR of aggregate loss. % Ledger: 17, 20, 22, 24, 26
+
+\begin{theorem}
+Assume the preceding oracle and domain conditions, compact convex local sets containing zero, a feasible coupled allocation set, and a multiplier for the surrogate planner problem. Let \(\widetilde x\) be any equilibrium allocation of the corrected surrogate game and \(x^0\) the true planner optimum. Then, writing \(F(x)=\sum_n[C_n(x_n)+\gamma\|x_n\|^2/2]\),
+\[
+F(\widetilde x)-F(x^0)\leq2\sum_nh_n,
+\qquad
+\|\widetilde x-x^0\|\leq
+2\sqrt{\frac{\sum_nh_n}{\gamma}}.
+\]
+At the same messages, when utilities are evaluated with the true normalized valuations and the corrected transfers, agent \(n\)'s unilateral regret is at most \(2h_n\), its utility is at least \(-2h_n\), and transfers still sum to zero.
+\end{theorem} % Ledger: 14, 17, 18, 22, 24, 26
+
+\begin{proof}
+The proposition makes \(\widetilde x\) the surrogate planner optimum and gives surrogate participation and exact transfer balance. Comparing the true and surrogate planner values at \(\widetilde x\) and \(x^0\) incurs at most \(h_n\) per agent at each of the two allocations; the normalization constants cancel. This gives the welfare inequality. Strong convexity of \(F\) over the convex feasible set gives \(F(\widetilde x)-F(x^0)\geq\gamma\|\widetilde x-x^0\|^2/2\), yielding the distance bound. For any unilateral message deviation, the payment is unchanged between true and surrogate evaluations; the valuation difference is \((H_n-C_n)(x)-(H_n-C_n)(0)\). The normalising term cancels when comparing two decisions, so surrogate optimality bounds true unilateral gain by \(2h_n\). At the equilibrium allocation, its true utility differs from its nonnegative surrogate utility by at most \(2h_n\). % Ledger: 17, 18, 22, 24, 26
+\end{proof}
+
+\section{Relation to prior work}
+The idea of repairing a mechanism's budget by adding terms that depend only on other agents' messages already appears in Healy and Mathevet's study of stable Nash mechanisms~\cite{healy2012stable}. Our contribution is the explicit coefficient and equilibrium transfer identity for Q's particular quadratic payment, then the static value comparison using P's estimator; we do not claim the others-only device itself is new. % Ledger: 12-14, 16, 20, 24, 32, 34
+
+Dahlin and Jain use CVaR in a two-stage electricity market but assume non-strategic agents for their market mechanism~\cite{dahlin2020risk}. The targeted search recorded in \texttt{search.md} did not locate a publication of this precise Q-payment correction with P's empirical-CVaR bound; it cannot establish priority or novelty. % Ledger: 16, 20, 22
+
+\section{Interpretation and limitations}
+The theorem concerns equilibrium of a \emph{fixed expected} empirical-CVaR surrogate, so its \(s_n^{-1/2}\) term is a value-comparison guarantee rather than a convergence rate for sampled play. P's consensus algorithm addresses a shared decision, whereas Q has separate coupled allocations and possibly non-unique prices. Neither paper proves that a feasible learning rule reaches the corrected surrogate equilibrium from sampled losses. Q's allocation rule may violate capacity before equilibrium. Moreover, P's centred-ball feasible-set assumption cannot simply be imposed on Q's nonnegative sets; the theorem explicitly assumes all perturbation queries are available. A surrogate planner multiplier is also required. % Ledger: 3, 19, 20, 22, 24, 26
+
+The result is conditional on summing individual CVaRs and on quadratic regularisation; it gives no guarantee for the CVaR of total loss. It gives exact participation only for surrogate preferences and a \(2h_n\) shortfall bound for true preferences. Q's numerical choice \(Q_i=\lceil0.96^{i+1}\rceil\) equals one for every iteration as written, while its convergence theorem assumes geometrically increasing batches; those plots therefore do not verify the theorem's sampling regime. An implementable learning rule with feasible perturbations and convergence to the equilibrium set remains open. % Ledger: 17, 19, 20, 22, 24, 26
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

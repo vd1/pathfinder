@@ -1,0 +1,29 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-23T21:48:08Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "2a2458b6414fc8047535184b0f88c50c25808df9a06e22a10b0243f1ca9795ea",
+  "decision": "ACCEPT",
+  "summary": "The paper stays within the note and ledger, separates proposed effects from observed results, and gives a correct gross-surplus calculation. All four references are cited and their metadata matches the linked arXiv records. Two minor clarifications would make the proposed test easier to follow.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Gross and net surplus",
+    "issue": "The cost formula does not define k, S_i, or \u03b1, so the notation is not fully self-contained.",
+    "fix": "Define k as the token-cost scale, S_i as model size, and \u03b1 as its cost exponent; note that the proposed primary test sets \u03b1=0."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Mechanism and test, Proposed comparison",
+    "issue": "The instruction to hold prompts fixed is imprecise because the charged arm must disclose the tariff.",
+    "fix": "Say that prompts are identical except for the treatment-specific tariff and payoff instructions."
+   }
+  ]
+ }
+]

@@ -1,0 +1,70 @@
+{
+  "observed_at": "2026-09-25T19:21:43.534697+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed_count": 13,
+  "scheduled_count": 28,
+  "completed_records_unchanged": true,
+  "papers": {
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    }
+  },
+  "receipts": {
+    "repeat": {
+      "count": 57,
+      "latest": {
+        "at": "2026-09-25T19:18:29Z",
+        "thread": "Q1P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      },
+      "new": [
+        {
+          "at": "2026-09-25T19:18:29Z",
+          "thread": "Q1P1",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        }
+      ]
+    },
+    "reinjection": {
+      "count": 44,
+      "latest": {
+        "at": "2026-09-25T18:42:48Z",
+        "thread": "Q4P4",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null
+      },
+      "new": []
+    }
+  },
+  "comparison": "Repeat Q1P1 editor completed; reinjection Q1P3 peer calls admitted. No overdue calls, stop markers, or new runner/child failure records.",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-026/processes.json",
+  "identity_assessment": "Supplied tree matches coordinator PID 24244, parent supervisor 24243, and recorded Codex children 48625/48626; same coordinator run as prior audit. No intervention. Point-in-time evidence does not resolve PID reuse.",
+  "outcomes_assessment": "outcomes.json remains the historical pre-repair export; current child checkpoints and launch.py status show Q3P2 repaired and edited. No new repair required.",
+  "action": "Record nonblocking edit lookup failure; leave active pipeline running.",
+  "pane_title": "HERDR_PANE_ID absent; no pane target available."
+}

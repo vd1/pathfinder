@@ -1,0 +1,86 @@
+{
+  "observed_at": "2026-09-25T15:29:07.521118+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "previous_audit": "audit-009",
+  "facts": [
+    "2/28 pipelines finished: repeat/Q4P10 DRAFT with editor done and paper ACCEPTED/build_ok; reinjection/Q4P2 scientific PAUSE with editor done/build_ok. 25 await admission; Q3P1 peer calls active.",
+    "Since audit-009 Q4P2 editing completed and Q3P1 peers began; meaningful progress with no overdue calls or livelock evidence.",
+    "Root and active child heartbeats fresh. Supplied process evidence matches Python owner 89044, parent supervisor 89043, Codex children 1957/1958 and hosts 2128/2132. Evidence is point-in-time and cannot exclude PID reuse or independent reparented groups; no intervention attempted.",
+    "No root/child stop, failures or failed receipts. New Q4P2 editor arXiv HTTP 406 lookup failure is nonblocking and recorded in incidents.jsonl.",
+    "outcomes.json absent as expected before launch.py finalization. progress.json stores last completed pair; aggregated child calls identify current peer stage despite root between-pairs label.",
+    "No checkout, process or schedule changes. HERDR_PANE_ID absent; title update unavailable."
+  ],
+  "schedule_count": 28,
+  "completed_pipelines": 2,
+  "active_calls": [
+    {
+      "attempt_id": "803a38ce6dd240e09991ec114fcad840",
+      "run_id": "b2df55c609a64515ac61d99c262b6e9a",
+      "pid": 89044,
+      "thread": "Q3P1",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790349953.727138,
+      "deadline_at": 1790351183.727138,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P1",
+      "child_pid": 1957,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/803a38ce6dd240e09991ec114fcad840.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 165.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    },
+    {
+      "attempt_id": "9deb9d088b4b408f92a81ffb54f9c24e",
+      "run_id": "b2df55c609a64515ac61d99c262b6e9a",
+      "pid": 89044,
+      "thread": "Q3P1",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790349953.72719,
+      "deadline_at": 1790351183.72719,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P1",
+      "child_pid": 1958,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/9deb9d088b4b408f92a81ffb54f9c24e.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 165.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "previous_active_calls": [
+    {
+      "attempt_id": "273c8fee86234609b525d9b9c548f6cd",
+      "run_id": "ddc01ce9be994142be491af7c9c8b1ff",
+      "pid": 89044,
+      "thread": "Q4P2",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790349711.295166,
+      "deadline_at": 1790350611.295166,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P2",
+      "child_pid": 1415,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/273c8fee86234609b525d9b9c548f6cd.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 70.0,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-010/processes.json",
+  "paper": {
+    "status": "ACCEPTED",
+    "round": 1,
+    "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+    "updated": "2026-09-25T15:11:00Z",
+    "build_ok": true
+  }
+}

@@ -1,0 +1,51 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Token Prices and Cost-Aware Crossing in an LLM Double Auction}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+The assigned Q is Bergemann, Koh, and Morris's mechanism-design framework for AI agents with uncertain preferences and capabilities; it permits rewards contingent on joint actions and allows a complete trajectory to count as an action. P proposes charging traders for generated tokens in a fixed-value LLM double auction, but reports no combined experiment; its internal labels ``Q'' and ``P'' refer to different source papers, not to the assigned pair. \ledger{2, 5, 10}
+
+\section*{Connexion pursued}
+
+A trader's auction trajectory can carry a token total, and a charge can enter its payoff as an additive reward. This embeds P's accounting in Q's incentive framework, but yields no auction implementation theorem by itself. The useful question is whether charging each trader for its own tokens induces a cost-aware spread crossing, and whether a verifiable reward based on the joint trajectory can correct a failure. \ledger{5, 6, 24}
+
+\section*{What was found}
+
+First, an actual additive tariff has a fixed-decision revealed-preference restriction. Hold the book state, trader type, opponent policy, feasible actions, expected intrinsic payoff \(U(a)\), and metered tokens \(T(a)\) fixed. If \(a_0\) is optimal at \(\tau_0\) and \(a_1\) at \(\tau_1>\tau_0\), the two optimality inequalities are
+\[
+U(a_0)-\tau_0T(a_0)\geq U(a_1)-\tau_0T(a_1),
+\qquad
+U(a_1)-\tau_1T(a_1)\geq U(a_0)-\tau_1T(a_0).
+\]
+Adding them gives
+\[
+(\tau_1-\tau_0)\bigl(T(a_0)-T(a_1)\bigr)\geq0,
+\]
+so \(T(a_1)\leq T(a_0)\). The same argument applies to optimal lotteries using expected tokens. It predicts neither crossings nor total tokens in a live auction, where the book and other traders' behavior can change. \ledger{11, 14, 16}
+
+Second, even perfect response to an own-token tariff need not induce the welfare-best crossing. At a fixed book state, let a buyer either cross a seller's ask \(p\) now or bid \(p-\delta\), with \(v>p>p-\delta>c\). Suppose the buyer's two replies use equal tokens. If it bids, a mandatory later seller call uses \(K_S>0\) tokens; that call's cost is the same whether the seller accepts or declines. The seller then accepts because \(p-\delta>c\). The buyer gets the same match for a price lower by \(\delta\), with no change in its own token charge, and therefore bids for every own-token tariff \(\tau\geq0\). Gross surplus is \(v-c\) either way, while immediate crossing raises net welfare by \(\lambda K_S>0\) for \(\lambda>0\). This is a conditional subgame, not an observed auction effect. \ledger{19, 20, 21, 23}
+
+For that fixed match, a verifiable trajectory reward to the buyer of
+\[
+R_B(a)=p(a)-\lambda C_S(a)-(\lambda-\tau)C_B(a)
+\]
+changes its charged payoff from \(v-p(a)-\tau C_B(a)\) to \(v-\lambda\bigl(C_B(a)+C_S(a)\bigr)\). It removes the price motive and makes the buyer choose the lower-token continuation in this subgame. Charging for both traders' tokens alone leaves the price motive: waiting remains attractive when \(\delta>\lambda K_S\). \ledger{22, 26}
+
+\section*{Objections and limits}
+
+P already identifies the possible counterparty saving qualitatively, so the subgame sharpens that observation rather than establishing a new empirical result. Its mandatory seller call and equal-token replies need checking against the operative scheduler and token meter. A prompt announcing a charge does not establish that the agent maximizes \(U-\tau T\): failure of the fixed-decision restriction would reject a joint set of assumptions without identifying which failed. The corrective reward also requires verifiable prices and token counts, may require funding, and does not establish incentive compatibility when values are private or the match changes. Q's coupled-reward result concerns a different quadratic game. \ledger{6, 16, 20, 23, 24, 26}
+
+A targeted prior-work search noted work on token-budget prompting and language-model revealed-preference tests, at \url{https://arxiv.org/abs/2412.18547} and \url{https://arxiv.org/abs/2607.26288}. It was not exhaustive and supports no broad novelty claim. \ledger{17}
+
+\section*{Open question and next step}
+
+The material is thin on behavior: no trader has faced this tariff or corrective reward in the proposed auction. The smallest useful test is a metered, fixed-book decision experiment that randomizes an actual tariff across otherwise identical snapshots and checks the two-price token restriction. If that premise survives, a paired crossing test with a specified seller continuation and a pre-specified corrected-reward arm can test the local externality; full-auction welfare and implementation remain separate questions. \ledger{11, 16, 22, 24}
+
+\end{document}
+```

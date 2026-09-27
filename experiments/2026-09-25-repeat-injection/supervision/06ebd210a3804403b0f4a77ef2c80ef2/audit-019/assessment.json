@@ -1,0 +1,157 @@
+{
+  "observed_at": "2026-09-25T18:46:40.463557+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "scheduled_threads": 28,
+  "research_edit_done": 11,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "2844a73ff509410cb7ec3f56510c46a1",
+      "run_id": "d0aa452087fe46858bf3b2a8ef69383f",
+      "pid": 24244,
+      "thread": "Q4P3",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790361771.678703,
+      "deadline_at": 1790363001.678703,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P3",
+      "child_pid": 41618,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/2844a73ff509410cb7ec3f56510c46a1.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 180.7,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    },
+    {
+      "attempt_id": "41af9f0e31d44becb5b83aafa6cb461d",
+      "run_id": "d0aa452087fe46858bf3b2a8ef69383f",
+      "pid": 24244,
+      "thread": "Q4P3",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790361771.678615,
+      "deadline_at": 1790363001.678615,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P3",
+      "child_pid": 41617,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/41af9f0e31d44becb5b83aafa6cb461d.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 180.7,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "receipts": {
+    "repeat": {
+      "count": 43,
+      "errors": 0,
+      "recent": [
+        {
+          "at": "2026-09-25T17:57:45Z",
+          "thread": "Q7P1",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:04:11Z",
+          "thread": "Q7P1",
+          "stage": "author",
+          "actor": "author",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:06:41Z",
+          "thread": "Q7P1",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "error": null
+        }
+      ]
+    },
+    "reinjection": {
+      "count": 44,
+      "errors": 0,
+      "recent": [
+        {
+          "at": "2026-09-25T18:37:20Z",
+          "thread": "Q4P4",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:40:24Z",
+          "thread": "Q4P4",
+          "stage": "author",
+          "actor": "author",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:42:48Z",
+          "thread": "Q4P4",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "error": null
+        }
+      ]
+    }
+  },
+  "completed_records_unchanged": true,
+  "comparison": "Reinjection Q4P4 review round 2 completed and paper ACCEPTED; repeat Q4P3 peers admitted. Both current calls within deadlines. No repeated-attempt stall.",
+  "process_identity": "Supplied process tree shows Python runner 24244 under supervisor 24243, with recorded Codex children 41617 and 41618 and their code-mode hosts. Consistent with session, run records and active calls; no duplicate runner shown. Evidence is point-in-time and does not resolve all PID reuse or reparented groups. No process action taken.",
+  "outcomes_note": "outcomes.json retains historical pre-repair Q3P2 BLOCKED state; launch.py writes outcomes in finally. Current aggregate, progress and receipts establish subsequent advancement.",
+  "failures": "No current root or child failure/stop or receipt errors. Previously recorded nonblocking editor lookup failures persist.",
+  "intervention": "none",
+  "pane_title": "HERDR_PANE_ID unavailable; rename unavailable.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-019/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-019/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-019/before.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-019/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-018/assessment.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

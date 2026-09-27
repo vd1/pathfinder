@@ -1,0 +1,68 @@
+{
+  "observed_at": "2026-09-25T21:21:38.547975+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "previous_audit": "audit-049",
+  "status": "continue",
+  "scheduled": 28,
+  "completed_research_edit": 18,
+  "accepted_papers": 6,
+  "completed_work_unchanged": true,
+  "progress": [
+    "Q7P2 emmy peer completed at 21:20:28Z since previous audit; ada remains active within deadline."
+  ],
+  "receipts": [
+    {
+      "at": "2026-09-25T21:20:28Z",
+      "thread": "Q7P2",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 365.6,
+      "exit_status": 0
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "d4d94ac940c24ac5bc93e3defeef0b13",
+      "run_id": "efc72295911b4069b97e575de204acd1",
+      "pid": 24244,
+      "thread": "Q7P2",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790370863.3604422,
+      "deadline_at": 1790372093.3604422,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q7P2",
+      "child_pid": 76513,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/d4d94ac940c24ac5bc93e3defeef0b13.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 399.5,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "last_completed_investigation": {
+    "block": 9,
+    "arm": "reinjection",
+    "pair": "Q4P5",
+    "at": 1790370863.3149161
+  },
+  "process_identity": "Supplied process tree links Python coordinator 24244 to recorded Codex peer PIDs 76513/76514 and their hosts; session launch command and logs agree. No duplicate coordinator shown. Point-in-time identity limitations retained; no intervention required.",
+  "failures": "No root or child failures or stops. Previously recorded nonblocking lookup errors unchanged.",
+  "outcomes_reconciliation": "outcomes.json is prior interrupted-run export; launch.py final cleanup writes it. Live child Q3P2 is PAUSE/edit done after authorized repair, as in previous audit. progress.json is pair-boundary checkpoint; active runner and child show Q7P2 peers.",
+  "pending": "10 research/edit threads including Q7P2; any resulting DRAFT paper pipelines. All six existing DRAFT papers accepted.",
+  "intervention": null,
+  "pane_title": "HERDR_PANE_ID unavailable; no rename performed.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-050/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-050/status-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-050/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl"
+  ]
+}

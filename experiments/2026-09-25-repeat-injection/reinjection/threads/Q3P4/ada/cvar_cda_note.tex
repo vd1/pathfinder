@@ -1,0 +1,104 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\begin{document}
+\title{Tail risk, execution, and allocation in the supplied double auction}
+\author{Ada}
+\date{}
+\maketitle
+
+\section*{Scope}
+Q is \emph{Competitive Market Behavior of LLMs}. Its Sections 3.2--3.3 specify a
+finite-horizon continuous double auction: crossing a standing quote executes
+immediately at that quote, while an unfilled trader receives zero profit. Q's
+Section 4.1 reports means across ten runs and links GPT Large's low trade count
+to repeated small order improvements. The supplied P is \emph{Fixed-Batch CVaR
+and Participation in a Quadratic Resource-Allocation Mechanism}. Its Sections
+2--4 distinguish true from expected empirical CVaR and local from aggregate
+risk. P's references to papers called Q and P in its introduction refer to
+different papers from this assigned pair.
+
+\section*{A conditional crossing result}
+At a Q state, suppose a buyer can cross a standing ask below its reservation
+price, giving certain profit \(r>0\). A seller has the symmetric option. Let
+\(W\geq0\) be the eventual profit if the agent instead makes a noncrossing
+improvement and follows some specified continuation policy. Write upper-tail
+CVaR of loss \(-W\) with tail mass \(\beta\in(0,1]\). If
+\[ \Pr(W=0)\geq\beta, \]
+then \(\operatorname{CVaR}_{\beta}(-W)=0\), while immediate crossing has
+\(\operatorname{CVaR}_{\beta}(-r)=-r\). Therefore minimizing local loss CVaR
+strictly prefers crossing. This is a conditional decision result, not a claim
+that Q's observed LLMs optimize CVaR. Q gives no counterfactual conditional
+distribution of \(W\).
+The buyer in Q does not observe other agents' reservation values, so a
+fill-probability oracle would need to be specified or learned from allowed
+public histories. The calculation does not give Q's traders this information.
+
+For the transparent two-point case, let \(W=h>r\) with probability \(p\) and
+\(W=0\) otherwise. Directly averaging the worst \(\beta\) probability mass
+gives
+\[
+\operatorname{CVaR}_{\beta}(-W)=
+\begin{cases}
+0,&\beta\leq 1-p,\\
+-h\bigl(\beta-(1-p)\bigr)/\beta,&\beta>1-p.
+\end{cases}
+\]
+Crossing is preferred precisely when \(r>h\max\{0,1-(1-p)/\beta\}\), apart
+from equality ties. Under the mean-profit criterion \(\beta=1\), the condition
+is \(r>ph\). Thus \(ph>r>0\) and \(\beta\leq1-p\) give opposite choices.
+
+\section*{Why local crossing does not prove market improvement}
+Crossing a profitable standing quote creates positive immediate surplus, but
+may use a seller who could later trade with a higher-value buyer. For example,
+one seller has cost \(0.75\) and an ask of \(1\); a buyer valued at \(2.25\)
+can cross now and obtain profit \(1.25\). If this buyer waits, a later buyer
+valued at \(3.25\) may cross the same ask. On that path, the first trade creates
+surplus \(1.50\) and the second creates \(2.50\). The values lie within Q's
+reservation-price range. This is a pathwise displacement example, not a
+counterfactual estimate for Q's full market. This is an allocation externality.
+P's Section 4 gives a separate reason to distinguish local and market goals:
+the sum of individual CVaRs generally differs from the CVaR of aggregate loss.
+
+\section*{The missing aggregate tail}
+Let \(E\in[0,1]\) be Q's normalized allocative efficiency in a run and
+\(L=1-E\) its inefficiency loss. Q's round-five GPT Small mean \(E=0.91\)
+does not identify \(\operatorname{CVaR}_{0.1}(L)\). The ten efficiency values
+\((0.91,\ldots,0.91)\) and \((0.1,1,\ldots,1)\) have the same mean, but their
+empirical upper-tenth loss CVaRs are \(0.09\) and \(0.9\), respectively. This
+only shows insufficiency of the efficiency mean; Q reports other marginal
+means, and the example does not claim to reproduce its joint data.
+
+If a severe failure occurs independently with probability \(0.05\), ten
+independent runs miss it with probability \(0.95^{10}\approx0.599\). At least
+\[
+\left\lceil\frac{\log(0.05)}{\log(0.95)}\right\rceil=59
+\]
+independent runs are needed
+for a probability of at least \(0.95\) of seeing one such failure. This is an
+event-detection calculation, not a CVaR confidence interval. P's Section 4
+bound \(e_n=L_n\delta_n+U_n\sqrt{2\pi}/(\beta_n\sqrt{s_n})\) concerns an
+expected empirical surrogate and likewise does not certify a realized batch.
+
+\section*{Research test and limits}
+A focused experiment could randomize an explicitly local CVaR-informed
+crossing rule against Q's existing trader prompts at matched market states.
+It would measure conditional nonfill rates, valuation ranks of trading agents,
+mean surplus, and the tail of market inefficiency across independent runs. The
+testable question is whether fewer missed profitable trades outweigh displaced
+high-value traders. Sampling and reporting must address the aggregate tail
+separately from individual risk. This is a proposed experiment, not a finding
+about the intervention. Existing risk-based CDA bidding predates both supplied
+papers: Vytelingum et al. (2004),
+\texttt{https://eprints.soton.ac.uk/259567/}. CVaR also appears in
+double-auctioned power-market bidding (Panda et al., 2019,
+\texttt{https://doi.org/10.1049/iet-gtd.2018.5905}). The decision threshold
+above is elementary and is not a standalone novelty claim. A possible
+contribution would require the controlled LLM-market test and aggregate-risk
+measurement described here.
+P's equilibrium and optimization guarantees do not directly transfer to Q:
+the crossing decision is discrete, Q's matching rule is discontinuous at the
+spread, and Q has neither P's quadratic taxes nor its empirical-CVaR oracle.
+Q's ten evaluation runs are separate from any oracle batch size used by a
+trader.
+\end{document}

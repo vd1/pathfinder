@@ -1,0 +1,27 @@
+{
+  "observed_at": "2026-09-25T14:48:17.315854+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "comparison_baseline": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-001/aggregate-observed.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-002/aggregate-observed.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-002/health-observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-002/processes.json",
+  "facts": [
+    "Manifest schedules 28 threads, 14 per arm. No completed investigation yet; research/edit and applicable DRAFT paper pipelines remain unfinished.",
+    "Same root run and PID 89044 as previous audit; supplied process tree identifies Python runner parented by session supervisor 89043 and active Codex child 90486. Evidence is point-in-time and has documented PID-reuse limitations.",
+    "Heartbeat age 1.7 seconds. Ada second peer call is 80 seconds old, within nominal 1230-second deadline; Emmy original call completed successfully at 14:47:48 UTC. Ada original call completed successfully at 14:46:42 UTC.",
+    "Ledger increased from 8 to 18 records, including new findings and readiness entries. Ada continuation follows later substantive partner entries and is within configured peer_calls=2; no evidence of livelock.",
+    "No root or child failures or stop markers. Runner log shows first pair admission without error.",
+    "progress.json and outcomes.json absent: launch.py writes progress after completed pairs and outcomes on exit. Reinjection has not yet been admitted by serial schedule; absence of its instrumentation is not treated as evidence of health."
+  ],
+  "stage_evidence": {
+    "ledger": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/ledger.jsonl",
+    "ledger_records": 18,
+    "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl",
+    "runner_log": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/runner.log"
+  },
+  "action": "No intervention warranted; no failure found and no incident created.",
+  "next_audit": "Check Ada continuation completion and stage advancement, both child failures/stops, all scheduled research/edit and paper outcomes.",
+  "auxiliary_limitation": "HERDR_PANE_ID absent; no pane rename performed."
+}

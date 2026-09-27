@@ -1,0 +1,7 @@
+Round 1 is complete: [paper.tex](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1/paper/paper.tex), [references.bib](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1/paper/references.bib), and the four-page [PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1/paper/paper.pdf) are in place.
+
+The paper claims a **conditional static result**: an others-only correction to Q’s payment preserves its equilibrium allocations while giving balanced transfers and surrogate participation; P’s empirical-CVaR estimate then bounds true welfare loss, unilateral regret, and participation shortfall. It also states Q’s certificate and participation defects and leaves sampled learning open. The general others-only repair device was [published earlier](https://www.econtheory.org/ojs/index.php/te/article/viewArticle/20120609/240), and the paper credits it.
+
+The targeted queries and their returns are recorded in [search.md](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1/paper/search.md). They found that prior device and adjacent CVaR market work, but no publication of the precise combined result; the paper makes no priority claim.
+
+`latexmk` completed with no undefined citations. I inspected the PDF, including its linked Q/P cover and references. Style checks reported zero errors and 25 nonblocking long-line warnings.

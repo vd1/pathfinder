@@ -1,0 +1,39 @@
+{
+  "observed_at": "2026-09-25T20:46:42.940747+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-042/after.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-043/aggregate-final.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-043/health-observed.json",
+  "status": "continue",
+  "facts": [
+    "16 of 28 research/edit threads completed; five DRAFT papers ACCEPTED with build_ok true.",
+    "Q4P9 advanced from Ada peer through consolidation and verification since audit 042.",
+    "No failed call receipts, child failure records, or stop markers. Historical Q3P2 JSON failure resolved by prior authorized repair. External lookup failures already recorded and nonblocking.",
+    "progress.json is last completed pair checkpoint; outcomes.json is previous exit snapshot. launch.py refreshes outcomes in finally. Current child checkpoints and aggregate status govern this active run.",
+    "Supplied process evidence identifies coordinator Python PID 24244 under supervisor 24243 with Codex child 69901. Later call children postdate that snapshot; no intervention or duplicate launch attempted."
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "52b30e872a51426d93914562935712fd",
+      "run_id": "3980959e1e364571aac4e8170df72ebb",
+      "pid": 24244,
+      "thread": "Q4P9",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790369156.142755,
+      "deadline_at": 1790370056.142755,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9",
+      "child_pid": 70210,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/52b30e872a51426d93914562935712fd.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 46.7,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "action": "none",
+  "next_audit": "Check current stage advancement, remaining scheduled threads, and DRAFT paper pipelines."
+}

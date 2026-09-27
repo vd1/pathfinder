@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What Fixed-Batch Tail Risk Can Say About Aero Hand Open}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account considers Aero Hand Open, a simulated and physical tendon-driven hand, alongside a
+paper on fixed-batch tail-risk estimates in a resource-allocation mechanism. The peers asked whether
+the second paper could support a claim about the first paper's controller on physical hardware. They
+checked a small-sample example and an episode-count bound, but found no recorded physical cube
+outcomes with which to assess the controller's tail risk. The thread paused because the mathematical
+warning was sound while the proposed link to the hand remained unmeasured.
+\end{abstract}
+
+\section{Introduction}
+
+Aero Hand Open presents a cable-driven hand, a simulator that represents its cable transmission, and
+a map between simulated and physical actuator commands. It trains a controller in simulation to
+rotate a cube and shows rotation on the physical hand without further training. Its training reward
+favours rotation and penalises dropping the cube. The physical cube pose is not logged, so the paper
+does not report a measured distribution of physical rotation outcomes \cite{Q}.
+
+The other paper studies conditional value at risk, or CVaR, in a quadratic resource-allocation
+mechanism. CVaR measures the mean loss in a chosen upper tail. With a fixed number of samples, the
+paper's empirical CVaR can favour an allocation whose true CVaR makes participation unattractive,
+even when the losses are strongly convex. It also gives conditional bounds for an exact equilibrium
+when the expected empirical value stays uniformly close to the true value. Those bounds concern the
+mechanism and valid queries within one loss distribution; they do not cover a change from simulation
+to hardware \cite{P}.
+
+The peers pursued a narrower connection: could fixed-batch CVaR reasoning support a claim about rare
+poor outcomes for the hand's cube-rotation controller? The mechanism paper uses its own labels ``Q''
+and ``P'' for other works. Its agents, taxes and opt-out utilities therefore cannot be identified
+with parts of the supplied hand paper.
+
+\section{What was done}
+
+The peers first checked the scope of the two papers and set aside a direct transfer of the
+mechanism's participation result. They then examined whether a tail-risk estimate could instead
+describe complete cube-rotation episodes. One peer proposed comparing physical and simulated episode
+losses through their difference. That proposal needed paired, closed-loop outcomes from the cube,
+which the hand paper did not provide.
+
+Next, the peers checked prior work. Robot-policy CVaR bounds, including distribution shift and
+comparisons among policies, were already studied by Vincent, Feldman and Schwager \cite{vincent}.
+Paired real and simulated evaluations for mean performance were also studied in SureSim
+\cite{suresim}. These checks removed a generic certificate or a paired comparison, on its own, as a
+new result of this thread.
+
+The peers then tested a simpler warning from the mechanism paper: a small batch can make a tail
+score misleading. They used an episode that either ends in a fall or does not, and checked both the
+CVaR calculation and the number of independent hardware episodes needed for a narrow zero-fall
+claim. Finally, they returned to the hand's measured transmission differences and specified the
+missing experiment that could connect those differences to cube outcomes.
+
+\section{Results}
+
+Let \(F\) be an episode loss equal to \(1\) for a fall and \(0\) otherwise. Let \(p\) be its fall
+probability and \(\beta\) the fraction of the worst outcomes whose mean defines upper-tail CVaR. The
+peers derived and cross-checked
+\[
+\operatorname{CVaR}_{\beta}(F)=\min\{1,p/\beta\}.
+\]
+With just one sampled episode, empirical CVaR is that episode's loss, so its expected value is
+\(p\). At \(p=0.02\) and \(\beta=0.05\), this expected one-episode score is \(0.02\), while true
+CVaR is \(0.4\). A second, hypothetical controller with constant loss \(0.1\) looks worse by the
+one-episode expected score but better by true CVaR. This is a controller-selection example, not a
+measured failure of Aero Hand Open. Its controller is trained on a rotation reward, not selected by
+empirical CVaR.
+
+The peers also checked what zero observed falls would say. For \(m\) independent, identically
+distributed complete episodes with no falls, the exact one-sided \(95\%\) upper confidence limit on
+\(p\) is
+\[
+p_{\mathrm{upper}}=1-0.05^{1/m}.
+\]
+To make this limit at most \(0.005\), which would put the corresponding \(5\%\)-tail fall CVaR at
+most \(0.1\), requires \(m\geq598\). This calculation assumes a fixed fall definition and comparable
+independent episodes. The hand paper gives neither such a hardware episode count nor logged physical
+cube pose from which to measure rotation loss.
+
+The hand paper does provide reasons to test the connection. Its two thumb cable excursions differ
+from hardware by \(32.7\%\) and \(31.2\%\); simulated actuator responses lead the physical responses
+by \(10\) to \(40\) milliseconds. Its attempted randomisation of cube friction and mass is
+overwritten. The peers checked that its shared-command replay measures actuator response with the
+controller out of the loop. Those measurements identify possible sources of a gap, but they do not
+measure the distribution of closed-loop cube rotations or falls \cite{Q}.
+
+\section{What did not hold}
+
+The proposed direct use of the mechanism's result failed on its assumptions: the hand has no
+demonstrated counterpart to strategic participation, taxes or opt-out utility. The finite-batch
+example establishes a possible evaluation error only. The mechanism paper's value-error bound
+concerns an expected empirical CVaR surrogate under valid same-distribution queries. It neither
+certifies a particular sampled batch nor bridges simulated and physical losses \cite{P}.
+
+An open-loop actuator replay also cannot settle the task-level question. Similar motor traces can
+accompany different object contacts, and the physical cube pose was not logged. The hand's
+deployment retunes finger action scales and its nominal pose, so a comparison would have to hold
+those settings fixed. The peers distinguished changing the deployed thumb map while keeping the
+controller fixed from correcting the simulator and training a new controller. The record contains no
+comparison of either intervention on physical episode losses.
+
+\section{Why the thread stopped}
+
+The verifier accepted the Bernoulli CVaR calculation and the \(m\geq598\) bound, but paused the
+thread after one round. They illustrate a real measurement issue; they do not show that this
+controller has poor tail performance or that its thumb mismatch causes it. Neither paper supplies
+the repeated, closed-loop physical loss data needed for that link.
+
+The smallest restart is a specified controller comparison with a declared episode loss and tail
+fraction, logged physical cube pose and falls, and independent complete episodes under matched
+starting conditions. Keeping the deployment settings fixed would let a thumb-map correction be
+compared at a fixed controller. A simulator correction followed by retraining would be a separate
+test. Until such outcomes are measured, the pair supports a question and a study design, not a new
+hardware tail-risk result.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

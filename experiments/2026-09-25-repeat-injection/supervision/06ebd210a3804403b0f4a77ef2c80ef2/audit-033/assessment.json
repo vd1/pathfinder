@@ -1,0 +1,135 @@
+{
+  "observed_at": "2026-09-25T19:56:34.094244+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-032/before.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-033/aggregate-final.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-033/processes.json",
+  "completed_research_edit": 14,
+  "scheduled": 28,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "round": 1,
+      "build_ok": true,
+      "updated": "2026-09-25T15:11:00Z"
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "round": 1,
+      "build_ok": true,
+      "updated": "2026-09-25T18:06:41Z"
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "round": 2,
+      "build_ok": true,
+      "updated": "2026-09-25T18:42:48Z"
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "round": 2,
+      "build_ok": true,
+      "updated": "2026-09-25T19:45:26Z"
+    }
+  ],
+  "work_changes": [],
+  "previous_active_calls": [
+    {
+      "attempt_id": "1301d0403bbc46c3aa97b8c245ba160a",
+      "run_id": "db7f296fce404cf4830d8e3439bc0269",
+      "pid": 24244,
+      "thread": "Q3P4",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790365529.5950432,
+      "deadline_at": 1790366759.5950432,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P4",
+      "child_pid": 53544,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/1301d0403bbc46c3aa97b8c245ba160a.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 294.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    },
+    {
+      "attempt_id": "35c031af99b34b6dacba4b44d7f167e3",
+      "run_id": "db7f296fce404cf4830d8e3439bc0269",
+      "pid": 24244,
+      "thread": "Q3P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790365529.595078,
+      "deadline_at": 1790366759.595078,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P4",
+      "child_pid": 53543,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/35c031af99b34b6dacba4b44d7f167e3.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 294.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "current_active_calls": [
+    {
+      "attempt_id": "03e6bfa514874d2181c1c7136b2708f8",
+      "run_id": "db7f296fce404cf4830d8e3439bc0269",
+      "pid": 24244,
+      "thread": "Q3P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790366158.547969,
+      "deadline_at": 1790366805.547969,
+      "timeout_seconds": 647,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P4",
+      "child_pid": 55843,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/03e6bfa514874d2181c1c7136b2708f8.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 35.5,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "last_completed_calls": {
+    "repeat": {
+      "at": "2026-09-25T19:18:29Z",
+      "thread": "Q1P1",
+      "stage": "edit",
+      "actor": "editor",
+      "outcome": "completed",
+      "error": null
+    },
+    "reinjection": {
+      "at": "2026-09-25T19:55:58Z",
+      "thread": "Q3P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null
+    }
+  },
+  "facts": [
+    "Supplied process tree identifies Python coordinator 24244 and its recorded Codex child; no recovery attempted.",
+    "Root and active child heartbeats fresh; no root or child failure or stop reported.",
+    "outcomes.json is an older blocked checkpoint; current child status and receipts show repaired Q3P2 completed and subsequent pairs advanced.",
+    "progress.json records last completed pair; live runner.json tracks current pair.",
+    "Previously recorded nonblocking bibliography lookup warnings persist; no new intervention required.",
+    "Q3P4 Emmy completed at 19:55:58Z and started a further peer call within remaining deadline. New child PID 55843 postdates supplied process evidence; its OS identity has not independently been verified, and no process action was taken."
+  ],
+  "action": "none",
+  "follow_up": "Check ongoing Q3P4 stage advancement and remaining research/edit/paper work next audit."
+}

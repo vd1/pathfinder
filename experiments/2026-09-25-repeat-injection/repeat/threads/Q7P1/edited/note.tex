@@ -1,0 +1,163 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Risk-aware allocation from sampled losses: a static connection between Q and P}
+\pathfinderpapers{2608.29130}{A Systematic Approach to Mechanism Design with Stochastic Dynamic
+Stability}{2609.04460}{Distributed risk-averse optimization via CVaR}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q designs payments for a strategic resource allocation game, while P studies how a network can optimise conditional
+value at risk (CVaR) from sampled losses. The thread asked whether P's local risk estimate could be used in Q's game
+while retaining efficient allocation, balanced payments and a participation guarantee. The peers found that Q's
+original payment can fail the participation guarantee, but a payment correction based only on other agents' messages
+repairs it without changing equilibrium allocations. P's estimate then gives bounds on welfare loss and incentives for
+the true risk objective, provided the sampling queries and a planner multiplier exist. The verifier ended the thread at
+DRAFT because the corrected static argument survived a general-agent check; convergence of sampled play in Q's game
+remains unproved.
+\end{abstract}
+
+\section{Introduction}
+
+Q considers several agents who each request an allocation from a shared, limited supply. Each agent values its own
+allocation, and a manager uses a quadratic payment rule to make the agents' choices agree with the allocation that
+maximises total value. Q also proposes a sampled best-response method and claims a unique equilibrium and convergence
+under its stated conditions \cite{Q}.
+
+P considers agents on a changing communication network who all seek the same decision. Their losses are uncertain, and
+they minimise the average of their own CVaR objectives, a measure of severe losses in the upper tail. They can sample
+losses but cannot evaluate the risk objective or its gradient directly. P constructs empirical CVaR estimates, uses
+them in a network update, and proves consensus and optimisation results for that shared-decision problem \cite{P}.
+
+The thread asked whether P's sampled risk values could replace Q's valuations. The objects that agents choose differ: Q
+needs separate allocations, often unequal, while P brings copies of one decision into agreement. The peers therefore
+used P's local estimate, not its consensus iteration. They examined Q's payment rule before making that connection.
+
+\section{What was done}
+
+The peers first checked Q's claimed strict uniqueness condition. Its implementation condition makes the payment's price
+response unchanged when all agents raise their price messages together. Along that common-price direction, the
+quadratic form used for strict uniqueness is zero. It therefore cannot be strictly negative as Q requires. This
+objection did not decide whether Q's allocation rule works, so the peers checked its displayed payment directly.
+
+Let there be \(N\geq 2\) agents. Agent \(n\) chooses an allocation \(x_n\) from a compact convex set \(\mathcal X_n\)
+and a nonnegative price message \(p_n\). The resource capacity is the nonnegative vector \(c\), and \(V_n(x_n)\) is
+agent \(n\)'s valuation. Q's payment is \(t_n\), and its positive scaling parameter is \(\alpha\). For any one
+resource, write \(z\) for total requested allocation minus capacity and \(P\) for the sum of price messages. The peers
+calculated the derivative of an agent's payoff with respect to its price message:
+\[
+\frac{\partial (V_n-t_n)}{\partial p_n}
+=-\frac{\alpha}{N-1}(Np_n-P-z).
+\]
+If any equilibrium price for that resource is positive, all prices there are equal and \(z=0\). If all are zero,
+\(z\leq 0\). Applied to every resource, this gives a common nonnegative price vector \(p\), feasible allocations and
+\(p^\top(\sum_n x_n-c)=0\). At that price, each agent's allocation choice maximises \(V_n(x_n)-\alpha p^\top x_n\).
+These are the planner's allocation conditions with multiplier \(\lambda=\alpha p\). Under strong concavity, the planner
+allocation is unique; a multiplier need not be. Conversely, if a planner multiplier exists, the peers' joint-concavity
+check shows that a planner solution with its common price is an equilibrium.
+
+They then tested Q's claimed participation guarantee. Take \(N=2\), a single resource with capacity \(1\), allocation
+sets \([0,1]\), \(\alpha=1\), and valuations \(V_1(x)=4x-x^2/2\) and \(V_2(x)=x-x^2/2\). The allocation \((1,0)\) and
+common price \(3\) form an equilibrium. Q's payment charges the first agent \(9/2\), more than its value \(7/2\). Its
+payoff is \(-1\), below the zero-allocation option. A separate example with \(N=2\) has the unique allocation \((1,1)\)
+but every common price from \(0\) to \(1\) as an equilibrium price; it confirms that message uniqueness fails even
+where allocation is fixed.
+
+The peers next added a term to Q's payment that uses only other agents' messages. Let \(\bar p_{-n}=\sum_{m\ne n}p_m\)
+and \(\bar x_{-n}=\sum_{m\ne n}x_m\). Their added term is
+\[
+g_n=\frac{\alpha N}{(N-1)^3}\bar p_{-n}^{\top}
+\left(\bar x_{-n}-\frac{N-1}{N}c\right).
+\]
+The revised payment is \(t_n+g_n\). Since \(g_n\) does not depend on agent \(n\)'s messages, it changes no best
+response. Finally, the peers used P's expected empirical CVaR, averaged over fresh samples and small random
+perturbations, as a fixed valuation surrogate. They compared its equilibria with the planner problem built from true
+CVaR.
+
+\section{Results}
+
+The payment calculation matters for any number of agents. Put \(d_n=x_n-c/N\), \(z=\sum_m x_m-c\), and
+\(\kappa_N=1+N/(N-1)^2\). At a common price, direct expansion of Q's payment gives
+\[
+\frac{t_n}{\alpha}=\kappa_Np^\top d_n
+-\frac{N}{(N-1)^2}p^\top z,
+\qquad
+\frac{g_n}{\alpha}=\frac{N}{(N-1)^2}p^\top(z-d_n).
+\]
+Thus the revised payment is \(\lambda^\top(x_n-c/N)\) at every common-price profile. At equilibrium, the payments sum
+to zero by capacity complementarity. If \(0\in\mathcal X_n\) and valuations are normalised so that \(V_n(0)=0\), the
+agent's allocation choice gives
+\[
+V_n(x_n)-\lambda^\top(x_n-c/N)
+\geq \lambda^\top c/N\geq 0.
+\]
+The correction therefore restores budget balance and participation at every equilibrium while keeping Q's efficient
+allocation. Emmy's transfer audit in \texttt{../emmy/transfer\_audit.md} contains the full expansion and a three-agent
+check.
+
+For the risk connection, let \(J_n(x,\xi)\) be agent \(n\)'s sampled loss at allocation \(x\) under uncertainty
+\(\xi\), and let \(C_n(x)\) be its true CVaR at upper-tail level \(\beta_n\). Let \(H_n(x)\) be the expected empirical
+CVaR from a fresh batch of \(s_n\) losses, smoothed by a uniform perturbation in a ball of radius \(\delta_n\). Suppose
+the losses are convex, \(L_n\)-Lipschitz and bounded in magnitude by \(U_n\) throughout the queried neighbourhood. P's
+CVaR and empirical-distribution estimates, together with its smoothing bound, give the pointwise comparison
+\[
+|H_n(x)-C_n(x)|\leq h_n,
+\qquad
+h_n=L_n\delta_n+\frac{U_n\sqrt{2\pi}}{\beta_n\sqrt{s_n}}.
+\]
+This is a bound on a deterministic expected surrogate at each point, not a claim that every random batch has this error.
+
+To meet Q's curvature condition, let \(u_n(x)\) be a strongly concave utility term with strength \(\alpha\). Define the
+true valuation from \(u_n-C_n\), and the surrogate valuation from \(u_n-H_n\), subtracting each one's value at \(0\) so
+both outside options equal zero. With feasible perturbation queries and a multiplier for the surrogate planner problem,
+the corrected game has an equilibrium. Each such equilibrium maximises surrogate welfare and has exactly balanced
+payments and nonnegative surrogate payoff. Its price messages may differ across equilibria.
+
+Let \(\widetilde x\) be an equilibrium allocation of that surrogate game, and let \(x^\star\) maximise true welfare
+over the same capacity-feasible allocation set. The peers' value comparison gives
+\[
+\text{true welfare at }x^\star-\text{true welfare at }\widetilde x
+\leq 2\sum_n h_n,
+\qquad
+\|\widetilde x-x^\star\|\leq
+2\sqrt{\frac{\sum_n h_n}{\alpha}}.
+\]
+For agent \(n\), the gain from any unilateral change of message when payoffs use true valuations is at most \(2h_n\),
+and its true payoff is at least \(-2h_n\) relative to its normalised outside option. The revised payments still balance
+exactly. The welfare and incentive bounds compare two decisions, so the constants introduced by normalising valuations
+cancel. Strong concavity supplies the distance bound. Ada's derivation in \texttt{../ada/pair\_note.md} and Emmy's
+independent audit support these static conclusions.
+
+\section{Objections and limits}
+
+Q's strict uniqueness condition conflicts with its implementation condition, and its original payment can violate
+participation. The direct equilibrium argument and the others-only correction settle allocation efficiency, balance and
+participation under the stated conditions. They do not make the price unique. The peers also noted that Q's numerical
+sample rule equals one sample at every iteration as written, while its theorem requires geometrically increasing
+samples. That simulation does not verify the theorem's sampling regime.
+
+P's consensus theorem concerns copies of one shared decision. It does not show that sampled agents reach an equilibrium
+of Q's separate-allocation game. P also assumes a feasible set containing a ball around zero; Q's nonnegative
+allocation sets do not meet that assumption literally. The local risk estimate needs a neighbourhood on which all
+perturbation queries are possible, and the equilibrium argument needs a planner multiplier. These are conditions here,
+not established properties of every allocation problem. The objective is the sum of individual CVaRs, not the CVaR of
+total loss.
+
+A narrow search by the peers recorded adjacent work on CVaR in a two-stage market \cite{dahlinJain} and learning in
+stochastic aggregative games \cite{duMeng}. Those reports were not used in the proofs and do not establish novelty. The
+present material remains thin on implementable learning dynamics and wider prior work.
+
+\section{Why the thread stopped}
+
+The verifier first objected that the transfer coefficient was wrong for general \(N\). The peers re-expanded all terms
+of Q's displayed payment and checked a three-agent equilibrium. Their result included a term the first objection had
+omitted, and the final verifier accepted the corrected coefficient. It marked the thread DRAFT because the static
+connection was supported, while the note kept the query and multiplier conditions explicit and made no claim that P's
+algorithm converges for Q's game. The smallest step to restart the research line is to prove or refute convergence of a
+feasible sampled learning rule to the corrected game's equilibrium set, starting with two agents and one resource.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

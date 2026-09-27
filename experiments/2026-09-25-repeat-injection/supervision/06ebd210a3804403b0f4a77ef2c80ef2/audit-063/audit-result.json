@@ -1,0 +1,178 @@
+{
+  "observed_at": "2026-09-25T22:25:52.188013+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed_research_edit": [
+    "repeat/Q4P10",
+    "repeat/Q3P9",
+    "repeat/Q4P6",
+    "repeat/Q3P10",
+    "repeat/Q7P1",
+    "repeat/Q4P3",
+    "repeat/Q1P1",
+    "repeat/Q3P3",
+    "repeat/Q4P9",
+    "repeat/Q7P7",
+    "repeat/Q8P8",
+    "reinjection/Q4P2",
+    "reinjection/Q3P1",
+    "reinjection/Q4P3",
+    "reinjection/Q3P2",
+    "reinjection/Q7P3",
+    "reinjection/Q4P4",
+    "reinjection/Q1P3",
+    "reinjection/Q3P4",
+    "reinjection/Q4P5",
+    "reinjection/Q7P2",
+    "reinjection/Q8P4"
+  ],
+  "pending_research_edit": [
+    "repeat/Q3P6",
+    "repeat/Q1P6",
+    "repeat/Q1P2",
+    "reinjection/Q3P5",
+    "reinjection/Q1P5",
+    "reinjection/Q1P1"
+  ],
+  "previous_completed_work_changed": [],
+  "draft_papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+        "updated": "2026-09-25T15:11:00Z",
+        "build_ok": true
+      }
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+        "updated": "2026-09-25T18:06:41Z",
+        "build_ok": true
+      }
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The mathematics, attribution, and bounded research claim are sound. The paper is fit to send to referees within its stated scope.",
+        "updated": "2026-09-25T20:24:54Z",
+        "build_ok": true
+      }
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P9",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 2,
+        "reason": "The construction, score identity, attribution, and scoped related-work claim are supported by the supplied record. The paper is fit to send to referees after one minor clarification.",
+        "updated": "2026-09-25T21:01:51Z",
+        "build_ok": true
+      }
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P7",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The claims stay within the note\u2019s restricted scope, the payment and regret arguments are sound, and the cited references are identifiable. Two minor clarifications would improve the paper before formatting.",
+        "updated": "2026-09-25T21:53:09Z",
+        "build_ok": true
+      }
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 2,
+        "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+        "updated": "2026-09-25T18:42:48Z",
+        "build_ok": true
+      }
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 2,
+        "reason": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+        "updated": "2026-09-25T19:45:26Z",
+        "build_ok": true
+      }
+    }
+  ],
+  "recent_receipts": {
+    "repeat": [],
+    "reinjection": [
+      {
+        "at": "2026-09-25T22:17:36Z",
+        "thread": "Q8P4",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 192.6,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-25T22:22:26Z",
+        "thread": "Q3P5",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 288.0,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-25T22:23:45Z",
+        "thread": "Q3P5",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 367.2,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-25T22:25:45Z",
+        "thread": "Q3P5",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 184.5,
+        "exit_status": 0
+      }
+    ]
+  },
+  "facts": [
+    "Compared audit-062: completed research/edit unchanged at 22/28; seven DRAFT papers ACCEPTED with successful builds.",
+    "Q3P5 peer calls have progressed: initial peer calls completed, subsequent ada peer completed at 22:25:45Z; emmy remains active within deadline. No livelock evidence.",
+    "PID 24244 executable, parent supervisor 24243, and recorded peer children match supplied point-in-time process evidence. PID reuse and unrecorded reparented groups remain evidence limitations; no process action taken.",
+    "Root and active child heartbeats fresh. No current failures, stops or overdue calls. Existing nonblocking lookup incidents preserved.",
+    "Manifest contains 28 scheduled pairs. progress.json is between-pair checkpoint; outcomes.json is historical export written in launch.py finally block. Current aggregate and paper checkpoints consulted instead."
+  ],
+  "action": "Saved health, aggregate, paper and comparison evidence. No intervention or new incident required.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-063/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-063/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-063/paper-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-063/processes.json"
+  ],
+  "next_audit": "Check Q3P5 advancement and remaining research/edit and author/reviewer pipelines."
+}

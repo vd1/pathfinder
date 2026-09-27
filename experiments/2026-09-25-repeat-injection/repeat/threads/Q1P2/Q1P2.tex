@@ -1,0 +1,53 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Certifying Connectivity in Concept-First Scene Graphs}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q explains why prediction-sensitive guarantees for individual components do not automatically compose: downstream instances, benchmarks, observation costs, and error propagation need separate assumptions. P builds an indoor scene graph from asynchronously maintained room and door concepts, but reports false accepted room models and lacks a mechanism to revise them when later observations disagree. \ledger{1, 3, 13}
+
+\section*{Connection pursued}
+
+An accepted room in P determines which wall regions the door agent searches. Its door detector applies hard geometric thresholds, while exploration and landmark matching depend on the resulting model. The question was whether this room-to-door interface could support a verifiable connectivity claim when concept predictions influence the observations subsequently collected. Q supplies the need for an edge-sensitivity argument and explicit accounting for censored feedback and costs; it does not supply a theorem for P. \ledger{1, 2, 9}
+
+\section*{What was found}
+
+\begin{claim}
+For a fixed finite scan, the first wall-distance gate in P is stable under a certified wall error smaller than its observed margin.
+\end{claim}
+
+Let \(S\) be the scanned points, \(\widehat W\) the estimated wall set, \(W^\star\) the true wall set, and \(\delta_{\mathrm{gate}}\) P's distance threshold. Define
+\[
+m_{\mathrm{wall}}
+=\min_{p\in S}
+\left|\operatorname{dist}(p,\widehat W)-\delta_{\mathrm{gate}}\right|.
+\]
+If \(d_H(W^\star,\widehat W)\leq\varepsilon\) and \(m_{\mathrm{wall}}>\varepsilon\), then every point receives the same pass or fail decision with either wall set. The reason is that the distance from a fixed point to a set changes by at most the Hausdorff distance between the sets. At the threshold, an arbitrarily small wall perturbation can flip this binary decision, so no global finite Lipschitz constant maps wall coordinates to that gate's output under a discrete output metric. This establishes stability only for the observed first gate. P's peak, door-width, segment, association, and asynchronous update steps need their own conditions. \ledger{2, 4, 13}
+
+A separate obstacle concerns openings that were never observed. In an explicit audit-only abstraction, let \(x\in\{0,1\}^n\) record whether each of \(n\) hidden wall regions contains an opening. Auditing region \(j\) reveals \(x_j\) at unit cost, and no other observation reveals it. Suppose an algorithm must output exact topology with probability at least \(1-\delta\) on every state while receiving the same prediction. Couple its random choices on the no-door state \(0^n\) and a state \(e_j\) containing only door \(j\). If it omits audit \(j\) and correctly outputs \(0^n\), the coupled run is wrong on \(e_j\). Hence the probability of omitting \(j\) on \(0^n\) is at most \(2\delta\), and its expected number of distinct audits there is at least
+\[
+n(1-2\delta).
+\]
+This is an elementary lower bound for that abstraction. A LiDAR view can cover several regions, so it is not a bound for P's robot. Physical sensing and travel also require their own cost objective; Q's proposed charge for predictor invocations does not charge them. \ledger{6, 8, 10}
+
+Together, the arguments suggest a provenance-aware graph that records observed door candidates, geometrically matched passages, witnessed crossings, and unresolved wall regions. These are different kinds of evidence. P can mark a visited door nominal before crossing and can propose a loop closure through an uncrossed door. A crossing witnesses a physical passage, but claiming that two named rooms are connected still requires reliable room identity and transition association. A negative claim that no opening exists instead requires coverage under a stated observation model. None of these distinctions alone certifies P's complete graph. \ledger{15, 18, 19}
+
+\section*{Objections and status}
+
+The margin result cannot certify absent doors or the full detector, and Q permits problem-specific, possibly discontinuous error bounds; failure of this Lipschitz route does not rule out every learning-augmented guarantee. An unresolved label is trivially sound if every edge receives it, so a useful theorem must also set a resolution target or bound sensing and travel cost. P proposes later fitness monitoring and alternative hypotheses, but does not implement revision in the reported system. Its correct topology in simplified tests is empirical evidence, not a general certificate. The material presently supports a research specification and two elementary arguments, not a publication-level result. \ledger{4, 9, 13, 19}
+
+\section*{Outside sources}
+
+The peers checked the abstracts of \href{https://arxiv.org/abs/2510.05430}{Active Semantic Perception} and \href{https://arxiv.org/abs/2606.06721}{SCOUT}, which already connect uncertain scene graphs with active traversal. They also checked \href{https://arxiv.org/abs/2406.13482}{Estimating Map Completeness in Robot Exploration} and \href{https://arxiv.org/abs/2103.03741}{Landmark-based Distributed Topological Mapping and Navigation}. Those bounded checks establish adjacent work, not novelty or an exhaustive absence claim. \ledger{5, 10, 11, 13}
+
+\section*{What remains open and the next step}
+
+A useful result still needs a LiDAR visibility model, a defensible room-error bound, conditions for every downstream detector gate and room association, revision semantics, and a travel-aware objective with a nonvacuous resolution target. The smallest test is to specify these quantities for one room, then inject wall perturbations near the detector threshold and occluded openings into P's room-and-door scenario. Record which edges are asserted or left unresolved, any wrong room-pair connections or false absences, and the sensing and travel required to resolve them. That test would settle whether the proposed certificate is operational in this restricted setting; a general cost or topology guarantee would remain open. \ledger{9, 16, 19}
+
+\end{document}
+```

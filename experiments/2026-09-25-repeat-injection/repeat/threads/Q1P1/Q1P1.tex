@@ -1,0 +1,50 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{What Distributional Advice Can Buy in Distributed CVaR Optimization}
+
+\begin{document}
+\maketitle
+
+Q surveys learning-augmented algorithms and asks how distributional predictions and predictor costs enter formal guarantees. P studies distributed CVaR minimization from noisy local loss evaluations, with finite-sample CVaR error and network disagreement appearing in its optimization bound.
+
+\section*{Connexion pursued}
+
+The question was whether a cheap predicted loss distribution could reduce P's loss-query cost while retaining a guarantee under arbitrary prediction error. Q's P5 discussion warns that distributional advice has no generic CVaR guarantee, and its cost model requires predictor calls to be charged; P supplies a concrete CVaR objective, oracle, and error bound against which to test such advice \ledger{1, 2, 30}.
+
+\section*{What was established}
+
+One proposed method validates a predicted CDF against an empirical CDF from \(s\) fresh losses. Conditional DKW control gives an empirical sup-norm error at most \(b=\sqrt{\log(2mT/\zeta)/(2s)}\) over the stated horizon with probability at least \(1-\zeta\). Accepting the prediction only when its empirical discrepancy is at most \(2b\) makes the selected CDF's error at most \(3\min\{\eta,b\}\), where \(\eta\) is prediction error. P's CVaR--CDF inequality converts this into a CVaR-value error bound. Validation still consumes \(s\) losses, so this argument establishes an error-sensitive bound, not a query saving \ledger{4}.
+
+A second route keeps each Rockafellar--Uryasev threshold as an optimization variable. For
+\[
+H_i(x,\tau,\xi)
+=\tau+\alpha_i^{-1}\bigl(J^i(x,\xi)-\tau\bigr)_+,
+\]
+one jointly perturbs \((x,\tau)\) on the sphere in dimension \(d+1\). One loss evaluation then gives
+\[
+\widehat g_i
+=\frac{d+1}{\delta}
+ H_i\bigl((x,\tau)+\delta u,\xi\bigr)u.
+\]
+Its conditional expectation is the gradient of a single jointly ball-smoothed convex objective. Bounded losses and projected thresholds give a pathwise estimator bound. The centralized calculation yields an \(O(T^{-1/4})\) expected gap with one loss query per agent per iteration and no fixed-sample CVaR-estimation plateau \ledger{12, 17, 18, 19}. Crucially, Cardoso and Xu had already published this estimator and centralized rate; they are a baseline, not a new result of this pairing \ledger{21, 23}.
+
+There is also a precise limit to quantile advice. In a one-agent instance, let \(E\) be Bernoulli with probability \(\alpha\), let \(S\in\{-1,+1\}\) have probability \(1/2\pm\gamma\) of being \(+1\) in two respective worlds, and return
+\[
+J(x,E,S)=E(1+Sx)/2,\qquad x\in[-1,1].
+\]
+Both worlds have exact CVaR threshold \(0\) at every decision and the same full loss CDF at \(x=0\), yet their CVaR objectives are \(1/2\pm\gamma x\) and have opposite minimizers. An adaptive query transcript has KL divergence at most \(16n\alpha\gamma^2\); Pinsker's inequality gives total variation at most \(1/2\) when \(n\leq1/(32\alpha\gamma^2)\). The worse world's expected gap is then at least \(\gamma/2\). Taking \(\gamma=2\varepsilon\) shows that \(\Omega(1/(\alpha\varepsilon^2))\) loss queries can remain necessary for gap below \(\varepsilon\), even with that exact advice \ledger{22, 24, 29, 31}. This lower bound does not match the known \(O(\varepsilon^{-4})\) upper route \ledger{26, 31}.
+
+\section*{Objections and resolution}
+
+A forecast-centered one-point estimator has a valid unchanged conditional mean when its baseline is fixed before the random direction. Its apparent gain over P's displayed bound is insufficient evidence of a learning-augmented advantage: a second independent loss batch provides a prediction-free baseline of similar order, and prior CVaR residual-feedback work was identified \ledger{3, 5, 6, 10}. An early threshold-lifting calculation also mixed derivatives of two different smoothings; joint perturbation repaired that proof issue, after which the direct Cardoso--Xu prior art resolved its novelty claim negatively \ledger{14, 17, 18, 21}. A proposed vanishing-radius, changing-network last-iterate argument remains a proof sketch and has not passed a novelty check \ledger{28, 31}.
+
+\section*{Outside sources and remaining question}
+
+The outside baselines used here are Cardoso and Xu's \emph{Risk-Averse Stochastic Convex Bandit} (\url{https://proceedings.mlr.press/v89/cardoso19a/cardoso19a.pdf}) and Li and Assaad's distributed one-point optimization work (\url{https://arxiv.org/pdf/2105.12597}) \ledger{21, 28}. The peer record also flagged CVaR residual-feedback work, but did not complete a comparison with it \ledger{10}.
+
+The pair-specific positive result remains thin. Exact quantiles, even with an exact CDF at one anchor, omit how tail losses change with the decision; joint lifting already has a centralized precedent. The smallest next step is to define one charged prediction of tail response across decisions, then test its error-dependent query bound against the one-query lifted baseline and the two-world instance above. Only after that single-agent comparison succeeds is a changing-network theorem warranted \ledger{24, 26, 30}.
+
+\end{document}
+```

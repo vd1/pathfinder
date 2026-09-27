@@ -1,0 +1,155 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What an Occluded Handover Can Tell Its Receiver}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies how reports and rewards can direct an agent with private information, while paper P
+asks whether a donor's wrist can locate an object hidden during handover. The thread looked for a
+limit on such control when wrist and motor observations leave the object's orientation unclear. The
+peers derived conditional bounds on a receiver's success and on rewards based on coarse
+measurements, and checked a failure of one of Q's reward menus under a changed signal assumption.
+They also found a repair for a stipulated signal channel. The thread paused because P supplies
+neither measured ambiguous histories nor tests showing that the hidden orientations require
+different receiving actions.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Mechanism Design for Alignment and Control}, studies an agent whose preferences, possible
+actions and information may be private. A human can ask for reports, recommend actions and offer
+rewards. Q asks when those tools make the agent report truthfully and act as intended. Its oversight
+example uses a weaker monitor to choose rewards for a stronger actor, which knows the relevant state
+exactly \cite{Q}.
+
+P, \emph{When a Donor Wrist Cannot Locate a Rotating Held Object}, examines a handover in which the
+held object is hidden from the receiver. It reads a proposal to use the donor arm's known wrist pose
+in place of the hidden object pose alongside a demonstration that a hand can rotate an object within
+its grasp. P observes that the object may then move relative to the wrist. It gives a conditional
+limit on wrist based receiving, and proposes a measurement test. It does not report matched
+histories of wrist, motor readings and actions with different object poses \cite{P}.
+
+The peers asked whether a receiver could be guided by Q's reports or rewards when the observations
+in P fail to identify which way the object faces. They separated two questions. Could the receiver
+choose the right approach from its information? Could a reward based on measured outcomes induce a
+desired physical action? The connection is conditional throughout: P neither reports a strategic
+donor nor supplies a signal distribution for Q's model.
+
+\section{What was done}
+
+The peers first identified the possible ambiguity at handover. A fixed wrist pose need not fix
+object orientation if the object rotates within the hand. They treated the wrist, motor encoder
+readings and action history as the receiver's available record. They then asked what follows if two
+orientations can have the same record and need incompatible receiving actions.
+
+One peer turned this into a bound on success from the record alone. In parallel, the other took Q's
+oversight menu and replaced its actor's exact view of the state with a coarse signal. The peers
+checked both calculations against Q and P. They corrected an early overreach: one matched pair
+supports a claim about that pair, but says nothing by itself about how often ambiguity occurs in
+ordinary handovers.
+
+Next, they considered incentives separately from inference. A finite model of measured outcomes
+showed when an observation based reward can support a desired action, including a simple case in
+which no such reward can work. Finally, they checked a structured signal channel for which adapting
+Q's menu restores its intended action. These were mathematical checks of stipulated models, not
+handover experiments.
+
+\section{Results}
+
+\subsection{A limit from the receiver's observations}
+
+Let \(H\) be either of two equally likely object orientations, labelled \(0\) and \(1\). Let \(Y\)
+be everything the receiver observes before acting, including the wrist, encoder and action history.
+Write \(P_0\) and \(P_1\) for the distributions of \(Y\) under the two orientations. Suppose that no
+receiving action succeeds for both. The peers found that a receiver using only \(Y\) has average
+success probability at most
+\[
+\frac{1+\operatorname{TV}(P_0,P_1)}{2}.
+\]
+Here \(\operatorname{TV}(P_0,P_1)\), total variation distance, is the largest difference between the
+probabilities that \(P_0\) and \(P_1\) assign to the same possible event. To succeed, the receiver
+must in effect distinguish the two orientations. The displayed expression is the best possible
+probability of doing so from \(Y\). A report or reward calculated only from \(Y\) cannot add
+information. Ada gave the argument in \texttt{ada/observation\_quotient.tex}, and Emmy checked it in
+\texttt{emmy/connection.md}.
+
+If \(P_0=P_1\), the bound is \(1/2\). That applies to a two-trial experiment made from a matched
+pair, or to a population whose two conditional observation laws really coincide. It does not follow
+for routine handovers from one matched pair. A donor with extra information about object pose could
+also send an informative report; that report would enlarge the receiver's information.
+
+\subsection{A limit from what a reward can measure}
+
+Ada also considered a finite set of feasible physical actions and a measurement that assigns each
+action an observed outcome. A reward may depend on that outcome, but cannot distinguish actions with
+the same outcome. For each private signal, Ada compared the desired action with possible deviations.
+These comparisons form a graph of observed outcomes. An observation based reward supports the
+desired actions exactly when every cycle in this graph has a nonpositive total gain from deviation.
+Summing the reward inequalities around a cycle proves one direction; assigning rewards from maximum
+path gains proves the other. The full statement and proof are in
+\texttt{ada/observation\_quotient.tex}.
+
+The immediate case is simple. If an actor prefers a different feasible physical action that produces
+the same measured outcome, the reward is identical for both actions. It cannot deter that deviation.
+This result assumes the actor can choose between the physical actions and that their measured
+outcomes are fixed. P establishes neither a strategic donor nor such a hidden deviation on its
+hardware.
+
+\subsection{Q's oversight menu under a changed signal}
+
+In Q's oversight example, the state \(\theta\) is uniform on \([0,1]\). A strong actor observes it
+exactly and has a preference bias \(b\); a weak monitor with bias \(w\) chooses a reward from a
+menu. A false report of \(b\) can drive the actor to an extreme action when the shifted state
+crosses an endpoint. That threat makes truthful choice of the reward best for the monitor under Q's
+assumptions \cite{Q}.
+
+Emmy changed the actor's observation to a signal saying only whether \(\theta\) exceeds \(1/2\). The
+actor's best estimate of \(\theta\) is then either \(1/4\) or \(3/4\). A small false report shifts
+its action while keeping it inside \([0,1]\), so Q's extreme action threat does not arise. For an
+actor bias of \(1/2\), a monitor bias of \(1/10\), and an allowed report of \(9/20\), the monitor's
+expected squared loss falls from \(37/1200\) under truth to \(7/300\) under the false report. Emmy's
+calculation is in \texttt{emmy/connection.md}; Ada checked the values. This shows a failure of Q's
+\emph{unchanged} menu after changing its signal assumption. It does not contradict Q's result.
+
+The peers also checked a limited repair. Suppose a signal reveals \(\theta\) with probability
+\(p>0\), and otherwise gives fresh uniform noise. Its posterior mean is \((1-p)/2+ps\), where \(s\)
+is the observed signal value. After rescaling actions, biases and rewards, Q's menu argument applies
+to this signal and implements that posterior mean. The remaining expected squared error from
+incomplete information is \((1-p^2)/12\). This channel was introduced for analysis; P gives no
+evidence that handover observations follow it.
+
+\section{Objections and remaining uncertainty}
+
+The peers objected to treating these calculations as an established result about the paired systems.
+P already points to pose aware handover work and proposes a sensor test. Q already recognises that
+rewards depend on what can be measured. The finite graph condition is a general difference
+constraint argument. The oversight calculation changes Q's exact observation premise, while its
+repair relies on an invented signal channel. An adjacent haptic pose estimation study was recorded
+during the prior work search, but was not used to prove a claim or establish novelty \cite{haptic}.
+
+The cross checks settled two logical points. The original oversight menu can fail under a coarse
+signal, yet a menu adapted to a particular signal can succeed. Likewise, identical histories in a
+matched pair do not imply identical observation distributions in normal operation. What remains open
+is physical: whether different object poses occur under matched histories, whether they demand
+incompatible receiving actions, and whether an actor can choose hidden physical deviations. A common
+safe grasp or negligible overlap would weaken the proposed connection.
+
+\clearpage
+\section{Why the thread stopped}
+
+The verifier paused the thread because P does not show matched observation histories with different
+object poses or show that those poses require incompatible receiving actions. The information bound
+is therefore conditional. The oversight example changes Q's signal assumption and establishes no
+handover result. The smallest step to restart the thread is to hold the donor wrist fixed,
+externally measure a marked object's pose in occluded trials, and identify trials with matched
+encoder and action histories. The receiving actions for any pose distinct matches must then be
+tested for incompatibility. Only those measurements would show whether the mathematical limits bear
+on this handover.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

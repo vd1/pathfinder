@@ -1,0 +1,90 @@
+{
+  "observed_at": "2026-09-25T17:41:31.629016+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed": 8,
+  "scheduled": 28,
+  "completed_records_unchanged": true,
+  "previous_calls": [
+    {
+      "attempt_id": "29dcd53983fe4775811cb9a76af25dd5",
+      "actor": "ada",
+      "age_seconds": 327.8
+    },
+    {
+      "attempt_id": "d0324588a5fa4e659ee68d209b34f0a4",
+      "actor": "emmy",
+      "age_seconds": 327.8
+    }
+  ],
+  "current_calls": [
+    {
+      "attempt_id": "a7e7c852b2894914b3cb2e970e572381",
+      "run_id": "16dadcbae68745c49ba2994e3b6bf730",
+      "pid": 24244,
+      "thread": "Q7P1",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790358053.12726,
+      "deadline_at": 1790359283.12726,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1",
+      "child_pid": 30588,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/a7e7c852b2894914b3cb2e970e572381.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 53.8,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "receipts": {
+    "repeat": {
+      "last": {
+        "at": "2026-09-25T17:41:03Z",
+        "thread": "Q7P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 638.7
+      },
+      "errors": 0,
+      "failure_count": 0,
+      "stop": null
+    },
+    "reinjection": {
+      "last": {
+        "at": "2026-09-25T17:13:48Z",
+        "thread": "Q3P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 204.3
+      },
+      "errors": 0,
+      "failure_count": 0,
+      "stop": null
+    }
+  },
+  "paper": "repeat/Q4P10 ACCEPTED; build_ok=true; reviewer ACCEPT",
+  "process_identity": "Supplied tree shows runner 24244, parent supervising session 24243, supplied Python executable; recorded call child 28937 is codex with code-mode-host descendant 29104. Consistent with session and call records. Point-in-time evidence limitations retained.",
+  "comparison": "Initial Q7P1 Ada and Emmy peer calls completed since previous audit. Emmy now has a subsequent peer call within its nominal deadline, consistent with configured peer_calls=2. No errors or failed attempts in receipts; no livelock evidence. No consolidation advancement claimed.",
+  "outcomes_caveat": "outcomes.json retains old BLOCKED Q3P2; prior audit recorded resolved repair and verified editing. Current aggregate and receipts show completion.",
+  "intervention": "none",
+  "pane_title": "Rename denied by sandbox; no successful rename claimed",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-006/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-006/status-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-006/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-005/aggregate-current.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-006/status-final.json"
+  ],
+  "process_evidence_limit": "New child 30588 started after supplied process snapshot; health records it alive but executable identity is not independently verified. No process intervention performed."
+}

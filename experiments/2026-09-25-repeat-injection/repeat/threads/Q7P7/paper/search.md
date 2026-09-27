@@ -1,0 +1,16 @@
+# Prior-work search for the Q7P7 result
+
+Searched on 25 September 2026. Searches targeted the correction of Q's quadratic payment, equilibrium price multiplicity, budget-balanced carbon charges, and forecast-conditioned load mechanisms. Titles, authors and years of cited works were checked against their arXiv abstract pages. The searches do not establish exhaustive novelty.
+
+| Query | Returned and read | Effect on this paper |
+| --- | --- | --- |
+| `"quadratic" "mechanism" "individual rationality" "budget balance" Nash resource allocation common price` | Network mechanism papers and broader mechanism-design results, without an identified correction of Q Eq. (40). | Motivated a narrower search for price-message multiplicity. |
+| `"A Systematic Approach to Mechanism Design with Stochastic Dynamic Stability" correction equilibrium uniqueness payment` | Q's arXiv abstract, plus unrelated mechanism papers; no identified erratum or published correction of Q's displayed tax. | The incompatibility, counterexamples and repair are stated specifically for Q's displayed conditions and payment. |
+| `"Achieving Social Optimum and Budget Balance via a Joint Electricity-Carbon Pricing Mechanism"` | Chen and Zhao, arXiv:2308.08195. Its abstract and paper claim carbon-aware social optimality, budget balance, individual rationality and incentive properties in a generator-load market. | A balanced carbon charge alone is not presented as novel. |
+| `forecast carbon intensity decentralized mechanism budget balanced optional flexible loads Nash equilibrium` | Related energy-market and demand-management mechanisms, with no identified paper proving this exact correction of Q Eq. (40) for a frozen P-style signal. | The forecast extension is presented as a restricted composition, not as a general physical-emissions mechanism. |
+| `"Distributed Mechanism Design for Network Resource Allocation Problems" arxiv Nash equilibria price messages allocation` | Heydaribeni and Anastasopoulos, arXiv:1904.01222. Section V explicitly allows multiple equilibrium messages and the same efficient allocation, and relates price multiplicity to nonunique dual variables. | Allocation uniqueness without full equilibrium uniqueness is acknowledged as an established mechanism-design pattern. |
+| `"2608.29130" erratum correction critique payment individual rationality` | Q and unrelated listings; no identified erratum addressing Q Eq. (40). | The paper limits its criticism to the stated LMI certificate and displayed payment. |
+| `"2607.26560" arxiv Cai Qiu Yang Zhang Wang Liu Zhao` | P's arXiv abstract and bibliographic listings. | Confirmed P's identity and the forecast-driven DDC/MESS scope. |
+| `"forecast" "leave-one-out" "carbon" "budget balance" mechanism load` | No identified publication of the particular transfer in this note. | No priority claim is made for the transfer formula. |
+
+The Q and P source files and the cited arXiv full text were read for the specific equations and claims discussed in the paper. The search located prior work on the main allocation-versus-message distinction and on balanced carbon-aware pricing, but did not locate the particular Q Eq. (40) repair. This is a bounded search result, not proof of absence.

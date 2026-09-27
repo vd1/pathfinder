@@ -1,0 +1,105 @@
+{
+  "observed_at": "2026-09-25T21:26:32.295453+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-050/status-observed.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-051/observed-status.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-051/observed-health.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-051/processes.json",
+  "changes": [
+    {
+      "arm": "reinjection",
+      "pair": "Q7P2",
+      "before": {
+        "pair": "Q7P2",
+        "research": {
+          "pair_id": "Q7P2",
+          "round": 1,
+          "stage": "peers",
+          "status": "running",
+          "reason": null,
+          "started": "2026-09-25T21:14:23Z",
+          "updated": "2026-09-25T21:14:23Z"
+        },
+        "editor": {},
+        "needs_edit": false,
+        "arm": "reinjection"
+      },
+      "after": {
+        "pair": "Q7P2",
+        "research": {
+          "pair_id": "Q7P2",
+          "round": 1,
+          "stage": "done",
+          "status": "PAUSE",
+          "reason": "The LMI contradiction and payment mismatch are supported, but they are corrections to Q rather than a non-obvious result about the pair. The proposed conformal dual-gap certificate is conditional, follows an existing general pattern, and cannot be evaluated from the supplied material. A useful joint result needs a corrected mechanism and trusted episode-level gap data.",
+          "started": "2026-09-25T21:14:23Z",
+          "updated": "2026-09-25T21:24:56Z",
+          "repair": null
+        },
+        "editor": {
+          "status": "editing",
+          "attempt": 1,
+          "updated": "2026-09-25T21:24:56Z"
+        },
+        "needs_edit": true,
+        "arm": "reinjection"
+      }
+    }
+  ],
+  "papers": {
+    "repeat/Q4P10": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/Q7P1": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "repeat/Q3P3": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The mathematics, attribution, and bounded research claim are sound. The paper is fit to send to referees within its stated scope.",
+      "updated": "2026-09-25T20:24:54Z",
+      "build_ok": true
+    },
+    "repeat/Q4P9": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The construction, score identity, attribution, and scoped related-work claim are supported by the supplied record. The paper is fit to send to referees after one minor clarification.",
+      "updated": "2026-09-25T21:01:51Z",
+      "build_ok": true
+    },
+    "reinjection/Q4P4": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    },
+    "reinjection/Q1P3": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+      "updated": "2026-09-25T19:45:26Z",
+      "build_ok": true
+    }
+  },
+  "finished_research_edit": 18,
+  "scheduled": 28,
+  "completed_work_unchanged": true,
+  "assessment": "continue",
+  "facts": [
+    "Q7P2 advanced from peers through completed verifier to editing; PAUSE research verdict. Editor within nominal deadline.",
+    "Root and child heartbeats fresh; supplied process tree matches recorded owner and editor child. No restart or repair required.",
+    "No current root or child failures or stop markers. Historical Q3P2 malformed verdict is already repaired.",
+    "progress.json is saved between pairs; outcomes.json is finalized on coordinator exit and remains historical during this run. Current status and paper checkpoints consulted.",
+    "HERDR_PANE_ID absent; no pane rename possible."
+  ]
+}

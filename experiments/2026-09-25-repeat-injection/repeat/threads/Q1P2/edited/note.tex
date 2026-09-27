@@ -1,0 +1,121 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What Can Be Certified in a Room-Guided Door Graph?}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note connects a survey of learning-augmented algorithms with a robot that builds a scene graph from room
+and door concepts. The thread asked whether the robot's claims about which rooms connect could be checked when
+its room model also guides what it observes. The peers proved stability for one door-detection threshold under
+a stated wall-error bound, and a sensing lower bound in a separate, simplified audit model. Neither result
+certifies the robot's complete graph or bounds its physical sensing cost. The verifier paused the thread
+because a usable claim needs a LiDAR visibility and error model, followed by experiments that test whether
+wall regions can be resolved at reasonable cost.
+\end{abstract}
+
+\section{Introduction}
+
+Q surveys algorithms that use fallible predictions with formal performance guarantees \cite{Q}. It explains
+why component guarantees need separate assumptions when predictions change later observations, instances or
+costs. Transferring an error bound needs a metric and a bound on sensitivity. Its charge for prediction calls
+does not price robot travel or scans.
+
+P describes a robot that builds an indoor scene graph from room and door concepts, without a prior global
+metric map \cite{P}. Once it accepts a room, its walls guide the door search. A detected door can prompt a
+visit and then a crossing. Simplified tests recover the correct room connections, but false rooms can be
+accepted and later revision is not implemented.
+
+The connection pursued was the room-to-door dependency. Can a slightly wrong room support a door decision? Can
+an unseen wall support a claim that no door is there? These questions join Q's concerns about error and
+missing feedback to P's detector.
+
+\section{What was done}
+
+The peers first traced how P's estimated walls filter LiDAR points for door detection. They compared this hard
+filter with Q's conditions for transferring an error guarantee. A small wall change can flip a point near the
+threshold. Ada derived a stability condition for the first filter with a fixed scan.
+
+Emmy then modelled hidden openings as wall regions checked one by one. Her coupling argument measured the cost
+of claiming exact topology even with a correct no-door prediction. Ada checked it and noted that a real LiDAR
+view can cover several regions.
+
+The peers finally compared evidence in P's graph. A door becomes nominal after a visit, before a crossing. A
+crossing witnesses a passage, but naming its rooms needs correct recognition and association. P also describes
+geometric loop closure through an uncrossed door. The peers proposed recording candidates, matches, crossings
+and unresolved regions separately. P does not supply this certificate.
+
+\section{Results and their scope}
+
+\begin{proposition}
+Fix a finite scan \(S\), an estimated wall set \(\widehat W\) and a true wall set \(W^\star\) in the same
+coordinates. Let \(\tau\) be P's wall-distance threshold, \(d_H\) the Hausdorff distance between wall sets,
+and \(\varepsilon\) a certified upper bound on their error. Define the smallest observed threshold margin by
+\[
+m=\min_{p\in S}\left|\operatorname{dist}(p,\widehat W)-\tau\right|.
+\]
+If \(d_H(W^\star,\widehat W)\leq\varepsilon<m\), every point in \(S\) makes the same pass or fail decision at
+the first wall-distance filter under either wall set.
+\end{proposition}
+
+Here \(\operatorname{dist}(p,W)\) is the distance from scan point \(p\) to wall set \(W\). It changes by at
+most the Hausdorff distance when the wall set changes. Thus a margin larger than the certified error prevents
+a threshold crossing. Ada's derivation in \texttt{ada/margin-gated-scene-graphs.md} applies this to P's
+\(0.15\,\mathrm m\) filter. At the threshold, tiny wall changes can reverse the decision. Hence this binary
+gate has no global finite Lipschitz bound under wall distance, though Q allows other error-dependent
+guarantees.
+
+\begin{proposition}
+In an audit-only model with \(n\) hidden wall regions, suppose each region has either a door or no door.
+Checking one region costs one unit and reveals only that region's state. Let \(\delta\), with
+\(0\leq\delta<1/2\), be the permitted failure probability. If an algorithm must report every region correctly
+with probability at least \(1-\delta\) for every possible state under the same prediction, then, on the state
+with no doors, its expected number of distinct checks is at least \(n(1-2\delta)\).
+\end{proposition}
+
+For any region \(j\), compare a no-door state with a state whose only door is in \(j\). Give the algorithm the
+same prediction and random choices in both runs. Until it checks \(j\), the runs look identical. If it omits
+\(j\) and correctly reports no doors in the first run, it must be wrong in the second. The allowed failure
+probability in each run therefore bounds the chance of omitting \(j\) by \(2\delta\); summing over regions
+gives the result. Emmy's proof is in \texttt{emmy/verification\_cost.md}, and Ada checked it independently.
+The bound concerns independent unit-cost checks, not P's LiDAR views, travel, or sensing policy.
+
+The results address different gaps. A margin supports a decision on measured points; an absence claim needs
+coverage and a sensor model. Neither proves P's graph correct. A crossing witnesses passage, while a named
+room pair also needs reliable identities and association.
+
+\section{Objections and unresolved questions}
+
+P's other door tests include derivative peaks, door widths, candidate pairing and association. The
+first-filter margin gives no bound for these decisions or for asynchronous graph updates. P does not provide
+the deterministic wall-error bound assumed by the proposition. Its correct topology in simplified tests is
+evidence for those tests, not a general certificate. Likewise, the audit bound cannot be read as a cost bound
+for a LiDAR robot: one view may check many regions, and Q's charge for predictor calls does not price travel
+or sensing.
+
+An unresolved label would avoid false claims if applied to every edge, but it would tell the robot little. A
+useful result needs a stated resolution target and an observation-cost measure. It also needs a rule for
+revising door claims when an accepted room changes. P proposes later fitness monitoring and alternative
+hypotheses, but does not implement that revision in the reported system \cite{P}.
+
+The peers made a bounded check of related abstracts. \emph{Active Semantic Perception} and \emph{SCOUT}
+already connect uncertain scene graphs with active traversal \cite{active-semantic-perception,scout}.
+\emph{Estimating Map Completeness in Robot Exploration} addresses a learned estimate of remaining map
+coverage, while \emph{Landmark-based Distributed Topological Mapping and Navigation} uses designed landmark
+coverage conditions \cite{map-completeness,landmark-mapping}. Those checks show adjacent work; they do not
+establish novelty or exhaust the literature.
+
+\section{Why the thread stopped}
+
+The verifier accepted the two elementary arguments and their limits, but paused because neither yields a
+connectivity certificate or sensing-cost bound for P's robot. The smallest next step is to specify visibility
+and wall-error assumptions for one room, then test P's room-and-door scenario with wall perturbations near the
+threshold and occluded openings. The test should record asserted, absent and unresolved edges, wrong room-pair
+connections, and the sensing and travel needed to resolve wall regions. A useful certificate for that
+restricted setting would restart the larger question; the present record does not establish one.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

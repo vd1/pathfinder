@@ -1,0 +1,109 @@
+{
+  "observed_at": "2026-09-25T14:58:35.034996+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "previous_audit": "audit-003",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-004/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-004/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-004/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-003/before.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/launch.py",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl"
+  ],
+  "facts": [
+    "Parent PID 89044 matches session runner PID and expected Python executable; supplied tree associates editor Codex PID 91653 and host 91763. No intervention or restart attempted.",
+    "Root and repeat heartbeats fresh; same first-attempt editor call as previous audit, within 900-second deadline.",
+    "Research Q4P10 completed DRAFT and verifier completed at 14:51:03Z; edited note.tex, bibliography and PDF were produced since previous audit, with PDF mtime 1790348242.3257043. This is stage artifact progress, not only a heartbeat.",
+    "All 28 full pipelines remain unfinished; repeat/Q4P10 author/reviewer work remains pending. Reinjection has not been admitted under serial manifest schedule.",
+    "progress.json absent before first whole-pair completion and outcomes.json absent until launcher finalization, consistent with launch.py lines 272-284.",
+    "Root and both child failure and stop records absent; receipt outcomes inspected.",
+    "Pane rename denied by sandbox; campaign audit unaffected."
+  ],
+  "receipts": [
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:46:42Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 557.8
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:47:48Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 624.1
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:48:37Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 100.4
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:49:37Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 64.0
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:50:25Z",
+      "thread": "Q4P10",
+      "stage": "consolidate",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 47.9
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:51:03Z",
+      "thread": "Q4P10",
+      "stage": "verify",
+      "actor": "verifier",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 37.6
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "bafd45e9fb0f41b1843edaf788e5e443",
+      "run_id": "fe15d5af28c74728b1c1dfc9013eb649",
+      "pid": 89044,
+      "thread": "Q4P10",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790347863.247641,
+      "deadline_at": 1790348763.247641,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10",
+      "child_pid": 91653,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/bafd45e9fb0f41b1843edaf788e5e443.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 451.8,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "action": "observe only",
+  "follow_up": "Next parent audit: verify editor completion and transition to author/reviewer; investigate if deadline exceeded."
+}

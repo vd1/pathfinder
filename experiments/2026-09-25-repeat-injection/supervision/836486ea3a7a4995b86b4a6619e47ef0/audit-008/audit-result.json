@@ -1,0 +1,51 @@
+{
+  "observed_at": 1790519365.120254,
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "9672a1685b814030b5d0e08c6ebaea6b",
+  "status": "continue",
+  "completed_pipelines": 24,
+  "unfinished": [
+    {
+      "arm": "repeat",
+      "pair": "Q1P6",
+      "research": "DRAFT",
+      "editor": "editing",
+      "paper": null
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P5",
+      "research": null,
+      "editor": null,
+      "paper": null
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P1",
+      "research": null,
+      "editor": null,
+      "paper": null
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q1P2",
+      "research": null,
+      "editor": null,
+      "paper": null
+    }
+  ],
+  "protected_files_checked": 720,
+  "protected_mismatches": [],
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-007/after.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-008/aggregate.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-008/processes.json",
+  "facts": [
+    "Q1P6 advanced from research to terminal DRAFT and editing since prior audit.",
+    "One editor call is within its 900-second allowance.",
+    "Runner and child heartbeat/process evidence are consistent; no duplicate runner appears in supplied tree.",
+    "Historical child failures predate renewal and have not recurred; Q3P6 pipeline is now accepted.",
+    "No stop markers or new failures. Renewed deadline remains in future.",
+    "outcomes.json retains prior stopped/new states because launch.py writes it only in finally; current thread checkpoints establish 24 completed pipelines. progress.json updates between pairs."
+  ],
+  "action": "No intervention."
+}

@@ -1,0 +1,143 @@
+{
+  "observed_at": "2026-09-25T18:26:32.763814+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "terminal_status": "continue",
+  "finished_threads": 10,
+  "scheduled_threads": 28,
+  "prior_completed_records_unchanged": true,
+  "papers": {
+    "repeat/Q4P10": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/Q7P1": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    }
+  },
+  "receipts": {
+    "repeat": {
+      "last": {
+        "at": "2026-09-25T18:06:41Z",
+        "thread": "Q7P1",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "seconds": 146.5,
+        "error": null
+      },
+      "errors": [],
+      "current_pair_calls": [],
+      "failure_files": {
+        "failure.json": false,
+        "failures.jsonl": false,
+        "stop.json": false
+      }
+    },
+    "reinjection": {
+      "last": {
+        "at": "2026-09-25T18:26:18Z",
+        "thread": "Q4P4",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "seconds": 60.2,
+        "error": null
+      },
+      "errors": [],
+      "current_pair_calls": [
+        {
+          "at": "2026-09-25T18:25:03Z",
+          "thread": "Q4P4",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "seconds": 345.4,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:26:18Z",
+          "thread": "Q4P4",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "seconds": 60.2,
+          "error": null
+        }
+      ],
+      "failure_files": {
+        "failure.json": false,
+        "failures.jsonl": false,
+        "stop.json": false
+      }
+    }
+  },
+  "comparison": "Since audit 014, Ada completed first Q4P4 peer call at 18:25:03Z and entered second allowed peer call. Emmy original call remains within deadline. No repeated failure or livelock evidence.",
+  "process_identity": "PID 24244 matches session runner, executable and recorded owners. Supplied process tree connects both recorded Codex children. No duplicate runner shown; point-in-time and PID-reuse limitations retained.",
+  "heartbeat_age_seconds": 2.5,
+  "calls": [
+    {
+      "attempt_id": "a2102157788c4617afd24fc224948549",
+      "run_id": "fc4dbbca30224d26af138f7cd25a7552",
+      "pid": 24244,
+      "thread": "Q4P4",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790360718.595962,
+      "deadline_at": 1790361948.595962,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4",
+      "child_pid": 38646,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/a2102157788c4617afd24fc224948549.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 36.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    },
+    {
+      "attempt_id": "aa98d281bd8a4cec92d71beb61117ba5",
+      "run_id": "fc4dbbca30224d26af138f7cd25a7552",
+      "pid": 24244,
+      "thread": "Q4P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790360358.212588,
+      "deadline_at": 1790361588.212588,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4",
+      "child_pid": 37600,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/aa98d281bd8a4cec92d71beb61117ba5.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 397.2,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "last_investigation": {
+    "block": 5,
+    "arm": "reinjection",
+    "pair": "Q7P3",
+    "at": 1790360358.172543
+  },
+  "outcomes_caveat": "outcomes.json is stale finalization output from previous run; launch.py lines 284-287 writes it only in finally. Prior Q3P2 BLOCKED resolved and recorded; current child state and receipts confirm completed editing.",
+  "action": "No intervention. No new failure found; existing nonblocking lookup incidents preserved.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-015/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-015/observed-aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-015/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json"
+  ],
+  "follow_up": "Check peer completion and later stages at next parent audit."
+}

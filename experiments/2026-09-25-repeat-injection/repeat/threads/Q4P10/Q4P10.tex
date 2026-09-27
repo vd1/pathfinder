@@ -1,0 +1,51 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Coupled Incentives in a Finite-Energy Agent Society}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q, \emph{Mechanism Design for Alignment and Control}, studies how action-dependent rewards can discipline AI agents, including through coupled rewards and peer scoring. P, \emph{The Energy Society}, reports a simulation in which agents choose jobs, share each job's prize when multiple agents succeed, and spend energy on communication and action.
+
+\section*{Connexion pursued}
+
+The question was whether Q's incentive mechanisms could improve job allocation in P without requiring rewards larger than P's finite energy budget. P's nonbinding recommendations and observed job collisions make the split-prize rule a concrete place to examine that question. The proposed mechanism changes who receives an existing job prize; it creates no additional prize energy. \ledger{2, 3, 4, 19}
+
+\section*{What was found}
+
+Consider two agents who attempt the same job \(j\), worth \(R_j\). Let \(p_{ij}\) be agent \(i\)'s success probability and \(q_j\) their joint-success probability. P's rule pays a total of \(R_j\) whenever at least one succeeds, so expected group payout is
+\[
+R_j(p_{1j}+p_{2j}-q_j).
+\]
+Agent 2's expected private payout is \(R_j(p_{2j}-q_j/2)\), while its contribution to expected group payout, holding agent 1's attempt fixed, is \(R_j(p_{2j}-q_j)\). The private incentive to join the occupied job therefore exceeds its group payout contribution by \(R_jq_j/2\). This calculation needs no independence assumption. If agent 2 instead attempts an empty job \(k\), the change in expected group energy is
+\[
+R_kp_{2k}-R_j(p_{2j}-q_j)-(c_{2k}-c_{2j}),
+\]
+where \(c_{2j}\) and \(c_{2k}\) are its attempt costs. A collision can thus be desirable when the occupied job offers enough additional chance of a payout. Raw collision counts alone do not establish an energy loss. \ledger{3, 5, 8}
+
+A bounded priority rule addresses the incentive wedge in a one-round job-or-idle game. Start with a profile that maximizes expected group energy over \emph{all} feasible profiles, including collisions. At each job, rank agents assigned there in that profile above visitors; award the existing \(R_j\) to the highest-ranked successful agent, or pay nothing if nobody succeeds. Total realized job payout remains exactly \(R_j\) when at least one agent succeeds. An incumbent's expected prize at the proposed profile is at least its contribution to that job's expected group payout. A unilateral visitor to another job receives exactly its contribution there. Including the agent's own change in attempt cost, its private gain from any unilateral job or idle deviation is therefore no greater than the change in group energy. Global optimality makes that change nonpositive, so the proposed profile is a Nash equilibrium. The argument permits correlated successes and an optimal profile with collisions. It assumes fixed success and cost laws, known to the coordinator, and expected-energy best responses. \ledger{6, 7, 10, 11}
+
+\section*{Objections and limits}
+
+An early version optimized only over distinct-job assignments. That restriction was withdrawn: an agent might profitably join an occupied, valuable job, so the Nash argument requires a global optimum over profiles that allow collisions. \ledger{4, 6, 8, 11}
+
+The one-round result does not establish a survival benefit. Priority and splitting preserve the same total prize but distribute energy differently. In the ledger's example, two agents begin with \(15\) energy each, each spend \(10\), and both solve a job worth \(20\). Splitting leaves balances \((15,15)\); priority leaves \((25,5)\). A later call costing \(10\) can deactivate the priority loser while both agents remain active under splitting. Donations and future work therefore matter even when current total energy is unchanged. \ledger{12, 14}
+
+Nor does the priority rule elicit private success probabilities. For a separate, bounded peer-scoring extension, suppose two types each gain at least \(M\) from a false report before scoring, their co-player outcome laws are \(P_0,P_1\), and score payments lie in \([0,B]\). Summing the two truth-telling constraints yields
+\[
+2M
+\leq \sum_y(P_0(y)-P_1(y))(z_0(y)-z_1(y))
+\leq 2B\,\operatorname{TV}(P_0,P_1).
+\]
+Thus \(B\geq M/\operatorname{TV}(P_0,P_1)\). Nearly indistinguishable types can be costly to separate if scores consume energy. This bound concerns that payment model; Q's abstract rewards need not consume P-energy. \ledger{2, 13, 15}
+
+P's reported aggregates cannot test the proposed priority rule. Collision counts vary alongside activity, donations, communication cost, and job mix, and the paper does not report the counterfactual success probabilities and job-specific costs needed to evaluate alternative assignments. The material supports a conditional theoretical construction, not a measured improvement in P or a novelty claim. \ledger{9, 14, 17, 19}
+
+\section*{Sources and next step}
+
+No source outside Q and P was used for this account. The remaining question is whether priority payouts improve group energy and survival when success, token use, donations, and future activity respond to the rule. The smallest next step is a controlled comparison of P's split rule with the priority rule, recording job assignments, joint successes, token costs, energy balances, deactivations, and donations; those records would test both the one-round incentive calculation and its survival limit. \ledger{14, 19}
+
+\end{document}

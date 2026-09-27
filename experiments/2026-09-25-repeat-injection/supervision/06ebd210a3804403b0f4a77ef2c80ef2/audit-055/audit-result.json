@@ -1,0 +1,159 @@
+{
+  "observed_at": "2026-09-25T21:45:53.012114+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed_research_edit": 19,
+  "scheduled": 28,
+  "paper_states": [
+    {
+      "pair": "repeat/threads/Q3P3",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The mathematics, attribution, and bounded research claim are sound. The paper is fit to send to referees within its stated scope.",
+        "updated": "2026-09-25T20:24:54Z",
+        "build_ok": true
+      }
+    },
+    {
+      "pair": "repeat/threads/Q4P10",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+        "updated": "2026-09-25T15:11:00Z",
+        "build_ok": true
+      }
+    },
+    {
+      "pair": "repeat/threads/Q7P1",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+        "updated": "2026-09-25T18:06:41Z",
+        "build_ok": true
+      }
+    },
+    {
+      "pair": "repeat/threads/Q4P9",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 2,
+        "reason": "The construction, score identity, attribution, and scoped related-work claim are supported by the supplied record. The paper is fit to send to referees after one minor clarification.",
+        "updated": "2026-09-25T21:01:51Z",
+        "build_ok": true
+      }
+    },
+    {
+      "pair": "reinjection/threads/Q4P4",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 2,
+        "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+        "updated": "2026-09-25T18:42:48Z",
+        "build_ok": true
+      }
+    },
+    {
+      "pair": "reinjection/threads/Q1P3",
+      "paper": {
+        "status": "ACCEPTED",
+        "round": 2,
+        "reason": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+        "updated": "2026-09-25T19:45:26Z",
+        "build_ok": true
+      }
+    }
+  ],
+  "completed_checkpoint_changes": [],
+  "comparison": "Repeat Q7P7 advanced from consolidation through completed verifier to DRAFT and editing. Active editor within 900-second allowance. Six accepted papers unchanged; eight unstarted threads plus current edit and subsequent paper remain. No new failures or stops. Historical outcomes.json and progress.json are stale checkpoints; current aggregate, receipts and child artifacts establish advancement. Finished reinjection heartbeat is not an active-runner stall.",
+  "active_calls": [
+    {
+      "attempt_id": "f858585ab7d04b679da0592bd68ac4ca",
+      "run_id": "e5f98859370c4e3e8ab222dd670442df",
+      "pid": 24244,
+      "thread": "Q7P7",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790372593.996297,
+      "deadline_at": 1790373493.996297,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P7",
+      "child_pid": 81985,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/f858585ab7d04b679da0592bd68ac4ca.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 159.0,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T21:40:27Z",
+        "thread": "Q7P7",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T21:41:49Z",
+        "thread": "Q7P7",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T21:43:13Z",
+        "thread": "Q7P7",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T21:24:40Z",
+        "thread": "Q7P2",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T21:24:56Z",
+        "thread": "Q7P2",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T21:28:10Z",
+        "thread": "Q7P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "process_assessment": "Supplied available process tree matches recorded Python owner PID 24244, editor Codex child 81985 and code-mode host descendant 82069. No duplicate coordinator shown. No intervention attempted.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-055/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-055/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-055/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-054/status-observed.json",
+  "action": "none"
+}

@@ -1,0 +1,115 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Can Pairwise Judgements Find Better Quotes in a Double Auction?}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+One paper studies language-model traders in a double auction; the other uses pairwise judgements to assign
+credit to cooperating agents. The thread asked whether an adapted pairwise judge could identify quotes that
+improve the auction's final welfare. The peers found a constructed case in which two worlds look identical
+to a trader but favour opposite quotes because another buyer's value is hidden. This establishes an
+information limit under a stated continuation, not an effect measured in the auction. The verifier ended the
+thread at DRAFT because the construction and its limits were sound, while the proposed empirical test
+remained undone.
+\end{abstract}
+
+\section{Introduction}
+
+Struski and colleagues study a double auction in which language-model buyers and sellers post bids and asks
+\cite{Q}. Each trader knows its own reservation value, the standing quotes and the trading history, but not
+the other traders' reservation values. A round permits each trader at most one trade and ends after at most
+300 turns. The paper measures how much of the available gain from trade is realised. Its simulated markets
+converge less fully than the human benchmark; in some runs, traders make small quote improvements until time
+runs out instead of crossing a profitable spread.
+
+Wang and colleagues study a different problem: how to assign credit to agents working together when feedback
+is sparse \cite{P}. Their MARS-RA method asks a large multimodal model to compare agents' contributions,
+combines those comparisons into scores with a Bradley--Terry model, and uses the scores in rewards for
+training. Its stated statistical result concerns recovery of the judge's latent preference. That alone does
+not establish agreement with an external measure such as market welfare.
+
+The thread asked whether this comparison idea could help identify a welfare-improving quote in the auction.
+This changes the object of comparison from \emph{agents} in P to \emph{alternative actions by one trader}.
+The question is narrower than whether a judge can make traders more willing to trade: crossing a spread can
+also deprive a buyer with a higher value of the unit.
+
+\section{What was done}
+
+The peers first paired Q's exact surplus measure with P's pairwise method. They noticed a useful control:
+for one fixed trade, buyer value \(v\), seller cost \(c\) and price \(p\) give total profit
+\[
+(v-p)+(p-c)=v-c.
+\]
+Changing only \(p\) moves profit between the traders. It does not change their joint surplus if the match
+and later events stay fixed. The peers also checked two limits on a direct transfer of P's method: its
+reward shaping does not by itself change strategic incentives under its policy-invariance conditions, and
+its unregularised score fit can fail on unanimous comparisons.
+
+The work then shifted from asking which quote \emph{crosses} to asking which quote yields greater
+\emph{final surplus}. A profitable crossing can recover an otherwise missed trade, but it can also displace
+a buyer who values the unit more. Ada proposed a hidden-value example. Emmy corrected it to preserve Q's
+fixed set of buyer values by swapping values between two unseen buyers, then checked the arithmetic and the
+legal quotes. Ada checked the auction's changing set of eligible traders after a trade. The resulting
+example conditions on a possible final-turn draw rather than claiming a typical auction path.
+
+The peers also noted related work on an LLM critic in a continuous double auction \cite{auctioncritic},
+alternative-action rollouts for cooperative-agent credit \cite{actionrollouts}, and Shapley counterfactual
+credit \cite{shapleycredit}. These references narrowed the proposed question. The record does not establish
+that the precise benchmark is new.
+
+\section{Results}
+
+The established result is an information limit for a specified continuation. Near the end of a round, let
+buyer \(B_2\) value a unit at \(2.25\). A seller with cost \(0.75\) has a standing ask of \(1.50\), and the
+best standing bid is below \(1.49\). The buyer can bid \(1.50\) and trade now, or bid \(1.49\) and leave the
+seller available. Two other buyers, \(B_1\) and \(B_3\), have not appeared in the public history. In world
+A, their values are \(3.25\) and \(1.75\); in world B, those values are swapped. This preserves Q's fixed
+buyer-value schedule. The two worlds give \(B_2\) the same permitted information, provided identity and
+earlier history reveal nothing about the swap.
+
+Suppose the next and final draw selects \(B_1\) in both worlds, and \(B_1\) crosses the ask if the seller
+remains. Assume other welfare contributions are the same across the two continuations. If \(B_2\) trades
+now, the gain is \(2.25-0.75=1.50\) in either world. If it improves its bid, the gain is \(3.25-0.75=2.50\)
+in A and \(1.75-0.75=1.00\) in B. Thus waiting is better in A and crossing is better in B. Emmy's derivation
+and Ada's corrected check in the ledger support the value swap, legal quotes, continuation and arithmetic.
+
+If these worlds are equally likely given \(B_2\)'s information, any judge limited to that information can
+label the \emph{realised} better action with accuracy at most \(1/2\). Repeating the same comparison cannot
+reveal the missing value. This does not rule out a good decision under uncertainty: waiting has expected
+surplus \((2.50+1.00)/2=1.75\), while crossing gives \(1.50\). A decision maker who also knows \(B_1\)'s
+value obtains \((2.50+1.50)/2=2.00\) by choosing separately in each world. The value of that information is
+\(0.25\) in this constructed continuation, not an estimate for Q's simulated markets.
+
+\section{Objections and limits}
+
+Q asks traders to maximise profit, while the proposed label measures total surplus. A correct welfare ranking
+need not change a trader's choice. P trains agents with potential-based rewards; Q studies prompted traders.
+With fixed initial and zero terminal potential, P's discounted shaping terms telescope to a constant. The
+argument requires an appropriate potential on a trader's exit transition. The record shows no error in P's
+implementation.
+
+P's unregularised Bradley--Terry fit has a separate boundary. If all \(K\) comparisons favour one of two
+agents, the graph is connected, but the loss for score difference \(d\) is \(K\log(1+e^{-d})\), with no
+finite minimum as \(d\) grows. Ada derived this and Emmy agreed. A larger quote set would need regularisation
+or symmetric pseudocounts; two quotes need only a direct judgement.
+
+The price identity holds for a fixed match and continuation; a changed quote can alter both. Crossing also
+changes who is eligible for Q's next random draw. Replays must couple underlying draws but apply the
+selection rule in each branch. P notes that hidden, domain-specific state can be outside its scope. This
+example quantifies that limit; it neither refutes P nor establishes how often these auction states arise.
+
+\section{Why the thread stopped}
+
+The verifier accepted the fixed-schedule, hidden-value construction, its explicit continuation, and the
+distinction between Q's quote actions and P's agents. This justified DRAFT as a theoretical result. No
+auction replay measured state frequency, judge accuracy, or any gain over direct conditional-welfare
+prediction. A pilot could restart the thread: find Q states with both quotes legal, replay each under coupled
+draws and fixed continuation policies, then compare local-information judgements with direct prediction and
+a more informed reference.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

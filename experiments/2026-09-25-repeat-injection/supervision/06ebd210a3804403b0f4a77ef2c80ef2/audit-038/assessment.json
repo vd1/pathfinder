@@ -1,0 +1,84 @@
+{
+  "observed_at": "2026-09-25T20:20:53.863695+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "comparison_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-037/aggregate.json",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-038/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-038/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-038/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "facts": [
+    "16 of 28 scheduled research/edit threads completed; twelve remain. Four papers ACCEPTED; repeat Q3P3 writing round 1.",
+    "Completed work and active attempt unchanged since audit-037. Author call age 403.7 seconds of 1800; not overdue. No repeated attempts or evidence establishing livelock.",
+    "Fresh root heartbeat; recorded Python runner 24244 under parent 24243 and codex child 64717 with code-mode-host descendant 64844 match supplied point-in-time process evidence. No duplicate runner shown within evidence limits.",
+    "No root/child stops or current failures; child failure files absent and receipt errors absent. Earlier Q3P2 malformed verifier was repaired; historical outcomes snapshot remains stale, as recorded in audit-037.",
+    "Last repeat investigation Q3P3 DRAFT, editing completed 20:14:07Z. Last reinjection investigation Q3P4 PAUSE, editing completed 20:02:27Z.",
+    "Previously recorded arXiv HTTP 406 remains nonblocking; no newly discovered failure. Child research runner finished does not mean author/reviewer completion."
+  ],
+  "work_unchanged": true,
+  "active_calls": [
+    {
+      "attempt_id": "ef0dfdf414c24d11b69cc33b7895704a",
+      "run_id": null,
+      "pid": 24244,
+      "thread": "Q3P3",
+      "stage": "author",
+      "actor": "author",
+      "started_at": 1790367250.181077,
+      "deadline_at": 1790369050.181077,
+      "timeout_seconds": 1800,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q3P3",
+      "child_pid": 64717,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/ef0dfdf414c24d11b69cc33b7895704a.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 403.7,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "papers": {
+    "repeat/threads/Q3P3/paper/paper.json": {
+      "status": "writing",
+      "round": 1,
+      "reason": null,
+      "updated": "2026-09-25T20:14:10Z"
+    },
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q1P3/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+      "updated": "2026-09-25T19:45:26Z",
+      "build_ok": true
+    }
+  },
+  "action": "No intervention.",
+  "follow_up": "Check author/reviewer advancement at next parent audit; nominal author deadline 2026-09-25T20:44:10Z."
+}

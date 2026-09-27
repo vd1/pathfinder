@@ -1,0 +1,147 @@
+{
+  "observed_at": "2026-09-25T17:46:56.512146+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "finished_threads": 8,
+  "scheduled_threads": 28,
+  "previous_completed_work_unchanged": true,
+  "comparison": "Q7P1 advanced from peer work through consolidation to verifier, within deadline.",
+  "process_identity": "Supplied tree matches session runner 24244, Python executable, parent 24243, and recorded codex child 31281. No duplicate shown; point-in-time limitations retained.",
+  "paper": "repeat/Q4P10 ACCEPTED/build_ok; review ACCEPT. Remaining threads and resulting DRAFT pipelines pending.",
+  "outcomes_caveat": "Previous finalization output retains repaired Q3P2 BLOCKED. Current checkpoint and edit receipt confirm done; launch.py refreshes outcomes at finalization.",
+  "failure_history": "No child failure files or receipt errors. Historical verifier incident resolved; lookup failures already recorded.",
+  "active_calls": [
+    {
+      "attempt_id": "fedf195e05364f168f699e07751d32b4",
+      "run_id": "16dadcbae68745c49ba2994e3b6bf730",
+      "pid": 24244,
+      "thread": "Q7P1",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790358348.7648692,
+      "deadline_at": 1790359578.7648692,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1",
+      "child_pid": 31460,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/fedf195e05364f168f699e07751d32b4.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 2.9,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T17:41:03Z",
+        "thread": "Q7P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "seconds": 638.7,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T17:42:28Z",
+        "thread": "Q7P1",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "seconds": 95.2,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T17:43:05Z",
+        "thread": "Q7P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "seconds": 62.2,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T17:44:54Z",
+        "thread": "Q7P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "seconds": 108.2,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T17:45:48Z",
+        "thread": "Q7P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "seconds": 54.7,
+        "error": null
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T16:32:28Z",
+        "thread": "Q3P2",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "seconds": 251.0,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T16:34:55Z",
+        "thread": "Q3P2",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "seconds": 169.7,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T16:36:03Z",
+        "thread": "Q3P2",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "seconds": 68.1,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T16:37:02Z",
+        "thread": "Q3P2",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "seconds": 58.9,
+        "error": null
+      },
+      {
+        "at": "2026-09-25T17:13:48Z",
+        "thread": "Q3P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "seconds": 204.3,
+        "error": null
+      }
+    ]
+  },
+  "action": "none",
+  "stop": {
+    "repeat": null,
+    "reinjection": null
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-007/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-007/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-007/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-006/before.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "follow_up": "Verifier completed in 54.7 seconds; final snapshot saved at /Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-007/aggregate-final.json"
+}

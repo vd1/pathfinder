@@ -1,0 +1,138 @@
+{
+  "observed_at": "2026-09-25T17:31:22.643258+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "facts": {
+    "completed_threads": 8,
+    "scheduled_threads": 28,
+    "completed_records_unchanged": true,
+    "changes": [
+      {
+        "arm": "repeat",
+        "pair": "Q3P10",
+        "before": {
+          "pair_id": "Q3P10",
+          "round": 1,
+          "stage": "consolidate",
+          "status": "running",
+          "reason": null,
+          "started": "2026-09-25T17:13:51Z",
+          "updated": "2026-09-25T17:25:42Z"
+        },
+        "after": {
+          "pair_id": "Q3P10",
+          "round": 1,
+          "stage": "done",
+          "status": "PAUSE",
+          "reason": "The welfare calculation is sound, but it does not establish how inference costs change auction behavior; that is the proposed connection between the papers. The note identifies the decisive gap itself: whether traders cross, shorten responses, or exit when charged per decision call.",
+          "started": "2026-09-25T17:13:51Z",
+          "updated": "2026-09-25T17:26:49Z",
+          "repair": null
+        },
+        "editor": {
+          "status": "done",
+          "attempt": 1,
+          "updated": "2026-09-25T17:30:24Z",
+          "build_ok": true,
+          "checks": [
+            "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+          ]
+        }
+      },
+      {
+        "arm": "repeat",
+        "pair": "Q7P1",
+        "before": {},
+        "after": {
+          "pair_id": "Q7P1",
+          "round": 1,
+          "stage": "peers",
+          "status": "running",
+          "reason": null,
+          "started": "2026-09-25T17:30:24Z",
+          "updated": "2026-09-25T17:30:24Z"
+        },
+        "editor": {}
+      }
+    ],
+    "active_calls": [
+      {
+        "attempt_id": "29dcd53983fe4775811cb9a76af25dd5",
+        "run_id": "16dadcbae68745c49ba2994e3b6bf730",
+        "pid": 24244,
+        "thread": "Q7P1",
+        "stage": "peer",
+        "actor": "ada",
+        "started_at": 1790357424.854209,
+        "deadline_at": 1790358654.854209,
+        "timeout_seconds": 1230,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1",
+        "child_pid": 28937,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/29dcd53983fe4775811cb9a76af25dd5.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 24.4,
+        "overdue_seconds": 0,
+        "arm": "repeat"
+      },
+      {
+        "attempt_id": "d0324588a5fa4e659ee68d209b34f0a4",
+        "run_id": "16dadcbae68745c49ba2994e3b6bf730",
+        "pid": 24244,
+        "thread": "Q7P1",
+        "stage": "peer",
+        "actor": "emmy",
+        "started_at": 1790357424.854187,
+        "deadline_at": 1790358654.854187,
+        "timeout_seconds": 1230,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1",
+        "child_pid": 28936,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/d0324588a5fa4e659ee68d209b34f0a4.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 24.4,
+        "overdue_seconds": 0,
+        "arm": "repeat"
+      }
+    ],
+    "paper": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "review": [
+      {
+        "round": 1,
+        "at": "2026-09-25T15:11:00Z",
+        "build_ok": true,
+        "checks": [
+          "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+        ],
+        "paper_sha256": "c6bfa599cceb680d661e397bca4a26bbf2d1fbc5031dafd2cd07da81ffd81800",
+        "decision": "ACCEPT",
+        "summary": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+        "findings": []
+      }
+    ],
+    "process_identity": "PID 24244 agrees across parent session, root and child runner records, call owners, and supplied Python executable/PPID evidence. Supplied process tree predates Q7P1 calls; no intervention or fresh process identity claim for those children. No duplicate coordinator visible in supplied tree.",
+    "outcomes_caveat": "outcomes.json is prior finalization state; aggregate status and child stage artifacts are current. Prior Q3P2 repair already verified and incident resolved.",
+    "stops": {
+      "repeat": null,
+      "reinjection": null
+    },
+    "failure_counts": {
+      "repeat": 0,
+      "reinjection": 0
+    },
+    "action": "none",
+    "status": "continue"
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-004/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-004/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-004/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-003/aggregate-status.json"
+  ]
+}

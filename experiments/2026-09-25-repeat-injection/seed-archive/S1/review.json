@@ -1,0 +1,55 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T22:03:07Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "9497f2cc04ddc63c0ea32c6816f9e7be120092a4dd5a43440fffc94433656ef2",
+  "decision": "REVISE",
+  "summary": "The core identification argument is sound, appropriately conditional, and fairly distinguishes prior results from the paper's contribution. Two specific corrections are needed before referee review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "A conditional interface, observer model display",
+    "issue": "The expression contains \u201cX_e,qquad a_r>0\u201d instead of a spacing command, so the model is mathematically malformed as written.",
+    "fix": "Replace \u201c,qquad\u201d with \u201c,\\qquad\u201d."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Limitations",
+    "issue": "The limitations omit Q's reliance on potentially very large rewards and off-support negative-infinite penalties, although the ledger identifies their practicality as a key restriction.",
+    "fix": "Explicitly state that the Q-style implementation assumes unbounded reward flexibility, including prohibitive off-support transfers, and may be impractical under bounded rewards."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T22:04:06Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "2694b7a2141fa007c87c54c795b240d391683826a4514cd3f40768286b2b061a",
+  "decision": "REVISE",
+  "summary": "The central algebra is correct and the paper represents Q, P, and the cited literature fairly. However, the population theorem lacks a sufficiently precise observation and overlap model, so its stated identification conclusion does not follow as written.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "A conditional interface, theorem and proof",
+    "issue": "An \u201cobserved overlapping triple\u201d is described as sufficient, but the proof uses population moments q_rs and observer means without specifying repeated shared draws, which observer pairs co-report which draws, or which calibrated observers cover each comparison edge. A single co-labelled realization cannot identify these expectations, and connected observer links alone do not ensure that every edge probability has an observable calibrated mean.",
+    "fix": "State an explicit population sampling design: each required observer pair must jointly label a distribution of repeated items while sharing each item's latent draw; every observer used for edge means must be connected to a calibrating triple through such pairwise moment distributions; and every claimed edge probability must be observed by at least one calibrated observer. Replace \u201cobserved overlapping triple\u201d with these population-level conditions and align the empirical-test wording accordingly."
+   }
+  ]
+ },
+ {
+  "round": 3,
+  "at": "2026-09-11T22:05:33Z",
+  "build_ok": true,
+  "checks": [],
+  "paper_sha256": "f4e70ebcaf3112e29b29680d48c64c7ffdbf23ab791ad484e36f24937c422ab4",
+  "decision": "ACCEPT",
+  "summary": "The claims are traceable, appropriately qualified, and fair to Q and P. The population identification proof is correct and self-contained, limitations are complete, and all verified references are cited with identifiers.",
+  "findings": []
+ }
+]

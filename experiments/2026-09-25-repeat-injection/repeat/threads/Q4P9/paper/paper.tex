@@ -1,0 +1,162 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{A Reciprocal Contract Witness for Asymmetric CT-Bench Boards}
+\pathfinderpapers{2609.01595}{Mechanism Design for Alignment and Control}%
+  {2607.22750}{Commitment To Cooperation With Self-Negotiated Contracts}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give a finite, computationally checked contract-and-path witness for the asymmetric board class of
+CT-Bench. For each of its \(396\) boards, a five-clause programmatic tile contract and a shared shortest route
+make both players strictly exceed their non-interaction scores while attaining the game's maximum joint score.
+An accounting identity states the delivered net coverage Red needs to improve on its outside option. These are
+feasibility statements. They do not establish that agents will propose or accept the contract, or that its
+path is an equilibrium of the sequential game. % ledger: 20, 22, 24, 26
+\end{abstract}
+
+\section{Question and setting}
+
+Q distinguishes feasible action rules from truthful reporting and obedience, but its one-shot formulation does
+not give an equilibrium theorem for P's sequential CT-Bench game \cite{bergemann2026mechanism}. P measures how
+language-model agents negotiate and use contracts there \cite{wyse2026commitment}. We ask whether its
+asymmetric boards admit a strictly mutually beneficial outcome through its tile-contract interface.
+% ledger: 1, 2, 18, 25
+
+Each player starts in one corner of P's \(4\times4\) board and seeks the opposite green goal. The other
+\(14\) cells split equally between Red and Blue. Red starts with \(14\) Red and two green chips, Blue with
+\(14\) Blue and two green chips. A move consumes one chip matching its destination; a finisher earns \(20\)
+plus \(5\) per remaining chip, and a non-finisher earns zero. In the asymmetric class only Red has an
+own-chip route. Outside scores are \((b_R,b_B)=(70,0)\), maximum joint score is \(140\), and P samples \(40\)
+boards from this class \cite{wyse2026commitment}. % ledger: 11, 20, 22, 24
+
+P's programmatic tile contract (PTC) specifies a tile, giver, receiver and colour per clause. After acceptance,
+a covered move automatically transfers a chip if the giver has one; otherwise the giver scores zero. The
+construction uses this format and sufficient inventory \cite{wyse2026commitment}. % ledger: 20, 21
+
+\section{Finite construction}
+
+The recorded exhaustive check enumerates all \(\binom{14}{7}=3{,}432\) balanced boards. Exactly \(396\) have
+independent Red and dependent Blue. A shortest Blue path has six moves: five onto coloured cells and one onto
+the green goal. Among shortest Blue paths, the minimum number \(k\) of Red cells is one on \(314\) boards and
+two on \(82\). A separate enumeration of all simple paths found no longer path with fewer Red cells. These
+counts are finite computational findings, rather than a closed-form count. % ledger: 11, 14, 20
+
+Here is the reproducible board test. Number cells rowwise from \(0\) (start) to \(15\) (goal), and let
+\(R\subseteq\{1,\ldots,14\}\) be the seven Red cells; all other nonterminal cells are Blue. Let \(\mathcal P\)
+contain every simple, orthogonally adjacent path from \(0\) to \(15\), and let \(I(p)\) exclude its endpoints.
+The asymmetric predicate is
+\[
+ \bigl(\exists p\in\mathcal P: I(p)\subseteq R\bigr)
+ \quad\text{and}\quad
+ \bigl(\nexists p\in\mathcal P: I(p)\cap R=\varnothing\bigr).
+\]
+This is P's Red-independent, Blue-dependent class under its fixed initial chips. % ledger: 11, 14, 20
+
+The enumeration proceeds as follows. % ledger: 11, 14, 20, 21
+\begin{enumerate}
+\item Generate \(\mathcal P\) by depth-first search without revisiting a cell, then retain its six-move paths as \(\mathcal P_6\).
+\item For each of the \(\binom{14}{7}\) choices of \(R\), apply the predicate above.
+\item For each retained board compute \(k=\min_{p\in\mathcal P_6}|I(p)\cap R|\), and check
+\(k=\min_{p\in\mathcal P}|I(p)\cap R|\); count boards by \(k\).
+\item For a shortest path attaining \(k\), check the reciprocal contract inventories and scores below.
+\end{enumerate}
+The runnable supplementary file \texttt{asymmetric\_oracle.py}, distributed with this paper, implements these
+steps and prints the counts and score pairs. % ledger: 11, 14, 20, 21
+
+\begin{proposition}[Reciprocal tile-contract witness]
+For each of the \(396\) asymmetric boards under P's stated generation rule, there is a PTC with five
+coloured-tile clauses and a pair of six-move paths whose executed scores are \((85,55)\) or \((75,65)\). Both
+players strictly exceed \((70,0)\), and their joint score is \(140\). % ledger: 20, 21, 26
+\end{proposition}
+
+\begin{proof}
+Choose a shortest Blue path minimising its Red-cell count \(k\in\{1,2\}\). Have both players traverse that
+same path. For each of its \(k\) Red cells, the contract makes Red cover Blue's move; for each of its \(5-k\)
+Blue cells, it makes Blue cover Red's move. Each player pays for its own matching-colour moves and its own
+green goal move. Red therefore spends \(2k+1\) chips and Blue spends \(2(5-k)+1\). Neither inventory is
+exhausted. As both begin with \(16\) chips, their scores are
+\[
+(r_R,r_B)=\bigl(20+5[16-(2k+1)],\;20+5[16-(2(5-k)+1)]\bigr)
+          =(95-10k,\;45+10k).
+\]
+The checked values of \(k\) yield the stated pairs. Both paths have the minimum six moves, so the sum is P's
+joint maximum of \(140\). % ledger: 20, 21, 26
+\end{proof}
+
+This is an existence result conditional on the contract being accepted and its specified route being followed.
+Automatic transfer removes an execution choice at each contracted tile when inventory is sufficient. It does
+not establish incentives to negotiate these clauses or full sequential obedience after acceptance.
+% ledger: 20, 21, 25, 26
+
+\section{Delivered coverage and observed outcomes}
+
+\begin{proposition}[Red's score identity]
+Suppose Red finishes in \(L_R\geq6\) moves, Blue pays for \(c\) of Red's moves, and Red pays for \(d\) of
+Blue's. With no other chip trades or point transfers,
+\[
+r_R=70+5\bigl[c-d-(L_R-6)\bigr].
+\]
+Thus Red strictly beats its own outside score precisely when \(c-d>L_R-6\). % ledger: 22, 23, 26
+\end{proposition}
+
+\begin{proof}
+Red's remaining inventory is \(16-L_R+c-d\). Applying P's terminal score rule gives \(20+5(16-L_R+c-d)\),
+which rearranges to the identity. The proposition concerns Red's score; both-beat-baseline additionally
+requires Blue to finish with a positive score. For the reciprocal witness, \(c=5-k\), \(d=k\) and \(L_R=6\),
+so the inequality holds for both recorded values of \(k\). % ledger: 22, 23, 26
+\end{proof}
+
+P already counts \emph{net tiles promised} in PTC agreements and finds equal numbers assigned to each player
+in \(49\%\) of asymmetric contracts. Its PTC visibility intervention moves Red's mean net promised tiles from
+\(0.2\) to \(0.45\), without a statistically decisive difference in the reported test. The identity adds a
+route-length adjustment and requires \emph{delivered} coverage: promised clauses may not all be triggered, and
+later coverage may change the net flow. Accordingly, \(49\%\) is not an estimate of failures caused by
+balanced terms \cite{wyse2026commitment}. % ledger: 22, 23
+
+P reports mean both-beat-baseline of \(0.06\pm0.03\) on asymmetric boards for Pay-for-Partner with PTC. Its
+\(0.80\pm0.03\) contract-acceptance figure is the all-board mean, across independent, mutually dependent and
+asymmetric boards; the two figures therefore have different board denominators. These are aggregate results
+of its sampled evaluations. The proposition gives a
+feasible score on each board in the generation class, but the contrast cannot identify whether agents failed
+to find suitable terms, accept them, traverse the route, or realise the transfers \cite{wyse2026commitment}.
+% ledger: 24, 25, 26
+
+\section{Related work and interpretation}
+
+P itself defines the baseline and joint-score metrics, describes the tile-contract mechanism, and analyses
+promised net tiles. Earlier Colored Trails work also uses a computed Pareto frontier as an evaluation
+benchmark in a different three-player game \cite{wyse2026commitment,li2025combining}. Thus a Pareto benchmark
+and the value of net promises are prior ingredients. The contribution here is the recorded all-board witness
+for P's particular asymmetric class and its delivered-coverage score test. The search found no published
+statement of that exact construction; this is a scoped literature observation, not a proof of priority.
+% ledger: 20, 22, 23, 25; related-work search: search.md
+
+Q's feasibility versus incentive distinction explains the interpretation: the oracle removes the possibility
+that these boards lack a mutually improving contract-and-path outcome, while leaving the behavioural cause of
+P's low observed rate unresolved \cite{bergemann2026mechanism,wyse2026commitment}. The local points-contract
+calculation in the peer record gives \(x(p_1-p_0)\geq5\) for honouring a costly coverage at a fixed history;
+it is a continuation comparison, not a sequential equilibrium condition. In particular, the \(20\)-point cap
+alone does not rule out the one- or two-coverage oracle paths. % ledger: 9, 10, 14, 15, 18, 25
+
+\section{Limitations and open questions}
+
+The enumeration covers P's stated balanced \(4\times4\) generation class, including its asymmetric rule. It is
+a finite computational check, not a theorem for larger boards or changed chip endowments. The construction
+assumes the compiled tile clauses are accepted, enough chips remain when invoked, and both players use the
+selected path. It proves neither a bargaining equilibrium nor sequential incentive compatibility under
+arbitrary deviations. P's aggregate table does not disclose which stage blocked the oracle outcome on each
+run. % ledger: 11, 14, 20, 21, 24, 25
+
+A discriminating experiment would supply the verified contract as already accepted on each asymmetric board,
+allow autonomous movement, and log route lengths and delivered transfers. Comparing that condition with
+autonomous proposal and acceptance would separate finding the terms from executing them; replaying the same
+coverage as defeasible Pay-for-Partner would test the role of automatic enforcement. These are proposed tests,
+not observed effects. Even success in the supplied-contract condition would leave voluntary bargaining and
+full sequential incentives open. % ledger: 18, 25, 26
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

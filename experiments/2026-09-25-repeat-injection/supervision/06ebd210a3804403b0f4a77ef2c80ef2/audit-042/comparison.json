@@ -1,0 +1,162 @@
+{
+  "observed_at": "2026-09-25T20:40:50.526977+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_audit": "audit-041",
+  "research_edit_complete": 16,
+  "scheduled": 28,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "status": "ACCEPTED",
+      "build_ok": true,
+      "updated": "2026-09-25T20:24:54Z"
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "build_ok": true,
+      "updated": "2026-09-25T15:11:00Z"
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "build_ok": true,
+      "updated": "2026-09-25T18:06:41Z"
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "build_ok": true,
+      "updated": "2026-09-25T18:42:48Z"
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "build_ok": true,
+      "updated": "2026-09-25T19:45:26Z"
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "7d23e2edfa5646cc8460f94eb4da8bf2",
+      "run_id": "3980959e1e364571aac4e8170df72ebb",
+      "pid": 24244,
+      "thread": "Q4P9",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790368606.943358,
+      "deadline_at": 1790369469.943358,
+      "timeout_seconds": 863,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9",
+      "child_pid": 68811,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/7d23e2edfa5646cc8460f94eb4da8bf2.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 243.6,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T20:24:54Z",
+        "thread": "Q3P3",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 92.0
+      },
+      {
+        "at": "2026-09-25T20:29:13Z",
+        "thread": "Q4P9",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 256.8
+      },
+      {
+        "at": "2026-09-25T20:36:46Z",
+        "thread": "Q4P9",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 710.0
+      },
+      {
+        "at": "2026-09-25T20:38:02Z",
+        "thread": "Q4P9",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 483.7
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T19:56:56Z",
+        "thread": "Q3P4",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 58.3
+      },
+      {
+        "at": "2026-09-25T19:58:07Z",
+        "thread": "Q3P4",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 70.9
+      },
+      {
+        "at": "2026-09-25T19:58:38Z",
+        "thread": "Q3P4",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 30.4
+      },
+      {
+        "at": "2026-09-25T20:02:27Z",
+        "thread": "Q3P4",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 229.0
+      }
+    ]
+  },
+  "comparison": "Q4P9 Ada first call completed 20:36:46Z and Emmy second call completed 20:38:02Z since prior audit. Ada second call active within deadline; configured peer_calls=2. No evidence of livelock. Completed research/edit count remains 16/28; five DRAFT papers accepted with successful builds.",
+  "process_assessment": "Supplied process evidence links Python runner 24244 to recorded Codex child 68811 and host 68899. Session runner PID and run identity match; root and repeat heartbeats fresh. No additional runner shown. Point-in-time evidence limitations retained; no process intervention attempted.",
+  "notes": [
+    "Root shortlist not used. Reinjection finished is last admitted child run, not completion of assigned scope.",
+    "Read manifest, progress, outcomes, authority, session, log and child receipts/failure records. Outcomes is historical: launch.py writes outcomes on exit and progress between pairs. Historical Q3P2 blocker already repaired; current checkpoint PAUSE/editor done.",
+    "No new campaign failures, stops, overdue calls or failed/censored final states; prior external lookup incidents preserved.",
+    "Pane rename denied by sandbox; title change not verified."
+  ],
+  "action": "No campaign intervention",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-042/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-042/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-042/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json"
+  ]
+}

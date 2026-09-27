@@ -1,0 +1,66 @@
+{
+  "observed_at": "2026-09-27T14:25:16.884563+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "9672a1685b814030b5d0e08c6ebaea6b",
+  "status": "continue",
+  "completed_count": 24,
+  "scheduled_count": 28,
+  "unfinished": [
+    "repeat/Q1P6",
+    "reinjection/Q1P5",
+    "reinjection/Q1P1",
+    "repeat/Q1P2"
+  ],
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-007/observed-status.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-007/health.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-006/aggregate-observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-007/processes.json",
+  "comparison": "Q1P6 ledger increased from 9 to 19 entries; Ada peer calls completed since prior audit. Emmy peer call remains within nominal deadline. Fresh root and repeat heartbeats. Last completed full pipeline repeat/Q3P6, paper ACCEPTED at 14:12:37 UTC.",
+  "recent_receipts": [
+    {
+      "at": "2026-09-27T14:11:26Z",
+      "thread": "Q3P6",
+      "stage": "author",
+      "actor": "author",
+      "outcome": "completed",
+      "seconds": 557.2,
+      "error": null
+    },
+    {
+      "at": "2026-09-27T14:12:37Z",
+      "thread": "Q3P6",
+      "stage": "review",
+      "actor": "reviewer",
+      "outcome": "completed",
+      "seconds": 67.5,
+      "error": null
+    },
+    {
+      "at": "2026-09-27T14:21:57Z",
+      "thread": "Q1P6",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "seconds": 557.2,
+      "error": null
+    },
+    {
+      "at": "2026-09-27T14:24:12Z",
+      "thread": "Q1P6",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "seconds": 135.0,
+      "error": null
+    }
+  ],
+  "historical_failures": "September 25 authentication and stream failures unchanged, recovery already resolved in incidents. No new failure or stop in either arm.",
+  "checkpoint_interpretation": "outcomes.json is stale from the prior run; live child checkpoints and paper records confirm 24 complete pipelines. progress.json records last completed pair. Reinjection finished sub-run does not establish campaign completion.",
+  "process_identity": "Supplied evidence links Python runner 53766 to supervising parent 53765 and recorded Codex children 58566 and 60197 plus code-mode descendants. Session runner PID and active call ownership agree. Ada completed after process observation. Evidence is point-in-time and does not rule out unrecorded independent groups; no process intervention attempted.",
+  "completed_files_checked": 720,
+  "preservation_mismatches": [],
+  "deadline_at": 1790538533.7635698,
+  "intervention": "none",
+  "new_incidents": 0,
+  "pane_title": "HERDR_PANE_ID unavailable; no rename performed."
+}

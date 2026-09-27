@@ -1,0 +1,160 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{An Information Limit for Pairwise Quote Judgments in a Double Auction}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We examine whether a pairwise judge given an acting trader's permitted information can rank two quotes by
+their counterfactual final surplus in a private-value double auction. In a constructed continuation of the
+auction studied by Struski and colleagues, two worlds preserve the full reservation-value schedule and the
+trader's information, yet reverse the welfare ranking of a crossing bid and an improving bid. With equal
+conditional probability on those worlds, any such judge has at most one-half accuracy on the realised
+better-quote label. The optimal local decision still has a well-defined expected-welfare ranking; the
+specified value of learning a competing buyer's valuation is \(0.25\) surplus units. This is a conditional
+information boundary for an adaptation of Wang and colleagues' pairwise credit method, not an empirical
+estimate of auction frequency or a guarantee about market intervention.
+% ledger: 11, 12, 14, 15, 19, 20, 22, 23, 28
+\end{abstract}
+
+\section{Question and scope}
+
+Q, \emph{Competitive Market Behavior of LLMs}, studies prompted, privately informed traders in a continuous
+double auction and reports slower or absent convergence and missed gains from trade relative to a human
+benchmark \cite{struski2026competitive}. Its allocative-efficiency measure is realised buyer-plus-seller
+surplus divided by maximum available surplus. A profitable spread crossing can recover a missed trade, but it
+can also allocate a seller's unit to a lower-value buyer before a higher-value buyer arrives.
+% ledger: 1, 9, 17
+
+P, \emph{MARS-RA}, compares \emph{agents} at a state using multimodal-model judgments, aggregates the
+comparisons into Bradley--Terry scores, and uses those scores in potential-based reward shaping for
+cooperative learning \cite{wang2026marsra}. Its stated statistical target is the comparator's latent
+preference under its assumptions; economic welfare accuracy is not established by that result. Comparing
+\emph{alternative quotes of one trader} is therefore an adaptation of P's judgment idea, not an output of P's
+agent scores. The question here is whether that adapted judge can identify the quote with greater final market
+surplus when its input is restricted to Q's acting-trader information.
+% ledger: 1, 10, 12, 17, 19, 22, 23
+
+Q has eleven buyers and eleven sellers, each able to trade once per round. Reservation values on each side
+occupy the \(0.75\)-to-\(3.25\) grid in increments of \(0.25\). A round lasts at most 300 iterations. At each
+iteration Q selects an agent uniformly from those who have not traded. A buyer's bid at or above the standing
+ask executes at that ask; a bid above the standing bid and below the ask becomes the new bid. The trader sees
+its own reservation value, standing quotes, public offer history, and its own private history, but not other
+traders' reservation values. Q instructs traders to maximise private profit.
+% ledger: 7, 9, 17, 19, 20, 22, 28
+
+\section{A conditional information boundary}
+
+Let \(W(a,\omega)\) denote final realised surplus after quote \(a\) under the specified continuation in world
+\(\omega\). The comparison concerns a crossing bid \(a_{\mathrm{c}}=1.50\) and an improving bid
+\(a_{\mathrm{i}}=1.49\), both available to the same buyer. It does not compare agents or infer a quote ranking
+from P's Bradley--Terry scores.
+% ledger: 19, 20, 22, 23
+
+\begin{proposition}[Identical local information, opposite quote rankings]
+Consider the following constructed states, with the acting buyer \(B_2\) selected just before one final
+iteration. A seller \(S\) has cost \(0.75\) and the sole relevant standing ask \(1.50\); \(B_2\) has value
+\(2.25\), and the standing bid is below \(1.49\). Buyers \(B_1\) and \(B_3\) have neither posted nor otherwise
+revealed their values. In world A, their values are \(3.25\) and \(1.75\), respectively; in world B, those
+values are swapped. Their identities and the common history convey no signal of the assignment to \(B_2\).
+Couple the continuation so that \(B_1\) is selected on the final turn in either branch and bids \(1.50\) if
+\(S\) remains; \(B_3\) does not act, and all other welfare contributions coincide. Then \(B_2\)'s permitted
+information and Q's full buyer-value multiset are identical across worlds, while the sign of
+\(W(a_{\mathrm{c}},\omega)-W(a_{\mathrm{i}},\omega)\) is opposite.
+% ledger: 11, 19, 20, 22, 25, 28
+\end{proposition}
+
+\begin{proof}
+Both bids are legal under Q's quote rule. Crossing matches \(B_2\) and \(S\) at once, yielding
+\(2.25-0.75=1.50\) surplus in either world. Improving leaves \(S\) available for \(B_1\)'s final crossing,
+yielding \(3.25-0.75=2.50\) in A and \(1.75-0.75=1.00\) in B. Common welfare contributions cancel from the
+difference. Hence the crossing-minus-improving differences are \(-1.00\) and \(+0.50\). Swapping the two
+unseen values preserves the fixed value schedule, and the stipulated histories make the two observations
+equal.
+% ledger: 19, 20, 22, 25
+\end{proof}
+
+Under an equal conditional prior on A and B, a judge measurable only from that common information, including
+one that repeats the same pairwise comparison, has at most \(1/2\) accuracy on the \emph{realised}
+better-quote label. This is an information ceiling for the stated two-world distribution, not a measured error
+rate in Q's simulations. A view that includes \(B_1\)'s private value can distinguish the worlds; access to
+every market valuation is sufficient but unnecessary for this example.
+% ledger: 11, 12, 13, 20, 22
+
+The ceiling does not imply an inability to make the best local decision. Improving has conditional expected
+surplus \((2.50+1.00)/2=1.75\), compared with \(1.50\) from crossing. A decision maker who sees \(B_1\)'s
+value improves in A and crosses in B, obtaining \((2.50+1.50)/2=2.00\) in expectation. The \(0.25\) difference
+is the value of that hidden information for this prior and continuation. Repeated judgments can reduce
+sampling noise in a comparator, but cannot remove this information gap.
+% ledger: 12, 14, 15, 20
+
+\section{Relation to existing methods}
+
+The action-rollout step is already present in Chen and colleagues' cooperative-LLM credit method: they restore
+decision points, vary actions, and evaluate continuations under a fixed behaviour policy \cite{chen2026exact}.
+The example here supplies a different target and constraint, namely final auction surplus under private
+reservation values. Jadhav and colleagues have already used an LLM critic to shape bidding in a partially
+observed continuous double auction for electricity trading \cite{jadhav2025fairness}; an LLM-guided auction
+intervention is therefore not a contribution of this paper. Neither of these works, as examined here,
+establishes the stated fixed-schedule, two-world quote-ranking calculation.
+% ledger: 7, 16, 17, 23
+
+For a fixed matched buyer and seller with value \(v\), cost \(c\), and transaction price \(p\), joint profit satisfies
+\[
+(v-p)+(p-c)=v-c.
+\]
+Thus an allocation-fixed price change transfers rent without changing that trade's joint surplus. This
+supports a control for whether a judge mistakes rent capture for welfare creation. If a changed quote changes
+subsequent behaviour or the allocation, the continuation must instead determine its total welfare effect.
+% ledger: 3, 23, 26
+
+If the comparison expands beyond two quotes, P's unregularised Bradley--Terry fit has a relevant boundary:
+\(K\) unanimous comparisons favouring one of two entities give a connected undirected graph but loss
+\(L(d)=K\log(1+e^{-d})\), whose infimum has no finite score difference \(d\). A penalised fit or symmetric
+pseudocounts would address this separation in a larger quote-set study. The present two-quote result needs no
+Bradley--Terry fit.
+% ledger: 4, 5, 6, 23, 26
+
+P's potential-based shaping also has a distinct scope. With fixed initial and zero terminal potential, its
+discounted shaping sum for agent \(i\) telescopes to
+\[
+\sum_{t=0}^{T-1}\gamma^t\bigl(\gamma\Phi_i(s_{t+1})-\Phi_i(s_t)\bigr)=-\Phi_i(s_0).
+\]
+Under these conditions it cannot by itself change a strategic equilibrium. Q uses prompted profit-maximising
+traders rather than policies trained on P's cooperative reward. An agent's exit after trade requires potential
+handling on that transition for the identity to apply; the record does not show a violation in P's
+implementation.
+% ledger: 7, 8, 20
+
+\section{Interpretation}
+
+The example separates a realised better-quote label from the best decision given the available information. In
+the specified balanced prior, a locally informed decision maker can choose improving and achieve its
+conditional expected-welfare optimum while disagreeing with half of the realised-world labels.
+% ledger: 12, 14, 15, 20
+
+\section{Limitations}
+
+The proposition is an existence result conditional on the specified final selection, bidding continuation, and
+absence of identity leakage. It does not establish that these states arise often, or that Q's prompted traders
+would choose the stipulated bid. Because a trade changes the set of eligible agents, counterfactual replays
+should couple underlying random draws and reapply Q's selection rule in each branch, rather than impose an
+identical realised actor sequence. P already acknowledges that tasks depending on unobserved domain-specific
+state may fall outside its scope. The calculation quantifies that boundary in this market; it does not refute
+P's stated limitation.
+% ledger: 19, 20, 22, 23, 25, 28
+
+\section{Open questions}
+
+A direct test would locate Q states where both quotes are legal, replay them with fixed continuation policies
+and coupled randomness, and label the difference in final surplus. It would measure state frequency and
+compare local-information pairwise judgments with direct conditional-welfare prediction and a judge given the
+relevant hidden value. These are proposed measurements, not findings. The effect size in Q, any predictive
+advantage of pairwise judgment, rollout feasibility, and any downstream gain in market efficiency remain open.
+% ledger: 17, 19, 23, 25, 28
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

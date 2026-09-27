@@ -1,0 +1,57 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Pairwise Credit and Welfare in a Private-Value Double Auction}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q studies whether LLM traders in a double auction reach the competitive allocation achieved by human traders, and reports incomplete convergence and missed gains from trade. P uses LMM pairwise judgments and rank aggregation to assign credit in cooperative multi-agent learning, but its theoretical guarantee concerns recovery of the comparator's latent preference rather than true economic contribution. \ledger{1, 17}
+
+\section{Connection pursued}
+
+The question is whether pairwise judgments can identify quotes that improve \emph{final market welfare} in Q's auction. This adapts P's comparison method: P compares agents at a state, whereas the proposed test compares alternative quotes by the same trader. P's Bradley--Terry agent scores do not themselves rank those quotes. \ledger{10, 19, 22, 23}
+
+Q supplies an exact welfare measure and a concrete failure mode: agents can spend a finite round improving quotes by small increments without crossing a profitable spread. A crossing quote is nevertheless not automatically welfare improving, because it may take a unit that a higher-value buyer would otherwise obtain. \ledger{9, 17}
+
+\section{What was established}
+
+\begin{claim}
+A trader's permitted information can leave the welfare-preferred quote unidentified, even when the market's reservation-value schedule is fixed.
+\end{claim}
+
+Consider a seller with cost \(0.75\) and a resting ask of \(1.50\), an acting buyer \(B_2\) with value \(2.25\), and a standing bid below \(1.49\). The buyer can cross at \(1.50\) or improve the bid to \(1.49\). In world A, an unseen buyer \(B_1\) values the unit at \(3.25\); in world B, \(B_1\) values it at \(1.75\). Swap those two values with another unseen buyer between worlds, preserving Q's fixed buyer-value multiset. Let the public histories be identical, and condition on a final turn in which \(B_1\) is selected and crosses if the seller remains. \ledger{19, 20, 22}
+
+Crossing now produces surplus \(2.25-0.75=1.50\) in either world. Improving instead leaves the seller available, producing \(3.25-0.75=2.50\) in A and \(1.75-0.75=1.00\) in B. Thus the sign of the welfare difference reverses across worlds that look identical to \(B_2\). With equally likely worlds, any judgment restricted to that identical information has at most \(1/2\) accuracy on the \emph{realized} better-action label. This is an information limit, not an estimate of how often such states occur in Q's simulations. \ledger{11, 12, 20, 22}
+
+That accuracy ceiling does not mean the local decision is irrational. Waiting yields conditional expected welfare \((2.50+1.00)/2=1.75\), compared with \(1.50\) from crossing. A full-information decision maker waits in A and crosses in B, obtaining expected welfare \((2.50+1.50)/2=2.00\). The \(0.25\) gap is the value of the hidden information in this constructed continuation; repeated comparisons cannot eliminate it. \ledger{14, 15, 20}
+
+For a fixed matched trade, buyer and seller profit sum to
+\[
+(v-p)+(p-c)=v-c.
+\]
+A price change alone transfers rent without changing that trade's joint surplus. This identity supports a diagnostic that holds allocation and continuation fixed when testing whether a judge confuses rent capture with welfare creation. If a quote change alters later behavior or allocation, its total welfare effect must instead be measured through the auction continuation. \ledger{3, 23}
+
+\section{Objections and limits}
+
+Q instructs traders to maximize private profit, while the proposed label measures total surplus. A welfare-accurate judge therefore need not induce a self-interested trader to follow its ranking. Moreover, P's potential-based reward shaping is policy invariant under the stated telescoping conditions: with fixed initial and zero terminal potential,
+\[
+\sum_{t=0}^{T-1}\gamma^t
+\bigl(\gamma\Phi_i(s_{t+1})-\Phi_i(s_t)\bigr)
+=-\Phi_i(s_0).
+\]
+Such shaping cannot by itself remove a strategic inefficient equilibrium; Q also studies prompted traders rather than training policies. If an agent exits after trading, its potential must be handled on that transition for the identity to hold. The record does not establish a violation in P's implementation. \ledger{7, 8, 20}
+
+P's unregularized Bradley--Terry fit has a separate technical boundary. With \(K\) unanimous comparisons favoring one of two agents, the undirected comparison graph is connected, but the loss \(L(d)=K\log(1+e^{-d})\) has no finite minimizer as the score difference \(d\) grows. Connectedness alone therefore does not ensure a finite estimate. Regularization or symmetric pseudocounts would be needed for a larger quote-set study; two candidate quotes require only a direct pairwise judgment. \ledger{4, 5, 6, 23}
+
+The example conditions on a particular near-horizon continuation. Q selects the next actor from agents who have not traded, so crossing changes the eligible set. Counterfactual rollouts should couple underlying random draws while applying the selection rule separately in each branch. Whether comparable states occur often enough to matter remains unmeasured. P's stated limitations already recognize that relevant domain-specific state may be unavailable in observations; the example quantifies one such boundary rather than refuting P. \ledger{23, 28}
+
+\section{Outside sources and next step}
+
+The ledger reports adjacent work on an \href{https://arxiv.org/abs/2508.18610}{LLM critic in a continuous double auction}, \href{https://arxiv.org/abs/2603.06859}{alternative-action rollouts for cooperative-agent credit}, and \href{https://arxiv.org/abs/2106.00285}{Shapley counterfactual credit}. These were used to narrow the proposed contribution, not to establish novelty; the record contains no independent assessment of the precise benchmark against that literature. \ledger{16}
+
+The smallest next step is to identify actual Q states with both quotes legal, replay each quote under coupled random draws and fixed continuation policies, and label the difference in final surplus. Measure how often informative states occur, then compare local-information pairwise judgments with direct conditional-welfare prediction and a privileged-information reference. Until that pilot is run, the empirical effect size, predictive advantage, and practical value of the proposed connection remain open. \ledger{17, 23, 25, 28}
+
+\end{document}

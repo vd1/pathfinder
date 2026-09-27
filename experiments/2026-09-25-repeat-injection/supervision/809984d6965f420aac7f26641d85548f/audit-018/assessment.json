@@ -1,0 +1,135 @@
+{
+  "observed_at": "2026-09-25T16:08:47.089203+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "completed_research_edit": 5,
+  "scheduled": 28,
+  "draft_paper": "repeat/Q4P10 ACCEPTED, build_ok true",
+  "previous_completed_unchanged": true,
+  "progress": "repeat/Q4P6 editing completed; reinjection/Q4P3 peers admitted",
+  "active_calls": [
+    {
+      "attempt_id": "61742aa8f1c643e18613722518994410",
+      "run_id": "9a42a3c84c084185b2a7e6bf9a5b3adb",
+      "pid": 89044,
+      "thread": "Q4P3",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790352348.986557,
+      "deadline_at": 1790353578.986557,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P3",
+      "child_pid": 11526,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/61742aa8f1c643e18613722518994410.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 120.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    },
+    {
+      "attempt_id": "d7269ff04ee640dba123027dc9408635",
+      "run_id": "9a42a3c84c084185b2a7e6bf9a5b3adb",
+      "pid": 89044,
+      "thread": "Q4P3",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790352348.986638,
+      "deadline_at": 1790353578.986638,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P3",
+      "child_pid": 11527,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/d7269ff04ee640dba123027dc9408635.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 120.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T16:01:34Z",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T16:02:17Z",
+        "thread": "Q4P6",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T16:02:34Z",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T16:05:45Z",
+        "thread": "Q4P6",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T15:33:03Z",
+        "thread": "Q3P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T15:34:07Z",
+        "thread": "Q3P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T15:34:41Z",
+        "thread": "Q3P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T15:38:38Z",
+        "thread": "Q3P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "outcomes": "absent; launch.py writes outcomes.json in finalization, expected during active run",
+  "process_identity": "Parent session runner_pid and launch argv correlate with PID 89044, supplied Python executable, PPID 89043, fresh matching run heartbeat and Codex child PIDs 11526/11527. Supplied process evidence has documented point-in-time limits. No intervention required.",
+  "failures": "No child failure records or stop markers; new nonblocking editor HTTP 406 recorded",
+  "action": "none",
+  "pane_title": "rename denied by sandbox; label not verified",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-018/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-018/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-018/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-017/after.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/runner.log"
+  ]
+}

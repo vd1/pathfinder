@@ -1,0 +1,95 @@
+{
+  "observed_at": "2026-09-25T19:11:48.841783+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed_count": 12,
+  "completed_records_unchanged": true,
+  "papers": {
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    }
+  },
+  "receipts": {
+    "repeat": {
+      "count": 53,
+      "latest": {
+        "at": "2026-09-25T19:08:43Z",
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 540.1
+      },
+      "new": [
+        {
+          "at": "2026-09-25T19:08:12Z",
+          "thread": "Q1P1",
+          "stage": "peer",
+          "actor": "emmy",
+          "outcome": "completed",
+          "error": null,
+          "seconds": 787.8
+        },
+        {
+          "at": "2026-09-25T19:08:43Z",
+          "thread": "Q1P1",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null,
+          "seconds": 540.1
+        }
+      ],
+      "errors": []
+    },
+    "reinjection": {
+      "count": 44,
+      "latest": {
+        "at": "2026-09-25T18:42:48Z",
+        "thread": "Q4P4",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 141.4
+      },
+      "new": [],
+      "errors": []
+    }
+  },
+  "facts": [
+    "Manifest schedules 28 threads. 12 research/edit threads complete; three DRAFT papers accepted.",
+    "Prior active peer calls completed; Ada completed at 19:08:43Z and Emmy second peer call is active within its nominal deadline.",
+    "Supplied process evidence links Python owner 24244 to Codex child 46587 and code-mode descendant 46707. No intervention; point-in-time identity limitations retained.",
+    "Root and active child heartbeats fresh. No stops, current failures or child failure records. Previously recorded nonblocking lookup failures unchanged.",
+    "progress.json is a between-pair checkpoint and outcomes.json is stale; current aggregate and child paper records establish present state.",
+    "Completed research/edit records and paper statuses unchanged since previous audit."
+  ],
+  "action": "No intervention; no new failure found.",
+  "next_audit": "Check repeat Q1P1 Emmy completion and downstream advancement; call deadline epoch 1790364055.624835.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-024/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-024/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-024/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json"
+  ]
+}

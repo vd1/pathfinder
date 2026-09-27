@@ -1,0 +1,45 @@
+The workspace is read-only, so I could not create `Q8P4.tex`. Its complete contents follow.
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Fixed-Batch Tail Risk and Aero Hand Open: A Limited Connection}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q presents Aero Hand Open, a tendon-driven hand with a simulation model, an identified actuation map, and a policy for in-hand cube rotation. P studies empirical CVaR in a quadratic resource-allocation mechanism; the papers that P calls ``Q'' and ``P'' are different from this supplied pair. \ledger{1, 2}
+
+\section*{Connection pursued}
+
+The question was whether P's fixed-batch CVaR reasoning could support a tail-risk claim about Q's simulated and physical controller. Q trains for rotation reward and penalises a fall, but does not optimise CVaR; its physical cube pose was not logged. P's value-error bound concerns an expected empirical CVaR surrogate under valid queries within one loss distribution, not a realised batch or a simulator-to-hardware shift. \ledger{4, 8, 9}
+
+\section*{What the record establishes}
+
+A binary example shows why a small batch can give a misleading tail-risk score. Let \(F\in\{0,1\}\) indicate an episode fall, let \(p=\Pr(F=1)\), and let \(\beta\) be the upper-tail mass. Then
+\[
+\operatorname{CVaR}_{\beta}(F)=\min\{1,p/\beta\}.
+\]
+With one episode, empirical CVaR equals its observed loss, so its expectation is \(p\). At \(p=0.02\) and \(\beta=0.05\), the expected one-episode score is \(0.02\), while true CVaR is \(0.4\). A candidate with constant loss \(0.1\) reverses their ordering under the true risk measure. This is a prospective controller-selection example, not a failure demonstrated for Q's policy. \ledger{7, 9}
+
+Even a zero-fall result would need many independent hardware episodes for a narrow claim. After \(m\) such episodes, the exact one-sided \(95\%\) binomial upper bound is \(p\leq 1-0.05^{1/m}\). Certifying \(\operatorname{CVaR}_{0.05}(F)\leq0.1\) by this route requires \(m\geq598\). Q reports neither that episode count nor logged physical cube pose. \ledger{7, 9}
+
+Q does identify plausible axes for a test: thumb cable excursions differ from hardware by \(32.7\%\) and \(31.2\%\), simulated actuator responses lead physical responses by \(10\) to \(40\) ms, and attempted cube friction and mass randomisation is overwritten. Its shared-command replay measures actuator behaviour open loop. Agreement in those traces cannot determine the distribution of closed-loop rotation or falls when object contacts are unobserved. Deployment also retunes finger scales and the nominal pose, so those settings would have to be fixed across a comparison. \ledger{8, 14, 16}
+
+\section*{Objections and resolution}
+
+The mechanism-specific participation result in P does not transfer to a robot controller: its agents, taxes, and opt-out utilities have no counterparts established in Q. The binary calculation above illustrates a measurement risk only. A generic finite-sample robot-policy CVaR certificate is also not a new result here; Vincent, Feldman and Schwager already study such bounds, distribution shift, and multiple-policy correction. SureSim studies paired real and simulated evaluations for mean performance. The supplied material contains no task-level hardware loss data from which to establish a new certificate or a causal thumb-model effect. \ledger{5, 9, 10, 12}
+
+\section*{Outside sources}
+
+The prior-work checks used Vincent, Feldman and Schwager, \emph{Guarantees on Robot System Performance Using Stochastic Simulation Rollouts}, \url{https://doi.org/10.1109/TRO.2024.3444070}, and \emph{SureSim}, \url{https://arxiv.org/abs/2510.04354}. These sources limit the novelty of a generic certificate or paired-evaluation proposal; they do not supply missing measurements for Q. \ledger{5, 9, 10}
+
+\section*{Open question and next step}
+
+The material is thin on the central question: it does not establish whether Q's measured transmission mismatch worsens the tail of closed-loop cube outcomes. The smallest decisive study would predeclare an episode loss and tail mass, log physical cube pose and falls over independent complete episodes, and compare the existing controller with one specified thumb-map correction under matched starting conditions and fixed deployment settings. Keeping the policy fixed would test a deployment-map intervention; correcting the simulator and retraining would be a separate experiment. \ledger{8, 12, 14, 16}
+
+\end{document}
+```

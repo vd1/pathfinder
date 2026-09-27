@@ -1,0 +1,69 @@
+I could not create `Q4P5.tex` because the workspace is read-only. Here is the complete file content; I could not run `pdflatex`.
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Occluded Handover as an Information and Incentive Boundary}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+P is a robotics note asking when a donor wrist pose can substitute for the pose of an occluded object during handover, using in-hand rotation as a possible source of ambiguity. Q develops mechanisms for AI agents with private information, including action recommendations, rewards, and oversight by another agent.
+
+\section{The connexion pursued}
+
+The peer discussion asked whether P's possible observation ambiguity limits what Q-style reports and rewards can achieve. The narrow question is whether distinct object orientations can produce the same wrist, encoder, and action history while requiring incompatible receiving approaches. P poses that possibility but does not measure its prevalence; Q's mechanisms distinguish the agent's physical information from what a reward can measure. \ledger{1,2,4,8}
+
+\section{What was found}
+
+\begin{claim}
+Let \(H\in\{0,1\}\) denote two object orientations with equal prior probabilities, and let \(Y\) be the full history available to the receiver. If the orientations require disjoint successful actions, any receiver policy generated only from \(Y\), including one selected through reports and rewards generated only from \(Y\), has average success probability at most
+\[
+\frac{1+\operatorname{TV}\bigl(\mathcal L(Y\mid H=0),
+                              \mathcal L(Y\mid H=1)\bigr)}{2}.
+\]
+\end{claim}
+
+For each observed history, the best orientation-specific choice succeeds with probability no greater than the larger of the two joint probabilities of that history and orientation. Summing those maxima gives the displayed binary-testing bound. Reports or recommendations generated only from \(Y\) cannot increase the distinction between the two conditional observation laws. If the laws coincide, the bound is \(1/2\). A single matched pair establishes that bound for a two-trial experiment supported on the pair; it does not establish equality of the laws in ordinary handovers. A donor with additional private pose information could also send an informative report. \ledger{4,6,10}
+
+A second argument concerns incentives rather than receiver inference. Ada's finite observation-quotient analysis treats rewards as functions of a measured outcome instead of the full achieved action. Its support inequalities become difference constraints on rewards assigned to measured outcomes. They are feasible only when every cycle in the resulting observation graph has nonpositive deviation gain. In particular, if a donor strictly prefers a different physical action with the same measured outcome, that deviation forms a positive self-loop: no reward based solely on that measurement can deter it. This is a conditional extension of Q's exact-measurement setting, not an empirical finding about P's hand. \ledger{6,8,10}
+
+The peers also checked a more specific limit of Q's robust oversight menu. Q's construction assumes that the strong actor observes the state \(\theta\) exactly. Keep \(\theta\sim U[0,1]\), but instead let the actor observe only \(s=\mathbf 1\{\theta>1/2\}\). Its posterior mean is \(M\in\{1/4,3/4\}\), with expected posterior variance \(1/48\). Under Q's unchanged menu, a small residual bias \(\delta=b-\hat b\) leaves \(M+\delta\) inside \([0,1]\), so the menu's extreme-action deterrent is not triggered. For \(b=1/2\), monitor bias \(w=1/10\), and an available report \(\hat b=9/20\), truthful reporting gives the monitor loss
+\[
+\frac{1}{48}+\frac{1}{100}=\frac{37}{1200},
+\]
+while the false report gives
+\[
+\frac{1}{48}+\left(\frac{1}{10}-\frac{1}{20}\right)^2
+=\frac{7}{300}.
+\]
+Thus the false report is preferred. More generally, if posterior means stay in \([\varepsilon,1-\varepsilon]\), an available understatement with \(0<\delta<\min\{\varepsilon,2w\}\) lowers a positively biased monitor's loss by \(2w\delta-\delta^2\). This changes Q's exact-state premise and shows fragility of that particular unchanged menu; it does not refute Q's proposition. \ledger{3,5,6,15,16}
+
+There is a repair for a stipulated, more informative signal channel. Suppose the signal reveals \(\theta\) with probability \(p>0\), and otherwise is fresh uniform noise. Then \(M=\mathbb E[\theta\mid s]=(1-p)/2+ps\). Rescale actions by \(x=(a-(1-p)/2)/p\), biases by \(1/p\), and rewards by \(p^2\). Q's exact-state menu argument then implements the Bayes action \(a=M\), using the correspondingly scaled bias support and monitor bound. The human still incurs the information loss
+\[
+\mathbb E[\operatorname{Var}(\theta\mid s)]
+=\frac{1-p^2}{12}.
+\]
+This channel was introduced for analysis; P supplies no evidence that it describes the handover observations. \ledger{10,13,15}
+
+\section{Objections and sources}
+
+\begin{objection}
+These arguments do not yet establish a new result about the paired systems. P already identifies pose-aware handover work and proposes a sensor test; Q already acknowledges coarse action and state measurement. The quotient-graph argument uses standard finite difference constraints, while the oversight calculation changes Q's signal assumption. P provides neither matched-history object-pose data nor evidence of a strategic donor. \ledger{7,8,11}
+\end{objection}
+
+The peers resolved the apparent conflict with Q by distinguishing the unchanged-menu counterexample from the signal-aware repair. They also corrected the inference from one matched pair: a population-level \(1/2\) bound needs equal conditional observation laws. Whether either premise holds in a real handover remains unresolved. \ledger{6,10,13,15}
+
+The discussion used P and Q as its substantive sources. A prior-work search recorded an adjacent haptic pose-estimation study at \url{https://arxiv.org/abs/2207.02843}; it was not used to prove a claim or establish novelty. \ledger{7}
+
+\section{What remains open}
+
+The material is thin on the decisive physical facts: the conditional distribution of object pose given wrist, encoder, and action history; whether ambiguous orientations demand disjoint receiving approaches; and whether the relevant physical deviations are available to a donor. It is also unknown whether an adapted reward menu or another sensor improves handover under realistic noise and bounded actions. If observation overlap is negligible, or one safe grasp works across the orientations, this proposed connexion loses its practical force. \ledger{7,8,11}
+
+The smallest decisive step is to hold the donor wrist fixed, externally measure a marked object's pose, and collect occluded trials with matched encoder and action histories. Check first whether those histories contain materially different object orientations, then whether those orientations require incompatible receiving actions. Only if both tests pass is a reward or report intervention needed to test the incentive part of the connexion. \ledger{7,8,11}
+
+\end{document}
+```

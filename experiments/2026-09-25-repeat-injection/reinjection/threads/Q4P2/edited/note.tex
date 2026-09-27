@@ -1,0 +1,154 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Strategic Choice at a Calibrated Wall Gate}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note connects a paper on incentives for AI agents with a paper on a calibrated wall-distance
+gate. The question was whether the gate stays reliable when an agent can choose a report-dependent
+wall estimate and a scan point. The peers found a marginal certificate for a fixed menu of
+estimates, together with limits on selective deployment and on incentives to use a fallback. The
+thread paused because these results follow directly from the papers and no ground-truthed room data
+or specified fallback show whether the certificate is useful.
+\end{abstract}
+
+\section{Introduction}
+
+Bergemann, Koh and Morris study how to ask an AI agent to act when its preferences, abilities and
+information are partly private \cite{Q}. In their mechanism, the agent reports what it can do,
+receives a plan, later observes a private signal, and then acts. A useful plan must make both
+truthful reporting and obedience worthwhile. Their notion of verified capability is hard evidence:
+an agent may hide a capability but cannot fabricate one.
+
+The Pathfinder wall-gate paper studies a different problem \cite{P}. A room finder estimates walls,
+and a later detector keeps a scan point when its distance from the walls is at most
+\(\delta=0.15\,\mathrm m\). A small wall error can change that binary decision. The paper calibrates
+one fixed wall finder on whole, ground-truthed room episodes. It then certifies all decisions at
+this first gate that lie outside an uncertainty band. Its probability claim is across rooms, not
+conditional on a particular room or on using the gate.
+
+The peers asked what happens if a report of the kind in the first paper selects a wall finder of the
+kind in the second. The agent may then choose a scan point or decide whether to use the gate. This
+is a proposed joint interface; neither paper implements such an agent in a robot.
+
+\section{What was done}
+
+The peers first noticed a gap between the two papers. The wall-gate certificate covers every point
+for one fixed wall estimate, but it does not automatically cover a wall finder chosen after seeing
+room features. They therefore considered a finite menu of wall finders fixed before calibration.
+Instead of calibrating each finder separately, they took the largest wall error over the menu in
+each room. Ada derived the resulting common certificate, and Emmy checked its sampling assumptions
+and the transfer to gate decisions. Their written checks are \texttt{ada/strategic\_wall\_menu.md}
+and \texttt{emmy/strategic\_wall\_gate.md}.
+
+They then tested the need for a common certificate. Ada gave a case in which each finder is rarely
+wrong, yet an agent who knows which one fails selects a wrong finder on every room. Emmy raised a
+second concern: an agent can act only in rooms where the marginal certificate fails. Ada checked
+that this leaves the original marginal guarantee intact but gives no useful conditional guarantee
+for those deployments. They also checked the timing. In the counterexample, the clue to the failing
+finder must be available before the report, as in the mechanism paper; the later private signal can
+govern the subsequent action.
+
+Next, Emmy applied the mechanism paper's obedience test to a choice between using the gate and
+taking a fallback. Ada checked the resulting two-signal inequality. Finally, Ada considered a
+wrapper that permits only a fixed set of scan points under each report. This allows calibration of
+distance errors at eligible points instead of the error over whole walls. The peers compared their
+observations with work on post-selection and multi-model conformal prediction
+\cite{sarkar2023,liang2024,hajihashemi2024,bao2025}. They treated the simple maximum-score repair as
+established technique, not as a new general theorem.
+
+\section{Results}
+
+Here is the precise common certificate recorded in Ada's and Emmy's checks. Let \(J\) be a finite
+set of possible reports. For each \(j\in J\), let \(F_j\) be a wall finder fixed independently of
+the calibration rooms. A room episode consists of a scan input \(X_i\) and a reference wall set
+\(W_i^*\). Assume the \(n\) calibration episodes and one new episode are exchangeable. All estimated
+and reference walls must be nonempty compact sets in the same frame and under the same wall
+convention. Write \(d_H\) for Hausdorff distance. For calibration room \(i\), set
+\[
+R_i=\max_{j\in J}d_H\bigl(F_j(X_i),W_i^*\bigr).
+\]
+Choose a target error probability \(\alpha\) between zero and one. Let \(\varepsilon\) be the
+\(\lceil(n+1)(1-\alpha)\rceil\)-th smallest of the \(R_i\), or infinity if that rank exceeds \(n\).
+The exchangeable-rank argument used in the wall-gate paper gives
+\[
+\Pr\!\left\{\text{every }j\in J:\
+d_H\bigl(F_j(X_{\mathrm{new}}),W_{\mathrm{new}}^*\bigr)
+\leq\varepsilon\right\}\geq 1-\alpha.
+\]
+The probability covers the calibration data and the new room. It is a single event for the whole
+menu. It follows by applying the rank argument in \cite{P} to Ada's maximum score.
+
+For a point \(p\), let \(\operatorname{dist}(p,W)\) be its shortest distance to a wall set \(W\).
+Hausdorff error at most \(\varepsilon\) implies that the distances from \(p\) to the estimated and
+reference walls differ by at most \(\varepsilon\). Thus the wrapper accepts only if
+\(\operatorname{dist}(p,F_j(X_{\mathrm{new}}))+\varepsilon\leq\delta\), rejects only if
+\(\operatorname{dist}(p,F_j(X_{\mathrm{new}}))-\varepsilon>\delta\), and abstains otherwise. Every
+decision it makes on the common event agrees with the reference-wall gate. This holds even when the
+agent chooses the report and point after seeing the new room. It requires the wrapper to enforce the
+gate and to allow only calibrated menu estimates. An infinite radius simply leads to abstention.
+
+Ada also checked a narrower interface. Suppose a rule fixed before calibration gives report \(j\) a
+nonempty finite set \(C_j(X)\) of permitted scan points, and the wrapper rejects points outside that
+set. The room score can be the largest absolute difference between estimated and reference distances
+over all permitted report-point pairs. Its conformal radius, call it \(\eta\), covers all permitted
+pairs in the new room by the same rank argument. On the same calibration rooms
+\(\eta\leq\varepsilon\), because a distance error at any point is at most the Hausdorff error. This
+can make the gate less likely to abstain, but only for the declared and enforced point sets. Ada's
+derivation gives the score and proof in full.
+
+\section{What did not hold}
+
+Separate marginal certificates for the menu items do not combine under strategic choice. In Ada's
+example, a room feature \(U\) is equally likely to take any of \(m\) values, and only finder \(j=U\)
+fails in that room. Each fixed finder fails with probability \(1/m\). An agent who sees \(U\) before
+reporting chooses the failing finder every time. This is a population-level counterexample, not a
+claim about the radius produced by every finite calibration sample. The menu-wide score settles this
+selection objection for the first gate.
+
+The common certificate remains marginal across rooms. If \(D\) means that a non-abstained decision
+is deployed and \(q=\Pr(D)>0\), the bound alone gives at most \(\min\{1,\alpha/q\}\) for the
+probability of a wrong decision conditional on \(D\). An agent that acts only in rare failure rooms
+can make this conditional probability one. This objection is unresolved by menu-wide calibration; it
+calls for a separate account of selective deployment.
+
+The gate certificate also does not make the agent follow a fallback policy. Let \(g\) and \(b\) be
+private signals for lower and higher gate risk, and let \(U\) and \(F\) mean use and fallback. Write
+\(\Delta(s)\) for the agent's posterior utility from \(U\) minus that from \(F\) after signal \(s\).
+If the only instrument is an action reward \(r\) that does not depend on the hidden signal or state,
+using on \(g\) and falling back on \(b\) is weakly obedient exactly when
+\[
+\Delta(g)\geq r(F)-r(U)\geq\Delta(b).
+\]
+Such a reward exists exactly when \(\Delta(g)\geq\Delta(b)\). Emmy derived this from the mechanism
+paper's signal-cycle condition, and Ada checked it. Equality permits indifference. The restriction
+is specific to this reward instrument and a genuinely private signal. A verifiable signal or an
+enforceable signal-dependent permission changes the incentive question. The full mechanism must also
+address truthful reports.
+
+The peers further noted that the wall-gate probability statement cannot serve as the mechanism
+paper's hard capability evidence. It can fail on a fraction of rooms. Nor does the first-gate result
+certify later door decisions, topology, fallback accuracy or robot motion. The material supplies no
+measured calibration radius, no observed abstention rate, and no complete fallback.
+
+\section{Why the thread stopped}
+
+The verifier paused after one round. The menu certificate and the two-action obedience test follow
+directly from the papers' existing arguments. The peers' checks establish their scope, but they do
+not show a non-obvious research result. In particular, a worst-case menu radius might leave almost
+no accepted scan region at the wall threshold, and no ground-truthed episodes or specified fallback
+were available to test this.
+
+The smallest restart is a pilot with a frozen, small report-dependent finder menu and enforced
+eligible scan-point sets. It needs separate ground-truthed calibration and test rooms. The pilot
+would compute both room scores, compare their radii with \(\delta\), and count how much of the scan
+must fall back. That would test whether the certificate is useful in the chosen room population.
+Incentives for choosing the fallback would still need their own model and evidence.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

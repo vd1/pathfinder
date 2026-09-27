@@ -1,0 +1,118 @@
+{
+  "observed_at": "2026-09-25T15:48:11.922660+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "completed_pipelines": 3,
+  "scheduled_pipelines": 28,
+  "comparison": "Since audit-013, repeat/Q3P9 advanced from peers through consolidation and verification to editing. Research PAUSE at 15:45:14Z; editor attempt 1 within 900-second deadline. No repeated attempt or livelock evidence.",
+  "paper": "repeat/Q4P10 ACCEPTED, round 1, build_ok true; other completed pairs PAUSE with editing done.",
+  "outcomes": "Absent as expected: launch.py writes outcomes.json only in full-pipeline finally block.",
+  "process_identity": "Parent-supplied process evidence matches runner 89044, Python executable, session parent 89043 and recorded editor child 5113 (codex), descendant 5234. No duplicate runner in supplied tree. Point-in-time evidence limitations retained.",
+  "failures": "No root or child failure records, stops or overdue calls. Previously recorded nonblocking HTTP 406 checks remain documented.",
+  "action": "No intervention.",
+  "next_audit": "Verify Q3P9 editing advances and continue monitoring all remaining research/edit and DRAFT paper pipelines.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-014/observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-014/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-014/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-013/before.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/launch.py"
+  ],
+  "receipts": {
+    "repeat": {
+      "count": 13,
+      "errors": [],
+      "latest": [
+        {
+          "at": "2026-09-25T15:11:00Z",
+          "thread": "Q4P10",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:43:35Z",
+          "thread": "Q3P9",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:43:47Z",
+          "thread": "Q3P9",
+          "stage": "peer",
+          "actor": "emmy",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:44:41Z",
+          "thread": "Q3P9",
+          "stage": "consolidate",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:45:14Z",
+          "thread": "Q3P9",
+          "stage": "verify",
+          "actor": "verifier",
+          "outcome": "completed",
+          "error": null
+        }
+      ]
+    },
+    "reinjection": {
+      "count": 12,
+      "errors": [],
+      "latest": [
+        {
+          "at": "2026-09-25T15:32:41Z",
+          "thread": "Q3P1",
+          "stage": "peer",
+          "actor": "emmy",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:33:03Z",
+          "thread": "Q3P1",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:34:07Z",
+          "thread": "Q3P1",
+          "stage": "consolidate",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:34:41Z",
+          "thread": "Q3P1",
+          "stage": "verify",
+          "actor": "verifier",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:38:38Z",
+          "thread": "Q3P1",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        }
+      ]
+    }
+  }
+}

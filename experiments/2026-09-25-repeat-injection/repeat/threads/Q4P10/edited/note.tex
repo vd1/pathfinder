@@ -1,0 +1,138 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{A Finite Prize for Coordinating Agents}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects a paper on incentives for AI agents with a simulation in which agents spend
+energy to work and survive. The thread asked whether changing the division of an existing job prize
+could improve job choice without adding energy. The peers found an exact incentive problem in the
+simulation's split prize and a bounded priority rule that makes a group-energy optimum a one-round
+Nash equilibrium under fixed, known success and cost laws. The result does not show that the rule
+improves the simulation's measured energy or survival across rounds. The verifier therefore left the
+thread at DRAFT, with a controlled comparison still needed.
+\end{abstract}
+
+\section{Introduction}
+
+\emph{Mechanism Design for Alignment and Control}, called Q here, studies how to make AI agents
+report information and take desired actions when their preferences and abilities are uncertain. Its
+peer scores and coupled rewards can make one agent's payoff depend on another's action. Some
+constructions scale rewards freely or use an unbounded penalty. Their cost would matter if rewards
+had to be paid as a scarce resource \cite{Q}.
+
+\emph{The Energy Society}, called P here, studies agents in a repeated simulation. Generating tokens
+costs energy, successful jobs replenish it, and an agent with no energy deactivates. Agents can
+recommend jobs, but each chooses its own action. Agents who solve the same job split one fixed prize
+equally. The paper reports job choices and collisions alongside activity and donations \cite{P}.
+
+The connexion pursued was Q's idea of coupled incentives applied to P's job choice. A recommendation
+alone does not oblige an agent to follow it, while P's shared prize may reward joining a job that
+another agent already attempts. The peers asked whether a rule could change that incentive by
+reallocating the existing prize. They treated energy as a real budget and separated the question of
+one-round job choice from the harder questions of private information and survival over many rounds.
+
+\section{What was done}
+
+The peers first compared P's private prize with the group's payout. A second solver could be paid
+even when the first had already earned the whole prize for the group. Yet the second attempt could
+succeed when the first failed. They calculated both effects from the joint chance of success,
+without assuming independence.
+
+An early construction chose the best assignment among distinct jobs. Ada withdrew that restriction
+after checking a move to an occupied job. Emmy independently showed that a collision can be the
+better group choice. The peers then chose a target that maximises expected group energy across
+\emph{all} job-or-idle profiles. They ranked its assigned agents ahead of visitors and gave the full
+prize to the first successful agent. Emmy checked Ada's equilibrium argument independently; their
+derivations are in \texttt{ada/priority\_prize\_note.md} and \texttt{emmy/research-note.md}.
+
+Emmy then raised a survival objection: the same total prize can leave one agent unable to work
+later. The peers also checked a budget bound for peer scoring when success chances are private.
+Their final source check found no data in P that could test the priority rule.
+
+\section{Results}
+
+Consider two agents attempting job \(j\). Let \(R_j\) be its fixed prize, \(p_{1j}\) and \(p_{2j}\)
+the agents' chances of success, and \(q_j\) the chance that both succeed. Under P's split rule, the
+expected group payout is
+\[
+R_j(p_{1j}+p_{2j}-q_j).
+\]
+Agent 2's expected private prize is \(R_j(p_{2j}-q_j/2)\). Yet its added expected payout for the
+group, with agent 1's attempt held fixed, is only \(R_j(p_{2j}-q_j)\). Its private incentive to join
+the job therefore exceeds that contribution by \(R_jq_j/2\). The identity does not require
+independent successes. It also does not say every collision is harmful: the second attempt still
+adds the chance that agent 2 succeeds while agent 1 fails. Ada derived this comparison and Emmy
+checked it in their notes.
+
+\begin{proposition}
+Fix one round in which active agents choose a job or remain idle. Suppose each agent maximises its
+expected own energy, success and expected cost laws are known and stay fixed when other agents
+change jobs, and there are no donations or later-round payoffs. Choose a job-or-idle profile that
+maximises expected group energy over all feasible profiles. Rank agents assigned to each job in that
+profile above visitors, and pay the job's entire prize to its highest-ranked successful agent. Then
+the chosen profile is a Nash equilibrium of job choice. For every realised outcome, the rule pays
+the same total job prize as P's split rule.
+\end{proposition}
+
+To see why, consider one agent leaving its assigned job. Its old priority prize is at least the
+payout the group loses when it leaves: it can win even when a lower-ranked assigned agent also
+succeeds. At a new job, the deviator ranks below those assigned there. It wins precisely when it
+succeeds and every assigned agent at that job fails. Its new prize is therefore exactly the payout
+it adds to the group at that job, including when the job was empty. The change in its own attempt
+cost is also the change in group cost under the stated assumptions. Its gain from any job or idle
+deviation is thus no greater than the change in expected group energy. The latter cannot be positive
+at a global maximum. This is the argument Ada gave and Emmy checked; it allows correlated successes
+and a target profile with collisions.
+
+The rule only redirects a prize of size \(R_j\); adjustments to individual payouts sum to zero on
+each job. This conditional result does not show that agents in P know the laws, follow
+expected-energy best responses, or achieve the target.
+
+\section{What did not hold, and what remains unsettled}
+
+The distinct-job version of the construction did not hold in general. Maximising group energy only
+among distinct assignments leaves open a profitable move into an occupied job. Allowing collisions
+in the global optimisation settled that objection for the one-round game. It did not settle whether
+the target can be found from P's published observations.
+
+Nor does equal total payout mean equal survival. In Emmy's example, two agents each start with
+\(15\) energy, spend \(10\) each, and both solve a job worth \(20\). Splitting leaves balances
+\((15,15)\), while priority leaves \((25,5)\). A later call costing \(10\) can deactivate the
+priority loser although both agents remain active after splitting. Donations, later work, and
+changes in answer effort can therefore matter even when the current group total agrees. The
+proposition does not address those effects.
+
+The priority rule also assumes the planner knows success chances. Emmy's separate scoring
+calculation shows why learning private chances may need a budget. Suppose two private types each
+gain at least \(M\) from a false report before scoring, their distinct peer-outcome laws are \(P_0\)
+and \(P_1\), and score payments lie between zero and \(B\). Here \(\operatorname{TV}(P_0,P_1)\) is
+the total variation distance between those laws. The two truth-telling constraints imply
+\[
+B\geq \frac{M}{\operatorname{TV}(P_0,P_1)}.
+\]
+Ada checked the derivation. This bound applies to that payment model if scores consume P's energy.
+It does not rule out every information mechanism, and Q's abstract rewards need not be P-energy.
+
+Finally, P's reported collision counts cannot establish whether priority would improve group energy.
+The conditions also differ in discussion cost, numbers of active agents, donations, and job mix. The
+reports lack the counterfactual success chances and job-specific costs needed to value an
+alternative assignment. The peers therefore made no measured improvement or novelty claim.
+
+\section{Why the thread stopped}
+
+The verifier accepted the one-round, prize-preserving equilibrium argument and its limits, but kept
+the thread at DRAFT. The missing link is evidence about net energy and survival when real agents
+choose, communicate, spend tokens, and face later rounds. The smallest useful restart is a
+controlled comparison of P's split rule and the priority rule with the same jobs and agent
+conditions, recording choices, joint successes, token costs, energy balances, deactivations, and
+donations. Those records would test the incentive calculation and expose any survival cost of
+reallocating the prize.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

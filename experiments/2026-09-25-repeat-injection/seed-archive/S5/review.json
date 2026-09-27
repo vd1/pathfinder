@@ -1,0 +1,22 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-23T22:02:06Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "c58e63010680796d1c486ff2af3dfe3fc80db63d45d739654f5b36ebea010556",
+  "decision": "ACCEPT",
+  "summary": "The paper stays within the supplied evidence, separates its conditional argument from measured results, and makes no unsupported novelty claim. All four cited references have consistent metadata and identifiers. One clarification would make the central proposition more precise.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Conditional limit of the wrist frame, proposition",
+    "issue": "\u201cRequire different receiving approaches\u201d leaves implicit that no single approach succeeds in both trials, which the proof needs.",
+    "fix": "State explicitly in the proposition that the sets of successful approaches for the two orientations do not overlap."
+   }
+  ]
+ }
+]

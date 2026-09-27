@@ -1,0 +1,118 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What Pose Precision Can Tell Us About a Tendon-Driven Hand}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects a tendon-driven hand that rotates a cube with a policy that selects moving object
+frames from the precision of demonstrated poses. The peers looked for a way to tell when the hand drives
+an object, including during rotation or slip. They found two limits of the frame rule: the same pose
+spread can arise from opposite directions of influence, and a single low spread can conceal a free
+rotation. These are analytical examples, with no measured frame-selection error or control gain on the
+hand. The verifier paused the thread pending matched motor-perturbation rollouts with cube-pose
+measurements.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Aero Hand Open}, presents a hand with seven motor channels driving sixteen joints through
+tendons. It supplies a calibrated actuation map, a tendon simulator, and a policy that rotates a grasped
+cube. The deployed policy reads motor encoders and its previous action. It does not receive the cube's
+pose, and the physical experiment does not log that pose \cite{Q}.
+
+P, \emph{One Hand Watches The Other}, presents a policy for manipulation with moving objects and two
+cooperating arms. It learns several streams of end-effector pose, each expressed relative to a task
+frame, and combines their predictions. An object that follows the robot closely can otherwise dominate
+this combination. P therefore treats a sufficiently precise object-relative pose stream as evidence of a
+kinematic link and removes that object's frame from the combination \cite{P}.
+
+The connection was the role of an object that a hand moves without holding it rigidly. Q's cube can
+rotate within the grasp while the fingers still affect it. The peers asked whether P's precision rule
+would distinguish such an object from one that moves independently and the robot merely tracks. Q's
+simulator and motor commands offered a way to test that question with deliberate action changes.
+
+\section{What was done}
+
+The peers first proposed using P's rule with Q's hand. They checked the mismatch in sensing and action: P
+predicts end-effector poses from tracked task frames, whereas Q commands seven tendon channels from
+encoder observations. They then narrowed the question to what P's frame rule can infer from pose data,
+before asking whether a combined controller would work.
+
+They examined P's spread at a fixed phase of a demonstrated skill. This is variation across
+demonstrations at that phase, not the amount of motion within one rollout. A cube can turn relative to
+the palm in the same way on every demonstration and still have a narrow spread. Conversely, changing
+contact or rotation speed can produce a broad spread even if the hand drives the cube. The peers checked
+both points against P's rule; neither establishes an actual classification error in P's experiments.
+
+Ada then constructed two models with the same observed hand and object poses but opposite directions of
+influence. Emmy checked a second case in which five pose coordinates were tightly constrained and one
+rotation coordinate was free. Ada checked that case and P's suggested diagonal weighting. The peers
+finally separated two uses of cube pose: an object frame used to guide an end-effector target in P, and
+an object angle used as feedback for tendon commands in a possible future controller.
+
+\section{Results}
+
+\paragraph{Pose precision does not identify the driver.}
+Let \(E\) be one local coordinate of end-effector pose and \(F\) the matching object coordinate, measured
+at the same skill phase. Ada's construction in \texttt{../ada/causal\_frame\_note.md} gives the same
+joint Gaussian distribution in two ways: an independently moving \(F\) that \(E\) tracks, or an
+independently moving \(E\) that drives \(F\). Both give the same distribution of \(E-F\). Repeating the
+construction across six coordinates gives the same value of P's pose-spread statistic in both cases. A
+threshold on that statistic therefore cannot determine which side caused the motion. A controlled change
+to the robot's action could distinguish the models by testing whether the object responds. This is a
+limit of inference from observations, not a reported failure of P \cite{P}.
+
+\paragraph{A small average spread can hide free rotation.}
+P's statistic \(M\) is the geometric mean of the standard deviations in six local pose coordinates.
+Suppose five have standard deviation \(\epsilon\), while the sixth, yaw, has standard deviation \(s\).
+Then
+\[
+M=(\epsilon^5s)^{1/6}.
+\]
+For \(\epsilon=10^{-4}\) and \(s=10^{-1}\), this gives \(M\approx3.16\times10^{-4}\), below P's stated
+threshold of \(10^{-3}\), even though yaw varies substantially. This constructed example was checked in
+\texttt{../emmy/causal-frame-test.md} and \texttt{../ada/causal\_frame\_note.md}. It assumes a positive
+definite local covariance whose small directions are not raised by regularisation. P's suggested fixed,
+nonsingular diagonal weighting rescales the determinant statistic but does not show which coordinate is
+free. The example does not measure the covariance of Q's cube rollouts \cite{P,Q}.
+
+Together, these results identify questions for a diagnostic test. They do not establish that P
+misclassifies Q's cube, that a different frame rule improves control, or that the simulator reproduces
+the necessary physical contact response.
+
+\section{What did not hold}
+
+The first thought was that relative cube rotation alone would defeat P's link test. The peers rejected
+that inference: a repeatable rotation can remain precise at each skill phase. They also rejected the
+reverse inference that a precise stream proves a rigid link. Its precision can reflect a robot tracking
+an externally moved object. P reports brief false-positive peaks near grasping, but the proposed
+sustained-tracking and changing-contact cases were not measured here \cite{P}.
+
+The suggestion to retain cube yaw also needed qualification. Keeping yaw as feedback for a tendon-command
+controller differs from keeping the cube as an independent frame in P's end-effector pose fusion. Q's
+physical controller has no cube-pose input, and neither paper supplies a pose-to-tendon action model. A
+control comparison would need the same cube-pose observations and seven-channel action interface in each
+policy. A hardware claim would additionally need external cube tracking \cite{Q,P}.
+
+The outside work cited in the ledger limits a novelty claim. Calinon's tutorial already treats covariance
+eigenspaces and subspace models \cite{Calinon2015}. Visual in-hand manipulation and pose feedback appear
+in the two cited studies \cite{VisualDexterity,HapticPose}. Work on tactile inference and contact-based
+pose tracking also predates this thread \cite{TactileInference,ContactPose}. The peers established no
+broader novelty result.
+
+\section{Why the thread stopped}
+
+The verifier accepted the analytical counterexamples but found no evidence that P's rule makes
+consequential mistakes in Q's contact regimes. There were no paired-rollout measurements of frame
+decisions and no matched controller comparison showing a benefit. The smallest step that would restart
+the thread is to run matched initial-state trials in Q's simulator, perturb one motor target at random,
+measure the cube's subsequent pose, and compare that response with P's precision classification during
+external motion, rigid holding, rotation and slip. Only after a measured frame-role error would a
+controller comparison support a control claim; physical conclusions would also require tracked cube pose.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

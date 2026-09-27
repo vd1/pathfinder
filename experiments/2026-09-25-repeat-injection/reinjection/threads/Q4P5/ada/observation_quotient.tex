@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{proposition}{Proposition}
+\begin{document}
+\section*{A coarse-observation test for Q's action rewards}
+
+Q, in ``Mechanisms and revelation,'' defines a reward \(r(\hat t,a,\theta)\)
+on actual action and state. Its ``Dimensions of single-agent mechanisms''
+observes that rewards can only respond to what an evaluator identifies, but
+does not give a cycle characterization for a coarse action measurement. P,
+in ``Conditional limit of the wrist frame,'' supplies a candidate physical
+measurement: the wrist, motor encoders, and action history can leave the
+relative object pose \(G\) unresolved. P explicitly does not establish that
+distinct \(G\) values occur with identical full histories on the hardware.
+
+The following finite, deterministic measurement model isolates the incentive
+issue. Fix one Q type, with finite signal set \(S\), feasible physical action
+set \(A\), and posterior intrinsic utility \(U(a,s)\). Interpret an action as
+an achieved physical trajectory when that interpretation is justified.
+Suppose the contractible measurement is \(m:A\to Y\), and the reward must
+factor as \(r(a)=q(m(a))\), where \(q\) may prohibit an observation label by
+assigning it \(-\infty\). For a target policy \(a_s\in A\), put
+\[
+Y_0=\{m(a_s):s\in S\}.
+\]
+Construct a directed multigraph on \(Y_0\). For every \(s\in S\) and
+\(b\in A\) with \(m(b)\in Y_0\), insert an edge from \(m(a_s)\) to
+\(m(b)\) of weight \(U(b,s)-U(a_s,s)\).
+
+\begin{proposition}
+The target policy has a supporting observation-based reward if and only if
+every directed cycle in this graph has nonpositive total weight.
+\end{proposition}
+
+\begin{proof}
+Obedience requires
+\[
+q(m(a_s))-q(m(b))\geq U(b,s)-U(a_s,s).
+\]
+Summing these inequalities around a graph cycle proves necessity. If there
+is no positive cycle, let \(q(y)\) be the maximum weight of a path starting
+at \(y\), including the empty path. Finite nodes and nonpositive cycles
+make this finite. Prepending an edge of weight \(w\) gives
+\(q(y)\geq w+q(y')\), the obedience inequality. Set \(q(y)=-\infty\)
+outside \(Y_0\). Every on-policy label remains available, and all
+off-policy labels are prohibited.
+\end{proof}
+
+A positive self-loop is already decisive: if \(m(b)=m(a_s)\) but
+\(U(b,s)>U(a_s,s)\), no payment magnitude can make \(a_s\) optimal.
+This extends Q's signal-policy cycle test by identifying actions that the
+evaluator cannot distinguish. Q's more elaborate type-report constraints
+would still need to be checked after each type's observation-based
+supporting schedule is found. The statement assumes that the physical
+alternatives are genuinely feasible for the agent and that their
+measurements are deterministic. It does not follow merely from P's visible
+in-hand rotation, since P reports no matched-history pose measurements and
+models no strategic donor.
+
+Separately, P's receiver-side information limit has a quantitative form.
+For two equally likely object orientations \(H\in\{0,1\}\), let the receiver
+observe \(Y\) with conditional laws \(P_0,P_1\). If no receiving action
+succeeds under both orientations, any policy based only on \(Y\) has average
+success at most
+\[
+\frac{1+\operatorname{TV}(P_0,P_1)}{2}.
+\]
+The proof is the binary classification bound: the policy must choose one of
+two mutually exclusive success sets, and its optimal classification
+probability is the displayed quantity. Any Q-style messages or rewards
+generated solely from \(Y\) and independent randomization cannot increase
+the bound, by data processing. A donor's genuinely pose-sensitive private
+signal could increase it; the relevant observation would then include that
+signal or a truthful report of it. A two-point experiment consisting only of
+P's hypothesized matched trials has \(P_0=P_1\), giving \(1/2\). A single
+matched pair does not show equality of observation laws in routine trials,
+and P does not establish such equality empirically.
+
+The pair suggests a testable question: measure how the object pose within
+the wrist varies across trials with matched contractible histories, then
+check whether the resulting observation graph contains a profitable hidden
+deviation for a specified donor objective, and whether adding a pose-sensitive
+sensor changes receiver success. The graph condition is a generic finite
+difference-constraint fact, so it is not by itself a novelty claim.
+\end{document}

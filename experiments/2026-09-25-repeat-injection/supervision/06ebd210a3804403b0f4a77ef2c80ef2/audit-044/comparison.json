@@ -1,0 +1,65 @@
+{
+  "observed_at": "2026-09-25T20:51:38.368977+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-043/aggregate-final.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-044/aggregate.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-044/health.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-044/processes.json",
+  "facts": [
+    "17/28 scheduled research/edit threads done (repeat 9, reinjection 8); 11 unstarted. Five papers ACCEPTED with build_ok true; repeat Q4P9 author round 1 writing.",
+    "Q4P9 editor completed since audit 043 and author started at 20:49:23 UTC with nominal deadline 21:19:23 UTC. No repeated attempts or stalled stage indicated.",
+    "Root PID 24244, supervisor parent 24243, and recorded Codex child 70738 match supplied process tree; heartbeat age 2.7 seconds. Process evidence is point-in-time and does not fully resolve PID reuse or unrecorded reparented processes. No process intervention attempted.",
+    "Root and child snapshots show no stop or failure. Child failure files absent. Child finished runner statuses represent individual admitted pairs, not full pipeline completion.",
+    "progress.json records last fully completed pair Q3P3. outcomes.json is prior exit snapshot, refreshed only in launch.py finally; stale Q3P2 BLOCKED is superseded by completed repaired child state and receipts.",
+    "Nonblocking arXiv HTTP 406 in Q4P9 editor; build succeeded and author advanced."
+  ],
+  "receipts": {
+    "repeat": {
+      "last_completed": {
+        "at": "2026-09-25T20:49:20Z",
+        "thread": "Q4P9",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      },
+      "unsuccessful": []
+    },
+    "reinjection": {
+      "last_completed": {
+        "at": "2026-09-25T20:02:27Z",
+        "thread": "Q3P4",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      },
+      "unsuccessful": []
+    }
+  },
+  "active_calls": [
+    {
+      "attempt_id": "fb7648390b854a88937d2161f0c2b0a7",
+      "run_id": null,
+      "pid": 24244,
+      "thread": "Q4P9",
+      "stage": "author",
+      "actor": "author",
+      "started_at": 1790369363.7220092,
+      "deadline_at": 1790371163.7220092,
+      "timeout_seconds": 1800,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9",
+      "child_pid": 70738,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/fb7648390b854a88937d2161f0c2b0a7.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 88.4,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "action": "none",
+  "next_audit": "Verify Q4P9 author/reviewer advancement and all remaining scheduled threads; no restart authorized over live owners."
+}

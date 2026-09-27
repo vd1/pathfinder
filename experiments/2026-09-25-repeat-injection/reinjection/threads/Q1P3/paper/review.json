@@ -1,0 +1,51 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T19:41:40Z",
+  "build_ok": true,
+  "checks": [
+   "pathfinder2026p: no URL, DOI or arXiv identifier",
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "b7cb8370310348c84e8f0a3b28358368d2b69fc5cbdc615ff1fc449ad20a69b5",
+  "decision": "AMEND",
+  "summary": "The mathematical arguments are correct within their stated execution and response assumptions, and the paper separates deductions from observed results. The local P manuscript needs a stable, referee-accessible citation before review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "references.bib: pathfinder2026p",
+    "issue": "The relative path ../inputs/P.tex is not a stable URL or accessible publication identifier. P is central to the paper, so a referee needs a reliable way to inspect it.",
+    "fix": "Include P with the review materials and cite its stable supplementary-file identifier, or provide a working permanent URL."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "The supplied pair and the question",
+    "issue": "Saying P has no arXiv or DOI record is stronger than the targeted search establishes.",
+    "fix": "Say that the recorded search found no arXiv or DOI record for P."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-25T19:45:26Z",
+  "build_ok": true,
+  "checks": [
+   "pathfinder2026p: no URL, DOI or arXiv identifier",
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "6039f1603e8190d1005dbdb74863a360580ac3857d995c584b79b4bcfe7c6f03",
+  "decision": "ACCEPT",
+  "summary": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "references.bib, pathfinder2026p",
+    "issue": "S1-P.tex is a relative supplementary-file path, although it is stored in the URL field. Supplementary File S1 is the usable identifier; the reference checks found no public URL, DOI or arXiv ID.",
+    "fix": "Identify P explicitly as Supplementary File S1 in the bibliography and retain the relative link as a link to the included file."
+   }
+  ]
+ }
+]

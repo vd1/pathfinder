@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{The Cost of Price Discovery in an LLM Double Auction}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A fixed-value double auction makes unrealised gains from trade measurable, while a token-metered agent economy makes deliberation costly. We combine the accounting of \cite{struski2026competitive} and \cite{hansen2026energy} to identify a testable tension: charging for quote decisions could encourage a profitable spread crossing, but could also remove traders or consume more value than it creates. In the auction's symmetric schedule, the gross surplus ceiling is \(7.5\) per round; its sixth equilibrium trade contributes zero gross surplus. A cost-aware comparison must therefore report realised surplus and inference cost separately, with a stated conversion between their units. We specify the intervention and controls needed to test the behavioural question. No combined experiment has been run, and the direction of its effects remains unknown. % ledger 2, 3, 6, 8, 10, 11, 17, 20
+\end{abstract}
+
+\section{Setting and contribution}
+\paragraph{What the source papers establish.}
+Q, \cite{struski2026competitive}, studies LLM buyers and sellers with private reservation values in a continuous double auction. Its standing order book accepts improvements, and a quote crossing the spread executes a trade. The study reports repeated one-cent improvements, incomplete convergence and unfilled profitable trades, especially in its GPT Large condition. It selects a non-trading agent at random on each call, so an agent that declines to quote may be called again. These are findings and rules of Q, not findings of this paper. % ledger 2, 6, 10, 12, 17, 19
+
+P, \cite{hansen2026energy}, charges agents for generated reasoning and output tokens according to \(kTS^{\alpha}\), with deactivation when their energy is exhausted. Its agents attempt uncertain jobs, share some rewards and have no counterpart sellers. P's survival language describes budget exhaustion within a simulation. Its experiments do not test auction traders. % ledger 2, 3, 4, 10
+
+\paragraph{What is new here.}
+The pairing retains Q's induced values and trading rules while applying P's token accounting to each trader decision. This preserves a known gross-surplus counterfactual and separates the value of executed matches from the cost of searching for them. An auction over P's jobs would require new seller and payoff rules and would lose that counterfactual. The contribution is the accounting and an identified experimental question, not a measured effect of charging traders. % ledger 2, 3, 5, 6, 10, 11
+
+\section{Gross and net surplus}
+Q assigns 11 buyers and 11 sellers reservation prices from \(0.75\) to \(3.25\) in steps of \(0.25\). Matching the highest-value buyer with the lowest-cost seller and continuing in order gives five strictly positive gains, \(2.5,2,1.5,1,0.5\). Hence the per-round gross ceiling is
+\[
+G^{\star}=2.5+2+1.5+1+0.5=7.5.
+\]
+The sixth trade at Q's equilibrium quantity \(q^{\star}=6\) has zero surplus. Thus reaching six trades does not by itself improve gross surplus, and it is not a cost-aware welfare target. % ledger 6, 8, 11
+
+For the executed buyer--seller matches \(M\), define realised gross surplus \(G\), token expenditure \(C\), and net welfare \(W_{\lambda}\) as
+\[
+G=\sum_{(b,s)\in M}(v_b-c_s),\qquad
+C=\sum_{i,t}kT_{it}S_i^{\alpha},\qquad
+W_{\lambda}=G-\lambda C.
+\]
+Here \(T_{it}\) counts generated tokens on trader \(i\)'s call \(t\); \(\lambda\) converts P-style energy into Q's induced-value units. The formula is an accounting definition, not an estimate of the optimum attainable when traders face a charge. A policy can raise \(G\) while lowering \(W_{\lambda}\), so the three quantities must be reported separately at a declared common \(\lambda\). % ledger 6, 8, 9, 10, 11
+
+\section{Mechanism and test}
+\paragraph{Interpretation.}
+Under Q's execution rule, crossing a resting quote ends the round for both counterparties. If either would otherwise have received further calls, execution can avoid subsequent inference expenditure. A trader who is charged for its own calls can have a private reason to cross earlier; its decision does not directly account for the other trader's possible saving. This is a conditional incentive argument. The number of calls avoided is counterfactual and cannot be recovered from one realised auction. Nor does Q's Gemini-only association between urgency words and crossing establish this mechanism. % ledger 4, 17, 19, 20
+
+\paragraph{Proposed comparison.}
+First replicate Q unchanged. In every subsequent comparison arm, add the same persistent withdrawal option for the rest of a round. A decline under Q's current prompt only skips the present call, so withdrawal is needed to let traders control future exposure. Charge the first scheduled decision, including a decision to withdraw. Hold values, prompts, order-book rules and scheduler fixed across modified arms, then compare zero price with a disclosed per-token charge that enters each trader's stated payoff as well as the analyst's welfare measure. Use matched seeds and multiple runs to estimate changes in gross surplus, tokens, calls, spread crossings, timing and withdrawals. A separate finite-budget arm and a matched exogenous-removal control can probe whether any effect reflects changed quoting or loss of active traders. These are proposed tests; none has been carried out here. % ledger 10, 12, 13, 15, 17, 19, 20
+
+Pre-specify whether a resting order survives voluntary withdrawal, cancel it on budget exhaustion, and specify how the charge for a call that exhausts a budget is processed. Check Q's released implementation before claiming exact replication: its mechanism states a 300-iteration cap, whereas its prompt also describes termination when no improving order remains. The first scheduled call is still imposed by the scheduler even with withdrawal, so its cost should be reported separately. % ledger 12, 13, 17, 19
+
+\paragraph{What each comparison identifies.}
+Retrospectively pricing tokens in an unchanged Q run can calculate its realised \(W_{\lambda}\) and, when token records are available, a break-even conversion for that particular path. It cannot show how traders would have quoted if charged. The zero-price and disclosed-price arms with the same withdrawal option are the behavioural comparison. A finite budget adds the possibility of involuntary exit; the exogenous-removal control addresses that change in market composition. Even with matched seeds, a crossing changes the order book and the set of eligible traders, so differences in total calls and tokens are run-level treatment effects. Attributing a particular unmade call to one crossing requires an additional counterfactual model. % ledger 9, 12, 13, 15, 17, 19, 20
+
+\section{Related work}
+A targeted search found Agora's auction for assigning reasoning tasks to expert models \cite{zhou2026agora} and DALA's auction for scarce inter-agent communication \cite{fan2025communication}. These papers establish that auction rules have been used to allocate costly model activity; they do not report the effect of charging buyers and sellers for successive quote decisions in Q's fixed-value double auction. P already establishes token metering and Q already establishes the auction and its gross-efficiency gap. We therefore claim neither invention of token pricing nor the first auction involving LLMs. The search record is in \texttt{search.md}; it does not support an exhaustive novelty claim. % ledger 7, 9, 10
+
+\clearpage
+\section{Limitations and open questions}
+No trader has been run under the proposed tariff, so neither earlier spread crossing nor improved gross or net welfare is established. Q's closed API models do not expose parameter counts needed for P's size term; the primary test should use a common per-token tariff, \(\alpha=0\). P's energy scale has no natural conversion to Q's prices, so a pilot should fix an affordable tariff and the analysis should declare a range of \(\lambda\) before the main runs. Reliable per-decision token records, agents' comprehension of the simulated charge, and Q's operative stopping rule require verification. These limits prevent a claim about a shared model-size effect or a cost-aware optimum. % ledger 4, 8, 9, 10, 13, 15, 19
+
+The open empirical question is whether making quote decisions costly closes profitable spreads soon enough to offset inference expenditure, or instead reduces participation and leaves more gains from trade unrealised. A matched-seed, non-binding-budget comparison can address the pricing response; a finite-budget arm can then address exhaustion. Gross surplus, cost and net welfare must remain distinct in either result. % ledger 5, 8, 10, 15, 20
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

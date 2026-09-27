@@ -1,0 +1,50 @@
+{
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "child_run_id": "2e553a063cf44017b36501fe607bf629",
+  "observation_time": "2026-09-25T16:38:12.659508+00:00",
+  "audit": 24,
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-024/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-024/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-024/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P2/status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P2/verify-unreadable.txt",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/engine/pathfinder/runner.py",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/engine/pathfinder/research.py"
+  ],
+  "observed_facts": {
+    "finished_threads": 6,
+    "scheduled_threads": 28,
+    "blocked": "reinjection/Q3P2",
+    "unstarted_threads": 21,
+    "draft_paper": "repeat/Q4P10 ACCEPTED build_ok=true",
+    "previous_completed_work_unchanged": true,
+    "previous_audit": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-023/before.json",
+    "change": "Q3P2 advanced from peer calls through consolidate and verify, then BLOCKED; root exited with code 1",
+    "runner_pid": 89044,
+    "runner_absent": true,
+    "active_calls": [],
+    "process_evidence": "available; related_processes empty; point-in-time evidence limits retained",
+    "stop": {
+      "repeat": null,
+      "reinjection": null
+    },
+    "failure_history": {
+      "repeat": 0,
+      "reinjection": 0
+    },
+    "cause": "Verifier returned malformed JSON containing invalid backslash escapes. Call completed in 58.9 seconds, within 900-second nominal allowance. Transport success did not imply valid stage output.",
+    "resume_safety": "runner.eligible excludes BLOCKED; runner.run returns 1 for blocked investigation; authorized launch.py run would fail again without reconciliation."
+  },
+  "diagnosis": {
+    "confidence": "confirmed",
+    "description": "Application-level verifier parse failure blocks the full pipeline; simple resume cannot recover."
+  },
+  "action": "No restart or state edits. Request operator direction for reconciliation of malformed verifier output; only full-pipeline resume is authorized.",
+  "follow_up_verification": "Fresh health/status confirm failed root, blocked child, no recorded active calls. Recovery remains open.",
+  "status": "open",
+  "terminal_status": "needs_operator"
+}

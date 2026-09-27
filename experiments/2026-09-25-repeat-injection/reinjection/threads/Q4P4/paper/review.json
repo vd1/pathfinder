@@ -1,0 +1,51 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T18:37:20Z",
+  "build_ok": true,
+  "checks": [
+   "pathfinder2026fixedbatch: no URL, DOI or arXiv identifier",
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "6963dcdcf7e8fdbdc8502833c793007ba0735c0e7d7e5dae3eddb28058495f67",
+  "decision": "AMEND",
+  "summary": "The cycle reversal and robust reward test are correct within the paper\u2019s stated scope. The central citation to P needs a locator that referees can access.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "references.bib, pathfinder2026fixedbatch",
+    "issue": "The entry\u2019s only locator is ../inputs/P.tex, a workspace-relative path. The reference checks report no URL or public identifier, so referees may be unable to inspect a central source.",
+    "fix": "Include P.tex in the referee package and cite it with a stable package identifier or working link; retain its status as a supplied manuscript."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Limitations and open questions",
+    "issue": "The claimed report-ranking example is attributed to an unseen ledger, so readers cannot check it from the paper.",
+    "fix": "Give the brief numerical example from the existing ledger or remove the claim that an explicit comparison is provided."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-25T18:42:48Z",
+  "build_ok": true,
+  "checks": [
+   "pathfinder2026fixedbatch: no URL, DOI or arXiv identifier",
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "e4ea96f8ee28a80c5f5d16800c6c878311ba3c0d10d697aedf1c4edf44d9a1c3",
+  "decision": "ACCEPT",
+  "summary": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "references.bib, pathfinder2026fixedbatch",
+    "issue": "The `url` field contains a relative referee-package path, not a web URL. The reference checks found no public URL, DOI or arXiv identifier for P.",
+    "fix": "Identify P as a supplied unpublished manuscript and place the package identifier and file path in a note or equivalent locator, rather than the `url` field."
+   }
+  ]
+ }
+]

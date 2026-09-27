@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When a Wrist Frame Needs a New Observation}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper P studies a donor wrist as a handover frame when the held object is hidden, while paper Q surveys
+how predictions should be judged by available information, task error and cost. The thread asked whether
+the receiver's full visible history can still leave different object poses that call for incompatible
+grasps. The peers derived conditional decision and sensing bounds, but found no measured handover
+evidence for the premise. The verifier paused the thread because P already gives the basic obstruction
+and the added calculations do not yet support a distinct paper section. A matched-history experiment with
+receiving outcomes and sensing costs is needed to resume it.
+\end{abstract}
+
+\section{Introduction}
+
+Paper P is a local manuscript about handover when the object is occluded. It describes using the donor
+wrist pose as a substitute task frame. It also gives a conditional obstruction: if the receiver sees the
+same wrist, motor-encoder and action history in two trials, but the hidden object orientations need
+incompatible approaches, the receiver cannot choose correctly in both. P does not report the matched
+histories or receiving outcomes needed to show that this case occurs in practice \cite{P}.
+
+Paper Q surveys learning-augmented algorithms, which use predictions while accounting for their errors.
+It says a deployed predictor can use only information available when it predicts. It also asks for an
+error measure tied to the task and for the cost of obtaining a prediction to be counted. Q is a survey,
+not a handover study \cite{Q}.
+
+The connection was a decision question. In-hand object rotation can change the object's pose relative to
+a fixed wrist. The peers asked whether the receiver's complete visible history then leaves a choice
+between object poses for which no single grasp works. They used Q's rules for observable predictions,
+task loss and query cost to make P's handover question more precise.
+
+\section{What was done}
+
+The peers first proposed treating the hidden object pose as a prediction target. They then moved from
+pose error to receiving success. A difference in pose matters only if it changes which actions can
+succeed. They wrote a common-grasp condition and a conditional failure risk for a receiver that uses the
+full visible history. This followed P's matched-observation argument but also covered cases in which a
+robust action succeeds across the possible poses.
+
+They next checked a prediction-set certificate. If a covered set of poses admits one action that succeeds
+throughout the set, failure can occur only when the true pose falls outside it. One peer also considered
+a bound on grasp-point position error. The other pointed out that rotation about that point can leave its
+position unchanged while changing the required receiving orientation. They retained the full-pose,
+task-specific condition.
+
+The peers then corrected two proposed transfers from Q. Q's formal consistency claim still makes sense
+for either hidden state supplied with its own hypothetical exact prediction. The difficulty is deploying
+one predictor on identical observations in both states. They also found that a multiplicative cost ratio
+is ill suited to a one-shot handover with binary failure: a receiver told the true pose may have zero
+failure cost. They therefore used additive failure and sensing costs. Finally, they checked related work
+and sharpened the proposed physical test.
+
+\section{Results}
+
+Let \(Z=z\) be everything visible to the receiver at its decision, including wrist pose, encoder readings
+and action history. Let \(G\) be the hidden object pose relative to the wrist, and let \(S(G)\) be the
+set of receiving actions that succeed at that pose. For binary failure, the infimum risk over actions
+using only \(z\) is
+\[
+R^*(z)=1-\sup_a\Pr\{a\in S(G)\mid Z=z\}.
+\]
+This is the lowest failure chance that such actions can attain or approach.
+The peers derived this form in the ledger and checked its two-state case. It expresses the issue in terms
+of receiving decisions, rather than pose spread alone.
+
+For a guarantee across all poses compatible with \(z\), a successful history-only action exists exactly
+when their sets \(S(G)\) have a common member. P already states the obstruction for two matched states
+that require incompatible approaches \cite{P}. The positive condition explains why pose variation alone
+need not cause failure: a common safe grasp would settle the choice.
+
+The peers also checked a limited prediction-set result. Suppose a pose set computed from \(Z\) contains
+the true \(G\) with marginal probability at least \(1-\alpha\), where \(\alpha\) is the allowed miss
+probability. If the receiver chooses an action that succeeds for every pose in that set, and the object
+remains fixed until the action, its marginal failure probability is at most \(\alpha\). This follows
+because failure implies that the true pose was outside the set. It says nothing about safety for each
+particular history.
+
+For a simple sensing calculation, the peers assumed two equally likely, fixed hidden poses with nonempty
+but disjoint successful-action sets. They called the state-dependent sensor reading \(W\), and its two
+conditional laws \(K_0\) and \(K_1\). Without that reading, the minimum failure probability is \(1/2\).
+With it, the minimum is \((1-\operatorname{TV}(K_0,K_1))/2\), where \(\operatorname{TV}\) is the total
+variation distance between those laws. If failure costs \(M\) and sensing costs \(\kappa\), with no other
+costs, sensing reduces expected additive cost exactly when \(\kappa<M\operatorname{TV}(K_0,K_1)/2\). The
+peers checked this binary decision calculation independently. Repeating a predictor on the same history
+with randomness independent of the hidden state supplies no new state information; the reading must
+depend on the hidden state. This is a conditional
+calculation, not a measured handover result or a direct use of Q's predictor-call ratio \cite{Q}.
+
+\section{What did not hold}
+
+An early suggestion said Q's consistency condition was vacuous on matched states. The peers withdrew that
+wording: Q tests consistency on an instance paired with an exact prediction, while the handover limit
+concerns whether one deployed predictor can produce distinct exact poses from the same input. They also
+rejected grasp-point position error alone as a certificate for an orientation-sensitive grasp. The
+one-shot failure model required additive accounting because its clairvoyant optimum can be zero.
+
+The physical premise remained unsettled. P supplies no measured distribution of object pose given a
+complete wrist, encoder and action history. Approximate matches among continuous histories would need a
+justified tolerance and would not prove exact indistinguishability. A common safe grasp could remove the
+action conflict. A sensing action that moves the object would require a model of that change before the
+fixed-state calculation could be used.
+
+The peers' prior-work checks also limited the claim. Work on uncertain-pose grasping with information
+gathering \cite{hsiao2011}, conformal object-pose sets \cite{yang2023}, and reported failures from object
+motion relative to a giver \cite{handover2025} already addresses nearby questions. They also noted robust
+grasps across uncertain shapes \cite{lundell2019}, moving-object handover \cite{zhang2023}, and haptic
+pose estimation under occlusion \cite{azulay2022}. These checks do not establish the proposed
+matched-history effect for this pair, but they make the elementary certificate and sensing identity
+insufficient as stand-alone contributions.
+
+\section{Why the thread stopped}
+
+The verifier accepted the conditional-risk and sensing calculations under their stated assumptions. It
+paused the thread because P already states the basic matched-observation obstruction, while Q adds useful
+ways to account for information, error and cost without supplying a tested handover result. The smallest
+restart is to hold the donor wrist fixed, record the complete receiver-visible history, and externally
+measure the marked object's pose through controlled in-hand rotations or reseating. Candidate matched
+histories must then be checked for incompatible successful receiving actions. If they exist, held-out
+receiving trials can compare a history-only or common-grasp choice with one new observation, including
+its delay and cost. Until those measurements exist, the practical value of the connection is unknown.
+
+\clearpage
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

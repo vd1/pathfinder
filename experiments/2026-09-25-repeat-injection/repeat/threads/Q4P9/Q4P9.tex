@@ -1,0 +1,47 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{A Cooperative Frontier for Asymmetric Contracting Boards}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q, \emph{Mechanism Design for Alignment and Control}, separates physically feasible action rules from rules that agents have incentives to report and obey. P, \emph{Commitment To Cooperation With Self-Negotiated Contracts}, tests LLM agents in a bargaining game where contracts can enforce chip transfers, yet both players rarely beat their outside options on asymmetric boards.
+
+\section*{The connexion pursued}
+
+The question was whether P's poor asymmetric-board outcomes reflect an unavailable cooperative outcome, inadequate contract terms, failure to follow agreed terms, or failure to discover and negotiate those terms. Q supplies the feasibility and incentive distinction, but its revelation principles concern a one-shot action after reports; they do not establish an equilibrium for P's sequential game. \ledger{1, 2, 18, 25}
+
+\section*{What was found}
+
+The ledger reports an exhaustive oracle check of P's \(3{,}432\) balanced boards. Of these, \(396\) have an independently capable Red player and a dependent Blue player. On each such board, a shortest Blue route has \(k\) Red tiles among its five colored moves: \(k=1\) on \(314\) boards and \(k=2\) on \(82\). The peer check also found that longer simple paths cannot reduce this Red-chip requirement. These are computational findings recorded in the ledger, not a new verification performed for this note. \ledger{11, 14, 20}
+
+A reciprocal programmatic tile contract gives a concrete witness. Both players take that same six-move route. The contract automatically has Red cover Blue's \(k\) Red-tile moves and Blue cover Red's \(5-k\) Blue-tile moves. Each also pays for its own moves on the remaining colored tiles and for one green goal tile. Under P's score rule, the resulting scores are
+\[
+(r_R,r_B)=(95-10k,\,45+10k).
+\]
+They are \((85,55)\) when \(k=1\) and \((75,65)\) when \(k=2\). Both exceed the asymmetric-board outside options \((70,0)\), and their sum equals P's maximum joint score of \(140\). The five tile clauses use P's stated programmatic contract format and its automatic transfer rule. This proves contract-and-path feasibility, not contract formation or full sequential incentive compatibility. \ledger{20, 21, 26}
+
+A score identity identifies what Red needs from an executed contract. If Red finishes in \(L_R\geq6\) moves, Blue pays for \(c\) of Red's moves, and Red pays for \(d\) of Blue's, with no other trades or point transfers, then
+\[
+r_R=70+5\bigl[c-d-(L_R-6)\bigr].
+\]
+Red strictly beats its outside option exactly when \(c-d>L_R-6\). Promised tile counts alone do not test this condition: the transfers must occur, and a longer route raises the required net coverage. The oracle has \(c=5-k\), \(d=k\), and \(L_R=6\), so it clears the threshold for both values of \(k\). P already measures net tiles promised; the proposed additional measurement is net coverage delivered alongside route length. \ledger{22, 23, 26}
+
+P reports mean both-beat-baseline of \(0.06\pm0.03\) for Pay-for-Partner with programmatic tile contracts, while its reported contract acceptance mean is \(0.80\pm0.03\). The oracle therefore exposes a feasible-outcome gap, but those aggregates cannot locate its cause. A separate regular-trading witness exchanges \(k\) Red chips for \(k+1\) Blue chips before movement and yields \((75,65)\) on every eligible board; P reports mean both-beat-baseline of \(0.20\) without contracts in regular trading. That witness likewise establishes feasibility, not a bargaining equilibrium. \ledger{13, 17, 24}
+
+\section*{Objections and limits}
+
+One proposed explanation was that P's point-contract limit of \(20\) points makes cooperation impossible. At a fixed Pay-for-Partner decision where covering costs a secure giver \(5\) points, a promised completion payment \(x\) supplies the local obedience condition \(x(p_1-p_0)\geq5\), where \(p_1\) and \(p_0\) are the giver's perceived probabilities that the partner finishes after coverage and refusal. More generally, a bonus bounded by \(B\), paid on an observable signal with conditional laws \(\mu_1,\mu_0\), can change incentives by at most \(B\,\mathrm{TV}(\mu_1,\mu_0)\). This is a local continuation calculation. It does not prove a sequential equilibrium, and the \(20\)-point ceiling does not explain the oracle paths, which require only one or two foreign-chip coverages. \ledger{9, 10, 14, 15}
+
+Another proposed explanation concerned P's gap between programmatic and natural-language tile contracts. Equal average numbers of covered tiles do not ensure equal tile identities or execution, and P's judge audit counts errors among approved moves without measuring rejected eligible moves. Holding contract terms and game histories fixed would be needed to isolate representation from negotiation and execution. The present material is too thin to attribute either observed performance gap to a particular failure stage. \ledger{3, 5, 7}
+
+\section*{Sources and next step}
+
+No source outside Q, P, and the recorded peer checks was used for this account. The smallest discriminating experiment is to place the verified reciprocal contract on each asymmetric board as already accepted, let agents choose their moves, and log route length and delivered transfers. Success would locate the remaining gap before execution, in finding or accepting suitable terms; failure would show an execution obstacle even with those terms supplied. Full bargaining and sequential incentive claims would still require separate analysis. \ledger{18, 25, 26}
+
+\end{document}
+```

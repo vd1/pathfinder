@@ -1,0 +1,60 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Fixed-Batch CVaR and Obedience Cycles}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q studies mechanisms for AI agents with private preferences and capabilities, and characterizes state-independent policy implementation through signal and report cycles \ledger{1, 12}. P studies empirical CVaR in a quadratic resource-allocation tax game, but its stated reference to ``Q'' is to a different paper, so its tax and participation results do not apply to the supplied Q \ledger{1, 18}.
+
+\section{Connection pursued}
+
+The useful connection is narrower: P distinguishes true CVaR from the expected empirical CVaR produced by a fixed batch, while Q gives an exact test for whether a state-independent action reward supports a signal-contingent policy. The question is whether finite-batch estimation can change the answer to Q's obedience-cycle test \ledger{2, 12}.
+
+\section{Finding}
+
+For every finite batch size \(m\), there is a one-type, two-signal policy supported under expected empirical conditional CVaR but unsupported under true conditional CVaR. Let the agent observe one of two equally likely states. In state \(0\), action \(a\) has loss \(0\) or \(2h\), each with probability \(1/2\), while action \(b\) has constant loss \(c_m\). Reverse the actions' losses in state \(1\), and prescribe \(a\) in state \(0\) and \(b\) in state \(1\). The upper-half CVaR of the risky action is \(2h\). If \(q_m\) is its expected empirical CVaR from \(m\) observations, the all-zero batch implies
+\[
+q_m\leq 2h(1-2^{-m})<2h.
+\]
+Choose \(c_m=2h-h2^{-m}\). Then \(q_m<c_m<2h\), so zero rewards support the prescribed actions under the expected empirical surrogate. Under true risk, obedience requires both
+\[
+r(a)-r(b)\geq 2h-c_m
+\quad\text{and}\quad
+r(b)-r(a)\geq 2h-c_m,
+\]
+which is impossible. Q's signal-cycle sum is at least \(2h2^{-m}>0\) for the surrogate and equals \(-2h2^{-m}<0\) for true risk \ledger{6, 9, 10, 16}. This is a family of examples indexed by \(m\), rather than one fixed example whose failure persists as \(m\) grows \ledger{10}.
+
+The peers also obtained a value-error test. If every conditional action utility differs from its surrogate by at most \(e\), each term of a \(K\)-edge signal cycle can change by at most \(2e\); a surrogate margin of \(2Ke\) therefore certifies the true cycle condition. For independent rectangular utility-error bounds, one state-independent reward works for every utility in the box exactly when the directed graph of distinct prescribed actions has no positive cycle, with edge weight
+\[
+w(a,b)=
+\max_{s:\,a(s)=a}
+\left\{\widetilde U(b,s)-\widetilde U(a,s)+2e\right\}.
+\]
+This follows by writing robust obedience as the difference constraints \(r(a)-r(b)\geq w(a,b)\); unprescribed actions may be prohibited \ledger{11, 14, 15}.
+
+\section{Objections and scope}
+
+Conditional CVaR can be embedded as Q's reduced-form, state-dependent utility for this obedience test. That does not establish a result for an agent that ranks entire plans by CVaR before seeing its signal, or for Q's unrestricted state-dependent rewards \ledger{6, 9}. The timing distinction matters: an example in the ledger ranks two reports one way by averaging signal-conditional CVaRs and the opposite way by ex-ante CVaR of their full loss distributions. Thus Q's outer continuation value cannot simply be formed by averaging local CVaRs \ledger{5, 7}. More generally, for \(0\leq J\leq U\) and upper-tail mass \(\beta\), the ledger establishes
+\[
+0\leq
+\operatorname{CVaR}_{\beta}(J)
+-\mathbb E\!\left[\operatorname{CVaR}_{\beta}(J\mid S)\right]
+\leq(1-\beta)U;
+\]
+the gap can persist even with exact risk evaluation \ledger{8, 11}.
+
+The argument concerns the expected empirical surrogate. It supplies no guarantee for one realized batch and no convergence result for a strategic learning process \ledger{12, 16}. The established result is a small, mechanism-specific obstruction, not a full nested-cycle theorem or a publication-priority claim \ledger{12, 18}.
+
+\section{Outside sources and next step}
+
+The ledger points to Miller and Yang, \url{https://arxiv.org/abs/1512.05015}, and Rudloff, Street and Valladão, \url{https://optimization-online.org/2010/12/2860/}, for the known dynamic-CVaR timing issue. Its limited searches do not settle novelty \ledger{8, 15}.
+
+The smallest next step is to fix whether report-stage preferences use ex-ante plan CVaR or conditional CVaR after each signal, then solve a two-type, two-signal report game under that choice. This would determine whether Q's outer report-cycle construction survives the proposed risk adjustment; a realized-batch guarantee and a broader prior-work check would remain separate tasks \ledger{12, 18}.
+
+\end{document}
+```

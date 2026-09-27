@@ -1,0 +1,60 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Visual Comparisons as Incentive Monitors}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies mechanisms that must induce strategic AI agents to report truthfully and obey recommended actions. P uses multimodal pairwise comparisons to estimate agents' contributions and turn those estimates into potential-based rewards for multi-agent learning.
+
+\section*{Connexion pursued}
+
+The peers asked whether P's comparison signal could support the action incentives required by Q, especially when agents can affect what their cameras show. This led to a narrower question: can visual comparisons, together with a sparse absolute outcome signal, deter unilateral deviations and coordinated shirking? \ledger{1, 2, 15, 20}
+
+\section*{What was found}
+
+P's specified shaping reward has the form \(F_{i,t}=\gamma\psi_{i,t+1}-\psi_{i,t}\), with zero terminal potential. Over a complete episode ending at \(T\),
+\[
+\sum_{t=0}^{T-1}\gamma^tF_{i,t}
+=-\psi_{i,0}+\gamma^T\psi_{i,T}
+=-\psi_{i,0}.
+\]
+If the initial potential is fixed before strategic choices, shaping changes each agent's total payoff by a strategy-independent constant. It can affect learning, but cannot by itself make a previously unprofitable action optimal or satisfy a missing Q-style obedience constraint. This is a boundary of the proposed connexion, not a new result or a criticism of P's training method. \ledger{3, 4, 5, 20}
+
+A non-potential comparison prize can change incentives. In the peers' two-agent benchmark, agent \(i\) chooses effort \(e_i\in\{0,1\}\), receives intrinsic payoff \(\beta(e_1+e_2)-ke_i\), and wins a comparison with probability \(\sigma(\eta(e_i-e_j))\). Put \(d=\sigma(\eta)-1/2\). A prize of weight \(w\) and an absolute success bonus of weight \(b\), where success probability is \((e_1+e_2)/2\), make high effort strictly preferable against either rival action when
+\[
+wd+\frac b2>k-\beta.
+\]
+The comparison term supplies a unilateral incentive. Its protection depends on the comparison law remaining informative after the agent changes its action or view. \ledger{7, 13, 19}
+
+Relative comparisons cannot distinguish common shifts: \(\sigma(c_i-c_j)\) is unchanged when the same constant is added to every score. In the benchmark, \((1,1)\) and \((0,0)\) consequently have the same comparison law. Moving jointly from the former to the latter raises each agent's expected payoff by \(k-2\beta-b\); the absolute bonus blocks that particular joint deviation when \(b\geq k-2\beta\). This concerns coalition resistance, which Q leaves outside its unilateral equilibrium requirement. It does not imply that P's actual sparse reward has the assumed success law. \ledger{6, 8, 9, 11, 12, 13, 19}
+
+For a finite monitor with target law \(P_0\), deviation laws \(P_j\), intrinsic deviation gains \(g_j\), and one payment bounded in \([0,B]\), the peers derived an exact test for deterring all listed unilateral deviations. Such a payment exists if and only if, for every probability mixture \(\lambda\) of the deviations,
+\[
+B\,\operatorname{TV}\!\left(P_0,\sum_j\lambda_jP_j\right)
+\geq \sum_j\lambda_jg_j.
+\]
+Finite minimax gives this condition by exchanging the choice of payment with the choice of deviation mixture; the variational formula for total variation supplies the maximum expected payment difference. Separate deviations can each be detectable yet impossible to deter together: the equal mixture of \(\operatorname{Bernoulli}(0)\) and \(\operatorname{Bernoulli}(1)\) reproduces a \(\operatorname{Bernoulli}(1/2)\) target law. A hypothetical uninformative camera view can likewise make a profitable deviation's law identical to the target. These are stress tests, not findings about P's environment. \ledger{22, 24, 25}
+
+\section*{Objections and limits}
+
+The peers rejected a novelty claim for telescoping shaping or the general observation that relative-performance rewards permit collusion; both have prior art. They also found that P's connected comparison graph alone does not justify its stated finite error bound for an unregularized Bradley--Terry estimator: two agents with only one-sided wins have a connected graph but no finite maximum-likelihood estimate. Scores additionally require a translation normalization for a Euclidean error bound. P's softmax potential is translation invariant, so the latter issue need not invalidate its practical shaping rule. \ledger{5, 9, 10, 17, 18}
+
+The incentive calculations assume a committed cardinal prize, specified monitor laws, and a verifiable absolute signal. P reports comparison accuracy on observed training data and notes failures with uninformative views; neither establishes accuracy across strategic deviations. The material is therefore thin on the decisive empirical question. The finite-law test also covers one fixed target and listed deviations, not Q's full report-contingent type space or dynamically changing coalitions. \ledger{12, 15, 20, 24, 25}
+
+\section*{Outside sources used}
+
+The peers cited prior work on dynamic potential shaping and equilibrium invariance at \url{https://www.ifaamas.org/Proceedings/aamas2012/papers/2C_3.pdf} and \url{https://arxiv.org/abs/1401.3907}; relative-performance collusion at \url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=461382} and \url{https://www.sciencedirect.com/science/article/pii/S0165410123000320}; and Bradley--Terry maximum-likelihood existence at \url{https://arxiv.org/abs/1411.1168}. These sources narrowed the novelty claim; the pair-specific monitor proposal remains unproved. \ledger{5, 9, 10, 17, 20}
+
+\section*{What remains open}
+
+It remains unknown whether agents in a P-like embodied task can choose views that erase or reverse useful comparisons, whether sparse task success separates common shirking sufficiently, and what bounded rewards could enforce Q-style obedience as the active team changes. The current account establishes a testable research question and benchmark inequalities, not an implementable mechanism for P's tasks. \ledger{15, 20, 25}
+
+The smallest next step is to specify one two-agent task and a finite set of shirking and camera-choice deviations, sample the comparison and success outcomes under each profile, and solve the bounded-payment obedience program. A positive incentive margin that exceeds the sampling uncertainty would settle feasibility for those specified deviations; a target law in their profitable mixture would rule it out for that monitor and payment bound. \ledger{22, 25}
+
+\end{document}
+```

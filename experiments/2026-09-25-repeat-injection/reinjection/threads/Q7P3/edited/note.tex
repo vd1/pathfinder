@@ -1,0 +1,143 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When Learning Has a Price: Participation in a Resource Allocation Mechanism}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies a resource allocation mechanism whose equilibrium balances transfers and gives each agent
+a nonnegative payoff; P proposes charging language-model auction traders for the tokens used in
+their decisions. We asked what would happen to Q's participation claim if its learning samples also
+carried such a charge. Under that extra assumption, the peers found an accounting limit, two
+participation examples, and a finite limit on the length of Q's stated sampling schedule. P does not
+test Q's mechanism, and Q does not identify its samples with token-generating calls. The thread
+paused because the conditional bounds do not yet give a new mechanism or a finite-budget accuracy
+result.
+\end{abstract}
+
+\section{Introduction}
+
+Q, by Garjani, Shokri and Kebriaei, allocates a shared resource among agents with private, uncertain
+valuations \cite{Q}. Each agent values its own allocation, and the valuations are strongly concave.
+Q designs quadratic transfers so that the game's equilibrium gives the welfare-maximising
+allocation, balances the transfers, and leaves each agent at least as well off as taking no
+allocation. It also gives a decentralised learning algorithm and proves mean-square convergence
+under its stated conditions.
+
+P is a local manuscript about a different setting: buyers and sellers represented by language models
+in a fixed-value double auction \cite{P}. It proposes charging for generated tokens when traders
+decide whether and how to quote. The proposal separates gains from completed trades from the cost of
+the calls used to reach them; no combined charged-auction experiment has been run. P calls two
+papers in its own source discussion ``Q'' and ``P'', but those labels refer to other works, not to
+the assigned Q and P here.
+
+The possible connexion was the cost of reaching an outcome. Q's participation result concerns the
+payoff at an ideal equilibrium after learning. P makes the cost of decisions explicit, including a
+charge for the first scheduled decision even if a trader withdraws. If Q's samples required paid,
+token-generating calls, an agent would face that cost before receiving its eventual allocation
+benefit. This is a proposed extension of Q, not a property established by either paper.
+
+\section{What was done}
+
+The peers first checked which papers were actually paired. They then compared Q's equilibrium payoff
+with P's cost accounting. They derived a condition on total value and total cost, before testing
+whether it could fail within Q's permitted valuations. One test used agents with no positive gain
+from an allocation. A second used Q's explicit transfer rule to show that positive total value need
+not pay every participant's bill.
+
+Next, the peers examined the number of samples in Q's convergence theorem. They asked how long its
+schedule could run if every sample had a positive cost and only one allocation payoff followed
+learning. They also checked whether P's buyer--seller matching met Q's assumptions, and whether a
+fixed charge would alter Q's stage-game choices. These checks narrowed the question to entry and
+learning choices made before a charge is incurred.
+
+\section{Results}
+
+Let \(g_n\) be agent \(n\)'s gross gain, \(c_n\) its metered cost, and \(t_n\) its transfer, counted
+as a payment when positive. Let \(\lambda>0\) convert cost units to gain units. Write \(G=\sum_n
+g_n\) for total gross gain and \(C=\sum_n c_n\) for total cost. If transfers balance, so that
+\(\sum_n t_n=0\), the agents' payoffs \(u_n=g_n-\lambda c_n-t_n\) satisfy
+\[
+\sum_n u_n=G-\lambda C.
+\]
+With zero outside payoffs, every agent can be willing to participate only if \(G\geq\lambda C\).
+This is an accounting condition. It says nothing by itself about incentives or whether agents can
+learn the needed transfers. For P's stated symmetric auction schedule, gross surplus cannot exceed
+\(7.5\) in a round. Thus \(\lambda C>7.5\) rules out both balanced transfers and nonnegative payoffs
+for every trader in that round \cite{P}.
+
+The first example applies to Q's full valuation class. Give every agent an allocation choice in
+\([0,1]\) and valuation \(V_n(x)=-\alpha x^2/2\), where \(\alpha>0\), \(x\) is that agent's
+allocation, and \(n\) labels the agent. These valuations meet Q's concavity and zero-at-zero
+conditions. The best total gross value is zero. If entry requires even one positive-cost sample
+before exit is possible, total net value is negative, so balanced transfers cannot give every
+entrant a nonnegative payoff. Emmy's derivation and Ada's independent check establish this
+conditional obstruction. A free choice before the first call, outside funding, or a narrower set of
+valuations could avoid this example; none alone proves a useful welfare outcome.
+
+The second example shows why a positive net total is insufficient for Q's particular transfer. With
+two agents, allocations in \([0,1]\), and capacity \(2\), take \(V_1(x)=-x^2/2\) and
+\(V_2(x)=x-x^2/2\). Q's rule admits an equilibrium with allocations \((0,1)\), zero price messages
+and zero transfers. Agent 1 gets no gross benefit. If that agent must pay \(0.1\) for learning, its
+payoff becomes \(-0.1\), although total net value is \(0.5-0.1=0.4\). Ada checked the equilibrium
+against Q's explicit payment rule: at zero rival price, a positive own price only adds a nonnegative
+charge, and each agent's stated allocation maximises its valuation. The example challenges a
+cost-aware extension of Q's participation claim, not Q's original claim.
+
+Q's Theorem 4 prescribes \(Q_i=\lceil C_b/\eta^{2(i+1)}\rceil\) samples per agent at iteration
+\(i\), where \(C_b>0\) is a theorem constant and \(0<\eta<1\). Suppose there are \(N\) agents, every
+sample costs at least \(d>0\) in gain units, and the agents receive one allocation payoff after
+\(I\) iterations.
+The total cost is then at least
+\[
+dN\sum_{i=0}^{I-1}Q_i
+\geq \frac{dNC_b(\eta^{-2I}-1)}{1-\eta^2}.
+\]
+Let \(M\) be the largest total gross valuation over Q's compact allocation sets. It is finite.
+Balanced transfers and nonnegative payoffs for all entrants therefore require
+\[
+I\leq
+\frac{\log\!\left(1+M(1-\eta^2)/(dNC_b)\right)}
+{2\log(1/\eta)}.
+\]
+Ada and Emmy derived this limit independently. It is a necessary cap on iterations under the stated
+cost and single-payoff assumptions. It gives no bound on the allocation error at that stopping
+point.
+
+\section{Objections and limits}
+
+P's auction cannot simply inherit Q's transfer theorem. Q adds valuations that each depend on one
+agent's continuous allocation. In a simple trade needing both a buyer and seller, a gain \(h>0\)
+appears only when both participate. Its dependence on their two choices cannot be written as a sum
+of separate buyer and seller values. Binary participation also lies outside Q's convex allocation
+sets. Emmy checked this mismatch using the positive cross-difference of the joint trade gain.
+
+A sampling bill fixed independently of an agent's messages leaves its best response in Q's stage
+game unchanged once the bill has been paid. The consequential choices occur earlier: whether to
+enter, buy samples, continue, or leave. P's proposed withdrawal happens on a charged first call, so
+it is too late to give the costless pre-call choice needed in the zero-gain example. Q's simulation
+text also states a sample count \(\lceil0.96^{i+1}\rceil=1\) at every iteration, unlike the growing
+count in its convergence theorem. Its plots therefore do not settle the paid-sampling question.
+
+The peers checked adjacent work on costly reporting \cite{osborne}, data acquisition \cite{chen},
+computation on costly data \cite{delegating}, and budget-constrained mechanism design
+\cite{budgetagents}. These sources narrow any novelty claim; the checks did not establish novelty
+for this particular pairing. The ledger records no experiment in which Q's samples were charged, and
+no finite-budget mechanism with an accuracy or welfare guarantee was produced.
+
+\section{Why the thread stopped}
+
+The verifier accepted the accounting bound, examples and iteration cap under their stated
+assumptions. It paused the thread because the central bridge remains unproved: Q's samples have not
+been shown to incur P-style token costs. The results also stop short of a new incentive or accuracy
+theorem. The smallest useful restart is to specify a paid-sampling version of Q, including who
+observes and pays each cost, when an agent may exit, and the payoff after a finite run. That model
+would then need a new finite-budget incentive or accuracy result, or a stronger impossibility
+result, before the pair supports a further claim.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

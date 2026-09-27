@@ -1,0 +1,29 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T18:06:41Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "60755072d7c0bdb46dd21bb05f004488e9c89f0d47f8a97ce0afc77672bf18c4",
+  "decision": "ACCEPT",
+  "summary": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "The Q payment: outcome and defect",
+    "issue": "The message notation and Q\u2019s original payment are left implicit, making the derivative and transfer calculation harder to check from this paper alone.",
+    "fix": "Define s_n and s_{-n}, and reproduce Eq. (40) or its relevant terms."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Fixed empirical-CVaR surrogate",
+    "issue": "The empirical CVaR estimator used inside H_n is not explicitly defined.",
+    "fix": "Give its sample minimization formula before defining H_n."
+   }
+  ]
+ }
+]

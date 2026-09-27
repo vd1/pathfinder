@@ -1,0 +1,22 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-27T14:12:37Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "5aeb1c5397819b82ff52279be12dda330b85c5464d593482e0dd1508fbb7a958",
+  "decision": "ACCEPT",
+  "summary": "The conditional result is mathematically sound, stays within the note\u2019s scope, and separates Q\u2019s findings from the proposed adaptation of P. The cited references are identifiable and their metadata checks out.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Conditional information boundary, proposition",
+    "issue": "\u201cSelected just before one final iteration\u201d leaves the timing slightly ambiguous.",
+    "fix": "Say that B\u2082 acts in the penultimate iteration and exactly one iteration remains afterward."
+   }
+  ]
+ }
+]

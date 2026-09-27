@@ -1,0 +1,87 @@
+{
+  "observed_at": "2026-09-25T17:21:40.876091+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "finished_threads": 7,
+  "scheduled_threads": 28,
+  "prior_completed_records_unchanged": true,
+  "paper": {
+    "status": "ACCEPTED",
+    "round": 1,
+    "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+    "updated": "2026-09-25T15:11:00Z",
+    "build_ok": true
+  },
+  "comparison": "Q3P10 Emmy peer completed at 17:20:16Z since prior audit. Ada same attempt remains active within deadline. Seven research/edit threads complete; twenty unstarted.",
+  "process_identity": "Supplied process tree shows Python runner 24244, matching session runner and call owner, codex child 25525 and host descendant 25724. No duplicate runner in supplied tree; point-in-time and reparented-process limitations retained.",
+  "active_calls": [
+    {
+      "attempt_id": "9f930329896749f68b38c3aecc75b830",
+      "run_id": "10abdc89cc57496ba54f92028e5eb04e",
+      "pid": 24244,
+      "thread": "Q3P10",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790356431.7606258,
+      "deadline_at": 1790357661.7606258,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q3P10",
+      "child_pid": 25525,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/9f930329896749f68b38c3aecc75b830.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 425.7,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "receipts": {
+    "repeat": {
+      "last": {
+        "at": "2026-09-25T17:20:16Z",
+        "thread": "Q3P10",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "seconds": 385.0,
+        "error": null
+      },
+      "errors": []
+    },
+    "reinjection": {
+      "last": {
+        "at": "2026-09-25T17:13:48Z",
+        "thread": "Q3P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "seconds": 204.3,
+        "error": null
+      },
+      "errors": []
+    }
+  },
+  "stops": {
+    "repeat": null,
+    "reinjection": null
+  },
+  "failure_history": {
+    "repeat": 0,
+    "reinjection": 0
+  },
+  "outcomes_caveat": "Saved outcomes retains historical pre-repair Q3P2 BLOCKED; launch.py finalization writes it. Current child status, edit receipt and progress confirm repair remains resolved.",
+  "intervention": "none",
+  "new_incidents": false,
+  "pane_title": "Rename denied by sandbox; title not verified.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-002/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-002/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-002/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-001/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

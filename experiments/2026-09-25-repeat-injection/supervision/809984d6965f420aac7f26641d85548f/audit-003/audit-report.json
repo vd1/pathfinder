@@ -1,0 +1,105 @@
+{
+  "observed_at": "2026-09-25T14:53:35.050144+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "comparison_baseline": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-002/aggregate-observed.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-003/aggregate-observed.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-003/health-observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-003/processes.json",
+  "facts": [
+    "Same root run and PID 89044; supplied tree records Python runner under supervisor 89043, Codex editor 91653 and code-mode-host 91763. Point-in-time evidence has stated PID reuse limitations; no process intervention attempted.",
+    "Research advanced from peers to DRAFT, with consolidation and verification completed. Editor attempt 1 is active within its deadline. No evidence of livelock.",
+    "Manifest schedules 28 threads, 14 per arm. First research investigation is DRAFT; editing and author/reviewer pipeline remain unfinished, with 27 investigations not yet admitted.",
+    "Root and both child snapshots show no failures or stops. Reinjection instrumentation is absent because it awaits serial admission, not proof of health.",
+    "progress.json and outcomes.json are absent; inspected launcher writes progress after a completed pair and outcomes on exit. Runner log shows first pair admission with no errors."
+  ],
+  "heartbeat_age_seconds": 3.8,
+  "active_calls": [
+    {
+      "attempt_id": "bafd45e9fb0f41b1843edaf788e5e443",
+      "run_id": "fe15d5af28c74728b1c1dfc9013eb649",
+      "pid": 89044,
+      "thread": "Q4P10",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790347863.247641,
+      "deadline_at": 1790348763.247641,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10",
+      "child_pid": 91653,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/bafd45e9fb0f41b1843edaf788e5e443.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 151.8,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "receipts_summary": [
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:46:42Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 557.8
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:47:48Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 624.1
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:48:37Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 100.4
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:49:37Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 64.0
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:50:25Z",
+      "thread": "Q4P10",
+      "stage": "consolidate",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 47.9
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:51:03Z",
+      "thread": "Q4P10",
+      "stage": "verify",
+      "actor": "verifier",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 37.6
+    }
+  ],
+  "ledger_records": 21,
+  "action": "No intervention warranted. No failure found; no incident created.",
+  "next_audit": "Verify editor and DRAFT paper pipeline advancement; check both child failures, stop markers, and remaining schedule.",
+  "auxiliary_limitation": "HERDR_PANE_ID absent; pane rename not performed."
+}

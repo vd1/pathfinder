@@ -1,0 +1,61 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Causal Frame Roles for a Tendon-Driven Hand}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q presents a seven-motor tendon-driven hand, a calibrated simulation and actuation map, and an encoder-only policy that rotates a cube in hand. P presents dynamic multi-stream manipulation: it uses the precision of object-relative end-effector pose streams to identify kinematic links and mask linked object frames during policy fusion. \ledger{1, 2, 8}
+
+\section*{Connection pursued}
+
+The peers asked whether P's frame-selection rule can distinguish an externally moving object from an object moved by Q's hand, including when contact permits relative rotation or slip. Q's motor-command map and tendon simulator provide a way to perturb the hand and measure the resulting object motion in simulation. \ledger{3, 7, 12}
+
+\section*{What was found}
+
+\begin{claim}
+P's stream precision alone cannot determine which system causes the other to move.
+\end{claim}
+P computes a geometric mean spread from the local pose covariance \(\Sigma_t^{(f)}\):
+\[
+M_t^{(f)}
+= \left|\det\!\left((\Sigma_t^{(f)})^{-1}\right)\right|^{-1/(2d)}
+= \left(\det\Sigma_t^{(f)}\right)^{1/(2d)},
+\qquad d=6.
+\]
+For any nonsingular joint Gaussian distribution of object frame \(F\) and end-effector pose \(E\), the same observations factor as either \(p(F)p(E\mid F)\) or \(p(E)p(F\mid E)\). Gaussian regression gives a structural model in either direction with an independent residual. Thus an externally moving object precisely tracked by the robot and a grasped object precisely following it can have identical values of \(M_t^{(f)}\), although their causal directions differ. A randomized robot action distinguishes them by testing whether \(F\) responds. This establishes an identifiability limit, not an observed failure on P's reported tasks. \ledger{7, 9, 11, 14}
+
+\begin{claim}
+P's scalar threshold cannot certify that every component of an object frame is rigidly linked.
+\end{claim}
+For a constructed local covariance with five directions of standard deviation \(\epsilon\) and a yaw direction of standard deviation \(s\),
+\[
+\Sigma=\operatorname{diag}(\epsilon^2,\epsilon^2,\epsilon^2,
+                          \epsilon^2,\epsilon^2,s^2),
+\qquad
+M=(\epsilon^5s)^{1/6}.
+\]
+With \(\epsilon=10^{-4}\) and \(s=10^{-1}\), \(M\approx3.16\times10^{-4}\), below P's stated threshold \(10^{-3}\), despite substantial yaw spread. A fixed nonsingular diagonal weighting \(W\) changes this determinant statistic by the constant factor \(|\det W|^{-1/6}\); it does not reveal which component is free. Q's in-hand rotation makes free object yaw a pertinent case, but the constructed covariance is not a measurement of Q's rollouts. \ledger{16, 17, 18, 21}
+
+\section*{Objections and limits}
+
+Relative cube rotation by itself does not imply that P's gate will miss a link: repeatable, phase-aligned rotation can have low covariance. Conversely, high variation across demonstrations can conceal action-caused contact. The proposed comparison must therefore measure both the precision gate and the cube's response to an action perturbation. \ledger{4, 6, 11, 13}
+
+A proposed remedy was to retain the free yaw component. The peers resolved an ambiguity in that proposal: keeping cube yaw as feedback to a tendon-command controller differs from retaining cube pose as an exogenous frame in P's end-effector pose fusion. P predicts end-effector poses, while Q's rotation policy commands seven tendon channels and receives only encoder-derived observations. Q's physical cube pose was not logged, and neither paper supplies a pose-to-tendon adapter. The determinant argument consequently establishes a diagnostic limit, not a control improvement. \ledger{8, 17, 18, 19, 22}
+
+\section*{Outside sources}
+
+The peers checked Calinon's task-parameterized movement-learning tutorial, \url{https://calinon.ch/papers/Calinon-JIST2015.pdf}, and found that covariance eigenspaces and subspace models were already developed there. They also recorded prior visual in-hand manipulation work at \url{https://arxiv.org/abs/2211.11744} and \url{https://arxiv.org/abs/2207.02843}, and causal-inference references at \url{https://arxiv.org/abs/2003.13165} and \url{https://arxiv.org/abs/2002.12160}. These checks preclude a stand-alone novelty claim for eigenvalue inspection or object-pose feedback; the ledger establishes no broader novelty result. \ledger{9, 13, 20, 23, 24}
+
+\section*{Open question and next step}
+
+It remains unknown whether P's gate makes consequential frame-role errors in Q's contact regimes, whether simulation captures the relevant physical contact response, and whether a matched seven-motor controller benefits from assigning object pose to exogenous guidance or endogenous feedback. The material is thin on performance: it contains analytical counterexamples and an experiment design, but no paired-rollout measurements or policy comparison. \ledger{12, 14, 19, 24}
+
+The smallest decisive test is a set of matched-initial-state rollouts in Q's simulator. Randomly perturb one motor target, measure the subsequent cube-pose difference, and compare that intervention-based response with P's precision classification during external object motion, rigid holding, and in-hand rotation or slip. Report classification errors before building a tendon-action policy; a control claim would then require the same pose observations and seven-channel action interface across matched policies. \ledger{13, 14, 17, 22, 24}
+
+\end{document}
+```

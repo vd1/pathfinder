@@ -1,0 +1,54 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Inference Costs in a Double Auction of LLM Traders}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies LLM traders in a continuous double auction and finds that repeated small quote improvements can leave profitable trades unexecuted within a finite trading round. P studies a survival economy in which generated tokens consume agents' energy, showing that computation costs and changes to the interaction process affect agent behavior and allocation \ledger{1, 2, 10}.
+
+\section*{The connexion pursued}
+
+The proposed question is whether charging Q's traders for every decision call would change their choice between improving a quote, crossing the spread, and leaving the market. P supplies a way to make generated tokens consequential to an agent; it does not establish that such a cost improves a double auction \ledger{5, 17, 25}.
+
+\section*{What the pair establishes}
+
+Q reports frequent \(\$0.01\) quote improvements and, for GPT Large, only \(2.2\) to \(3.8\) trades per round. Its rounds have a \(300\)-iteration cap. These observations motivate testing whether a trader facing future inference costs would cross a profitable spread sooner, but the direction of that response is unknown: the trader could instead produce fewer tokens or cease participating \ledger{2, 3, 17}.
+
+For a buyer with value \(v\) facing ask \(a\), the comparison can be written as
+\[
+v-a-c_{\mathrm{cross}}
+\;\geq\;
+\mathbb{E}_{\sigma}\!\left[F(v-p)-K_{\sigma}\right]
+-c_{\mathrm{improve}},
+\]
+where \(F\) indicates a later fill under a quote-improvement strategy \(\sigma\), \(p\) is its later transaction price, and \(K_{\sigma}\) is future inference cost. Equal flat fees for the current call cancel from this comparison; differing token costs and expected future calls need not \ledger{6}.
+
+Q's reservation schedules also distinguish trade count from welfare. Pairing buyers in descending value order with sellers in ascending cost order gives marginal gains \(2.5,\,2,\,1.5,\,1,\,0.5,\,0\) through the sixth trade. Thus maximum gross surplus is \(G^\star=7.5\): five positive-gain trades attain it, although Q reports an equilibrium quantity of six. A sixth zero-gain trade can reduce value once computation is counted \ledger{4, 14}.
+
+\section*{Objections and resolution}
+
+\begin{objection}
+An earlier trade need not save inference calls. Q continues selecting untraded agents, and a trader who declines to announce may be selected again. A check of Q's released implementation found that, with at least two untraded LLM agents, its deadlock rule normally leaves the round running to the tick cap \ledger{5, 9, 12, 16}.
+\end{objection}
+
+The proposed test therefore gives every treatment the same irrevocable exit action and stopping rule, charges every decision call including a decision to post nothing, and records actual calls and generated tokens. It reports gross surplus \(G\), computation use, and the operational measure
+\[
+N_{\lambda}=G-\lambda\sum_{i,t}Y_{i,t},
+\]
+where \(Y_{i,t}\) is generated tokens and \(\lambda\) is a declared conversion scale. This measure represents social welfare only if that scale reflects real resource cost \ledger{11, 14, 24}.
+
+P's model-size factor cannot be copied literally into Q: P uses local models with known sizes, whereas Q does not report parameter sizes for its proprietary models. Within one fixed-model treatment, that factor can be absorbed into \(\lambda\); comparisons across models need an observable, declared cost schedule \ledger{22, 24}. P's no-discussion results further caution that saving calls can worsen allocation: job collisions rose when discussion was removed. Those job results do not predict the direction of Q's auction outcome \ledger{10}.
+
+\section*{Outside sources and remaining question}
+
+The released implementation was consulted for the stopping-rule objection \ledger{12, 16}. Prior human double-auction studies of costly offers report slower equilibration or reduced efficiency, so charging for quotes is not itself a new intervention \ledger{7, 14}. The relevant records are \url{https://authors.library.caltech.edu/records/fnhzb-n0e58} and \url{https://www.sciencedirect.com/science/article/abs/pii/S0167268198000638}.
+
+The material is thin on the decisive point: neither paper tests per-decision inference charges in Q's market. It remains open whether agents cross earlier, shorten responses, exit, or change gross and operational net value. The smallest settling step is a matched-seed, fixed-model comparison of a zero-cost control with a metered-cost treatment, using the same exit and stopping rules and reporting crossing, participation, calls, generated tokens, \(G\), and \(N_{\lambda}\) separately \ledger{17, 24, 25}.
+
+\end{document}
+```

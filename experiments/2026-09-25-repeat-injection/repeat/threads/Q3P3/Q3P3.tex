@@ -1,0 +1,51 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Evidence-Typed Review in a Double Auction}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies whether LLM traders in a continuous double auction reach the prices and allocative efficiency observed with human traders. P studies a reviewer--critic protocol for coding agents and finds that agreement can be unsupported unless disagreement is tied to evidence. \ledger{1, 2}
+
+\section*{The connexion pursued}
+
+The question is whether reviewing a trader's proposed quote with P's protocol changes welfare in Q's market. Q reports that small quote improvements can consume a round's 300 iterations without completing profitable trades; P supplies a way to scrutinize a proposed action before it is changed, but its evidence-typed variant has not been tested in an auction. \ledger{2, 10, 18}
+
+\section*{What was found}
+
+A better price for one trader does not, by itself, improve allocation. For a completed trade between buyer value \(v\) and seller cost \(c\) at price \(p\), combined surplus is
+\[
+(v-p)+(p-c)=v-c.
+\]
+Changing only \(p\) for the same buyer--seller match redistributes profit. Blocking the match, or changing who trades, can change total surplus. \ledger{4, 18}
+
+Trade count alone is also insufficient. Let \(W\) be realized surplus, and let \(W_q\) be the greatest surplus obtainable with exactly \(q\) trades under Q's stated values. Then the exact accounting identity
+\[
+W^\star-W=(W^\star-W_q)+(W_q-W)
+\]
+separates a quantity contribution from a selection contribution. Q's values give marginal gains \(2.50, 2.00, 1.50, 1.00, 0.50, 0, -0.50,\ldots\), so \(W^\star=W_5=W_6=7.50\), while \(W_7=7.00\). A sixth trade need not improve welfare, and a seventh can reduce it even when every executed pair trades profitably at its own price. This decomposition is ex post accounting, not proof that a welfare change was caused through either pathway. \ledger{5, 9, 13, 20, 22}
+
+A reviewer can check present facts, such as whether crossing a resting ask gives the buyer a known immediate profit. It cannot establish that crossing maximizes expected private profit without assumptions about later fills. In a simplified choice between crossing ask \(a\) now and posting a lower bid \(b\) that fills later with probability \(r\), crossing is preferable for a buyer with value \(v\) precisely when \(v-a>r(v-b)\). Q does not supply \(r\). The analyst's full value schedule and equilibrium price must therefore stay out of trader and reviewer prompts. \ledger{8, 12, 15}
+
+\section*{Objections and their status}
+
+An initial objection held that Q's reported mean above six trades implied a prompt violation or table error. That inference was withdrawn: seven individually profitable matches are possible at differing prices, although seven is above the efficient quantity under the stated schedule. \ledger{7, 9, 11}
+
+Review latency might make a quote stale in a moving market. Q's mechanism instead processes one selected trader before choosing the next, so a synchronous review can hold the book fixed. Latency remains a token and wall-clock cost; stale quotes require a separate asynchronous experiment. \ledger{3, 16}
+
+P's evidence-typed prompt improved review \(F_1\) on SWE-PRBench, but P did not apply that variant in its SWE-bench Verified experiment. Neither paper measures its effect on auction welfare. The evidence for transfer is therefore thin. Reviewers must also retain Q's private-profit objective: instructing them to maximize social welfare would change the task. \ledger{10, 17, 24}
+
+\section*{Sources beyond the pair}
+
+The ledger records nearby work on a critic in an electricity double auction, debate in portfolio allocation, and verification of auction or negotiation actions: \url{https://arxiv.org/abs/2508.18610}, \url{https://arxiv.org/abs/2609.29701}, and \url{https://arxiv.org/abs/2608.14613}. It also cites Q's released analysis helper for the \(7.50\) welfare maximum. These checks do not establish a novelty claim from a full literature review. \ledger{6, 13, 14}
+
+\section*{Open question and next step}
+
+It remains unknown whether evidence-typed review raises, lowers, or leaves unchanged Q's allocative surplus, and whether any effect persists across models or value schedules. The smallest direct test is to randomize whole market runs among Q's unreviewed baseline, a token-matched extra-deliberation control, and evidence-typed reviewer--critic review. Keep the trader objective, information, order book, and iteration cap fixed; save proposed and final actions; then compare realized \(W/W^\star\), its two accounting contributions, trader profit, crossing behavior, and call cost. This would estimate the intervention's market effect without treating more crossings or a component split as a causal explanation. \ledger{15, 17, 20, 24}
+
+\end{document}
+```

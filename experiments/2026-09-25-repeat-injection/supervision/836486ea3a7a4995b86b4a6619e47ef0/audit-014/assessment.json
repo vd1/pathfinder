@@ -1,0 +1,95 @@
+{
+  "observed_at": "2026-09-27T15:00:14.185461+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "9672a1685b814030b5d0e08c6ebaea6b",
+  "status": "continue",
+  "completed_pipelines": 25,
+  "remaining": [
+    "reinjection/Q1P5",
+    "reinjection/Q1P1",
+    "repeat/Q1P2"
+  ],
+  "comparison": "Previous audit had two Q1P5 peers active. Both now completed successfully; current stage and calls recorded below. Completed pipeline count remains 25. Ada now has a subsequent peer call within deadline; ledger has 22 entries. No repeated errors or overdue call.",
+  "runner": {
+    "pid": 53766,
+    "run_id": "9672a1685b814030b5d0e08c6ebaea6b",
+    "status": "running",
+    "started_at": 1790516934.237466,
+    "heartbeat_at": 1790521212.21578,
+    "last_progress": {
+      "block": 13,
+      "arm": "repeat",
+      "pair": "Q1P6",
+      "at": 1790520751.24173
+    },
+    "task": {
+      "block": 13,
+      "arm": "reinjection",
+      "pair": "Q1P5"
+    },
+    "stage": "between-pairs",
+    "pid_alive": true,
+    "heartbeat_age_seconds": 1.9
+  },
+  "active_calls": [
+    {
+      "attempt_id": "9b438477a5d0463d8931e498816c24c5",
+      "run_id": "a8b120b225114760858e4bbb25980493",
+      "pid": 53766,
+      "thread": "Q1P5",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790521177.15061,
+      "deadline_at": 1790522203.15061,
+      "timeout_seconds": 1026,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P5",
+      "child_pid": 69608,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/9b438477a5d0463d8931e498816c24c5.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 37.0,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "last_completed_calls": {
+    "repeat": {
+      "at": "2026-09-27T14:52:28Z",
+      "thread": "Q1P6",
+      "stage": "review",
+      "actor": "reviewer",
+      "outcome": "completed",
+      "error": null
+    },
+    "reinjection": {
+      "at": "2026-09-27T14:59:37Z",
+      "thread": "Q1P5",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null
+    }
+  },
+  "failure_counts": {
+    "repeat": 2,
+    "reinjection": 0
+  },
+  "failure_review": "Two historical repeat/Q3P6 authentication/stream failures are already documented and resolved. No recurrence or current failure or stop.",
+  "protected_artifacts_checked": 720,
+  "protected_artifact_mismatches": [],
+  "deadline_at": 1790538533.7635698,
+  "identity_evidence": "Parent-supplied processes.json matches session PID 53766, Python executable, parent 53765 and recorded Codex child 66363. Point-in-time evidence limits retained; no process intervention.",
+  "notes": "Root progress/outcomes checkpoints lag live child work; all 28 per-thread research/edit and DRAFT paper checkpoints inspected. Nine DRAFT papers ACCEPTED. HERDR_PANE_ID absent; no pane rename possible.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-014/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-014/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-014/after.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-014/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-013/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json"
+  ],
+  "action": "No intervention; parent timer continues."
+}
