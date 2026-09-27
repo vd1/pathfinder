@@ -355,6 +355,56 @@ result or model calls. An agent audit can diagnose the failure and record an
 incident before invoking resume. This proves neither recurring task delivery
 nor recovery of an arbitrary infrastructure fault.
 
+## One engine, many deployments
+
+statarb, in-repository experiments and other campaigns run this engine
+rather than editing copies of it (see
+[the plan](plans/2026-09-27-1809-single-engine-deployments.md)). A deployment
+adjusts it only through:
+
+- settings in `campaign.json`;
+- prompt overlays and a `styles/` directory, as above;
+- extensions named in `campaign.json` and loaded from the deployment's own code:
+  `"extensions": {"path": "deploy", "admission": "mypolicies:budget",
+  "snapshot_extra": "mymonitor:extra"}`. Extension code is trusted; the engine
+  validates what it returns. Each deployment's modules need unique names.
+
+**Admission.** Every model call is admitted inside an engine-owned
+reservation. Under one lock the engine checks the campaign's stop marker and
+its parent's (`"parent": ".."` in a child campaign), asks the admission policy,
+and reserves. A policy returns admit, defer or stop;
+`pathfinder.admission:budget_per_call` is built in. A refused call gets a
+receipt with outcome `refused` and no cost, and is a stop, never a failure.
+
+**Bounded runs.** `pathfinder research --pairs Q1P1 Q2P3` runs exactly those
+pairs. `runner.run_pair` takes one pair through research, edit and, for a
+DRAFT, the paper, resuming where it stands. `pathfinder coordinate
+schedule.json` runs a fixed schedule of (arm, pair) entries across child
+campaigns one pair at a time; the schedule is recorded in
+`coordination.json`, and a changed schedule needs `--accept-change`.
+
+**Run records.** Every command that calls a model takes campaign ownership
+and writes `run.json` (appended to `runs.jsonl`): engine commit and a digest
+of the files it loaded, deployment files and lock, extension code, resolved
+settings, composed prompts, styles, TeX and corpus. Receipts name the run.
+When any of these changed since the previous run the command refuses until
+rerun with `pathfinder --accept-change REASON ...`; code edited on disk after
+the process loaded it requires a restart.
+
+**Frozen copies.** `pathfinder freeze DIR --ref engine-vX.Y` writes the
+engine's runtime files at that commit; `pathfinder verify-frozen DIR`
+compares a copy with the commit's own tree and reports verified, modified
+or unverifiable.
+
+**Model-free runs.** `"backend": "stub"` drives every stage with
+deterministic replies and real builds, for contract tests.
+
+**Releases.** `deployments.toml` lists every live deployment, pinned, as
+supported or not yet supported. `uv run python scripts/release_check.py`
+runs the suite with `PATHFINDER_RELEASE=1` and fails on any failure, skip,
+missing or mispinned supported deployment, or change to the candidate
+during the run.
+
 ## Receipts
 
 Every call the transport attempts appends one line to `receipts.jsonl`,
@@ -383,10 +433,14 @@ format; in them a zero may mean unknown.
 
 ## Prompts
 
-The seven prompts in `prompts/` are the place to tune behaviour: `scan.md`
+The prompts in `prompts/` are the place to tune behaviour: `scan.md`
 (the two-axis judge), `peer.md` (the creative brief), `consolidate.md`,
-`verify.md`, `author.md`, `review.md` and `editor.md`. A campaign directory may carry its own `prompts/` to override
-them.
+`verify.md`, `author.md`, `review.md`, `editor.md` and `supervisor.md`. An
+installed engine carries them inside the package. A campaign adjusts them
+one file at a time: for role R, the campaign's `prompts/R.md` replaces the
+engine's prompt, `prompts/R.append.md` is appended to whichever prompt
+applies, and placeholders such as `{{ACTOR}}` are filled in last. Roles
+without a campaign file use the engine's prompt.
 
 ## The thread's context
 
@@ -429,7 +483,9 @@ before the agent is called and again after every verdict, so no agent
 types a title-block value; the style reads it if present. The pipeline
 puts the styles directory on `TEXINPUTS` for its own builds and for the
 agents' shells, so a document only needs `\usepackage{pathfinder-paper}`,
-a `\title`, and no other package.
+a `\title`, and no other package. A campaign's own `styles/` directory is
+searched first, by every build (edit, paper, restyle, the monitor) and by the
+agents, so a deployment can replace `pathfinder-common.sty` or add a kind.
 
 `pathfinder restyle` rebuilds every note, readable note and paper PDF of a
 campaign with the current styles. Documents written before the styles
