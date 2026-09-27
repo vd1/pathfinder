@@ -45,9 +45,11 @@ def build(d: Path, main: str = "paper.tex", restyle: str | None = None) -> tuple
     for f in d.glob("*"):
         if f.suffix in (".tex", ".bib", ".bst", ".sty", ".png", ".pdf") and f.name != f"{stem}.pdf":
             shutil.copy(f, scratch)
+    src = research.unfence((d / main).read_text(errors="replace"))   # older notes were saved inside a Markdown code block
     if restyle:
         from .restyle import restyle as _restyle
-        (scratch / main).write_text(_restyle((d / main).read_text(errors="replace"), restyle))
+        src = _restyle(src, restyle)
+    (scratch / main).write_text(src)
     r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", main], cwd=scratch,
                        capture_output=True, text=True, timeout=300, env=tex_env())
     log = (scratch / f"{stem}.log").read_text(errors="replace") if (scratch / f"{stem}.log").exists() else r.stdout + r.stderr

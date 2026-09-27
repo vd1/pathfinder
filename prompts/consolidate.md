@@ -19,4 +19,7 @@ the environments claim and objection and the macro \ledger{12, 15} for
 citing ledger entries; do not load packages or define theorem
 environments yourself. Compile-clean pdflatex; write inline mathematics
 as \( ... \) and displayed mathematics as \[ ... \] or an amsmath
-environment, never with dollar signs.
+environment, never with dollar signs. Write the LaTeX file itself, not a Markdown code
+block around it. Keep every line within the text width: put file paths and URLs in \url{...},
+which breaks across lines, and set matrices and long formulas as displays,
+not inline.

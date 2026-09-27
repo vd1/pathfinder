@@ -48,7 +48,9 @@ Form: article class with the pipeline's style, and nothing else:
 Set \title; do not set \date or \author. The style reads pathfinder-meta.tex beside the document, written by the pipeline, and opens every document with the pair, the two papers linked to their arXiv abstracts, the date of production and the thread's state. The style loads amsmath, amssymb, amsthm, hyperref and url, provides an
 abstract environment and the theorem environments theorem, proposition,
 lemma, corollary, definition and remark; do not load packages or define
-theorem environments yourself. Build it yourself with
+theorem environments yourself. Keep every line within the text width: put file paths and URLs in \url{...},
+which breaks across lines, and set matrices and long formulas as displays,
+not inline. Build it yourself with
 
     latexmk -pdf -interaction=nonstopmode -halt-on-error note.tex
 

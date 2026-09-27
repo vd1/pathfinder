@@ -18,6 +18,10 @@
 \@namedef{ver@lmodern.sty}{2009/10/30 v1.6 superseded by the Pathfinder fonts}
 \RequirePackage[semibold,scale=0.98]{sourcesanspro}
 \RequirePackage[varqu,varl,scaled=0.96]{zi4}
+% \mathsf and \mathtt follow the text fonts (the kernel would take Computer Modern)
+\DeclareMathAlphabet{\mathsf}{T1}{\sfdefault}{m}{n}
+\SetMathAlphabet{\mathsf}{bold}{T1}{\sfdefault}{b}{n}
+\DeclareMathAlphabet{\mathtt}{T1}{\ttdefault}{m}{n}
 \RequirePackage{microtype}
 \RequirePackage{xcolor}
 \RequirePackage{fancyhdr}

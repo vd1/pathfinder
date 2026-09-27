@@ -1,6 +1,6 @@
 """One research thread: peers on a shared ledger, consolidate, verify, up to `rounds` rounds."""
 from __future__ import annotations
-import hashlib, json, shutil, sys, threading, time
+import hashlib, json, re, shutil, sys, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from . import corpus, transport
@@ -85,6 +85,18 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
                                                                           if read else "Inline evidence is complete and no tools are available.")
     head = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if above else ""
     return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
+
+
+def unfence(text: str) -> str:
+    """The LaTeX document inside a reply that wrapped it in a Markdown code block; other text unchanged."""
+    if text.lstrip().startswith("\\documentclass"):
+        return text
+    m = re.search(r"```[A-Za-z]*[ \t]*\n(.*?\\end\{document\})\s*\n```", text, re.S)
+    return m.group(1).strip() + "\n" if m and "\\documentclass" in m.group(1) else text
+
+
+def is_latex_document(text: str) -> bool:
+    return "\\documentclass" in text and "\\begin{document}" in text
 
 
 def _tex_escape(t: str) -> str:
@@ -294,10 +306,15 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                                 False,
                                 A["consolidate_seconds"], done=note.exists)
                 if not note.exists():
-                    if r["text"].strip():
-                        note.write_text(r["text"])
-                    else:
+                    text = unfence(r["text"])
+                    if not text.strip():
                         _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r['error'] or 'no note'}"); return "BLOCKED"
+                    if not is_latex_document(text):                # e.g. a quota message returned as the reply
+                        (d / "consolidate-unreadable.txt").write_text(r["text"])     # keep the paid reply for inspection
+                        _set(campaign, pair_id, status="BLOCKED", reason="consolidate: reply is not a LaTeX document"); return "BLOCKED"
+                    note.write_text(text)
+                elif (fixed := unfence(note.read_text(errors="replace"))) != note.read_text(errors="replace"):
+                    note.write_text(fixed)                          # the verifier judges, and the digest records, the bare document
                 _set(campaign, pair_id, stage="verify", repair=None)
             elif s["stage"] == "verify":
                 _check(stop)

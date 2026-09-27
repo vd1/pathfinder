@@ -43,7 +43,9 @@ lemma, corollary, definition, assumption and remark; do not load packages
 or define theorem environments yourself. Inline mathematics as \( ... \),
 displayed as \[ ... \] or an amsmath environment, never dollar signs;
 \bibliographystyle{plainurl} and \bibliography{references}, so that URLs
-and identifiers print; British English; no em dash character. Build it
+and identifiers print; British English; no em dash character. Keep every line within the text width: put file paths and URLs in \url{...},
+which breaks across lines, and set matrices and long formulas as displays,
+not inline. Build it
 yourself with
 
     latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
