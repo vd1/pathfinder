@@ -225,6 +225,9 @@ def pending(campaign) -> list[str]:
     @planks("When the operator runs the research command")
     """
     pairs = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]]
+    selection = getattr(campaign, "selection", None)
+    if selection is not None:                    # a bounded run: unlisted pairs, BLOCKED ones included, are not considered
+        pairs = [p for p in pairs if p in selection]
     from . import edit
     return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
             and research.status(campaign, p).get("status") != "BLOCKED"
@@ -254,12 +257,43 @@ def _work(campaign, pair_id):
         return result
 
 
-def run(campaign, interval: float = 5.0):
-    """Run under exclusive ownership; an explicit invocation starts a new run."""
+def _validate_selection(campaign, pairs) -> list[str]:
+    pairs = list(pairs)
+    shortlist = {p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]}
+    if len(set(pairs)) != len(pairs):
+        raise ValueError(f"duplicate pairs in selection: {pairs}")
+    missing = [p for p in pairs if p not in shortlist]
+    if missing:
+        raise ValueError(f"not on the shortlist: {', '.join(missing)}")
+    held = [p for p in pairs if Lock.holder(campaign.thread_dir(p))]
+    if held:
+        raise RuntimeError(f"held by another runner: {', '.join(held)}")
+    return pairs
+
+
+def run(campaign, interval: float = 5.0, pairs=None):
+    """Run under exclusive ownership; an explicit invocation starts a new run.
+    pairs: a bounded run over exactly these shortlisted pairs, through research and edit. Unlisted pairs are
+    ignored, BLOCKED ones included; when no listed pair has research or edit work left, the run returns at
+    once with status nothing-to-run. A listed BLOCKED pair is reported and does not stop the others."""
+    if pairs is not None:
+        campaign.selection = _validate_selection(campaign, pairs)
+    try:
+        return _owned_run(campaign, interval)
+    finally:
+        if pairs is not None:
+            del campaign.selection
+
+
+def _owned_run(campaign, interval):
     with health.owner(campaign):
         if stopped(campaign):
             print("stop marker exists; clear it explicitly before restarting")
             return 1
+        selection = getattr(campaign, "selection", None)
+        if selection is not None and not pending(campaign) and not _blocked(campaign):
+            print("nothing to run: every selected pair has finished research and edit")
+            return 0
         campaign.run_id = uuid.uuid4().hex
         old = health.read(campaign.path("health.json"))
         metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
@@ -270,6 +304,8 @@ def run(campaign, interval: float = 5.0):
         try:
             result = _run(campaign, interval, metadata)
             metadata["status"] = "failed" if unhealthy(campaign) else "stopped" if stopped(campaign) else "blocked" if result else "finished"
+            if getattr(campaign, "selection", None) is not None:
+                metadata["selection"] = list(campaign.selection)
             return result
         except BaseException as error:
             metadata.update(status="failed", error=repr(error))
@@ -299,12 +335,19 @@ def _run(campaign, interval, metadata):
             _loop(campaign, ex, interval, futures, metadata)
     finally:
         signal.signal(signal.SIGINT, previous)
-    blocked = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]
-               if research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"]
+    blocked = _blocked(campaign)
     if blocked:
         print(f"blocked investigations require reconcile: {', '.join(blocked)}")
         alerts.emit(campaign, "research blocked", campaign.path("threads"))
     return 1 if unhealthy(campaign) or blocked else 0
+
+
+def _blocked(campaign) -> list[str]:
+    """BLOCKED pairs in scope: the whole shortlist, or only the selection of a bounded run."""
+    selection = getattr(campaign, "selection", None)
+    return [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]
+            if (selection is None or p["pair_id"] in selection)
+            and research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"]
 
 
 def _loop(campaign, ex, interval, futures, metadata):
@@ -325,7 +368,8 @@ def _loop(campaign, ex, interval, futures, metadata):
             print(f"{_now()} admitted {pair_id} ({len(futures)}/{campaign.seats} seats)")
         if not futures:
             if stopped(campaign) or unhealthy(campaign) or not pending(campaign):
-                print("failure: inspect `pathfinder health`" if unhealthy(campaign) else "stopped" if stopped(campaign) else "all threads terminal"); return
+                done = "selected pairs finished research and edit" if getattr(campaign, "selection", None) is not None else "all threads terminal"
+                print("failure: inspect `pathfinder health`" if unhealthy(campaign) else "stopped" if stopped(campaign) else done); return
             time.sleep(interval); continue
         done, _ = wait(list(futures), timeout=interval, return_when=FIRST_COMPLETED)
         for f in done:
@@ -350,3 +394,49 @@ def _loop(campaign, ex, interval, futures, metadata):
                 if not unhealthy(campaign):
                     health.write(campaign.path("health.json"), failure)
                     alerts.emit(campaign, "runner stage failed", campaign.path("health.json"))
+
+
+PAPER_DONE = {"ACCEPTED", "PAUSE-ON-AMEND"}
+STAGE_SETS = {("research", "edit"), ("research", "edit", "paper")}
+
+
+def pair_complete(campaign, pair_id, stages=("research", "edit", "paper")) -> bool:
+    """Complete over the requested stages: research terminal and edit done; with paper, also either research
+    is not DRAFT or the paper is ACCEPTED or PAUSE-ON-AMEND."""
+    from . import edit, paper
+    if research.status(campaign, pair_id).get("status") not in research.TERMINAL:
+        return False
+    if edit.status(campaign, pair_id).get("status") != "done":
+        return False
+    if "paper" in stages and research.status(campaign, pair_id).get("status") == "DRAFT":
+        return paper.status(campaign, pair_id).get("status") in PAPER_DONE
+    return True
+
+
+def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), interval: float = 5.0) -> dict:
+    """One shortlisted pair through the requested stages, resuming where it stands: research and edit as a
+    bounded run, then, for a DRAFT, the paper under campaign ownership and the thread lock. Returns each
+    stage's status and the research run's exit code."""
+    from . import edit, paper
+    stages = tuple(stages)
+    if stages not in STAGE_SETS:
+        raise ValueError(f"stages must be one of {sorted(STAGE_SETS)}, got {stages}")
+    _validate_selection(campaign, [pair_id])       # always, before any completion shortcut or paper resume
+    code = 0
+    if not pair_complete(campaign, pair_id, ("research", "edit")):
+        code = run(campaign, interval=interval, pairs=[pair_id])
+    out = {"code": code, "research": research.status(campaign, pair_id).get("status"),
+           "edit": edit.status(campaign, pair_id).get("status"), "paper": paper.status(campaign, pair_id).get("status")}
+    def paper_due():
+        return (research.status(campaign, pair_id).get("status") == "DRAFT"
+                and edit.status(campaign, pair_id).get("status") == "done"
+                and paper.status(campaign, pair_id).get("status") not in PAPER_DONE
+                and not stopped(campaign) and not unhealthy(campaign))
+    if "paper" in stages and code == 0 and paper_due():
+        with health.owner(campaign), Lock(campaign.thread_dir(pair_id)):
+            if paper_due():                          # re-read under ownership: state may have moved meanwhile
+                out["paper"] = paper.run(campaign, pair_id, stop=lambda: stopped(campaign) or unhealthy(campaign))
+            else:
+                out["paper"] = paper.status(campaign, pair_id).get("status")
+    out["complete"] = pair_complete(campaign, pair_id, stages)
+    return out

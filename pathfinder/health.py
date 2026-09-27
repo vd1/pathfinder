@@ -126,7 +126,7 @@ def snapshot(campaign):
     failure = inspect(campaign.path("health.json"))
     if failure:
         warnings.append("Recorded operational failure requires diagnosis and an explicit restart.")
-    return {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
+    out = {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
             "active_calls": active, "last_completed_call": ({k: completed[-1].get(k) for k in fields} if completed else None),
             "failure_count": len(failures), "recent_failures": failures[-10:], "failure": failure,
             "stop": inspect(campaign.path("stop.json")), "work": work, "warnings": warnings,
@@ -134,6 +134,24 @@ def snapshot(campaign):
                          "runner": str(campaign.path("runner.json")),
                          "failures": str(campaign.path("failures.jsonl"))},
             "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health."}
+    return _with_extension(campaign, out)
+
+
+def _with_extension(campaign, out):
+    """A deployment's snapshot_extra sees a copy of the snapshot; what it returns is stored under
+    "extensions" and can never replace a core field. A failing extension is a warning, not a failed audit."""
+    import copy
+    from . import extensions
+    try:
+        extra = extensions.load(campaign, "snapshot_extra")
+        if extra is not None:
+            value = extra(campaign, copy.deepcopy(out))
+            if not isinstance(value, dict):
+                raise TypeError(f"snapshot_extra returned {type(value).__name__}, expected dict")
+            out["extensions"] = value
+    except Exception as error:                 # evidence gathering must not hide the core snapshot
+        out["warnings"].append(f"snapshot_extra failed: {error!r}")
+    return out
 
 
 def text(campaign):

@@ -123,3 +123,20 @@ def test_parent_stop_during_edit_is_a_stop_not_a_health_failure(tmp_path):
     assert not (c.root / "health.json").exists() and not (c.root / "failures.jsonl").exists()
     assert edit.status(c, "Q1P1")["status"] == "stopped"
     assert json.loads((c.root / "runner.json").read_text())["status"] == "stopped"
+
+
+def test_snapshot_extra_cannot_replace_core_fields(tmp_path):
+    from pathfinder import health
+    c = make(tmp_path, extensions={"path": "deploy", "admission": "", "snapshot_extra": "snapextra_mod:extra"})
+    _policy_module(tmp_path, "snapextra_mod", "def extra(c, snap):\n    snap['work'] = 'clobbered'\n"
+                   "    return {'arms': 2}\n")
+    snap = health.snapshot(c)
+    assert snap["extensions"] == {"arms": 2} and snap["work"] != "clobbered"
+
+
+def test_codex_search_as_configuration(tmp_path):
+    c = make(tmp_path, backend="codex", codex={"search": "config"})
+    live = transport._command(c, "m", True, True, tmp_path)
+    off = transport._command(c, "m", True, False, tmp_path)
+    assert 'web_search="live"' in live and "--search" not in live and 'web_search="disabled"' in off
+    assert "--search" in transport._command(make(tmp_path / "flag", backend="codex"), "m", True, True, tmp_path)

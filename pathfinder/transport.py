@@ -66,7 +66,10 @@ def _command(campaign, model, tools, search, cwd):
             cmd += ["--tools", ""]
         return cmd
     cmd = shlex.split(os.environ.get("PATHFINDER_CODEX", "codex"))
-    if tools and search:
+    prov = (campaign.raw or {}).get("codex") or {}
+    if prov.get("search") == "config":             # CLIs that take web search as configuration, not a flag
+        cmd += ["-c", f'web_search="{"live" if tools and search else "disabled"}"']
+    elif tools and search:
         cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
