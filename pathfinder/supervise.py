@@ -57,8 +57,7 @@ def audit(campaign, checkout, directory, resume, scope, timeout):
         pids.extend([call.get("pid"), call.get("child_pid")])
     health.write(directory / "processes.json", processes(pids))
     from . import resources
-    local = checkout / "prompts/supervisor.md"
-    instructions = local.read_text() if local.is_file() else (resources.engine_prompts() / "supervisor.md").read_text()
+    instructions = resources.prompt_template(campaign, "supervisor")   # campaign overlays apply, as for every role
     prompt = instructions + "\n\nSession-local assignment:\n" + json.dumps({
         "campaign_directory": str(campaign.root), "checkout": str(checkout),
         "pipeline_scope": scope, "authorized_resume_argv": resume,

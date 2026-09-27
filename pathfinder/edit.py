@@ -4,6 +4,7 @@ import json
 from . import corpus, research, transport
 from .paper import build, check_references
 from .research import _inputs, _prompt, _now
+from .admission import Refused
 
 
 def status(campaign, pair_id) -> dict:
@@ -42,6 +43,14 @@ def _set(campaign, pair_id, **kw):
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
+    """The editor stage; a call the engine refuses (a stop marker or an admission Stop) ends it as stopped."""
+    try:
+        return _run(campaign, pair_id, stop)
+    except Refused as refused:
+        _set(campaign, pair_id, status="stopped", reason=f"refused: {refused}"); return "stopped"
+
+
+def _run(campaign, pair_id: str, stop) -> str:
     st = research.status(campaign, pair_id).get("status")
     if st not in research.TERMINAL:
         raise SystemExit(f"{pair_id} is not terminal ({st})")

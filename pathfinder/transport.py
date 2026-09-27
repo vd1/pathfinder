@@ -190,7 +190,14 @@ def execute_batch(requests: list[ModelRequest], adapter):
 
 
 def execute(campaign, request: ModelRequest):
-    """Record an active attempt before launching it, including abrupt-exit evidence."""
+    """Admit the call, then record an active attempt before launching it, including abrupt-exit evidence.
+    A refused call raises admission.Refused before any active-call record exists."""
+    from . import admission
+    with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+        return _attempt(campaign, request)
+
+
+def _attempt(campaign, request: ModelRequest):
     from . import health
     attempt = uuid.uuid4().hex
     path = campaign.path(f"active-calls/{attempt}.json")
@@ -224,6 +231,11 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
     timeout, thread, stage, actor = request.timeout, request.thread, request.stage, request.actor
     cwd = request.cwd or campaign.path(f"{stage}-work")
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
+    if campaign.backend == "stub":                  # model-free contract tests; see pathfinder.stub
+        from . import stub
+        r = stub.execute(campaign, request)
+        _receipt(campaign, thread, stage, actor, model, r)
+        return r
     started = time.time()
     try:
         proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
@@ -321,10 +333,13 @@ def unknown_cost_calls(rows) -> int:
     return sum(1 for r in rows if r.get("cost") is None)
 
 
+UNCHARGED = ("no session", "launch failed", "refused")    # outcomes that never reached a model
+
+
 def spend(campaign) -> float:
     """What the budget guard counts: known cost, plus the per-call estimate for every call that opened a
     session and whose cost is unknown. A call that never reached a session is not charged, as before, or
     the probes of a long outage would exhaust the budget. The caution lives here, not in the receipts."""
     rows = receipts(campaign)
-    charged = sum(1 for r in rows if r.get("cost") is None and r.get("outcome") not in ("no session", "launch failed"))
+    charged = sum(1 for r in rows if r.get("cost") is None and r.get("outcome") not in UNCHARGED)
     return round(known_cost(rows) + charged * campaign.call_estimate_usd, 4)

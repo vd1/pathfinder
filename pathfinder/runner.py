@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
 from . import research, transport
 from . import alerts, corpus, health
+from .admission import Refused
 
 
 def _digest(path: Path) -> str:
@@ -196,7 +197,10 @@ class Lock:
 
 
 def stopped(campaign) -> bool:
-    return campaign.path("stop.json").exists()
+    """A stop marker on the campaign, or on the parent it runs under (campaign.raw["parent"]): the same
+    predicate admission uses, so a refused call and the scheduler always agree that the run is stopping."""
+    from .admission import _stop_marker
+    return _stop_marker(campaign) is not None
 
 
 def request_stop(campaign, reason: str):
@@ -332,6 +336,10 @@ def _loop(campaign, ex, interval, futures, metadata):
                 from . import edit
                 if result in research.TERMINAL and edit.status(campaign, pair_id).get("status") == "done":
                     metadata["last_progress"] = {"pair": pair_id, "result": result, "at": _now()}
+            except Refused as e:
+                print(f"{_now()} {pair_id}: refused ({e}); stopping")
+                if not stopped(campaign):
+                    request_stop(campaign, f"refused: {e}")
             except Exception as e:
                 print(f"{_now()} {pair_id}: error {e!r}")
                 failure = {"run_id": campaign.run_id, "at": _now(), "pair": pair_id,

@@ -6,6 +6,7 @@ from pathlib import Path
 from . import corpus, transport
 from .ledger import Ledger
 from .scan import prompts_dir, parse_json
+from .admission import Refused
 
 PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json
 TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"}
@@ -340,7 +341,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
                     _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
-    except Stopped:
+    except (Stopped, Refused):
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise

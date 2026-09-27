@@ -21,7 +21,9 @@ Success means:
   supported extension held in the deployment, not an edited copy of engine
   code or a runtime replacement of engine functions;
 - a release is cut only after the candidate engine has passed a required
-  test matrix covering every live deployment at a named revision.
+  test matrix covering every deployment the release supports, each at a
+  named revision; the release notes list the live deployments it does not
+  yet support, and why.
 
 ## Current state
 
@@ -208,15 +210,16 @@ children's snapshots under the parent.
 
 ### Release matrix
 
-- `deployments.toml` in this repository lists the required deployments and
-  the exact revision of each to test against: statarb, julien-2, and any
-  live experiment. Each entry names how to obtain it (a checkout at a
+- `deployments.toml` in this repository lists every live deployment with the
+  exact revision to test against, and marks each as supported (required for
+  the release) or not yet supported (listed, with the reason, and excluded
+  from the gate). Each entry names how to obtain it (a checkout at a
   commit, or a versioned fixture stored here that reproduces how the
   deployment prepares a campaign and which extensions it loads).
 - The release job provisions every entry, runs its contract tests against
   the **candidate** engine (the deployment's adapter is pointed at the
-  candidate, not at its own pinned copy), and fails if any required entry is
-  missing, skipped or failing. Local runs may still skip absent siblings;
+  candidate, not at its own pinned copy), and fails if any supported entry
+  is missing, skipped or failing. Local runs may still skip absent siblings;
   the release job may not.
 - Contract tests make no model call. Using the stub transport, they cover
   research, edit, the paper stage where the deployment uses it, coordinator

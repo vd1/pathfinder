@@ -13,9 +13,11 @@ PACKAGE = Path(__file__).resolve().parent
 
 
 def engine_prompts() -> Path:
-    """The built-in prompts: the checkout's prompts/ when present, otherwise the packaged copy."""
-    checkout = PACKAGE.parent / "prompts"
-    return checkout if checkout.is_dir() else PACKAGE / "resources" / "prompts"
+    """The built-in prompts: the packaged copy when installed; the repository's prompts/ only in the
+    source layout, where the package has no packaged copy. An unrelated prompts/ beside an installed
+    package can never override the installed defaults."""
+    packaged = PACKAGE / "resources" / "prompts"
+    return packaged if packaged.is_dir() else PACKAGE.parent / "prompts"
 
 
 def engine_styles() -> Path:

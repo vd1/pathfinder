@@ -3,6 +3,7 @@ from __future__ import annotations
 import json, re
 from pathlib import Path
 from . import corpus, transport
+from .admission import Refused
 
 
 def prompts_dir(campaign) -> Path:
@@ -53,11 +54,14 @@ def run(campaign, stop=lambda: False):
             row = {"pair_id": pid, "q": q["id"], "p": p["id"], "feasibility": None, "gain": None,
                    "connexion": None, "rationale": None, "model": campaign.scan_model, "seconds": 0, "cost": 0, "error": None}
             for attempt in range(2):
-                r = transport.execute(campaign, transport.ModelRequest(
-                    identity=f"{pid}:scan:{attempt}", prompt=render(campaign, q, p), model=campaign.scan_model,
-                    tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
-                    stage="scan", actor="judge",
-                ))
+                try:
+                    r = transport.execute(campaign, transport.ModelRequest(
+                        identity=f"{pid}:scan:{attempt}", prompt=render(campaign, q, p), model=campaign.scan_model,
+                        tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
+                        stage="scan", actor="judge",
+                    ))
+                except Refused:
+                    return                                # a stop: the scan resumes from scan.jsonl
                 row["seconds"] += r["seconds"]; row["cost"] += r["cost"] or 0
                 try:
                     v = parse_json(r["text"])

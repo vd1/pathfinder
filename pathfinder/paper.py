@@ -6,6 +6,7 @@ from pathlib import Path
 from . import corpus, research, transport
 from .research import _inputs, _prompt, _now
 from .scan import parse_json
+from .admission import Refused
 
 
 LEGACY = {"accepted": "ACCEPTED", "returned": "PAUSE-ON-AMEND"}
@@ -132,8 +133,16 @@ def _arxiv_titles(ids: list[str]) -> dict:
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
+    """Author and reviewer rounds; a call the engine refuses ends the stage as stopped, resumable."""
     if research.status(campaign, pair_id).get("status") != "DRAFT":
         raise SystemExit(f"{pair_id} is not DRAFT")
+    try:
+        return _run(campaign, pair_id, stop)
+    except Refused as refused:
+        _set(campaign, pair_id, status="stopped", reason=f"refused: {refused}"); return "stopped"
+
+
+def _run(campaign, pair_id: str, stop) -> str:
     d = campaign.thread_dir(pair_id); pd = d / "paper"; pd.mkdir(exist_ok=True)
     A, inp = campaign.allowances, _inputs(d)
     reviews = json.loads((pd / "review.json").read_text()) if (pd / "review.json").exists() else []
