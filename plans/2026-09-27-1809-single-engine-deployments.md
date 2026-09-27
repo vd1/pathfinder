@@ -32,16 +32,21 @@ Success means:
 | This repository | live `pathfinder/` | reference | none |
 | statarb (`../statarb/arxiv_drip/research_protocol.py`) | per-job copy of `../pathfinder/pathfinder` and `prompts/`, with a file-digest manifest | `campaign.json` keys; its research brief appended to four prompts; `PATHFINDER_CODEX`; an extra `inputs/supporting.json`; engine styles and `paper.build` for its own implementation note | none in code, but the copy is taken live at job start, so each job silently runs whatever is on disk |
 | Repeat and reinjection pilot (`experiments/2026-09-25-repeat-injection/`, finished and archived) | frozen `engine/` copy, 131 file digests checked at preflight | runtime replacement of `transport.call` (reservation counting around each call), `runner.pending` (restricted to one scheduled pair) and `health.snapshot` (two child campaigns); a coordinator loop running research, edit and paper per pair; `codex_adapter.py` mapping `--search` to `web_search`; an appended role instruction | engine behaviour changed by monkeypatching, invisible to the engine's tests |
-| pathfinder-julien-2, at `5cc82db` (2026-09-27 17:25 +0200) | vendored `dependencies/pathfinder/`, pinned for reproducibility | its own EVA and PCE controller; its own XeLaTeX preamble for new notes; a reviewed patch to `research.py` | a fork; see the inventory task below, since the difference is larger than the patch |
+| pathfinder-julien-2, at `5cc82db` (2026-09-27 17:25 +0200; since then `8c0aad3`) | two vendored copies: `dependencies/pathfinder/` and, for the EVA experiment, `experiments/eva-minus-reuse-01/dependencies/pathfinder/` | its own EVA and PCE controllers, which replace `transport.execute` and call `run_thread` directly; since `8c0aad3`, readable accounts rendered with the vendored `paper.build` and `pathfinder-readable` | two forks of upstream `57e9a7a`; see [the inventory](../deployments/pathfinder-julien-2/inventory.md) |
 
-julien-2's engine differs from this repository in at least: `alerts.py` and
-`recovery.py` absent; seven modules, four prompts and the shared style
-changed; and in `research.py`, inline assessment evidence
-(`_assessment_evidence`), path and symlink rejection, configurable stage
-attempts (`_stage_attempts`), changed tool-less consolidation
-(`_consolidate_prompt`), external citation declarations and branch evidence
-links. This list comes from inspection, not from a classified diff; step 8
-of the migration produces the real inventory.
+The [inventory](../deployments/pathfinder-julien-2/inventory.md) establishes
+that both julien-2 copies fork upstream `57e9a7a` (2026-09-24). The main copy,
+`dependencies/pathfinder/`, changes only `research.py`: inline assessment
+evidence (`_assessment_evidence`), path and symlink rejection, configurable
+stage attempts (`_stage_attempts`), changed tool-less consolidation
+(`_consolidate_prompt`), and repair and restart fixes (each consolidation
+response persisted by round and repair, previous accounts archived by hash,
+an empty or failed fresh repair rejected instead of reusing the old note).
+External citation declarations, branch evidence links, a changed `runner.py`
+and the EVA research scheme exist only in the experiment copy,
+`experiments/eva-minus-reuse-01/dependencies/pathfinder/`. The absent
+`alerts.py` and `recovery.py`, and the other differing modules, prompts and
+style, are upstream changes made after the fork, not julien-2 edits.
 
 ## What deployments need to change
 
