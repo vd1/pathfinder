@@ -1,8 +1,9 @@
 # One engine, adjustable deployments
 
-Drafted 2026-09-27 for review; revised the same day after Astra's review
-(see "Review response" at the end). No code has changed yet. Nothing here
-authorises engine changes or a release; it is the design to agree first.
+Drafted 2026-09-27 for review; revised twice the same day after Astra's
+reviews (see "Review response" at the end). Implementation started on
+branch `single-engine` after the user asked for autonomous work; no release
+is cut without the gate below.
 
 ## Goal
 
@@ -142,24 +143,47 @@ Each is declared in `campaign.json` by `module:object`, loaded from the
 deployment's code, and recorded by digest in the run record.
 
 1. **Admission, with an engine-owned reservation lifecycle.** The engine
-   wraps every model call in `with admission(campaign, stage, role):`. It
-   owns the reservation counter and lock, and releases the reservation on
-   success, provider failure, timeout and cancellation. A deployment
-   supplies `policy(campaign, stage, role, reserved) -> Admit | Defer |
-   Stop`. `Defer` and `Stop` are intentional outcomes: the engine writes a
-   stop marker (or waits, for `Defer`) with the policy's stated reason and
-   records a refusal receipt, and `runner._loop` treats them as a stop, not a
-   health failure. Tests: concurrent admissions against a cap, a provider
-   failure releasing its reservation, and a refusal that makes no model
-   call.
-2. **Bounded execution.** Not a hook: an engine API. `runner.run(campaign,
-   pairs=[...])` runs only the listed pairs, after checking that each is on
-   the shortlist, not duplicated and not held by another runner. An empty
-   list, or a list whose pairs are all terminal, returns immediately with
-   status `nothing-to-run`, never "all threads terminal" for the campaign.
-   `run_pair(campaign, pair_id, stages=("research", "edit", "paper"))` runs
-   one pair through the requested stages and returns its outcome. The
-   coordinator below is built on these.
+   wraps every model call in `with admission(campaign, stage, role):`, before
+   the active-call record is written. A deployment supplies
+   `policy(campaign, stage, role, reserved) -> Admit | Defer | Stop`.
+   - *Scope.* Reservations are counted per campaign root. A campaign run by
+     a coordinator also carries its parent's root; the parent's stop marker
+     is honoured, but reservations are not pooled across arms.
+   - *Atomicity.* The stop checks, the policy evaluation and the increment
+     happen under one lock, so two concurrent calls cannot both pass a cap
+     that admits one.
+   - *Defer.* Releases the lock while waiting, wakes at a bounded interval or
+     when the campaign's or parent's stop marker appears, then re-evaluates.
+   - *Stop.* The engine writes a stop marker with the policy's reason and a
+     refusal receipt (outcome `refused`, no usage, no cost), and raises
+     `Refused`. No active-call record exists for a refused attempt, so
+     nothing looks like a crash. Research, edit and paper stages treat
+     `Refused` as a stop, and `runner._loop` never turns it into a health
+     failure.
+   - *Release.* The reservation is released on success, provider failure,
+     timeout and cancellation.
+   Tests: concurrent admissions against a cap of one, a provider failure
+   releasing its reservation, a deferral woken by a stop, and a refusal that
+   makes no model call and leaves no active-call record.
+2. **Bounded execution.** Not a hook: an engine API.
+   - `runner.run(campaign, pairs=[...])` runs only the listed pairs, after
+     checking that each is on the shortlist, not duplicated and not held by
+     another runner. Unlisted pairs are ignored entirely, including BLOCKED
+     ones: they neither run nor make the bounded run report failure.
+   - Completion is defined over the requested stages. A pair is complete
+     for research and edit when research is terminal and the edit is done;
+     for paper, additionally when research is not DRAFT or the paper is
+     ACCEPTED or PAUSE-ON-AMEND. So a DRAFT pair whose edit is unfinished
+     resumes at edit, and a DRAFT pair with a finished edit but no finished
+     paper resumes at paper.
+   - A listed pair that is BLOCKED is reported as blocked and requires
+     reconcile; it does not stop the other listed pairs.
+   - When no listed pair has work left, the call returns immediately with
+     status `nothing-to-run`, never "all threads terminal" for the campaign.
+   - `run_pair(campaign, pair_id, stages=("research", "edit", "paper"))`
+     runs one pair through the requested stages under campaign ownership and
+     the thread lock, and returns each stage's outcome. The coordinator
+     below is built on it.
 3. **Monitoring.** `snapshot_extra(campaign, snapshot) -> dict` returns
    additional data, which the engine stores under `snapshot["extensions"]`.
    It cannot replace core fields (`runner`, `active_calls`, `work`,
@@ -212,16 +236,25 @@ evidence. Only future runs move.
 4. **Execution APIs.** Admission lifecycle with policy; `run(pairs=...)` and
    `run_pair`; `snapshot_extra`; Codex search mapping in `transport`.
 5. **Coordinator.** `pathfinder coordinate`, with the pilot's tests ported.
-6. **Release matrix.** `deployments.toml`, fixtures, contract tests, release
-   job. Then tag `engine-v1.0`.
-7. **statarb.** Replace the live copy with a pin or a verified freeze; move
-   its brief to `*.append.md` overlays; its entry joins the matrix.
-8. **pathfinder-julien-2.** Produce a classified inventory of every
-   behaviour difference between its engine at the pinned commit and this
-   repository, each with its regression test: upstream as general, upstream
-   behind a setting, or keep in julien-2 as an extension. Only then point
-   new julien-2 work at a release. Its EVA and PCE controller stays in
-   julien-2; it drives the engine rather than modifying it.
+6. **Deployment compatibility, before any release.**
+   - statarb: a fixture reproducing how it prepares a campaign (settings,
+     append overlays instead of edited prompts, supporting inputs, its
+     implementation-note build), passing against the candidate engine.
+   - pathfinder-julien-2: a classified inventory of every behaviour
+     difference between its engine at the pinned commit and this
+     repository, each with its regression test: upstream as general,
+     upstream behind a setting, or keep in julien-2 as an extension. Until
+     the upstream work it calls for is done, julien-2 is listed in the matrix
+     as not yet compatible, and the first release states that it does not
+     cover julien-2.
+7. **Release matrix and first release.** `deployments.toml`, fixtures,
+   contract tests, release job; then tag `engine-v1.0` once every entry
+   marked required passes.
+8. **Pin upgrades, after release.** statarb replaces its live copy with a
+   pin or a verified freeze and moves its brief to overlays; julien-2 points
+   new work at a release once its inventory is resolved. Its EVA and PCE
+   controller stays in julien-2; it drives the engine rather than modifying
+   it.
 9. **Next pilot.** Express the schedule with `pathfinder coordinate`, with no
    monkeypatching.
 
@@ -259,3 +292,11 @@ Astra's review of the first draft, 2026-09-27, and what changed:
 | P2 hook guarantees overstated | Trust model stated; returned values validated; core snapshot fields protected; Codex search made engine functionality, not a hook |
 | P2 freeze needs an immutable inventory | Inventory from the commit's tree, exact file set, verified, modified or unverifiable outcomes, with tests |
 | P2 refresh julien-2's inventory | Commit recorded; known extra behaviours listed; migration step requires a classified inventory with regression tests before any replacement |
+
+Astra's second review, of `4a094be`:
+
+| Comment | Change |
+|---|---|
+| Bounded completion across stages | Completion defined per requested stage, preserving edit and paper resumes; unlisted BLOCKED pairs ignored; listed BLOCKED pairs reported without stopping the rest |
+| Release gate before deployments join | Compatibility work and the julien-2 inventory moved before the first release; pin upgrades after it |
+| Atomic admission, Defer and refusals | Stop checks, policy and increment under one lock; Defer waits outside the lock and wakes on stop; refusals leave no active-call record; per-campaign scope with parent stop |
