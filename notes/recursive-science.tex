@@ -1,0 +1,631 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{XCharter}
+\usepackage[margin=24mm]{geometry}
+\usepackage{microtype,amsmath,amssymb,booktabs,tabularx,longtable,array}
+\usepackage{xcolor}
+\usepackage{xurl}
+\definecolor{accent}{RGB}{21,102,121}
+\usepackage[colorlinks=true,linkcolor=accent,urlcolor=accent,citecolor=accent]{hyperref}
+\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{3pt}
+\renewcommand{\arraystretch}{1.15}
+\newcommand{\pair}[1]{\texttt{#1}}
+\newcommand{\ev}[1]{{\small\textsf{Evidence:} #1}}
+\newcommand{\sel}{\(\bullet\)}
+\title{Recursive Science\\\large What repeats and reinjected papers added to a 10-by-10 Pathfinder experiment}
+\author{Pathfinder experiment record}
+\date{27 September 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Can a research pipeline use its own completed papers as productive inputs?
+We examine a Pathfinder experiment beginning with ten papers returned for
+``mechanism design'' and ten for ``agentic cooperation''. After investigating
+14 selected pairs and repeating those investigations, we compared another
+14-pair repeat with 14 pairings of original papers and previously accepted
+manuscripts. All 28 pilot pipelines finished. The repeat arm produced seven
+internally accepted papers and reinjection three, but claim-level comparison
+changes the interpretation: several repeat papers reconstruct earlier work,
+including a payment repair already developed in a separate follow-up.
+Reinjection produced a concrete correction and graph extension of a
+peer-ranking seed, and a conditional-risk counterexample crossing an
+obedience boundary. Both arms developed related auction information limits.
+The evidence supports productive, complementary recursion, not its superiority
+over repetition or autonomous scientific validation. The useful recursive
+unit is a claim with assumptions and ancestry, not an accepted PDF alone.
+\end{abstract}
+
+\section{The question: repetition is not recursion}
+
+Pathfinder searches for possible connexions between two collections of papers.
+An abstract-level scan proposes a question for each pair. Selected pairs pass
+to two researchers, who inspect sources, exchange findings and objections in
+a ledger, and produce a consolidated note. A verifier may request further
+work, stop the thread, or recommend a paper. An editor produces a readable
+account; a recommended paper then passes through author and reviewer stages
+\cite{engine}.
+
+A repeat gives a fresh investigation the same original inputs. Reinjection
+replaces an input by a completed, internally accepted paper from an earlier
+investigation. Here reinjection occurs at the very end of the pipeline,
+after paper writing and review, not immediately after editing a research note.
+It exposes a later team to a compressed argument, including its assumptions,
+proofs, references and unresolved questions.
+
+Different answers on a second run are not evidence for recursion: fresh
+research on unchanged inputs also follows different paths. Waiting until
+repeats appear exhausted would not solve this problem cleanly. There is no
+known stopping rule that certifies exhaustion, and waiting changes the
+resources spent before recursion is tried. We therefore used a contemporaneous
+repeat arm as a control, without claiming saturation \cite{protocol}.
+
+\section{The original 10-by-10 space}
+
+The saved corpora contain ten Q papers and ten P papers, identified in
+Appendix~\ref{app:corpus}. These are query-returned collections, not pure
+disciplinary samples: Q includes robotics and astronomical instrumentation
+as well as economic mechanisms. The experiment studies this particular
+retrieved space, not a random sample of science.
+
+The scanner scored feasibility and scientific gain from titles and abstracts,
+each on a 0--100 scale, and ranked their product. The archive contains 100 scan
+records, of which 99 were scored successfully. A product threshold of 1500
+selected 13 pairs; the human-retained Q1P2, scored 600, made the research
+shortlist 14. The remaining 86 cells were not investigated in these campaigns.
+Q1P2 later produced an accepted selective-perception paper. This is evidence
+of a useful exception to the scan, not an estimate of its false-negative rate.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{l*{10}{c}}
+\toprule
+ & P1&P2&P3&P4&P5&P6&P7&P8&P9&P10\\
+\midrule
+Q1&\sel&H&&&&\sel&&&&\\
+Q2&&&&&&&&&&\\
+Q3&&&\sel&&&\sel&&&\sel&\sel\\
+Q4&&&\sel&&&\sel&&&\sel&\sel\\
+Q5&&&&&&&&&&\\
+Q6&&&&&&&&&&\\
+Q7&\sel&&&&&&\sel&&&\\
+Q8&&&&&&&&\sel&&\\
+Q9&&&&&&&&&&\\
+Q10&&&&&&&&&&\\
+\bottomrule
+\end{tabular}
+\caption{The investigated subset of the original space. Dots mark the
+13 threshold selections; H marks the retained human exception. These are
+selection marks, not successful-result marks.}
+\end{table}
+
+The original campaign used mixed models and subsequent interventions; its
+receipts include Claude and GPT stages. A September 23 fresh-context rerun
+used GPT-6-sol on the same 14 pairs. Their outcomes already showed substantial
+variation: the original produced five accepted papers and the rerun three.
+Q4P6 moved from a conditional peer-calibration construction to a PAUSE on
+strategic shaping; Q8P8 moved from a proposed compliant-grasp study to a
+conditional wrist-observation obstruction. A changed verdict need not refute
+an earlier argument: it may reflect a different argument or evidential bar.
+
+\section{The repeat--reinjection pilot}
+
+Five final papers were frozen as seeds, selected for different argument
+families rather than solely for recency. Their full text and compiled
+bibliographies were preserved, with artifact hashes and parentage in the
+manifest \cite{pilot}.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabularx}{\linewidth}{llX}
+\toprule
+Seed&Parent&Argument carried forward\\
+\midrule
+S1&O/Q4P6&Shared-comparison calibration and contribution ranking.\\
+S2&O/Q1P2&Room-level calibration transferred to a selective wall gate.\\
+S3&R/Q3P10&Auction surplus with explicit computation costs.\\
+S4&R/Q7P1&True versus expected empirical CVaR, with conditional economic bounds.\\
+S5&R/Q8P8&Limits of wrist-only information for an occluded held object.\\
+\bottomrule
+\end{tabularx}
+\caption{O denotes the original campaign; R the September 23 rerun.
+The carbon-mechanism paper was deferred because its source assumptions needed
+audit. S4 was carried forward for its risk distinction, not as certification
+of the source mechanism.}
+\end{table}
+
+The control C repeated the original 14 pairs. The reinjection arm I used
+14 distinct Q--seed pairs, excluded each seed's parent Q, and matched Q
+frequencies exactly: Q1 appeared three times, Q3 four, Q4 four, Q7 twice,
+and Q8 once. Scheduling blocks alternated which arm ran first. No new scan
+selected treatment pairs after their outcomes were known. In I, local P1--P5
+mean S1--S5, not original P1--P5.
+
+Both arms used GPT-6-sol at high reasoning effort, the same frozen engine
+and prompts, two peer seats, up to four research rounds, and up to three
+paper rounds. They had separate USD 200 API-equivalent admission caps.
+Equal caps did not require equal realised expenditure. Each investigation
+could stop at PAUSE; only DRAFT proceeded to a paper. Only one recursive
+generation was authorised. Pilot outputs have not been reinjected again.
+
+There were operational interruptions, including authentication and transport
+failures. Resumption retained stage identities and completed artifacts rather
+than silently treating retries as new scientific replicates. The final
+runner and supervisor both report completion; all 28 edits and ten papers
+report successful builds. All 720 artifacts protected at the last resumption
+were unchanged, and frozen-input preflight passed. These integrity checks do
+not establish mathematical validity or complete reference verification.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{lrrrr}
+\toprule
+ & O & R & C & I\\
+\midrule
+Investigated pairs &14&14&14&14\\
+Internally accepted papers &5&3&7&3\\
+Other terminal research outcomes &9&11&7&11\\
+\bottomrule
+\end{tabular}
+\caption{Descriptive pipeline outcomes. O includes one PAUSE-ON-ITERATE
+among its nine other outcomes. O and R are historical context, not controlled
+model comparisons. C and I form the contemporaneous pilot.}
+\end{table}
+
+Recorded arm costs were USD 52.03 for C and USD 36.52 for I, from 119 and
+105 receipts respectively. C has two error receipts. Usage is missing from
+one of them. I has no error receipts. These are recorded API-equivalent workloads under subscription
+access, not additional invoices or guaranteed complete metering. They exclude
+the historical cost of seeds \cite{readout}. Supervision is separate: 115 audit logs contain
+114 completed-turn usage records, totalling 24,120,478 input tokens, of which
+18,601,984 were cached, and 244,038 output tokens. Failed calls and separate
+probes may lack usage. The pilot took 49.24 hours from staging to completion,
+including interruption; summed model-call duration is not elapsed wall time.
+
+\section{How claims were compared}
+\label{sec:method}
+
+The comparison unit is a statement with assumptions and an argument, not a
+paper, title, verdict or topic. We distinguish inherited results, extensions,
+corrections, new connexions, and proposals still lacking decisive evidence.
+``Supported'' here means that the recorded derivation or finite computation
+supports the stated conditional claim; it does not mean externally reviewed,
+experimentally demonstrated, or new in the literature.
+
+The main historical baseline is the union of O and R, including PAUSE ledgers.
+Close comparisons also use the already-existing Q7 cache-run, September 13
+paper follow-ups and September 14 source audit. This is an explicit extension
+of the initial two-campaign inventory: otherwise the pilot would receive
+credit for a payment repair already present in the repository. Other model
+benchmark campaigns are not exhaustively assessed here. Thus novelty means
+``not found in this specified record'', not ``first found anywhere''.
+
+We inspected terminal claims and the relevant proofs, compared ledger
+entries and earlier supporting notes, and searched 186 historical authored
+and ledger files for the distinctive constructions. Search matches were
+checked for substance: a source line numbered 396 is not a 396-board theorem.
+Absence of a phrase was used to guide reading, not as proof of novelty.
+The all-board witness was rerun successfully; the common-flip endpoint
+calculation was independently checked numerically. This is not a fresh
+line-by-line proof audit of every manuscript.
+
+The planned label-hidden support assessment was not performed: this reviewer
+had already seen arm labels. The classifications below are therefore a
+transparent, unblinded post-hoc assessment. The same distinction between
+proved conditional results and untested applications is applied to both arms.
+Appendix~\ref{app:inventory} records a disposition for every pilot pair,
+including PAUSE. Granularity affects counts, so we report result families
+and their differences rather than manufacture a total ``discovery score''.
+
+\section{What survives deduplication}
+
+\subsection{Peer rankings: a real recursive extension, not the first warning about bias}
+
+S1's positive construction uses reports $Y_{er}=X_eZ_{er}$: observers share
+one realised comparison $X_e$, with conditionally independent symmetric
+errors of positive means $a_r$. Shared-item agreements satisfy
+$q_{rs}=a_ra_s$. Calibrating observer reliabilities then permits recovery
+of Bradley--Terry score differences under coverage assumptions.
+
+The historical record already warned that well-fitted comparison scores need
+not measure true contribution. R/Q3P6, for example, lets a nuisance cue shift
+the latent score while preserving a Bradley--Terry form. The September 13
+S1 exposition also explicitly warns that passing observable checks does not
+establish conditional independence. Those warnings are inherited.
+
+I/Q1P1 adds a more specific construction. An independent common flip $B_e$,
+with constant mean $b>0$, gives $Y_{er}=X_eB_eZ_{er}$. Agreements still obey
+$q_{rs}=a_ra_s$, while calibrated edge means become
+$b\tanh((c_i-c_j)/2)$. A four-vertex path can therefore have the same full
+report law in two worlds with opposite endpoint rankings. At $b=1/2$,
+the true path differences $(4,-3/2,-3/2)$ sum to 1, but their uncorrected
+transforms sum to approximately $-0.26458$.
+
+This supplies a counterexample to the seed's broad sentence that correlated
+errors destroy factorisation; it does not refute the seed's theorem under
+conditional independence. The new graph results are also substantive:
+diameter at most two preserves ordinal information within the specified
+common-flip model; suitable triangles or four-cycles identify its missing
+scale, while a recorded six-cycle admits ambiguity. These results and a
+conditional finite-sample interface are not in the inspected historical
+baseline or C. The general bias warning is old; the explicit same-law
+construction and graph boundary are the incremental result.
+
+This paper uses S1 deeply. Q1 contributes the distinction between ordinal
+and numerical predictions and their downstream cost, rather than a new
+algorithmic performance theorem. Its relevance is principally a correction
+and extension of the seed, not equal technical contributions from both inputs.
+
+\ev{O/Q4P6 ledger 28, 32, 37, 41; R/Q3P6 ledger 7, 9;
+September 13 Q4P6 exposition, limitations;
+I/Q1P1 ledger 4, 8, 11, 16, 26, 27 and final paper.}
+
+\subsection{CVaR and obedience: a new conditional connexion}
+
+S4 already establishes that the expectation of empirical CVaR can differ
+from true CVaR and reverse an economically relevant comparison. I/Q4P4
+does not discover that bias again. Its increment is to connect the bias to
+Q4's state-independent obedience-cycle test, rather than the seed's resource
+tax game. The researchers first identify that the paper called Q inside
+the seed is not the Q assigned to this new pair.
+
+For each finite batch size $m$, a risky loss is 0 or $2h$ with equal
+probability. Its expected empirical upper-half CVaR is at most
+$2h(1-2^{-m})$. Put a safe loss $c_m=2h-h2^{-m}$ between that value and
+true CVaR $2h$. In two signals with exchanged action losses, the surrogate
+supports the prescribed risky actions with zero rewards. True obedience
+would require both $r(a)-r(b)\geq h2^{-m}$ and its reverse with the same
+positive margin, which is impossible. The same policy thus crosses an
+implementability boundary, not merely an objective-value boundary.
+
+This is a supported new connexion relative to the inspected baseline and
+C, where the risk analysis stays with resource allocation or query cost.
+It is deliberately narrow: the instance changes with $m$; risk values are
+conditional reduced-form utilities; the impossibility concerns
+state-independent rewards, not unrestricted state-dependent rewards or
+CVaR of an entire plan. Cycle-margin and common-reward certificates are
+useful extensions of standard bounded-error and difference-constraint ideas.
+
+\ev{R/Q7P1 paper, fixed-batch participation example and value bounds;
+I/Q4P4 ledger 1, 6, 9--16 and final paper.}
+
+\subsection{Auction baselines: useful sharpening, substantial inheritance}
+
+I/Q1P3 inherits the surplus ceiling 7.5 from S3. Even earlier, O/Q3P3
+computed trade-count ceilings, omission/commission losses, and stylised
+zero-intelligence benchmarks. A claim that reinjection discovered the need
+for a cheap auction baseline would therefore be wrong.
+
+The new paper supplies a specific conditional no-generated-token fixed-price
+rule and a price-error counterexample. If its five eligible pairs execute,
+the rule reaches 7.5. An arbitrarily small upward advised-price error can
+admit a cost-2 seller who displaces a cost-0.75 seller, losing 1.25 surplus.
+The latter distinguishes scalar price accuracy from allocation quality.
+Neither construction establishes behaviour under the actual random scheduler.
+This is a modest, useful extension of an existing family, not a wholly new
+auction result or measured benefit of advice.
+
+C/Q3P3's accepted paper also belongs to that family. Its five/six/seven-trade
+accounting sharpens an older warning that more individually profitable
+crossings need not increase welfare. I/Q3P2, although PAUSE, adds a
+rounding-aware lower bound: at least about 44.9\% of a reported model's
+aggregate deficit is attributable to trade count. That numerical
+interpretation is not found in the historical baseline, but is Q-only:
+the calibration seed does not supply the bound. Its proposed market
+calibration lacks run-level data. These should not become three independent
+discoveries of the same welfare-accounting principle.
+
+\ev{O/Q3P3 ledger 3--9, 12; R/Q3P10 paper;
+C/Q3P3 final paper; I/Q1P3 ledger 10, 15, 19, 24;
+I/Q3P2 ledger 14, 16, 18, 22, 24.}
+
+\subsection{Auction information limits: a shared family, with a meaningful difference}
+
+C/Q3P6 constructs two worlds with the same acting-trader information and
+the same value multiset, but opposite welfare rankings of crossing and
+improving a bid. Its final-step continuation is stipulated. Under an equal
+prior, no local judge can exceed one-half accuracy on the realised better
+action; the illustrated value of revealing a hidden buyer value is 0.25.
+This is an explicit auction instantiation beyond O/R's comparator-bias
+proposals, not evidence about the frequency of such states.
+
+I/Q3P5 imports S5's matched-observation idea into the auction and reaches a
+related result. Its ledger rejects an initial rent-only example and a
+symmetry problem, then swaps a value between an active and an already-traded
+agent and averages over future random invitations. Thus it extends the
+construction beyond conditioning on a particular next actor. It still needs
+a stipulated continuation and illustrative prior.
+
+The pair of outputs belongs to one auction-information family, with different
+conditional examples. The repeat was ACCEPTED and reinjection PAUSE, despite
+both offering mathematical examples with unresolved empirical relevance.
+Counting only papers would conceal the shared finding and this threshold
+variation. Reinjection adds a refinement here, not exclusive ownership of
+the information-limit idea.
+
+\ev{O/R Q3P6 ledgers; S5 final paper; C/Q3P6 ledger 19, 20, 22, 28;
+I/Q3P5 ledger 4, 15, 18--21.}
+
+\subsection{Contracts: the clearest repeat-only constructive addition}
+
+O/Q4P9 focused on representation and enforcement confounds. R/Q4P9 then
+proposed path-based contract sufficiency and distinguished feasibility from
+obedience. C/Q4P9 goes further: its enumeration supplies a reciprocal
+five-clause tile contract and shared shortest route for every one of the
+396 asymmetric boards, giving scores $(85,55)$ or $(75,65)$ instead of
+the outside scores $(70,0)$ and achieving joint score 140.
+
+We reran the archived enumeration: 314 boards need one Red coverage and
+82 need two, reproducing the score counts. This verifies the finite
+construction under the program's model, not source-code equivalence with
+every simulator rule. It is a supported extension beyond the historical
+proposal and was not found in I. It proves an available mutually improving
+outcome, not voluntary bargaining or sequential equilibrium. Q supplies
+the feasibility/obedience distinction; the computation is predominantly
+about the contract game's rules.
+
+\ev{R/Q4P9 ledger 14, 17, 19; C/Q4P9 ledger 20--26,
+final paper and \path{paper/asymmetric_oracle.py}.}
+
+\subsection{Payment repairs and reward shaping: accepted does not mean new}
+
+C/Q7P1's explicit others-only transfer correction looks new against a short
+summary of O and R. It is not new against the existing follow-up record.
+The September 13 paper already has the same correction: its coefficient
+$\gamma(b_N-1)/(N-1)$ equals $\gamma N/(N-1)^3$, the coefficient in C.
+The September 14 source audit also supplies direct allocation implementation,
+participation, non-unique prices and risk-surrogate error control. C's
+rediscovery is useful confirmation and exposition, not another independent
+repair. C/Q7P7 combines that repair with a previously developed carbon charge
+and forecast-error argument, under restricted optional loads. Its synthesis
+must not count the same repair again. I/Q7P2's source contradictions also
+repeat earlier findings; its calibrated dual-gap proposal remains conditional.
+
+C/Q1P6 is similarly mostly inherited. O/Q1P6 already proves fixed-population
+telescoping, entry/exit accounting and the loss of ranking information when
+softmax potentials are pooled. R/Q1P6 supplies critic-offset cancellation and
+the finite unregularised Bradley--Terry estimate counterexample. Recombining
+these in an accepted paper is not a new finding that comparisons do not
+automatically improve learning.
+
+\ev{September 13 Q7P1 paper, repair equation;
+September 14 Q7 source audit, static repair;
+O/Q1P6 ledger 24, 27, 30, 33; R/Q1P6 ledger 4, 9, 18;
+C/Q7P1, C/Q7P7 and C/Q1P6 final papers.}
+
+\section{Conclusions for recursive science}
+
+\paragraph{Recursion can change the object of inquiry.}
+The ranking seed becomes an object to challenge, not merely an authority to
+reuse. The risk seed supplies an ingredient for a different implementability
+question. These are concrete reasons to continue studying reinjection. They
+do not show that either result required a generated input or could not have
+been found by an unobserved repeat.
+
+\paragraph{The pilot does not rank recursion above repetition.}
+The repeat arm finds a new finite contract witness and its own information
+construction. Reinjection contributes distinctive extensions but fewer
+accepted papers. Neither 7 versus 3 nor the smaller reinjection workload
+estimates marginal discovery efficiency without the claim assessment and a
+declared value judgment. Shared seeds, selected pairs, heterogeneous research
+paths and incomplete blinding rule out a universal causal conclusion.
+
+\paragraph{The historical ledger matters as much as the final paper.}
+PAUSE can contain a sound bound or counterexample whose application is
+unsupported. Earlier PAUSE work prevents false credit for later acceptance.
+Separate follow-ups matter too: a paper-only or two-directory inventory would
+misclassify the payment repair. Ancestry should track claims, assumptions,
+corrections and unresolved dependencies, not just parent filenames.
+
+\paragraph{Acceptance is a staging decision, not an epistemic guarantee.}
+The seed's overbroad correlation statement survived internal review. The
+recursive paper usefully challenges it. Conversely, repeating an accepted
+argument can amplify its authority without adding evidence. All pilot
+editors also report an arXiv HTTP 406 lookup failure; local generated seeds
+have missing-public-identifier warnings. Successful builds do not resolve
+those checks. Reference verification and independent mathematical review
+remain separate work.
+
+\paragraph{A focused continuation is preferable to waiting for saturation.}
+The next experiment should first independently audit the common-flip and
+CVaR-cycle results and reconcile the overlapping auction constructions.
+A further generation could then use corrected final papers with an explicit
+incremental question, alongside fresh original-input controls at comparable
+realised effort. It should not simply feed every accepted PDF back into an
+ever-growing pool. No second generation has been launched here.
+
+Daily query intersections, absolute-interest filtering and broader corpus
+growth are possible later selection strategies, not interventions tested by
+this pilot. The present result is narrower: a fixed small seed space supports
+both rediscovery and substantive transformation, and a claim-level memory is
+needed to tell them apart.
+
+\appendix
+\section{Complete pilot disposition}
+\label{app:inventory}
+
+The tables give the residual after comparison, not a binary scientific-quality
+score. A modest extension can be mathematically sound yet insufficient as a
+paper claim. ``New'' is relative to the inspected record described in
+Section~\ref{sec:method}. The primary evidence for each row is its terminal
+paper or edited note and ledger; the named O/R antecedents provide the
+comparison. A means internally accepted paper; P means PAUSE.
+
+\small
+\begin{longtable}{p{17mm}p{7mm}p{112mm}}
+\toprule
+Repeat&End&Claim-level disposition\\\midrule
+\endfirsthead
+\toprule Repeat&End&Claim-level disposition\\\midrule\endhead
+Q4P10&A&Extension: split-prize collision calculation and a bounded priority
+realisation. The ordered-protocol theorem is established prior work, as the
+paper acknowledges. O/R pursued paid peer scoring instead. No survival gain
+was measured.\\
+Q3P9&P&Mostly repeated proposal: immediate settlement is not missing
+commitment; proposal order and outside options remain confounded. O/R Q3P9
+already separate commitment from wording. A role-by-order test is unrun.\\
+Q4P6&P&Conditional extension: bounded payments must distinguish every mixture
+of profitable deviations, not just each deviation separately. The finite
+monitor/minimax test and shirking benchmark sharpen O/R's shaping boundary;
+no strategic camera or success law was measured.\\
+Q3P10&P&Repeated accounting and untested tariff proposal. The 7.5 ceiling,
+first-call and scheduler cautions already occur in O Q3P3 and R Q3P10.\\
+Q7P1&A&Rediscovery against the expanded baseline: the same others-only
+repair and static risk comparison are in the September 13--14 follow-ups.
+Different presentation is not a new mechanism.\\
+Q4P3&P&Modest extension: two-way separation of peer informativeness and defect
+truth, plus an F1 filtering inequality. O/R already warn that agreement and
+copied evidence are insufficient. No review intervention was tested.\\
+Q1P1&P&Extension of R/Q1P1's rare-tail lower bound from value estimation to
+an optimisation example with opposite optima. Threshold lifting is known;
+no new prediction-sensitive query saving is established.\\
+Q3P3&A&Refinement of old welfare-accounting family, not a new discovery of
+7.5 or of inefficient extra crossings. O/Q3P3 already records ceilings and
+omission/commission. The review intervention remains untested.\\
+Q4P9&A&Supported finite extension: all-board reciprocal contract witness
+and delivered-coverage identity, beyond R/Q4P9's path-audit proposal.
+Predominantly P-side, not an incentive theorem.\\
+Q7P7&A&Recombination: earlier payment repair plus O/R's carbon charge,
+restricted allocation and forecast-error arguments. Conditional synthesis
+for optional loads; not an additional independent repair.\\
+Q8P8&P&Formal extension: identical Gaussian observations can hide opposite
+causal directions; a scalar pose-spread statistic can hide free yaw. O/R
+already question rigidity as a proxy for causal attachment. No hand failure
+or control improvement was measured.\\
+Q3P6&A&New explicit auction-information example, sharing a family with
+I/Q3P5. Fixed value multiset, stipulated continuation, no frequency estimate.\\
+Q1P6&A&Largely reconstruction: O/Q1P6 has pooling and entry/exit accounting;
+R/Q1P6 has critic cancellation and estimator separation.\\
+Q1P2&P&Old first-gate margin plus an elementary unit-audit lower bound
+$n(1-2\delta)$. O/R already isolate missing observations and fallback
+conditions. The bound is not a physical LiDAR-cost certificate.\\
+\bottomrule
+\end{longtable}
+
+\begin{longtable}{p{17mm}p{7mm}p{112mm}}
+\toprule
+Reinject&End&Claim-level disposition\\\midrule
+\endfirsthead
+\toprule Reinject&End&Claim-level disposition\\\midrule\endhead
+Q4P2&P&Elementary extension of S2: calibrate a maximum over a fixed fitter
+menu to resist selection. Generic simultaneous coverage and the two-action
+obedience inequality are not a new measured wall-gate result.\\
+Q3P1&P&Inherited shaping invariance; hypothetical payoff-equivalent feedback.
+Public-tape ambiguity and a common-anchor example sharpen cautions, but do
+not establish a feedback effect. Relates to O/R Q3P3 and Q3P6.\\
+Q4P3&P&Modest tariff extension: own-token charges can miss counterparty
+costs in a fixed-match subgame. S3 already identifies avoided calls.
+The corrective reward needs metering, funding and enforcement.\\
+Q3P2&P&Supported Q-only numerical extension: the 44.9\% deficit bound.
+Welfare ceilings are inherited. The S2-style calibrated market guarantee
+has no run-level data and is not a new calibration theorem.\\
+Q7P3&P&Conditional accounting extension: paid learning can exhaust the
+participation surplus; a geometric sample schedule gives an iteration cap.
+S3 supplies cost accounting, but Q7 does not posit paid LLM samples.\\
+Q4P4&A&New connexion: finite-batch conditional CVaR reverses an
+obedience-cycle test. Inherits S4's surrogate bias, adds the specific
+state-independent implementability boundary and error certificates.\\
+Q1P3&A&Modest extension: completed fixed-price comparator and a
+price-error/rationing example. S3 and O/Q3P3 already supply the welfare
+ceiling and cheap-baseline motivation.\\
+Q3P4&P&Conditional instantiation of S4's risk reversal in an auction
+cross/wait choice. The stipulated continuation and analyst-only fill
+probability do not explain observed trader behaviour.\\
+Q4P5&P&Extensions under added models: observation-testing bound,
+measurement-based incentive obstruction, and a coarse-signal oversight
+counterexample/repair. S5 supplies the information issue. No matched-history
+handover data or strategic donor is established.\\
+Q7P2&P&Source corrections are inherited from R/Q7P7 and the September 14
+audit. S2-inspired dual-gap calibration is a conditional proposal with no
+trusted episode labels or nonvacuity demonstration.\\
+Q8P4&P&Elementary S4 risk example and a zero-fall sample calculation
+requiring 598 independent episodes under its stated target. No closed-loop
+hardware losses establish a controller result.\\
+Q3P5&P&Supported auction-information construction; shares C/Q3P6's family
+but integrates over random invitations. Refinement, not an exclusive
+reinjection discovery or observed explanation of market losses.\\
+Q1P5&P&Mostly S5's inherited obstruction, extended with a standard
+value-of-information identity and marginal set coverage. Practical sensing
+benefit remains unmeasured.\\
+Q1P1&A&Correction and substantive extension: shared flips can preserve
+agreement factorisation while reversing rankings; graph structure separates
+ordinal recovery and scale identification. Seed-driven, with Q1 framing
+the prediction interface.\\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\section{Corpus identity and evidence map}
+\label{app:corpus}
+
+The abbreviated corpus labels below preserve the original ordering. Full
+titles, abstracts and identifiers are in the root \path{Q.jsonl} and
+\path{P.jsonl}. The query-date prose in the engine note and the earliest
+saved scan receipts do not agree; corpus files and frozen hashes, rather
+than that date, identify the experiment here.
+
+\begin{longtable}{lp{108mm}}
+\toprule ID&Paper (arXiv identifier)\\\midrule\endfirsthead
+\toprule ID&Paper (arXiv identifier)\\\midrule\endhead
+Q1&Learning-Augmented Algorithms (2609.04787)\\
+Q2&Approximately Efficient Multidimensional Bilateral Trade (2609.02872)\\
+Q3&Competitive Market Behavior of LLMs (2609.02580)\\
+Q4&Mechanism Design for Alignment and Control (2609.01595)\\
+Q5&Sensitivity Hot Spot Penalization (2608.30499)\\
+Q6&Facility Location Games Under a Prelocated Facility (2608.30292)\\
+Q7&Mechanism Design with Stochastic Dynamic Stability (2608.29130)\\
+Q8&Aero Hand Open (2608.28578)\\
+Q9&Optomechanical inertial reference for atom interferometry (2608.28418)\\
+Q10&Canadian Galactic Emission Mapper (2608.28159)\\
+P1&Distributed risk-averse optimization via CVaR (2609.04460)\\
+P2&Concept-Guided Exploration (2608.23650)\\
+P3&Adversarial Review (2608.18167)\\
+P4&Uplink-Completion-Triggered Edge-GPU Inference (2608.08330)\\
+P5&Multi-Agent Reinforcement Learning for Base Station Placement (2607.28002)\\
+P6&MARS-RA (2607.27967)\\
+P7&Emission-Forecasting-Based Spatial-Temporal Carbon Response (2607.26560)\\
+P8&One Hand Watches The Other (2607.22119)\\
+P9&Commitment To Cooperation With Self-Negotiated Contracts (2607.22750)\\
+P10&The Energy Society (2607.14865)\\
+\bottomrule
+\end{longtable}
+
+Evidence paths are relative to the repository root. O/pair means
+\path{threads/<pair>/}; R/pair means
+\path{experiments/2026-09-23-gpt-6-sol-rerun-01/threads/<pair>/}.
+C and I mean respectively \path{repeat/threads/<pair>/} and
+\path{reinjection/threads/<pair>/} beneath
+\path{experiments/2026-09-25-repeat-injection/}.
+Within each thread, \path{ledger.jsonl} records numbered entries;
+\path{paper/paper.tex} is the final paper when present, and
+\path{edited/note.tex} is the readable account. Verdicts do not replace
+either source of evidence.
+
+The expanded historical baseline additionally includes
+\path{experiments/cache-run/threads/Q7P1/},
+\path{experiments/2026-09-13-paper-followups/threads/}, and
+\path{experiments/2026-09-14-Q7-source-audit/Q7-repair.tex}.
+The latter audit and the September 13 Q7P1 paper are essential to the
+payment-repair deduplication. Their inclusion changes the novelty judgment,
+not any frozen campaign input or outcome.
+
+The pilot manifest preserves exact seed ancestry, hashes, corpus and prompt
+hashes, configuration and the 28-entry schedule. Its \path{outcomes.json},
+arm \path{receipts.jsonl} files and final supervisor audit support the
+operational totals. These archived records remain unchanged by this review.
+
+\begin{thebibliography}{9}
+\bibitem{engine} Pathfinder. \emph{The Pathfinder engine}.
+Repository note, \path{notes/pathfinder-engine.tex}.
+\bibitem{protocol} Pathfinder. \emph{Repeat versus reinjection: claim
+baseline and pilot protocol}. 25 September 2026.
+\path{plans/2026-09-25-1623-repeat-versus-reinjection.md}.
+\bibitem{pilot} Pathfinder. \emph{Repeat--reinjection pilot archive}.
+25--27 September 2026. \path{experiments/2026-09-25-repeat-injection/}.
+See Appendix~\ref{app:corpus} for the thread-level evidence map.
+\bibitem{readout} Pathfinder. \emph{Repeat versus reinjection: first readout}.
+27 September 2026. \path{plans/2026-09-27-repeat-reinjection-readout.md}.
+Its initial candidates are superseded by the historical comparison here.
+\end{thebibliography}
+\end{document}
