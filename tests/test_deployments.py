@@ -49,10 +49,13 @@ def test_statarb_prepares_freezes_and_runs_the_candidate_engine(tmp_path, monkey
     record = json.loads((root / "run.json").read_text())
     assert record["engine"]["path"].startswith(str(root / "engine"))          # the frozen copy ran, not the checkout
     # statarb's research brief reached the prompts it appends to
-    probe = ("from pathfinder import config, resources; import json, sys; c = config.load(sys.argv[1]); "
-             "print(json.dumps({r: resources.prompt_template(c, r) for r in ('peer', 'consolidate', 'verify', 'editor')}))")
-    prompts = json.loads(subprocess.run([sys.executable, "-c", probe, str(root)], env=env, capture_output=True,
-                                        text=True, check=True).stdout)
+    probe = ("import pathfinder, json, sys; from pathfinder import config, resources; c = config.load(sys.argv[1]); "
+             "print(json.dumps({'origin': pathfinder.__file__, 'prompts': {r: resources.prompt_template(c, r) "
+             "for r in ('peer', 'consolidate', 'verify', 'editor')}}))")
+    out = json.loads(subprocess.run([sys.executable, "-c", probe, str(root)], cwd=tmp_path, env=env,
+                                    capture_output=True, text=True, check=True).stdout)
+    assert Path(out["origin"]).resolve().is_relative_to((root / "engine").resolve())   # the frozen engine answered
+    prompts = out["prompts"]
     brief = (statarb / "arxiv_drip/research-brief.md").read_text().strip()[:200]
     assert all(brief in text for text in prompts.values())
 
