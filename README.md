@@ -249,6 +249,90 @@ audit ends supervision visibly; it does not kill the campaign runner. Ctrl-C
 requests a campaign stop and ends the timer; active work may still be draining.
 A killed timer or sleeping host does not provide an independent watchdog.
 
+### Local failure alerts and supervision handoff
+
+Runner failures, blocked research, and supervision ending with `needs_operator`
+write `alert.json` and append `alerts.jsonl`, print a terminal alert, and attempt
+a macOS desktop notification without calling a model. Thus failed model
+authentication does not prevent the timer from alerting. Desktop delivery is
+best effort: macOS notification permissions and Focus settings may hide it.
+`submitted` means the notification command succeeded, not that the user saw it.
+Other platforms retain the terminal and file alerts. Disable desktop attempts
+with `"notifications": {"desktop": false}` in `campaign.json`.
+
+This is not an independent watchdog for a killed timer or a sleeping host.
+Notification failures are recorded and do not mask the original pipeline error.
+No email, network notification service, or background system service is installed.
+
+Extend an active watch without relaunching research:
+
+```sh
+uv run python -m pathfinder.supervise --root CAMPAIGN --extend-hours 6
+```
+
+The request targets the current session only. Check `extension_id` and
+`deadline_at` in `supervision/latest-session.json` to confirm it was applied.
+The timer checks between audits and at most five seconds apart while waiting;
+an ongoing audit must finish first. Request extensions before the deadline.
+An expired or failed watch requires a new session, not an extension request.
+
+If research is still running after its watch ends, inspect its recorded PID and
+process identity, then attach a new watch without starting another runner:
+
+```sh
+uv run python -m pathfinder.supervise --root CAMPAIGN --attach-pid PID \
+  --hours 6 --scope 'Research and editing for this campaign' \
+  --resume-command 'uv run pathfinder --root CAMPAIGN research'
+```
+
+Attachment requires a PID matching campaign evidence and available process
+identity information. It pins that identity while watching, refuses an active
+timer or stop marker, and does not signal or launch the attached runner.
+The explicit PID still needs operator inspection, especially for legacy records
+or possible PID reuse before attachment. For an exited runner, use the normal
+start/resume command instead. Include author/reviewer stages in scope and the
+resume command when the campaign runs a full pipeline.
+
+### Saved verdict repair
+
+An explicitly authorized supervisor can use `--allow-verdict-repair`, or an
+operator can run:
+
+```sh
+uv run pathfinder --root CAMPAIGN repair-verdict Q1P1
+```
+
+This repairs only illegal JSON string escapes in an existing completed PAUSE
+or DRAFT verifier reply with a reason and null action. It matches the saved
+reply to its receipt, preserves the raw reply and research note, records
+before-state and hashes under `supervision/repairs/`, and logs the intervention.
+It makes no model call, changes no judgment, and leaves editing/paper work for
+the normal resume path. Live owners, active calls, stops, duplicate round
+verdicts, ambiguous content and unsupported verdict transitions are refused.
+Inspect descendants before repair. If interrupted between checkpoint writes,
+use the preserved before-state for explicit reconciliation rather than bypassing
+the duplicate-round guard.
+
+Accepted papers and completed edits may still carry unresolved reference checks.
+These remain visible in `health --json` and its text warnings; acceptance does
+not silently certify a failed external lookup.
+
+### Shared engine used by statarb
+
+The sibling statarb adapter, `arxiv_drip/research_protocol.py`, freezes this
+repository's `pathfinder/` package and prompts into each new investigation by
+default (or uses its configured `pathfinder_root`). No second maintained engine
+needs copying. New jobs therefore inherit these fixes; existing frozen jobs do
+not. Its paper-to-strategy dossier, subscription accounting, persisted sessions,
+data contracts and trading controls remain statarb-specific. Merely inheriting
+supervision commands does not enable an Astra timer in statarb's worker.
+
+The local transport now distinguishes recoverable reconnect events from terminal
+failure: a successfully completed turn and successful process exit can clear a
+transient error, while raw events remain in the receipt. A terminal failure,
+nonzero exit, timeout, or absent completion event still fails the call. This
+adopts statarb's final-outcome discipline without importing trading behavior.
+
 Evidence lives under `supervision/`: `latest-session.json`, a session directory
 with runner logs and state, per-audit before/after snapshots, filtered process
 evidence, agent event logs and structured results, and `incidents.jsonl` written
@@ -360,8 +444,8 @@ notes the same way on demand.
 
 ## Departures from the agQSL instance
 
-- One package, standard library only, one loop in one terminal; no
-  supervisors, services or notification files.
+- One package, standard library only, with a terminal runner, optional
+  bounded supervision, and local failure notifications; no required service.
 - Receipts are the only spend figure; there is no separate cost model.
 - Stops are always drains; there is no forced kill short of a second Ctrl-C.
 - ITERATE loops automatically up to `rounds`; nothing waits for a human.

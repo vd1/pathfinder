@@ -95,6 +95,7 @@ def _parse(campaign, model, lines):
     """Text, session, the provider's last usage object as reported (None when none arrived, possibly
     partial on a call that did not complete), the cost the provider reported, the error, the first turn's cache hit."""
     text, session, usage, cost, err, prefix_read = "", None, None, None, None, None
+    terminal_failure = False
     for line in lines:
         try:
             row = json.loads(line)
@@ -121,8 +122,11 @@ def _parse(campaign, model, lines):
             text = row["item"].get("text", "")
         elif t == "turn.completed":
             usage = row.get("usage") or usage
+            if not terminal_failure:
+                err = None  # A completed turn can recover from transient reconnect events.
         elif t in ("error", "turn.failed"):
             err = str(row.get("error") or row.get("message") or t)
+            terminal_failure = terminal_failure or t == "turn.failed"
     return text, session, usage, cost, err, prefix_read
 
 
@@ -260,6 +264,17 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         _kill(proc); error = "timeout"
     t.join(5)
     text, session, usage, reported, err, prefix_read = _parse(campaign, model, lines)
+    if campaign.backend != "claude" and not err and not error:
+        events = []
+        for line in lines:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(event, dict):
+                events.append(event.get("type"))
+        if "turn.completed" not in events:
+            err = "CLI exited without a completed turn"
     if proc.returncode not in (0, None) and not error and not err:
         err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
     counters = _counters(campaign.backend, usage)

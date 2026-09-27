@@ -157,3 +157,34 @@ def test_codex_search_opens_the_sandbox_network(tmp_path):
     no_search = transport._command(c, "m", tools=True, search=False, cwd=tmp_path)
     assert "--search" in search and "sandbox_workspace_write.network_access=true" in search
     assert "--search" not in no_search and "sandbox_workspace_write.network_access=true" not in no_search
+
+
+def test_reconnect_error_is_not_a_terminal_failure(tmp_path):
+    c = campaign(tmp_path, "codex")
+    events = [{"type": "error", "message": "Reconnecting..."},
+              {"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}},
+              {"type": "turn.completed", "usage": {"input_tokens": 1}}]
+    result = transport._parse(c, "m", [json.dumps(x) for x in events])
+    assert result[0] == "ok" and result[4] is None
+    for event in [{"type": "turn.failed", "error": "denied"}, {"type": "error", "message": "final failure"}]:
+        result = transport._parse(c, "m", [json.dumps(x) for x in events + [event]])
+        assert result[4]
+    events.insert(1, {"type": "turn.failed", "error": "terminal failure"})
+    assert transport._parse(c, "m", [json.dumps(x) for x in events])[4]
+
+
+@pytest.mark.parametrize("complete,exit_code,expected", [(True, 0, "completed"), (True, 1, "error"), (False, 0, "error")])
+def test_transport_requires_successful_terminal_completion(tmp_path, monkeypatch, complete, exit_code, expected):
+    import sys
+    events = [{"type": "thread.started", "thread_id": "fixture"},
+              {"type": "error", "message": "Reconnecting..."},
+              {"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}}]
+    if complete:
+        events.append({"type": "turn.completed", "usage": {"input_tokens": 1, "output_tokens": 1}})
+    code = "import sys; sys.stdin.read(); print(" + repr("\n".join(json.dumps(e) for e in events)) + f"); sys.exit({exit_code})"
+    monkeypatch.setattr(transport, "_command", lambda *a: [sys.executable, "-c", code])
+    result = transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=False,
+                            search=False, cwd=tmp_path, timeout=2, thread="T", stage="verify", actor="judge")
+    assert result["outcome"] == expected
+    assert result["transport_failed"] == (expected != "completed")
+    assert any("Reconnecting" in e for e in result["raw_events"])

@@ -38,6 +38,7 @@ def main(argv=None):
     sub.add_parser("restyle", help="rebuild every note, readable note and paper PDF with the current styles; sources untouched")
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
+    sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
     ns = ap.parse_args(argv); c = config.load(Path(ns.root))
     if ns.cmd == "fetch" and ns.more:
         for side in ("Q", "P"):
@@ -66,6 +67,9 @@ def main(argv=None):
             print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']})")
     elif ns.cmd == "research":
         return runner.run(c)
+    elif ns.cmd == "repair-verdict":
+        from . import recovery
+        print(json.dumps(recovery.repair_verdict(c, ns.pair), indent=2))
     elif ns.cmd == "stop":
         if ns.clear:
             c.path("stop.json").unlink(missing_ok=True); print("stop marker cleared")

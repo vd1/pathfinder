@@ -115,7 +115,13 @@ def snapshot(campaign):
         pid = pair["pair_id"]
         research_state = inspect(campaign.thread_dir(pid) / "status.json") or {}
         editor = inspect(campaign.thread_dir(pid) / "edited/edit.json") or {}
-        work.append({"pair": pid, "research": research_state, "editor": editor,
+        paper = inspect(campaign.thread_dir(pid) / "paper/paper.json") or {}
+        checks = {"editor": editor.get("checks", []), "paper": paper.get("checks", [])}
+        for stage, findings in checks.items():
+            if findings:
+                warnings.append(f"{pid}/{stage}: unresolved reference/build checks; inspect the stage record.")
+        work.append({"pair": pid, "research": research_state, "editor": editor, "paper": paper,
+                     "checks": checks,
                      "needs_edit": research_state.get("status") in research.TERMINAL and editor.get("status") != "done"})
     failure = inspect(campaign.path("health.json"))
     if failure:

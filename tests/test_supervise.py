@@ -127,3 +127,114 @@ def test_unavailable_process_evidence_is_explicit(monkeypatch):
         raise PermissionError("ps denied")
     monkeypatch.setattr(supervise.subprocess, "run", denied)
     assert supervise.processes([20])["available"] is False
+
+
+def test_model_failure_produces_non_model_alert(tmp_path, monkeypatch):
+    def fail(*args):
+        raise RuntimeError("model authentication unavailable")
+    monkeypatch.setattr(supervise, "audit", fail)
+    c = campaign(tmp_path)
+    assert run(c, [sys.executable, "-c", "pass"]) == 1
+    assert health.read(c.path("alert.json"))["kind"] == "supervision needs operator"
+
+
+def test_extension_is_consumed_without_restarting_runner(tmp_path, monkeypatch):
+    c = campaign(tmp_path)
+    seen = []
+    def audit(*args):
+        s = health.read(c.path("supervision/latest-session.json"))
+        seen.append(s)
+        if len(seen) == 1:
+            request = supervise.extend(c, .001)
+            assert request["deadline_at"] > s["deadline_at"]
+            with pytest.raises(RuntimeError, match="pending"):
+                supervise.extend(c, .001)
+            return {"status": "continue", "summary": "extended"}
+        assert s["extension_id"]
+        assert s["runner_pid"] == seen[0]["runner_pid"]
+        assert s["deadline_at"] > seen[0]["deadline_at"]
+        return {"status": "complete", "summary": "done"}
+    monkeypatch.setattr(supervise, "audit", audit)
+    assert run(c, [sys.executable, "-c", "pass"]) == 0
+
+
+@pytest.mark.parametrize("hours", [0, -1, float("nan"), float("inf")])
+def test_invalid_extension_rejected(tmp_path, hours):
+    with pytest.raises(ValueError):
+        supervise.extend(campaign(tmp_path), hours)
+
+
+def test_expired_or_stopped_watch_cannot_be_extended(tmp_path):
+    c = campaign(tmp_path)
+    with pytest.raises(RuntimeError, match="No live"):
+        supervise.extend(c, 6)
+
+
+def test_attach_does_not_launch_or_kill_runner(tmp_path, monkeypatch):
+    c = campaign(tmp_path)
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(10)"])
+    try:
+        health.write(c.path("runner.json"), {"pid": child.pid, "status": "running", "heartbeat_at": time.time()})
+        monkeypatch.setattr(supervise, "audit", lambda *a: {"status": "needs_operator", "summary": "fixture"})
+        monkeypatch.setattr(supervise, "process_identity", lambda pid: "fixture process birth")
+        monkeypatch.setattr(supervise.subprocess, "Popen", lambda *a, **k: pytest.fail("attach launched a process"))
+        assert supervise.session(c, tmp_path, [], ["approved-resume"], "test", interval=.01,
+                                 hours=.001, attach_pid=child.pid) == 1
+        assert child.poll() is None
+        state = health.read(c.path("supervision/latest-session.json"))
+        assert state["attach_pid"] == child.pid and state["process_identity"]
+    finally:
+        child.terminate(); child.wait(timeout=5)
+
+
+def test_attach_rejects_unrelated_pid(tmp_path):
+    import os
+    with pytest.raises(RuntimeError, match="does not match"):
+        supervise.session(campaign(tmp_path), tmp_path, [], ["resume"], "test", attach_pid=os.getpid())
+
+
+def test_verdict_repair_authority_is_explicit(tmp_path, monkeypatch):
+    c = campaign(tmp_path)
+    monkeypatch.setattr(supervise, "audit", lambda *a: {"status": "complete", "summary": "fixture"})
+    assert run(c, [sys.executable, "-c", "pass"], allow_verdict_repair=True) == 0
+    assert health.read(c.path("supervision/latest-session.json"))["verdict_repair_command"][-1] == "repair-verdict"
+
+
+def test_attached_pid_reuse_is_treated_as_exit(monkeypatch):
+    identities = iter(["original birth", "different birth"])
+    monkeypatch.setattr(supervise, "process_identity", lambda pid: next(identities))
+    process = supervise.AttachedProcess(123)
+    assert process.poll() == 0
+
+
+def test_process_identity_refuses_unavailable_evidence(monkeypatch):
+    monkeypatch.setattr(supervise.subprocess, "run", lambda *a, **k:
+                        subprocess.CompletedProcess(a[0], 1, stdout="", stderr="permission denied"))
+    with pytest.raises(RuntimeError, match="identity"):
+        supervise.process_identity(123)
+
+
+def test_stale_extension_cannot_extend_a_different_session(tmp_path, monkeypatch):
+    c = campaign(tmp_path)
+    health.write(c.path("supervision/extension-request.json"), {
+        "session": "other-session", "id": "old", "deadline_at": time.time() + 9999})
+    monkeypatch.setattr(supervise, "audit", lambda *a: {"status": "complete", "summary": "fixture"})
+    assert run(c, [sys.executable, "-c", "pass"]) == 0
+    state = health.read(c.path("supervision/latest-session.json"))
+    assert "extension_id" not in state
+
+
+def test_extension_is_seen_while_runner_remains_alive(tmp_path, monkeypatch):
+    c = campaign(tmp_path)
+    seen = []
+    def audit(*args):
+        seen.append(health.read(c.path("supervision/latest-session.json")))
+        if len(seen) == 1:
+            supervise.extend(c, .001)
+            return {"status": "continue", "summary": "fixture"}
+        assert seen[-1].get("extension_id")
+        return {"status": "needs_operator", "summary": "fixture stop"}
+    monkeypatch.setattr(supervise, "audit", audit)
+    assert run(c, [sys.executable, "-c", "import time; time.sleep(.3)"]) == 1
+    import os
+    os.waitpid(seen[0]["runner_pid"], 0)

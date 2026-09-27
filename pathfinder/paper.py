@@ -171,7 +171,7 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
     tex, bib = (pd / "paper.tex").read_text(errors="replace"), (pd / "references.bib").read_text(errors="replace")
     checks = check_references(tex, bib) + ([] if ok else ["the pipeline's own latexmk build failed:\n" + log])
     (pd / f"checks-round-{rnd}.txt").write_text("\n".join(checks) or "no findings")
-    _set(campaign, pair_id, status="reviewing", round=rnd, build_ok=ok)
+    _set(campaign, pair_id, status="reviewing", round=rnd, build_ok=ok, checks=checks)
     # static material first (the same head as the verifier's), then what changes each round, the instruction last
     q = research.judge_head(d, inp, f"{pair_id}.tex")
     q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")

@@ -4,7 +4,7 @@ import copy, hashlib, json, os, signal, time, uuid
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
 from . import research, transport
-from . import corpus, health
+from . import alerts, corpus, health
 
 
 def _digest(path: Path) -> str:
@@ -269,6 +269,7 @@ def run(campaign, interval: float = 5.0):
             return result
         except BaseException as error:
             metadata.update(status="failed", error=repr(error))
+            alerts.emit(campaign, "runner failed", campaign.path("runner.json"))
             raise
         finally:
             metadata.update(heartbeat_at=time.time(), finished_at=time.time())
@@ -298,6 +299,7 @@ def _run(campaign, interval, metadata):
                if research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"]
     if blocked:
         print(f"blocked investigations require reconcile: {', '.join(blocked)}")
+        alerts.emit(campaign, "research blocked", campaign.path("threads"))
     return 1 if unhealthy(campaign) or blocked else 0
 
 
@@ -339,3 +341,4 @@ def _loop(campaign, ex, interval, futures, metadata):
                     stream.write(json.dumps(failure) + "\n")
                 if not unhealthy(campaign):
                     health.write(campaign.path("health.json"), failure)
+                    alerts.emit(campaign, "runner stage failed", campaign.path("health.json"))
