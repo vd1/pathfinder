@@ -140,3 +140,28 @@ def test_codex_search_as_configuration(tmp_path):
     off = transport._command(c, "m", True, False, tmp_path)
     assert 'web_search="live"' in live and "--search" not in live and 'web_search="disabled"' in off
     assert "--search" in transport._command(make(tmp_path / "flag", backend="codex"), "m", True, True, tmp_path)
+
+
+def test_a_transport_extension_answers_inside_admission_and_engine_receipts(tmp_path):
+    c = make(tmp_path, backend="claude", extensions={"path": "deploy", "transport": "hostdispatch_mod:execute"})
+    _policy_module(tmp_path, "hostdispatch_mod",
+                   "seen = []\n"
+                   "def execute(campaign, request):\n"
+                   "    seen.append((request.stage, request.actor))\n"
+                   "    return {'text': 'answer', 'session': 'host-1', 'cost': 0.25}\n")
+    r = transport.execute(c, _request(cwd=tmp_path))
+    rows = transport.receipts(c)
+    assert r["text"] == "answer" and r["outcome"] == "completed" and not r["transport_failed"]
+    assert rows[-1]["outcome"] == "completed" and rows[-1]["cost"] == 0.25 and rows[-1]["cost_basis"] == "reported"
+    assert admission.reserved(c) == 0 and not list((tmp_path / "active-calls").glob("*.json"))
+    import hostdispatch_mod
+    assert hostdispatch_mod.seen == [("scan", "judge")]
+
+
+def test_a_failing_transport_extension_leaves_a_receipt_and_the_evidence(tmp_path):
+    c = make(tmp_path, backend="claude", extensions={"path": "deploy", "transport": "hostfail_mod:execute"})
+    _policy_module(tmp_path, "hostfail_mod", "def execute(campaign, request):\n    raise OSError('host down')\n")
+    with pytest.raises(OSError):
+        transport.execute(c, _request(cwd=tmp_path))
+    assert transport.receipts(c)[-1]["outcome"] == "error" and admission.reserved(c) == 0
+    assert list((tmp_path / "active-calls").glob("*.json"))          # the abrupt-exit evidence stays, as for any call

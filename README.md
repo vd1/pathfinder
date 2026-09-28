@@ -378,8 +378,11 @@ adjusts it only through:
 - prompt overlays and a `styles/` directory, as above;
 - extensions named in `campaign.json` and loaded from the deployment's own code:
   `"extensions": {"path": "deploy", "admission": "mypolicies:budget",
-  "snapshot_extra": "mymonitor:extra"}`. Extension code is trusted; the engine
-  validates what it returns. Each deployment's modules need unique names.
+  "snapshot_extra": "mymonitor:extra", "transport": "mydispatch:execute"}`.
+  A `transport` extension is a deployment's own dispatcher: the engine still
+  admits each call, records it and writes the receipt. Extension code is
+  trusted; the engine validates what it returns. Each deployment's modules
+  need unique names.
 
 **Admission.** Every model call is admitted inside an engine-owned
 reservation. Under one lock the engine checks the campaign's stop marker and

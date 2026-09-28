@@ -181,6 +181,36 @@ def _failed(campaign, thread, stage, actor, model, started, outcome, error):
     return r
 
 
+RESULT_KEYS = ("text", "session", "seconds", "usage", "input_tokens", "output_tokens", "cache_write", "cache_read",
+               "prefix_read", "cost", "cost_basis", "rates", "outcome", "error", "transport_failed", "exit_status",
+               "terminal_event", "raw_events")
+
+
+def _extension_call(campaign, request, dispatcher):
+    """A deployment's transport extension answers the request. The engine has already admitted the call and
+    written its active-call record; it normalises the result and writes the receipt, so the engine's
+    records do not depend on the extension keeping its own. A missing counter stays unknown."""
+    started = time.time()
+    try:
+        raw = dispatcher(campaign, request)
+    except Exception as error:
+        r = {"text": "", "outcome": "error", "error": f"transport extension: {error!r}", "transport_failed": True,
+             "seconds": round(time.time() - started, 1)}
+        _receipt(campaign, request.thread, request.stage, request.actor, request.model, {k: r.get(k) for k in RESULT_KEYS})
+        raise
+    if not isinstance(raw, dict) or not isinstance(raw.get("text", ""), str):
+        raise TypeError(f"transport extension returned {type(raw).__name__}; expected a result dict with text")
+    r = {k: raw.get(k) for k in RESULT_KEYS}
+    r["text"] = raw.get("text") or ""
+    r["error"] = raw.get("error")
+    r["transport_failed"] = bool(raw.get("transport_failed"))
+    r["seconds"] = raw.get("seconds") if raw.get("seconds") is not None else round(time.time() - started, 1)
+    r["outcome"] = raw.get("outcome") or ("error" if r["error"] or r["transport_failed"] else "completed")
+    r["cost_basis"] = raw.get("cost_basis") or ("reported" if raw.get("cost") is not None else None)
+    _receipt(campaign, request.thread, request.stage, request.actor, request.model, r)
+    return r
+
+
 def execute_sync(request: ModelRequest, adapter):
     """@planks("When Pathfinder assigns the request to Pi")
     @planks("When Pathfinder executes the request")
@@ -240,6 +270,10 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         r = stub.execute(campaign, request)
         _receipt(campaign, thread, stage, actor, model, r)
         return r
+    from . import extensions
+    dispatcher = extensions.load(campaign, "transport")
+    if dispatcher is not None:                      # a deployment's own dispatcher, inside admission and receipts
+        return _extension_call(campaign, request, dispatcher)
     started = time.time()
     try:
         proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),

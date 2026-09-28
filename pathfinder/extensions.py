@@ -5,12 +5,13 @@
 "path" (relative to the campaign root, optional) is put on sys.path; each other entry is "module:object".
 Extension code runs in the engine's process and is trusted: the engine validates what it returns and keeps
 its own records authoritative, but does not police what it does. Supported names: admission,
-snapshot_extra."""
+snapshot_extra, transport (a deployment's own dispatcher, called as dispatcher(campaign, request) inside
+the engine's admission, active-call record and receipt)."""
 from __future__ import annotations
 import hashlib, importlib, inspect, sys
 from pathlib import Path
 
-SUPPORTED = {"admission", "snapshot_extra"}
+SUPPORTED = {"admission", "snapshot_extra", "transport"}
 
 
 def _spec(campaign) -> dict:
