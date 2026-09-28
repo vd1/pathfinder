@@ -1,0 +1,142 @@
+{
+  "observation_time": "2026-09-28T11:47:56.244506+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "status": "continue",
+  "comparison_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-002/observed.json",
+  "comparison_generated_at": 1790595756.2896519,
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-003/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-003/processes.json",
+  "facts": [
+    "Runner PID 49475 and run identities agree across session, root and repeat records. Supplied process tree identifies the Python runner under supervisor 49472 and its then-active codex verifier child 59747. Point-in-time evidence cannot exclude PID reuse; no process intervention is needed or attempted.",
+    "Previous audit had Q4P6 in peers. Receipts now establish peer completion, consolidation completion at 11:46:52Z and verification completion at 11:47:27Z. This is stage progress, not heartbeat-only activity.",
+    "Recursive has no recorded calls or owner and remains queued under the sequential coordinator schedule; absent instrumentation alone is not treated as health.",
+    "All four entries still require completion of the assigned research, readable editing and DRAFT paper pipeline. No completed investigation was present at the initial observation. Root progress is empty.",
+    "Aggregate launch.py status agrees with health. Runner log records successful preflight and Q4P6 admission. No recorded failures, stops or censoring; no overdue call or livelock evidence."
+  ],
+  "current_arms": {
+    "repeat": {
+      "runner": {
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "pid": 49475,
+        "status": "running",
+        "started_at": 1790595117.597286,
+        "heartbeat_at": 1790596074.3022132,
+        "last_progress": null,
+        "previous_failure": null,
+        "active_pairs": [
+          "Q4P6"
+        ],
+        "pid_alive": true,
+        "heartbeat_age_seconds": 1.9
+      },
+      "active_calls": [
+        {
+          "attempt_id": "7d35d2715ef14ab9b76673227e3ca806",
+          "run_id": "57376373baef4bb5a1671ed7e1777960",
+          "pid": 49475,
+          "thread": "Q4P6",
+          "stage": "edit",
+          "actor": "editor",
+          "started_at": 1790596047.4368992,
+          "deadline_at": 1790596947.4368992,
+          "timeout_seconds": 900,
+          "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q4P6",
+          "child_pid": 60154,
+          "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/7d35d2715ef14ab9b76673227e3ca806.json",
+          "pid_alive": true,
+          "child_alive": true,
+          "age_seconds": 28.8,
+          "overdue_seconds": 0
+        }
+      ],
+      "last_completed_call": {
+        "at": "2026-09-28T11:47:27Z",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      "work": [
+        {
+          "pair": "Q4P6",
+          "research": {
+            "pair_id": "Q4P6",
+            "round": 1,
+            "stage": "done",
+            "status": "PAUSE",
+            "reason": "The shared-error counterexample is sound, but it establishes a known identification limit rather than a new result connecting Q\u2019s pre-signal reporting mechanism to P\u2019s post-observation comparisons. A paper section making a stronger claim needs a defined contribution target and independent audits or observation groups, supported by a new theorem or benchmark evidence that the peers do not have.",
+            "started": "2026-09-28T11:31:57Z",
+            "updated": "2026-09-28T11:47:27Z",
+            "repair": null
+          },
+          "editor": {
+            "status": "editing",
+            "attempt": 1,
+            "updated": "2026-09-28T11:47:27Z"
+          },
+          "paper": {},
+          "checks": {
+            "editor": [],
+            "paper": []
+          },
+          "needs_edit": true
+        },
+        {
+          "pair": "Q1P1",
+          "research": {},
+          "editor": {},
+          "paper": {},
+          "checks": {
+            "editor": [],
+            "paper": []
+          },
+          "needs_edit": false
+        }
+      ],
+      "failure_count": 0,
+      "stop": null
+    },
+    "recursive": {
+      "runner": null,
+      "active_calls": [],
+      "last_completed_call": null,
+      "work": [
+        {
+          "pair": "Q4P1",
+          "research": {},
+          "editor": {},
+          "paper": {},
+          "checks": {
+            "editor": [],
+            "paper": []
+          },
+          "needs_edit": false
+        },
+        {
+          "pair": "Q1P2",
+          "research": {},
+          "editor": {},
+          "paper": {},
+          "checks": {
+            "editor": [],
+            "paper": []
+          },
+          "needs_edit": false
+        }
+      ],
+      "failure_count": 0,
+      "stop": null
+    }
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/schedule.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/engine/pathfinder/coordinator.py"
+  ],
+  "action": "No campaign intervention. Saved observed snapshot and latest-health.json.",
+  "follow_up": "Next parent audit checks current stage completion and subsequent editing/paper progress.",
+  "pane_title": "Rename attempted but sandbox returned PermissionDenied; title unverified."
+}

@@ -1,0 +1,28 @@
+{
+  "observation_time": "2026-09-28T11:42:36.289652+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "status": "continue",
+  "comparison_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-001/after.json",
+  "comparison_generated_at": 1790595456.948119,
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-002/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-002/processes.json",
+  "facts": [
+    "Runner 49475 matches session, root and repeat run records, and supplied process tree. Its recorded codex children 49482 and 56353 match Emmy and Ada calls. Evidence is point-in-time and does not resolve PID reuse; no process intervention attempted.",
+    "Root and repeat heartbeats are fresh. Both peer calls are within their nominal 1230-second deadlines.",
+    "Since previous audit Ada completed a call at 11:39:15Z and resumed after Emmy posted a new substantive finding. research.py readiness loop supports this continuation; no error retry or livelock evidence.",
+    "Ledger advanced from seven entries to thirteen, including new findings at 11:41:25Z and 11:42:12Z; both peers have research notes. No completed investigation yet.",
+    "Recursive has no recorded owner or active call. coordinator.py executes schedule sequentially, currently on repeat/Q4P6; recursive remains queued, not inferred healthy from absent instrumentation.",
+    "Aggregate launch.py status agrees with maintained health. Progress is empty; all four scheduled entries still require completed research, readable editing and DRAFT author/reviewer papers. No root or arm stop, failure or censoring reported.",
+    "Runner log contains preflight success and Q4P6 admission. No recovery indicated."
+  ],
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q4P6/ledger.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/schedule.json"
+  ],
+  "action": "No intervention; preserve current snapshot as latest-health.json.",
+  "follow_up": "Next parent audit checks peer completion and stage advancement.",
+  "pane_title": "HERDR_PANE_ID is unavailable; no rename attempted."
+}

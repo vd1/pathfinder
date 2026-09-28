@@ -1,5 +1,22 @@
 # Recursive extension run record
 
+## Completed run
+
+Finished 28 September 2026 at 15:25:27 Europe/Paris, after 113.50 minutes.
+All four investigations and readable edits completed. Recursive Q4P1 and
+Q1P2, and repeat Q1P1, reached ACCEPTED papers; repeat Q4P6 ended PAUSE.
+All 34 calls completed: 16 repeat and 18 recursive. Recorded research cost
+was 6.8965948 and 8.7036228 API-equivalent dollars respectively, excluding
+supervision. Astra performed 23 audits and reported completion without a
+restart or repair. This is operational completion, not external validation.
+
+The output archive is preserved byte-for-byte. The staged style gate reports
+11 missing-final-newline errors in original consolidated notes and saved
+author/editor replies, plus 142 source-layout warnings. These are explicitly
+retained archival exceptions so output hashes and the review record remain
+intact; new corrections belong in separately versioned copies. The style-ban
+check passes after supplied upstream input texts are excluded from staging.
+
 Protocol: `plans/2026-09-28-1322-recursive-extension.md`.
 The setup is frozen in `manifest.json`; runtime outcomes are separate.
 The engine is the verified copy of commit `01b0f87`, not a modified copy

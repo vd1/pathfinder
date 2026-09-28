@@ -1,0 +1,29 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-28T13:25:25Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "3e4b986053d1fafafbb378bb9543b969b7572653271abe50225da472dc956965",
+  "decision": "ACCEPT",
+  "summary": "The claims trace to the supplied note and ledger, the main bounds and examples are correct, and the paper separates its conditional bridge from Q, P, and prior work. Two small clarifications would improve the presentation.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Section 3, deployment certificate",
+    "issue": "The paper does not explicitly say that \u03b1 is the upper-tail mass, which is needed to read the stated future-loss probability bound.",
+    "fix": "Define the CVaR convention when \u03b1 is introduced."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Limitations and open questions, finite-sample example",
+    "issue": "The interval p\u2208(\u03b1b/U,\u03b1) is nonempty only when b<U; that choice is unstated.",
+    "fix": "Specify 0<b<U for the example."
+   }
+  ]
+ }
+]

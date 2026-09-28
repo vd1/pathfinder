@@ -1,0 +1,202 @@
+{
+  "generated_at": 1790595456.948119,
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "runner": {
+    "pid": 49475,
+    "run_id": "ad6c24c6e1ef431baca4fde017595707",
+    "status": "running",
+    "started_at": 1790595117.573193,
+    "heartbeat_at": 1790595453.173099,
+    "last_progress": null,
+    "censored_arms": [],
+    "coordination_id": "9c76acaadc1f4fdba205de92c9bb0c6e",
+    "entry": {
+      "arm": "repeat",
+      "pair": "Q4P6"
+    },
+    "stage": "pair",
+    "pid_alive": true,
+    "heartbeat_age_seconds": 3.8
+  },
+  "active_calls": [],
+  "last_completed_call": null,
+  "failure_count": 0,
+  "recent_failures": [],
+  "failure": null,
+  "stop": null,
+  "work": [],
+  "warnings": [],
+  "evidence": {
+    "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/receipts.jsonl",
+    "runner": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/runner.json",
+    "failures": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/failures.jsonl"
+  },
+  "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health.",
+  "extensions": {
+    "parent": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+    "runner": {
+      "pid": 49475,
+      "run_id": "ad6c24c6e1ef431baca4fde017595707",
+      "status": "running",
+      "started_at": 1790595117.573193,
+      "heartbeat_at": 1790595453.173099,
+      "last_progress": null,
+      "censored_arms": [],
+      "coordination_id": "9c76acaadc1f4fdba205de92c9bb0c6e",
+      "entry": {
+        "arm": "repeat",
+        "pair": "Q4P6"
+      },
+      "stage": "pair"
+    },
+    "progress": {},
+    "stop": null,
+    "arms": {
+      "repeat": {
+        "generated_at": 1790595456.950433,
+        "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat",
+        "runner": {
+          "run_id": "57376373baef4bb5a1671ed7e1777960",
+          "pid": 49475,
+          "status": "running",
+          "started_at": 1790595117.597286,
+          "heartbeat_at": 1790595453.169753,
+          "last_progress": null,
+          "previous_failure": null,
+          "active_pairs": [
+            "Q4P6"
+          ],
+          "pid_alive": true,
+          "heartbeat_age_seconds": 3.8
+        },
+        "active_calls": [
+          {
+            "attempt_id": "3ea7be53cb634bd09d2e588ac9506bbd",
+            "run_id": "57376373baef4bb5a1671ed7e1777960",
+            "pid": 49475,
+            "thread": "Q4P6",
+            "stage": "peer",
+            "actor": "ada",
+            "started_at": 1790595117.601161,
+            "deadline_at": 1790596347.601161,
+            "timeout_seconds": 1230,
+            "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q4P6",
+            "child_pid": 49481,
+            "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/3ea7be53cb634bd09d2e588ac9506bbd.json",
+            "pid_alive": true,
+            "child_alive": true,
+            "age_seconds": 339.3,
+            "overdue_seconds": 0
+          },
+          {
+            "attempt_id": "97c2839cef154506bafe90d27fbf4a9e",
+            "run_id": "57376373baef4bb5a1671ed7e1777960",
+            "pid": 49475,
+            "thread": "Q4P6",
+            "stage": "peer",
+            "actor": "emmy",
+            "started_at": 1790595117.601331,
+            "deadline_at": 1790596347.601331,
+            "timeout_seconds": 1230,
+            "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q4P6",
+            "child_pid": 49482,
+            "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/97c2839cef154506bafe90d27fbf4a9e.json",
+            "pid_alive": true,
+            "child_alive": true,
+            "age_seconds": 339.3,
+            "overdue_seconds": 0
+          }
+        ],
+        "last_completed_call": null,
+        "failure_count": 0,
+        "recent_failures": [],
+        "failure": null,
+        "stop": null,
+        "work": [
+          {
+            "pair": "Q4P6",
+            "research": {
+              "pair_id": "Q4P6",
+              "round": 1,
+              "stage": "peers",
+              "status": "running",
+              "reason": null,
+              "started": "2026-09-28T11:31:57Z",
+              "updated": "2026-09-28T11:31:57Z"
+            },
+            "editor": {},
+            "paper": {},
+            "checks": {
+              "editor": [],
+              "paper": []
+            },
+            "needs_edit": false
+          },
+          {
+            "pair": "Q1P1",
+            "research": {},
+            "editor": {},
+            "paper": {},
+            "checks": {
+              "editor": [],
+              "paper": []
+            },
+            "needs_edit": false
+          }
+        ],
+        "warnings": [],
+        "evidence": {
+          "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/receipts.jsonl",
+          "runner": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/runner.json",
+          "failures": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/failures.jsonl"
+        },
+        "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health."
+      },
+      "recursive": {
+        "generated_at": 1790595456.950943,
+        "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive",
+        "runner": null,
+        "active_calls": [],
+        "last_completed_call": null,
+        "failure_count": 0,
+        "recent_failures": [],
+        "failure": null,
+        "stop": null,
+        "work": [
+          {
+            "pair": "Q4P1",
+            "research": {},
+            "editor": {},
+            "paper": {},
+            "checks": {
+              "editor": [],
+              "paper": []
+            },
+            "needs_edit": false
+          },
+          {
+            "pair": "Q1P2",
+            "research": {},
+            "editor": {},
+            "paper": {},
+            "checks": {
+              "editor": [],
+              "paper": []
+            },
+            "needs_edit": false
+          }
+        ],
+        "warnings": [
+          "No runner instrumentation recorded; liveness is unknown for legacy or external launchers."
+        ],
+        "evidence": {
+          "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/receipts.jsonl",
+          "runner": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/runner.json",
+          "failures": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/failures.jsonl"
+        },
+        "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health."
+      }
+    },
+    "schedule_length": 4
+  }
+}

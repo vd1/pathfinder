@@ -1,0 +1,317 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{A Comparator Gap for Distributed CVaR Decisions}
+\pathfinderpapers
+  {2609.04787}{Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and System-Level Implications}
+  {2609.04460}{Distributed risk-averse optimization via CVaR}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Wang et al. optimise an average of local conditional value-at-risk
+(CVaR) objectives, whereas deployment may incur the CVaR of the sum of
+the same losses.  We identify the comparator term needed to transfer
+their finite-time bound to that aggregate objective and give a two-agent
+example in which the term is actual decision loss even at an exact local
+optimum.  A fresh holdout sample supports a selective aggregate-risk
+certificate, subject to a declared observation interface and a safe
+fallback.  Existing work has already established that the order of risk
+aggregation can change decisions; our result is a precise accounting for
+this particular optimisation guarantee and deployment interface.
+% ledger: #6, #8, #14, #22, #23, #27
+\end{abstract}
+
+\section{The two source results and the question}
+
+Zhao et al.\ survey learning-augmented algorithms and explain why a
+component guarantee needs an explicit downstream benchmark relation,
+conditional interface guarantees, and cost accounting before it becomes
+a system guarantee \cite{Q}.  Their priced quantity is a predictor
+invocation.  Wang et al.\ study a different primitive: agents query
+sampled local losses and communicate decisions while optimising the
+average of their local CVaRs \cite{P}.  Their finite-time theorem bounds
+the \emph{expected} objective gap of a weighted ergodic output; their
+projection makes its membership in the decision domain exact.  Neither
+fact certifies a realised output against a separate aggregate-risk
+budget.  These are statements of Q and P, respectively.
+% ledger: #3, #11, #13
+
+We consider only the identity deployment interface: the decision
+produced by P is used for the same agents' losses.  Let the common tail
+level be \(\alpha\in(0,1)\), let \(\mathcal X\) be P's decision set, and
+write
+\[
+\begin{aligned}
+C_i(x)&=\operatorname{CVaR}_{\alpha}(J_i(x,\xi_i)),
+&\mathcal C(x)&=\frac1m\sum_{i=1}^m C_i(x),\\
+S(x,\xi)&=\sum_{i=1}^m J_i(x,\xi_i),
+&A(x)&=\operatorname{CVaR}_{\alpha}(S(x,\xi)).
+\end{aligned}
+\]
+Here \(\xi\) has the joint deployment law and each marginal agrees
+with the corresponding local evaluation law.  This joint law is an
+additional specification: P's local-oracle model gives the marginals,
+but no paired aggregate-loss oracle.  Set
+\(\mathcal C^*=\min_{x\in\mathcal X}\mathcal C(x)\) and
+\(A^*=\min_{x\in\mathcal X}A(x)\).  For P's weighted ergodic output
+\(X=\hat x_T\), assume its theorem's conditions and denote a
+deterministic upper bound on its right-hand side by \(B_T\).  Thus
+\[
+X\in\mathcal X\quad\text{pathwise},\qquad
+\mathbb E[\mathcal C(X)-\mathcal C^*]\le B_T.
+\]
+The expectation is over P's optimisation samples and algorithmic
+randomness.  This paper adds no new finite-time estimate for \(B_T\).
+% ledger: #3, #6, #13, #21, #26
+
+\section{The aggregate comparator}
+
+\begin{proposition}[Benchmark transfer]\label{prop:bridge}
+Under the preceding common-tail and matched-loss assumptions, define
+\[
+D=m\mathcal C^*-A^*.
+\]
+Then \(D\ge0\) and
+\[
+\mathbb E[A(X)-A^*]\le mB_T+D.
+\]
+% ledger: #6, #22, #27
+\end{proposition}
+
+\begin{proof}
+CVaR subadditivity, also noted in P for a common tail level, gives
+\(A(x)\le m\mathcal C(x)\) for every \(x\).  Minimising both sides
+gives \(A^*\le m\mathcal C^*\).  At \(X\), add and subtract
+\(m\mathcal C^*\), then take expectations and apply P's bound.
+% ledger: #6, #22
+\end{proof}
+
+The term \(D\) compares \emph{different optima}.  P's local
+suboptimality bound does not control it; P's appendix identifies the
+pointwise diversification price but does not supply this optimiser-level
+comparison.  The proposition is an additive bridge of the kind Q's
+composition discussion requires, without yielding Q's competitive
+ratio for another downstream policy.
+% ledger: #11, #22, #24
+
+\begin{proposition}[The gap can be attained]\label{prop:example}
+Let \(U>0\), \(m=2\), \(\alpha=1/2\), \(\mathcal X=[-1,1]\), and let
+\(Z\) be a shared fair Bernoulli variable.  For
+\[
+J_1(x,Z)=UZ,\qquad
+J_2(x,Z)=U\bigl((1-x)Z+x(1-Z)\bigr),
+\]
+the exact minimiser of \(\mathcal C\) is \(x_P=1/2\), while the
+minimiser of \(A\) is \(x_A=1\).  Moreover,
+\[
+A(x_P)-A^*=D=U/2.
+\]
+% ledger: #23, #27
+\end{proposition}
+
+\begin{proof}
+The local and aggregate CVaRs are
+\[
+\begin{aligned}
+C_1(x)&=U, & C_2(x)&=U\max\{1-x,x\},\\
+A(x)&=U\max\{2-x,x\}=U(2-x)
+&&\text{for }x\in[-1,1].
+\end{aligned}
+\]
+Hence \(2\mathcal C^*=3U/2\), \(A^*=U\), and the displayed
+gap follows.  Both losses are bounded and affine in \(x\), as required
+for P's loss class.
+% ledger: #23, #27
+\end{proof}
+
+This example shows actual aggregate decision loss, beyond looseness of
+a certificate at a fixed point.  It does not assert that \(D\) equals
+the decision loss in general.
+% ledger: #22, #23, #27
+
+\section{A conditional deployment certificate}
+
+The aggregate benchmark comparison is an expectation bound.  To assess
+a realised \(X\), freeze it and draw \(n_i\) fresh validation losses
+from each marginal law, independently of P's optimisation transcript.
+Suppose \(|J_i|\le U_i\), and let \(\widehat C_i(X)\) be the empirical
+CVaR of this batch.  For \(\zeta\in(0,1)\), put
+\[
+\epsilon_i=\frac{2U_i}{\alpha}
+\sqrt{\frac{\log(2m/\zeta)}{2n_i}},
+\qquad
+R=\sum_{i=1}^m\bigl(\widehat C_i(X)+\epsilon_i\bigr).
+\]
+Conditional on the optimisation transcript, the DKW inequality and P's
+CVaR stability lemma give, with validation probability at least
+\(1-\zeta\), simultaneous errors
+\(|\widehat C_i(X)-C_i(X)|\le\epsilon_i\).  Consequently, on this
+event,
+\[
+A(X)\le\sum_i C_i(X)\le R
+\le m\mathcal C(X)+2\sum_i\epsilon_i.
+\]
+Freshness matters because \(X\) was chosen using the optimisation
+samples.  CVaR subadditivity requires no independence across agents in
+the deployment law.
+% ledger: #4, #6, #12, #13
+
+For a fixed risk budget \(b\), accepting \(X\) only if \(R\le b\)
+therefore gives
+\[
+\Pr\{\text{accept }X\text{ and }A(X)>b\}\le\zeta.
+\]
+On the validation event, the risk statement also implies
+\(\Pr_{\xi}\{S(X,\xi)>R\mid X,\text{validation}\}\le\alpha\)
+for a fresh deployment draw.  The confidence probability over the
+audit and the tail probability over future loss are different.
+% ledger: #6, #12, #14
+
+\begin{proposition}[Selective deployment]\label{prop:selective}
+Suppose a known \(x_0\in\mathcal X\) satisfies \(A(x_0)\le b\),
+and suppose a known margin \(m\mathcal C^*\le b-h\) holds for
+\(h>0\).  If \(2\sum_i\epsilon_i\le h/2\), deploy \(X\) when
+\(R\le b\) and \(x_0\) otherwise.  Write
+\(\Delta=\mathcal C(x_0)-\mathcal C^*\).  Then
+\[
+\begin{aligned}
+\Pr\{\text{reject }X\}&\le\zeta+\frac{2mB_T}{h},\\
+\Pr\{A(X_{\mathrm{deploy}})>b\}&\le\zeta,\\
+\mathbb E[\mathcal C(X_{\mathrm{deploy}})-\mathcal C^*]
+&\le B_T+\Delta\left(\zeta+\frac{2mB_T}{h}\right).
+\end{aligned}
+\]
+% ledger: #8, #14
+\end{proposition}
+
+\begin{proof}
+On the simultaneous validation event,
+\(R\le m\mathcal C(X)+2\sum_i\epsilon_i\).  The margin and
+precision conditions make \(R\le b\) whenever
+\(\mathcal C(X)-\mathcal C^*\le h/(2m)\).  Markov's inequality and
+P's expected gap bound prove the first claim.  The fallback is known
+safe, so only a false acceptance on the failed validation event can
+breach \(b\).  Finally, the deployed local gap is at most the gap at
+\(X\) plus \(\Delta\) on rejection; take expectations.
+% ledger: #8, #14
+\end{proof}
+
+The margin and safe fallback are additional premises, not outputs of
+P.  The proposition concerns the same action and same losses, rather
+than an arbitrary downstream policy.
+% ledger: #8, #11, #14
+
+\section{Observation and cost limits}
+
+Marginal validation can be arbitrarily conservative.  If exactly one
+of \(m\) agents incurs \(U\) in each equally likely outcome and
+\(\alpha=1/m\), then \(\sum_i C_i=mU\) but \(A=U\).
+Moreover, two agents with losses \((UZ,UZ)\) or
+\((UZ,U(1-Z))\), for a fair Bernoulli \(Z\), have the same local
+marginals but aggregate CVaRs \(2U\) and \(U\) at \(\alpha=1/2\).
+With only separately generated marginal oracle samples, their
+transcripts cannot reveal which coupling will occur in deployment.
+This last statement assumes no synchronised cross-agent outcomes or
+other dependence information.
+% ledger: #18, #21, #26
+
+A fresh paired audit of the actual joint loss at frozen \(X\) can
+instead estimate \(A(X)\) directly.  With \(n\) independent paired
+vectors, \(U_\Sigma=\sum_iU_i\), and empirical aggregate CVaR
+\(\widehat A(X)\), set
+\[
+\epsilon_J=\frac{2U_\Sigma}{\alpha}
+\sqrt{\frac{\log(2/\zeta)}{2n}},
+\qquad R_J=\widehat A(X)+\epsilon_J.
+\]
+The same DKW argument gives
+\(A(X)\le R_J\le A(X)+2\epsilon_J\) with confidence
+\(1-\zeta\).  This removes the local-sum slack at the selected
+decision, but does not identify \(A^*\) or remove \(D\) from
+Proposition~\ref{prop:bridge}.  Paired sensing and communication are
+extra interface requirements.
+% ledger: #22, #26, #28
+
+If an offline local evaluation costs \(\kappa_L\) and a paired
+validation vector costs \(\kappa_J\), the declared acquisition charge
+is \(\kappa_L\sum_{k<T,i}s_k^i+\kappa_Jn\).  A local audit instead
+charges its \(\sum_i n_i\) evaluations.  These are accounting
+conventions inspired by Q, whose own charge is for predictor calls.
+They exclude forming \(X\), audit communication, and any loss from
+physically playing a queried action; an application must price those
+as well.  The displayed risk bounds are not cost-augmented competitive
+ratios.
+% ledger: #11, #12, #26, #28
+
+For a deterministic call schedule and an all-in budget \(B\) in the
+same units, the risk-only acceptance threshold must subtract the
+declared acquisition charge:
+\[
+b=B-\kappa_L\sum_{k<T,i}s_k^i-\kappa_Jn.
+\]
+Any additional implementation charge must also be subtracted before
+the risk filter is applied.
+% ledger: #11, #28
+
+\section{Related work and interpretation}
+
+The distinction between risk of an aggregate and aggregation of
+individual risks is already published.  Almen and Dentcheva
+\cite{AlmenDentcheva} compare those evaluation orders in a distributed
+system and report different decisions and less conservative aggregate
+risk evaluation.  Thus the main aggregation insight and the
+possibility of changed decisions are prior work.  P itself notes the
+pointwise diversification price \cite{P}.  The contribution here is
+the exact additive comparator term for \emph{P's} finite-time
+guarantee, together with its tight two-agent instance and the
+assumptions needed to audit its output in Q's interface language.
+% ledger: #15, #19, #22, #23, #24, #27
+
+CVaR confidence bounds are also established.  Liang and Luo
+\cite{LiangLuo} study risk-measure confidence bounds, including CVaR,
+and improve on empirical-risk-plus-radius constructions.  The DKW
+holdout radius used above is a direct combination of standard
+concentration with P's stability lemma, not a new estimation method.
+The examples about dependence are likewise illustrations of a known
+risk-aggregation obstruction, specialised to this oracle interface.
+% ledger: #12, #15, #18, #19, #21
+
+\section{Limitations and open questions}
+
+No finite-sample filter that accepts a candidate on an all-zero safe
+transcript can guarantee exact distribution-free risk feasibility for
+that candidate across the stated loss class.  The ledger gives a bounded,
+convex, Lipschitz single-agent example with a safe fallback: the
+candidate loss is \(J(x,Z)=\max\{0,x\}Z\), with fallback \(x_0=0\)
+and candidate \(x=1\).  An all-zero law makes the candidate safe;
+under a law where \(Z=U\) with probability
+\(p\in(\alpha b/U,\alpha)\), its CVaR is \(Up/\alpha>b\).
+Every finite all-zero transcript occurs with positive probability
+under both laws.  A rule accepting the candidate on that transcript
+can therefore falsely accept it.  Exact membership of
+\(\mathcal X\) by P's projection remains a separate fact.
+% ledger: #9, #10, #13
+
+The analysis also assumes a common tail level, matched local and
+deployment losses, fresh validation, and either a safe fallback or
+abstention.  A paired audit needs access to the joint deployment law.
+The cost expression omits implementation-specific communication and
+physical-play losses.  No bound on \(D\), no aggregate-aware training
+method, and no competitive ratio for a separate downstream policy
+follow from the present material.
+% ledger: #11, #21, #22, #24, #26, #28
+
+A concrete next question is whether a specified application can pay
+for local training, joint observation, validation and fallback while
+also bounding \(D\) tightly enough to improve on its known safe
+baseline.  Q's downstream sensitivity and benchmark conditions would
+still need proof if the deployed policy differs from the decision
+considered here.  The current results do not establish such an
+improvement.
+% ledger: #24, #28
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

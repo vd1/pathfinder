@@ -1,0 +1,43 @@
+{
+  "observation_time": "2026-09-28T13:17:25.411737+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "status": "continue",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-021/observed.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-020/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-021/processes.json",
+  "facts": [
+    "Both arms inspected; repeat Q1P1 author attempt remains active with owner 49475, child 81503, descendant 81627 supported by supplied process tree. Recursive has no active calls.",
+    "Same author attempt as previous audit, approximately five minutes into a 30 minute deadline; no overdue call or repeated failed attempt. No evidence warranting intervention.",
+    "All four research stages and editing stages are done; recursive DRAFT papers ACCEPTED; repeat Q1P1 author/reviewer work remains unfinished. Q4P6 scientific PAUSE verdict preserved.",
+    "Fresh root heartbeat, no operator stop, no censored arms, no recorded call failures. Root pair progress timestamp predates current paper work and is not taken as new progress.",
+    "All work records unchanged from previous observed snapshot; reference checks persist with successful completed builds.",
+    "Process evidence is point-in-time and does not exclude PID reuse or unrecorded reparented groups; no process action performed.",
+    "Pane rename denied by sandbox; title not verified."
+  ],
+  "active_calls": {
+    "repeat": [
+      {
+        "attempt_id": "d3022866632248738a10693ec885fcad",
+        "run_id": "b3c08f89f1e54709a76212379677046d",
+        "pid": 49475,
+        "thread": "Q1P1",
+        "stage": "author",
+        "actor": "author",
+        "started_at": 1790601150.6818612,
+        "deadline_at": 1790602950.6818612,
+        "timeout_seconds": 1800,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q1P1",
+        "child_pid": 81503,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/d3022866632248738a10693ec885fcad.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 294.7,
+        "overdue_seconds": 0
+      }
+    ],
+    "recursive": []
+  },
+  "completed_work_unchanged": true,
+  "action": "Observation only; no restart or repair."
+}

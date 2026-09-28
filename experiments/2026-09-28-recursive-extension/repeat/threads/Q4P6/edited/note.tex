@@ -1,0 +1,155 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When Peer Agreement Measures a Shared Error}
+\pathfinderpapers{2609.01595}{Mechanism Design for Alignment and Control}%
+  {2607.27967}{MARS-RA: Rank Aggregation for Credit Assignment via Multimodal
+  Comparisons in Embodied Multi-Agent Cooperation}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects a mechanism for eliciting AI agents' private types in Q with a method for
+assigning team credit from image comparisons in P. The thread asked whether truthful peer reports
+and repeated comparisons can certify the contribution the designer cares about. The peers found a
+shared-error example in which reports agree and comparisons concentrate, yet neither identifies the
+target. Independent observations or audits give limited ways to measure the error, subject to
+separate incentives for truthful reporting. The verifier paused the thread because this known
+identification limit does not yet yield a new result for P's setting or evidence on its benchmark.
+\end{abstract}
+
+\section{Introduction}
+
+Bergemann, Koh and Morris study how a designer can induce AI agents to reveal what they know and do
+what they are asked to do \cite{Q}. An agent's preferences, abilities and information may be
+private. In their multi-agent example, a reward scores each agent's reported type against the types
+reported by peers. Under a condition that different types predict different peer types, this helps
+make truthful reporting an equilibrium. Further parts of the reward induce the desired action.
+
+Wang and co-authors study how to assign credit to agents cooperating in embodied tasks \cite{P}.
+Their MARS-RA method asks a large multimodal model to compare agents' current images, fits scores to
+those pairwise choices using a Bradley--Terry model, and uses the scores to shape rewards during
+training. Its convergence claim concerns the model's underlying preference. Its Shapley-value
+interpretation assumes that this preference already agrees with Shapley values, a measure of
+contribution across possible teams.
+
+The connection pursued was whether Q's peer scoring could support P's claim that aggregated
+comparisons measure useful contribution. Three questions emerged: whether an agent has reason to
+report what it sees, whether comparisons recover the comparator's preference, and whether that
+preference tracks the intended contribution. These are different claims.
+
+\section{What was done}
+
+The peers first read Q's peer-discipline result beside P's rank-aggregation result. Ada checked Q's
+separation condition and the reward calculation; Emmy checked what P's fitted score is meant to
+recover. They found that Q assumes a specified map from each private type to a distribution of peer
+types. P assumes a stable latent preference for its comparison model, then separately assumes
+equality with Shapley values for that interpretation. Neither paper derives target accuracy from
+peer agreement alone.
+
+They next tested a shared observation error. They treated an observed bit as Q's private type and
+checked the score against a truthful peer. They also considered repeated comparisons of the same
+visual scene in P. Ada checked an independent audit and the existence of P's score estimate; Emmy
+checked independent observation groups and the timing of the two mechanisms. Each peer cross-checked
+the other's calculations. The worked examples and qualifications are in
+\url{../ada/peer_scoring_note.md} and \url{../emmy/shared_noise.md}.
+
+\section{Results}
+
+Q's condition separates types by their predictions about peers. Let \(\beta_i[t]\) be the
+distribution of other agents' types predicted by agent \(i\) when its type is \(t\). Against
+truthful peers, Q's quadratic score gives type \(t\) an expected advantage over a false report \(u\)
+of
+\[
+\Lambda\lVert\beta_i[t]-\beta_i[u]\rVert_2^2,
+\]
+where \(\Lambda>0\) scales the reward. When the two predicted distributions differ, this advantage
+is positive. Q also cancels the agent's utility on the intended action support and penalises actions
+outside it. Thus its result supports a truthful, obedient equilibrium under its stated conditions;
+the peer score alone is not the obedience argument.
+
+The shared-error example shows the limit of that result as a measurement claim. Let \(T\) be a fair
+binary target, \(N\) an independent binary error with \(\Pr(N=1)=p\), and let every peer observe
+\(X_i=T\oplus N\), where \(\oplus\) means addition modulo two. Each peer's observation predicts
+every other peer's observation exactly, so Q's separation condition holds for the two possible
+observed types. Yet the full collection of peer observations is just one fair bit for every value of
+\(p\). When \(p=0\), it gives the target; when \(p=1/2\), it gives no information; when \(p=1\), it
+gives the reverse. Even with a known error rate below one half, adding peers who share this error
+does not reduce the error on a task. Ada and Emmy checked the conditional distributions and the
+resulting score gap in their notes.
+
+The same distinction appears in P's comparisons. Let \(d\) be the intended difference in
+contribution between two agents, and \(B\) a shift shared by all comparisons of one scene. If
+repeated comparison outcomes are independent conditional on \(B\), with probability \(\sigma(d+B)\)
+of preferring the first agent, where \(\sigma(z)=1/(1+\exp(-z))\), then a two-agent Bradley--Terry
+fit converges to \(d+B\). More calls refine the scene-conditioned preference. They do not separate
+\(d\) from \(B\): raising one and lowering the other by the same amount leaves the comparison law
+unchanged. This is a model-based example, not an empirical finding about P's benchmark.
+
+The peers derived two restricted ways to check target accuracy. If \(G\) observation groups have
+independent binary errors with the same probability \(q<1/2\), and each group supplies one truthful
+report, a majority vote has error at most
+\[
+\exp\{-2G(1/2-q)^2\}.
+\]
+Here \(G\) counts independent groups, not repeated calls within one group. Alternatively, let an
+independent audit label be \(A=T\oplus E\), where \(E\) has known error probability \(q<1/2\). Under
+truthful reports, the report error rate \(p\) follows from
+\[
+\Pr(A=X)=1-q-p(1-2q),\qquad
+p=\frac{1-q-\Pr(A=X)}{1-2q}.
+\]
+Ada derived the audit identity and Emmy checked it. The majority bound concerns a binary target;
+neither calculation establishes cardinal Shapley values. An audit used only to assess reports does
+not make truth-telling attractive.
+
+\section{Objections and limits}
+
+The first objection was about timing. Q's agents report types before later private signals arrive.
+P's model compares images after observation. A direct transfer of Q's theorem would need a new game
+in which agents can report those later observations and receive suitable payments. If P's agents
+cannot change the images or the comparison calls, the immediate question is whether the comparator
+is calibrated to contribution, not whether agents report truthfully.
+
+The second objection concerned equilibrium selection. In the binary example with two agents, zero
+utility and one action, a peer receives score \(1\) for a matching report and \(-1\) otherwise.
+Truthful reporting is a strict equilibrium, but both agents flipping their observations is another
+strict equilibrium. Ada checked this case. Her audit-payment condition selects truthful reporting
+only in that small game; it does not cover Q's general action problem. Earlier work cited in the
+ledger discusses relabelling equilibria and informed truthfulness \cite{relabel,informed}.
+
+The third objection concerned P's stated finite-sample guarantee. P defines an unregularised
+Bradley--Terry estimate but its proof sketch refers to regularised-estimator analysis. A connected
+comparison graph does not by itself ensure a finite unregularised estimate: with two agents and
+every comparison favouring the same one, the likelihood keeps increasing as their fitted score gap
+grows. Ada's two-agent check establishes this exception to the printed assumptions. An existence
+condition or specified regulariser would address that issue, without proving calibration to
+contribution.
+
+Finally, P's potential-based reward shaping has a different role from Q's direct peer payment. With
+a fixed initial state and zero terminal potential, its discounted shaping rewards sum to a constant
+set by the initial potential. They can change training feedback without changing the exact ranking
+of complete trajectories under those conditions. They do not supply Q's reporting and obedience
+incentives. The ledger also cites work on measurement integrity, conditional independence in peer
+elicitation, and random effects in Bradley--Terry comparisons \cite{integrity,independence,random}.
+The peers did not independently assess those sources, and did not claim the general shared-error
+warning as new.
+
+\section{Why the thread stopped}
+
+The verifier accepted the shared-error counterexample but judged it a known identification limit. It
+did not establish a new result connecting Q's pre-signal reporting mechanism to P's post-observation
+comparisons. A stronger claim would need a declared contribution target and independent audits or
+observation groups, backed by a new theorem or benchmark evidence. The peers had neither a general
+certificate for P's changing teams nor a test of the proposed dependence effect in its benchmark.
+
+The smallest restart step is a controlled test against one declared target in P's benchmark. At a
+fixed comparison budget, compare repeated judgements of one scene with judgements from independently
+generated observation groups, using held-out dense-reward labels and uncertainty measured by scene.
+That would test the practical size of shared error for that target. It would leave any strategic
+reporting mechanism for a separately specified game.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,57 @@
+{
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "observation_time": "2026-09-28T12:13:01.499609+00:00",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-007/observed.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-008/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-008/processes.json",
+  "facts": [
+    "Recursive Q4P1 advanced from peer research to DRAFT at 12:10:52Z; verifier completed and editor attempt 1 is active.",
+    "Repeat Q4P6 remains PAUSE with readable edit done and build_ok true; Q1P2 and Q1P1 remain unstarted; DRAFT paper pipeline remains unfinished.",
+    "Both arms inspected: repeat has no active call; recursive editor owner 49475 and child 65867 match the supplied process tree, with code-mode-host descendant 65957. Process evidence is point-in-time and does not resolve PID reuse.",
+    "Coordinator PID 49475 matches the supervising session runner PID and supplied Python executable; fresh heartbeats and completed verifier receipt corroborate ongoing progress.",
+    "No stop, censoring, call failure, overdue call, or evidence of livelock. No intervention warranted."
+  ],
+  "previous_last_completed_call": {
+    "at": "2026-09-28T12:00:28Z",
+    "thread": "Q4P1",
+    "stage": "peer",
+    "actor": "ada",
+    "outcome": "completed",
+    "error": null
+  },
+  "current_last_completed_call": {
+    "at": "2026-09-28T12:10:52Z",
+    "thread": "Q4P1",
+    "stage": "verify",
+    "actor": "verifier",
+    "outcome": "completed",
+    "error": null
+  },
+  "active_calls": {
+    "repeat": [],
+    "recursive": [
+      {
+        "attempt_id": "27714b880b374f8ba8c9cdd8bea01e59",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "pid": 49475,
+        "thread": "Q4P1",
+        "stage": "edit",
+        "actor": "editor",
+        "started_at": 1790597452.537924,
+        "deadline_at": 1790598352.537924,
+        "timeout_seconds": 900,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q4P1",
+        "child_pid": 65867,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/active-calls/27714b880b374f8ba8c9cdd8bea01e59.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 128.9,
+        "overdue_seconds": 0
+      }
+    ]
+  },
+  "status": "continue",
+  "action": "No intervention.",
+  "open_incident": "audit-004-q4p6-editor-arxiv-406"
+}

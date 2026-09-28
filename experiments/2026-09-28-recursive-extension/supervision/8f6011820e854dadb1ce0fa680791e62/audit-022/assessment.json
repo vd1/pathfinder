@@ -1,0 +1,47 @@
+{
+  "observation_time": "2026-09-28T13:23:00.627384+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-021/observed.json",
+  "elapsed_since_previous_seconds": 335.2156467437744,
+  "work_unchanged": {
+    "repeat": true,
+    "recursive": true
+  },
+  "active_calls": {
+    "repeat": [
+      {
+        "attempt_id": "d3022866632248738a10693ec885fcad",
+        "run_id": "b3c08f89f1e54709a76212379677046d",
+        "pid": 49475,
+        "thread": "Q1P1",
+        "stage": "author",
+        "actor": "author",
+        "started_at": 1790601150.6818612,
+        "deadline_at": 1790602950.6818612,
+        "timeout_seconds": 1800,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q1P1",
+        "child_pid": 81503,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/d3022866632248738a10693ec885fcad.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 629.9,
+        "overdue_seconds": 0
+      }
+    ],
+    "recursive": []
+  },
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-022/processes.json",
+  "facts": [
+    "Root heartbeat fresh; run identity and recorded owner 49475 unchanged. Supplied process tree links Python owner 49475 to Codex 81503 and host descendant 81627. Evidence is point-in-time and cannot eliminate PID reuse.",
+    "Same repeat/Q1P1 round-1 author attempt active within 1800-second deadline; no repeated attempts or observed livelock. Recursive has no active call.",
+    "All four research investigations and edits finished; recursive DRAFT papers accepted. Repeat Q1P1 author/reviewer pipeline unfinished.",
+    "Root last completed entry recursive/Q1P2 unchanged, but repeat/Q1P1 research and editor finished at 13:12:30Z.",
+    "No stop, censoring or recorded call failure. Existing reference checks remain unresolved with successful builds.",
+    "HERDR_PANE_ID absent; pane rename unavailable.",
+    "Author artifacts show progress since the previous 13:17:25Z audit: repeat/Q1P1 paper.pdf modified at 13:19:56Z and paper.tex at 13:20:31Z. This supports ongoing author work beyond the root heartbeat."
+  ],
+  "action": "Observation only; no intervention.",
+  "status": "continue",
+  "admission_deadline": 1790604117.4098518
+}

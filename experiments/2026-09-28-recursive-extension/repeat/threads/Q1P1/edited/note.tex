@@ -1,0 +1,169 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Distributed CVaR and the Cost of Certifying Aggregate Risk}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The pair joins a survey of learning-augmented algorithms with a paper on distributed optimisation of
+conditional value at risk (CVaR). We asked whether the distributed algorithm's output can support a costed
+guarantee for the total loss faced in deployment. A fresh audit gives a conditional risk certificate, but the
+algorithm's local objective can favour a decision that is worse for total risk. The thread ended as a draft
+because the benchmark gap and the cost of obtaining joint observations remain unresolved for any specified
+application.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q surveys algorithms that use predictions while retaining stated performance guarantees \cite{Q}. It
+asks what happens when a prediction is produced, queried, and passed to another decision rule. Its account of
+composition requires a relation between the components' benchmarks, as well as a way to charge information and
+other costs. A guarantee for one component does not by itself describe the cost of the whole system.
+
+Paper P studies agents that jointly choose a decision while each sees only sampled values of its own loss
+\cite{P}. Each agent measures risk by CVaR, the average loss in a specified worst tail of its distribution.
+The agents exchange decisions across a changing network and use sampled loss values in place of gradients. P
+proves a finite-time bound on the expected error in the average of their local CVaRs. Its projection also
+keeps decisions and sampled perturbations inside the permitted decision set.
+
+The connection was to use P's chosen decision in an operation whose loss is the sum of the agents' losses. Q's
+questions then become concrete: Does P's local risk bound control risk for that sum? Can the risk of the
+chosen decision be checked from new samples? What must be paid for those checks? The operation here uses the
+same decision and losses as P. A different downstream policy would need its own link between decisions, costs,
+and benchmarks.
+
+\section{What was done}
+
+The peers first separated P's two kinds of guarantee. Its finite-time theorem bounds an expectation over the
+random training run. It does not certify the risk of the particular output from one run. Its projection does
+give exact membership in the decision set, but membership is different from meeting a limit on tail risk. The
+peers also checked P's fixed-batch last-iterate argument: it bounds the limiting true objective under its
+assumptions, yet supplies no finite-time certificate for a realised output.
+
+They next froze P's output and considered fresh validation samples at that decision. They used the
+empirical-distribution bound and CVaR stability result in P's appendix to bound each local CVaR. P's
+subadditivity observation then turned the local bounds into an upper bound for the CVaR of the sum, provided
+all agents use the same tail level. The samples had to be independent of the training transcript: reusing the
+samples that selected the decision would not justify the same conditional argument. They added a known safe
+fallback and a margin assumption to estimate how often the audit would reject the proposed decision.
+
+An objection shifted the work from estimation to information and benchmarks. Separate local samples need not
+reveal how losses move together in deployment. The peers constructed examples in which this missing dependence
+made a local certificate very loose, and another in which minimising the local objective chose the wrong
+decision for aggregate risk. They then derived an explicit benchmark gap and considered a fresh audit of
+paired losses from the actual joint law. Ada's checks are recorded in \url{../ledger.jsonl}; Emmy's derivation
+and cross-check are in \url{../emmy/costed_cvar_certificate.md}.
+
+\section{Results}
+
+Let \(m\) be the number of agents and \(\mathcal X\) their common feasible decision set. At decision \(x\),
+let \(J_i(x,\xi_i)\) be agent \(i\)'s loss, with \(\xi_i\) its random input. For a common tail probability
+\(\alpha\), write \(C_i(x)=\operatorname{CVaR}_{\alpha}(J_i(x,\xi_i))\) and \(\mathcal C(x)=m^{-1}\sum_i
+C_i(x)\). Let \(\mathcal C^*\) be the minimum of \(\mathcal C\) over \(\mathcal X\). P's weighted average
+output \(X\) belongs to \(\mathcal X\), and its theorem supplies a deterministic bound \(B_T\) after \(T\)
+iterations such that
+\[
+\mathbb E[\mathcal C(X)-\mathcal C^*]\le B_T.
+\]
+The expectation covers the random optimisation run. The bound includes the effects of network disagreement,
+smoothing, and finite sampling \cite{P}.
+
+Suppose deployment at \(x\) has total loss \(S(x,\xi)=\sum_i J_i(x,\xi_i)\), where \(\xi\) collects the
+agents' inputs under a specified joint law. Write \(A(x)=\operatorname{CVaR}_{\alpha}(S(x,\xi))\), and let
+\(A^*\) be its minimum over \(\mathcal
+X\). CVaR subadditivity gives \(A(x)\le m\mathcal C(x)\) at every decision. Thus the nonnegative benchmark gap
+\(D=m\mathcal C^*-A^*\) gives
+\[
+\mathbb E[A(X)-A^*]\le mB_T+D.
+\]
+This is the benchmark relation called for by Q's composition discussion \cite{Q}. P controls \(B_T\), while
+neither P's local theorem nor a local audit bounds \(D\).
+
+The gap can be real decision loss. Take two agents, tail probability \(\alpha=1/2\), decisions \(x\in[-1,1]\),
+a fair shared indicator \(Z\), and a positive loss scale \(U\). The peers used
+\[
+J_1(x,Z)=UZ,\qquad
+J_2(x,Z)=U\bigl((1-x)Z+x(1-Z)\bigr).
+\]
+The local CVaRs are \(U\) and \(U\max\{1-x,x\}\). Their sum is smallest at \(x=1/2\). The aggregate CVaR is
+\(A(x)=U(2-x)\), which is smallest at \(x=1\). Choosing the exact local optimum therefore loses \(U/2\)
+against the aggregate optimum, and here \(D=U/2\). Ada derived the example and Emmy independently checked it
+in the files cited above.
+
+A selective certificate is available under extra information assumptions. After freezing \(X\), draw \(n_i\)
+fresh, independent validation losses for each agent at that decision. Assume their absolute values are at most
+known constants \(U_i\), and let \(\widehat C_i(X)\) be the empirical CVaR. For a chosen failure probability
+\(\zeta\), define
+\[
+\epsilon_i=\frac{2U_i}{\alpha}
+\sqrt{\frac{\log(2m/\zeta)}{2n_i}},
+\qquad
+R=\sum_{i=1}^{m}\bigl(\widehat C_i(X)+\epsilon_i\bigr).
+\]
+P's CVaR stability lemma and the empirical-distribution inequality give \(A(X)\le R\) with probability at
+least \(1-\zeta\) over validation data \cite{P}. Thus a rule that accepts \(X\) only when \(R\le b\), for a
+fixed risk budget \(b\), falsely accepts an action with \(A(X)>b\) with probability at most \(\zeta\). On the
+same validation event, a fresh deployment loss exceeds \(R\) with probability at most \(\alpha\). These are
+distinct probabilities: one concerns the audit, the other a future loss draw.
+
+The peers also checked a fallback bound. Suppose a known decision \(x_0\in\mathcal X\) satisfies \(A(x_0)\le
+b\), a known positive margin \(h\) satisfies \(m\mathcal C^*\le b-h\), and the validation sizes give
+\(2\sum_i\epsilon_i\le h/2\). Deploy \(X\) on acceptance and \(x_0\) otherwise. Markov's inequality applied to
+P's nonnegative objective gap gives
+\[
+\Pr\{\text{reject }X\}\le\zeta+\frac{2mB_T}{h}.
+\]
+The chance that the deployed decision has aggregate CVaR above \(b\) is at most \(\zeta\), since the fallback
+is known to be safe. If \(\Delta=\mathcal C(x_0)-\mathcal C^*\), its expected local-objective gap is at most
+\(B_T+\Delta(\zeta+2mB_T/h)\). The margin and fallback are additional premises, not results of P.
+
+\section{Objections and limits}
+
+The sum of local CVaRs can overstate aggregate CVaR even with unlimited local data. In the peers' example,
+exactly one of \(m\) agents loses \(U\) in each equally likely outcome. At \(\alpha=1/m\), each local CVaR is
+\(U\), but the total loss is always \(U\). Dependence is also invisible to a marginal-only oracle: two fair
+losses with identical local distributions can move together, giving aggregate CVaR \(2U\), or alternate,
+giving aggregate CVaR \(U\). Ada and Emmy checked that this remains an information obstacle at an exact
+optimum of P's local objective, provided the oracle does not supply paired outcomes. Related dependence
+questions already appear in risk aggregation work \cite{cheung2010}.
+
+A fresh audit of paired loss vectors from the actual deployment law can estimate \(A(X)\) directly. If \(n\)
+such vectors are independent, their total loss is bounded in absolute value by \(U_\Sigma=\sum_i U_i\), and
+\(\widehat A(X)\) is their empirical aggregate CVaR, the same argument gives an upper certificate
+\[
+R_J=\widehat A(X)+\frac{2U_\Sigma}{\alpha}
+\sqrt{\frac{\log(2/\zeta)}{2n}}
+\]
+with confidence \(1-\zeta\). This removes local-sum slack at the chosen decision. It neither finds \(A^*\) nor
+removes \(D\) from the decision-quality bound. Paired sensing and communication have to be available and
+priced. Existing work on CVaR confidence bounds also means the holdout step alone is no novelty claim
+\cite{liang2023,torossian2019}.
+
+Finite samples cannot make this filter exactly risk-feasible for every accepted action without further
+information. The peers gave a bounded, convex loss with a known safe fallback for which a safe law and an
+unsafe law can produce the same finite run of zero observations. A rule accepting the candidate on that run
+has a positive chance of accepting it under the unsafe law. The confidence failure term therefore cannot
+simply be erased.
+
+Finally, Q charges calls to a predictor, while P samples loss values and exchanges decisions. Charging \(N\)
+training and validation evaluations at \(\kappa N\), where \(\kappa\) is a declared cost per evaluation, is a
+new accounting convention \cite{Q,P}. If a query physically plays a perturbed decision, its incurred loss
+matters too. Forming the shared output, collecting audit reports, and coordinating deployment may add cost. No
+competitive ratio for a separate downstream policy follows without a relation for that policy's benchmark and
+its sensitivity to \(X\).
+
+\section{Why the thread stopped}
+
+The verifier left the thread at DRAFT. It accepted the benchmark-gap argument and the example where perfect
+optimisation of P's objective still loses \(U/2\) in aggregate CVaR. It also judged the audit certificate
+correctly conditional and the cost and information limits acknowledged. The present evidence therefore gives a
+sound connection, but no application-specific improvement over a safe baseline or complete costed downstream
+theorem. The smallest restart is to choose an application with a priced source of paired observations and a
+safe baseline, then prove or refute a useful bound on \(D\) and compare total cost with that baseline.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

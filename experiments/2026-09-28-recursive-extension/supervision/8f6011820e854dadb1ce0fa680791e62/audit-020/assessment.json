@@ -1,0 +1,41 @@
+{
+  "observation_time": "2026-09-28T13:12:32.415613+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "status": "continue",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-020/observed.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-019/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-020/processes.json",
+  "facts": [
+    "Q1P1 advanced from consolidation through completed DRAFT research and editing to an active author call within deadline.",
+    "Supplied process tree matches Python runner 49475, session parent 49472, editor child 80150 and its code-mode descendant. Author began after that point-in-time evidence; no process intervention attempted. PID reuse and unrecorded reparented groups are not independently excluded.",
+    "Both arms inspected: recursive has no active calls and both papers ACCEPTED; repeat Q1P1 paper remains unfinished. Heartbeat fresh, no operator stop, censoring or recorded call failures.",
+    "Previously completed Q4P6, Q4P1 and Q1P2 work records are unchanged.",
+    "Herdr pane rename was denied by sandbox; title could not be verified."
+  ],
+  "active_calls": {
+    "repeat": [
+      {
+        "attempt_id": "d3022866632248738a10693ec885fcad",
+        "run_id": "b3c08f89f1e54709a76212379677046d",
+        "pid": 49475,
+        "thread": "Q1P1",
+        "stage": "author",
+        "actor": "author",
+        "started_at": 1790601150.6818612,
+        "deadline_at": 1790602950.6818612,
+        "timeout_seconds": 1800,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q1P1",
+        "child_pid": 81503,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/d3022866632248738a10693ec885fcad.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 1.7,
+        "overdue_seconds": 0
+      }
+    ],
+    "recursive": []
+  },
+  "completed_work_unchanged": true,
+  "action": "Observation only; no restart or repair."
+}

@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Truthful Peer Reports and an Unidentified Target Ranking}
+
+\begin{document}
+\maketitle
+
+\section{The pair in two sentences}
+
+Q shows that a quadratic peer score can make type reports truthful when the designer knows distinct type-conditioned predictions of other agents' reports. P shows that peer reports can have the same complete distribution in two worlds whose intended Bradley--Terry endpoint rankings are opposite. \ledger{3, 8, 28}
+
+\section{Connection pursued}
+
+The question is whether Q's truthful peer-scoring equilibrium makes P's intended ranking identifiable from reports. The relevant distinction is between an incentive to report an observed label and evidence that the label tracks the intended comparison. P's internal paper names ``Q'' and ``P'' refer to a different pair. \ledger{2, 13, 28}
+
+\section{What was found}
+
+\begin{claim}
+There is a two-agent specialization in which Q's peer-belief separation holds and truthful label reporting is a strict best response in both of P's observationally identical worlds. Nevertheless, any report-based endpoint-order decision has error probability at least \(1/2\) in one world.
+\end{claim}
+
+Use P's path \(1\to2\to3\to4\). In the first world its intended edge differences are
+\[
+(d_{12},d_{23},d_{34})=(4,-3/2,-3/2),
+\qquad c_1-c_4=1.
+\]
+Each intended comparison receives an independent shared flip of mean \(b=1/2\).
+In the second world there is no shared flip, and the edge differences are
+\(f_b(d_e)\), where
+\[
+f_b(d)=2\operatorname{artanh}\!\bigl(b\tanh(d/2)\bigr).
+\]
+These differences define Bradley--Terry scores because the graph is a path.
+The second endpoint difference is
+\[
+f_{1/2}(4)-2f_{1/2}(3/2)\simeq-0.26458.
+\]
+Both agents label every edge through the same independent personal-flip
+channels in both worlds. Each corrupted comparison sign has mean
+\(b\tanh(d_e/2)=\tanh(f_b(d_e)/2)\), so the entire joint law of their label
+vectors is identical. \ledger{8, 10}
+
+Take each agent's private three-label vector as its reported type and give it
+no consequential action choice. If the personal-flip means are
+\(a_i,a_j\in(0,1)\), and a corrupted edge sign has mean \(w_e\), then
+\[
+\mathbb E[Y_{ej}\mid Y_{ei}=+1]
+-\mathbb E[Y_{ej}\mid Y_{ei}=-1]
+=
+\frac{2a_i a_j(1-w_e^2)}{1-a_i^2w_e^2}>0.
+\]
+Independent edges therefore make distinct label vectors predict distinct
+co-player label distributions. Q's quadratic score gives a truthful report
+\(t\) an advantage of
+\(\Lambda\|\beta_i[t]-\beta_i[\hat t]\|_2^2>0\) over any false report
+\(\hat t\), when the other agent reports truthfully. The score table is
+identical in the two worlds. Since the report laws coincide while the
+endpoint orders differ, the two order-error probabilities sum to at least
+one. This establishes a truthful equilibrium, not its uniqueness.
+\ledger{6, 8, 10, 12}
+
+A sharper population result holds if independent shared flips may have
+unknown, positive, edge-specific means \(b_e\). With positive observer
+reliabilities, orient each nonzero observed edge mean
+\[
+w_e=b_e\tanh((c_u-c_v)/2)
+\]
+from the higher-score vertex to the lower-score vertex. Within this model,
+a strict pairwise order is identified exactly when the oriented graph has
+a directed path between the pair. A path forces the order. For incomparable
+vertices, either relative order has a linear extension; assign scores with
+gaps larger than \(2\operatorname{artanh}|w_e|\) and set
+\(b_e=w_e/\tanh((c_u-c_v)/2)\). Both extensions reproduce the full report
+law while reversing that pair. Zero-mean edges imply equal endpoint scores
+and can be contracted when the data are feasible. \ledger{19, 21, 22}
+
+This boundary has a finite-sample version conditional on truthful reports.
+If an observer's reliability on every edge is at least \(\alpha>0\), every
+\(|w_e|\) is at least \(\kappa>0\), and there are \(N\) independent labels
+per edge, then
+\[
+N\geq
+\frac{2}{\alpha^2\kappa^2}
+\log\frac{2|E|}{\zeta}
+\]
+makes all edge signs correct with probability at least \(1-\zeta\), by
+Hoeffding's inequality and a union bound. It consequently certifies the
+orders implied by directed reachability. The bound does not establish
+incentives when the scoring table is estimated from those labels.
+\ledger{22, 24}
+
+\section{Objections and boundaries}
+
+Q's full type includes beliefs about the payoff-relevant state, and its
+designer is given a state-and-type model. The construction concerns what
+can be certified from peer labels when that target relation must be learned;
+it does not refute Q under its stated information. Q's general
+any-feasible-rule reward can also depend on the true state through utility
+cancellation and action-support penalties. The specialization above uses a
+report-only score and a singleton action, so it does not transfer that
+implementation claim to settings without state-contingent rewards.
+\ledger{5, 10, 12}
+
+P's nondegenerate triangle or four-cycle identifies a common positive flip
+rate within the edge-constant model, provided observer reliabilities are
+known or calibrated. Adding edge \(1\)--\(3\) repairs P's original path
+ambiguity under that assumption. It cannot verify the assumption from
+reports: the ledger gives two triangle-plus-tail worlds with the same
+report law, positive edge-specific flip rates, and opposite \(1\)-versus-\(4\)
+orders. The short-cycle repair is therefore conditional, while a direct
+\(1\)--\(4\) comparison certifies that ordinal comparison under positive
+edge-specific flips. Unknown or negative flip signs remove this sign
+guarantee. \ledger{9, 18, 21, 25, 26}
+
+\section{Outside sources and remaining work}
+
+Miller, Resnick, and Zeckhauser's peer-prediction work,
+\url{https://doi.org/10.1287/mnsc.1050.0379}, already uses another rater's
+report to reward truthful signals. Shnayder and coauthors,
+\url{https://arxiv.org/abs/1603.03151}, address uninformative equilibria.
+The broad distinction between truthful peer reporting and target truth is
+therefore prior background. The ledger does not establish novelty for the
+structured composition or reachability criterion; on its own, the material
+is thin as a publication claim. \ledger{11, 15, 26}
+
+Open issues include equilibrium selection, scoring tables estimated from
+strategic reports, finite-sample stability of cycle calibration, defensible
+restrictions on shared noise, and transfer from ranking error to a specified
+human decision payoff. The smallest next step for the present pair is to
+fix the binary decision between vertices \(1\) and \(4\), add their direct
+comparison, and derive its label-cost and decision-error bound under
+truthful reports and positive edge-specific flips. That would settle the
+ordinal audit for this decision under those assumptions, while leaving the
+broader strategic and noise questions open. \ledger{22, 24, 26, 28}
+
+\end{document}
