@@ -45,6 +45,30 @@ staging, not altered or deleted. Versioned generated seeds and their immediate
 local-source packages are tracked. Reconstructing elsewhere also requires
 the original September 23 source corpus.
 
+The final staged gate checked 20 artifact files with zero errors and 115
+warnings across copied engine prompts, source packages and seed text. These
+are source-layout warnings (long lines and prompt heading structure), retained
+to preserve the frozen engine and inherited manuscript text. Newly written
+protocol and audit notes pass without warnings.
+
+## Launch
+
+Started 28 September at 13:31:57 Europe/Paris. The initial supervisor PID is
+49472 and coordinator PID is 49475; these are historical launch identities,
+not permanent liveness assertions. The recorded admission deadline is 16:01:57
+Europe/Paris. The watch ceiling is approximately 16:31:57 Europe/Paris.
+Both first control peers started, and their active-call records were visible
+under the aggregate snapshot. Later health must be read from runtime records.
+
+The first five-minute Astra audit returned `continue`: it checked both arms,
+found the control peer calls within their deadlines and recent ledger activity,
+and reported no failures, stops or need for intervention. The recursive arm
+was queued. This verifies the watch is operating, not scientific completion.
+
+Fixes were pushed as `e3d52bb`; the frozen setup was pushed as `eb6b8ca`.
+The last ACCEPT review for each selected parent was also checked to bind
+to the exact SHA-256 of its archived TeX, not merely to a matching title.
+
 ## Scientific assessment
 
 Evaluate claims and ancestry, not acceptance-rate superiority. The comparison
