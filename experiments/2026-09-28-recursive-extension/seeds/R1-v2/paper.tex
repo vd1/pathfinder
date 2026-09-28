@@ -1,0 +1,191 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{When Peer Agreement Hides a Reversed Ranking: Graph Conditions for a Learning-Augmented Prediction Interface}
+
+\date{28 September 2026; clarified version 2}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The survey Q treats rankings and numerical scores as distinct prediction objects and requires a
+declared error and access cost before transferring a prediction guarantee to a decision system. The
+local manuscript P identifies Bradley--Terry scores from peer reports under shared-draw conditional
+independence. % ledger: 1, 3, 15, 17
+We examine a restricted violation of that premise: every item has an independent, common binary flip
+of constant positive mean. Peer agreements retain exactly P's rank-one form, yet a four-vertex
+comparison path admits two observationally identical worlds with opposite endpoint orders. % ledger: 4, 8, 9, 19
+Within this restricted model, comparison graphs of diameter at most two preserve all pairwise
+orders; on trees this condition is exact. A nondegenerate triangle or four-cycle identifies the
+common flip rate and hence the numerical scores, whereas a recorded six-cycle retains two admissible
+rates and reverses a pair. % ledger: 11, 13, 16, 22, 26, 27
+A separate finite-sample bound describes P's clean-model score interface and its query count,
+conditional on an unobservable misspecification allowance. None of these statements proves truthful
+reporting or downstream decision performance. % ledger: 6, 7, 17, 24
+\end{abstract}
+
+\section{Question and source boundary}
+Q is the learning-augmented algorithms survey by Zhao et al.\ \cite{Q}; P is the supplied local
+manuscript on peer-derived contribution rankings \cite{P}. P's internal names ``Q'' and ``P'' denote
+other papers and do not name the pair studied here. % ledger: 1, 2
+Q distinguishes ordinal rankings from point predictions, notes that prediction quality may be only
+partly observable, and calls for an error metric, a transfer condition, and accounting for
+prediction queries. % ledger: 3, 15, 17
+P proves a population interface: under its shared realised comparison and conditionally independent
+symmetric peer flips, a calibration triangle and overlap paths identify positive observer
+reliabilities; calibrated edge means then identify Bradley--Terry differences on a connected
+comparison graph, up to a common score translation. % ledger: 6, 13, 17
+The agreement-calibration step is already present in single-coin crowdsourcing, including sparse
+worker interaction graphs \cite{Ma2017}. We claim no new rank-one calibration method. % ledger: 12, 13, 17
+
+The contribution here is an audit of the object passed from P to a decision algorithm of Q's kind.
+Its negative example is exact at the level of the entire observable report law. Its positive graph
+statements require a constant positive common-flip mean, and its sample bound concerns the clean
+interface or a separately bounded moment deviation. % ledger: 4, 8, 11, 13, 17, 26, 27
+
+\section{Model and P's conditional interface}
+Let \(G=(V,E)\) be a connected undirected comparison graph with arbitrarily oriented edges. For edge
+\(e=(i,j)\), the intended comparison \(X_e\in\{-1,+1\}\) has \(\Pr(X_e=+1)=\sigma(c_i-c_j)\), where
+\(\sigma(t)=(1+\exp(-t))^{-1}\). Thus \(\mathbb E X_e=\tanh((c_i-c_j)/2)\). A second graph records
+which observers jointly label the same realised comparison. % ledger: 4, 6, 13
+Under P's clean premise, observer \(r\) reports \(Y_{er}=X_eZ_{er}\), where the \(Z_{er}\) are
+conditionally independent symmetric flips with positive means \(a_r\). Hence shared-item agreements
+and edge means obey
+\[
+q_{rs}:=\mathbb E[Y_{er}Y_{es}]=a_ra_s,
+\qquad
+\mu_{er}:=\mathbb E[Y_{er}]=a_r\tanh((c_i-c_j)/2).
+\]
+A triangle of observed overlap links gives \(a_r=\sqrt{q_{rs}q_{ru}/q_{su}}\); observed paths
+propagate this calibration. Dividing \(\mu_{er}\) by \(a_r\), applying \(2\operatorname{artanh}\),
+and integrating along \(G\) gives \(c\) up to translation. % ledger: 6, 13, 17
+
+\section{A report-law ambiguity under a shared flip}
+Suppose each item has an additional independent sign \(B_e\) with a common mean \(b=\mathbb E
+B_e\in(0,1)\), and reports are \(Y_{er}=X_eB_eZ_{er}\). Draws and peer flips are independent as
+specified in the peer notes. Conditional independence given the intended \(X_e\) now fails, but
+\[
+q_{rs}=a_ra_s,
+\qquad
+w_{ij}:=\frac{\mathbb E Y_{er}}{a_r}
+=b\tanh((c_i-c_j)/2).
+\]
+Thus a perfect agreement factorisation does not certify that the calibrated mean targets the
+intended comparison. P's identification theorem remains correct under its stated premise; its
+suggestion that correlated errors necessarily destroy the observable factorisation is too broad. % ledger: 4, 8, 13, 19
+
+\begin{proposition}[Four-vertex ambiguity]
+On a comparison path with four vertices, there are a clean world satisfying P's premise and a
+constant-common-flip world with the same complete distribution of peer reports, although their
+endpoint score orders are opposite. Consequently, from reports alone, one of these worlds has
+endpoint-order error probability at least \(1/2\) for any estimator, at any sample size. % ledger: 4, 8, 9
+\end{proposition}
+\begin{proof}
+Orient the path \(1\to2\to3\to4\), and in the common-flip world take edge differences
+\((4,-3/2,-3/2)\), so \(c_1-c_4=1\). Set \(b=1/2\). Define
+\[
+f_b(d)=2\operatorname{artanh}\!\bigl(b\tanh(d/2)\bigr).
+\]
+In the clean world take latent comparisons \(X'_e=X_eB_e\), peer flips \(Z_{er}\), and path
+differences \(f_b(d_e)\). A path has no cycle constraint, so these differences integrate to a
+Bradley--Terry score vector. The observed reports are \(X'_eZ_{er}\) in both worlds, while
+\[
+c'_1-c'_4=f_{1/2}(4)-2f_{1/2}(3/2)\simeq-0.265<0.
+\]
+The two report distributions coincide and the true endpoint orders differ. The two error
+probabilities for a binary order decision therefore sum to at least one. % ledger: 4, 8, 9
+\end{proof}
+
+\section{Which graph information survives?}
+The next statements concern only the constant positive common-flip model and population means. They
+do not test whether observed data satisfy that model. % ledger: 8, 14, 24
+
+\begin{proposition}[Ordinal boundary]
+For every connected comparison graph of diameter at most two, the calibrated edge means determine
+every pairwise score order for every admissible \(b>0\). For comparison trees with \(0<b<1\),
+diameter at most two is also necessary for universal order preservation under the uncorrected edge
+transform \(f_b\). This is an ordinal statement and supplies no numerical score guarantee. % ledger: 11, 15, 16, 27
+\end{proposition}
+\begin{proof}
+For a one-edge path, positive \(b\) preserves the edge sign. For two consistently oriented path
+edges with differences \(x,y\), \(f_b\) is odd and strictly increasing, so
+\(\operatorname{sgn}(f_b(x)+f_b(y))=\operatorname{sgn}(x+y)\). Every vertex pair in a diameter-two
+graph has such a path. Conversely, a tree of diameter at least three contains a three-edge path. Put
+differences \((2t+1,-t,-t)\) on it. Its true endpoint difference is \(1\), whereas as \(t\) grows
+the transformed sum tends to \(-2\operatorname{artanh}(b)<0\). % ledger: 11, 16, 27
+\end{proof}
+
+Short cycles can identify the missing cardinal scale under this same model. For a consistently
+oriented triangle \((i,j),(j,k),(i,k)\), write \(A=w_{ij}\), \(B=w_{jk}\), and \(C=w_{ik}\). If
+\(ABC\ne0\), the addition identity gives
+\[
+C=\frac{A+B}{1+AB/b^2},
+\qquad b^2=\frac{ABC}{A+B-C}.
+\]
+The positive admissible root identifies \(b\); then every edge difference is
+\(2\operatorname{artanh}(w_{ij}/b)\), and connectedness identifies scores up to translation. This is
+population self-calibration within the specified class. % ledger: 10, 13, 14
+
+For four consistently oriented cycle edges, let \(S_k\) be the elementary symmetric sum of degree
+\(k\) in their calibrated means. Cycle consistency reduces to \(S_1b^2+S_3=0\). If \(S_1\ne0\), the
+positive admissible root of \(b^2=-S_3/S_1\) is unique. Thus a triangle is sufficient but not
+necessary. % ledger: 22, 24, 26
+A cycle alone is not sufficient in general: the recorded six-cycle with calibrated means
+\((-65,60,-52,-23,62,16)/100\) has admissible rates approximately \(0.739\) and \(0.854\), and the
+corresponding integrated scores give opposite orders for one vertex pair. % ledger: 26
+
+\section{A conditional error and label budget}
+A separate calculation prices P's clean interface. Choose a calibration triangle and overlap tree
+whose greatest depth from that triangle is \(D\), and let \(L_H\) be the selected overlap links.
+Suppose \(a_r\geq\alpha>0\), \(0<\tau\leq1/2\), \(p_e\in[\tau,1-\tau]\), and every required agreement or edge-mean
+estimate is within \(\delta\) of its clean-model value. Let \(L_G\) be the unweighted comparison
+Laplacian and set
+\[
+u=\frac{2\delta}{\alpha^2},\qquad
+T=(D+3/2)u,\qquad
+h=\frac{\delta e^T}{\alpha}+e^T-1.
+\]
+If \(\delta\leq\alpha^2/2\) and \(h\leq\tau\), P's triangle and path calibration, edge logit
+inversion, and centred least-squares reconstruction obey
+\[
+\|\widehat c-c\|_2\leq
+\sqrt{\frac{|E|}{\lambda_2(L_G)}}
+\frac{h}{\tau(1-\tau/2)}.
+\]
+Here \(u\) bounds each log-agreement error, \(T\) bounds propagated log-reliability error, \(h\)
+bounds calibrated edge-mean error, and the Laplacian factor converts edge error to centred score
+error. This is an upper bound, not a matching rate or a decision theorem. % ledger: 6, 7, 17
+
+On every measured overlap link both observers label the same realised draw.
+With \(N\) independent items per measured population, \(M=|L_H|+|E|\) measured moments, and
+population misspecification bias at most \(\beta\), the same premise holds with probability at least
+\(1-\zeta\) for
+\[
+\delta=\beta+\sqrt{\frac{2\log(2M/\zeta)}{N}}.
+\]
+A direct plan uses at most \(N(2|L_H|+|E|)\) peer labels. This count is not yet a monetary or
+objective cost. The bias \(\beta\) need not shrink with \(N\), and the path ambiguity shows why
+report-only checks cannot set it to zero relative to the intended target. % ledger: 6, 7, 8, 17
+
+\section{Related work and interpretation}
+Ma et al. already establish label-free single-coin worker calibration and rank-one agreements from
+sparse interactions \cite{Ma2017}. That step is prior work. Bradley--Terry diagnostics examine model
+failures and ranking effects \cite{Wu2022}. Our targeted searches found no exact constant-common-flip
+graph statement; this does not establish novelty. % ledger: 12, 13, 15, 17, 28
+
+For Q's interface, the diameter-two result could serve a guarantee based only on ordinal error.
+P's potential uses numerical scores, so it requires separate sensitivity and query-cost arguments
+even after cycle calibration. % ledger: 15, 17, 20, 24
+
+\section{Limitations and open questions}
+Identification assumes an edge-constant positive flip mean independent of intended comparisons
+and stable positive reliabilities. Short-cycle formulae cannot test these premises; edge-dependent
+or unrestricted shared bias remains unresolved. Degenerate cycles and finite-sample cycle
+stability are outside the result. % ledger: 8, 14, 20, 22, 24, 26
+The work supplies no truthful reporting, minimal general-graph audit design, policy sensitivity,
+or empirical validation. A next step is a conditioned finite-sample cycle bound with label costs,
+then error transfer to one specified decision rule. These remain open questions. % ledger: 17, 20, 24, 26
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}
