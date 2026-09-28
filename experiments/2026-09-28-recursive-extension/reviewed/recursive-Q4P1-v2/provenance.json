@@ -1,0 +1,35 @@
+{
+  "parent": "recursive/threads/Q4P1/paper",
+  "parent_sha256": "4c85fa17ef3e4d321350fd0b709c50f4aa715db1ee712561adfced556d03d4a1",
+  "parent_review": {
+    "round": 1,
+    "at": "2026-09-28T12:25:02Z",
+    "build_ok": true,
+    "checks": [
+      "P: no URL, DOI or arXiv identifier",
+      "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+    ],
+    "paper_sha256": "4c85fa17ef3e4d321350fd0b709c50f4aa715db1ee712561adfced556d03d4a1",
+    "decision": "ACCEPT",
+    "summary": "The claims trace to the note and ledger, the proofs are correct within their stated models, and Q and P are represented fairly. The remaining issues are minor presentation and citation housekeeping.",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "minor",
+        "where": "Section 3",
+        "issue": "The general comparison graph is used without explicitly defining its vertex and edge sets.",
+        "fix": "Introduce a finite graph G=(V,E) before the reachability proposition."
+      },
+      {
+        "id": "F2",
+        "severity": "minor",
+        "where": "references.bib, entry P",
+        "issue": "The relative file path is presented as a URL, although P has no public URL or identifier.",
+        "fix": "Label P explicitly as a supplied local manuscript and give its package path as a local source reference."
+      }
+    ]
+  },
+  "version": 2,
+  "status": "Supervisor clarification; no new independent review",
+  "scope": "Minor definition and local-reference corrections; main claims unchanged"
+}

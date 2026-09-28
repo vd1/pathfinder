@@ -1,0 +1,35 @@
+{
+  "parent": "recursive/threads/Q1P2/paper",
+  "parent_sha256": "53bbde666c995487923bf3a51bd63a1079ba7a5844a6dd400c13b09da543c349",
+  "parent_review": {
+    "round": 1,
+    "at": "2026-09-28T12:51:50Z",
+    "build_ok": true,
+    "checks": [
+      "pathfinder2026reversal: no URL, DOI or arXiv identifier",
+      "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+    ],
+    "paper_sha256": "53bbde666c995487923bf3a51bd63a1079ba7a5844a6dd400c13b09da543c349",
+    "decision": "ACCEPT",
+    "summary": "The paper stays within the supplied note\u2019s scope, and its mathematical claims check out. The remaining issues are presentational and bibliographic.",
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "minor",
+        "where": "Theorem 1",
+        "issue": "The empirical utility sum used for a negative-cycle witness is not explicitly defined, leaving the signal associated with each edge unclear.",
+        "fix": "Define the sum using one specified signal for each cycle edge."
+      },
+      {
+        "id": "F2",
+        "severity": "minor",
+        "where": "references.bib: pathfinder2026reversal",
+        "issue": "The relative file URI is not a usable reference for an external referee; the reference check found no public identifier.",
+        "fix": "Identify P as the supplied unpublished manuscript with its package identifier, and include it with the submission."
+      }
+    ]
+  },
+  "version": 2,
+  "status": "Supervisor clarification; no new independent review",
+  "scope": "Minor definition and local-reference corrections; main claims unchanged"
+}

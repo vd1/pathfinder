@@ -88,6 +88,12 @@ to the exact SHA-256 of its archived TeX, not merely to a matching title.
 
 ## Scientific assessment
 
+The completed claim-level assessment is in
+`plans/2026-09-28-extension-readout.md` and the updated Recursive Science note.
+Supervisor-clarified paper packages are under `reviewed/`; their provenance
+binds each unchanged accepted parent. The numerical audit is
+`notes/check_extension_claims.py`. No third generation has been launched.
+
 Evaluate claims and ancestry, not acceptance-rate superiority. The comparison
 is question-conditioned and unblinded: both arms receive the same starting
 question within each block. Costs and terminal verdicts remain descriptive.

@@ -1,0 +1,314 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Priced Certificates for Conditional-CVaR Obedience}
+
+\date{28 September 2026; supervisor-clarified version 2}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a fixed finite-signal policy, we study whether one realised batch of
+conditional-loss samples can certify exact obedience under upper-tail
+conditional value-at-risk (CVaR). A simultaneous confidence box and a
+finite difference-constraint graph give either a supporting state-independent
+reward, a negative-cycle witness, or abstention. Under a strict cycle margin,
+the least nonnegative reward cap exceeds the true-utility oracle cap by at
+most an explicit confidence term. Sampling cost can therefore be charged
+alongside one reward payment. This is a local, confidence-qualified result;
+it is not a competitive ratio for a learning-augmented system.
+% ledger: 3, 8, 12, 14, 20
+\end{abstract}
+
+\section{Setting and provenance}
+
+The supplied Q is a survey of learning-augmented algorithms. It proposes a
+charge per predictor invocation and gives sufficient conditions for composing
+component cost guarantees, including conditional guarantees at reachable
+histories and relations among benchmarks \cite{zhao2026survey}. The supplied
+P studies a one-type, finite-signal obedience test with state-independent
+action rewards \cite{pathfinder2026reversal}. Its expected empirical CVaR
+surrogate can reverse the true obedience decision at every fixed finite batch
+size. P also proves deterministic cycle and common-reward tests when all
+conditional utilities lie within a stated error bound. P explicitly leaves
+one realised-batch certification outside those results. The mechanism paper
+called Q inside P is distinct from the supplied Q.
+% ledger: 4, 5, 20
+
+We fix a finite signal set \(S\), a finite set \(B\) of available actions,
+and a policy \(a:S\to B\) chosen before sampling. Every available action is
+prescribed at some signal; alternatively, unprescribed actions are barred.
+The agent has one type and evaluates an action after observing \(s\) by
+\(U(b,s)=-\operatorname{CVaR}_{\beta}(L_{s,b})\), where
+\(\beta\in(0,1]\) is upper-tail mass and \(L_{s,b}\in[0,H]\).
+A state-independent reward \(r:B\to\mathbb R\) supports the policy when
+\[
+U(a(s),s)+r(a(s))\geq U(b,s)+r(b)
+\quad\text{for every }s\in S\text{ and }b\in B.
+\]
+This reduced-form conditional-risk model excludes ex-ante CVaR of a plan,
+report-stage incentives, and the system objective considered by Q.
+% ledger: 4, 5, 8, 15, 20
+
+The contribution below is the realised-data certificate and its priced,
+local reward-cap comparison. P's graph theorem supplies the deterministic
+step; the CVaR concentration step and margin reasoning have close published
+antecedents discussed in Section~\ref{sec:related}.
+% ledger: 7, 8, 12, 13, 14, 20
+
+\section{A certificate from one realised batch}
+
+For each of the \(N=|S||B|\) cells \((s,b)\), assume access to \(m\)
+independent, identically distributed draws from its fixed conditional loss
+law. Dependence between different cells is allowed. Write
+\(\widehat U(b,s)\) for negative upper-tail CVaR of that cell's realised
+empirical distribution. For \(0<\delta<1\), set
+\[
+e_m=\frac{H}{\beta}
+\sqrt{\frac{\log(2N/\delta)}{2m}},\qquad
+\mathcal E=\left\{
+\max_{s,b}|\widehat U(b,s)-U(b,s)|\leq e_m
+\right\}.
+\]
+The variational CVaR formula gives
+\(\lvert\operatorname{CVaR}_{\beta}(F)
+-\operatorname{CVaR}_{\beta}(G)\rvert
+\leq H\|F-G\|_{\infty}/\beta\) for distributions on \([0,H]\).
+The Dvoretzky--Kiefer--Wolfowitz inequality and a union bound yield
+\(\Pr(\mathcal E)\geq1-\delta\). This bounds the error of a realised
+batch relative to true CVaR; P's expected empirical CVaR is a different
+quantity.
+% ledger: 3, 8, 20
+
+For distinct \(a,b\in B\), define the empirical robust edge and the true
+edge by
+\[
+\begin{aligned}
+w_m(a,b)&=\max_{s:a(s)=a}
+\{\widehat U(b,s)-\widehat U(a,s)+2e_m\},\\
+w^*(a,b)&=\max_{s:a(s)=a}
+\{U(b,s)-U(a,s)\}.
+\end{aligned}
+\]
+The graph has vertex set \(B\) and one such edge for each ordered pair of
+distinct actions. A cycle's weight is the sum of its edge weights.
+% ledger: 8, 12, 14, 20
+
+\begin{theorem}[Realised-batch decision]\label{thm:certificate}
+If the empirical robust graph has no positive cycle, its difference
+constraints admit a vector \(r\) satisfying
+\[
+r(a)-r(b)\geq w_m(a,b)\quad(a\ne b).
+\]
+The recorded estimates, radius, graph and vector then certify exact true
+obedience on \(\mathcal E\). If instead a displayed cycle of \(K\) edges
+uses actions \(a_1,\ldots,a_K,a_{K+1}=a_1\) and specified signals
+\(s_k\) with \(a(s_k)=a_k\), define
+\[\widehat C=\sum_{k=1}^K[\widehat U(a_k,s_k)-\widehat U(a_{k+1},s_k)].\]
+If \(\widehat C\) satisfies
+\(\widehat C+2Ke_m<0\), it certifies true infeasibility on
+\(\mathcal E\). In every other case the procedure abstains.
+% ledger: 3, 8, 14, 20
+\end{theorem}
+
+\begin{proof}
+For every signal prescribing \(a\), the event \(\mathcal E\) implies
+\(U(b,s)-U(a,s)\leq w_m(a,b)\). Summing difference constraints around
+a cycle proves their necessity; P's path-potential construction proves
+sufficiency when there is no positive cycle. The resulting \(r\)
+satisfies every true obedience inequality on \(\mathcal E\).
+Each utility difference in a cycle changes by at most \(2e_m\), so the
+second inequality makes the corresponding true cycle negative. Such a cycle
+cannot coexist with any supporting reward. The graph step is P's
+deterministic rectangular-error test, applied to a random box with stated
+coverage.
+% ledger: 3, 8, 14, 20
+\end{proof}
+
+The certificate is sound with probability at least \(1-\delta\) over the
+specified sample draw. A positive robust cycle alone proves neither true
+infeasibility nor failure of a particular true reward: it can lead to
+abstention. A negative-cycle test uses an upper confidence bound, not the
+robust graph's failed feasibility check.
+% ledger: 8, 20
+
+\section{Margin, payment and sample price}
+
+Assume every nontrivial simple true cycle in the graph has weight at most
+\(-K\gamma\), where \(K\) is its length and \(\gamma>0\). This is
+equivalent to a positive per-edge margin for the corresponding utility-cycle
+test. On \(\mathcal E\), direct comparison of edge maxima gives
+\[
+w^*(a,b)\leq w_m(a,b)\leq w^*(a,b)+4e_m.
+\]
+Thus \(e_m<\gamma/4\) makes every empirical robust cycle negative, and
+Theorem~\ref{thm:certificate} produces a reward witness. One sufficient
+uniform batch size is
+\[
+m>\frac{8H^2}{\beta^2\gamma^2}
+\log\frac{2N}{\delta}.
+\]
+A true cycle with utility sum at most \(-K\gamma\) likewise produces a
+negative certificate under this radius. These are sufficient margin
+conditions, not optimal sample-complexity claims.
+% ledger: 8, 15, 17, 18, 20
+
+We now require nonnegative rewards. Let \(n=|B|\), let \(R^*\) be the
+smallest possible cap \(\max_a r(a)\) for a reward satisfying the true
+constraints, and let \(R_m^*\) be the corresponding cap for the empirical
+robust constraints. A cap is the maximum payment for one decision, not the
+expected payment under a specified signal distribution.
+% ledger: 10, 11, 12, 14, 18
+
+\begin{proposition}[Local reward-cap comparison]\label{prop:cap}
+Under the preceding cycle margin, on \(\mathcal E\) and when
+\(e_m<\gamma/4\),
+\[
+R^*\leq R_m^*\leq R^*+4(n-1)e_m.
+\]
+If one conditional-loss draw costs \(\kappa_s\) in the decision
+objective's units, sampling plus at most one reward payment is bounded by
+\[
+\kappa_sNm+R^*+4(n-1)e_m
+\]
+on the coverage event, apart from any separately charged graph computation.
+% ledger: 10, 11, 12, 14, 18, 20
+\end{proposition}
+
+\begin{proof}
+For any edge array without a positive cycle, the coordinatewise least
+nonnegative solution of \(r(a)-r(b)\geq w(a,b)\) is the maximum weight
+of a path starting at \(a\), including the empty path. A maximising path
+can be simple, so it uses at most \(n-1\) edges. The edge comparison above
+raises any such path weight by at most \(4(n-1)e_m\). Taking maximum
+coordinates of these least solutions gives the stated cap comparison.
+% ledger: 12, 14
+\end{proof}
+
+The payment term is necessary. For instance, edge requirements
+\(r(a)-r(b)\geq M\) and
+\(r(b)-r(a)\geq-M-\gamma\) have a negative cycle, yet any
+nonnegative supporting reward has cap at least \(M\). A declared budget
+\(R\) can be checked by adding \(0\leq r(a)\leq R\) to the robust
+difference constraints. Failure of that budget check does not show that
+the true array violates the budget.
+% ledger: 10, 11, 12
+
+For \(\kappa_s>0\), the sufficient upper bound in
+Proposition~\ref{prop:cap} has variable part
+\(\kappa_sNm+A m^{-1/2}\), where
+\[
+A=4(n-1)\frac{H}{\beta}
+\sqrt{\frac{\log(2N/\delta)}{2}}.
+\]
+Its continuous unconstrained minimiser is
+\(m_0=(A/(2\kappa_sN))^{2/3}\). The margin condition additionally
+requires the strict batch-size inequality above; an integer batch is
+chosen above that threshold and near the larger of the threshold and
+\(m_0\). This only optimises the displayed sufficient bound.
+% ledger: 17, 18
+
+Q charges predictor invocations, whereas the bill here charges draws.
+Treating one draw as one invocation, or one batch as one invocation, is an
+extra accounting choice. Neither \(R^*\) nor
+\(\kappa_sNm+R_m^*\) is Q's prediction-free offline system benchmark.
+% ledger: 5, 8, 15, 20
+
+\section{Two access boundaries}
+
+The sample oracle must reveal losses for deviations at each signal, not
+just losses for the prescribed action. In a two-signal swapped-action
+instance, give each prescribed action constant loss \(3/2\) in both
+worlds. Give every unplayed deviation loss \(2\) in one world and
+\(1\) in another. Every on-policy transcript has the same law in both
+worlds, for any sample size, while the true two-edge utility cycles have
+weights \(+1\) and \(-1\). Thus on-policy logs alone cannot identify
+the obedience decision. A generative conditional sampler, covered
+exploration, or a justified identification model is a separate premise
+whose cost must be counted.
+% ledger: 9, 13, 15, 20
+
+There is also no uniform finite-sample exact yes-or-no decision near the
+cycle boundary. Let the safe loss be \(1\), risky loss be
+\(2X\) with \(X\sim\operatorname{Bernoulli}(p)\), and
+\(\beta=1/2\). In two signals, swap which named action is risky and
+prescribe the risky action at each signal. For \(p<1/2\), risky CVaR is
+\(4p\), giving true utility-cycle sum \(C(p)=2-8p\).
+At \(p_{\pm}=1/4\pm\varepsilon\), with
+\(0<\varepsilon<1/4\), the signs differ. Every fixed finite binary
+transcript has positive probability in both worlds. A nonabstaining
+sequential test with errors at most \(\delta<1/2\) in both worlds and
+finite expected informative sample count \(T\) obeys
+\[
+\mathbb E_{p_-}T\,
+\operatorname{kl}(p_-,p_+)
+\geq\operatorname{kl}(1-\delta,\delta).
+\]
+The per-draw divergence is of order \(\varepsilon^2\), so expected
+sampling cost grows as the margin shrinks. This obstruction permits
+abstention and positive-margin promises.
+% ledger: 6, 7, 15, 20
+
+\section{Related work and interpretation}\label{sec:related}
+
+Concentration for empirical CVaR is established by
+Prashanth, Jagannathan and Kolla \cite{prashanth2019concentration}; a
+Wasserstein treatment of empirical risk estimation that includes CVaR
+appears in Prashanth and Bhat \cite{prashanth2019wasserstein}.
+Agrawal, Koolen and Juneja \cite{agrawal2021tailrisk} give
+fixed-confidence best-arm methods and confidence bounds for tail-risk
+measures. These works publish the statistical main step used here. P
+\cite{pathfinder2026reversal} supplies the deterministic graph step in
+the supplied manuscript. Thus the contribution is their narrow
+combination with a priced reward witness and local cap comparison, rather
+than a new concentration or graph theorem.
+% ledger: 7, 8, 13, 20
+
+Chen \cite{chen2026persuasion} uses a positive risk-value margin to
+retain strict incentive compatibility under approximation in a different
+persuasion model. Balcan, Sandholm and Vitercik
+\cite{balcan2019approximate} estimate approximate incentive compatibility
+from samples for other mechanism classes. The sequential change-of-measure
+ingredient behind the boundary example is standard in best-arm
+identification \cite{kaufmann2016complexity}. None of these sources,
+in the targeted searches recorded in \url{search.md}, was found to state
+the specific conditional-CVaR reward-cap comparison above; that search
+does not establish publication priority.
+% ledger: 6, 7, 13, 20
+
+\section{Limitations and open questions}
+
+The local guarantee concerns a fixed policy, bounded conditional losses,
+sample access for all compared cells, state-independent rewards and one
+decision. It makes no claim for ex-ante CVaR, report-stage incentives,
+unobserved counterfactuals, or a general learning-augmented pipeline.
+The graph construction gives a high-confidence statement, not a pathwise
+guarantee on failed coverage. A negative-cycle witness and a supporting
+reward are sound only on the coverage event.
+% ledger: 4, 5, 9, 15, 20
+
+An expected-cost claim needs an abstention action and failure-path cost
+control. If downstream cost \(D\leq B\) on the entire coverage event,
+including abstention, and \(D\leq M\) on every path, then
+\[
+\mathbb E[\kappa_sNm+D]
+\leq\kappa_sNm+B+\delta M.
+\]
+For Q's adaptive composition, both coverage and cost premises must hold
+conditionally on each reachable pre-sampling history. A common positive
+offline benchmark and component-to-system cost relations would also be
+needed for a competitive ratio. None is supplied by this local result.
+% ledger: 20, 22, 24
+
+Open questions are how to price and justify counterfactual access, how to
+allocate samples around critical graph cycles, and how transfers and a
+bounded abstention fallback enter a common downstream objective. A first
+system-level test would specify these elements in the two-signal setting
+and prove, or refute, a conditional expected-cost comparison with its
+prediction-free benchmark.
+% ledger: 15, 20, 22, 24
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}
