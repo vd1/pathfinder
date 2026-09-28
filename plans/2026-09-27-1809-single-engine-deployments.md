@@ -308,3 +308,20 @@ Astra's second review, of `4a094be`:
 | Bounded completion across stages | Completion defined per requested stage, preserving edit and paper resumes; unlisted BLOCKED pairs ignored; listed BLOCKED pairs reported without stopping the rest |
 | Release gate before deployments join | Compatibility work and the julien-2 inventory moved before the first release; pin upgrades after it |
 | Atomic admission, Defer and refusals | Stop checks, policy and increment under one lock; Defer waits outside the lock and wakes on stop; refusals leave no active-call record; per-campaign scope with parent stop |
+
+## Status, 2026-09-28
+
+- Steps 1 to 7 are implemented and merged. `engine-v1.0` (`b9913b4`) and
+  `engine-v1.1` (`f733ded`) passed the release check with no skips.
+- statarb pins `engine-v1.1`: it freezes the tag, verifies the copy, and
+  appends its brief as prompt overlays (statarb `7064de3`).
+- julien-2's general research fixes are in `engine-v1.1`. The transport
+  extension point (`bdc45a7`, release check passed, not tagged) removes the
+  need for julien-2 to replace `transport.execute`. julien-2 stays not yet
+  supported: its EVA research scheme still lives in its own copy of the
+  engine; see `deployments/pathfinder-julien-2/migration.md`.
+- Behave scenarios without model access: 87 pass, 0 fail, 9 error. All nine
+  errors are in `features/operational/edit-stage.feature`: eight call
+  `edit_stage.run_author` and `run_round`, which the later PCE delegation
+  removed on purpose, and one needs `nix` and a `../pce` checkout. Resolving
+  them is a decision about that feature's specification.
