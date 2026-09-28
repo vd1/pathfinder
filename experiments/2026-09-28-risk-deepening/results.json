@@ -1,0 +1,2111 @@
+{
+  "seed": 20260928,
+  "trials_per_cell": 2000,
+  "python": "3.13.0",
+  "parent_sha256": "c7169614be6f9095f8674d5549e3b83bfa8de7d4b135b22f6fdc2888018e9ef0",
+  "protocol_sha256": "d331468af2351bbf55dae7da6637d129d774cc5bfeff5a3fe762355f7739fccb",
+  "script_sha256": "e03bfde98c4613179b5289f43cb8aa4840dc45925643fa7235594d37133414a8",
+  "delta_per_trial": 0.05,
+  "rows": [
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 250,
+      "mode": "uniform",
+      "draws": 1000,
+      "radius": 0.40299573457728116,
+      "padding": 0.8059914691545623,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.01,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 250,
+      "mode": "known_safe",
+      "draws": 500,
+      "radius": 0.3744660896657589,
+      "padding": 0.3744660896657589,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.2000296991344916,
+      "mc_standard_error": 1.2960815514823597e-05,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.2005296991344916,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.2050296991344916,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 1000,
+      "mode": "uniform",
+      "draws": 4000,
+      "radius": 0.20149786728864058,
+      "padding": 0.40299573457728116,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.20399999999999294,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.23999999999999294,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 1000,
+      "mode": "known_safe",
+      "draws": 2000,
+      "radius": 0.18723304483287945,
+      "padding": 0.18723304483287945,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.20199999999999294,
+          "sufficient_expected_bound": 0.49487139259123547
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.21999999999999292,
+          "sufficient_expected_bound": 0.5128713925912355
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 4000,
+      "mode": "uniform",
+      "draws": 16000,
+      "radius": 0.10074893364432029,
+      "padding": 0.20149786728864058,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.21599999999999292,
+          "sufficient_expected_bound": 0.5224229739242086
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.35999999999999294,
+          "sufficient_expected_bound": 0.6664229739242086
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 4000,
+      "mode": "known_safe",
+      "draws": 8000,
+      "radius": 0.09361652241643972,
+      "padding": 0.09361652241643972,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.20799999999999294,
+          "sufficient_expected_bound": 0.41193569629561777
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.2799999999999929,
+          "sufficient_expected_bound": 0.4839356962956178
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 16000,
+      "mode": "uniform",
+      "draws": 64000,
+      "radius": 0.050374466822160145,
+      "padding": 0.10074893364432029,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.2639999999999929,
+          "sufficient_expected_bound": 0.4747114869621043
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.839999999999993,
+          "sufficient_expected_bound": 1.0507114869621044
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 16000,
+      "mode": "known_safe",
+      "draws": 32000,
+      "radius": 0.04680826120821986,
+      "padding": 0.04680826120821986,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.23199999999999293,
+          "sufficient_expected_bound": 0.3914678481478089
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.5199999999999929,
+          "sufficient_expected_bound": 0.6794678481478089
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 64000,
+      "mode": "uniform",
+      "draws": 256000,
+      "radius": 0.025187233411080073,
+      "padding": 0.050374466822160145,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.45599999999999297,
+          "sufficient_expected_bound": 0.6188557434810521
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 2.759999999999993,
+          "sufficient_expected_bound": 2.922855743481052
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 64000,
+      "mode": "known_safe",
+      "draws": 128000,
+      "radius": 0.02340413060410993,
+      "padding": 0.02340413060410993,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.32799999999999296,
+          "sufficient_expected_bound": 0.4652339240739044
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.4799999999999929,
+          "sufficient_expected_bound": 1.6172339240739044
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 256000,
+      "mode": "uniform",
+      "draws": 1024000,
+      "radius": 0.012593616705540036,
+      "padding": 0.025187233411080073,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.2239999999999929,
+          "sufficient_expected_bound": 1.362927871740526
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 10.439999999999992,
+          "sufficient_expected_bound": 10.578927871740527
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "free",
+      "p": [
+        0.1,
+        0.1
+      ],
+      "m": 256000,
+      "mode": "known_safe",
+      "draws": 512000,
+      "radius": 0.011702065302054965,
+      "padding": 0.011702065302054965,
+      "oracle_cap": 0.0,
+      "mean_downstream_cost": 0.19999999999999293,
+      "mc_standard_error": 1.3187351721084254e-09,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.711999999999993,
+          "sufficient_expected_bound": 0.8381169620369522
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 5.319999999999993,
+          "sufficient_expected_bound": 5.446116962036952
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 250,
+      "mode": "uniform",
+      "draws": 1000,
+      "radius": 0.40299573457728116,
+      "padding": 0.8059914691545623,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.01,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 250,
+      "mode": "known_safe",
+      "draws": 500,
+      "radius": 0.3744660896657589,
+      "padding": 0.3744660896657589,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.9961433982689974,
+      "mc_standard_error": 0.0011104989831171763,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.9966433982689974,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.0011433982689975,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 12,
+        "refute": 0,
+        "abstain": 1988,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 1000,
+      "mode": "uniform",
+      "draws": 4000,
+      "radius": 0.20149786728864058,
+      "padding": 0.40299573457728116,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.004,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.04,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 1000,
+      "mode": "known_safe",
+      "draws": 2000,
+      "radius": 0.18723304483287945,
+      "padding": 0.18723304483287945,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.6088916421671899,
+      "mc_standard_error": 0.006755975772570131,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.6108916421671899,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.62889164216719,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 1264,
+        "refute": 0,
+        "abstain": 736,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 1,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 4000,
+      "mode": "uniform",
+      "draws": 16000,
+      "radius": 0.10074893364432029,
+      "padding": 0.20149786728864058,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.7116212456137636,
+      "mc_standard_error": 0.006810144801377793,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.7276212456137636,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.8716212456137636,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 946,
+        "refute": 0,
+        "abstain": 1054,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 4000,
+      "mode": "known_safe",
+      "draws": 8000,
+      "radius": 0.09361652241643972,
+      "padding": 0.09361652241643972,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.3476645112082199,
+      "mc_standard_error": 0.0010298920182491647,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.3556645112082199,
+          "sufficient_expected_bound": 0.5069356962956177
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.4276645112082199,
+          "sufficient_expected_bound": 0.5789356962956178
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 1,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 16000,
+      "mode": "uniform",
+      "draws": 64000,
+      "radius": 0.050374466822160145,
+      "padding": 0.10074893364432029,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.3504148418221601,
+      "mc_standard_error": 0.00015914239286060212,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.4144148418221601,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.9904148418221601,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 16000,
+      "mode": "known_safe",
+      "draws": 32000,
+      "radius": 0.04680826120821986,
+      "padding": 0.04680826120821986,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.32444450560410976,
+      "mc_standard_error": 0.0010004492552902718,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.3564445056041098,
+          "sufficient_expected_bound": 0.48646784814780886
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 0.6444445056041097,
+          "sufficient_expected_bound": 0.7744678481478089
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 1,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 64000,
+      "mode": "uniform",
+      "draws": 256000,
+      "radius": 0.025187233411080073,
+      "padding": 0.050374466822160145,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.32514226466107976,
+      "mc_standard_error": 8.192458838449066e-05,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.5811422646610798,
+          "sufficient_expected_bound": 0.7138557434810521
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 2.88514226466108,
+          "sufficient_expected_bound": 3.0178557434810522
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 64000,
+      "mode": "known_safe",
+      "draws": 128000,
+      "radius": 0.02340413060410993,
+      "padding": 0.02340413060410993,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.31265709655205554,
+      "mc_standard_error": 0.0009970896875583575,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.44065709655205554,
+          "sufficient_expected_bound": 0.5602339240739044
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.5926570965520557,
+          "sufficient_expected_bound": 1.7122339240739044
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 1,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 256000,
+      "mode": "uniform",
+      "draws": 1024000,
+      "radius": 0.012593616705540036,
+      "padding": 0.025187233411080073,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.3125673120180401,
+      "mc_standard_error": 3.928026520045583e-05,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.3365673120180401,
+          "sufficient_expected_bound": 1.457927871740526
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 10.55256731201804,
+          "sufficient_expected_bound": 10.673927871740526
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "paid",
+      "p": [
+        0.3,
+        0.1
+      ],
+      "m": 256000,
+      "mode": "known_safe",
+      "draws": 512000,
+      "radius": 0.011702065302054965,
+      "padding": 0.011702065302054965,
+      "oracle_cap": 0.19999999999999996,
+      "mean_downstream_cost": 0.30782472796352744,
+      "mc_standard_error": 0.0014100736438143956,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 0.8198247279635275,
+          "sufficient_expected_bound": 0.9331169620369522
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 5.427824727963528,
+          "sufficient_expected_bound": 5.541116962036952
+        }
+      ],
+      "counts": {
+        "deploy": 2000,
+        "refute": 0,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 2,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 250,
+      "mode": "uniform",
+      "draws": 1000,
+      "radius": 0.40299573457728116,
+      "padding": 0.8059914691545623,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.01,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 250,
+      "mode": "known_safe",
+      "draws": 500,
+      "radius": 0.3744660896657589,
+      "padding": 0.3744660896657589,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.0005,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.005,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 1000,
+      "mode": "uniform",
+      "draws": 4000,
+      "radius": 0.20149786728864058,
+      "padding": 0.40299573457728116,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.004,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.04,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 1000,
+      "mode": "known_safe",
+      "draws": 2000,
+      "radius": 0.18723304483287945,
+      "padding": 0.18723304483287945,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.002,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.02,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 4
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 4000,
+      "mode": "uniform",
+      "draws": 16000,
+      "radius": 0.10074893364432029,
+      "padding": 0.20149786728864058,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.016,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.16,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 4000,
+      "mode": "known_safe",
+      "draws": 8000,
+      "radius": 0.09361652241643972,
+      "padding": 0.09361652241643972,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.008,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.08,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 16000,
+      "mode": "uniform",
+      "draws": 64000,
+      "radius": 0.050374466822160145,
+      "padding": 0.10074893364432029,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.064,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.6400000000000001,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 16000,
+      "mode": "known_safe",
+      "draws": 32000,
+      "radius": 0.04680826120821986,
+      "padding": 0.04680826120821986,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.032,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.32,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 64000,
+      "mode": "uniform",
+      "draws": 256000,
+      "radius": 0.025187233411080073,
+      "padding": 0.050374466822160145,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.256,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 3.56,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 64000,
+      "mode": "known_safe",
+      "draws": 128000,
+      "radius": 0.02340413060410993,
+      "padding": 0.02340413060410993,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.1280000000000001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 2.2800000000000002,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 256000,
+      "mode": "uniform",
+      "draws": 1024000,
+      "radius": 0.012593616705540036,
+      "padding": 0.025187233411080073,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 2.024,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 11.24,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "near_boundary",
+      "p": [
+        0.35,
+        0.149
+      ],
+      "m": 256000,
+      "mode": "known_safe",
+      "draws": 512000,
+      "radius": 0.011702065302054965,
+      "padding": 0.011702065302054965,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.512,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 6.12,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 250,
+      "mode": "uniform",
+      "draws": 1000,
+      "radius": 0.40299573457728116,
+      "padding": 0.8059914691545623,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.01,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 250,
+      "mode": "known_safe",
+      "draws": 500,
+      "radius": 0.3744660896657589,
+      "padding": 0.3744660896657589,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.0005,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.005,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 8
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 1000,
+      "mode": "uniform",
+      "draws": 4000,
+      "radius": 0.20149786728864058,
+      "padding": 0.40299573457728116,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.004,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.04,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 1000,
+      "mode": "known_safe",
+      "draws": 2000,
+      "radius": 0.18723304483287945,
+      "padding": 0.18723304483287945,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.002,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.02,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 5
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 4000,
+      "mode": "uniform",
+      "draws": 16000,
+      "radius": 0.10074893364432029,
+      "padding": 0.20149786728864058,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.016,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.16,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 4000,
+      "mode": "known_safe",
+      "draws": 8000,
+      "radius": 0.09361652241643972,
+      "padding": 0.09361652241643972,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.008,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.08,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 6
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 16000,
+      "mode": "uniform",
+      "draws": 64000,
+      "radius": 0.050374466822160145,
+      "padding": 0.10074893364432029,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.064,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.6400000000000001,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 16000,
+      "mode": "known_safe",
+      "draws": 32000,
+      "radius": 0.04680826120821986,
+      "padding": 0.04680826120821986,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.032,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.32,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 4
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 64000,
+      "mode": "uniform",
+      "draws": 256000,
+      "radius": 0.025187233411080073,
+      "padding": 0.050374466822160145,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.256,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 3.56,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 64000,
+      "mode": "known_safe",
+      "draws": 128000,
+      "radius": 0.02340413060410993,
+      "padding": 0.02340413060410993,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.1280000000000001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 2.2800000000000002,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 256000,
+      "mode": "uniform",
+      "draws": 1024000,
+      "radius": 0.012593616705540036,
+      "padding": 0.025187233411080073,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 2.024,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 11.24,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 0
+    },
+    {
+      "scenario": "boundary",
+      "p": [
+        0.35,
+        0.15
+      ],
+      "m": 256000,
+      "mode": "known_safe",
+      "draws": 512000,
+      "radius": 0.011702065302054965,
+      "padding": 0.011702065302054965,
+      "oracle_cap": 0.3999999999999999,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.512,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 6.12,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 250,
+      "mode": "uniform",
+      "draws": 1000,
+      "radius": 0.40299573457728116,
+      "padding": 0.8059914691545623,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.01,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 250,
+      "mode": "known_safe",
+      "draws": 500,
+      "radius": 0.3744660896657589,
+      "padding": 0.3744660896657589,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.0005,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.005,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 2,
+        "abstain": 1998,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 7
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 1000,
+      "mode": "uniform",
+      "draws": 4000,
+      "radius": 0.20149786728864058,
+      "padding": 0.40299573457728116,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.004,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.04,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 1000,
+      "mode": "known_safe",
+      "draws": 2000,
+      "radius": 0.18723304483287945,
+      "padding": 0.18723304483287945,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.002,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.02,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 27,
+        "abstain": 1973,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 4000,
+      "mode": "uniform",
+      "draws": 16000,
+      "radius": 0.10074893364432029,
+      "padding": 0.20149786728864058,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.016,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.16,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 0,
+        "abstain": 2000,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 4000,
+      "mode": "known_safe",
+      "draws": 8000,
+      "radius": 0.09361652241643972,
+      "padding": 0.09361652241643972,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.008,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.08,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 1221,
+        "abstain": 779,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 16000,
+      "mode": "uniform",
+      "draws": 64000,
+      "radius": 0.050374466822160145,
+      "padding": 0.10074893364432029,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.064,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.6400000000000001,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 960,
+        "abstain": 1040,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 16000,
+      "mode": "known_safe",
+      "draws": 32000,
+      "radius": 0.04680826120821986,
+      "padding": 0.04680826120821986,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.032,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 1.32,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 2000,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 3
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 64000,
+      "mode": "uniform",
+      "draws": 256000,
+      "radius": 0.025187233411080073,
+      "padding": 0.050374466822160145,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.256,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 3.56,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 2000,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 1
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 64000,
+      "mode": "known_safe",
+      "draws": 128000,
+      "radius": 0.02340413060410993,
+      "padding": 0.02340413060410993,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.1280000000000001,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 2.2800000000000002,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 2000,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 5
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 256000,
+      "mode": "uniform",
+      "draws": 1024000,
+      "radius": 0.012593616705540036,
+      "padding": 0.025187233411080073,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 2.024,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 11.24,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 2000,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 2
+    },
+    {
+      "scenario": "infeasible",
+      "p": [
+        0.35,
+        0.2
+      ],
+      "m": 256000,
+      "mode": "known_safe",
+      "draws": 512000,
+      "radius": 0.011702065302054965,
+      "padding": 0.011702065302054965,
+      "oracle_cap": null,
+      "mean_downstream_cost": 1.0,
+      "mc_standard_error": 0.0,
+      "prices": [
+        {
+          "per_draw": 1e-06,
+          "mean_total": 1.512,
+          "sufficient_expected_bound": null
+        },
+        {
+          "per_draw": 1e-05,
+          "mean_total": 6.12,
+          "sufficient_expected_bound": null
+        }
+      ],
+      "counts": {
+        "deploy": 0,
+        "refute": 2000,
+        "abstain": 0,
+        "budget_uncertain": 0
+      },
+      "false_definitive": 0,
+      "coverage_failures": 5
+    }
+  ]
+}
