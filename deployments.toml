@@ -6,10 +6,10 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "64552144b5477bb36687e6954bf5341983a5eb83"
+revision = "4332e7f534934e287e0b321f1be19e886e87ea97"
 clean_paths = ["arxiv_drip"]
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
-notes = "The real statarb adapter prepares a job from the candidate engine, freezes it, and its worker runs research and edit on the stub backend."
+notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb itself pins engine-v1.0."
 
 [deployments.coordinated-pilot]
 status = "supported"

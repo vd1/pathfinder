@@ -28,11 +28,16 @@ def test_statarb_prepares_freezes_and_runs_the_candidate_engine(tmp_path, monkey
         (root / "sources/Q.tex").write_text("Fixture full text of the pinned paper.")
         return "sources/Q.tex"
     monkeypatch.setattr(module, "paper_source", source)
-    root, manifest = module.prepare({"pathfinder_root": str(ROOT), "model": "unused", "codex": "unused"}, tmp_path)
-    # statarb's own preparation froze the candidate engine: every runtime file is the candidate's
-    for rel, digest in json.loads((root / "engine-manifest.json").read_text())["files"].items():
-        import hashlib
-        assert hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() == digest, rel
+    root, manifest = module.prepare({"pathfinder_root": str(ROOT), "pathfinder_ref": "HEAD", "model": "unused",
+                                     "codex": "unused"}, tmp_path)
+    # statarb froze the candidate commit with the engine's own freeze, and the copy verifies against it
+    from pathfinder import freeze
+    head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    assert json.loads((root / "engine/engine-freeze.json").read_text())["commit"] == head
+    assert freeze.verify(root / "engine", ROOT)["status"] == "verified"
+    # the brief is an append overlay, not an edited copy of the engine's prompts
+    assert sorted(p.name for p in (root / "prompts").iterdir()) == [
+        "consolidate.append.md", "editor.append.md", "peer.append.md", "verify.append.md"]
     # run the job on the stub backend with statarb's own worker and the frozen engine
     raw = json.loads((root / "campaign.json").read_text())
     raw.update(backend="stub", model="stub", scan_model="stub")
