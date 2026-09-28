@@ -112,6 +112,7 @@ def record(campaign, run_id: str) -> dict:
                                                   "rounds", "allowances", "budget_usd", "prices", "scan_fulltext",
                                                   "call_estimate_usd")}
     resolved["peers"] = list(campaign.peers)
+    resolved["peer_models"] = dict(getattr(campaign, "peer_models", {}) or {})
     config_bytes = json.dumps({"resolved": resolved, "raw": raw}, sort_keys=True).encode()
     corpus = {side: _sha(campaign.path(f"{side}.jsonl").read_bytes())
               for side in ("Q", "P") if campaign.path(f"{side}.jsonl").exists()}

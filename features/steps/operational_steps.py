@@ -439,7 +439,7 @@ def request_stop(context):
     original = runner._work
     runner._work = work
     try:
-        runner._loop(context.campaign, ThreadPoolExecutor(1), 0, {})
+        runner._loop(context.campaign, ThreadPoolExecutor(1), 0, {}, {})
     finally:
         runner._work = original
     context.admitted = admitted
@@ -1303,7 +1303,7 @@ def execute_campaign_model_requests(context):
             Ledger(campaign.thread_dir("Q1P1") / "ledger.jsonl").add("ada", "finding", "finding")
             text = "peer"
         elif stage == "consolidate":
-            text = "account"
+            text = "\\documentclass{article}\\begin{document}account\\end{document}"
         else:
             text = '{"decision": "DRAFT", "reason": "ready", "action": null}'
         return {"text": text, "session": request.identity, "seconds": 0, "input_tokens": 1,
@@ -1363,6 +1363,7 @@ def pair_ready_for_model_stage(context):
     frozen_pair_enters_campaign(context)
     if hasattr(context, "assigned_models"):
         context.campaign.peers = context.assigned_models
+        context.campaign.peer_models = {model: model for model in context.assigned_models}
 
 
 @given('a campaign loaded from a manifest assigns models "{first}" and "{second}" to two peers')
@@ -1445,7 +1446,7 @@ def verify_campaign_execution_routing(context):
             ledger.add(request.actor, "ready", "ready", seen=seen)
         text = {
             "scan": '{"feasibility": 1, "gain": 1, "connexion": "c", "rationale": "r"}',
-            "peer": "peer", "consolidate": "account",
+            "peer": "peer", "consolidate": "\\documentclass{article}\\begin{document}account\\end{document}",
             "verify": '{"decision": "DRAFT", "reason": "ready", "action": null}',
         }[stage]
         return {"text": text, "session": request.identity, "seconds": 0, "input_tokens": 1,

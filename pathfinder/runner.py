@@ -45,8 +45,10 @@ def validate_manifest(manifest: dict) -> dict:
     @planks("Then role \"{role}\" records its own model, backend, execution class, prompt arrangement, tool policy, and budget")
     """
     required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
-    for role in ("scan", "research", "consolidate", "verify", "edit"):
-        if required - manifest["assignments"][role].keys():
+    roles = ["scan", "research", "consolidate", "verify"]            # every run has these
+    roles += [r for r in ("edit",) if r in manifest["assignments"]]   # a run that edits assigns the editor too
+    for role in roles:
+        if role not in manifest["assignments"] or required - manifest["assignments"][role].keys():
             raise ValueError(f"incomplete assignment for {role}")
     return manifest
 

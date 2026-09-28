@@ -1,6 +1,6 @@
 """One research thread: peers on a shared ledger, consolidate, verify, up to `rounds` rounds."""
 from __future__ import annotations
-import hashlib, json, re, shutil, sys, threading, time
+import hashlib, json, os, re, shutil, sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from . import corpus, transport
@@ -20,6 +20,19 @@ def _now():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
+def _atomic_write(path: Path, data: bytes):
+    """Publish a complete file; an interrupted replacement preserves the previous version."""
+    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(name, path)
+    finally:
+        Path(name).unlink(missing_ok=True)
+
+
 def status(campaign, pair_id) -> dict:
     p = campaign.thread_dir(pair_id) / "status.json"
     return json.loads(p.read_text()) if p.exists() else {"pair_id": pair_id, "round": 0, "stage": "peers", "status": "new"}
@@ -27,7 +40,7 @@ def status(campaign, pair_id) -> dict:
 
 def _set(campaign, pair_id, **kw):
     s = status(campaign, pair_id); s.update(kw, updated=_now())
-    (campaign.thread_dir(pair_id) / "status.json").write_text(json.dumps(s, indent=1))
+    _atomic_write(campaign.thread_dir(pair_id) / "status.json", json.dumps(s, indent=1).encode())
     return s
 
 
@@ -94,8 +107,8 @@ def _assessment_evidence(campaign, d) -> str:
     A cited path that leaves the thread, goes through a symlink or uses '..' always blocks the thread
     (EvidenceUnavailable): inlining it could read another investigation. With "strict_evidence": true in
     campaign.json a cited file that is missing, unreadable, not UTF-8 text or larger than
-    "evidence_max_bytes" also blocks; otherwise such a file is listed with its size and digest, and a
-    missing one is named as missing."""
+    "evidence_max_bytes" also blocks; otherwise readable binary or oversized files are listed with
+    size and digest, while missing or unreadable files are explicitly named as unavailable."""
     strict = bool(campaign.raw.get("strict_evidence"))
     limit = int(campaign.raw.get("evidence_max_bytes", EVIDENCE_MAX_BYTES))
     paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
@@ -114,7 +127,13 @@ def _assessment_evidence(campaign, d) -> str:
                 raise EvidenceUnavailable(f"missing evidence: {relative}")
             parts.append(f"## {relative}\n\n(cited in the ledger; no such file)")
             continue
-        data = path.read_bytes()
+        try:
+            data = path.read_bytes()
+        except OSError as error:
+            if strict:
+                raise EvidenceUnavailable(f"unreadable evidence: {relative}: {error}") from error
+            parts.append(f"## {relative}\n\n(not inlined: unreadable file: {error})")
+            continue
         try:
             if len(data) > limit:
                 raise UnicodeError(f"{len(data)} bytes, over the {limit}-byte inline limit")
@@ -266,7 +285,7 @@ def _peers(campaign, pair_id, stop):
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
             r = transport.execute(campaign, transport.ModelRequest(
-                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.model, tools=True,
+                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.peer_model(actor), tools=True,
                 search=campaign.peer_search, cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id,
                 stage="peer", actor=actor,
             ))
@@ -378,7 +397,13 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 # without paying for it again; the returned text always becomes the account
                 response = d / "consolidation" / f"round-{s['round']}-repair-{s.get('repairs', 0)}.json"
                 if response.exists():
-                    text = json.loads(response.read_text())["text"]
+                    try:
+                        text = json.loads(response.read_text())["text"]
+                        if not isinstance(text, str) or not is_latex_document(text):
+                            raise ValueError("retained text is not a LaTeX document")
+                    except (OSError, ValueError, KeyError, TypeError) as error:
+                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: invalid retained response: {error}")
+                        return "BLOCKED"
                 else:
                     r = _stage_call(campaign, pair_id, "consolidate",
                                     _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
@@ -390,16 +415,15 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                         (d / "consolidate-unreadable.txt").write_text(r["text"])     # keep the paid reply for inspection
                         _set(campaign, pair_id, status="BLOCKED", reason="consolidate: reply is not a LaTeX document"); return "BLOCKED"
                     response.parent.mkdir(exist_ok=True)
-                    response.write_text(json.dumps({"text": text, "session": r.get("session"), "at": _now(),
-                                                    "run_id": getattr(campaign, "run_id", None)}))
+                    _atomic_write(response, json.dumps({"text": text, "session": r.get("session"), "at": _now(),
+                                                       "run_id": getattr(campaign, "run_id", None)}).encode())
                 if note.exists():                                    # archive the account being replaced
                     previous = note.read_bytes()
                     version = d / "account-versions" / f"{hashlib.sha256(previous).hexdigest()}.tex"
                     version.parent.mkdir(exist_ok=True)
                     if not version.exists():
-                        with version.open("xb") as archive:
-                            archive.write(previous)
-                note.write_text(text)
+                        _atomic_write(version, previous)
+                _atomic_write(note, text.encode())
                 _set(campaign, pair_id, stage="verify", repair=None)
             elif s["stage"] == "verify":
                 _check(stop)

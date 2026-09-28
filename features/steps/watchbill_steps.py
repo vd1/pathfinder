@@ -11,6 +11,9 @@ from pathfinder import reconcile, research, runner, transport
 
 from operational_steps import assignments, prepared_corpora, seed_pair
 
+# a research account is a LaTeX document; the engine refuses any other reply as an account
+ACCOUNT = "\\documentclass{article}\\begin{document}\n%s\n\\end{document}\n"
+
 
 def provider_reply(text="", error=None):
     return {"text": text, "error": error, "transport_failed": False, "seconds": 0}
@@ -232,7 +235,7 @@ def evaluates_consolidation_attempt(context):
 
 @when("the direct provider returns a complete research account on its consolidation retry")
 def provider_returns_account_on_retry(context):
-    context.returned_account = "complete research account"
+    context.returned_account = ACCOUNT % "complete research account"
     context.account_at_verification = None
     replies = [
         provider_reply(),
@@ -272,7 +275,7 @@ def verifier_assesses_once(context):
 
 @when('the provider returns a research account for pair "Q1P1"')
 def provider_returns_account(context):
-    context.returned_account = "provider research account"
+    context.returned_account = ACCOUNT % "provider research account"
     context.result = run_with_replies(
         context,
         [
@@ -310,7 +313,7 @@ def blocked_at_consolidation(context):
 def blocked_consolidation(context):
     findings_awaiting_consolidation(context)
     research._set(context.campaign, "Q1P1", status="BLOCKED", reason="consolidate: no note")
-    context.replies = [provider_reply("recovered account"), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')]
+    context.replies = [provider_reply(ACCOUNT % "recovered account"), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')]
 
 
 @when('the operator applies the recovery action for pair "Q1P1"')
@@ -372,7 +375,7 @@ def recoverable_shortlist(context):
 def reconcile_shortlist(context):
     replies = []
     for pair_id in ("Q1P1", "Q1P2"):
-        replies.extend([provider_reply(f"account {pair_id}"), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')])
+        replies.extend([provider_reply(ACCOUNT % f"account {pair_id}"), provider_reply('{"decision":"DRAFT","reason":"ready","action":null}')])
     context.results = run_with_replies(
         context,
         replies,
