@@ -76,8 +76,8 @@ def run_research(context, decisions, substantive=True):
         if stage == "consolidate":
             repair = research.status(campaign, pair_id).get("repair") or {}
             correction = repair.get("action", "initial account")
-            (d / f"{pair_id}.tex").write_text(correction)
-            return {"text": "written", "error": None}
+            # the returned text becomes the account; a tool-less consolidator writes no file
+            return {"text": "\\documentclass{article}\\begin{document}\n" + correction + "\n\\end{document}\n", "error": None}
         if stage == "verify":
             decision, reason, action = next(replies)
             return {"text": json.dumps({"decision": decision, "reason": reason, "action": action}), "error": None}
@@ -406,7 +406,7 @@ def returned_to_research(context):
 
 @then('the current account is repaired using that correction')
 def account_repaired(context):
-    assert (context.campaign.thread_dir("Q1P1") / "Q1P1.tex").read_text() == context.correction
+    assert context.correction in (context.campaign.thread_dir("Q1P1") / "Q1P1.tex").read_text()
 
 
 @then('the repaired account is independently assessed again')

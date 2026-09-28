@@ -154,7 +154,19 @@ your own campaign directory and edit the models and the budget.
   provider such as a university proxy: `name`, `base_url`, `env_key` (the
   variable Codex reads the key from), `key_file` (a dotenv file holding
   `env_key=value`, read into the child environment only) and `wire_api`.
-  Leave it out to use the ChatGPT login.
+  Leave it out to use the ChatGPT login. `"search": "config"` passes web
+  search as `web_search` configuration instead of the `--search` flag.
+- `stage_attempts`: attempts for consolidation and verification (default 2);
+  a value that is not a positive integer fails before any call.
+- `strict_evidence`: `false` by default. Consolidation and verification are
+  tool-less, so every file in the peers' directories and every file the
+  ledger cites by relative path is inlined into their prompts. A cited path
+  that leaves the thread, uses `..` or goes through a symlink always blocks
+  the thread. Otherwise a missing file is named as missing and a binary or
+  oversized file (`evidence_max_bytes`, default 300000) is listed with its
+  size and digest; with `strict_evidence` both block the thread instead.
+- `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
+  deployments" below.
 
 ## Stops, guard, failures, reconcile
 

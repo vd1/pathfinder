@@ -92,3 +92,15 @@ From `57e9a7a` to `9d50081`, none of which is in either julien-2 engine copy:
 5. Drop J9 from julien-2's engine use, or keep it in the controller; reconcile the two archive rules.
 6. Move julien-2's prompt copies to append overlays.
 7. Add a julien-2 entry to the release matrix with a contract test on the stub backend (including peer artefacts and ledger references), retarget `tests/test_eva_end_to_end.py` at the candidate engine, then pin julien-2 to a release and verify its frozen copy.
+
+## Upstream status, 2026-09-28
+
+The engine now carries J1 to J4, J6, J8 and J10 to J13 as general behaviour,
+and J5 and J7 behind the campaign settings `strict_evidence` (with
+`evidence_max_bytes`) and `stage_attempts`. The repair fix (J13) removes
+`done=note.exists`: the returned text is the account, and an empty or failed
+reply blocks the thread instead of passing the older account to the verifier.
+J9 is not adopted; a consolidation transport failure still stops the thread,
+resumable. Regression tests: `tests/test_research_revisions.py`. The E rows and
+C1 remain julien-2's own, and julien-2 remains not yet supported until its
+controllers stop replacing `transport.execute`.

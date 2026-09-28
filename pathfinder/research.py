@@ -73,6 +73,61 @@ def judge_head(d, inp, note_name: str) -> str:
     return thread_head(d, inp) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
 
 
+class EvidenceUnavailable(Exception):
+    """Evidence a tool-less stage needs cannot be supplied inline; the thread blocks before any call."""
+
+
+EVIDENCE_PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
+EVIDENCE_MAX_BYTES = 300_000
+
+
+def _evidence_references(text: str) -> list[str]:
+    """Relative file paths cited in ledger text; DOIs and scholarly figure locators are citations, not files."""
+    return [name for name in EVIDENCE_PATH.findall(text)
+            if not re.match(r"10\.\d{4,9}/", name) and not re.search(r"/Fig\.\d+$", name)]
+
+
+def _assessment_evidence(campaign, d) -> str:
+    """Everything the tool-less consolidator and verifier are told is complete: every file in each peer's
+    directory, and every file the ledger cites by relative path, inlined under its path.
+
+    A cited path that leaves the thread, goes through a symlink or uses '..' always blocks the thread
+    (EvidenceUnavailable): inlining it could read another investigation. With "strict_evidence": true in
+    campaign.json a cited file that is missing, unreadable, not UTF-8 text or larger than
+    "evidence_max_bytes" also blocks; otherwise such a file is listed with its size and digest, and a
+    missing one is named as missing."""
+    strict = bool(campaign.raw.get("strict_evidence"))
+    limit = int(campaign.raw.get("evidence_max_bytes", EVIDENCE_MAX_BYTES))
+    paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
+    ledger = d / "ledger.jsonl"
+    for name in _evidence_references(ledger.read_text(errors="replace") if ledger.exists() else ""):
+        paths.add(d / name)
+    parts = []
+    for path in sorted(paths):
+        relative = path.relative_to(d)
+        if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
+            raise EvidenceUnavailable(f"aliased evidence path: {relative}")
+        if path.exists() and not path.resolve().is_relative_to(d.resolve()):
+            raise EvidenceUnavailable(f"evidence outside the investigation: {relative}")
+        if not path.is_file():
+            if strict:
+                raise EvidenceUnavailable(f"missing evidence: {relative}")
+            parts.append(f"## {relative}\n\n(cited in the ledger; no such file)")
+            continue
+        data = path.read_bytes()
+        try:
+            if len(data) > limit:
+                raise UnicodeError(f"{len(data)} bytes, over the {limit}-byte inline limit")
+            text = data.decode("utf-8")
+        except UnicodeError as error:
+            if strict:
+                raise EvidenceUnavailable(f"evidence not inlinable as text: {relative}: {error}") from error
+            parts.append(f"## {relative}\n\n(not inlined: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})")
+            continue
+        parts.append(f"## {relative}\n\n{text}")
+    return "\n\n".join(parts)
+
+
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
     """@planks("When Pathfinder requests consolidation from the direct provider")
     @planks("When Pathfinder builds its consolidation model request")
@@ -84,7 +139,11 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
     read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
     material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
                                                                           if read else "Inline evidence is complete and no tools are available.")
-    head = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if above else ""
+    head = thread_head(d, inp, in_papers, in_ledger)
+    if (d / note_name).exists():                    # the account a repair or a next round must keep
+        head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+    evidence = _assessment_evidence(campaign, d)
+    head += ("\n\n" + evidence if evidence else "") + "\n\n## your task\n\n"
     return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
 
 
@@ -240,10 +299,13 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     @planks("When Pathfinder executes one stage attempt")
     @planks("When Pathfinder verifies execution routing")
 
-    Run consolidate or verify; rerun once on timeout or empty reply unless done() says the output exists.
+    Run consolidate or verify for up to "stage_attempts" attempts (default 2). A reply that failed in
+    transport raises TransportFailed (the thread stops, resumable). A reply carrying an error is not an
+    answer: consolidation tries again, and a verifier reply with an error raises TransportFailed rather
+    than being read as a verdict. An empty consolidation reply is retried.
     """
     d = campaign.thread_dir(pair_id)
-    for attempt in range(2):
+    for attempt in range(_stage_attempts(campaign)):
         r = transport.execute(campaign, transport.ModelRequest(
             identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
             search=False, cwd=d, timeout=seconds, thread=pair_id, stage=stage,
@@ -251,9 +313,20 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
         ))
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
+        if r.get("error"):
+            if stage == "consolidate":
+                continue
+            raise transport.TransportFailed(pair_id)
         if done() or (r["text"].strip() and not tools):
             return r
     return r
+
+
+def _stage_attempts(campaign) -> int:
+    attempts = campaign.raw.get("stage_attempts", 2)
+    if type(attempts) is not int or attempts < 1:
+        raise ValueError("stage_attempts must be a positive integer")
+    return attempts
 
 
 def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
@@ -271,6 +344,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("When Pathfinder runs consolidation through the campaign workflow")
     @planks("When the verification path to that request is inspected")
     """
+    _stage_attempts(campaign)                   # an invalid setting fails before any call
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
     note, verdicts = d / f"{pair_id}.tex", d / f"{pair_id}.verdict.json"
     inp = _inputs(d)
@@ -300,25 +374,38 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 write_meta(campaign, pair_id, d)                     # the note's title block: pair, papers, date, state
-                r = _stage_call(campaign, pair_id, "consolidate",
-                                _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
-                                False,
-                                A["consolidate_seconds"], done=note.exists)
-                if not note.exists():
-                    text = unfence(r["text"])
-                    if not text.strip():
-                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r['error'] or 'no note'}"); return "BLOCKED"
+                # every accepted consolidation reply is kept per round and repair, so a restart applies it
+                # without paying for it again; the returned text always becomes the account
+                response = d / "consolidation" / f"round-{s['round']}-repair-{s.get('repairs', 0)}.json"
+                if response.exists():
+                    text = json.loads(response.read_text())["text"]
+                else:
+                    r = _stage_call(campaign, pair_id, "consolidate",
+                                    _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
+                                    False, A["consolidate_seconds"])
+                    text = unfence(r["text"] or "")
+                    if r.get("error") or not text.strip():   # never re-verify the older account as if repaired
+                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r.get('error') or 'no note'}"); return "BLOCKED"
                     if not is_latex_document(text):                # e.g. a quota message returned as the reply
                         (d / "consolidate-unreadable.txt").write_text(r["text"])     # keep the paid reply for inspection
                         _set(campaign, pair_id, status="BLOCKED", reason="consolidate: reply is not a LaTeX document"); return "BLOCKED"
-                    note.write_text(text)
-                elif (fixed := unfence(note.read_text(errors="replace"))) != note.read_text(errors="replace"):
-                    note.write_text(fixed)                          # the verifier judges, and the digest records, the bare document
+                    response.parent.mkdir(exist_ok=True)
+                    response.write_text(json.dumps({"text": text, "session": r.get("session"), "at": _now(),
+                                                    "run_id": getattr(campaign, "run_id", None)}))
+                if note.exists():                                    # archive the account being replaced
+                    previous = note.read_bytes()
+                    version = d / "account-versions" / f"{hashlib.sha256(previous).hexdigest()}.tex"
+                    version.parent.mkdir(exist_ok=True)
+                    if not version.exists():
+                        with version.open("xb") as archive:
+                            archive.write(previous)
+                note.write_text(text)
                 _set(campaign, pair_id, stage="verify", repair=None)
             elif s["stage"] == "verify":
                 _check(stop)
                 # static material first, the instruction last: the head is shared with every other judge call
-                p = judge_head(d, inp, note.name) + "\n\n## your task\n\n"
+                evidence = _assessment_evidence(campaign, d)
+                p = judge_head(d, inp, note.name) + ("\n\n" + evidence if evidence else "") + "\n\n## your task\n\n"
                 p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
                 r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"], done=lambda: True)
                 try:
@@ -341,6 +428,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
                     _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
+    except EvidenceUnavailable as error:
+        _set(campaign, pair_id, status="BLOCKED", reason=f"evidence: {error}"); return "BLOCKED"
     except (Stopped, Refused):
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:
