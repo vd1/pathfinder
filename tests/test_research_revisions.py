@@ -1,5 +1,6 @@
 """Consolidation revisions and inline evidence, brought in from pathfinder-julien-2 (inventory rows J1 to J13)."""
 import hashlib, json, os
+from pathlib import Path
 import pytest
 from pathfinder import research, transport
 from pathfinder.ledger import Ledger
@@ -143,3 +144,55 @@ def test_missing_and_binary_evidence_are_listed_or_block_in_strict_mode(tmp_path
             assert result == "PAUSE"
             text = prompts["consolidate"][0]
             assert "no such file" in text and "not inlined: 6 bytes, sha256" in text
+
+
+@pytest.mark.parametrize("strict", [False, True])
+def test_unreadable_evidence_is_reported_without_an_unhandled_exception(tmp_path, monkeypatch, strict):
+    c, d = thread(tmp_path, strict_evidence=strict); at_repair(c, d)
+    evidence = d / "ada/calc.txt"; evidence.write_text("42")
+    original = Path.read_bytes
+    def read(path):
+        if path == evidence:
+            raise PermissionError("denied")
+        return original(path)
+    monkeypatch.setattr(Path, "read_bytes", read)
+    prompts = {}
+    calls = drive(monkeypatch, {"consolidate": [{"text": DOC % "account"}],
+                               "verify": [{"text": '{"decision":"PAUSE"}'}]}, prompts)
+    assert research.run_thread(c, "Q1P1") == ("BLOCKED" if strict else "PAUSE")
+    if strict:
+        assert calls == [] and "unreadable evidence" in research.status(c, "Q1P1")["reason"]
+    else:
+        assert all("unreadable file" in prompts[stage][0] for stage in ("consolidate", "verify"))
+
+
+@pytest.mark.parametrize("retained", ['{"text":', '{}', '{"text":null}', '{"text":"quota exceeded"}'])
+def test_invalid_retained_response_blocks_without_replacing_account_or_calling_model(tmp_path, monkeypatch, retained):
+    c, d = thread(tmp_path); at_repair(c, d)
+    response = d / "consolidation/round-1-repair-1.json"
+    response.parent.mkdir(); response.write_text(retained)
+    calls = drive(monkeypatch, {})
+    assert research.run_thread(c, "Q1P1") == "BLOCKED"
+    assert calls == [] and "old account" in (d / "Q1P1.tex").read_text()
+    assert response.read_text() == retained
+
+
+def test_interrupted_account_replace_preserves_old_account_and_reuses_paid_response(tmp_path, monkeypatch):
+    c, d = thread(tmp_path); at_repair(c, d)
+    note = d / "Q1P1.tex"; old = note.read_bytes()
+    calls = drive(monkeypatch, {"consolidate": [{"text": DOC % "replacement"}],
+                               "verify": [{"text": '{"decision":"PAUSE"}'}]})
+    replace = os.replace
+    def interrupt(source, target):
+        if target == note:
+            raise OSError("simulated interruption before account replacement")
+        return replace(source, target)
+    monkeypatch.setattr(os, "replace", interrupt)
+    with pytest.raises(OSError, match="simulated interruption"):
+        research.run_thread(c, "Q1P1")
+    assert note.read_bytes() == old
+    assert (d / "account-versions" / f"{hashlib.sha256(old).hexdigest()}.tex").read_bytes() == old
+    monkeypatch.setattr(os, "replace", replace)
+    assert research.run_thread(c, "Q1P1") == "PAUSE"
+    assert calls == ["consolidate", "verify"]
+    assert "replacement" in note.read_text()
