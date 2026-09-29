@@ -158,13 +158,13 @@ your own campaign directory and edit the models and the budget.
   search as `web_search` configuration instead of the `--search` flag.
 - `stage_attempts`: attempts for consolidation and verification (default 2);
   a value that is not a positive integer fails before any call.
-- `strict_evidence`: `false` by default. Consolidation and verification are
-  tool-less, so every file in the peers' directories and every file the
-  ledger cites by relative path is inlined into their prompts. A cited path
-  that leaves the thread, uses `..` or goes through a symlink always blocks
-  the thread. Otherwise a missing file is named as missing and a binary or
-  oversized file (`evidence_max_bytes`, default 300000) is listed with its
-  size and digest; with `strict_evidence` both block the thread instead.
+- `strict_evidence`: `false` by default; only for composable schemes
+  (`research_scheme`, `research_bundles`), whose review stages inline every
+  file in the peers' directories and every file the ledger cites. A cited
+  path that leaves the thread, uses `..` or goes through a symlink always
+  blocks the thread. Otherwise a missing file is named as missing and a
+  binary or oversized file (`evidence_max_bytes`, default 300000) is listed
+  with its size and digest; with `strict_evidence` both block the thread.
 - `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
   deployments" below.
 
@@ -459,18 +459,19 @@ without a campaign file use the engine's prompt.
 
 ## The thread's context
 
-The researchers and the consolidator get links: the paths of the two
-papers and the ledger, which they read through their tools, as much as
-they need. The two judges get their material inline, in the same order,
-the two papers, the ledger, the note, then for the reviewer the search
-record, the paper and the checks, and the instruction last. The two papers
-and the ledger entries already present are the same bytes for both judges
-and from one round to the next, so a prompt cache can serve that leading
-part; what follows it, the new entries, the note and the instruction,
-changes. Nothing depends on a cache hit.
+Every stage of a thread runs with file tools in the thread's directory.
+The researchers get links: the paths of the two papers and the ledger,
+which they read as much as they need. The consolidator and the verifier
+get the two papers, the ledger and the current account inline, in that
+order, with the instruction last, and are pointed at the peers'
+directories and the files the ledger cites, which they read themselves.
+The consolidator returns the account in its response. The two papers and
+the ledger entries already present are the same bytes for both and from
+one round to the next, so a prompt cache can serve that leading part;
+nothing depends on a cache hit.
 
 Two switches in `campaign.json`, both off by default, put material in
-front of the researchers' and the consolidator's calls, with their brief
+front of the researchers' calls, with their brief
 after it: `inline_papers` for the two papers, `inline_ledger` for the
 ledger as it stood when the call began (the read command then starts
 from its last entry). They are separate so that either effect can be

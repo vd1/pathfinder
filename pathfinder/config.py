@@ -7,7 +7,6 @@ from pathlib import Path
 
 @dataclass
 class Campaign:
-    """@planks("Given a campaign manifest assigns role \"verify\" to model \"{model}\" through ELM with no allowed tools")"""
     root: Path
     backend: str
     model: str
@@ -42,7 +41,6 @@ class Campaign:
 
 
 def load(root: Path) -> Campaign:
-    """@planks("Given a campaign manifest assigns role \"verify\" to model \"{model}\" through ELM with no allowed tools")"""
     root = Path(root).resolve()
     raw = json.loads((root / "campaign.json").read_text())
     return Campaign(

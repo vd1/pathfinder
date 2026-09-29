@@ -39,61 +39,7 @@ def result_provenance(campaign, pair_id: str) -> dict:
     }
 
 
-def validate_manifest(manifest: dict) -> dict:
-    """@planks("When the operator defines a run manifest")
-    @planks("When the operator defines a run")
-    @planks("Then role \"{role}\" records its own model, backend, execution class, prompt arrangement, tool policy, and budget")
-    """
-    required = {"model", "backend", "execution_class", "prompt", "tool_policy", "budget"}
-    roles = ["scan", "research", "consolidate", "verify"]            # every run has these
-    roles += [r for r in ("edit",) if r in manifest["assignments"]]   # a run that edits assigns the editor too
-    for role in roles:
-        if role not in manifest["assignments"] or required - manifest["assignments"][role].keys():
-            raise ValueError(f"incomplete assignment for {role}")
-    return manifest
-
-
-def comparison_arm(baseline: dict, role: str, *, model: str | None = None, backend: str | None = None) -> dict:
-    """@planks("When the operator creates a comparison arm for role \"verify\"")"""
-    arm = copy.deepcopy(baseline)
-    if model is not None:
-        arm["assignments"][role]["model"] = model
-    if backend is not None:
-        arm["assignments"][role]["backend"] = backend
-    return arm
-
-
-def compare_manifests(baseline: dict, arm: dict) -> dict:
-    """@planks("When the runs are compared")"""
-    changed = [role for role in baseline["assignments"] if baseline["assignments"][role] != arm["assignments"][role]]
-    return {"role": changed[0], "outcomes": [], "cost": [], "latency": []}
-
-
-def reproduction_record(campaign, manifest: dict) -> dict:
-    """@planks("When the comparison run starts")"""
-    encoded = json.dumps(manifest, sort_keys=True).encode()
-    prompts = campaign.path("prompts")
-    return {
-        "manifest_digest": hashlib.sha256(encoded).hexdigest(),
-        "snapshot_digests": {side: _digest(campaign.path(f"{side}.jsonl")) for side in ("Q", "P")},
-        "prompt_digests": {path.name: _digest(path) for path in prompts.glob("*") if path.is_file()} if prompts.exists() else {},
-    }
-
-
-def execution_route(assignment: dict) -> str:
-    """@planks("When the comparison run schedules role \"scan\"")
-    @planks("When the comparison run schedules role \"research\"")
-    @planks("When the comparison run schedules role \"consolidate\"")
-    @planks("When Pathfinder schedules the same frozen stage through each provider")
-    """
-    return "provider" if assignment.get("execution_class") == "provider" else assignment["backend"]
-
-
 def prepare_provider_stage(role: str, inputs: dict, *, input_limit: int, output_limit: int) -> dict:
-    """@planks("When Pathfinder prepares role \"consolidate\" for provider execution")
-    @planks("When Pathfinder prepares role \"consolidate\" for one frozen paper pair")
-    @planks("Then the provider request exposes no workspace or search tools")
-    """
     frozen = copy.deepcopy(inputs)
     request = {
         "role": role,
@@ -110,63 +56,6 @@ def prepare_provider_stage(role: str, inputs: dict, *, input_limit: int, output_
     if request["input_tokens"] > input_limit:
         request["status"] = "blocked"
     return request
-
-
-def execute_provider_stage(request: dict, provider_call):
-    """@planks("When Pathfinder executes role \"verify\" through its assigned provider")"""
-    return provider_call(request)
-
-
-def prepare_provider_batch(role: str, jobs: list[dict], *, input_limit: int, output_limit: int) -> list[dict]:
-    """@planks("When Pathfinder prepares their provider stage jobs")"""
-    prepared = []
-    for job in jobs:
-        request = prepare_provider_stage(role, job["inputs"], input_limit=input_limit, output_limit=output_limit)
-        request["result_id"] = hashlib.sha256(f'{role}\0{job["pair_id"]}'.encode()).hexdigest()
-        prepared.append(request)
-    return prepared
-
-
-def execution_receipt(role, backend, model, execution_class, prompt_digest, provider_job_id, raw_response, outcome, latency, token_usage, cost):
-    """@planks("When the execution finishes")
-    @planks("When the same assignment is repeated")
-    """
-    return dict(role=role, backend=backend, model=model, execution_class=execution_class, prompt_digest=prompt_digest,
-                provider_job_id=provider_job_id, raw_response=raw_response, outcome=outcome, latency=latency,
-                token_usage=token_usage, cost=cost)
-
-
-def run_assigned_comparison(campaign, assignments: dict) -> dict:
-    """@planks("When Pathfinder runs the assigned comparison workflow")
-    @planks("Then the provider call has a \"{timeout}\" second timeout")
-    @planks("Then the provider receipt retains budget \"{budget}\" for role \"{role}\"")
-    @planks("When Pathfinder executes role \"{role}\" for one frozen paper pair")
-    """
-    receipts = []
-    outcome = None
-    for role, assignment in assignments.items():
-        campaign.backend = assignment["backend"]
-        campaign.raw = {**campaign.raw, "codex": {"name": "elm", "env_key": "ELM_API_KEY"}}
-        prompt = f"Role: {role}. Review frozen pair Q1P1 and return a concise outcome."
-        reply = transport.call(
-            prompt, campaign=campaign, model=assignment["model"], tools=False, search=False,
-            cwd=campaign.path(f"comparison-{role}"), timeout=120, thread="Q1P1", stage=role, actor=role,
-        )
-        receipt = execution_receipt(
-            role, assignment["backend"], assignment["model"], assignment["execution_class"],
-            hashlib.sha256(prompt.encode()).hexdigest(), reply["session"], reply["text"], reply["text"],
-            reply["seconds"], {"input": reply["input_tokens"], "output": reply["output_tokens"]}, reply["cost"],
-        )
-        receipt["budget"] = assignment["budget"]
-        receipts.append(receipt)
-        if role == "verify":
-            outcome = reply["text"]
-    return {"receipts": receipts, "pairs": {"Q1P1": {"verification_outcome": outcome}}}
-
-
-def validate_assignment(assignment: dict) -> bool:
-    """@planks("When the run manifest is validated")"""
-    return assignment.get("provider") == "elm" and assignment.get("backend") in {"opencode", "pi"}
 
 
 def _now():

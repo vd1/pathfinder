@@ -253,8 +253,7 @@ def _attempt(campaign, request: ModelRequest):
 
 
 def _execute(campaign, request: ModelRequest, activity_path, activity):
-    """@planks("When role \"scan\" executes a minimal frozen paper pair")
-    @planks("When Pathfinder records the completed provider call")
+    """@planks("When Pathfinder records the completed provider call")
     @planks("When Pathfinder completes the provider call without a parsed research account")
     @planks("Then the receipt retains the raw response events")
     @planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
@@ -340,7 +339,6 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
 
 
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
-    """@planks("When Pathfinder submits the role's frozen stage")"""
     request = ModelRequest(
         identity=f"{thread}:{stage}", prompt=prompt, model=model, tools=tools, search=search,
         cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor,

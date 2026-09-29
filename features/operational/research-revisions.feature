@@ -50,39 +50,13 @@ Feature: Preserve research revisions and supply complete assessment evidence
       When the research workflow starts
       Then configuration validation fails before any provider call
 
-  Rule: Roles without file tools receive the full evidence they are asked to assess
+  Rule: Consolidator and verifier read the evidence with their own tools
 
-    Scenario: The consolidator receives complete prior account and peer evidence inline
-      Given a tool-less consolidator has an existing account and peer artefacts with calculation evidence
-      When the research workflow prepares its consolidation request
-      Then the request contains the complete prior account and peer artefact contents
-      And the request contains the complete calculation evidence with its source paths
-
-    Scenario: The verifier receives complete current account and peer evidence inline
-      Given a tool-less verifier has a revised account and peer artefacts with calculation evidence
-      When the research workflow prepares its verification request
-      Then the request contains the complete current account and peer artefact contents
-      And the request contains the complete calculation evidence with its source paths
-
-    Scenario: Unreadable referenced evidence blocks strict tool-less assessment
-      Given a tool-less assessment requires a peer artefact that cannot be read
-      When the research workflow prepares the assessment request
-      Then the assessment is blocked before a provider call with the unreadable evidence identified
-
-    Scenario: Evidence references stay inside their investigation
-      Given a tool-less assessment ledger references a calculation outside its investigation through parent traversal
-      When the research workflow prepares the assessment request
-      Then the assessment is blocked before reading outside evidence or calling a provider
-
-    Scenario: Evidence symlinks cannot expose another investigation
-      Given a tool-less assessment peer artefact or calculation path is a symlink to outside evidence
-      When the research workflow prepares the assessment request
-      Then the assessment is blocked before reading outside evidence or calling a provider
-
-    Scenario: Evidence path aliases are rejected even when their targets stay inside the investigation
-      Given a tool-less assessment references an internal evidence target through a symlink or parent traversal
-      When the research workflow prepares the assessment request
-      Then the assessment is blocked before reading the aliased evidence or calling a provider
+    Scenario: Consolidation and verification point to the evidence instead of inlining it
+      Given peer artefacts with calculation evidence beside an existing account
+      When the research workflow prepares its consolidation and verification requests
+      Then both requests have file tools and name the peer directories
+      And neither request inlines the peer artefact contents
 
   Rule: Readiness verification stays offline
 

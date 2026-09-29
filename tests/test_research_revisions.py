@@ -1,6 +1,5 @@
 """Consolidation revisions and inline evidence, brought in from pathfinder-julien-2 (inventory rows J1 to J13)."""
 import hashlib, json, os
-from pathlib import Path
 import pytest
 from pathfinder import research, transport
 from pathfinder.ledger import Ledger
@@ -98,72 +97,36 @@ def test_stage_attempts_bound_retries_and_invalid_values_fail_first(tmp_path, mo
         research.run_thread(bad, "Q1P1")
 
 
-def test_peer_files_and_cited_calculations_are_inlined_for_both_assessors(tmp_path, monkeypatch):
+def test_assessors_read_evidence_with_tools_instead_of_inlining_it(tmp_path, monkeypatch):
     c, d = thread(tmp_path)
     (d / "ada/calc.py").write_text("print(42)  # peer calculation\n")
     (d / "work").mkdir(); (d / "work/out.txt").write_text("result 42\n")
-    Ledger(d / "ledger.jsonl").add("ada", "finding", "see work/out.txt; cf. doi 10.1234/abc.def and Nature/Fig.3")
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "see work/out.txt and missing/gone.txt")
     research._set(c, "Q1P1", stage="consolidate")
-    prompts = {}
-    drive(monkeypatch, {"consolidate": [{"text": DOC % "account"}],
-                        "verify": [{"text": json.dumps({"decision": "PAUSE", "reason": "r", "action": ""})}]}, prompts)
+    calls = []
+    def stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
+        calls.append((stage, tools, prompt))
+        text = DOC % "account" if stage == "consolidate" else json.dumps({"decision": "PAUSE", "reason": "r", "action": ""})
+        return {"text": text, "error": None, "transport_failed": False}
+    monkeypatch.setattr(research, "_stage_call", stage_call)
     assert research.run_thread(c, "Q1P1") == "PAUSE"
-    for stage in ("consolidate", "verify"):
-        text = prompts[stage][0]
-        assert "## ada/calc.py" in text and "peer calculation" in text and "## work/out.txt" in text
-        assert "10.1234/abc.def\n" not in text and "## 10.1234" not in text and "## Nature/Fig.3" not in text
+    assert [(stage, tools) for stage, tools, _ in calls] == [("consolidate", True), ("verify", True)]
+    for _, _, prompt in calls:
+        assert all(f"{peer}/" in prompt for peer in c.peers)
+        assert "peer calculation" not in prompt and "result 42" not in prompt
 
 
-@pytest.mark.parametrize("make_alias", ["dotdot", "symlink"])
-def test_evidence_aliases_block_before_any_call(tmp_path, monkeypatch, make_alias):
+def test_an_account_written_to_the_file_is_accepted(tmp_path, monkeypatch):
     c, d = thread(tmp_path)
-    (tmp_path / "secret.txt").write_text("another investigation")
-    if make_alias == "dotdot":
-        Ledger(d / "ledger.jsonl").add("ada", "finding", "compare ada/../../../secret.txt")
-    else:
-        os.symlink(tmp_path / "secret.txt", d / "ada/link.txt")
     research._set(c, "Q1P1", stage="consolidate")
-    calls = drive(monkeypatch, {})
-    assert research.run_thread(c, "Q1P1") == "BLOCKED" and calls == []
-    assert "evidence" in research.status(c, "Q1P1")["reason"]
-
-
-def test_missing_and_binary_evidence_are_listed_or_block_in_strict_mode(tmp_path, monkeypatch):
-    for strict in (False, True):
-        c, d = thread(tmp_path / str(strict), strict_evidence=strict)
-        (d / "ada/figure.png").write_bytes(b"\x89PNG\x00\xff")
-        Ledger(d / "ledger.jsonl").add("ada", "finding", "see work/missing.txt")
-        research._set(c, "Q1P1", stage="consolidate")
-        prompts = {}
-        drive(monkeypatch, {"consolidate": [{"text": DOC % "account"}],
-                            "verify": [{"text": json.dumps({"decision": "PAUSE", "reason": "r", "action": ""})}]}, prompts)
-        result = research.run_thread(c, "Q1P1")
-        if strict:
-            assert result == "BLOCKED" and "evidence" in research.status(c, "Q1P1")["reason"]
-        else:
-            assert result == "PAUSE"
-            text = prompts["consolidate"][0]
-            assert "no such file" in text and "not inlined: 6 bytes, sha256" in text
-
-
-@pytest.mark.parametrize("strict", [False, True])
-def test_unreadable_evidence_is_reported_without_an_unhandled_exception(tmp_path, monkeypatch, strict):
-    c, d = thread(tmp_path, strict_evidence=strict); at_repair(c, d)
-    evidence = d / "ada/calc.txt"; evidence.write_text("42")
-    original = Path.read_bytes
-    def read(path):
-        if path == evidence:
-            raise PermissionError("denied")
-        return original(path)
-    monkeypatch.setattr(Path, "read_bytes", read)
-    prompts = {}
-    calls = drive(monkeypatch, {"consolidate": [{"text": DOC % "account"}],
-                               "verify": [{"text": '{"decision":"PAUSE"}'}]}, prompts)
-    assert research.run_thread(c, "Q1P1") == ("BLOCKED" if strict else "PAUSE")
-    if strict:
-        assert calls == [] and "unreadable evidence" in research.status(c, "Q1P1")["reason"]
-    else:
-        assert all("unreadable file" in prompts[stage][0] for stage in ("consolidate", "verify"))
+    def stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
+        if stage == "consolidate":
+            (d / "Q1P1.tex").write_text(DOC % "written by the consolidator")
+            return {"text": "Done: wrote Q1P1.tex.", "error": None, "transport_failed": False}
+        return {"text": '{"decision":"PAUSE"}', "error": None, "transport_failed": False}
+    monkeypatch.setattr(research, "_stage_call", stage_call)
+    assert research.run_thread(c, "Q1P1") == "PAUSE"
+    assert "written by the consolidator" in (d / "Q1P1.tex").read_text()
 
 
 @pytest.mark.parametrize("retained", ['{"text":', '{}', '{"text":null}', '{"text":"quota exceeded"}'])

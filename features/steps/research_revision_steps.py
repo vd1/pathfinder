@@ -245,303 +245,38 @@ def invalid_rejected(context):
         assert isinstance(error, ValueError) and 'stage_attempts' in str(error) and calls == 0, (value, error, calls)
 
 
-def inline_evidence(context, stage):
-    revision_setup(context, stage=stage)
-    context.evidence = {
-        'ada/notes.tex': '\\section{Derivation}\nA complete variance calculation follows.\n' + 'x = x + 1;\n' * 1800 + 'DERIVATION END\n',
-        'emmy/check.py': 'from fractions import Fraction\nprint(Fraction(1, 3) + Fraction(2, 3))\n',
-        'calculations/variance.json': '{"variance": 0.125, "sample_size": 128, "checked": true}\n',
-    }
-    for name, text in context.evidence.items():
+EVIDENCE = {
+    'ada/notes.tex': '\\section{Derivation}\nA complete variance calculation follows.\n',
+    'emmy/check.py': 'from fractions import Fraction\nprint(Fraction(1, 3) + Fraction(2, 3))\n',
+    'calculations/variance.json': '{"variance": 0.125, "sample_size": 128, "checked": true}\n',
+}
+
+
+@given('peer artefacts with calculation evidence beside an existing account')
+def evidence_beside_account(context):
+    revision_setup(context, stage='consolidate')
+    for name, text in EVIDENCE.items():
         path = context.d / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text)
-    Ledger(context.d / 'ledger.jsonl').add('emmy', 'finding', 'Evidence: ada/notes.tex, emmy/check.py and calculations/variance.json')
+    Ledger(context.d / 'ledger.jsonl').add('emmy', 'finding', 'Evidence: ' + ', '.join(EVIDENCE))
 
 
-@given('a tool-less consolidator has an existing account and peer artefacts with calculation evidence')
-def consolidator_evidence(context):
-    inline_evidence(context, 'consolidate')
-
-
-@given('a tool-less verifier has a revised account and peer artefacts with calculation evidence')
-def verifier_evidence(context):
-    inline_evidence(context, 'verify')
-    context.note.write_text(NEW)
-
-
-@when('the research workflow prepares its consolidation request')
-@when('the research workflow prepares its verification request')
-def prepare_evidence_request(context):
+@when('the research workflow prepares its consolidation and verification requests')
+def prepare_assessment_requests(context):
     revision_run(context)
-    assert context.requests, str(context.exception)
-    context.request = context.requests[0]
-    assert context.request.tools is False
+    context.assessment = {r.stage: r for r in context.requests if r.stage in ('consolidate', 'verify')}
+    assert set(context.assessment) == {'consolidate', 'verify'}, (context.result, str(context.exception))
 
 
-@then('the request contains the complete prior account and peer artefact contents')
-def complete_prior(context):
-    assert OLD in context.request.prompt, 'Prior account absent from consolidator request'
-    for name, content in context.evidence.items():
-        assert content in context.request.prompt, f'Incomplete evidence: {name}'
+@then('both requests have file tools and name the peer directories')
+def assessment_tools(context):
+    for request in context.assessment.values():
+        assert request.tools is True and request.cwd == context.d, request.stage
+        assert all(f'{peer}/' in request.prompt for peer in context.c.peers), request.stage
 
 
-@then('the request contains the complete current account and peer artefact contents')
-def complete_current(context):
-    assert NEW in context.request.prompt
-    for name, content in context.evidence.items():
-        assert content in context.request.prompt, f'Incomplete evidence: {name}'
-
-
-@then('the request contains the complete calculation evidence with its source paths')
-def complete_calculations(context):
-    for name, content in context.evidence.items():
-        assert name in context.request.prompt and content in context.request.prompt, name
-
-
-@given('a tool-less assessment requires a peer artefact that cannot be read')
-def unreadable_evidence(context):
-    inline_evidence(context, 'consolidate')
-    context.c.raw['strict_evidence'] = True
-    context.unreadable = 'ada/notes.tex'
-    (context.d / context.unreadable).unlink()
-
-
-@when('the research workflow prepares the assessment request')
-def prepare_unreadable(context):
-    if hasattr(context, 'alias_cases'):
-        for case in context.alias_cases:
-            revision_run(case)
-    else:
-        revision_run(context)
-
-
-@then('the assessment is blocked before a provider call with the unreadable evidence identified')
-def unreadable_blocked(context):
-    state = research.status(context.c, 'Q1P1')
-    assert state['status'] == 'BLOCKED', state
-    assert not context.requests
-    assert context.unreadable in state.get('reason', ''), state
-
-
-def outside_evidence(context):
-    revision_setup(context, stage='consolidate')
-    context.outside = context.d.parent / 'Q2P1' / 'calculation.txt'
-    context.outside.parent.mkdir()
-    context.outside.write_text('Evidence owned by another investigation.\n')
-    context.outside_reads = []
-    original_read = Path.read_text
-
-    # @exceptional-double: read observation proves internal ordering against real
-    # files; spy delegates to original filesystem read without substitution.
-    def observe_read(path, *args, **kwargs):
-        if path.resolve() == context.outside.resolve():
-            context.outside_reads.append(str(path))
-        return original_read(path, *args, **kwargs)
-
-    observer = patch.object(Path, 'read_text', observe_read)
-    observer.start()
-    context.add_cleanup(observer.stop)
-
-
-@given('a tool-less assessment ledger references a calculation outside its investigation through parent traversal')
-def traversal_evidence(context):
-    outside_evidence(context)
-    Ledger(context.d / 'ledger.jsonl').add('ada', 'finding', 'Calculation: ../Q2P1/calculation.txt')
-
-
-@given('a tool-less assessment peer artefact or calculation path is a symlink to outside evidence')
-def symlink_evidence(context):
-    outside_evidence(context)
-    (context.d / 'ada' / 'linked.txt').symlink_to(context.outside)
-    calculations = context.d / 'calculations'
-    calculations.mkdir()
-    (calculations / 'linked.txt').symlink_to(context.outside)
-    Ledger(context.d / 'ledger.jsonl').add('ada', 'finding', 'Calculation: calculations/linked.txt')
-
-
-@then('the assessment is blocked before reading outside evidence or calling a provider')
-def isolated_evidence(context):
-    state = research.status(context.c, 'Q1P1')
-    assert state['status'] == 'BLOCKED' and not context.outside_reads and not context.requests, {
-        'status': state['status'], 'outside_reads': context.outside_reads,
-        'provider_calls': len(context.requests),
-    }
-
-
-@given('a tool-less assessment references an internal evidence target through a symlink or parent traversal')
-def internal_aliases(context):
-    from types import SimpleNamespace
-    context.alias_cases = []
-    for kind in ('file symlink', 'directory symlink', 'parent traversal'):
-        case = SimpleNamespace(add_cleanup=context.add_cleanup, kind=kind, alias_reads=[])
-        revision_setup(case, stage='consolidate')
-        target = case.d / 'calculations' / 'result.txt'
-        target.parent.mkdir()
-        target.write_text('Internal calculation result.\n')
-        if kind == 'file symlink':
-            alias = case.d / 'ada' / 'linked.txt'
-            alias.symlink_to(target)
-        elif kind == 'directory symlink':
-            (case.d / 'ada' / 'linked').symlink_to(target.parent, target_is_directory=True)
-            alias = case.d / 'ada' / 'linked' / 'result.txt'
-        else:
-            alias = case.d / 'ada' / '..' / 'calculations' / 'result.txt'
-        case.alias = alias
-        Ledger(case.d / 'ledger.jsonl').add('ada', 'finding', f'Calculation: {alias.relative_to(case.d)}')
-        context.alias_cases.append(case)
-    original_read = Path.read_text
-
-    # @exceptional-double: delegated read spy records alias access ordering.
-    def observe_alias(path, *args, **kwargs):
-        for case in context.alias_cases:
-            if path == case.alias:
-                case.alias_reads.append(str(path))
-        return original_read(path, *args, **kwargs)
-
-    observer = patch.object(Path, 'read_text', observe_alias)
-    observer.start()
-    context.add_cleanup(observer.stop)
-
-
-@then('the assessment is blocked before reading the aliased evidence or calling a provider')
-def aliases_blocked(context):
-    results = [{'kind': case.kind, 'status': research.status(case.c, 'Q1P1')['status'],
-                'alias_reads': case.alias_reads, 'provider_calls': len(case.requests)}
-               for case in context.alias_cases]
-    assert all(row['status'] == 'BLOCKED' and not row['alias_reads'] and row['provider_calls'] == 0
-               for row in results), results
-
-
-def reference_cases(context):
-    from types import SimpleNamespace
-    context.reference_cases = []
-    for stage in ('consolidate', 'verify'):
-        case = SimpleNamespace(add_cleanup=context.add_cleanup, stage=stage, reads=[])
-        revision_setup(case, stage=stage)
-        context.reference_cases.append(case)
-    context.reference_evidence = {}
-    context.reference_provenance = []
-
-
-def record_references(context, text):
-    context.reference_provenance.append(text)
-    for case in context.reference_cases:
-        Ledger(case.d / 'ledger.jsonl').add('ada', 'finding', text)
-
-
-def calculation_reference(context, name, content):
-    context.reference_evidence[name] = content
-    for case in context.reference_cases:
-        path = case.d / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content)
-    record_references(context, f'Calculation: {name}')
-
-
-@given('a research ledger cites "{first}" and "{second}" as bare DOIs and resolver URLs')
-def cited_dois(context, first, second):
-    reference_cases(context)
-    context.dois = (first, second)
-    record_references(context, f'Bibliography: {first}, https://doi.org/{first}; {second}, https://doi.org/{second}')
-
-
-@given('the ledger references a readable local calculation artefact')
-def readable_calculation(context):
-    calculation_reference(context, 'calculations/results/variance.json', '{"variance": 0.125, "samples": 128}\n')
-
-
-@given('a research ledger cites "{locator}" as the location of a published finding')
-def scholarly_locator(context, locator):
-    reference_cases(context)
-    context.locator = locator
-    record_references(context, f'The published finding appears in {locator}.')
-
-
-@given('a research ledger records the command "{command}"')
-def interpreter_command(context, command):
-    reference_cases(context)
-    context.command = command
-    record_references(context, f'Command: {command}')
-
-
-@given('the referenced calculation script is readable')
-def readable_script(context):
-    calculation_reference(context, 'ada/check_sector.py', 'from fractions import Fraction\nprint(Fraction(1, 3) + Fraction(2, 3))\n')
-
-
-@given('a research ledger references calculation artefacts under "{nested}" and "{shared}" outside peer directories')
-def non_peer_calculations(context, nested, shared):
-    reference_cases(context)
-    calculation_reference(context, f'{nested}/sector.json', '{"sector": 2, "checked": true}\n')
-    calculation_reference(context, f'{shared}/derivation.tex', '\\section{Calculation}\n' + 'x = x + 1;\n' * 1800 + 'CALCULATION END\n')
-
-
-@given('a research ledger references the missing local calculation "{name}"')
-def missing_non_peer_calculation(context, name):
-    reference_cases(context)
-    for case in context.reference_cases:
-        case.c.raw['strict_evidence'] = True
-    record_references(context, f'Calculation: {name}')
-    assert all(not (case.d / name).exists() for case in context.reference_cases)
-
-
-@when('the workflow prepares tool-less consolidation and verification requests')
-@when('the workflow prepares a tool-less assessment request')
-def prepare_reference_requests(context):
-    original_read = Path.read_text
-
-    # @exceptional-double: delegated filesystem spy observes internal read
-    # ordering; real local files and transport-controlled workflow remain in use.
-    def observe_reference_read(path, *args, **kwargs):
-        for case in context.reference_cases:
-            if path.is_relative_to(case.d):
-                case.reads.append(str(path.relative_to(case.d)))
-        return original_read(path, *args, **kwargs)
-
-    with patch.object(Path, 'read_text', observe_reference_read):
-        for case in context.reference_cases:
-            revision_run(case)
-
-
-@then('both requests retain the DOI citations and complete local calculation contents')
-@then('both requests retain the scholarly locator and complete local calculation contents')
-@then('both requests contain the complete calculation script and command provenance')
-@then('both requests contain every referenced local calculation artefact in full')
-def complete_reference_requests(context):
-    for case in context.reference_cases:
-        requests = [request for request in case.requests if request.stage == case.stage]
-        assert len(requests) == 1, (case.stage, research.status(case.c, 'Q1P1'))
-        request = requests[0]
-        assert request.tools is False
-        for provenance in context.reference_provenance:
-            assert provenance in request.prompt, (case.stage, provenance)
-        for name, content in context.reference_evidence.items():
-            assert name in request.prompt and content in request.prompt, (case.stage, name)
-
-
-@then('no DOI or fragment of a resolver URL is read as a local file')
-def citations_not_read(context):
-    for case in context.reference_cases:
-        assert not [name for name in case.reads if any(part in name for doi in context.dois for part in doi.split('/'))], case.reads
-
-
-@then('the scholarly figure locator is not read as a local file')
-def locator_not_read(context):
-    for case in context.reference_cases:
-        assert context.locator not in case.reads, case.reads
-
-
-@then('no fragment of the interpreter path is read as local evidence')
-def interpreter_not_read(context):
-    interpreter = context.command.split()[0]
-    for case in context.reference_cases:
-        assert not [name for name in case.reads if any(part in name for part in interpreter.split('/') if part)], case.reads
-
-
-@then('assessment blocks before provider dispatch and identifies "{name}"')
-def missing_reference_blocks(context, name):
-    for case in context.reference_cases:
-        state = research.status(case.c, 'Q1P1')
-        assert state['status'] == 'BLOCKED' and name in state.get('reason', ''), (case.stage, state)
-        assert not case.requests, (case.stage, case.requests)
+@then('neither request inlines the peer artefact contents')
+def assessment_not_inlined(context):
+    for request in context.assessment.values():
+        assert not [name for name, text in EVIDENCE.items() if text in request.prompt], request.stage

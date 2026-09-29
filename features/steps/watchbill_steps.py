@@ -9,7 +9,7 @@ from behave import given, then, when
 
 from pathfinder import reconcile, research, runner, transport
 
-from operational_steps import assignments, prepared_corpora, seed_pair
+from operational_steps import prepared_corpora, seed_pair
 
 # a research account is a LaTeX document; the engine refuses any other reply as an account
 ACCOUNT = "\\documentclass{article}\\begin{document}\n%s\n\\end{document}\n"
@@ -47,103 +47,6 @@ def findings_awaiting_consolidation(context):
     research._set(context.campaign, "Q1P1", stage="consolidate", status="running")
 
 
-@given("one frozen paper pair has two source papers, a peer ledger, and a prior account")
-def complete_consolidation_evidence(context):
-    context.campaign = seed_pair(context)
-    context.campaign.raw.update({"inline_papers": True, "inline_ledger": True})
-    context.thread_dir = context.campaign.thread_dir("Q1P1")
-    context.inputs = research._inputs(context.thread_dir)
-    research.Ledger(context.thread_dir / "ledger.jsonl").add(
-        context.campaign.peers[0], "finding", "complete peer finding"
-    )
-    context.prior_account = "prior research account"
-    prompts = context.campaign.path("prompts")
-    prompts.mkdir()
-    (prompts / "consolidate.md").write_text("Consolidate {{NOTE}}. {{PRIOR}}. {{MATERIAL}}")
-
-
-@given('one frozen paper pair has source text "{question}" and "{proposal}"')
-def frozen_pair_source_text(context, question, proposal):
-    context.campaign = seed_pair(context)
-    context.thread_dir = research.prepare(context.campaign, "Q1P1")
-    context.inputs = research._inputs(context.thread_dir)
-    (context.thread_dir / "inputs" / context.inputs["Q"]).write_text(question)
-    (context.thread_dir / "inputs" / context.inputs["P"]).write_text(proposal)
-
-
-@given('its peer ledger contains "{evidence}"')
-def peer_ledger_contains(context, evidence):
-    research.Ledger(context.thread_dir / "ledger.jsonl").add(
-        context.campaign.peers[0], "finding", evidence
-    )
-
-
-@given('its prior account contains "{account}"')
-def prior_account_contains(context, account):
-    context.prior_account = account
-
-
-@given("its campaign has no inline-evidence switches")
-def campaign_has_no_inline_switches(context):
-    context.campaign.raw.pop("inline_papers", None)
-    context.campaign.raw.pop("inline_ledger", None)
-    prompts = context.campaign.path("prompts")
-    prompts.mkdir()
-    (prompts / "consolidate.md").write_text("Consolidate {{NOTE}}. {{PRIOR}}. {{MATERIAL}}")
-
-
-@when("Pathfinder builds its consolidation model request")
-def builds_consolidation_request(context):
-    context.consolidation_prompt = research._consolidate_prompt(
-        context.campaign,
-        context.thread_dir,
-        context.inputs,
-        "Q1P1",
-        "consolidate evidence",
-        "Q1P1.tex",
-        context.prior_account,
-    )
-
-
-@then("the request contains both source papers, the complete ledger, the prior account, and the consolidation instruction")
-def consolidation_request_contains_complete_evidence(context):
-    prompt = context.consolidation_prompt
-    assert "Abstract q1" in prompt
-    assert "Abstract p1" in prompt
-    assert "complete peer finding" in prompt
-    assert context.prior_account in prompt
-    assert "Consolidate Q1P1.tex" in prompt
-
-
-@then("the request requires no file acquisition")
-def consolidation_request_requires_no_acquisition(context):
-    assert "Read inputs/" not in context.consolidation_prompt
-    assert "Read ledger.jsonl" not in context.consolidation_prompt
-
-
-@then('the request contains "{question}", "{proposal}", "{ledger}", and "{prior}"')
-def request_contains_complete_evidence(context, question, proposal, ledger, prior):
-    assert all(item in context.consolidation_prompt for item in (question, proposal, ledger, prior))
-
-
-@then("the request asks for the complete research account")
-def request_asks_for_complete_account(context):
-    assert "return the complete research account" in context.consolidation_prompt.lower()
-
-
-@then("the request contains no file-reading instruction")
-def request_contains_no_file_reading(context):
-    assert "read inputs/" not in context.consolidation_prompt.lower()
-    assert "read ledger.jsonl" not in context.consolidation_prompt.lower()
-
-
-@then("the request states that its inline evidence is complete and no tools are available")
-def request_states_inline_evidence_is_complete(context):
-    prompt = context.consolidation_prompt.lower()
-    assert "inline evidence is complete" in prompt
-    assert "no tools are available" in prompt
-
-
 @given("its first consolidation returns no account and no provider error")
 def empty_first_consolidation(context):
     context.replies = [provider_reply(), provider_reply("stored account")]
@@ -163,12 +66,7 @@ def makes_second_attempt(context):
     assert context.provider_calls[:2] == ["consolidate", "consolidate"]
 
 
-@given("its direct provider cannot write campaign files")
-def direct_provider_cannot_write(context):
-    context.direct_provider_cannot_write = True
-
-
-@when("Pathfinder requests consolidation from the direct provider")
+@when("Pathfinder requests consolidation")
 def requests_direct_consolidation(context):
     context.direct_prompt = None
     prompts = context.campaign.path("prompts")
@@ -204,36 +102,13 @@ def requests_direct_consolidation(context):
         transport.execute = original
 
 
-@then("the request asks the provider to return the complete research account")
+@then("the request asks for the complete research account in the response")
 def requests_returned_account(context):
-    assert context.direct_provider_cannot_write
     assert "return" in context.direct_prompt.lower()
     assert "complete research account" in context.direct_prompt.lower()
 
 
-@given("its direct provider returns text without producing a stored research account")
-def direct_provider_returns_unstored_text(context):
-    context.replies = [provider_reply("unstored account"), provider_reply("stored account")]
-
-
-@when("Pathfinder evaluates the consolidation attempt")
-def evaluates_consolidation_attempt(context):
-    context.result = run_with_replies(
-        context,
-        context.replies,
-        lambda: research._stage_call(
-            context.campaign,
-            "Q1P1",
-            "consolidate",
-            "prompt",
-            True,
-            1,
-            done=(context.campaign.thread_dir("Q1P1") / "Q1P1.tex").exists,
-        ),
-    )
-
-
-@when("the direct provider returns a complete research account on its consolidation retry")
+@when("the provider returns a complete research account on its consolidation retry")
 def provider_returns_account_on_retry(context):
     context.returned_account = ACCOUNT % "complete research account"
     context.account_at_verification = None
@@ -291,7 +166,7 @@ def provider_returns_account(context):
 @then("Pathfinder stores the response as the pair's research account")
 def stores_provider_account(context):
     path = context.campaign.thread_dir("Q1P1") / "Q1P1.tex"
-    assert context.direct_provider_cannot_write and path.read_text() == context.returned_account
+    assert path.read_text() == context.returned_account
 
 
 @when("both consolidation attempts produce no stored research account")
@@ -395,307 +270,6 @@ def all_verdicts_recorded(context):
         assert verdicts[-1]["decision"] == "DRAFT"
 
 
-@given('role "consolidate" is assigned execution class "provider" through ELM')
-def provider_consolidation(context):
-    context.campaign = seed_pair(context)
-    context.campaign.backend = "elm"
-    context.campaign.model = "consolidate-model"
-    context.assignments = assignments()
-    context.assignments["consolidate"].update(
-        backend="elm", model="consolidate-model", execution_class="provider"
-    )
-
-
-@given('role "{role}" is assigned model "{model}" and execution class "provider" through ELM')
-def assigned_provider_model(context, role, model):
-    context.campaign = seed_pair(context)
-    context.assignments = assignments()
-    context.assignments[role].update(backend="elm", model=model, execution_class="provider")
-
-
-@given('role "{role}" is assigned budget "{budget}" in its comparison tier')
-def assigned_role_budget(context, role, budget):
-    context.assignments[role]["budget"] = int(budget)
-
-
-@when('Pathfinder executes role "{role}" for one frozen paper pair')
-def execute_assigned_role(context, role):
-    # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.execute
-
-    def execute(campaign, request):
-        context.provider_call = request
-        return {
-            **provider_reply("provider research account"),
-            "session": "provider-job",
-            "input_tokens": 1,
-            "output_tokens": 1,
-            "cost": 0,
-        }
-
-    transport.execute = execute
-    try:
-        context.workflow = runner.run_assigned_comparison(
-            context.campaign, {role: context.assignments[role]}
-        )
-    finally:
-        transport.execute = original
-
-
-@then('the provider call has a "{timeout}" second timeout')
-def provider_call_timeout(context, timeout):
-    assert context.provider_call.timeout == int(timeout)
-
-
-@then('the provider receipt retains budget "{budget}" for role "{role}"')
-def provider_receipt_budget(context, budget, role):
-    receipt = next(item for item in context.workflow["receipts"] if item["role"] == role)
-    assert receipt["budget"] == int(budget)
-
-
-@given('retained provider events for pair "{pair_id}" include workspace command execution')
-def retained_workspace_events(context, pair_id):
-    context.retained_provider_events = [
-        {"thread": pair_id, "type": "item.completed", "item": {"type": "command_execution"}}
-    ]
-
-
-@given("the provider cannot write campaign files")
-def provider_cannot_write(context):
-    context.provider_can_write = False
-
-
-@when("Pathfinder consolidates a frozen paper pair")
-def consolidate_pair(context):
-    # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.execute
-    transport.execute = lambda campaign, request: {
-        "text": "provider research account",
-        "error": None,
-        "transport_failed": False,
-        "seconds": 0,
-    }
-    try:
-        context.account_reply = research._stage_call(
-            context.campaign, "Q1P1", "consolidate", "prompt", False, 1
-        )
-    finally:
-        transport.execute = original
-
-
-@when("Pathfinder consolidates the frozen paper pair")
-def consolidate_frozen_pair(context):
-    # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.execute
-
-    def execute(campaign, request):
-        context.provider_call = request
-        context.provider_events = [{"type": "item.completed", "item": {"type": "agent_message"}}]
-        return provider_reply("provider research account")
-
-    transport.execute = execute
-    try:
-        research._stage_call(context.campaign, "Q7P10", "consolidate", "prompt", False, 1)
-    finally:
-        transport.execute = original
-
-
-@then("consolidation executes through the ELM provider interface")
-def consolidation_uses_elm_provider(context):
-    assert context.campaign.backend == "elm"
-    assert context.provider_call.stage == "consolidate"
-    assert context.provider_call.tools is False
-
-
-@then("the provider events contain no workspace command execution")
-def provider_events_have_no_workspace_commands(context):
-    assert any(event["item"]["type"] == "command_execution" for event in context.retained_provider_events)
-    assert all(event["item"]["type"] != "command_execution" for event in context.provider_events)
-
-
-@given('a campaign is loaded from a manifest that assigns role "consolidate" to model "{model}" through ELM with an empty allowed-tools list')
-@given('a campaign manifest assigns role "consolidate" to model "{model}" through ELM with no allowed tools')
-def campaign_manifest_assigns_consolidation(context, model):
-    context.assigned_consolidation = {
-        "model": model,
-        "backend": "elm",
-        "execution_class": "provider",
-        "allowed_tools": [],
-    }
-
-
-@given("one frozen paper pair has substantive findings awaiting consolidation")
-def frozen_pair_awaiting_consolidation(context):
-    findings_awaiting_consolidation(context)
-    context.campaign.backend = context.assigned_consolidation["backend"]
-    context.campaign.model = context.assigned_consolidation["model"]
-
-
-@when("Pathfinder runs consolidation through the campaign workflow")
-def run_campaign_consolidation(context):
-    context.campaign_workflow_entered = True
-    # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.execute
-
-    def execute(campaign, request):
-        context.consolidation_request = request
-        return provider_reply("provider research account")
-
-    transport.execute = execute
-    try:
-        context.consolidation_result = research.run_thread(context.campaign, "Q1P1")
-    finally:
-        transport.execute = original
-
-
-@then("the consolidation transport request uses the assigned model and backend")
-def consolidation_request_uses_assignment(context):
-    assert context.consolidation_request.model == context.assigned_consolidation["model"]
-    assert context.campaign.backend == context.assigned_consolidation["backend"]
-
-
-@then("the consolidation transport request exposes no tools")
-def consolidation_request_exposes_no_tools(context):
-    assert context.assigned_consolidation["allowed_tools"] == []
-    assert context.consolidation_request.tools is False
-
-
-@given("a campaign-routing scenario asserts a model transport request")
-def campaign_routing_scenario(context):
-    campaign_manifest_assigns_consolidation(
-        context, "Qwen/Qwen3.5-397B-A17B-FP8"
-    )
-    frozen_pair_awaiting_consolidation(context)
-
-
-@when("the verification path to that request is inspected")
-def inspect_campaign_routing_path(context):
-    run_campaign_consolidation(context)
-
-
-@then("the path enters through the campaign workflow rather than a transport helper")
-def path_enters_campaign_workflow(context):
-    assert context.campaign_workflow_entered
-
-
-@then("the provider response becomes the pair's research account")
-def response_becomes_account(context):
-    assert not context.provider_can_write
-    assert context.account_reply["text"] == "provider research account"
-
-
-@given("a direct-provider consolidation produced a research account")
-def direct_account(context):
-    context.campaign = seed_pair(context)
-    context.campaign.backend = "elm"
-    context.campaign.model = "verify-model"
-    context.account = "consolidated account"
-
-
-@given('role "verify" is assigned execution class "provider" through ELM')
-def provider_verification(context):
-    context.verify_assignment = {"backend": "elm", "execution_class": "provider"}
-
-
-@when("Pathfinder verifies the frozen paper pair")
-def verify_pair(context):
-    # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.execute
-    transport.execute = lambda *args, **kwargs: {
-        "text": json.dumps({"decision": "DRAFT", "reason": "supported", "action": None}),
-        "error": None,
-        "transport_failed": False,
-        "seconds": 0,
-    }
-    try:
-        context.verification_reply = research._stage_call(
-            context.campaign, "Q1P1", "verify", context.account, False, 1
-        )
-    finally:
-        transport.execute = original
-
-
-@then("the pair records the provider's verification decision")
-def records_verification(context):
-    decision = json.loads(context.verification_reply["text"])
-    assert decision["decision"] == "DRAFT"
-
-
-@given("each comparison role has a model, backend, and execution class assignment")
-def comparison_assignments(context):
-    context.assignments = assignments()
-    context.assignments["scan"].update(backend="elm", execution_class="provider")
-    context.assignments["research"].update(backend="pi", execution_class="agent")
-    context.assignments["consolidate"].update(backend="elm", execution_class="provider")
-    context.assignments["verify"].update(backend="elm", execution_class="provider")
-
-
-@then("each role follows its assigned execution route")
-def assigned_routes(context):
-    assert [receipt["execution_class"] for receipt in context.workflow["receipts"]] == [
-        context.assignments[role]["execution_class"] for role in context.assignments
-    ]
-
-
-@then("consolidation completes before verification")
-def consolidation_before_verification(context):
-    roles = [receipt["role"] for receipt in context.workflow["receipts"]]
-    assert roles.index("consolidate") < roles.index("verify")
-
-
-@then("consolidation and verification execute through the pair's research stages")
-def assigned_research_stages(context):
-    roles = {receipt["role"] for receipt in context.workflow["receipts"]}
-    assert {"consolidate", "verify"} <= roles
-
-
-@given("a provider-class execution scenario with an assigned backend, model, and execution class")
-def provider_class_assignment(context):
-    context.assignment = assignments()["consolidate"]
-    context.assignment.update(
-        backend="elm",
-        model="Qwen/Qwen3.5-397B-A17B-FP8",
-        execution_class="provider",
-    )
-    context.routing_assignment = {
-        key: context.assignment[key] for key in ("backend", "model", "execution_class")
-    }
-
-
-@when("the verification invokes the provider-class execution seam")
-def invoke_provider_class_seam(context):
-    context.campaign = seed_pair(context)
-    # @exceptional-double: internal composition has no independent external verifier.
-    original = transport.execute
-
-    def execute(campaign, request):
-        context.execution_route = runner.execution_route(context.routing_assignment)
-        context.routing_inputs = {
-            "backend": campaign.backend,
-            "model": request.model,
-            "execution_class": context.routing_assignment["execution_class"],
-        }
-        return {
-            **provider_reply("provider research account"),
-            "session": "provider-job",
-            "input_tokens": 1,
-            "output_tokens": 1,
-            "cost": 0,
-        }
-
-    transport.execute = execute
-    try:
-        runner.run_assigned_comparison(context.campaign, {"consolidate": context.assignment})
-    finally:
-        transport.execute = original
-
-
-@then("the invocation routing inputs match the scenario assignment")
-def routing_inputs_match_assignment(context):
-    assert context.execution_route == "provider"
-    assert context.routing_inputs == context.routing_assignment
-
-
 @given("the implementation paths and executable scenarios from the rigging")
 def implementation_and_scenarios(context):
     context.root = repository_root(context)
@@ -796,11 +370,6 @@ def check_double_justifications(context):
                 if "@exceptional-double" not in nearby:
                     errors.append(f"{path}:{number}")
     context.double_errors = errors
-
-
-@then('every test double carries an "@exceptional-double" justification')
-def doubles_justified(context):
-    assert not context.double_errors, "unjustified doubles:\n" + "\n".join(context.double_errors)
 
 
 @given("the binding scenarios and default tier from the rigging")

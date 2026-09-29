@@ -87,7 +87,7 @@ def thread_head(d, inp, papers: bool = True, ledger: bool = True) -> str:
 
 
 class EvidenceUnavailable(Exception):
-    """@planks("Then the assessment is blocked before a provider call with the unreadable evidence identified")"""
+    """Evidence a composable review must inline cannot be supplied; the thread blocks before any call."""
 
 
 def _external_citations(d):
@@ -239,23 +239,22 @@ def _assessment_evidence(campaign, d, references=None) -> str:
 
 
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
-    """@planks("When Pathfinder requests consolidation from the direct provider")
-    @planks("When Pathfinder builds its consolidation model request")
-    @planks("Then the request states that its inline evidence is complete and no tools are available")
-    @planks("When the research workflow prepares its consolidation request")
-    """
-    in_papers = True
-    in_ledger = True
-    above = [x for x, on in (("Q and P", in_papers), ("the ledger", in_ledger)) if on]
-    read = [x for x, on in ((f"inputs/{inp['Q']} and inputs/{inp['P']}", not in_papers), ("ledger.jsonl", not in_ledger)) if on]
-    material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
-                                                                          if read else "Inline evidence is complete and no tools are available.")
-    head = thread_head(d, inp, in_papers, in_ledger)
+    """@planks("When the research workflow prepares its consolidation and verification requests")"""
+    head = thread_head(d, inp)
     if (d / note_name).exists():                    # the account a repair or a next round must keep
         head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
-    evidence = _assessment_evidence(campaign, d)
-    head += ("\n\n" + evidence if evidence else "") + "\n\n## your task\n\n"
-    return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
+    head += "\n\n## your task\n\n"
+    return (head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id,
+                           PRIOR=prior, MATERIAL="Q, P and the ledger are above.")
+            + "\n\n" + evidence_pointer(campaign)
+            + "\n\nReturn the complete research account, the LaTeX document itself, in your response; do not write it to a file.\n")
+
+
+def evidence_pointer(campaign) -> str:
+    """Where the evidence is: consolidator and verifier read it with their own file tools."""
+    dirs = ", ".join(f"{a}/" for a in campaign.peers)
+    return (f"The peers' working files are in {dirs} beside you, and every path the ledger cites is relative to your "
+            "working directory: read whatever you need to check a claim.")
 
 
 def unfence(text: str) -> str:
@@ -400,12 +399,7 @@ def _peers(campaign, pair_id, stop):
 
 
 def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
-    """@planks("When Pathfinder consolidates a frozen paper pair")
-    @planks("When Pathfinder verifies the frozen paper pair")
-    @planks("When Pathfinder consolidates pair \"Q1P1\"")
-    @planks("When Pathfinder evaluates the consolidation attempt")
-    @planks("When Pathfinder consolidates the frozen paper pair")
-    @planks("When Pathfinder runs the assigned comparison workflow")
+    """@planks("When Pathfinder consolidates pair \"Q1P1\"")
     @planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
     @planks("When Pathfinder executes one stage attempt")
     @planks("When Pathfinder verifies execution routing")
@@ -432,7 +426,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
             if stage == "consolidate":
                 continue
             raise transport.TransportFailed(pair_id)
-        if done() or (r["text"].strip() and not tools):
+        if done() or r["text"].strip():
             return r
     return r
 
@@ -449,7 +443,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("the campaign continues")
     @planks("the provider returns a research account for pair \"Q1P1\"")
     @planks("both consolidation attempts produce no stored research account")
-    @planks("the direct provider returns a complete research account on its consolidation retry")
+    @planks("the provider returns a complete research account on its consolidation retry")
     @planks("Pathfinder runs consolidation through the campaign workflow")
     @planks("the verification path to that request is inspected")
     @planks("the research workflow receives a nonempty repair account after \"REVISE\"")
@@ -506,10 +500,13 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                         _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: invalid retained response: {error}")
                         return "BLOCKED"
                 else:
+                    before = note.read_bytes() if note.exists() else None
                     r = _stage_call(campaign, pair_id, "consolidate",
                                     _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
-                                    False, A["consolidate_seconds"])
+                                    True, A["consolidate_seconds"])
                     text = unfence(r["text"] or "")
+                    if not is_latex_document(text) and note.exists() and note.read_bytes() != before:
+                        text = note.read_text(errors="replace")      # it wrote the account to the file instead
                     if r.get("error") or not text.strip():   # never re-verify the older account as if repaired
                         _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r.get('error') or 'no note'}"); return "BLOCKED"
                     if not is_latex_document(text):                # e.g. a quota message returned as the reply
@@ -529,10 +526,10 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
             elif s["stage"] == "verify":
                 _check(stop)
                 # static material first, the instruction last: the head is shared with every other judge call
-                evidence = _assessment_evidence(campaign, d)
-                p = judge_head(d, inp, note.name) + ("\n\n" + evidence if evidence else "") + "\n\n## your task\n\n"
+                p = judge_head(d, inp, note.name) + "\n\n## your task\n\n"
                 p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
-                r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"], done=lambda: True)
+                p += "\n\n" + evidence_pointer(campaign) + " Do not modify any file.\n"
+                r = _stage_call(campaign, pair_id, "verify", p, True, A["verify_seconds"], done=lambda: True)
                 try:
                     v = parse_json(r["text"]); dec = v["decision"].upper()
                     assert dec in ("DRAFT", "REVISE", "ITERATE", "PAUSE")
@@ -553,8 +550,6 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
                     _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
-    except EvidenceUnavailable as error:
-        _set(campaign, pair_id, status="BLOCKED", reason=f"evidence: {error}"); return "BLOCKED"
     except (Stopped, Refused):
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:
@@ -830,7 +825,7 @@ def next_requests(campaign, pair_id):
                                                             P_INPUT=f"inputs/{_inputs(d)['P']}", NOTE=f"{pair_id}.tex")
                 identity = f"{pair_id}:{stage}:{actor}:round-{s['round']}:review-{s.get('reviews', 0)}:repair-{s.get('repairs', 0)}:call-{s.get('peer_call', 0)}"
                 request = transport.ModelRequest(identity=identity, prompt=prompt, model=campaign.model,
-                    tools=stage == "peers", search=campaign.peer_search if stage == "peers" else False,
+                    tools=True, search=campaign.peer_search if stage == "peers" else False,
                     cwd=d, timeout=int(seconds) + (30 if stage == "peers" else 0), thread=pair_id,
                     stage="peer" if stage == "peers" else stage, actor=actor)
                 path = _request_file(campaign, pair_id, identity)

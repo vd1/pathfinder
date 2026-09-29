@@ -19,9 +19,8 @@ Feature: Operate a paper-pair research workflow
       When Pathfinder consolidates pair "Q1P1"
       Then Pathfinder makes one more consolidation attempt
 
-    Scenario: A direct-provider response becomes the research account
+    Scenario: A consolidation response becomes the research account
       Given pair "Q1P1" has substantive findings awaiting consolidation
-      And its direct provider cannot write campaign files
       When the provider returns a research account for pair "Q1P1"
       Then Pathfinder stores the response as the pair's research account
 
@@ -30,21 +29,14 @@ Feature: Operate a paper-pair research workflow
       When both consolidation attempts produce no stored research account
       Then pair "Q1P1" is blocked at consolidation
 
-    Scenario: Direct-provider consolidation requests a returned research account
+    Scenario: Consolidation requests a returned research account
       Given pair "Q1P1" has substantive findings awaiting consolidation
-      And its direct provider cannot write campaign files
-      When Pathfinder requests consolidation from the direct provider
-      Then the request asks the provider to return the complete research account
-
-    Scenario: A provider reply without a stored account remains retryable
-      Given pair "Q1P1" has substantive findings awaiting consolidation
-      And its direct provider returns text without producing a stored research account
-      When Pathfinder evaluates the consolidation attempt
-      Then Pathfinder makes one more consolidation attempt
+      When Pathfinder requests consolidation
+      Then the request asks for the complete research account in the response
 
     Scenario: A returned research account proceeds directly to verification
       Given pair "Q1P1" has substantive findings awaiting consolidation
-      When the direct provider returns a complete research account on its consolidation retry
+      When the provider returns a complete research account on its consolidation retry
       Then Pathfinder stores that research account before verification
       And the verifier assesses it once
 
