@@ -1,0 +1,88 @@
+The workspace is read-only, so I could not create `Q1P1.tex`. Its complete contents are below.
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Auditing Peer-Derived Predictions for Learning-Augmented Decisions}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q is Zhao et al.'s survey of learning-augmented algorithms, including prediction error, query cost, and conditions for composing guarantees. P is the anonymous note \emph{From Truthful Peer Signals to Contribution Rankings}, which identifies Bradley--Terry scores from calibrated peer comparisons under restrictive population assumptions; its internal names ``Q'' and ``P'' refer to different papers. \ledger{1, 2}
+
+\section{The connexion pursued}
+
+P could supply an ordinal ranking or a numerical score vector to a decision algorithm of the kind surveyed by Q. Q's framework then asks for a declared error measure, a bound transferring comparison error to the object consumed by that algorithm, and an accounting of the comparison queries. P proves population identification under its model, but supplies neither a finite-sample bound nor a downstream decision guarantee. \ledger{3, 6, 15, 17}
+
+\section{What was found}
+
+\begin{claim}
+Under P's shared-draw, conditionally independent symmetric-noise model, peer agreements identify observer reliabilities, and calibrated edge means identify Bradley--Terry score differences.
+\end{claim}
+
+If observer \(r\) has positive reliability \(a_r\), reports on a common realised comparison satisfy
+\[
+q_{rs}=\mathbb{E}[Y_{er}Y_{es}]=a_ra_s.
+\]
+An observed triangle gives \(a_r=\sqrt{q_{rs}q_{ru}/q_{su}}\); observed overlap paths propagate the calibration. For a calibrated observer, dividing an edge report mean by \(a_r\) recovers the latent comparison mean. Applying the logit and integrating edge differences on a connected comparison graph recovers scores up to translation. This is P's conditional interface, whose agreement factorisation was already known in single-coin crowdsourcing. \ledger{6, 13, 17}
+
+A conditional finite-sample calculation makes Q's error and cost questions concrete. Suppose \(a_r\geq\alpha>0\), all edge probabilities lie in \([\tau,1-\tau]\), the calibration paths have depth at most \(D\), and every required empirical moment differs from its clean-model value by at most \(\delta\). Set
+\[
+u=\frac{2\delta}{\alpha^2},\qquad
+T=(D+3/2)u,\qquad
+h=\frac{\delta e^T}{\alpha}+e^T-1.
+\]
+For \(\delta\leq\alpha^2/2\) and \(h\leq\tau\), the triangle and path calibration, mean division, logit inversion, and comparison-graph least squares give
+\[
+\|\widehat c-c\|_2
+\leq
+\sqrt{\frac{|E|}{\lambda_2(L_G)}}\,
+\frac{h}{\tau(1-\tau/2)}.
+\]
+With \(N\) independent repeats per measured population and \(M\) measured moments, concentration gives
+\(\delta\leq\beta+\sqrt{2\log(2M/\zeta)/N}\) with probability at least \(1-\zeta\), where \(\beta\) bounds misspecification bias. The direct sampling plan uses at most \(N(2|L_H|+|E|)\) labels. This is a conditional upper bound, not a truthfulness or policy theorem; an unobservable bias \(\beta\) need not vanish as \(N\) grows. \ledger{6, 7, 8, 17}
+
+\begin{objection}
+Agreement factorisation does not certify the intended latent comparison.
+\end{objection}
+
+Let every item carry a shared sign \(B_e\), independent of its latent Bradley--Terry draw \(X_e\), and let \(Y_{er}=X_eB_eZ_{er}\), with independent observer flips \(Z_{er}\) of means \(a_r>0\). If \(\mathbb{E}[B_e]=b>0\) is constant, peer agreements still equal \(a_ra_s\), but calibrated edge means become
+\[
+w_{ij}=b\tanh((c_i-c_j)/2).
+\]
+Thus correlated errors can leave the observable rank-one agreement check intact while attenuating its target. P's theorem remains valid under its stated conditional-independence assumption; the counterexample shows why that assumption cannot be certified by agreements alone. \ledger{4, 8, 19}
+
+On a four-vertex comparison path, true oriented differences \((4,-1.5,-1.5)\) give \(c_1-c_4=1>0\). At \(b=1/2\), the same report law has an alternative clean Bradley--Terry interpretation with edge differences
+\(f_b(d)=2\operatorname{artanh}(b\tanh(d/2))\).
+Under it, \(c'_1-c'_4=f_{1/2}(4)-2f_{1/2}(1.5)\approx-0.265<0\). Unlimited reports and peer-agreement checks cannot distinguish these worlds or certify that endpoint order. \ledger{4, 9}
+
+The graph needed for an ordinal prediction differs from the graph needed for numerical scores. Under this constant positive attenuation model, every pair's order is preserved on a connected comparison graph of diameter at most two: along a path of at most two edges, odd strict monotonicity gives
+\(\operatorname{sgn}(f_b(x)+f_b(y))
+=\operatorname{sgn}(x+y)\).
+For comparison trees, this condition is exact: any tree with a three-edge path admits an order reversal. It protects rankings, not P's score magnitudes or shaping potential. \ledger{11, 15, 16, 27}
+
+Cycles can instead identify \(b\) under the specified model. For a nondegenerate triangle, let \(A=w_{ij}\), \(B=w_{jk}\), and \(C=w_{ik}\). The hyperbolic-tangent addition identity yields
+\[
+C=\frac{A+B}{1+AB/b^2},
+\qquad
+b^2=\frac{ABC}{A+B-C}.
+\]
+A nondegenerate four-cycle also suffices: if \(S_k\) is the elementary symmetric sum of degree \(k\) in its consistently oriented edge means, cycle consistency gives \(S_1b^2+S_3=0\), so \(S_1\neq0\) identifies the admissible positive \(b\). A cycle is not sufficient in general. The recorded six-cycle has two admissible rates, approximately \(0.739\) and \(0.854\), with identical observable reports but opposite order for one vertex pair. \ledger{10, 13, 14, 22, 26}
+
+\section{Objections, sources, and limits}
+
+The common-flip construction is a restricted misspecification class, not a test that real reports obey it. A triangle or informative four-cycle repairs cardinal identification only within that class; edge-dependent or unrestricted shared bias remains unresolved. Conversely, P's original conditional theorem is not refuted. \ledger{8, 14, 20, 24}
+
+P already cites the single-coin crowdsourcing work of Ma et al. for rank-one calibration. The peers also checked primary work on correlated annotators, semi-verified learning, heterogeneous-worker ranking, and Bradley--Terry diagnostics. Those searches did not locate the exact graph statements above, but were not a comprehensive novelty review. \ledger{12, 13, 28}
+
+The material is thin on implementation. It contains no finite-sample stability bound for cycle calibration, minimal audit design across general graphs, downstream policy-sensitivity theorem, truthful bootstrap for P's proposed peer reports, or validation against unrestricted common bias. Q's survey explains why the prediction object and its cost must be specified; it does not supply these missing reductions. \ledger{17, 20, 24, 26}
+
+\section{Smallest next step}
+
+Prove a finite-sample version of the nondegenerate triangle or four-cycle calibration under a stated lower bound on its denominator, including both graph condition numbers and the number of labels. Test its constant-\(b\) premise with repeated shared-draw comparisons and independent reference labels before transferring the resulting score or ranking error to one specified downstream algorithm. This would settle whether the population repair can serve as a costed prediction interface in that restricted model; strategic truthfulness and broader correlated error would remain separate questions. \ledger{17, 24, 26}
+
+\end{document}
+```

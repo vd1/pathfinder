@@ -1,0 +1,167 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Where Comparison Rankings Enter Open-Team Reward Shaping}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q asks that a prediction guarantee be connected to a downstream objective and that predictor calls be
+charged; P turns multimodal pairwise comparisons into agent-specific potential-based rewards.
+% ledger: 1, 2, 12, 19
+We analyse the interface between these claims, without asserting a new return guarantee. With complete
+per-agent reward accounting, P's shaping telescopes from exact discounted returns and cancels from a matched
+critic's temporal-difference residual. With full-population pooling, its softmax normalisation also removes
+every individual ranking from the pooled shaping increment. An active-only reward mask instead leaves a
+reentry term and can preserve ranking dependence at coalition changes. These are conditional consequences of
+the stated potential, not findings about P's implementation. % ledger: 4, 5, 9, 10, 14, 15, 16, 17, 19
+A two-agent sample additionally shows that connectedness alone does not ensure the finite unregularised
+Bradley--Terry estimate required by P's stated error bound. The remaining question is whether comparisons
+improve finite-budget unshaped performance through a measured training channel after their calls are charged.
+% ledger: 3, 5, 8, 12, 19
+\end{abstract}
+
+\section{The two papers and the question}
+
+Q surveys learning-augmented algorithms and distinguishes predictor error from the downstream cost it is
+meant to control. Its inference-graph account requires a justified edge between components, and its
+prediction-pricing proposal explicitly counts calls in objective units~\cite{Q}. % ledger: 1, 2, 4, 12, 19
+P's MARS-RA queries a multimodal comparator for each ordered pair in the active coalition, fits
+Bradley--Terry scores, softmaxes them into a vector potential, and adds the potential difference to a scalar
+environment reward for multi-agent training~\cite{P}. It reports task-success and comparison-accuracy trends;
+its estimation proposition addresses latent comparator scores, while its Shapley proposition assumes
+alignment of those scores with Shapley values. Neither proposition states a bound on the return of the
+learned policy per comparison call. % ledger: 3, 8, 12, 19
+
+We ask which reward or critic route could carry P's ranking signal into a finite-training improvement when
+Q's downstream and cost requirements are applied. The calculations below identify routes to inspect. They do
+not establish that any route is used by P's implementation. % ledger: 12, 15, 17, 19
+
+\section{Conditional accounting for P's potential}
+
+Let \(\mathcal N\) be the fixed agent population, \(I^t\subseteq\mathcal N\) the active coalition, and
+\(a_{i,t}=\mathbf 1\{i\in I^t\}\). For a nonempty nonterminal coalition, let \(\psi_{i,t}\) be P's softmax
+score for \(i\in I^t\), embedded as zero for an inactive agent. Use one cached value at each endpoint of
+adjacent transitions and set \(\psi_{i,T}=0\) at termination. Write
+\(F_{i,t}=\gamma\psi_{i,t+1}-\psi_{i,t}\), with shaping weight \(\rho\). This fixed-coordinate,
+cached-potential convention is a condition of our analysis; P does not specify its cross-coalition reward
+convention. % ledger: 4, 5, 6, 10, 15, 16
+
+\begin{proposition}[Complete accounting and active masking]
+If agent \(i\)'s shaping increment is credited on every transition, then, pathwise,
+\[
+\sum_{t=0}^{T-1}\gamma^t F_{i,t}=-\psi_{i,0}.
+\]
+If it is credited only when \(a_{i,t}=1\), then
+\[
+\sum_{t=0}^{T-1}\gamma^t a_{i,t}F_{i,t}
+=-a_{i,0}\psi_{i,0}
++\sum_{t=1}^{T-1}\gamma^t(a_{i,t-1}-a_{i,t})\psi_{i,t}.
+\]
+At a reentry time \(t\), the latter sum includes \(-\gamma^t\psi_{i,t}\).
+\end{proposition}
+% ledger: 4, 5, 6, 10, 16, 19
+\begin{proof}
+In the first sum, every intermediate \(\psi_{i,t}\) appears once with each sign, leaving
+\(-\psi_{i,0}+\gamma^T\psi_{i,T}\). In the masked sum, the coefficient of \(\psi_{i,t}\), for \(1\leq t<T\),
+is \(\gamma^t(a_{i,t-1}-a_{i,t})\); the terminal term is zero. % ledger: 4, 10, 16
+\end{proof}
+
+The first identity is the standard potential-shaping cancellation applied to P's coordinates. For a fixed
+initial potential determined before the first action, its pathwise offset does not change exact policy
+ordering. The second identity shows why zeroing inactive potentials is insufficient when rewards are masked:
+the transition into a returning agent is not credited to that agent. Neither identity says how P actually
+routes its rewards. % ledger: 5, 6, 10, 12, 16
+
+\begin{proposition}[Pooling fork]
+Let \(u_t=\sum_{i\in\mathcal N}\psi_{i,t}\). If every coordinate is pooled, the shaping increment is
+\(\sum_{i\in\mathcal N}F_{i,t}=\gamma u_{t+1}-u_t\). P's softmax gives \(u_t=1\) for each nonempty
+nonterminal coalition, so this pooled increment is independent of the individual rankings. If instead only
+\(i\in I^t\) are pooled and both endpoint coalitions are nonempty with a nonterminal successor, then
+\[
+\sum_{i\in I^t}F_{i,t}
+=\gamma\left(1-\sum_{i\in I^{t+1}\setminus I^t}\psi_{i,t+1}\right)-1.
+\]
+Thus entrant scores can affect this active-only pool.
+\end{proposition}
+% ledger: 6, 14, 15, 16, 17
+\begin{proof}
+Sum the potential differences, then use \(\sum_{i\in I^t}\psi_{i,t}=1\). In the active-only case, the
+successor sum includes exactly the agents active at both endpoints, leaving out entrants. % ledger: 14, 15, 17
+\end{proof}
+
+The proposition concerns the shaping increment, rather than a claim that P uses a pooled team reward.
+Separate agent rewards can still change approximate training updates, even where complete per-agent returns
+telescope. % ledger: 14, 15, 17, 19
+
+For a critic \(\widehat V_i^{\mathrm{env}}\), set \(\widetilde V_i=\widehat V_i^{\mathrm{env}}-\rho\psi_i\).
+Under complete accounting its shaped temporal-difference residual is exactly the unshaped residual. If the
+implemented critic adds mismatch \(e_i\), the residual difference is \(\gamma e_{i,t+1}-e_{i,t}\). The same
+cancellation holds for a generalised-advantage sum formed from matched residuals. This identifies critic
+mismatch as a possible training channel, not a bound on final return. % ledger: 5, 9, 12, 19
+
+\section{Two limits on transferring an accuracy claim}
+
+\begin{proposition}[Connected comparisons need not yield a finite estimate]
+For two agents at a true Bradley--Terry tie, take two independent comparisons of their sole pair. The
+undirected comparison graph is connected, but the unregularised maximum-likelihood estimate is not finite on
+the event that both outcomes favour the same agent. This event has probability \(1/2\).
+\end{proposition}
+% ledger: 3, 5, 12
+\begin{proof}
+Each ordered draw favours either agent with probability \(1/2\). Each unanimous outcome has probability
+\(1/4\). For either outcome, increasing the winning agent's score difference strictly increases the
+likelihood, whose supremum is reached only at an infinite difference. % ledger: 3, 5
+\end{proof}
+
+P states a finite score-error guarantee with probability at least \(1-n^{-2}=3/4\) under connectedness. The
+example permits a finite estimate on at most half the samples, so connectedness by itself cannot support that
+assertion for its unregularised fit. This is an objection to that stated estimator premise, not to P's
+reported experiments; it does not assess a constrained or regularised estimator. % ledger: 3, 5, 12, 19
+
+A distinct one-step diagnostic also limits what pairwise accuracy can imply. If agent 2 is inert, agent 1
+chooses \(a\sim\operatorname{Bernoulli}(1/2)\), \(G=a\), and the logit score is \(z=a-1/2\), then the
+baseline estimator \(g_b=z(G-b)\) has mean \(1/4\) and variance \((b-1/2)^2/4\). The neutral \(b=1/2\) has
+zero variance; a rank-correct softmax of Shapley scores \((1/2,0)\) gives \(b>1/2\) and positive variance.
+This example tests a proposed downstream error measure, not MAPPO performance. % ledger: 7, 11, 12
+
+\section{Prior work and interpretation}
+
+The central cancellation is published potential-shaping theory, rather than a new invariance theorem. P
+itself cites dynamic shaping work; Gupta and colleagues show that potential shaping can leave expected
+policy-gradient updates unchanged while increasing their variance~\cite{gupta2023}. Müller and Kudenko
+already obtain a shaping potential from vision-language pairwise preferences and study label accuracy and
+learning speed in single-agent environments~\cite{muller2026}. Thus using visual preferences for potential
+shaping, and warning that ranking quality alone does not establish gradient quality, are existing steps.
+% ledger: 6, 9, 11, 12, 19; related-work verification: arXiv:2606.27180
+
+What this note contributes for the Q--P pair is the explicit three-way accounting fork: complete per-agent
+rewards telescope, full-population pooling erases P's softmax ranking, and active-only credit can expose
+entrant scores while leaving a reentry term. The fork is algebraic and conditional. It does not establish
+novelty over all reward-routing implementations, nor does it identify P's implementation.
+% ledger: 10, 14, 15, 16, 17, 19
+
+P's stated all-ordered-pairs protocol calls the comparator \(q_t=|I^t|(|I^t|-1)\) times at a queried step. P
+reports 50-million-step training times of 16 hours for MAPPO and 30 hours for MARS-RA in its setting. These
+observations motivate measuring held-out, unshaped success or return under fixed environment-step and
+wall-clock budgets, with comparison count and latency reported separately. They do not yield a cost-adjusted
+performance bound. % ledger: 8, 9, 12, 19
+
+\newpage
+\section{Limitations and open questions}
+
+P's displayed method leaves the inactive-agent reward mask, cross-coalition embedding, pooling rule, and
+critic targets unresolved, so the conditional identities cannot diagnose its realised updates. Repeat
+comparator calls may be correlated, and the toy variance calculation is a frozen-policy diagnostic. We have
+no controlled finite-training experiment, no measured comparison-to-return sensitivity, and no theorem of
+improved learned-policy return. % ledger: 10, 11, 12, 15, 16, 19
+
+A direct audit would trace a coalition entry or reentry through P's reward tensor, inactive-agent mask, and
+critic target. Matched-critic, neutral-potential, and scale-matched random-potential controls could then
+compare held-out unshaped outcomes at fixed step and time budgets while counting calls. Whether a ranking
+effect survives, and whether it pays for those calls, remains open. % ledger: 9, 12, 17, 19, 20
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

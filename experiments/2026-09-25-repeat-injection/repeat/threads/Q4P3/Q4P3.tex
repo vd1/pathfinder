@@ -1,0 +1,53 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Peer Agreement, Defect Evidence, and Adversarial Code Review}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q studies mechanisms for agents with unknown preferences and capabilities, including peer scoring and oversight by a biased monitor. P measures a reviewer--critic code-review protocol and finds that its agents can agree while retaining speculative findings or dropping a real concern. \ledger{3, 4, 9}
+
+\section*{The connexion pursued}
+
+The question was whether Q's incentive analysis explains P's false consensus and suggests a testable improvement. The resulting proposal separates two tasks: eliciting an agent's private review judgment and establishing whether that judgment identifies a real defect. This is a research hypothesis, not an application of Q's theorems to P's agents. \ledger{5, 10, 16}
+
+\section*{What was found}
+
+Q's peer-discipline result uses distinct conditional beliefs about co-player types. For two supported types \(t\) and \(\hat t\), its quadratic peer score gives truthful reporting an expected advantage of
+\[
+\Lambda\left\lVert\beta[t]-\beta[\hat t]\right\rVert_2^2.
+\]
+If the minimum squared separation is \(\delta>0\) and other gains from a false report are bounded by \(B\), a score weight satisfying \(\Lambda\delta\geq B\) blocks that deviation. Q also requires a known belief map, enforceable rewards, and off-target penalties; its result is support-wise, partial implementation. P measures none of those premises. \ledger{3, 5, 11, 12}
+
+Peer separation does not establish defect information. Let a bug state \(Y\) be independent of a shared nuisance bit \(Z\), and give both reviewers type \(Z\). Their conditional peer beliefs are maximally separated, with \(\delta=2\), but their reports reveal nothing about \(Y\). Conversely, if one reviewer's type equals \(Y\) while the peer's type is an independent fair bit, that reviewer knows \(Y\) although its conditional peer beliefs have \(\delta=0\). These are counterexamples within Q's type-belief abstraction, not observations about P. \ledger{14, 18, 20}
+
+Q's weak-monitor example provides a second, limited analogy: an instrument optimal for the monitor can harm the human when the monitor is biased. P's case in which a critic abandons a manually verified concern shows why agreement alone is an unsafe stopping signal. P reports review F1 of \(0.457\) for its initial protocol and \(0.533\) after adding text constraints on disagreement. The latter change bundles verdict labels, citation requests, and rules for preserving findings, so the comparison does not identify which component helped. \ledger{4, 7, 9}
+
+A simple flag-filtering model makes an evidence gate's tradeoff explicit. Let \(\pi\) be defect prevalence, \(t\) and \(f\) the baseline true- and false-positive rates, and \(s\) and \(z\) the fractions of true and false flags retained by the gate. Direct substitution into the F1 formula shows that the gate improves F1 exactly when
+\[
+(1-\pi)f(s-z)>\pi(1-s).
+\]
+A citation requirement that retains true and false flags at the same rate cannot satisfy this condition. The calculation concerns filtering existing flags; P's iterative protocol can also create new ones. \ledger{6, 9}
+
+\section*{Objections and limits}
+
+Q assumes preferences, reports, and rewards that P has not measured. P's citations are requested in prompts, not verified as certificates in Q's sense. P's \(0.533\) result is from a review-only benchmark; its SWE-bench Verified repair result used the earlier protocol. Matched-comment F1 can also miss valid findings that differ from human comments. These objections remain unresolved by the available experiments. \ledger{5, 7, 9, 16}
+
+The material is thin on the central causal question. Neither paper measures independent pre-dialogue reviewer judgments, the transition from dissent to agreement, or whether cited code semantically supports a claimed bug. P's critic sees the reviewer's judgment before responding. \ledger{12, 18, 20}
+
+\section*{Outside sources and what remains open}
+
+The ledger records prior work on LLM peer-score training at \url{https://arxiv.org/abs/2601.20299}, limited ground-truth spot checks at \url{https://ojs.aaai.org/index.php/AAAI/article/view/11336} and \url{https://arxiv.org/abs/1606.07042}, and executable code-review verification at \url{https://arxiv.org/abs/2603.00539}. These sources narrow any novelty claim; the present account relies on the ledger's prior-work check rather than a new examination of them. \ledger{15}
+
+It remains open whether cheap semantic checks cover enough review findings, whether preserving dissent improves final decisions, and whether any review-quality gain carries over to successful repository repair. \ledger{16}
+
+\section*{Smallest settling step}
+
+On held-out pull requests, elicit reviewer and critic bug judgments independently before dialogue. Randomize whether the protocol preserves an initial dissent and obtains an independent check of its cited code. Blindly adjudicate defects and citation support, then compare transitions to false agreement, precision, recall, F1, and audit cost. This directly tests the proposed failure and intervention; peer scoring can be studied separately once its behavioral premises are measured. \ledger{10, 16, 20}
+
+\end{document}
+```

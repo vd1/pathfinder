@@ -1,0 +1,136 @@
+{
+  "observation_time": "2026-09-28T12:52:44.189399+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "status": "continue",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-015/observed.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-016/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-016/processes.json",
+  "facts": [
+    "Root PID 49475 matches supplied Python process and recorded call owner; children 73246 and 73247 match repeat/Q1P1 peer emmy and ada. Evidence is point-in-time and does not fully exclude PID reuse or reparented independent processes.",
+    "Root and repeat heartbeats fresh; both peer calls within nominal deadlines; recursive has no active calls.",
+    "Q1P2 paper advanced from writing to ACCEPTED with successful build and completed reviewer receipt.",
+    "All previously completed research records remain unchanged.",
+    "Q1P1 research, editing and any DRAFT paper remain unfinished. No stop, censored arms, failed calls or livelock evidence observed.",
+    "Reference checks persist with successful builds; no intervention warranted.",
+    "No HERDR_PANE_ID was supplied; no pane rename performed."
+  ],
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-28T11:44:49Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 772.0,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T11:45:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 62.7,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T11:46:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 59.9,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T11:47:27Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 35.2,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T11:50:58Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 211.4,
+        "exit_status": 0
+      }
+    ],
+    "recursive": [
+      {
+        "at": "2026-09-28T12:41:17Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 85.6,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:41:53Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 36.2,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:45:14Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 200.5,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:50:10Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 293.1,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:51:50Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 97.4,
+        "exit_status": 0
+      }
+    ]
+  },
+  "action": "Observation only; no restart or repair.",
+  "follow_up": "Check Q1P1 progress and unresolved reference checks at next parent-timer audit."
+}

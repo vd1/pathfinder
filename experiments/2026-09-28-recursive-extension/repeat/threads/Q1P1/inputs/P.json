@@ -1,0 +1,13 @@
+{
+ "id": "2609.04460",
+ "title": "Distributed risk-averse optimization via CVaR",
+ "abstract": "Distributed systems often operate under uncertainty, where minimizing expected loss may overlook rare but severe events. This paper studies a distributed risk-averse convex optimization problem in which agents cooperatively minimize the average of local conditional value-at-risk (CVaR) objectives over a time-varying network. Each agent has access only to noisy evaluations of its local loss function, rather than to its CVaR objective or gradient. We therefore develop a zeroth-order algorithm that uses sampled losses to construct empirical CVaR estimates and their gradient estimates. At each iteration, agents combine neighboring decisions and perform a local update. Under convexity and Lipschitz continuity assumptions, we prove that the agents reach exact asymptotic consensus. We also establish a finite-time expected suboptimality bound for the weighted ergodic iterate. With diminishing step sizes and fixed sample sizes, the local last iterates converge almost surely to a common optimum, and their limiting expected CVaR gap is bounded in terms of the smoothing and finite-sample errors. This distributed bound matches the parameter dependence of the centralized benchmark provided in this paper. Finally, simulations on a distributed sensor network estimation problem illustrate the efficacy of the method.",
+ "authors": [
+  "Siyi Wang",
+  "Kun Huang",
+  "Lei Xu",
+  "Karl H. Johansson"
+ ],
+ "date": "2026-09-03",
+ "text": "sources/2609.04460.tex"
+}

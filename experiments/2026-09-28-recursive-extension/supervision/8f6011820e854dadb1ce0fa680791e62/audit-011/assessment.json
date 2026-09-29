@@ -1,0 +1,115 @@
+{
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "observation_time": "2026-09-28T12:27:36.071924+00:00",
+  "status": "continue",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-010/observed.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-011/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-011/processes.json",
+  "facts": [
+    "Q4P1 advanced from author writing to ACCEPTED paper; reviewer completed at 12:25:02Z and build_ok true.",
+    "Q1P2 admitted at 12:25:05Z with ada and emmy peer calls, both within 1230-second deadlines.",
+    "Repeat has no active calls; Q4P6 research PAUSE with editing done; Q1P1 pending.",
+    "Supplied process evidence links runner 49475 to supervising PID 49472 and call children 67979/67980 with host descendants 68161/68165. Evidence is point-in-time and cannot exclude unrecorded reparented groups.",
+    "Fresh root and recursive heartbeats; no stop markers, censored arms, call failures or runner failures in snapshot.",
+    "Known reference checks persist despite successful builds; no operational blockage demonstrated.",
+    "No restart, repair, process action or checkout modification. HERDR_PANE_ID unavailable; pane rename not attempted."
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-28T11:44:49Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:45:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:46:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:47:27Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:50:58Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "recursive": [
+      {
+        "at": "2026-09-28T12:10:14Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:10:52Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:14:55Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:23:14Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:25:02Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "next_audit": "Check Q1P2 progress and remaining Q1P1 workload; retain open reference-check incidents."
+}

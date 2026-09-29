@@ -1,0 +1,30 @@
+{
+  "observed_at": "2026-09-25T14:43:29.662291+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "comparison_baseline": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-001/before.json",
+  "prior_audit_available": false,
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-001/aggregate-observed.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-001/health-observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-001/processes.json",
+  "facts": [
+    "28 scheduled threads, 14 per arm; first pair repeat/Q4P10 active in round 1 peer stage.",
+    "Runner PID 89044 matches session runner and supplied Python process tree; Codex child PIDs 89045 and 89046 match both active records. Point-in-time process evidence has stated PID-reuse limits.",
+    "Heartbeat advanced since supplied baseline; both original peer attempts remain within their 1230-second deadlines, with no repeated attempts.",
+    "Research note and ledger writes establish stage activity beyond heartbeat; no completed investigation or call yet.",
+    "No root or child failures, receipts, or stop markers present.",
+    "progress.json and outcomes.json absent; launch.py writes progress after completed pairs and outcomes on exit.",
+    "Reinjection is scheduled after first repeat pair; its missing runner instrumentation is explained by serial admission in launch.py, not used as proof of health.",
+    "Research, editing and applicable DRAFT paper pipelines remain unfinished."
+  ],
+  "stage_evidence": {
+    "ledger": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/ledger.jsonl",
+    "ledger_records": 8,
+    "ledger_mtime": 1790347377.0097096,
+    "research_note": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/emmy/research-note.md"
+  },
+  "action": "No recovery or process intervention warranted.",
+  "next_audit": "Compare calls, completed receipts, ledger activity and deadlines; inspect both child arms and full pipeline outcomes.",
+  "auxiliary_limitation": "Herdr pane rename denied by sandbox; pane label change not verified."
+}

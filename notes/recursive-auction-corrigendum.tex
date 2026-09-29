@@ -1,0 +1,61 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{XCharter,amsmath,amssymb}
+\usepackage[margin=25mm]{geometry}
+\usepackage{hyperref}
+\title{A waiting-policy clarification for the recursive auction example}
+\author{Pathfinder experiment record}
+\date{28 September 2026}
+\begin{document}
+\maketitle
+This corrigendum concerns the September 25 repeat--reinjection pilot,
+reinjection thread Q3P5, ledger entry 19 and its supporting matched-state
+construction. The archived output is unchanged. This clarification is not
+an independently reviewed paper or an input to the next experiment.
+
+\paragraph{The gap.}
+After an initial bid of 2, the buyer of value 3 might cross the standing
+ask of 2.50 on a later invitation. If it does so before the seller of
+cost 1 arrives, the event that this seller is invited within six draws
+no longer guarantees a trade with surplus 2. Merely requiring agents to
+avoid losses does not establish the written lower bound.
+
+\paragraph{An explicit sufficient continuation.}
+Retain the stated eight active traders and their values, the two hidden
+cost assignments, and the six independent uniform invitations among
+eligible traders. Fix other traders' behaviour: they hold their quotes,
+except that seller $S_2$ crosses a strictly profitable standing bid when
+invited. Traders who have transacted exit the round.
+The acting buyer is allowed to choose its continuation.
+In state A, an informed comparator posts 2 and leaves it standing for all
+six draws. Until $S_2$ is invited there is no trade; all eight traders
+remain eligible. Consequently its expected added welfare is exactly
+$2r$, where $r=1-(7/8)^6$.
+
+Immediate crossing yields 0.50 in either state and at most another 0.25
+in state A, even if later profitable trades are permitted. In state B,
+after a noncrossing first action no seller can profitably cross a bid
+below 2.50. A profitable trade requires the buyer to be invited again;
+its surplus is at most 0.50. Thus that branch has expected welfare at
+most $0.50r$, while immediate crossing yields 0.50.
+
+Under an equal prior, let $p$ be the probability that an observation-only
+policy crosses immediately. Its state-informed regret is bounded below by
+\[
+\frac12\bigl[p(2r-0.75)+(1-p)0.50(1-r)\bigr]
+\geq \frac12\min\{2r-0.75,\;0.50(1-r)\}
+=0.1121988296508789\ldots.
+\]
+The first term compares with a feasible informed waiting policy, not an
+assumed optimal policy; the second allows the uninformed buyer to adapt
+after later observations. This is sufficient for the regret inequality.
+It does not mean that every noncrossing continuation earns $2r$.
+
+\paragraph{Scope.}
+This repairs the existence construction by specifying behaviour, not by
+demonstrating that the stipulated behaviour is an equilibrium or typical
+of the source experiment. The hidden-state prior is illustrative. No
+frequency estimate, simulator-equivalence test, or causal attribution of
+observed market losses follows. The original conditional-on-a-final-actor
+repeat example remains a related, distinct construction.
+\end{document}

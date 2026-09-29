@@ -1,0 +1,133 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Tail Risk at the Last Quote: A Conditional Link Between Two Market Papers}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Struski and colleagues study language-model traders in a double auction, while the companion local
+manuscript studies fixed-batch estimates of conditional value at risk in a different allocation
+mechanism. We asked whether the sampling issue in the second paper could change a late trader's
+choice between taking a sure profit and waiting for a better one. The peers found a valid reversal
+for a constructed auction state: an expected one-sample risk estimate favours waiting, while true
+tail risk favours trading now. The continuation behaviour and the fill probability were assumed, and
+no such state was shown to occur in the reported runs. The thread therefore paused pending a
+matched-state check in the auction simulator.
+\end{abstract}
+
+\section{Introduction}
+
+\emph{Competitive Market Behavior of LLMs} puts language-model buyers and sellers in a
+double auction \cite{Q}. A buyer may accept the best current selling price, or post a better
+buying offer and hope someone accepts it later. Each round has at most 300 chances to act,
+so a better offer can expire without a trade. The agents are told to maximise profit. The
+paper reports that one model often makes tiny price improvements and leaves profitable
+trades unfinished; its markets reach lower efficiency than the best-performing model's markets.
+
+\emph{Fixed-Batch CVaR and Participation in a Quadratic Resource-Allocation Mechanism}
+studies a separate allocation game \cite{P}. It measures risk with conditional value at risk,
+or CVaR: the average loss in the worst chosen fraction of outcomes. Its main example shows
+that optimising a fixed-batch estimate, even in expectation over fresh batches, can lead to
+a choice that fares worse under true risk. Its equilibrium and welfare bounds require the
+assumptions of its quadratic mechanism. The two papers called ``Q'' and ``P'' inside that
+manuscript are other works, not the pair considered here.
+
+The connection pursued was a late auction choice. Accepting a standing offer secures a modest gain;
+improving one's own offer may yield a larger gain, but may never be filled. The peers asked whether
+fixed-batch CVaR could rank those actions differently from true CVaR. This was a counterfactual
+question: the auction paper gives its traders no CVaR objective or sampling oracle.
+
+\section{What was done}
+
+The peers first read the auction rules and the risk paper's distinction between true CVaR and the
+\emph{expected} CVaR of an empirical batch. Ada also asked whether the auction paper's means across
+ten runs could reveal the downside of market efficiency. They cannot: different sets of run outcomes
+can have the same mean and very different worst outcomes. This raised a separate question about
+market-wide risk.
+
+Emmy then reduced the trading question to two actions at the end of a round. Crossing the standing
+offer gives a sure profit. Posting a noncrossing offer gives a larger profit only if a later trader
+accepts it. Emmy derived the risk ranking for this choice and placed it in a state allowed by the
+auction rules. Ada checked the seller count, the resulting fill probability, and the surplus
+arithmetic against those rules. Their derivation and checks are in \url{../emmy/cross_wait.md} and
+\url{../ada/cvar_cda_note.tex}.
+
+The peers next tested the interpretation. They separated an expected batch objective from a decision
+based on one realised batch, and checked what information the selected trader can actually see. They
+also checked whether a local decision result says anything about total market surplus. These checks
+narrowed the result to a conditional example.
+
+\section{Results}
+
+Let crossing yield certain profit \(g>0\). Let a specified continuation after posting a better,
+noncrossing offer yield profit \(h>g\) with probability \(p\), and zero otherwise. Write \(f=1-p\)
+for the chance of no trade, and let \(\beta\) be the fraction of worst losses used in CVaR. A
+trader's risk-adjusted utility is the negative CVaR of its loss, where loss is negative profit.
+Directly averaging the worst \(\beta\) fraction gives the following utility for waiting:
+\[
+U_{\mathrm{wait}}=h\max\left\{0,1-\frac{f}{\beta}\right\}.
+\]
+Crossing has utility \(g\). With one fresh observation, the \emph{expected empirical} CVaR gives
+waiting utility \(ph\), just its expected profit. Thus, if \(f\geq\beta\) and \(ph>g\), the expected
+one-sample objective selects waiting while true CVaR selects crossing. This is an action-ranking
+result under the stated continuation, not a claim about how the observed language models choose.
+
+The constructed state makes the comparison concrete. At the penultimate iteration, suppose all 22
+traders remain untraded. A buyer values a unit at \(3.25\), the best ask is \(3.00\), and the buyer
+can instead improve the best bid to \(2.25\). Crossing gives \(g=1/4\); if a seller accepts the new
+bid next, the buyer earns \(h=1\). Seven sellers in the auction's value grid have costs at most
+\(2.25\). Stipulate that each of them crosses if selected next and that every other selection leaves
+this buyer without a trade. Uniform selection then gives \(p=7/22\) and \(f=15/22\). For a
+worst-half tail, \(\beta=1/2\), the checked rankings are
+\[
+U_{\mathrm{wait}}=0<\frac14,
+\qquad U_{\mathrm{one\ sample}}=\frac7{22}>\frac14,
+\qquad U_{\mathrm{two\ samples}}=\frac{49}{484}<\frac14.
+\]
+The two-sample value follows because, for this tail size, both observations must be successful for
+waiting to have positive empirical risk utility. These are expectations over fresh batches. A single
+realised one-sample estimate instead favours waiting after a sampled fill and crossing after a
+sampled failure. Emmy derived the batch calculation; Ada independently checked the auction count and
+inequalities in the peer files named above.
+
+If the standing ask belongs to a seller with cost \(1\), crossing creates surplus \(9/4\). Under the
+same stipulated continuation, waiting creates expected surplus \(49/88\), as Ada checked. This
+comparison concerns only that constructed state. Its waiting option has true-risk utility zero, the
+same as no trade, so the reversal is not the negative-participation result in the risk paper.
+
+\section{Objections and unresolved points}
+
+The fill probability assumes a policy for every next trader and uses private seller costs. The
+auction buyer sees only its own value, the book and histories. The peers therefore used \(7/22\) as
+an analyst's counterfactual, not a trader's belief. A practical test needs an oracle or a belief
+from public history. No supplied evidence shows that this state occurred, or that the auction agents
+optimised CVaR; here the one-sample choice also maximises expected profit.
+
+Two market objections remain. A buyer who crosses can displace a higher-value buyer, so more
+crossing need not raise surplus. Separately, the sum of individual CVaRs need not equal CVaR of
+aggregate loss. The auction reports ten-run means, which do not reveal downside efficiency: ten
+values of \(0.91\) and nine values of \(1\) plus one of \(0.1\) share a mean but have different
+worst runs. These invented sets do not reproduce the auction's data.
+
+The quadratic taxes, equilibrium assumptions and value-error bounds of the risk paper do not carry
+over to this discrete auction decision. The auction's ten evaluation runs are also different from
+the number of observations in a trader's CVaR batch. The ledger's outside sources already cover
+risk-based continuous double-auction bidding \cite{Vytelingum2004}, CVaR bidding in a
+double-auctioned power market \cite{Panda2019}, and sampling bias in CVaR \cite{Tamar2015}. The
+recorded searches do not establish priority for the proposed combination.
+
+\section{Why the thread stopped}
+
+The verifier accepted the ranking reversal but paused the thread because it rests on assumed
+continuation behaviour and a fill probability unavailable to the traders. No evidence shows that
+relevant states occur or change market outcomes. The smallest restart is to count reachable late
+states in the auction simulator and estimate action-specific continuation distributions at matched
+states with fixed other-trader policies. Only then could tests of public-history beliefs and market
+outcomes support a claim about these agents.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

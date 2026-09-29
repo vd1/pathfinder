@@ -1,0 +1,145 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{A Wall-Gate Certificate and a Resource Mechanism: Where the Transfer Stopped}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies payments for a stochastic resource-allocation game, while P certifies decisions at one geometric gate in a
+room detector. The peers looked for a way to use P's finite-sample method to judge an allocation or equilibrium
+reached by Q's learning algorithm. They found a conflict between two of Q's stated design conditions, a separate
+mismatch in its learning payoff, and a conditional route to a welfare certificate. That route needs trusted
+calibration data which the papers do not provide, and its general form overlaps cited prior work. The thread paused
+because the supported corrections to Q did not yet amount to a useful new result about the pair.
+\end{abstract}
+
+\section{Introduction}
+
+Q asks how to share limited resources among agents whose average valuations and local constraints are private
+\cite{Q}. Each agent requests resources and proposes a price. The paper designs quadratic payments intended to make a
+Nash equilibrium both unique and socially optimal, while balancing the budget and leaving each agent willing to
+participate. It also gives a sample-based best-response algorithm and a mean-square convergence claim under stated
+assumptions. Its case study concerns electric-vehicle routes and charging.
+
+P asks a different question \cite{P}. A room detector uses estimated walls to decide whether a scan point is close
+enough to a wall for later door processing. P calibrates an error radius from exchangeable rooms with reference
+walls. On the event that the new room's wall error lies inside that radius, every decision outside an ambiguity band
+agrees with the decision based on reference walls. The coverage is marginal across rooms and concerns only this first
+gate. P has no episode-level wall pairs with which to measure the radius.
+
+The connection pursued was a common pattern: measure an uncertain quantity, then use a deterministic margin to
+protect a later decision. For Q, the hoped-for later decision concerned capacity feasibility or distance from an
+efficient equilibrium at a finite iteration. The question was whether Q supplied an observable error quantity and a
+sound implication from that quantity to the desired economic claim.
+
+\section{What was done}
+
+The peers first compared P's whole-room wall-error event with Q's resource and strategy variables. They found no link
+from wall geometry to Q's fixed capacity constraints. They then tried to bound finite-iteration equilibrium error
+through the strong-monotonicity condition used in Q's uniqueness argument. A check of Q's payment conditions defeated
+that route: two conditions that the paper asks to hold together conflict in a common-price direction. The peers
+independently checked this general obstruction in their derivations.
+
+They next examined Q's explicit payment against the reduced payment used in its learning section. This produced a
+second, independent discrepancy. They also compared the sampling schedule in Q's convergence theorem with the
+schedule printed for its numerical runs.
+
+Finally, they set aside the equilibrium claim and considered the planner's objective directly. A feasible allocation
+has a standard primal-dual upper bound on its welfare loss. In principle, P's order-statistic method could calibrate
+the error in an estimated bound across whole episodes. The peers checked the algebra, then checked whether the papers
+supplied the labels needed to use it and whether the general idea was already present in the cited literature.
+
+\section{Results}
+
+\subsection{The stated payment conditions conflict}
+
+Q's condition P1(ii) requires a matrix \(\Psi\), built from the payment coefficients, to satisfy
+\(\Psi+\Psi^{\top}\preceq-\upsilon I\) for some \(\upsilon>0\). Here \(I\) is the identity matrix. Its condition
+P2(i) requires \(\sum_m A_{nm}^{n}=0\) for each agent \(n\), where \(A_{nm}^{n}\) is a price-to-price coefficient in
+agent \(n\)'s payment and the sum runs over agents \(m\).
+
+Choose a nonzero price vector \(q\). Let \(v\) change no allocations and give every agent the same price change
+\(q\). Q's price-to-price blocks in \(\Psi\) are \(-A_{nm}^{n}\), so P2(i) gives
+\[
+v^{\top}(\Psi+\Psi^{\top})v
+=-2\sum_n q^{\top}\Bigl(\sum_m A_{nm}^{n}\Bigr)q=0.
+\]
+P1(ii) instead makes this value at most \(-\upsilon\lVert v\rVert^2<0\). Thus no payment coefficients satisfy both
+stated conditions in the full price space. The argument does not depend on the shape of the valuations. It
+invalidates this sufficient-condition route to Q's joint claims, including the claimed explicit solution; it does not
+prove that every game built from that payment lacks a unique equilibrium. Both peers recorded the general check in
+their derivations \cite{Q}.
+
+\subsection{The learning payoff does not match the explicit payment}
+
+Q says that its learning section removes terms independent of an agent's own strategy from the explicit payment. The
+resulting displayed formula instead reverses the sign of the agent's own quadratic price term. A direct check uses
+two agents and one resource: set both requested allocations and the capacity to zero, set the first price to one and
+the second to zero, and set Q's payment scale to one. Q's explicit payment then gives the first agent \(1/2\), while
+its reduced payment gives \(-1/2\). Because the difference depends on the first agent's price, removing terms
+involving only opponents cannot explain it. The printed best-response algorithm therefore optimises a different
+payoff from the explicit payment as printed. This check was made by both peers \cite{Q}.
+
+\subsection{A conditional welfare route}
+
+The narrower positive result concerns the planner, not strategic behaviour. Let \(x_n\) be agent \(n\)'s allocation
+in its local feasible set \(\mathcal X_n\); let \(x\) collect all allocations. Write \(V_n(x_n)\) for its average
+valuation, \(W(x)=\sum_n V_n(x_n)\) for total welfare, and \(x^o\) for a welfare-maximising allocation. Let \(c\) be
+the resource-capacity vector. If \(x\) obeys \(\sum_n x_n\leq c\), then for any nonnegative price vector \(\lambda\),
+define
+\[
+G(x,\lambda)=\lambda^{\top}c+
+\sum_n\sup_{z_n\in\mathcal X_n}
+\{V_n(z_n)-\lambda^{\top}z_n\}-W(x).
+\]
+Here \(z_n\) ranges over agent \(n\)'s alternative local allocations. Weak duality bounds the welfare loss by
+\(G(x,\lambda)\). Q assumes the valuations are \(\alpha\)-strongly concave for \(\alpha>0\), which also bounds
+allocation error:
+\[
+0\leq W(x^o)-W(x)\leq G(x,\lambda),
+\qquad
+\lVert x-x^o\rVert^2\leq \frac{2G(x,\lambda)}{\alpha}.
+\]
+The second bound follows because strong concavity makes the welfare loss at least \(\alpha\lVert x-x^o\rVert^2/2\) at
+a feasible \(x\). These inequalities need a feasible allocation, but do not use Q's disputed payment conditions.
+
+Suppose a frozen procedure estimated the gap as \(\widehat G\), and trusted exact gaps were available on exchangeable
+calibration episodes. P's rank-based rule could then calibrate the nonnegative shortfall \((G-\widehat G)_+\), where
+\((a)_+=\max\{a,0\}\). At a fixed feasible new iterate, the resulting upper radius \(\varepsilon\) would replace
+\(G\) in the bounds by \(\widehat G+\varepsilon\) with marginal coverage. One could abstain when feasibility fails or
+the bound is too wide. The certificate would concern planner welfare and allocation distance, not truthful reports,
+exact budget balance, or a conditional guarantee among accepted runs. Neither paper supplies the trusted gap labels
+or a test showing a useful radius.
+
+\section{What did not hold}
+
+The initial equilibrium-distance bridge needed Q's strong-monotonicity condition, which the common-price calculation
+ruled out for the stated design. A different equilibrium error bound would need a new argument. Q's non-expansiveness
+assumption for its best-response map was also left unverified for the numerical runs. The peers found a local
+two-agent example where it fails, without establishing failure for Q's particular case study.
+
+There is a further gap between Q's theorem and its illustration. The theorem calls for geometrically growing sample
+sizes. The numerical rule uses \(Q_i=\lceil\widetilde\eta^{i+1}\rceil\) with \(0<\widetilde\eta<1\), where \(i\) is
+the iteration number and \(Q_i\) is its sample count. This gives \(Q_i=1\) at every iteration, so those runs do not
+instantiate the theorem's vanishing-error schedule \cite{Q}.
+
+The conditional dual-gap route survived the algebraic objections, but its required oracle data and finite-iterate
+feasibility are absent. It also does not establish a distinct contribution by itself: Li and colleagues discuss
+conformal primal-dual optimality bounds \cite{Li2025}, while Fabiani and Franci discuss finite-data equilibrium
+certificates \cite{FabianiFranci2026}. These comparisons limit a novelty claim; they do not refute the conditional
+inequalities.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the firm findings correct Q rather than establish a new result about Q and P
+together. The proposed transfer from P remains conditional, follows a known general pattern, and cannot be evaluated
+from the supplied material. The smallest restart step is to correct Q's conflicting conditions and payment reduction,
+then verify one explicit mechanism under the revised claims. A joint finite-iteration certificate would also require
+trusted episode-level gap data and evidence that its bound is useful.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

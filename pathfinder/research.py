@@ -1,6 +1,6 @@
 """One research thread: peers on a shared ledger, consolidate, verify, up to `rounds` rounds."""
 from __future__ import annotations
-import hashlib, json, re, shutil, sys, threading, time
+import hashlib, json, os, re, shutil, sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -8,6 +8,7 @@ from dataclasses import asdict
 from . import corpus, transport
 from .ledger import Ledger
 from .scan import prompts_dir, parse_json
+from .admission import Refused
 
 PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json
 TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"}
@@ -21,6 +22,19 @@ def _now():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
+def _atomic_write(path: Path, data: bytes):
+    """Publish a complete file; an interrupted replacement preserves the previous version."""
+    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(name, path)
+    finally:
+        Path(name).unlink(missing_ok=True)
+
+
 def status(campaign, pair_id) -> dict:
     p = campaign.thread_dir(pair_id) / "status.json"
     return json.loads(p.read_text()) if p.exists() else {"pair_id": pair_id, "round": 0, "stage": "peers", "status": "new"}
@@ -28,7 +42,7 @@ def status(campaign, pair_id) -> dict:
 
 def _set(campaign, pair_id, **kw):
     s = status(campaign, pair_id); s.update(kw, updated=_now())
-    (campaign.thread_dir(pair_id) / "status.json").write_text(json.dumps(s, indent=1))
+    _atomic_write(campaign.thread_dir(pair_id) / "status.json", json.dumps(s, indent=1).encode())
     return s
 
 
@@ -126,56 +140,6 @@ def _external_citations(d):
         raise EvidenceUnavailable(f"Invalid external citation declaration: {error}") from error
 
 
-def _assessment_evidence(d, peers, references=None):
-    """@planks("the request contains the complete calculation evidence with its source paths")
-    @planks("the request contains the complete prior account and peer artefact contents")
-    @planks("the request contains the complete current account and peer artefact contents")
-    @planks("the assessment is blocked before a provider call with the unreadable evidence identified")
-    @planks("the assessment is blocked before reading outside evidence or calling a provider")
-    @planks("the assessment is blocked before reading the aliased evidence or calling a provider")
-    @planks("the workflow prepares tool-less consolidation and verification requests")
-    @planks("the scholarly figure locator is not read as a local file")
-    @planks("Vera receives the ledger and its external citation declaration")
-    @planks("research blocks before provider dispatch and identifies \"{path}\"")
-    @planks("research blocks before reading the aliased citation file")
-    @planks("the external citation is resolved only in its originating branch namespace")
-    """
-    paths = {p for actor in peers for p in (d / actor).rglob("*") if p.is_file()}
-    declaration, citations = _external_citations(d)
-    # Present declared files retain ordinary read and alias checks.
-    for _, _, name in citations:
-        relative = Path(name)
-        path = d / relative
-        if path.exists() or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
-            paths.add(path)
-    ledger = d / "ledger.jsonl"
-    if references is None:
-        references = ledger.read_text() if ledger.exists() else ""
-    # Exempt only the declared entry; another entry may require the same path locally.
-    for line in references.splitlines():
-        if not line.strip():
-            continue
-        row = json.loads(line)
-        for name in re.findall(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+", row["text"]):
-            if re.match(r"10\.\d{4,9}/", name) or re.search(r"/Fig\.\d+$", name):
-                continue
-            if ("ledger.jsonl", row["seq"], name) not in citations:
-                paths.add(d / name)
-    parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
-    for path in sorted(paths):
-        relative = path.relative_to(d)
-        if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
-            raise EvidenceUnavailable(f"Aliased evidence path: {relative}")
-        if not path.resolve().is_relative_to(d.resolve()):
-            raise EvidenceUnavailable(f"Evidence outside investigation: {path.relative_to(d)}")
-        try:
-            content = path.read_text()
-        except (OSError, UnicodeError) as error:
-            raise EvidenceUnavailable(f"Unreadable evidence {path.relative_to(d)}: {error}") from error
-        parts.append(f"## {path.relative_to(d)}\n\n{content}")
-    return "\n\n".join(parts)
-
-
 def _stage_attempts(campaign):
     """@planks("Given a campaign sets \"stage_attempts\" to 1")
     @planks("Given a campaign omits \"stage_attempts\"")
@@ -192,6 +156,88 @@ def judge_head(d, inp, note_name: str) -> str:
     return thread_head(d, inp) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
 
 
+EVIDENCE_PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
+EVIDENCE_MAX_BYTES = 300_000
+
+
+def _evidence_references(text: str) -> list[str]:
+    """Relative file paths cited in ledger text; DOIs and scholarly figure locators are citations, not files."""
+    return [name for name in EVIDENCE_PATH.findall(text)
+            if not re.match(r"10\.\d{4,9}/", name) and not re.search(r"/Fig\.\d+$", name)]
+
+
+def _assessment_evidence(campaign, d, references=None) -> str:
+    """@planks("the request contains the complete calculation evidence with its source paths")
+    @planks("the request contains the complete prior account and peer artefact contents")
+    @planks("the request contains the complete current account and peer artefact contents")
+    @planks("the assessment is blocked before a provider call with the unreadable evidence identified")
+    @planks("the assessment is blocked before reading outside evidence or calling a provider")
+    @planks("the assessment is blocked before reading the aliased evidence or calling a provider")
+    @planks("the workflow prepares tool-less consolidation and verification requests")
+    @planks("the scholarly figure locator is not read as a local file")
+    @planks("Vera receives the ledger and its external citation declaration")
+    @planks("research blocks before provider dispatch and identifies \"{path}\"")
+    @planks("research blocks before reading the aliased citation file")
+    @planks("the external citation is resolved only in its originating branch namespace")
+    
+
+    Everything the tool-less consolidator and verifier are told is complete: every file in each peer's
+    directory, and every file the ledger (or `references`) cites by relative path, inlined under its path.
+    A path declared external in external-references.json for one ledger entry is not read for that entry.
+
+    A cited path that leaves the thread, goes through a symlink or uses '..' always blocks the thread
+    (EvidenceUnavailable): inlining it could read another investigation. With "strict_evidence": true in
+    campaign.json a cited file that is missing, unreadable, not UTF-8 text or larger than
+    "evidence_max_bytes" also blocks; otherwise readable binary or oversized files are listed with
+    size and digest, while missing or unreadable files are explicitly named as unavailable."""
+    strict = bool(campaign.raw.get("strict_evidence"))
+    limit = int(campaign.raw.get("evidence_max_bytes", EVIDENCE_MAX_BYTES))
+    paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
+    declaration, citations = _external_citations(d)
+    for _, _, name in citations:                    # present declared files keep the ordinary checks
+        relative = Path(name)
+        if (d / relative).exists() or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
+            paths.add(d / relative)
+    if references is None:
+        ledger = d / "ledger.jsonl"
+        references = ledger.read_text(errors="replace") if ledger.exists() else ""
+    for line in references.splitlines():            # exempt only the declared entry; another may need the file
+        if line.strip():
+            row = json.loads(line)
+            paths.update(d / name for name in _evidence_references(row["text"])
+                         if ("ledger.jsonl", row["seq"], name) not in citations)
+    parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
+    for path in sorted(paths):
+        relative = path.relative_to(d)
+        if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
+            raise EvidenceUnavailable(f"aliased evidence path: {relative}")
+        if path.exists() and not path.resolve().is_relative_to(d.resolve()):
+            raise EvidenceUnavailable(f"evidence outside the investigation: {relative}")
+        if not path.is_file():
+            if strict:
+                raise EvidenceUnavailable(f"missing evidence: {relative}")
+            parts.append(f"## {relative}\n\n(cited in the ledger; no such file)")
+            continue
+        try:
+            data = path.read_bytes()
+        except OSError as error:
+            if strict:
+                raise EvidenceUnavailable(f"unreadable evidence: {relative}: {error}") from error
+            parts.append(f"## {relative}\n\n(not inlined: unreadable file: {error})")
+            continue
+        try:
+            if len(data) > limit:
+                raise UnicodeError(f"{len(data)} bytes, over the {limit}-byte inline limit")
+            text = data.decode("utf-8")
+        except UnicodeError as error:
+            if strict:
+                raise EvidenceUnavailable(f"evidence not inlinable as text: {relative}: {error}") from error
+            parts.append(f"## {relative}\n\n(not inlined: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})")
+            continue
+        parts.append(f"## {relative}\n\n{text}")
+    return "\n\n".join(parts)
+
+
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
     """@planks("When Pathfinder requests consolidation from the direct provider")
     @planks("When Pathfinder builds its consolidation model request")
@@ -205,10 +251,23 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
     material = (f"{' and '.join(above)} are above. " if above else "") + (f"Read {', '.join(read)} and the peers' directories beside you."
                                                                           if read else "Inline evidence is complete and no tools are available.")
     head = thread_head(d, inp, in_papers, in_ledger)
-    if (d / note_name).exists():
-        head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text()
-    head += "\n\n" + _assessment_evidence(d, campaign.peers) + "\n\n## your task\n\n"
+    if (d / note_name).exists():                    # the account a repair or a next round must keep
+        head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+    evidence = _assessment_evidence(campaign, d)
+    head += ("\n\n" + evidence if evidence else "") + "\n\n## your task\n\n"
     return head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id, PRIOR=prior, MATERIAL=material) + "\n\nReturn the complete research account in the response.\n"
+
+
+def unfence(text: str) -> str:
+    """The LaTeX document inside a reply that wrapped it in a Markdown code block; other text unchanged."""
+    if text.lstrip().startswith("\\documentclass"):
+        return text
+    m = re.search(r"```[A-Za-z]*[ \t]*\n(.*?\\end\{document\})\s*\n```", text, re.S)
+    return m.group(1).strip() + "\n" if m and "\\documentclass" in m.group(1) else text
+
+
+def is_latex_document(text: str) -> bool:
+    return "\\documentclass" in text and "\\begin{document}" in text
 
 
 def _tex_escape(t: str) -> str:
@@ -256,11 +315,9 @@ def _inputs(d: Path) -> dict:
 
 
 def _prompt(campaign, name, **vars):
-    t = (prompts_dir(campaign) / f"{name}.md").read_text()
+    from . import resources
     vars.setdefault("DATE", time.strftime("%Y-%m-%d"))          # every document bears its date of production
-    for k, v in vars.items():
-        t = t.replace("{{" + k + "}}", str(v))
-    return t
+    return resources.prompt(campaign, name, **vars)
 
 
 def _check(stop):
@@ -320,7 +377,7 @@ def _peers(campaign, pair_id, stop):
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
             r = transport.execute(campaign, transport.ModelRequest(
-                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.model, tools=True,
+                identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.peer_model(actor), tools=True,
                 search=campaign.peer_search, cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id,
                 stage="peer", actor=actor,
             ))
@@ -357,7 +414,10 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     @planks("When its first consolidation response is empty and its next response contains an account")
     @planks("When every fresh repair response reports a provider failure")
 
-    Run a bounded number of stage attempts; accept only successful responses.
+    Run consolidate or verify for up to "stage_attempts" attempts (default 2). A reply that failed in
+    transport raises TransportFailed (the thread stops, resumable). A reply carrying an error is not an
+    answer: consolidation tries again, and a verifier reply with an error raises TransportFailed rather
+    than being read as a verdict. An empty consolidation reply is retried.
     """
     d = campaign.thread_dir(pair_id)
     for attempt in range(_stage_attempts(campaign)):
@@ -366,7 +426,9 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
             search=False, cwd=d, timeout=seconds, thread=pair_id, stage=stage,
             actor=campaign.peers[0] if stage == "consolidate" else "verifier",
         ))
-        if r["transport_failed"] or r.get("error"):
+        if r["transport_failed"]:
+            raise transport.TransportFailed(pair_id)
+        if r.get("error"):
             if stage == "consolidate":
                 continue
             raise transport.TransportFailed(pair_id)
@@ -400,7 +462,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("the research workflow starts")
     @planks("the previous account remains available as an immutable version")
     """
-    _stage_attempts(campaign)
+    _stage_attempts(campaign)                   # an invalid setting fails before any call
     if campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"):
         return _run_composable(campaign, pair_id, stop)
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances
@@ -432,33 +494,43 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 else:
                     prior = ""
                 write_meta(campaign, pair_id, d)                     # the note's title block: pair, papers, date, state
-                responses = d / "consolidation"
-                response = responses / f"round-{s['round']}-repair-{s.get('repairs', 0)}.json"
+                # every accepted consolidation reply is kept per round and repair, so a restart applies it
+                # without paying for it again; the returned text always becomes the account
+                response = d / "consolidation" / f"round-{s['round']}-repair-{s.get('repairs', 0)}.json"
                 if response.exists():
-                    r = json.loads(response.read_text())
+                    try:
+                        text = json.loads(response.read_text())["text"]
+                        if not isinstance(text, str) or not is_latex_document(text):
+                            raise ValueError("retained text is not a LaTeX document")
+                    except (OSError, ValueError, KeyError, TypeError) as error:
+                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: invalid retained response: {error}")
+                        return "BLOCKED"
                 else:
                     r = _stage_call(campaign, pair_id, "consolidate",
                                     _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
                                     False, A["consolidate_seconds"])
-                    if r.get("transport_failed") or r.get("error") or not r["text"].strip():
-                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r.get('error') or 'no note'}")
-                        return "BLOCKED"
-                    responses.mkdir(exist_ok=True)
-                    response.write_text(json.dumps(r))
-                if note.exists():
+                    text = unfence(r["text"] or "")
+                    if r.get("error") or not text.strip():   # never re-verify the older account as if repaired
+                        _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r.get('error') or 'no note'}"); return "BLOCKED"
+                    if not is_latex_document(text):                # e.g. a quota message returned as the reply
+                        (d / "consolidate-unreadable.txt").write_text(r["text"])     # keep the paid reply for inspection
+                        _set(campaign, pair_id, status="BLOCKED", reason="consolidate: reply is not a LaTeX document"); return "BLOCKED"
+                    response.parent.mkdir(exist_ok=True)
+                    _atomic_write(response, json.dumps({"text": text, "session": r.get("session"), "at": _now(),
+                                                       "run_id": getattr(campaign, "run_id", None)}).encode())
+                if note.exists():                                    # archive the account being replaced
                     previous = note.read_bytes()
-                    versions = d / "account-versions"
-                    versions.mkdir(exist_ok=True)
-                    version = versions / f"{hashlib.sha256(previous).hexdigest()}.tex"
+                    version = d / "account-versions" / f"{hashlib.sha256(previous).hexdigest()}.tex"
+                    version.parent.mkdir(exist_ok=True)
                     if not version.exists():
-                        with version.open("xb") as archive:
-                            archive.write(previous)
-                note.write_text(r["text"])
+                        _atomic_write(version, previous)
+                _atomic_write(note, text.encode())
                 _set(campaign, pair_id, stage="verify", repair=None)
             elif s["stage"] == "verify":
                 _check(stop)
                 # static material first, the instruction last: the head is shared with every other judge call
-                p = judge_head(d, inp, note.name) + "\n\n" + _assessment_evidence(d, campaign.peers) + "\n\n## your task\n\n"
+                evidence = _assessment_evidence(campaign, d)
+                p = judge_head(d, inp, note.name) + ("\n\n" + evidence if evidence else "") + "\n\n## your task\n\n"
                 p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
                 r = _stage_call(campaign, pair_id, "verify", p, False, A["verify_seconds"], done=lambda: True)
                 try:
@@ -482,8 +554,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
                     _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
     except EvidenceUnavailable as error:
-        _set(campaign, pair_id, status="BLOCKED", reason=str(error)); return "BLOCKED"
-    except Stopped:
+        _set(campaign, pair_id, status="BLOCKED", reason=f"evidence: {error}"); return "BLOCKED"
+    except (Stopped, Refused):
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.TransportFailed:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
@@ -507,7 +579,7 @@ def _bundle_evidence(campaign, d):
         except (OSError, UnicodeError) as error:
             raise EvidenceUnavailable(f"Unreadable evidence {name}/ledger.jsonl: {error}") from error
         parts.append(f"## {name}/ledger.jsonl\n\n{content}")
-        evidence = _assessment_evidence(root, campaign.peers)
+        evidence = _assessment_evidence(campaign, root)
         parts.append(evidence.replace("## ", f"## {name}/"))
     return "\n\n".join(parts)
 
@@ -528,7 +600,7 @@ def _review_material(campaign, pair_id, review_id=None):
             json.loads(line)["text"].startswith('{"review_id": ' + json.dumps(review_id) + ','))]
     ledger_text = "".join(lines)
     material = thread_head(d, _inputs(d), ledger=False) + "\n\n## ledger.jsonl\n\n" + ledger_text
-    material += "\n\n" + _assessment_evidence(d, campaign.peers, references=ledger_text)
+    material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text)
     material += "\n\n" + _bundle_evidence(campaign, d)
     if campaign.raw.get("research_scheme", "eva") == "eva":
         note = d / f"{pair_id}.tex"

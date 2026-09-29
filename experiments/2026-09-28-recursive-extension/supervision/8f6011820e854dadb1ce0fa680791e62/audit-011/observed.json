@@ -1,0 +1,317 @@
+{
+  "generated_at": 1790598456.071924,
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "runner": {
+    "pid": 49475,
+    "run_id": "ad6c24c6e1ef431baca4fde017595707",
+    "status": "running",
+    "started_at": 1790595117.573193,
+    "heartbeat_at": 1790598453.621349,
+    "last_progress": {
+      "arm": "recursive",
+      "pair": "Q4P1",
+      "at": 1790598305.304615
+    },
+    "censored_arms": [],
+    "coordination_id": "9c76acaadc1f4fdba205de92c9bb0c6e",
+    "entry": {
+      "arm": "recursive",
+      "pair": "Q1P2"
+    },
+    "stage": "pair",
+    "pid_alive": true,
+    "heartbeat_age_seconds": 2.5
+  },
+  "active_calls": [],
+  "last_completed_call": null,
+  "failure_count": 0,
+  "recent_failures": [],
+  "failure": null,
+  "stop": null,
+  "work": [],
+  "warnings": [],
+  "evidence": {
+    "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/receipts.jsonl",
+    "runner": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/runner.json",
+    "failures": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/failures.jsonl"
+  },
+  "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health.",
+  "extensions": {
+    "parent": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+    "runner": {
+      "pid": 49475,
+      "run_id": "ad6c24c6e1ef431baca4fde017595707",
+      "status": "running",
+      "started_at": 1790595117.573193,
+      "heartbeat_at": 1790598453.621349,
+      "last_progress": {
+        "arm": "recursive",
+        "pair": "Q4P1",
+        "at": 1790598305.304615
+      },
+      "censored_arms": [],
+      "coordination_id": "9c76acaadc1f4fdba205de92c9bb0c6e",
+      "entry": {
+        "arm": "recursive",
+        "pair": "Q1P2"
+      },
+      "stage": "pair"
+    },
+    "progress": {
+      "pid": 49475,
+      "run_id": "ad6c24c6e1ef431baca4fde017595707",
+      "status": "running",
+      "started_at": 1790595117.573193,
+      "heartbeat_at": 1790595117.573193,
+      "last_progress": {
+        "arm": "recursive",
+        "pair": "Q4P1",
+        "at": 1790598305.304615
+      },
+      "censored_arms": [],
+      "coordination_id": "9c76acaadc1f4fdba205de92c9bb0c6e",
+      "entry": {
+        "arm": "recursive",
+        "pair": "Q4P1"
+      },
+      "stage": "between-pairs"
+    },
+    "stop": null,
+    "arms": {
+      "repeat": {
+        "generated_at": 1790598456.076743,
+        "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat",
+        "runner": {
+          "run_id": "57376373baef4bb5a1671ed7e1777960",
+          "pid": 49475,
+          "status": "finished",
+          "started_at": 1790595117.597286,
+          "heartbeat_at": 1790596262.172771,
+          "last_progress": {
+            "pair": "Q4P6",
+            "result": "PAUSE",
+            "at": "2026-09-28T11:51:02Z"
+          },
+          "previous_failure": null,
+          "active_pairs": [],
+          "selection": [
+            "Q4P6"
+          ],
+          "finished_at": 1790596262.172771,
+          "pid_alive": true,
+          "heartbeat_age_seconds": 2193.9
+        },
+        "active_calls": [],
+        "last_completed_call": {
+          "at": "2026-09-28T11:50:58Z",
+          "thread": "Q4P6",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        },
+        "failure_count": 0,
+        "recent_failures": [],
+        "failure": null,
+        "stop": null,
+        "work": [
+          {
+            "pair": "Q4P6",
+            "research": {
+              "pair_id": "Q4P6",
+              "round": 1,
+              "stage": "done",
+              "status": "PAUSE",
+              "reason": "The shared-error counterexample is sound, but it establishes a known identification limit rather than a new result connecting Q\u2019s pre-signal reporting mechanism to P\u2019s post-observation comparisons. A paper section making a stronger claim needs a defined contribution target and independent audits or observation groups, supported by a new theorem or benchmark evidence that the peers do not have.",
+              "started": "2026-09-28T11:31:57Z",
+              "updated": "2026-09-28T11:47:27Z",
+              "repair": null
+            },
+            "editor": {
+              "status": "done",
+              "attempt": 1,
+              "updated": "2026-09-28T11:51:02Z",
+              "build_ok": true,
+              "checks": [
+                "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+              ]
+            },
+            "paper": {},
+            "checks": {
+              "editor": [
+                "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+              ],
+              "paper": []
+            },
+            "needs_edit": false
+          },
+          {
+            "pair": "Q1P1",
+            "research": {},
+            "editor": {},
+            "paper": {},
+            "checks": {
+              "editor": [],
+              "paper": []
+            },
+            "needs_edit": false
+          }
+        ],
+        "warnings": [
+          "Q4P6/editor: unresolved reference/build checks; inspect the stage record."
+        ],
+        "evidence": {
+          "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/receipts.jsonl",
+          "runner": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/runner.json",
+          "failures": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/failures.jsonl"
+        },
+        "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health."
+      },
+      "recursive": {
+        "generated_at": 1790598456.08104,
+        "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive",
+        "runner": {
+          "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+          "pid": 49475,
+          "status": "running",
+          "started_at": 1790598305.32289,
+          "heartbeat_at": 1790598455.6544409,
+          "last_progress": null,
+          "previous_failure": null,
+          "active_pairs": [
+            "Q1P2"
+          ],
+          "pid_alive": true,
+          "heartbeat_age_seconds": 0.4
+        },
+        "active_calls": [
+          {
+            "attempt_id": "80e1e3b3990f4e3c956af112fed99327",
+            "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+            "pid": 49475,
+            "thread": "Q1P2",
+            "stage": "peer",
+            "actor": "emmy",
+            "started_at": 1790598305.33631,
+            "deadline_at": 1790599535.33631,
+            "timeout_seconds": 1230,
+            "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q1P2",
+            "child_pid": 67980,
+            "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/active-calls/80e1e3b3990f4e3c956af112fed99327.json",
+            "pid_alive": true,
+            "child_alive": true,
+            "age_seconds": 150.7,
+            "overdue_seconds": 0
+          },
+          {
+            "attempt_id": "f206ed8649be4e38a1d3971c9d61fac0",
+            "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+            "pid": 49475,
+            "thread": "Q1P2",
+            "stage": "peer",
+            "actor": "ada",
+            "started_at": 1790598305.33335,
+            "deadline_at": 1790599535.33335,
+            "timeout_seconds": 1230,
+            "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q1P2",
+            "child_pid": 67979,
+            "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/active-calls/f206ed8649be4e38a1d3971c9d61fac0.json",
+            "pid_alive": true,
+            "child_alive": true,
+            "age_seconds": 150.7,
+            "overdue_seconds": 0
+          }
+        ],
+        "last_completed_call": {
+          "at": "2026-09-28T12:25:02Z",
+          "thread": "Q4P1",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "error": null
+        },
+        "failure_count": 0,
+        "recent_failures": [],
+        "failure": null,
+        "stop": null,
+        "work": [
+          {
+            "pair": "Q4P1",
+            "research": {
+              "pair_id": "Q4P1",
+              "round": 1,
+              "stage": "done",
+              "status": "DRAFT",
+              "reason": "The note correctly combines Q\u2019s strict peer-scoring incentive with P\u2019s identical-report-law rank reversal, so truthful reporting does not identify the intended ranking. The ledger also supports the exact directed-reachability criterion under positive edge-specific flips and its conditional sample bound. These restricted but non-obvious results justify a paper section; the note states their limits.",
+              "started": "2026-09-28T11:51:02Z",
+              "updated": "2026-09-28T12:10:52Z",
+              "repair": null
+            },
+            "editor": {
+              "status": "done",
+              "attempt": 1,
+              "updated": "2026-09-28T12:14:59Z",
+              "build_ok": true,
+              "checks": [
+                "P: no URL, DOI or arXiv identifier",
+                "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+              ]
+            },
+            "paper": {
+              "status": "ACCEPTED",
+              "round": 1,
+              "reason": "The claims trace to the note and ledger, the proofs are correct within their stated models, and Q and P are represented fairly. The remaining issues are minor presentation and citation housekeeping.",
+              "updated": "2026-09-28T12:25:02Z",
+              "build_ok": true,
+              "checks": [
+                "P: no URL, DOI or arXiv identifier",
+                "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+              ]
+            },
+            "checks": {
+              "editor": [
+                "P: no URL, DOI or arXiv identifier",
+                "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+              ],
+              "paper": [
+                "P: no URL, DOI or arXiv identifier",
+                "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+              ]
+            },
+            "needs_edit": false
+          },
+          {
+            "pair": "Q1P2",
+            "research": {
+              "pair_id": "Q1P2",
+              "round": 1,
+              "stage": "peers",
+              "status": "running",
+              "reason": null,
+              "started": "2026-09-28T12:25:05Z",
+              "updated": "2026-09-28T12:25:05Z"
+            },
+            "editor": {},
+            "paper": {},
+            "checks": {
+              "editor": [],
+              "paper": []
+            },
+            "needs_edit": false
+          }
+        ],
+        "warnings": [
+          "Q4P1/editor: unresolved reference/build checks; inspect the stage record.",
+          "Q4P1/paper: unresolved reference/build checks; inspect the stage record."
+        ],
+        "evidence": {
+          "receipts": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/receipts.jsonl",
+          "runner": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/runner.json",
+          "failures": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/failures.jsonl"
+        },
+        "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health."
+      }
+    },
+    "schedule_length": 4
+  }
+}

@@ -1,0 +1,60 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{A Wall-Gate Certificate Meets a Resource-Allocation Mechanism}
+
+\begin{document}
+\maketitle
+
+\section*{The pair}
+
+Q proposes a quadratic-payment mechanism for stochastic resource allocation, claiming a unique socially optimal Nash equilibrium and mean-square convergence of a learning algorithm. P calibrates a room-level wall error and uses a geometric margin to certify, with marginal finite-sample coverage, every non-abstained decision at one wall-distance gate. \ledger{1, 2}
+
+\section*{Connexion pursued}
+
+The proposed transfer was to use P's calibration-to-interface argument to certify either capacity feasibility or finite-iterate equilibrium accuracy in Q. P's certificate works because one room-level Hausdorff event bounds the distance error at every scan point; Q would need an analogous observable error score and a valid implication from that score to its desired allocation or equilibrium property. Neither paper supplies such a calibrated score for Q. \ledger{1, 2, 3, 13}
+
+\section*{What was found}
+
+\begin{claim}
+Q's stated LMI conditions P1(ii) and P2(i) cannot hold together.
+\end{claim}
+Q's P2(i) requires \(\sum_m A_{nm}^{n}=0\) for every agent \(n\). Take a nonzero direction \(v\) with zero allocation components and the same price component \(q\) for every agent. The price-price blocks of Q's matrix \(\Psi\) are \(-A_{nm}^{n}\), so
+\[
+v^{\top}\Psi v
+=
+-\sum_n q^{\top}\Bigl(\sum_m A_{nm}^{n}\Bigr)q
+=0.
+\]
+Consequently \(v^{\top}(\Psi+\Psi^{\top})v=0\), whereas P1(ii) requires this quantity to be at most \(-\upsilon\lVert v\rVert^2<0\) for \(\upsilon>0\). The contradiction applies to the stated LMI family, including its claimed explicit solution, regardless of valuation curvature. It defeats the strong-monotonicity premise considered for a direct equilibrium-distance certificate. \ledger{3, 4, 5, 6, 11, 13}
+
+A separate check finds that Q's reduced payment in its stability section is not obtained from its explicit payment by deleting opponent-only terms. At \(N=2\), with scalar \(x_1=x_2=c=0\), \(p_1=1\), \(p_2=0\), and \(\alpha=1\), the explicit payment gives \(t_1=1/2\), while the displayed reduced matrices give \(\widehat t_1=-1/2\). The discrepancy depends on agent 1's own price. Thus the printed best-response algorithm optimizes a different payoff; its theorem does not establish stability for the explicit payment as printed. \ledger{12, 14, 16, 18}
+
+Q's numerical sample schedule presents another unresolved gap. Its theorem requires geometrically increasing sample sizes, but the reported choice \(Q_i=\lceil\widetilde\eta^{i+1}\rceil\), with \(0<\widetilde\eta<1\), equals one at every iteration. The displayed runs therefore do not instantiate that theorem's vanishing-error schedule. Non-expansiveness of the best-response map is also assumed rather than verified for those runs. \ledger{7, 10}
+
+A narrower conditional connexion avoids Q's equilibrium claims. For a feasible allocation \(x\) and \(\lambda\geq0\), define
+\[
+G(x,\lambda)
+=
+\lambda^{\top}c+
+\sum_n\sup_{z_n\in\mathcal X_n}
+\bigl\{V_n(z_n)-\lambda^{\top}z_n\bigr\}
+-\sum_n V_n(x_n).
+\]
+Weak duality and Q's strong concavity give
+\[
+0\leq W(x^o)-W(x)\leq G(x,\lambda),
+\qquad
+\lVert x-x^o\rVert^2\leq \frac{2G(x,\lambda)}{\alpha}.
+\]
+If exchangeable calibration episodes supplied trusted exact-gap labels, P's order-statistic pattern could calibrate a one-sided radius for \( (G-\widehat G)_+ \). At a fixed feasible iterate this would yield marginal bounds using \(\widehat G+\varepsilon_\alpha\). It would certify planner performance, not strategic truthfulness, and would give no conditional guarantee among selected runs. Q and P provide neither those labels nor a nonvacuity test. \ledger{8, 9, 11, 17}
+
+\section*{Objections, sources, and open work}
+
+The initial strong-monotonicity bridge was withdrawn after the common-price contradiction; the conditional dual-gap bridge survives algebraically but lacks the required oracle data and a distinctive novelty claim. Outside Q and P, the ledger records Li et al., \url{https://arxiv.org/abs/2503.04071}, on conformal primal-dual optimality bounds, and Fabiani and Franci, \url{https://doi.org/10.1016/j.ejcon.2026.101558}, on finite-data equilibrium certificates. Those sources limit any claim that generic conformal gap calibration is new. The material supports a Q correction note more strongly than a new joint Q--P result. \ledger{9, 11, 13, 17}
+
+The smallest next step is to correct Q's incompatible conditions and payment reduction, then verify one explicit mechanism against the revised conditions. For the separate finite-iterate route, a frozen feasible-allocation procedure and disjoint episodes with trusted gap labels would permit a first report of coverage and bound width. Until those checks exist, whether P's calibration pattern yields a useful certificate for Q remains open. \ledger{13, 17, 18}
+
+\end{document}
+```

@@ -1,0 +1,76 @@
+{
+  "observed_at": "2026-09-25T19:01:33.556712+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "facts": [
+    "12/28 research/edit threads complete; three DRAFT papers ACCEPTED.",
+    "Repeat Q1P1 ada completed first peer call at 18:59:43Z and started next permitted peer call; emmy first call continues. Both within deadlines.",
+    "Root and active child heartbeat fresh; supplied process tree matches runner PID 24244 and both recorded Codex child PIDs. No duplicate recorded runner.",
+    "Completed research/edit records unchanged from previous audit.",
+    "No current child failure records, receipt errors or stop markers. Previous nonblocking lookup failures already recorded.",
+    "outcomes.json is stale pre-repair export; launch.py writes it on finalization. progress.json records last completed pair; current aggregate and artifacts take precedence."
+  ],
+  "completed_count": 12,
+  "completed_records_unchanged": true,
+  "papers": {
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    }
+  },
+  "receipts": {
+    "repeat": {
+      "count": 51,
+      "latest": {
+        "at": "2026-09-25T18:59:43Z",
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 278.6
+      },
+      "errors": []
+    },
+    "reinjection": {
+      "count": 44,
+      "latest": {
+        "at": "2026-09-25T18:42:48Z",
+        "thread": "Q4P4",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 141.4
+      },
+      "errors": []
+    }
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-022/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-022/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-022/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-021/observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "action": "No intervention; no new failure found.",
+  "next_audit": "Verify Q1P1 advancement and remaining scheduled research/edit and DRAFT paper pipelines."
+}

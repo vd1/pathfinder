@@ -1,0 +1,121 @@
+{
+  "observed_at": "2026-09-27T15:20:12.514313+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "9672a1685b814030b5d0e08c6ebaea6b",
+  "status": "continue",
+  "completed_pipelines": 26,
+  "unfinished_pipelines": [
+    "repeat/Q1P2",
+    "reinjection/Q1P1"
+  ],
+  "paper_statuses": [
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P9",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P7",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q3P6",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q1P6",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    }
+  ],
+  "protected_files_checked": 720,
+  "protected_files_changed": [],
+  "deadline_at": 1790538533.7635698,
+  "active_calls": [
+    {
+      "attempt_id": "6406ebc6f9a7475187cbf43334c8f232",
+      "run_id": "d91b41aadfdd48cf92cbf760c2c4a181",
+      "pid": 53766,
+      "thread": "Q1P1",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790522119.198643,
+      "deadline_at": 1790522885.198643,
+      "timeout_seconds": 766,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P1",
+      "child_pid": 84090,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/6406ebc6f9a7475187cbf43334c8f232.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 239.1,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "comparison": {
+    "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-017/aggregate.json",
+    "completed_count_unchanged": true,
+    "progress": "Ada first peer call completed 15:15:19 UTC; Emmy second peer call completed 15:17:20 UTC. Ada second peer call active within deadline.",
+    "failure_counts": {
+      "repeat": 2,
+      "reinjection": 0
+    }
+  },
+  "facts": [
+    "Runner PID 53766 matches session and supplied Python process; child 84090 and descendant 84200 match recorded Ada call. Point-in-time process evidence limitations retained.",
+    "Root and child heartbeats fresh; no overdue calls or stop markers.",
+    "Historical repeat Q3P6 authentication and stream failures previously recorded and resolved; current paper ACCEPTED. No new child failure.",
+    "All nine current DRAFT paper pipelines ACCEPTED with successful builds.",
+    "outcomes.json is historical; launch.py writes it on exit. Current child checkpoints establish progress. progress.json represents latest completed pair; runner task identifies current pair.",
+    "No evidence of livelock: successful peer calls and bounded second peer attempt.",
+    "Pane rename denied by sandbox; label not verified."
+  ],
+  "action": "No campaign intervention; snapshots and assessment saved.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-018/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-018/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-018/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/failures.jsonl"
+  ]
+}

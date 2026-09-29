@@ -1,0 +1,235 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{XCharter}
+\usepackage[margin=25mm]{geometry}
+\usepackage{microtype,amsmath,amssymb,booktabs}
+\usepackage{xurl}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=blue]{hyperref}
+\setlength{\emergencystretch}{2em}
+\title{When Is a Risk Certificate Worth Its Sampling Cost?\\
+\large A synthetic deepening of the recursive CVaR branch}
+\author{Pathfinder supervisor-led research follow-up}
+\date{28 September 2026}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We instantiate the recursive paper's conditional-risk obedience certificate
+in a two-signal routing model with a paid simulator, a reward budget and a
+bounded fallback. This gives a conditional expected-cost comparison absent
+from the parent paper's application-free statement. A fixed simulation grid
+shows useful deployment on a separated instance, persistent abstention near
+the feasibility boundary, and a cost penalty for oversampling. Knowing the
+safe alternative exactly reduces both the uncertainty and the access bill.
+This is a synthetic worked application, not field validation, a new QP
+generation, or an independently reviewed manuscript.
+\end{abstract}
+
+\section{Research question and lineage}
+
+The parent is \emph{Priced Certificates for Conditional-CVaR Obedience},
+recursive Q1P2, clarified version 2 of 28 September 2026. It combines an
+inherited deterministic reward graph with a simultaneous realised-data
+confidence box. Its open questions include pricing counterfactual access and
+specifying an abstention fallback. This follow-up supplies those ingredients
+in a deliberately small example. It does not add evidence to the matched
+repeat-versus-recurse comparison, whose allocations are already complete.
+
+The protocol was written before executing the simulations. Code and output
+are in \path{experiments/2026-09-28-risk-deepening/}. The result file binds
+the parent, protocol and script by SHA-256. Historical papers are unchanged.
+All claims below are either direct algebra in this declared model or an
+application of the parent's stated confidence guarantee. No publication
+priority or exhaustive external literature claim is made.
+
+\section{A declared routing model}
+
+Signals \(s=0,1\) are equally likely. The fixed policy prescribes action
+\(A\) at signal 0 and \(B\) at signal 1. At signal \(s\), the prescribed
+route has loss \(2X_s\), with \(X_s\sim\mathrm{Bernoulli}(p_s)\).
+The alternative route has constant loss 1. Thus each action is prescribed
+somewhere, as required by the parent. The agent evaluates conditional loss
+using upper-tail CVaR with tail mass \(\beta=1/2\), and subtracts its
+state-independent action reward. Recommendation-following breaks utility
+ties. This is weak obedience, not unique or strict implementation.
+
+Write \(c_s=\min\{4p_s,2\}\) for the prescribed route's true CVaR and
+\(d=r(A)-r(B)\). Exact obedience is simply
+\[
+ c_0-1\leq d\leq 1-c_1.
+\]
+It is feasible exactly when \(c_0+c_1\leq2\). Among nonnegative rewards,
+choose the point of this interval closest to zero. Its absolute value is
+the oracle cap \(R^*\), and its expected payment is \(R^*/2\).
+
+The planner pays operating cost \(g=0.2\) on deployment and expected
+action reward \(|d|/2\). For evaluation we conservatively add a surcharge
+\(J=2\) if \emph{any} true obedience constraint fails, rather than
+modelling the deviating agent's route. Reward cap is \(R=0.6\).
+Fallback costs \(F=1\), needs no agent obedience, and is always available.
+Consequently downstream evaluation cost is at most
+\(M=g+R/2+J=2.5\). These costs are stipulated in a common unit; they are
+not derived from the agent's risk objective or measured operational losses.
+
+Sampling uses a conditional simulator with price \(\kappa\) per loss draw.
+This assumes access to deviation outcomes. On-policy logs alone do not
+justify this simulator. Two access regimes are compared:
+\begin{itemize}
+\item Uniform: sample all four signal-action cells, charging \(4m\) draws.
+  The parent's generic certificate treats every cell as uncertain, even
+  though safe-cell observations in this example are constant.
+\item Known safe: the alternative's constant loss is known from the model
+  or an enforceable service contract. Sample only the two risky cells,
+  charging \(2m\) draws. This assumption is stronger than observing a
+  constant value in a finite batch.
+\end{itemize}
+
+\section{Certificate, fallback and an expected-cost bound}
+
+For \(N=4\) or 2 respectively, the parent gives simultaneous radius
+\[
+ e=4\sqrt{\frac{\log(2N/\delta)}{2m}},\qquad \delta=0.05.
+\]
+The empirical risky CVaR is exactly \(\widehat c_s=\min(4K_s/m,2)\),
+where \(K_s\) is a binomial count. Put \(t=2e\) in the uniform regime
+and \(t=e\) in the known-safe regime. Since sampled safe losses equal 1,
+the robust interval in this particular application is
+\[
+ \widehat c_0-1+t\leq d\leq 1-\widehat c_1-t.
+\]
+If this interval intersects \([-R,R]\), deploy using its point closest
+to zero. If \(\widehat c_0+\widehat c_1-2t>2\), record a refutation
+and use fallback. Otherwise use fallback, distinguishing an uncertain
+budget from ordinary abstention. A failed robust budget check does not
+certify failure of the true budget.
+
+On simultaneous coverage, deployment is obedient and a refutation is sound.
+This is not a guarantee on every batch. Suppose
+\(\gamma=(2-c_0-c_1)/2>0\). Define
+\[
+ I=\begin{cases}4e&\text{uniform},\\2e&\text{known safe}.\end{cases}
+\]
+If \(I<\gamma\) and \(R^*+I\leq R\), every covered batch deploys
+and its cap is at most \(R^*+I\). To see this, each robust difference
+constraint exceeds its true counterpart by at most \(I\); their sum
+is at most \(-2\gamma+2I<0\). The two-action path potential increases
+by at most \(I\), and the budget condition permits that potential.
+The uniform bound deliberately retains the parent's generic error-box
+argument; the deterministic safe observations could also permit sharpening.
+
+Let \(q=4m\) or \(2m\). Since downstream cost on coverage is at most
+\(B=g+(R^*+I)/2\leq0.5<M\), splitting by the coverage event gives
+\[
+ \mathbb E[\text{total cost}]
+ \leq \kappa q+(1-\delta)\left(g+\frac{R^*+I}{2}\right)+\delta M.
+ \tag{1}
+\]
+This compares with the feasible prediction-free benchmark of always
+falling back at cost 1. It is not a ratio against an unknown optimal system.
+It also differs from the oracle-with-free-information benchmark, which
+can deploy at \(g+R^*/2\) whenever feasible and within budget.
+
+For \((p_0,p_1)=(0.3,0.1)\), we have \(R^*=0.2\) and
+\(\gamma=0.2\). Known-safe access at \(m=4000\) and
+\(\kappa=10^{-5}\) satisfies the premises and gives (1) approximately
+\(0.579<1\). Uniform access at \(m=64000\) gives approximately
+\(3.018\), not a useful guarantee at that price; at \(\kappa=10^{-6}\)
+the same uniform bound is \(0.714<1\). These are sufficient bounds,
+not optimal access-complexity results.
+
+\section{Fixed-batch numerical experiment}
+
+The protocol fixes five probability pairs, six batch sizes from 250 through
+256000, two access regimes and two sampling prices. Each scenario-size
+combination has 2000 independent batches, pairing regimes on the same risky
+observations. There are 60000 batch pairs and 120000 regime decisions.
+Binomial counts are sampled directly using Python 3.13.0 with seed 20260928.
+No normal approximation is used. Guarantees apply per fixed trial, not
+simultaneously across the grid; no adaptive stopping is claimed.
+
+Table~\ref{tab:paid} shows the paid-reward instance at the higher sampling
+price. Mean costs include fallback and the stipulated error surcharge.
+The baseline without sampling costs exactly 1.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{r l r r r}
+\toprule
+\(m\)&Access&Deployment (\%)&Mean cost&MC standard error\\
+\midrule
+1000&Known safe&63.2&0.629&0.00676\\
+4000&Uniform&47.3&0.872&0.00681\\
+4000&Known safe&100.0&0.428&0.00103\\
+16000&Uniform&100.0&0.990&0.00016\\
+16000&Known safe&100.0&0.644&0.00100\\
+64000&Uniform&100.0&2.885&0.00008\\
+64000&Known safe&100.0&1.593&0.00100\\
+\bottomrule
+\end{tabular}
+\caption{Paid instance \((0.3,0.1)\), price \(10^{-5}\) per draw.
+Deployment frequency is not correctness frequency.}\label{tab:paid}
+\end{table}
+
+Across the entire grid, six deployed rewards violate a true obedience
+constraint. They all occur in the paid scenario with known-safe access:
+one each at \(m=1000,4000,16000,64000\), and two at 256000.
+All occur outside the recorded confidence box. There are 106 coverage
+failures across the paired regime decisions, and no incorrect refutations.
+The maximum observed false-decision frequency in a grid cell is 0.1\%;
+neither that frequency nor zero errors in other cells proves coverage.
+The surcharge is retained in every reported cost, not removed as an outlier.
+
+The free-reward scenario \((0.1,0.1)\) readily deploys without payments.
+The near-boundary scenario \((0.35,0.149)\) and exact boundary
+\((0.35,0.15)\) abstain in every tested batch under both regimes.
+For the infeasible scenario \((0.35,0.2)\), known-safe access refutes in
+61.05\% of batches at \(m=4000\) and all batches at 16000; uniform
+access refutes in 48\% at 16000 and all batches at 64000.
+Refutation is informative but cannot repay sampling in this one-decision
+model: fallback is still required, and could have been chosen for free.
+
+\section{What this deepening adds}
+
+First, specifying a fallback and a failure-path cap closes the parent's
+missing expected-cost calculation, for this model only. The guarantee can
+be economically useful: equation (1) is below fallback cost for a declared
+instance, batch and sampling price.
+
+Second, the access model materially changes the result. Known-safe access
+both halves the charged draws and removes uncertainty from deviation loss.
+These effects are combined here, not causally separated. It would be
+misleading to describe the gain as a uniformly better algorithm on equal
+information assumptions.
+
+Third, more evidence is not always better for the planner. Once deployment
+is already reliable, the sampling bill grows linearly while the reward
+premium decreases only as the inverse square root of batch size. The grid
+illustrates this tradeoff; selecting the best observed grid cell would be
+post-selection, not a validated adaptive policy.
+
+Finally, a small margin changes the practical question. At
+\((0.35,0.149)\), \(\gamma=0.002\). The known-safe sufficient margin
+condition alone requires more than 35 million samples per risky cell;
+the uniform version requires more than 162 million per cell. At either
+declared price those sufficient sample bills already exceed the fallback.
+This does not prove that every valid certificate needs so many samples:
+it diagnoses the conservatism and economic limitation of this particular
+sufficient rule. A useful next investigation is a budget-aware sequential
+certificate with valid time-uniform coverage, or amortising one certificate
+over explicitly stationary repeated decisions. Neither is implemented here.
+
+\section{Verification and limits}
+
+Tests cover exact CVaR examples, interval signs, budget fallback,
+confidence-box corners, access accounting and the sufficient deployment
+premises. The simulation checks every definitive outcome against the true
+array, including failures. These checks supplement the algebra above.
+Results depend on a correct conditional simulator, stationary losses, known
+safe loss in the stronger regime, and the chosen cost model. There is no
+measured simulator cost, multi-type mechanism, report incentive analysis,
+or field experiment. No external review was performed.
+
+This is \emph{deepening}: pursuing an intermediate paper's application and
+limitations. It is not another recombination and should not be counted as
+a new success in the historical repeat-versus-recurse comparison.
+\end{document}

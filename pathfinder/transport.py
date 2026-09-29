@@ -36,8 +36,8 @@ class TransportFailed(Exception):
 
 def _env(campaign):
     env = {k: v for k, v in os.environ.items() if not any(s in k for s in SCRUB)}
-    styles = Path(__file__).parent / "styles"          # the agents build with latexmk themselves; they must see the style files
-    env["TEXINPUTS"] = f"{styles}{os.pathsep}" + env.get("TEXINPUTS", "")
+    from . import resources                             # the agents build with latexmk themselves; they must see the style files
+    env["TEXINPUTS"] = resources.texinputs(campaign, env.get("TEXINPUTS", ""))
     prov = (campaign.raw or {}).get("codex") or {}
     if campaign.backend == "elm":
         env[prov["env_key"]] = os.environ[prov["env_key"]]
@@ -66,7 +66,10 @@ def _command(campaign, model, tools, search, cwd):
             cmd += ["--tools", ""]
         return cmd
     cmd = shlex.split(os.environ.get("PATHFINDER_CODEX", "codex"))
-    if tools and search:
+    prov = (campaign.raw or {}).get("codex") or {}
+    if prov.get("search") == "config":             # CLIs that take web search as configuration, not a flag
+        cmd += ["-c", f'web_search="{"live" if tools and search else "disabled"}"']
+    elif tools and search:
         cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
@@ -95,6 +98,7 @@ def _parse(campaign, model, lines):
     """Text, session, the provider's last usage object as reported (None when none arrived, possibly
     partial on a call that did not complete), the cost the provider reported, the error, the first turn's cache hit."""
     text, session, usage, cost, err, prefix_read = "", None, None, None, None, None
+    terminal_failure = False
     for line in lines:
         try:
             row = json.loads(line)
@@ -121,8 +125,11 @@ def _parse(campaign, model, lines):
             text = row["item"].get("text", "")
         elif t == "turn.completed":
             usage = row.get("usage") or usage
+            if not terminal_failure:
+                err = None  # A completed turn can recover from transient reconnect events.
         elif t in ("error", "turn.failed"):
             err = str(row.get("error") or row.get("message") or t)
+            terminal_failure = terminal_failure or t == "turn.failed"
     return text, session, usage, cost, err, prefix_read
 
 
@@ -153,7 +160,8 @@ def _cost(campaign, model, reported, counters):
 
 
 def _receipt(campaign, thread, stage, actor, model, r):
-    row = {"v": 2, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "thread": thread, "stage": stage,
+    row = {"v": 2, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
+           "thread": thread, "stage": stage,
            "actor": actor, "backend": campaign.backend, "model": model,
            **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
@@ -173,6 +181,36 @@ def _failed(campaign, thread, stage, actor, model, started, outcome, error):
     return r
 
 
+RESULT_KEYS = ("text", "session", "seconds", "usage", "input_tokens", "output_tokens", "cache_write", "cache_read",
+               "prefix_read", "cost", "cost_basis", "rates", "outcome", "error", "transport_failed", "exit_status",
+               "terminal_event", "raw_events")
+
+
+def _extension_call(campaign, request, dispatcher):
+    """A deployment's transport extension answers the request. The engine has already admitted the call and
+    written its active-call record; it normalises the result and writes the receipt, so the engine's
+    records do not depend on the extension keeping its own. A missing counter stays unknown."""
+    started = time.time()
+    try:
+        raw = dispatcher(campaign, request)
+    except Exception as error:
+        r = {"text": "", "outcome": "error", "error": f"transport extension: {error!r}", "transport_failed": True,
+             "seconds": round(time.time() - started, 1)}
+        _receipt(campaign, request.thread, request.stage, request.actor, request.model, {k: r.get(k) for k in RESULT_KEYS})
+        raise
+    if not isinstance(raw, dict) or not isinstance(raw.get("text", ""), str):
+        raise TypeError(f"transport extension returned {type(raw).__name__}; expected a result dict with text")
+    r = {k: raw.get(k) for k in RESULT_KEYS}
+    r["text"] = raw.get("text") or ""
+    r["error"] = raw.get("error")
+    r["transport_failed"] = bool(raw.get("transport_failed"))
+    r["seconds"] = raw.get("seconds") if raw.get("seconds") is not None else round(time.time() - started, 1)
+    r["outcome"] = raw.get("outcome") or ("error" if r["error"] or r["transport_failed"] else "completed")
+    r["cost_basis"] = raw.get("cost_basis") or ("reported" if raw.get("cost") is not None else None)
+    _receipt(campaign, request.thread, request.stage, request.actor, request.model, r)
+    return r
+
+
 def execute_sync(request: ModelRequest, adapter):
     """@planks("When Pathfinder assigns the request to Pi")
     @planks("When Pathfinder executes the request")
@@ -186,7 +224,14 @@ def execute_batch(requests: list[ModelRequest], adapter):
 
 
 def execute(campaign, request: ModelRequest):
-    """Record an active attempt before launching it, including abrupt-exit evidence."""
+    """Admit the call, then record an active attempt before launching it, including abrupt-exit evidence.
+    A refused call raises admission.Refused before any active-call record exists."""
+    from . import admission
+    with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+        return _attempt(campaign, request)
+
+
+def _attempt(campaign, request: ModelRequest):
     from . import health
     attempt = uuid.uuid4().hex
     path = campaign.path(f"active-calls/{attempt}.json")
@@ -220,6 +265,15 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
     timeout, thread, stage, actor = request.timeout, request.thread, request.stage, request.actor
     cwd = request.cwd or campaign.path(f"{stage}-work")
     cwd = Path(cwd); cwd.mkdir(parents=True, exist_ok=True)
+    if campaign.backend == "stub":                  # model-free contract tests; see pathfinder.stub
+        from . import stub
+        r = stub.execute(campaign, request)
+        _receipt(campaign, thread, stage, actor, model, r)
+        return r
+    from . import extensions
+    dispatcher = extensions.load(campaign, "transport")
+    if dispatcher is not None:                      # a deployment's own dispatcher, inside admission and receipts
+        return _extension_call(campaign, request, dispatcher)
     started = time.time()
     try:
         proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
@@ -260,6 +314,17 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         _kill(proc); error = "timeout"
     t.join(5)
     text, session, usage, reported, err, prefix_read = _parse(campaign, model, lines)
+    if campaign.backend != "claude" and not err and not error:
+        events = []
+        for line in lines:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(event, dict):
+                events.append(event.get("type"))
+        if "turn.completed" not in events:
+            err = "CLI exited without a completed turn"
     if proc.returncode not in (0, None) and not error and not err:
         err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
     counters = _counters(campaign.backend, usage)
@@ -306,10 +371,13 @@ def unknown_cost_calls(rows) -> int:
     return sum(1 for r in rows if r.get("cost") is None)
 
 
+UNCHARGED = ("no session", "launch failed", "refused")    # outcomes that never reached a model
+
+
 def spend(campaign) -> float:
     """What the budget guard counts: known cost, plus the per-call estimate for every call that opened a
     session and whose cost is unknown. A call that never reached a session is not charged, as before, or
     the probes of a long outage would exhaust the budget. The caution lives here, not in the receipts."""
     rows = receipts(campaign)
-    charged = sum(1 for r in rows if r.get("cost") is None and r.get("outcome") not in ("no session", "launch failed"))
+    charged = sum(1 for r in rows if r.get("cost") is None and r.get("outcome") not in UNCHARGED)
     return round(known_cost(rows) + charged * campaign.call_estimate_usd, 4)

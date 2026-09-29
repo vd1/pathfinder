@@ -1,0 +1,321 @@
+{
+  "observed_at": "2026-09-25T15:43:45.347908+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "previous_audit": "audit-012",
+  "facts": [
+    "3/28 full pipelines finished, 24 unstarted, repeat/Q3P9 peers active. repeat/Q4P10 DRAFT paper ACCEPTED/build_ok with reviewer ACCEPT; reinjection/Q4P2 and Q3P1 scientific PAUSE with editor done/build_ok.",
+    "Since audit-012 reinjection/Q3P1 editing completed at 15:38:38Z and repeat/Q3P9 admitted at 15:38:41Z. Current ledger has fresh peer contributions. No repeated stalled attempts observed.",
+    "Root and repeat heartbeats fresh. Ada and Emmy peer calls within nominal deadlines. Supplied process evidence associates Python 89044 with supervisor 89043, Codex children 4064/4065 and host descendants 4246/4241. Point-in-time evidence cannot eliminate PID reuse or unknown reparented groups; no intervention required.",
+    "No root or child failure/stop records or failed receipts. Newly observed Q3P1 arXiv HTTP 406 recorded as nonblocking incident; missing source identifier is a metadata check.",
+    "Root between-pairs label and progress.json retain the prior completion boundary per launch.py. outcomes.json is absent until finalization. Root empty shortlist was not used for completion.",
+    "No restart, checkout modification, schedule action or process intervention. HERDR_PANE_ID absent."
+  ],
+  "schedule_count": 28,
+  "completed_pipelines": 3,
+  "active_calls": [
+    {
+      "attempt_id": "a7314715217d40ea97e5d38e3157dabb",
+      "run_id": "53275cd67cb847a0b2c5f9228bdb06fc",
+      "pid": 89044,
+      "thread": "Q3P9",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790350721.624297,
+      "deadline_at": 1790351951.624297,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q3P9",
+      "child_pid": 4065,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/a7314715217d40ea97e5d38e3157dabb.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 265.5,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    },
+    {
+      "attempt_id": "b2cd39967f444e65b587aaf1d55d31cb",
+      "run_id": "53275cd67cb847a0b2c5f9228bdb06fc",
+      "pid": 89044,
+      "thread": "Q3P9",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790350721.624328,
+      "deadline_at": 1790351951.624328,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q3P9",
+      "child_pid": 4064,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/b2cd39967f444e65b587aaf1d55d31cb.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 265.5,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "previous_active_calls": [
+    {
+      "attempt_id": "504d661c31264f2594ed8c8733bd722f",
+      "run_id": "b2df55c609a64515ac61d99c262b6e9a",
+      "pid": 89044,
+      "thread": "Q3P1",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790350481.153753,
+      "deadline_at": 1790351381.153753,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P1",
+      "child_pid": 3451,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/504d661c31264f2594ed8c8733bd722f.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 226.4,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T14:46:42Z",
+        "thread": "Q4P10",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 557.8
+      },
+      {
+        "at": "2026-09-25T14:47:48Z",
+        "thread": "Q4P10",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 624.1
+      },
+      {
+        "at": "2026-09-25T14:48:37Z",
+        "thread": "Q4P10",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 100.4
+      },
+      {
+        "at": "2026-09-25T14:49:37Z",
+        "thread": "Q4P10",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 64.0
+      },
+      {
+        "at": "2026-09-25T14:50:25Z",
+        "thread": "Q4P10",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 47.9
+      },
+      {
+        "at": "2026-09-25T14:51:03Z",
+        "thread": "Q4P10",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 37.6
+      },
+      {
+        "at": "2026-09-25T15:01:36Z",
+        "thread": "Q4P10",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 633.2
+      },
+      {
+        "at": "2026-09-25T15:10:25Z",
+        "thread": "Q4P10",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 525.8
+      },
+      {
+        "at": "2026-09-25T15:11:00Z",
+        "thread": "Q4P10",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 31.5
+      },
+      {
+        "at": "2026-09-25T15:43:35Z",
+        "thread": "Q3P9",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 293.4
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T15:16:57Z",
+        "thread": "Q4P2",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 354.5
+      },
+      {
+        "at": "2026-09-25T15:17:20Z",
+        "thread": "Q4P2",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 377.7
+      },
+      {
+        "at": "2026-09-25T15:18:02Z",
+        "thread": "Q4P2",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 64.3
+      },
+      {
+        "at": "2026-09-25T15:20:39Z",
+        "thread": "Q4P2",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 168.8
+      },
+      {
+        "at": "2026-09-25T15:21:35Z",
+        "thread": "Q4P2",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 55.7
+      },
+      {
+        "at": "2026-09-25T15:21:51Z",
+        "thread": "Q4P2",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 15.8
+      },
+      {
+        "at": "2026-09-25T15:25:51Z",
+        "thread": "Q4P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 240.6
+      },
+      {
+        "at": "2026-09-25T15:32:41Z",
+        "thread": "Q3P1",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 407.6
+      },
+      {
+        "at": "2026-09-25T15:33:03Z",
+        "thread": "Q3P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 430.2
+      },
+      {
+        "at": "2026-09-25T15:34:07Z",
+        "thread": "Q3P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 63.7
+      },
+      {
+        "at": "2026-09-25T15:34:41Z",
+        "thread": "Q3P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 33.5
+      },
+      {
+        "at": "2026-09-25T15:38:38Z",
+        "thread": "Q3P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 237.4
+      }
+    ]
+  },
+  "ledger_entries": 17,
+  "ledger_last": {
+    "seq": 17,
+    "at": "2026-09-25T15:43:19Z",
+    "actor": "emmy",
+    "kind": "ready"
+  },
+  "progress": {
+    "pid": 89044,
+    "run_id": "98e346417570428d95f88ffae05db3cc",
+    "status": "running",
+    "started_at": 1790347044.478713,
+    "heartbeat_at": 1790347044.478713,
+    "last_progress": {
+      "block": 2,
+      "arm": "reinjection",
+      "pair": "Q3P1",
+      "at": 1790350721.604683
+    },
+    "task": {
+      "block": 2,
+      "arm": "reinjection",
+      "pair": "Q3P1"
+    },
+    "stage": "between-pairs"
+  },
+  "outcomes": null,
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-013/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-013/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-013/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-012/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/launch.py"
+  ],
+  "action": "Observation only; no intervention.",
+  "follow_up": "Next parent audit check Q3P9 peer progression, call deadlines, child failures and all remaining research/edit and DRAFT paper pipelines."
+}

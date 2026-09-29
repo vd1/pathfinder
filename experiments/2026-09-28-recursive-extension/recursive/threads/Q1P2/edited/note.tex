@@ -1,0 +1,161 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Priced Certificates for Conditional-CVaR Obedience}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q surveys guarantees and costs in learning-augmented systems, while P studies how finite-batch
+conditional risk estimates can reverse an obedience decision. The thread asked whether a priced,
+realised batch could instead certify that decision. For a fixed finite policy with access to losses
+from deviations, the peers found a high-confidence reward certificate and a local bound on its
+sampling and reward costs. The result needs a cycle margin for reliable acceptance and does not give
+a system-wide cost guarantee, so the verifier left the thread at DRAFT.
+\end{abstract}
+
+\section{Introduction}
+
+Q is a survey of algorithms that use predictions while retaining performance guarantees \cite{Q}. It
+asks how to count the price of calling a predictor and when guarantees for separate parts of a
+system can be combined. Such a combination needs conditions on each part and a common account of
+system cost. Q itself gives no test for obedience to a prescribed action.
+
+P considers a small incentive problem with fixed signals, actions, and rewards that depend on the
+action but not on the signal \cite{P}. It values an action by the negative conditional value at risk
+of its loss, or CVaR: the average loss in a specified upper tail. P shows that replacing true CVaR
+by the \emph{expected} empirical CVaR of a finite batch can change whether a policy can be supported
+by these rewards. It also gives a graph test when bounds on all action values are already known. P
+leaves open a guarantee from one realised batch. The paper called Q within P is a different
+mechanism-design paper, not the survey supplied here.
+
+The peers pursued that gap. They asked whether samples could give a checkable reward for the true,
+conditional-risk policy and what it would cost to obtain one. The question connects P's graph test
+to Q's cost accounting. It concerns one fixed policy and its action-stage obedience. It does not
+cover risk for a complete plan before the signal arrives or incentives to report a type.
+
+\section{What was done}
+
+The work began by separating P's two kinds of estimate. Its reversal concerns an expectation over
+possible batches. A certificate must use the values calculated from the batch actually drawn. The
+peers assumed a finite signal set \(S\), a set \(B\) of prescribed actions, and a policy \(a(s)\)
+that prescribes an action at signal \(s\). Deviations to actions outside \(B\) were excluded. They
+assumed access to independent draws within each action--signal cell, including cells for actions the
+policy would not take. Each loss lies between zero and \(H\). These access and boundedness
+assumptions are essential.
+
+For each of the \(N=|S||B|\) cells, the peers took \(m\) draws. They called the upper-tail fraction
+\(\beta\), with \(0<\beta\leq1\), and set the true utility \(U(b,s)\) to minus the conditional CVaR
+of action \(b\) at signal \(s\). Its batch estimate is \(\widehat U(b,s)\). The CVaR variational
+formula, the Dvoretzky--Kiefer--Wolfowitz inequality, and a union bound gave a simultaneous error
+radius
+\[
+e_m=\frac{H}{\beta}
+\sqrt{\frac{\log(2N/\delta)}{2m}}.
+\]
+Here \(\delta\) is the allowed failure probability. With probability at least \(1-\delta\), every
+estimated utility differs from its true value by at most \(e_m\). Draws from different cells need
+not be independent for this union bound. Existing work already studies empirical-CVaR concentration
+and risk-arm identification \cite{cvarfixed,cvarother,cvarneurips}.
+
+The peers then put these intervals into P's reward graph. An edge from prescribed action \(a\) to
+another prescribed action \(b\) records the largest possible gain from switching at any signal that
+prescribes \(a\):
+\[
+w_m(a,b)=
+\max_{s:\,a(s)=a}
+\bigl\{\widehat U(b,s)-\widehat U(a,s)+2e_m\bigr\}.
+\]
+They checked the graph for positive cycles and, where possible, solved for rewards. They next asked
+whether the resulting rewards could be expensive even when the policy was feasible. Finally, they
+tested what happens near a zero cycle margin, with only on-policy observations, and when this local
+certificate is placed in Q's larger cost model. The detailed derivations and cross-checks are in
+\url{../emmy/research.md} and \url{../ada/decision_certificate.md}.
+
+\section{Results}
+
+If the confidence graph has no positive directed cycle, there are rewards \(r(a)\) satisfying
+\(r(a)-r(b)\geq w_m(a,b)\) for every edge. On the simultaneous coverage event, this same reward
+obeys every true incentive inequality. The output can therefore include the estimates, the radius,
+the graph check, and the reward vector as a verifiable certificate of exact true obedience, with
+confidence at least \(1-\delta\). Conversely, a cycle whose empirical utility sum stays negative
+even after adding \(2e_m\) for each edge certifies true infeasibility on that event. If neither
+check succeeds, the answer is abstention. P supplies the deterministic graph argument; the peers
+supplied the realised-sample interval that makes it usable here.
+
+There is a sufficient sample size when cycles stay clear of zero. Suppose every nontrivial simple
+true cycle has utility sum at least its number of edges times a positive margin \(\gamma\). Then the
+feasible certificate succeeds on the coverage event if \(e_m<\gamma/4\). A true cycle whose sum is
+at most minus its number of edges times \(\gamma\) similarly gives a negative certificate. It is
+enough to choose
+\[
+m>\frac{8H^2}{\beta^2\gamma^2}
+\log\frac{2N}{\delta}.
+\]
+If a loss draw costs \(\kappa_s\), the sample bill is \(\kappa_sNm\), plus any material cost of the
+graph calculation. Q prices predictor invocations, so treating one draw as one invocation is a
+further modelling choice.
+
+The peers also bounded a local reward cost. Let \(n=|B|\). Let \(R^*\) be the smallest possible
+maximum nonnegative reward that supports the policy using true utilities, and let \(R_m^*\) be the
+corresponding minimum for the confidence graph. If every nontrivial simple true cycle has average
+edge weight at most \(-\gamma\), and \(e_m<\gamma/4\), then on the coverage event
+\[
+R^*\leq R_m^*\leq R^*+4(n-1)e_m.
+\]
+The reason is that each confidence edge exceeds its true edge by at most \(4e_m\). The least
+nonnegative reward at an action is the largest weight of a path starting there, including the empty
+path. A largest path can be taken to have at most \(n-1\) edges. If a single reward payment counts
+as resource cost, the resulting local upper bound is \(\kappa_sNm+R^*+4(n-1)e_m\). This compares
+with an oracle that knows the true utilities; it is not a ratio against Q's offline system
+benchmark. The peers' path argument and mutual check appear in \url{../emmy/research.md} and
+\url{../ada/decision_certificate.md}.
+
+\section{Objections and unresolved issues}
+
+The first objection was statistical. In P's two-signal pattern, take a safe loss of \(1\) and a
+risky loss of \(2X\), where \(X\) is a Bernoulli variable with success chance \(p\). At upper-tail
+fraction \(1/2\), the true two-edge cycle is \(2-8p\) when \(p<1/2\). It changes sign across
+\(p=1/4\), while every finite sample transcript remains possible on either side. The peers concluded
+that a finite-sample rule cannot give a uniformly exact, zero-error answer at this boundary. A
+nonabstaining rule with a fixed small error probability needs an expected number of informative
+draws that grows as the inverse square of the distance from the boundary. Their change-of-measure
+step uses a standard sequential testing argument \cite{klsource}. The margin promise and abstention
+option resolve this objection for the stated certificate, not for unrestricted exact testing.
+
+The second objection was access to deviations. The graph needs losses for an action even when the
+policy never takes it at that signal. The peers gave two worlds with identical on-policy logs at
+every sample size: prescribed losses are always \(3/2\), while unplayed deviations cost \(2\) in one
+world and \(1\) in the other. One world has a positive obedience cycle and the other a negative one.
+A conditional sampler, covered exploration, or a justified model of the missing losses is therefore
+needed. The cost of obtaining such information must also be counted.
+
+The third objection concerned money. A nonpositive cycle can still require an arbitrarily large
+nonnegative reward. The peers addressed this locally by allowing an explicit reward cap and checking
+it alongside the graph constraints. Their cap bound above applies only under its cycle margin and
+cost convention. Earlier work also uses a positive value margin for incentive claims in a different
+persuasion model \cite{persuasion}; this thread did not establish priority for its basic
+concentration and margin ingredients.
+
+Finally, confidence is not an expected system-cost bound. An expected-cost argument would need a
+specified action on abstention and a cost bound on the coverage-failure event. It would also need
+conditional coverage for every policy chosen after an adaptive history, plus a common downstream
+objective and benchmark. The peers corrected an earlier cost claim that controlled only accepted
+certificates: the cost bound must also cover abstention on the whole coverage event. None of those
+system premises was established here.
+
+\section{Why the thread stopped}
+
+The verifier accepted the realised-batch certificate, the reward-cap comparison, and the boundary
+obstruction as supported by the recorded arguments. It left the thread at DRAFT because the result
+is a useful local connection, while the claimed extension to a system-wide competitive guarantee
+remains unproved. The smallest restart is to specify a downstream objective and prediction-free
+benchmark for the two-signal setting, say whether rewards count as costs, and give a feasible
+abstention action with a cost bound. A conditional expected-cost comparison under those choices, or
+a counterexample, would decide whether this certificate composes even in that minimal case.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

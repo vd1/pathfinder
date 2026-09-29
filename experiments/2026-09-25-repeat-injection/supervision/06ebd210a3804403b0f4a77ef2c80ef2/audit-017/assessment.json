@@ -1,0 +1,72 @@
+{
+  "observed_at": "2026-09-25T18:36:46.388216+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "scheduled_threads": 28,
+  "research_edit_done": 11,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "reviewing",
+      "round": 1,
+      "reason": null,
+      "updated": "2026-09-25T18:35:52Z",
+      "build_ok": true
+    }
+  ],
+  "comparison": "Previous audit Q4P4 editing; now author completed and reviewer active. All previously completed research/editor records identical.",
+  "process_identity": "Supplied process tree identifies Python runner 24244 as child of supervising session 24243 and recorded author child 40085. Author completed after process observation; new reviewer child 40511 recorded under same owner. No duplicate runner in supplied evidence; evidence is point-in-time.",
+  "active_calls": [
+    {
+      "attempt_id": "a05b26c2a7454aafb5af11663bb70ce9",
+      "run_id": null,
+      "pid": 24244,
+      "thread": "Q4P4",
+      "stage": "review",
+      "actor": "reviewer",
+      "started_at": 1790361352.338441,
+      "deadline_at": 1790362252.338441,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4",
+      "child_pid": 40511,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/a05b26c2a7454aafb5af11663bb70ce9.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 0.7,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "failures": "No child failure files or receipt errors; new nonblocking Q4P4 arXiv HTTP 406 editor check recorded separately.",
+  "outcomes_note": "outcomes.json is a stale prior-finalization snapshot, including repaired Q3P2 BLOCKED. launch.py writes it in finally. Current receipts, aggregate and progress confirm advancement.",
+  "intervention": "none",
+  "pane_title": "Rename denied by sandbox; no title change verified.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-017/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-017/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-017/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json"
+  ]
+}

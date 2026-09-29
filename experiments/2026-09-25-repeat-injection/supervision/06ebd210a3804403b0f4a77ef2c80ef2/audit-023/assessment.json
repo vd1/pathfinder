@@ -1,0 +1,76 @@
+{
+  "observed_at": "2026-09-25T19:06:38.586694+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed_count": 12,
+  "completed_records_unchanged": true,
+  "papers": {
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    }
+  },
+  "receipts": {
+    "repeat": {
+      "count": 51,
+      "latest": {
+        "at": "2026-09-25T18:59:43Z",
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 278.6
+      },
+      "errors": []
+    },
+    "reinjection": {
+      "count": 44,
+      "latest": {
+        "at": "2026-09-25T18:42:48Z",
+        "thread": "Q4P4",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 141.4
+      },
+      "errors": []
+    }
+  },
+  "facts": [
+    "Same two Q1P1 peer calls as previous audit, both within deadlines; fresh root and child heartbeats.",
+    "Supplied process tree matches Python owner 24244 and recorded Codex children 43629 and 44519, with code-mode descendants. Point-in-time identity limitations retained; no process intervention needed.",
+    "Q1P1 peer artifacts and ledger modified since previous audit, including ledger at epoch 1790363166.5965862. Evidence supports ongoing work, not livelock.",
+    "Both child failure files absent; no current stop or failure. Prior external lookup failures already recorded.",
+    "Read manifest, progress and outcomes. Outcomes is stale finalization export including repaired Q3P2; current child records confirm PAUSE and editing done.",
+    "12 of 28 scheduled research/edit threads complete; all three current DRAFT papers accepted. Remaining scheduled work is not complete."
+  ],
+  "action": "No intervention; no new failure found.",
+  "next_audit": "Check Q1P1 peer completion and downstream advancement; earliest nominal call deadline epoch 1790363734.8248608.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-023/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-023/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-023/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-022/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

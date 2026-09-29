@@ -1,0 +1,140 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Welfare Loss and Run-Level Guarantees in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account reads a study of language-model traders in a double auction alongside a paper on calibrated
+decisions in a robot's wall detector. We looked for a way to tell whether slow trading explains lost market
+welfare and whether the second paper could support a guarantee for a future market run. The auction's reported
+averages imply that trade count accounts for at least about 44.9\% of GPT Large's five-round welfare deficit,
+but they do not identify the rest or show what caused the low count. A future-run guarantee would need
+complete run records, and the ten runs reported for each model cannot give a finite 95\% bound by the proposed
+method. The thread paused because it had an analytical bound and a study design, but no measured intervention
+or useful market certificate.
+\end{abstract}
+
+\section{Introduction}
+
+Struski and colleagues put language-model buyers and sellers in a continuous double auction \cite{Q}. Traders
+know their own values or costs, submit prices, and can trade when an offer crosses the standing offer on the
+other side. The paper reports five rounds in each of ten runs per model. Its model populations differ: GPT
+Large makes relatively few trades and has low average allocative efficiency, while GPT Small comes closer to
+the human benchmark. The authors link GPT Large's poor outcome partly to slow, small changes in offers that
+fail to close the gap between bids and asks.
+
+The second paper, by the Pathfinder research campaign, studies a different setting \cite{P}. A robot uses
+estimated room walls to decide which scan points pass an early door-detection gate. The paper calibrates a
+wall-error radius across whole, ground-truthed room episodes. Outside an uncertainty band, it guarantees that
+all decisions at that gate agree with decisions made using reference walls, with a stated marginal coverage
+probability. It does not guarantee the later door detections or the robot's behaviour.
+
+The peers first asked whether that selective gate could be moved to the auction's rule for accepting a
+crossing offer. The auction compares submitted prices exactly, so it has no estimated quote and reference
+quote whose error needs calibration. The more useful connection was the limit of a gate guarantee: correct
+trade execution says little by itself about total welfare. The peers then examined what the auction's own
+numbers say about welfare loss, and how a whole-run guarantee might be posed.
+
+\section{What was done}
+
+The first check compared the two threshold decisions. In the robot paper, uncertainty lies in the estimated
+wall. In the auction, the standing bid and ask are the prices actually posted. The peers therefore set aside a
+direct price-margin transfer. They instead separated a round's lost welfare into a part forced by its number
+of trades and a part due to which buyers and sellers traded. This used the auction's fixed schedule of eleven
+buyer values and eleven seller costs, from 0.75 to 3.25 in steps of 0.25.
+
+They next used the published mean trade counts to find a lower bound on the first part. A mean count does not
+reveal every run's count, but counts are whole numbers. That restriction gives a stronger bound than simply
+substituting the mean into a curve. They checked the calculation for GPT Large's fourth round and then for all
+five rounds. Finally, they applied the robot paper's episode-level ranking method to a complete five-round
+market run. They also examined a more speculative way to limit the opportunity cost of choosing one trading
+pair.
+
+\section{Results}
+
+Let \(N\) be the number of trades in one round and \(W\) the surplus actually realised: buyer values less
+seller costs, summed over the trades. Let \(f(N)\) be the greatest surplus possible with exactly \(N\) trades,
+and let \(W^*\) be the greatest surplus with any number of trades. Pairing the highest-value buyers with the
+lowest-cost sellers gives
+\[
+f(N)=2.75N-0.25N^2,\qquad W^*=7.5.
+\]
+The first five such trades add positive surplus; the sixth adds zero. Thus five well-chosen trades can attain
+full welfare even though the paper calls six the equilibrium quantity. As the peers derived and cross-checked
+in their welfare notes, every round obeys
+\[
+W^*-W=\bigl(W^*-f(N)\bigr)+\bigl(f(N)-W\bigr).
+\]
+The first term is loss forced by trade count. The second is loss from the choice and pairing of traders. Both
+are non-negative. Transaction prices divide surplus between traders but do not change this sum. The identity
+remains true if an offer leads an agent to trade at a loss.
+
+The reported averages bound the count loss. For a mean count \(\mu\), let \(a\) be the whole-number part of
+\(\mu\), and let \(u=\mu-a\) be its fractional part. An integer count with that mean has variance at least
+\(u(1-u)\). Therefore the mean count loss is at least
+\[
+7.5-f(\mu)+0.25u(1-u).
+\]
+GPT Large's fourth round has mean count \(2.2\), giving a count loss of at least \(2.70\) surplus units. Its
+reported efficiency of \(0.36\), meaning realised surplus divided by \(7.5\), implies a total mean loss of
+about \(4.80\). Across all five GPT Large rounds, the minimum count losses sum to \(8.00\), against about
+\(17.625\) units of reported total loss. Allowing for the efficiencies printed to two decimal places puts the
+total loss at no more than \(17.8125\) units, so the count share is at least about \(44.9\%\). In round four
+alone it is at least about \(55.8\%\). These bounds use the displayed counts as exact tenths, as expected for
+means of ten integer counts. The peers' aggregate-welfare check gives the round-by-round arithmetic. Exact
+count and selection losses still need each run's transactions.
+
+For a possible future-run guarantee, let \(E_{ir}\) be the efficiency in round \(r\) of complete calibration
+run \(i\), and let \(R_i=1-\min_{1\leq r\leq5}E_{ir}\) measure its worst round. With \(n\) exchangeable
+complete runs from a frozen model, prompt, and market policy, the second paper's rank argument uses the
+\(k\)th smallest score, where \(k=\lceil(n+1)(1-\alpha)\rceil\) and \(1-\alpha\) is the target coverage. It
+would give a marginal lower bound for all five efficiencies in a new run. With the auction paper's \(n=10\), a
+95\% target requires \(k=11\), beyond the ten available scores; the prescribed bound is therefore
+uninformative. A 90\% target uses the worst observed run. The published round means do not give the
+complete-run scores needed even for that calculation. This is an application of the second paper's method, not
+a new conformal result.
+
+\section{Objections and limits}
+
+The count bound supports part of the auction paper's account of stalled trading. It does not show that small
+price increments caused the low counts, and it leaves the selection loss unknown. A crossing can itself reduce
+attainable welfare: the peers checked an example using buyer values \(3.25\) and \(1.00\), and seller costs
+\(0.75\) and \(3.00\). Matching the high-value buyer to the cheap seller can yield \(2.50\) units. If the
+low-value buyer first trades with that seller at a price of \(0.90\), a profitable crossing for both parties,
+the best total after completing the remaining match is only \(0.50\). The example shows a possibility, not an
+event observed in the study.
+
+The peers also derived a conditional test for such choices. Let \(F\) be the greatest surplus attainable from
+the remaining traders and \(F_e\) the greatest surplus attainable if a proposed pair \(e\) must trade. Its
+opportunity cost is \(D_e=F-F_e\). If each predicted value or cost differs from the true one by at most
+\(\varepsilon\), and no matching contains more than \(m\) trades, the peers' market-margin check gives \(D_e\)
+at most its predicted value plus \(4m\varepsilon\). This concerns attainable surplus after a chosen pair, not
+the welfare traders will actually realise. In the auction's fixed simulator the evaluator already knows all
+reservation values, so it can compute this cost directly. A hidden-value version would need a fixed predictor,
+varied schedules, whole-run calibration, and a score covering every state and quote history an adaptive policy
+can reach. The allowance may also be too large to help. Neither paper supplies these ingredients.
+
+The ledger notes prior work on conformal auction acceptance rules \cite{lotan2024acceptance}; the peers
+therefore made no broad claim that conformal calibration in auctions is new. It also records a check of the
+auction authors' code repository \cite{marketrepository}. Its README describes supplementary run files and
+unseeded mechanism randomness, while the paper describes ten different random seeds. That difference matters
+for a future paired-seed comparison, though it does not by itself decide whether independent runs are
+exchangeable. The repository observation was recorded in the peer check and was not repeated here.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because its strongest quantitative finding follows from the auction paper
+alone. The second paper supplies a sound way to ask about a future run, but the available runs cannot yield a
+finite 95\% bound by that method. No run-level decomposition, calibrated market guarantee, or tested
+intervention shows that a crossing rule improves realised welfare. The smallest next step is to use the
+released transaction records to calculate both loss terms for every round of every run. A claim about
+improving welfare would then need a prespecified, randomised crossing intervention, measured against the
+original policy and calibrated separately for each frozen policy.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

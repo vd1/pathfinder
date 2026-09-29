@@ -1,0 +1,125 @@
+{
+  "observed_at": "2026-09-25T16:03:27.719844+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "completed_pipelines": 4,
+  "scheduled_pipelines": 28,
+  "comparison": {
+    "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-016/observed-status.json",
+    "progress": "Q4P6 advanced from peers through consolidation and verification to editing. Research concluded PAUSE at 16:02:34Z.",
+    "completed_work_unchanged": true
+  },
+  "process_identity": "Supplied process evidence identifies Python runner 89044 under supervising PID 89043, with codex child 10683 matching the supplied before snapshot verifier. New editor child 10894 started after process evidence capture; active-call record reports owner and child alive. No duplicate shown; point-in-time evidence does not exclude PID reuse. No process action taken.",
+  "health": "Fresh heartbeat; editor call within its 900-second deadline; no overdue call, stop marker or child failure record. Reinjection waits for serial admission.",
+  "scope": "4/28 pipelines finished. Q4P10 DRAFT paper ACCEPTED with build_ok and ACCEPT review. Q4P6 editing remains active; later scheduled threads unstarted. Scientific PAUSE verdicts are not operator stops.",
+  "instrumentation": "progress.json is last completed pair; root stage remains between-pairs while child works. outcomes.json absent as expected: launch.py writes it in finally. Root empty shortlist was not used for completion.",
+  "receipts": {
+    "repeat": {
+      "last_calls": [
+        {
+          "at": "2026-09-25T15:58:31Z",
+          "thread": "Q4P6",
+          "stage": "peer",
+          "actor": "emmy",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:59:22Z",
+          "thread": "Q4P6",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T16:01:34Z",
+          "thread": "Q4P6",
+          "stage": "peer",
+          "actor": "emmy",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T16:02:17Z",
+          "thread": "Q4P6",
+          "stage": "consolidate",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T16:02:34Z",
+          "thread": "Q4P6",
+          "stage": "verify",
+          "actor": "verifier",
+          "outcome": "completed",
+          "error": null
+        }
+      ],
+      "errors": []
+    },
+    "reinjection": {
+      "last_calls": [
+        {
+          "at": "2026-09-25T15:32:41Z",
+          "thread": "Q3P1",
+          "stage": "peer",
+          "actor": "emmy",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:33:03Z",
+          "thread": "Q3P1",
+          "stage": "peer",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:34:07Z",
+          "thread": "Q3P1",
+          "stage": "consolidate",
+          "actor": "ada",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:34:41Z",
+          "thread": "Q3P1",
+          "stage": "verify",
+          "actor": "verifier",
+          "outcome": "completed",
+          "error": null
+        },
+        {
+          "at": "2026-09-25T15:38:38Z",
+          "thread": "Q3P1",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        }
+      ],
+      "errors": []
+    }
+  },
+  "failures": "No new failures found; prior nonblocking HTTP 406 checks already recorded.",
+  "action": "No intervention; no new incident required.",
+  "next_audit": "Verify Q4P6 editing and next pair advance; track all 28 pipelines and DRAFT paper completion.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-017/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-017/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-017/before.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-017/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/launch.py",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/paper.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/review.json"
+  ]
+}

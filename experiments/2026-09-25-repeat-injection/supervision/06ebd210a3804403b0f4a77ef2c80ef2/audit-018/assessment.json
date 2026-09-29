@@ -1,0 +1,159 @@
+{
+  "observed_at": "2026-09-25T18:41:34.936290+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "scheduled_threads": 28,
+  "research_edit_done": 11,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "reviewing",
+      "round": 2,
+      "reason": null,
+      "updated": "2026-09-25T18:40:27Z",
+      "build_ok": true
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "35f8cb24d4874327bad73bfcc079b91d",
+      "run_id": null,
+      "pid": 24244,
+      "thread": "Q4P4",
+      "stage": "review",
+      "actor": "reviewer",
+      "started_at": 1790361627.565227,
+      "deadline_at": 1790362527.565227,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4",
+      "child_pid": 41146,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/35f8cb24d4874327bad73bfcc079b91d.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 24.3,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "receipts": {
+    "repeat": {
+      "recent": [
+        {
+          "at": "2026-09-25T17:52:59Z",
+          "thread": "Q7P1",
+          "stage": "verify",
+          "actor": "verifier",
+          "outcome": "completed",
+          "seconds": 30.1,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T17:57:45Z",
+          "thread": "Q7P1",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "seconds": 286.7,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:04:11Z",
+          "thread": "Q7P1",
+          "stage": "author",
+          "actor": "author",
+          "outcome": "completed",
+          "seconds": 382.6,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:06:41Z",
+          "thread": "Q7P1",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "seconds": 146.5,
+          "error": null
+        }
+      ],
+      "errors": 0
+    },
+    "reinjection": {
+      "recent": [
+        {
+          "at": "2026-09-25T18:31:53Z",
+          "thread": "Q4P4",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "seconds": 186.3,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:35:49Z",
+          "thread": "Q4P4",
+          "stage": "author",
+          "actor": "author",
+          "outcome": "completed",
+          "seconds": 233.0,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:37:20Z",
+          "thread": "Q4P4",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "seconds": 88.5,
+          "error": null
+        },
+        {
+          "at": "2026-09-25T18:40:24Z",
+          "thread": "Q4P4",
+          "stage": "author",
+          "actor": "author",
+          "outcome": "completed",
+          "seconds": 183.7,
+          "error": null
+        }
+      ],
+      "errors": 0
+    }
+  },
+  "completed_records_unchanged": true,
+  "comparison": "Q4P4 reviewer round 1 completed, author revision completed, reviewer round 2 active within nominal deadline. No evidence of livelock.",
+  "process_identity": "Supplied process evidence identifies Python PID 24244 under supervising PID 24243, with author child 40722. Author completed after evidence capture; active call now records reviewer child 41146. No duplicate runner shown. Point-in-time tree does not independently identify the newly started reviewer; no process action taken.",
+  "outcomes_note": "Historical outcomes.json predates repaired Q3P2. launch.py writes outcomes only in finally; progress.json updates between pairs. Current aggregate and receipts show advancement.",
+  "failures": "No root or child failure records or receipt errors; prior nonblocking arXiv lookup failure already recorded. No stops.",
+  "intervention": "none",
+  "pane_title": "HERDR_PANE_ID unavailable; no rename attempted.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-018/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-018/status-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-018/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-017/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

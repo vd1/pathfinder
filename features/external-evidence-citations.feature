@@ -32,7 +32,7 @@ Feature: Explicit external research citations preserve local evidence checks
       When Pathfinder prepares its first Vera review
       Then research blocks before provider dispatch because the citation binding is stale
 
-    Scenario: External declarations cannot hide missing local calculations
+    Scenario: External declarations cannot hide missing local calculations under strict evidence
       Given an EVA-minus ledger cites external "ammo/msm/_msm.py" in a bound declaration
       And another ledger entry references missing local "calculations/missing.json"
       When Pathfinder prepares its first Vera review

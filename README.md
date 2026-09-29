@@ -154,7 +154,19 @@ your own campaign directory and edit the models and the budget.
   provider such as a university proxy: `name`, `base_url`, `env_key` (the
   variable Codex reads the key from), `key_file` (a dotenv file holding
   `env_key=value`, read into the child environment only) and `wire_api`.
-  Leave it out to use the ChatGPT login.
+  Leave it out to use the ChatGPT login. `"search": "config"` passes web
+  search as `web_search` configuration instead of the `--search` flag.
+- `stage_attempts`: attempts for consolidation and verification (default 2);
+  a value that is not a positive integer fails before any call.
+- `strict_evidence`: `false` by default. Consolidation and verification are
+  tool-less, so every file in the peers' directories and every file the
+  ledger cites by relative path is inlined into their prompts. A cited path
+  that leaves the thread, uses `..` or goes through a symlink always blocks
+  the thread. Otherwise a missing file is named as missing and a binary or
+  oversized file (`evidence_max_bytes`, default 300000) is listed with its
+  size and digest; with `strict_evidence` both block the thread instead.
+- `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
+  deployments" below.
 
 ## Stops, guard, failures, reconcile
 
@@ -249,6 +261,90 @@ audit ends supervision visibly; it does not kill the campaign runner. Ctrl-C
 requests a campaign stop and ends the timer; active work may still be draining.
 A killed timer or sleeping host does not provide an independent watchdog.
 
+### Local failure alerts and supervision handoff
+
+Runner failures, blocked research, and supervision ending with `needs_operator`
+write `alert.json` and append `alerts.jsonl`, print a terminal alert, and attempt
+a macOS desktop notification without calling a model. Thus failed model
+authentication does not prevent the timer from alerting. Desktop delivery is
+best effort: macOS notification permissions and Focus settings may hide it.
+`submitted` means the notification command succeeded, not that the user saw it.
+Other platforms retain the terminal and file alerts. Disable desktop attempts
+with `"notifications": {"desktop": false}` in `campaign.json`.
+
+This is not an independent watchdog for a killed timer or a sleeping host.
+Notification failures are recorded and do not mask the original pipeline error.
+No email, network notification service, or background system service is installed.
+
+Extend an active watch without relaunching research:
+
+```sh
+uv run python -m pathfinder.supervise --root CAMPAIGN --extend-hours 6
+```
+
+The request targets the current session only. Check `extension_id` and
+`deadline_at` in `supervision/latest-session.json` to confirm it was applied.
+The timer checks between audits and at most five seconds apart while waiting;
+an ongoing audit must finish first. Request extensions before the deadline.
+An expired or failed watch requires a new session, not an extension request.
+
+If research is still running after its watch ends, inspect its recorded PID and
+process identity, then attach a new watch without starting another runner:
+
+```sh
+uv run python -m pathfinder.supervise --root CAMPAIGN --attach-pid PID \
+  --hours 6 --scope 'Research and editing for this campaign' \
+  --resume-command 'uv run pathfinder --root CAMPAIGN research'
+```
+
+Attachment requires a PID matching campaign evidence and available process
+identity information. It pins that identity while watching, refuses an active
+timer or stop marker, and does not signal or launch the attached runner.
+The explicit PID still needs operator inspection, especially for legacy records
+or possible PID reuse before attachment. For an exited runner, use the normal
+start/resume command instead. Include author/reviewer stages in scope and the
+resume command when the campaign runs a full pipeline.
+
+### Saved verdict repair
+
+An explicitly authorized supervisor can use `--allow-verdict-repair`, or an
+operator can run:
+
+```sh
+uv run pathfinder --root CAMPAIGN repair-verdict Q1P1
+```
+
+This repairs only illegal JSON string escapes in an existing completed PAUSE
+or DRAFT verifier reply with a reason and null action. It matches the saved
+reply to its receipt, preserves the raw reply and research note, records
+before-state and hashes under `supervision/repairs/`, and logs the intervention.
+It makes no model call, changes no judgment, and leaves editing/paper work for
+the normal resume path. Live owners, active calls, stops, duplicate round
+verdicts, ambiguous content and unsupported verdict transitions are refused.
+Inspect descendants before repair. If interrupted between checkpoint writes,
+use the preserved before-state for explicit reconciliation rather than bypassing
+the duplicate-round guard.
+
+Accepted papers and completed edits may still carry unresolved reference checks.
+These remain visible in `health --json` and its text warnings; acceptance does
+not silently certify a failed external lookup.
+
+### Shared engine used by statarb
+
+The sibling statarb adapter, `arxiv_drip/research_protocol.py`, freezes this
+repository's `pathfinder/` package and prompts into each new investigation by
+default (or uses its configured `pathfinder_root`). No second maintained engine
+needs copying. New jobs therefore inherit these fixes; existing frozen jobs do
+not. Its paper-to-strategy dossier, subscription accounting, persisted sessions,
+data contracts and trading controls remain statarb-specific. Merely inheriting
+supervision commands does not enable an Astra timer in statarb's worker.
+
+The local transport now distinguishes recoverable reconnect events from terminal
+failure: a successfully completed turn and successful process exit can clear a
+transient error, while raw events remain in the receipt. A terminal failure,
+nonzero exit, timeout, or absent completion event still fails the call. This
+adopts statarb's final-outcome discipline without importing trading behavior.
+
 Evidence lives under `supervision/`: `latest-session.json`, a session directory
 with runner logs and state, per-audit before/after snapshots, filtered process
 evidence, agent event logs and structured results, and `incidents.jsonl` written
@@ -270,6 +366,59 @@ editing, and `resume` finishes only that fixture stage. It produces no scientifi
 result or model calls. An agent audit can diagnose the failure and record an
 incident before invoking resume. This proves neither recurring task delivery
 nor recovery of an arbitrary infrastructure fault.
+
+## One engine, many deployments
+
+statarb, in-repository experiments and other campaigns run this engine
+rather than editing copies of it (see
+[the plan](plans/2026-09-27-1809-single-engine-deployments.md)). A deployment
+adjusts it only through:
+
+- settings in `campaign.json`;
+- prompt overlays and a `styles/` directory, as above;
+- extensions named in `campaign.json` and loaded from the deployment's own code:
+  `"extensions": {"path": "deploy", "admission": "mypolicies:budget",
+  "snapshot_extra": "mymonitor:extra", "transport": "mydispatch:execute"}`.
+  A `transport` extension is a deployment's own dispatcher: the engine still
+  admits each call, records it and writes the receipt. Extension code is
+  trusted; the engine validates what it returns. Each deployment's modules
+  need unique names.
+
+**Admission.** Every model call is admitted inside an engine-owned
+reservation. Under one lock the engine checks the campaign's stop marker and
+its parent's (`"parent": ".."` in a child campaign), asks the admission policy,
+and reserves. A policy returns admit, defer or stop;
+`pathfinder.admission:budget_per_call` is built in. A refused call gets a
+receipt with outcome `refused` and no cost, and is a stop, never a failure.
+
+**Bounded runs.** `pathfinder research --pairs Q1P1 Q2P3` runs exactly those
+pairs. `runner.run_pair` takes one pair through research, edit and, for a
+DRAFT, the paper, resuming where it stands. `pathfinder coordinate
+schedule.json` runs a fixed schedule of (arm, pair) entries across child
+campaigns one pair at a time; the schedule is recorded in
+`coordination.json`, and a changed schedule needs `--accept-change`.
+
+**Run records.** Every command that calls a model takes campaign ownership
+and writes `run.json` (appended to `runs.jsonl`): engine commit and a digest
+of the files it loaded, deployment files and lock, extension code, resolved
+settings, composed prompts, styles, TeX and corpus. Receipts name the run.
+When any of these changed since the previous run the command refuses until
+rerun with `pathfinder --accept-change REASON ...`; code edited on disk after
+the process loaded it requires a restart.
+
+**Frozen copies.** `pathfinder freeze DIR --ref engine-vX.Y` writes the
+engine's runtime files at that commit; `pathfinder verify-frozen DIR`
+compares a copy with the commit's own tree and reports verified, modified
+or unverifiable.
+
+**Model-free runs.** `"backend": "stub"` drives every stage with
+deterministic replies and real builds, for contract tests.
+
+**Releases.** `deployments.toml` lists every live deployment, pinned, as
+supported or not yet supported. `uv run python scripts/release_check.py`
+runs the suite with `PATHFINDER_RELEASE=1` and fails on any failure, skip,
+missing or mispinned supported deployment, or change to the candidate
+during the run.
 
 ## Receipts
 
@@ -299,10 +448,14 @@ format; in them a zero may mean unknown.
 
 ## Prompts
 
-The seven prompts in `prompts/` are the place to tune behaviour: `scan.md`
+The prompts in `prompts/` are the place to tune behaviour: `scan.md`
 (the two-axis judge), `peer.md` (the creative brief), `consolidate.md`,
-`verify.md`, `author.md`, `review.md` and `editor.md`. A campaign directory may carry its own `prompts/` to override
-them.
+`verify.md`, `author.md`, `review.md`, `editor.md` and `supervisor.md`. An
+installed engine carries them inside the package. A campaign adjusts them
+one file at a time: for role R, the campaign's `prompts/R.md` replaces the
+engine's prompt, `prompts/R.append.md` is appended to whichever prompt
+applies, and placeholders such as `{{ACTOR}}` are filled in last. Roles
+without a campaign file use the engine's prompt.
 
 ## The thread's context
 
@@ -345,7 +498,9 @@ before the agent is called and again after every verdict, so no agent
 types a title-block value; the style reads it if present. The pipeline
 puts the styles directory on `TEXINPUTS` for its own builds and for the
 agents' shells, so a document only needs `\usepackage{pathfinder-paper}`,
-a `\title`, and no other package.
+a `\title`, and no other package. A campaign's own `styles/` directory is
+searched first, by every build (edit, paper, restyle, the monitor) and by the
+agents, so a deployment can replace `pathfinder-common.sty` or add a kind.
 
 `pathfinder restyle` rebuilds every note, readable note and paper PDF of a
 campaign with the current styles. Documents written before the styles
@@ -360,8 +515,8 @@ notes the same way on demand.
 
 ## Departures from the agQSL instance
 
-- One package, standard library only, one loop in one terminal; no
-  supervisors, services or notification files.
+- One package, standard library only, with a terminal runner, optional
+  bounded supervision, and local failure notifications; no required service.
 - Receipts are the only spend figure; there is no separate cost model.
 - Stops are always drains; there is no forced kill short of a second Ctrl-C.
 - ITERATE loops automatically up to `rounds`; nothing waits for a human.

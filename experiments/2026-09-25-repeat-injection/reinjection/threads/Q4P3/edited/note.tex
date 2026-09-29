@@ -1,0 +1,137 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Token charges and delayed trade in an LLM double auction}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note connects a theory of rewards for AI agents to a proposal to charge traders for the tokens
+they generate in a double auction. The thread looked for a test of whether a token charge changes
+choices as an actual price would, and for a reason it might fail to bring forward a useful trade. It
+found a necessary token-use restriction at a fixed decision and a conditional example in which an
+own-token charge leaves a socially costly delay. A reward based on the whole trading path fixes that
+example if prices and token counts can be verified. The thread paused because the auction has not
+been run with these incentives, and the example's timing and funding assumptions remain untested.
+\end{abstract}
+
+\section{Introduction}
+
+Bergemann, Koh and Morris study rewards for AI agents with uncertain aims and abilities \cite{Q}.
+They ask whether rewards make agents follow an intended course. A complete sequence of actions can
+count as one choice, and one agent's reward can depend on what several agents do. The paper gives no
+result for a sequential double auction.
+
+The local auction paper studies the cost of price discovery when language-model buyers and sellers
+make quotes \cite{P}. A buyer can accept a standing ask, or bid and wait. Generated tokens cost
+resources, so an earlier trade may save later calls. The paper proposes a charge for each trader's
+own tokens and asks whether it changes crossing, participation and net welfare. It reports no run
+with that charge. Its internal labels Q and P name other source papers; here they mean the assigned
+pair.
+
+The connection was to treat a trader's full auction path as an action and its token charge as a
+reward deducted from its payoff. This made two questions precise: whether observed choices would
+respond to a real charge in the predicted way, and whether that charge would account for tokens
+spent by the other trader.
+
+\section{What was done}
+
+The peers first caught the mismatch between the assigned pair and the auction paper's own Q and P
+labels. They then considered using the theory paper's peer-scoring method to elicit traders' values,
+while mapping a trader's auction path and token charge onto the reward framework. That map supplies
+a way to state incentives, not an auction result. They explored a delayed-trade example because the
+auction paper already says that an early crossing may save a counterparty's later call. One early
+version allowed uncertain later trade and extra calls. It exposed a possible gap between a buyer's
+preferred price and the total cost of reaching a match, but depended on unmeasured continuation
+probabilities.
+
+The peer-scoring route required an added assumption that values were randomly permuted among
+traders. A proposed numerical separation applied to one peer's value, whereas the theory paper's
+score uses the whole profile of peers. Direct reports would also replace the standing-book auction
+under study. The peers set this route aside.
+
+The next step was a simpler diagnostic. One peer derived a restriction on token demand at two actual
+charge rates while holding the decision fixed; the other checked the algebra. The peers then made
+the delayed-trade example sharper by requiring a later seller call that the scheduler cannot avoid
+and by making its token cost the same whether the seller accepts or declines. Finally, they checked
+a reward tied to the complete path that removes both the buyer's reason to wait for a better price
+and the cost imposed on the seller. These were derivations and checks, not auction runs.
+
+\section{Results}
+
+For the diagnostic, fix a trader, its value, the book, the other traders' behaviour and the choices
+available. Let \(a\) be a choice, \(U(a)\) its expected payoff before the charge, and \(T(a)\) its
+expected metered tokens. Suppose these quantities stay the same when the token price changes. If
+\(a_0\) is optimal at price \(\tau_0\), and \(a_1\) at a higher price \(\tau_1\), each choice must
+beat the other at its own price. Adding those two payoff comparisons gives
+\[
+(\tau_1-\tau_0)\bigl(T(a_0)-T(a_1)\bigr)\geq 0.
+\]
+Thus \(T(a_1)\leq T(a_0)\): under these fixed conditions, a higher actual charge cannot make an
+optimal trader choose more expected tokens. The same reasoning covers lotteries over choices, using
+their expected payoffs and token counts. Emmy derived this restriction and Ada checked it in the
+peer notes. It is a necessary test of the additive-charge model, not a prediction for total tokens
+or crossing in a live auction, where the book and other traders can change.
+
+The delayed-trade example shows a different limit. Let a buyer value an item at \(v\), let a
+seller's cost be \(c\), and let the standing ask be \(p\). The buyer can accept \(p\) now or bid
+\(p-\delta\), where \(\delta>0\) is the price cut and \(v>p>p-\delta>c\). Suppose the buyer's two
+replies use the same number of tokens. After a bid, the scheduler requires a seller call using
+\(K_S>0\) extra tokens. The seller pays for that call whether it accepts or declines, and no further
+buyer call is needed. Once called, the seller accepts the bid because its price exceeds \(c\).
+
+Both paths make the same match. At every own-token price \(\tau\geq0\), the buyer prefers to bid: it
+saves \(\delta\) on the item without changing its own token bill. Let \(\lambda>0\) convert token
+cost into the units of trading surplus. The gross gain from trade is \(v-c\) on either path, but
+crossing now raises net welfare by \(\lambda K_S\) because it avoids the seller's call. Ada stated
+the example, and Emmy checked the continuation conditions. It is a possible local failure of an
+own-token charge, not a finding about traders in the proposed auction.
+
+The peers then checked a repair for this fixed match. For a complete trading path \(a\), let
+\(p(a)\) be the execution price and \(C_B(a)\) and \(C_S(a)\) be the buyer's and seller's verifiable
+token totals. Give the buyer the additional reward
+\[
+R_B(a)=p(a)-\lambda C_S(a)-(\lambda-\tau)C_B(a).
+\]
+The buyer's payoff after its own-token charge and this reward is \(v-\lambda[C_B(a)+C_S(a)]\). It
+therefore favours the lower-token path when the match is fixed. The price term matters: charging for
+both traders' tokens alone can still leave waiting attractive when \(\delta>\lambda K_S\). The
+reward calculation was checked by both peers. It establishes only this local comparison.
+
+\section{What did not hold}
+
+The peer-scoring idea did not justify a result about this auction. It needed a value-assignment rule
+absent from the auction paper and a different score for the single-peer calculation. The peers kept
+it only as a conditional benchmark.
+
+The token-price restriction needs an actual additive charge and a stable decision problem. An
+announced charge may change choices without making the trader maximise the stated payoff. More
+tokens at a higher price would reject the combined assumptions without identifying which failed.
+Fewer tokens would not establish auction efficiency.
+
+The delayed-trade example needs equal-token buyer replies and a mandatory seller call whose cost is
+sunk before the seller chooses. Otherwise a high charge might prevent the later trade. The repair
+needs verifiable prices and token counts and might need outside funds. It does not settle private
+values, changing matches, seller outside options or the full auction's equilibrium. The theory
+paper's coupled-reward example concerns another game. The auction paper already mentions
+counterparty savings, so this example sharpens that concern without establishing an empirical
+effect.
+
+A targeted search in the ledger found adjacent work on token-budget prompting \cite{tokenbudget} and
+language-model preference tests \cite{preferences}. The search was limited and supports no broad
+claim of novelty.
+
+\section{Why the thread stopped}
+
+The verifier accepted the fixed-decision inequality and conditional crossing example, but paused
+because no charged traders have been tested under the actual scheduler. The reward needs a fixed
+match and observable path data; its funding and enforcement are unresolved. The smallest restart is
+a metered fixed-book test that varies a real token charge while holding options and other traders'
+behaviour fixed. A later paired crossing test could check the seller continuation and compare the
+own-token charge with a specified path reward. Full-auction welfare remains a later question.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

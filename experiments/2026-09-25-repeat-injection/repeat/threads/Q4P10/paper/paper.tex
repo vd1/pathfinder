@@ -1,0 +1,89 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Priority Prizes for Job Choice in a Finite-Energy Agent Society}
+\pathfinderpapers{2609.01595}{Mechanism Design for Alignment and Control}%
+  {2607.14865}{The Energy Society: A Simulation Environment for Studying Agent Cooperation under Survival Pressure}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We examine a one-round job-choice implication of the action-dependent rewards in \emph{Mechanism Design for Alignment and Control} for the split prizes in \emph{The Energy Society}. An exact two-agent calculation shows that splitting a prize gives a colliding agent an expected private payout above its marginal contribution to group payout, but that a collision need not reduce group energy. A prize-preserving priority rule makes a globally optimal job-or-idle profile a Nash equilibrium under fixed, known success and cost laws. This priority argument is a specialisation of an earlier ordered-protocol result by Marden and Wierman; our contribution is its explicit realisation with the graded, finite-energy prizes of the pair, together with the collision and survival boundaries. The theorem is conditional and does not establish better survival or measured improvement in the simulation. % Ledger #5, #7, #10, #12, #14, #19.
+\end{abstract}
+
+\section{The two papers and the question}
+
+Bergemann, Koh and Morris study mechanisms for AI agents whose preferences and capabilities may be unknown. Their multi-agent framework allows rewards to depend on the action profile and state; its peer-discipline construction can use a freely scaled score and an off-path reward of negative infinity. These are abstract rewards, with no requirement that they be paid from an energy account \cite{bergemann2026mechanism}. % Ledger #2, #19.
+
+Hansen and co-authors' \emph{Energy Society} instead makes energy both an inference budget and a condition for remaining active. Agents can attempt a job, donate, or idle; token generation consumes energy. A correct job attempt earns a prize, split equally among the successful agents if several solve the same job. Recommendations in its discussion phase are nonbinding and also cost tokens \cite{hansen2026energy}. % Ledger #2, #5, #19.
+
+We ask what a coupled reward can do at the job-choice stage while preserving each job's realised total prize. The following one-round model fixes a set of active agents and available jobs, and retains job choice or idle. It omits donations and later rounds. This restriction is substantive: it turns the prize into a transferable share of a fixed current payout, without asserting that energy has the same value to every agent over time. % Ledger #7, #10, #12, #14.
+
+\section{The split-prize incentive}
+
+Suppose agents \(1\) and \(2\) attempt job \(j\), with prize \(R_j\). Write \(p_{ij}=\Pr(S_{ij}=1)\) and \(q_j=\Pr(S_{1j}=1,S_{2j}=1)\), where \(S_{ij}\) indicates success. P's split rule gives expected group payout and agent \(2\)'s expected private payout, respectively, of % Ledger #3, #5.
+\[
+R_j(p_{1j}+p_{2j}-q_j),
+\qquad
+R_j(p_{2j}-q_j/2).
+\]
+Holding agent \(1\)'s attempt fixed, agent \(2\)'s marginal contribution to expected group payout is \(R_j(p_{2j}-q_j)\). Its private payout therefore exceeds that contribution by exactly \(R_jq_j/2\). This uses the joint-success probability directly and needs no independence assumption. % Ledger #5.
+
+If agent \(2\) instead attempts an empty job \(k\), with success probability \(p_{2k}\), and its expected attempt costs are \(c_{2j}\) and \(c_{2k}\), the change in expected group energy is % Ledger #5.
+\[
+R_kp_{2k}-R_j(p_{2j}-q_j)-(c_{2k}-c_{2j}).
+\]
+This expression may have either sign. A second attempt at an occupied job can raise the probability that anyone earns its prize enough to justify the collision. P's aggregate collision counts alone consequently cannot measure the energy effect of reallocating an attempt. % Ledger #5, #8, #9, #17, #19.
+
+\section{A priority realisation of the prize}
+
+Let \(N\) be a finite set of active agents and \(J\) a finite set of jobs. Each agent selects one job or idle. For each agent-job pair, potential success events have a fixed joint law independent of the choice profile; the expected individual cost of each action, including idle, is fixed. Answer policies are fixed too. Agents maximise expected own one-round energy, and a coordinator knows these laws. Let \(W(a)\) be expected total prize payout less expected individual costs at profile \(a\). Let \(a^\star\) maximise \(W\) over every feasible profile, including collisions and idle. % Ledger #6, #7, #10, #11, #19.
+
+For each job \(j\), put its agents in \(a^\star\) ahead of all other agents in a fixed priority order. After grading, pay the whole existing prize \(R_j\) to the highest-ranked successful agent at that job, and zero if nobody succeeds. This replaces P's equal division; for every realised outcome, both rules pay a total of \(R_j\) precisely when at least one agent succeeds. The corresponding adjustment to each agent's split payout is bounded in magnitude by \(R_j\), and the adjustments sum to zero within each job. % Ledger #7, #9, #10.
+
+\begin{proposition}[One-round priority implementation]
+Under the preceding fixed-law and expected-energy assumptions, \(a^\star\) is a Nash equilibrium of the job-or-idle game with priority prizes. The claim permits correlated successes and collisions in \(a^\star\). % Ledger #7, #10, #11.
+\end{proposition}
+
+\begin{proof}
+Fix agent \(i\), holding all other choices at \(a^\star\). If \(i\) is assigned to job \(j\), removing it lowers expected group payout there by % Ledger #7, #10.
+\[
+m_{ij}=R_j\Pr\bigl(S_{ij}=1,\;\text{all other incumbents on }j\text{ fail}\bigr).
+\]
+Its own expected priority payout on \(j\) is at least \(m_{ij}\): it wins whenever it succeeds and all higher-ranked incumbents fail. For a move to another job \(k\), agent \(i\) ranks after every incumbent there, so its new expected payout is exactly the marginal increase in that job's group payout, % Ledger #7, #10.
+\[
+m_{ik}=R_k\Pr\bigl(S_{ik}=1,\;\text{all incumbents on }k\text{ fail}\bigr).
+\]
+This includes empty jobs; idle has zero prize. Agent \(i\)'s change in expected cost is also the change in group cost. Thus every unilateral deviation satisfies \(\Delta U_i\leq\Delta W\leq0\), where the last inequality is global optimality. An initially idle agent has zero old prize, so the same comparison applies. % Ledger #7, #10, #11.
+\end{proof}
+
+The global comparison is essential. Maximising only over distinct-job assignments cannot exclude a profitable, group-beneficial deviation into an occupied job. The result also establishes an equilibrium at the selected optimum; it does not say that this is the only equilibrium or that agents will find it. % Ledger #6, #8, #10, #11.
+
+\section{Relation to the specific prior result}
+
+The target-first priority construction and its optimal-profile equilibrium step have already been published. Marden and Wierman's Lemma 4.1 gives resource-specific ordered protocols with incumbents of an optimal allocation ranked ahead of outsiders, and proves that the optimum is an equilibrium for submodular distributed-welfare games \cite{marden2013overcoming}. Our priority prize is the stochastic job-coverage instance: under the fixed joint law, a job's expected payout is the probability of a union of success events times \(R_j\), and its ordered marginal share is the probability that an agent succeeds while all higher-ranked agents fail, multiplied by \(R_j\). The proposition above makes that established step explicit for P's realised split prize and its individual energy costs. We do not claim a new general implementation theorem. % Ledger #5, #7, #10, #19; prior result checked at the cited paper's Lemma 4.1.
+
+Q establishes a broad incentive framework but does not impose P's prize and survival budget. P reports behaviour under split prizes and discussion, not a priority-payout experiment. The pair-specific contribution here is the exact split-rule collision wedge, a bounded payout realisation of the ordered protocol in P's job stage, and the identification of what its one-round guarantee leaves unresolved. % Ledger #2, #5, #7, #9, #12, #17, #19.
+
+\section{Limitations}
+
+\paragraph{Survival and continuation.} Priority preserves current total payout but changes who holds energy. In the ledger's stylised example, two agents each begin with \(15\) energy, each spend \(10\) on the same job, both succeed, and the prize is \(20\). Splitting leaves balances \((15,15)\), while priority leaves \((25,5)\). A later call costing \(10\) can exhaust the priority loser's balance even though both split-rule agents can pay that cost. Equal current group energy therefore does not imply equal future activity. This is an illustrative boundary, not an outcome measured in P. % Ledger #12, #14.
+
+\paragraph{Private capability and scoring.} The priority proof assumes that the coordinator already knows the success and cost laws. It offers no truthful-reporting mechanism. The note gives a separate necessary bound for a particular paid peer score: if two types each gain at least \(M\) from a false report before scoring, their co-player outcome laws are \(P_0,P_1\), and every score lies in \([0,B]\), the two truth-telling inequalities imply the following, where \(z_r(y)\) is the score for report \(r\) and outcome \(y\), and \(\operatorname{TV}\) denotes total variation distance. % Ledger #13, #15.
+\[
+2M\leq\sum_y(P_0(y)-P_1(y))(z_0(y)-z_1(y))
+\leq2B\operatorname{TV}(P_0,P_1).
+\]
+Thus \(B\geq M/\operatorname{TV}(P_0,P_1)\) when total variation is positive. When the laws coincide and \(M>0\), no finite \(B\) satisfies these constraints. This bound concerns nonnegative score payments from an energy budget; it does not constrain Q's abstract rewards or all possible elicitation mechanisms. % Ledger #2, #13, #15.
+
+\paragraph{Behaviour and identification.} The proof fixes answer effort, joint success laws and job-specific costs, and assumes expected-energy best responses. P's agents may change effort, communication, donations and later choices when the payout rule changes. Its published aggregates do not supply the counterfactual success probabilities or job-specific token costs needed to evaluate the proposed assignment. The no-discussion comparison changes a charged phase as well as collision counts, activity and job mix. Nothing here demonstrates an energy or survival improvement in P. % Ledger #9, #12, #14, #17, #19.
+
+\section{Open question}
+
+A controlled comparison would hold jobs, agent set, objectives and communication budget fixed while varying split versus priority payout. Recording assignments, joint correctness, token costs, balances, deactivations and donations would test both the one-round incentive calculation and its survival boundary. The open theoretical problem is to combine private success information, strategic answer effort and continuation values under a finite energy budget. % Ledger #14, #19.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,50 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Payoff-Equivalent Feedback in an LLM Double Auction}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q studies LLM traders in a double auction and reports incomplete convergence, low trade volume in some conditions, and frequent small quote improvements. P studies an interface from truthful peer signals to contribution rankings, but its references to ``Q'' concern a different mechanism-design paper, so its peer-ranking theorem does not directly apply to the assigned double-auction study. \ledger{1, 2, 3, 13}
+
+\section{Connection pursued}
+
+The useful connection is P's account of potential-based reward shaping. It suggests a controlled intervention for Q's traders: give provisional feedback for completing a trade while preserving each trader's total monetary payoff. This could test whether the observed reluctance to cross a profitable spread depends on the timing and framing of feedback. Q's reasoning-trace analysis associates crossing with urgency and execution language, but does not establish what causes the switch. \ledger{4, 10, 13}
+
+\section{What the arguments establish}
+
+Let \(U_i\) be trader \(i\)'s total profit in a round. Give the trader additional step feedback \(F_{i,t}=\psi_{i,t+1}-\psi_{i,t}\), with \(\psi_{i,0}=\psi_{i,T}=0\). A potential that rises temporarily after a completed trade and returns to zero at settlement produces a completion signal, yet
+\[
+\widetilde U_i
+=U_i+\sum_{t=0}^{T-1}F_{i,t}
+=U_i+\psi_{i,T}-\psi_{i,0}
+=U_i.
+\]
+The equality holds on every completed path. Profit best responses and the set of Nash equilibria are therefore unchanged. If fixed LLM agents trade differently under this feedback, the result would concern their response to feedback, not a change in the underlying profit incentives or a new equilibrium theorem. \ledger{4, 5, 9, 11, 13}
+
+Welfare needs its own endpoint. In Q's value schedule, the five positive-surplus pairs generate gains of \(2.50+2.00+1.50+1.00+0.50=7.50\), the maximum available surplus. They can attain full allocative efficiency with five trades and transaction prices dispersed around the competitive price; a sixth trade between value and cost \(2.00\) adds no surplus. Trade count and price dispersion should therefore be reported alongside, rather than substituted for, realized surplus. \ledger{12, 15}
+
+P's peer-calibration route has a separate obstacle. Its agreement factorisation requires repeated, conditionally independent reports about the same realised latent comparison. Q provides strategic bids and asks, private reservation values, and a public order history, not such reports. For example, if observers all repeat a common public anchor \(Z\) that is independent of the true comparison \(X\), their pairwise agreement is one although their reports contain no information about \(X\). P's calibration assumptions cannot simply be assigned to Q's market tape. \ledger{6, 13}
+
+The public tape also does not identify Q's welfare measure by itself. Hold a trade at price \(2.00\) with a seller of cost \(0.75\) fixed, and swap values \(3.25\) and \(2.25\) between the matched buyer and an unmatched buyer. Both assignments permit the same public trade and preserve the maximum attainable surplus, but realized surplus differs by \(1.00\). Q can calculate efficiency because its experimenter knows private values; the example limits a tape-only deployment of a ranking or welfare diagnostic. \ledger{7, 8}
+
+\section{Objections and limits}
+
+Q's prompts do not explicitly give agents the numerical iteration cap. A late small improvement is consequently not evidence that an agent knowingly declined its final profitable opportunity. A decisive local probe must disclose that the action is the last one in the fifth and final round: with a strictly profitable resting quote available and no continuation, crossing yields positive profit while an unfilled quote yields none. Earlier-round probes would need to account for the effect of actions on later public histories. \ledger{5, 9, 11}
+
+The proposed feedback has not been tested in Q. The material establishes a payoff-equivalent intervention and a testable behavioral question, but supplies no estimate of its effect on crossing or welfare. \ledger{13, 14}
+
+\section{Outside sources}
+
+The payoff-invariance argument is established prior work. The peer notes identify Devlin and Kudenko's \href{https://pure.york.ac.uk/portal/en/publications/theoretical-considerations-of-potential-based-reward-shaping-for-/}{work on potential-based reward shaping} and \href{https://arxiv.org/abs/1401.3907}{Lu et al.'s multi-agent analysis}; neither makes the proposed market intervention an existing empirical result. \ledger{5, 8, 14}
+
+\section{Open question and next step}
+
+The smallest test is a matched, disclosed-horizon final-action probe: present the same profitable spread, state, and final monetary payoff with and without provisional completion feedback and its terminal reversal, then measure crossing across repeated trials. That would test the local feedback effect. A claim about market efficiency would additionally require paired full-market runs, with realized surplus as the primary outcome and crossing, trade count, and price dispersion as diagnostics. \ledger{10, 12, 13, 14}
+
+\end{document}
+```

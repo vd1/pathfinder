@@ -1,0 +1,150 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What Predictions Reveal About Distributed Tail Risk}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note reads a survey of learning with predictions alongside a paper on distributed optimisation of
+conditional value at risk (CVaR). The thread asked whether predicted loss distributions could reduce the
+number of sampled losses needed by the distributed method while remaining safe when predictions are wrong. The
+peers obtained an error bound for validated predictions and a lower bound showing that even exact quantile
+advice can leave costly tail information hidden. They also recovered a one-query CVaR method, but found that
+its centralised estimator and rate were already published. The thread paused because it had neither a
+prediction-sensitive query saving nor a proved new distributed result.
+\end{abstract}
+
+\section{Introduction}
+
+Q surveys algorithms that use fallible predictions while retaining formal guarantees \cite{Q}. It separates
+the form of a prediction from its error, the quality of a result from the cost of obtaining advice, and proved
+guarantees from evidence about systems. Its discussion of predicted distributions cautions that a guarantee
+for one objective need not carry over to a tail-risk objective. It asks that predictor calls be counted when
+comparing methods.
+
+P studies agents that jointly choose a decision while communicating over a changing network \cite{P}. Each
+agent sees noisy samples of its own loss, rather than its risk function or gradient. The objective is the
+average of local CVaR values, which measure losses in an upper tail. P estimates each CVaR from a fresh batch,
+uses a random perturbation to estimate a gradient, and proves an expected bound for an average of iterates.
+Its bound records both disagreement between agents and error from finite batches. With fixed batches and
+smoothing, its last-iterate result retains a gap from the true CVaR optimum.
+
+The connexion was a concrete cost question: could a forecast of local losses replace some of P's samples, with
+a bound that improves when the forecast is accurate and stays valid when it is wrong? The peers treated a
+sampled loss and a predictor call as costs, as Q requires. P supplied the oracle and error terms against which
+an apparent saving could be tested.
+
+\section{What was done}
+
+The peers first considered a predicted cumulative distribution function (CDF) at each sampled point. They
+compared it with an empirical CDF from fresh losses and accepted the prediction only when the two were close.
+A concentration bound then controlled the selected CDF, even for a bad forecast. P's inequality between CDF
+error and CVaR error turned this into an error-sensitive CVaR estimate. The validation batch still had to be
+collected, so this calculation did not save loss queries.
+
+Next, the peers tried subtracting a predicted scalar CVaR value from P's one-point gradient estimate. A scalar
+fixed before the random direction has zero mean after multiplication by that direction. This kept the
+estimator's conditional mean unchanged and could reduce its second moment when the scalar was accurate. Ada
+checked the required timing and the moment bound in \texttt{ada/research-note.md}. A second independent batch
+could supply a similar baseline without a prediction, at roughly twice the loss-query cost. Earlier
+residual-feedback work also weakened any novelty claim \cite{Residual2010,Wang2022Game}. A forecast benefit
+would therefore need a full comparison of charged predictor and loss calls, including P's network error. That
+comparison was not completed.
+
+The work then shifted to the threshold used to define CVaR. Rather than estimating CVaR anew from a batch at
+every point, the peers kept each agent's threshold as a variable to be optimised. An early update combined a
+gradient from ball smoothing with a threshold derivative from sphere smoothing. These are derivatives of
+different objectives, as Ada objected. Emmy repaired this by perturbing the decision and threshold together.
+Ada checked the repair; their derivations are in \texttt{emmy/lifted-threshold.md} and
+\texttt{ada/lifted-threshold.md}. They then found that Cardoso and Xu had already used the same joint
+estimator and its centralised rate \cite{CardosoXu2019}.
+
+Finally, the peers asked what an exact threshold forecast actually reveals. They built two loss models with
+the same exact quantile at every decision and the same full loss CDF at one anchor decision, but opposite best
+decisions. Their information bound quantified the samples still needed to tell the models apart. A separate
+suggestion used a shrinking perturbation and P's graph mixing to seek exact last-iterate convergence. The
+potential argument in \texttt{emmy/vanishing-radius.md} remained a sketch, and a comparison with existing
+distributed one-point work was incomplete \cite{LiAssaad2021}.
+
+\section{Results and their support}
+
+For the validation calculation, let \(F\) be the true loss CDF at a query point, \(\widetilde F\) a predicted
+CDF fixed before sampling, and \(F_s\) the empirical CDF of \(s\) fresh losses. There are \(m\) agents and a
+horizon of \(T\) rounds. Write \(\eta=\|\widetilde F-F\|_\infty\) for prediction error and set
+\(b=\sqrt{\log(2mT/\zeta)/(2s)}\), where \(\zeta\) is the allowed failure probability. The peers' conditional
+concentration and union-bound argument gave \(\|F_s-F\|_\infty\le b\) at all the tested points with
+probability at least \(1-\zeta\). They selected \(\widetilde F\) when \(\|\widetilde F-F_s\|_\infty\le2b\),
+and \(F_s\) otherwise. On that event, the selected CDF has error at most \(3\min\{\eta,b\}\): a forecast with
+\(\eta\le b\) is accepted, while any accepted forecast with larger error is within \(3b\) of \(F\). For agent
+\(i\), P's CDF inequality then gives a CVaR-value error at most \((6U_i/\alpha_i)\min\{\eta,b\}\), where
+\(U_i\) bounds the absolute loss and \(\alpha_i\) is its upper-tail probability. This is a value-error
+calculation from the peer record, not a proved query saving or a new network theorem.
+
+The lifted construction explains the alternative sampling route. Let \(x\) be the shared decision,
+\(J^i(x,\xi)\) a sampled loss for agent \(i\), and \(\tau_i\) its threshold. Here \(\xi\) denotes a fresh
+random sample, and \((a)_+=\max\{a,0\}\). P's CVaR representation uses
+\[
+H_i(x,\tau_i,\xi)
+=\tau_i+\alpha_i^{-1}\bigl(J^i(x,\xi)-\tau_i\bigr)_+,
+\qquad
+C^i(x)=\min_{\tau_i}\mathbb E H_i(x,\tau_i,\xi).
+\]
+Under P's bounded, convex loss assumptions, \(H_i\) is jointly convex in \((x,\tau_i)\), and a best threshold
+lies in \([-U_i,U_i]\). If \(x\) has dimension \(d\), a random direction \(u\) on the sphere in dimension
+\(d+1\) perturbs the pair \((x,\tau_i)\) by radius \(\delta\). One loss sample evaluates \(H_i\) at that pair.
+Multiplying the value by \((d+1)u/\delta\) gives a vector whose conditional mean is the gradient of one
+jointly ball-smoothed objective. Bounded losses and projection of the stored threshold give a pathwise
+estimator bound. The peers' centralised calculation therefore obtained an expected \(O(T^{-1/4})\) gap from
+one loss query per agent per round, without P's fixed-batch CVaR-estimation term. Cardoso and Xu already give
+this estimator and centralised rate \cite{CardosoXu2019}; the peer calculation checks its fit to P's
+formulation. The proposed extension to P's changing graph was not proved.
+
+The lower bound is the clearest limit on advice. For one agent let \(x\in[-1,1]\), let \(E\) equal one with
+probability \(\alpha\), and let an independent sign \(S\) equal \(+1\) with probability \(1/2+\gamma\) in one
+world and \(1/2-\gamma\) in the other, where \(0<\gamma\le1/4\). A query returns
+\[
+J(x,E,S)=E(1+Sx)/2.
+\]
+Both worlds have the exact lower \((1-\alpha)\)-quantile zero at every \(x\). At \(x=0\), both also have the
+same full loss CDF: probability \(1-\alpha\) at zero and \(\alpha\) at \(1/2\). Yet their CVaR functions are
+\(C_\pm(x)=1/2\pm\gamma x\), so their best decisions are opposite. For \(n\) adaptive loss queries, the peers
+bounded the divergence between the two observation histories by \(16n\alpha\gamma^2\): only a tail draw can
+reveal the biased sign. Their total-variation argument then gave a worst-world expected CVaR gap of at least
+\(\gamma/2\) when \(n\le1/(32\alpha\gamma^2)\). Taking \(\gamma=2\varepsilon\), for \(0<\varepsilon\le1/8\),
+yields a necessary order of \(1/(\alpha\varepsilon^2)\) queries for expected gap below \(\varepsilon\). Ada's
+proof and Emmy's check are recorded in \texttt{ada/lifted-threshold.md} and the peer ledger. This bound
+concerns exact threshold advice, even with an exact CDF at one decision. It does not cover predictions of the
+loss distribution across all decisions.
+
+\section{Objections and limits}
+
+The forecast checks separated mathematical validity from a useful saving. Validation spent the batch it was
+meant to replace. Scalar centring preserved the conditional mean only when the hint was fixed before the
+random direction; a prediction-sensitive network term would require a new disagreement argument. The initial
+query-exponent comparison for centring also used an untuned step-size schedule, which Ada corrected. None of
+these calculations establishes that predictions beat a fresh baseline batch after all costs are counted. The
+ledger also recorded possible one-point and directional-hint comparators without completing the comparison
+\cite{Residual2010,DirectionalHint2026}. A separate risk-averse momentum method was logged as relevant prior
+work, not as a settled comparison \cite{Wang2022Momentum}.
+
+For threshold lifting, the first derivative pairing failed because it mixed two smoothings. Joint perturbation
+settled that proof objection, but the direct Cardoso--Xu precedent settled the centralised novelty claim. The
+proposed changing-network bound and the shrinking-radius last-iterate result still need complete proofs and
+prior-art checks. Li and Assaad already cover general one-point distributed optimisation on changing networks
+\cite{LiAssaad2021}. The two-world lower bound leaves a wide gap against the known \(O(\varepsilon^{-4})\)
+upper route and says nothing about richer predictions that reveal how tail losses respond to \(x\).
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the sound two-world bound limits only a narrow advice model, CDF
+validation still uses fresh samples, and the one-query centralised route was already known. The record
+contains no prediction-sensitive loss-query saving and no proved new theorem for P's network. The smallest
+useful restart is to specify one prediction of tail response across decisions, charge its acquisition and use,
+and prove an error-dependent query bound against the one-query lifted baseline and the two-world instance. The
+changing-network proof becomes a separate next step if that single-agent comparison succeeds.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

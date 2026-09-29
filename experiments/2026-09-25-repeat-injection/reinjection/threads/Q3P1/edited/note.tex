@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Payoff-equivalent feedback in an LLM double auction}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q studies language-model traders in a double auction; P studies how peer reports can support
+contribution rankings and reward feedback. The thread looked for a way to connect P's methods to the
+trades that Q's agents often fail to complete. It found a payoff-equivalent completion signal and two
+limits on using P's ranking method with Q's public auction records. The payoff calculation is established
+prior work, and no one tested whether the signal changes trading or welfare, so the thread ended at PAUSE.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Competitive Market Behavior of LLMs}, puts 11 language-model buyers and 11 sellers in a double
+auction for five rounds \cite{Q}. Each trader knows its own reservation price and sees the standing
+offers and order history. A buyer can accept a standing ask by bidding at least that much; a seller can
+accept a standing bid in the corresponding way. The agents are told to maximise their trading profit. Q
+reports incomplete convergence, especially for GPT Large, whose agents often improve offers by small
+amounts until time runs out. Its analysis of Gemini Large reasoning traces links crossing a spread with
+words about urgency and execution, but does not establish what causes a trader to cross.
+
+P, \emph{From Truthful Peer Signals to Contribution Rankings}, asks when noisy reports from several
+observers can be turned into a common ranking \cite{P}. Its result needs repeated reports about the same
+underlying comparison, independent observer errors under stated conditions, and enough overlap between
+observers. It also discusses potential-based reward shaping: intermediate feedback can change while the
+total reward difference between complete paths stays fixed. P's own labels ``Q'' and ``P'' refer to other
+papers on mechanism design and cooperative credit, rather than to the assigned auction paper and P
+itself.
+
+The thread first asked whether P's peer calibration could diagnose Q's market. That route lacked the
+reports P requires. The peers then pursued a narrower question: could a temporary signal for completing a
+trade change the behaviour of Q's fixed language-model traders while leaving final monetary profit
+unchanged?
+
+\section{What was done}
+
+The peers checked the identity of the assigned papers before trying to combine their claims. They
+compared P's requirement for repeated, conditionally independent labels of one realised comparison with
+Q's strategic bids, asks and shared public history. They found no direct input to P's calibration method
+in the auction record. They also constructed two private-value assignments that give the same public
+trades but different realised welfare.
+
+They next took P's reward-shaping calculation and adapted it to Q's undiscounted trading profit. They
+proposed provisional feedback when a trader completes a trade, followed by a full reversal at settlement.
+They checked the resulting payoff path by path and compared the proposed claim with prior work on
+multi-agent reward shaping \cite{devlin2011,lu2011}. Their source search also found a related LLM-guided
+double-auction shaping study \cite{related2025}; it did not establish novelty for this proposed
+intervention.
+
+Finally, they tightened the proposed test after two objections. Q's prompts do not explicitly tell agents
+the numerical order cap or identify a final turn. Also, actions in an earlier round can affect later
+public histories. The peers therefore specified a disclosed final opportunity in the fifth round for a
+local decision test, and separate paired full-market runs for a welfare test. They checked that Q's
+welfare measure is realised surplus, which need not move with trade count or price dispersion.
+
+\section{Results}
+
+The payoff calculation is exact for a completed round. Let \(i\) denote a trader, \(t\) a step in the
+round, and \(T\) its settlement step. Let \(U_i\) be the trader's total profit without added feedback.
+Choose a feedback balance \(\psi_{i,t}\) that starts and ends at zero on every possible path. Give the
+trader the change \(F_{i,t}=\psi_{i,t+1}-\psi_{i,t}\) at each step. Then
+\[
+\widetilde U_i
+=U_i+\sum_{t=0}^{T-1}F_{i,t}
+=U_i+\psi_{i,T}-\psi_{i,0}
+=U_i.
+\]
+Here \(\widetilde U_i\) is final profit including the feedback. A temporary balance can rise when a trade is completed and return to zero at
+settlement. Because every complete path has the same final profit as before, profit best responses and
+Nash equilibria stay the same. This is P's telescoping argument in Q's setting, not a new equilibrium
+result \cite{P,devlin2011,lu2011}. A change in fixed agents' choices under the displayed feedback would
+be a behavioural finding about the feedback, not a change in the game's monetary incentives.
+
+The peers' welfare check also holds for Q's stated values. The five buyer--seller pairs with strictly
+positive gains can produce surplus \(2.50+2.00+1.50+1.00+0.50=7.50\), the full available surplus. The
+sixth pair has value and cost \(2.00\), so it adds no surplus. Thus five trades can achieve full
+allocative efficiency even if their prices differ. A test of market improvement must measure realised
+surplus; crossing rates, trade count and price dispersion can help explain it but do not determine it
+\cite{Q}.
+
+The public record alone cannot always reveal that surplus. In the peers' example, a seller with cost
+\(0.75\) trades with buyer A at price \(2.00\), while buyer B does not trade. A has value \(3.25\) and B
+has \(2.25\) in one assignment; the values are swapped in another. The same public actions are feasible
+in both, and the best attainable surplus is unchanged, yet this trade creates \(2.50\) surplus in the
+first assignment and \(1.50\) in the second. Q's experimenter can compute welfare because it knows the
+private values. The example limits a diagnostic based only on the public tape; it does not challenge Q's
+reported efficiency calculation.
+
+\section{Objections and limits}
+
+P's ranking result needs reports from observers of the same underlying comparison, with errors that are
+independent once that comparison is fixed. Q records traders' strategic actions under a shared order
+history, not those reports. The peers illustrated the problem with a hypothetical public anchor that
+every observer repeats regardless of the true comparison: perfect agreement would then convey no truth.
+This is an objection to applying P's assumptions to the auction tape, not an empirical finding that P's
+method fails on Q's data.
+
+Nor does Q's late small-step quoting prove that its agents passed up a known final profitable trade. The
+displayed prompts give the round number and mention an order cap, but not the numerical cap or a
+countdown. For a strict local comparison, the peers required the final actor in the fifth and final round
+to be told that no later action can fill an unaccepted quote. If a resting opposite-side offer yields
+positive profit when crossed, crossing then earns more than an unfilled offer. Earlier rounds do not give
+this simple comparison because today's actions may alter tomorrow's history.
+
+No completion-feedback intervention was run. The algebra therefore gives no estimate of its effect on
+crossing or welfare. The peers' source check also placed payoff invariance in prior work
+\cite{devlin2011,lu2011}. The related auction study found in the search was noted, but the available
+material did not establish whether it tests this same matched feedback question \cite{related2025}.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the supported payoff identity was already known and the proposed
+behavioural effect had not been measured. The peer-calibration and public-tape checks set useful
+boundaries, but did not supply an intervention result for the assigned pair. The smallest restart is a
+repeated, matched final-action probe: disclose the last opportunity and the same profitable standing
+offer in both conditions, keep the state and final profit fixed, and compare crossing with and without
+provisional completion feedback and its stated settlement reversal. A claim about market welfare would
+then need paired full-market runs with realised surplus as the main outcome.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

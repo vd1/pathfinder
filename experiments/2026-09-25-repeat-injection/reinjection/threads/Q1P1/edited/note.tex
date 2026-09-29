@@ -1,0 +1,156 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When Peer Comparisons Can Serve as Predictions}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note reads Zhao and colleagues' survey of learning-augmented algorithms alongside a local paper on
+rankings built from peer comparisons. We asked whether the latter's scores or rankings could be supplied to a
+decision algorithm with a stated error and a stated cost of obtaining them. Peer agreements can pass the
+paper's calibration check even when a shared error reverses a ranking; within a narrower shared-error model,
+graph structure determines when order or numerical scores can still be recovered. A conditional sampling bound
+prices the clean-model estimate, but no downstream decision guarantee follows. The verifier left the thread at
+DRAFT because the argument supports these qualified findings and leaves the next interface theorem open.
+\end{abstract}
+
+\section{Introduction}
+
+The survey by Zhao and colleagues, called Q here, studies algorithms that use fallible predictions while
+retaining performance guarantees \cite{Q}. It distinguishes a numerical prediction from an ordering, asks how
+prediction error affects a decision, and treats the cost of obtaining predictions as part of the system
+question. It also explains why guarantees for separate parts of a system do not automatically give a guarantee
+for the whole system.
+
+The local paper \emph{From Truthful Peer Signals to Contribution Rankings}, called P here, studies how reports
+from several observers can yield a numerical ranking \cite{P}. It assumes that observers compare the same
+realised item, make independent symmetric errors conditional on that item, and have positive, stable
+reliabilities. Agreements between observers then calibrate those reliabilities; the calibrated comparisons
+determine Bradley--Terry scores when the item-comparison graph is connected. P also discusses using scores for
+reward shaping. Its own letters Q and P name a different pair of papers.
+
+The question pursued in this thread was whether P's output could be the prediction consumed by an algorithm of
+the kind Q surveys. That requires a choice between an \emph{order} and numerical \emph{scores}, an error bound
+for that choice, a count of comparison labels, and a rule for carrying the error into a particular decision. P
+gives a population identification result under its assumptions. It does not itself give the finite-sample or
+downstream rule.
+
+\section{What was done}
+
+The peers first checked which papers were actually supplied. They then translated P's population result into
+Q's terms: a prediction must have a declared target, an error measure, and an acquisition cost. One peer
+worked out how errors in measured agreements and edge means pass through P's reliability calibration,
+Bradley--Terry inversion, and graph reconstruction. The other tested whether the agreements themselves show
+that the intended target was recovered. The resulting four-vertex path example changed the focus from
+estimation alone to identification under shared errors.
+
+Next, the peers restricted the shared error to one positive attenuation rate common to all compared items.
+They checked which comparison graphs preserve order without learning that rate, and which cycles can recover
+the rate and hence the numerical scores. The triangle calculation was followed by a four-cycle calculation,
+then by a six-cycle counterexample. Their derivations give the detailed calculations; the results below state
+the assumptions needed to read them.
+
+\section{Results}
+
+Under P's clean model, let \(X_e\) be the binary result of comparison \(e\), and let \(Y_{er}\) be observer
+\(r\)'s binary report on the same realised result. Write \(a_r>0\) for that observer's reliability.
+Conditional independence and symmetric errors give
+\[
+q_{rs}:=\mathbb{E}[Y_{er}Y_{es}]=a_ra_s.
+\]
+Here \(q_{rs}\) is the agreement moment for observers \(r\) and \(s\). An observed triangle of observer pairs
+fixes their positive reliabilities, and observed overlap paths extend the calibration. Dividing each edge's
+report mean by a calibrated reliability recovers its latent comparison mean. P then uses a connected
+comparison graph to reconstruct Bradley--Terry scores, up to adding the same constant to every score. This is
+a conditional population statement, not an empirical test of its assumptions \cite{P}. The agreement step has
+a precedent in single-coin crowdsourcing, as P notes \cite{P}.
+
+The peers obtained a conditional sampling bound for this clean reconstruction. They assumed a positive lower
+bound on reliability, edge probabilities bounded away from zero and one, bounded depth for the observer
+calibration paths, and uniformly small errors in the measured moments. Their calculation bounded score error
+by the moment error multiplied by factors that grow with calibration depth and with poor connectivity of the
+comparison graph. With \(N\) independent repeats for each measured population, its sampling part decreases at
+order \(N^{-1/2}\); a separate misspecification term may remain. If \(L_H\) is the set of measured
+observer-overlap links and \(E\) the set of comparison edges, their direct collection plan uses at most
+\(N(2|L_H|+|E|)\) observer labels. This is an upper bound for a specified estimator, with its derivation in
+\texttt{emmy/working\_note.md}. It does not price those labels in a decision objective or establish a policy
+guarantee.
+
+The principal negative result concerns a shared error that all observers make on one item. Let \(B_e\) be a
+shared binary sign, independent of the intended comparison \(X_e\), with the same positive mean \(b\) on every
+edge. Let \(Z_{er}\) be an independent observer-specific sign of mean \(a_r\), and suppose each report is
+\(Y_{er}=X_eB_eZ_{er}\). The shared sign cancels when two reports are multiplied. Thus their agreements still
+obey \(q_{rs}=a_ra_s\), although the calibrated edge mean is
+\[
+w_{ij}=b\tanh\!\left(\frac{c_i-c_j}{2}\right),
+\]
+where \(c_i\) and \(c_j\) are the intended numerical scores and \(w_{ij}\) is the calibrated mean for their
+comparison. Agreements alone therefore cannot certify that the inferred score targets the intended comparison.
+This observation sharpens P's warning about correlated errors: the agreement factorisation can survive the
+correlation. It does not contradict P's theorem, whose conditional independence premise excludes this shared
+sign.
+
+On a path of four items, the peers chose successive intended score differences \((4,-1.5,-1.5)\). The first
+item's score exceeds the fourth's by \(1\). With \(b=1/2\), those same reports fit a clean Bradley--Terry
+model whose first score falls below the fourth's by about \(0.265\). The two models give the same full
+distribution of observed reports, even with unlimited repeated items. The construction and its
+error-probability argument are in \texttt{ada/common\_mode\_counterexample.md}, and the second peer checked
+the calculation in \texttt{emmy/working\_note.md}.
+
+The graph matters differently for order and for numerical scores. Under the same constant positive
+shared-error model, any two vertices joined by at most two comparison edges keep their relative order: the
+edge transformation is odd and strictly increasing. Hence a connected comparison graph of diameter at most two
+preserves every pairwise order. On trees this condition is exact for a guarantee over all score vectors: any
+tree containing a three-edge path admits a reversal. It gives an ordinal guarantee, while P's reward-shaping
+use of numerical scores still needs score magnitudes. Ada proved the tree boundary and the diameter-two
+extension; Emmy checked the short-path argument.
+
+Cycles can recover more within this restricted model. On a comparison triangle with consistently oriented
+calibrated means \(A=w_{ij}\), \(B=w_{jk}\), and \(C=w_{ik}\), the Bradley--Terry addition identity gives
+\[
+C=\frac{A+B}{1+AB/b^2},\qquad
+b^2=\frac{ABC}{A+B-C}.
+\]
+When the three means are nonzero, the positive admissible root identifies \(b\). Each edge then yields its
+score difference, and a connected graph recovers all scores up to a common shift. A nondegenerate four-cycle
+also identifies \(b\): if \(S_1\) is the sum of its consistently oriented edge means and \(S_3\) is the sum of
+their three-way products, cycle consistency gives \(S_1b^2+S_3=0\), so \(S_1\ne0\) fixes the positive
+admissible rate. Emmy derived these identities and Ada checked them. A cycle of arbitrary length is not
+enough: Ada supplied a six-cycle with two admissible rates, about \(0.739\) and \(0.854\), whose identical
+report laws reverse one vertex pair's order.
+
+\section{Objections and limits}
+
+The four-vertex example objected to treating a fitted agreement matrix as evidence that reports track the
+intended comparison. The objection stands: more samples of the same reports cannot distinguish its two worlds.
+A direct comparison across that path creates a cycle that exposes this particular clean-model inconsistency,
+and a nondegenerate short cycle calibrates \(b\) within the constant-rate model. Neither observation validates
+that model against edge-dependent or unrestricted shared bias. Degenerate cycles can also provide no rate
+information.
+
+The clean sampling bound answers a different objection, namely that population identification says little
+about limited data or query cost. It makes both depend on the observer and comparison graphs, but its
+misspecification term need not shrink with more data. No finite-sample stability result for the cycle
+estimate, optimal audit design for general graphs, truthful bootstrap for peer reports, or sensitivity theorem
+for a particular downstream decision was established. The peers also did not establish that the graph results
+are new. Their targeted checks found work on correlated annotators \cite{li2019}, pairwise co-occurrence
+identification \cite{ibrahim2019}, semi-verified learning \cite{meister2018}, worker-dependent ranking errors
+\cite{crowdbt}, and Bradley--Terry diagnostics \cite{btdiagnostics}. Those checks were limited searches, not a
+full review.
+
+\section{Why the thread stopped}
+
+The verifier marked the thread DRAFT because the note's central claims were supported and the pair yielded a
+non-obvious result: apparently sound peer agreements can coexist with a wrong downstream ranking. The
+graph-dependent order result and conditional cycle calibration made the proposed prediction interface
+concrete, while the assumptions and limits remained explicit. The smallest useful restart is to prove a
+finite-sample bound for an informative triangle or four-cycle with a stated separation from degeneracy,
+counting both comparison labels and graph conditioning. That bound could then be passed to one specified
+decision algorithm with an explicit sensitivity rule. The present material does not supply that final step.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

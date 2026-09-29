@@ -75,7 +75,7 @@ Feature: Research with EVA and EVA-minus
     When the next research and review cycle is prepared
     Then its calls have identities distinct from the earlier review cycle
 
-  Scenario: Missing referenced research evidence blocks direct review
+  Scenario: Missing referenced research evidence blocks strict direct review
     Given an EVA-minus ledger referencing a missing calculation output
     When Pathfinder prepares its first Vera review
     Then the review is blocked before a provider call with the missing path identified

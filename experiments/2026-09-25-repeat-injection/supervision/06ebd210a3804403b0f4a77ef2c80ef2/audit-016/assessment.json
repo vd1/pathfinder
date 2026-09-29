@@ -1,0 +1,97 @@
+{
+  "observed_at": "2026-09-25T18:31:21.762626+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-015/observed-aggregate.json",
+  "changes": [
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "before": {
+        "pair": "Q4P4",
+        "research": {
+          "pair_id": "Q4P4",
+          "round": 1,
+          "stage": "peers",
+          "status": "running",
+          "reason": null,
+          "started": "2026-09-25T18:19:18Z",
+          "updated": "2026-09-25T18:19:18Z"
+        },
+        "editor": {},
+        "needs_edit": false,
+        "arm": "reinjection"
+      },
+      "after": {
+        "pair": "Q4P4",
+        "research": {
+          "pair_id": "Q4P4",
+          "round": 1,
+          "stage": "done",
+          "status": "DRAFT",
+          "reason": "The note correctly identifies that P refers to a different Q, then makes a valid narrower connection to the supplied papers. Its construction shows that, for every finite batch size, expected empirical CVaR can satisfy Q's state-independent obedience-cycle test while true conditional CVaR violates it; the reward inequalities and value-error graph test follow from the ledger's derivations. The note keeps the result separate from ex-ante plan CVaR and unrestricted state-dependent rewards.",
+          "started": "2026-09-25T18:19:18Z",
+          "updated": "2026-09-25T18:28:46Z",
+          "repair": null
+        },
+        "editor": {
+          "status": "editing",
+          "attempt": 1,
+          "updated": "2026-09-25T18:28:46Z"
+        },
+        "needs_edit": true,
+        "arm": "reinjection"
+      }
+    }
+  ],
+  "unchanged_completed_records": 10,
+  "papers": {
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    }
+  },
+  "active_calls": [
+    {
+      "attempt_id": "6d856e0f229d4832aa59aab53be9a3dd",
+      "run_id": "fc4dbbca30224d26af138f7cd25a7552",
+      "pid": 24244,
+      "thread": "Q4P4",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790360927.014941,
+      "deadline_at": 1790361827.014941,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4",
+      "child_pid": 39535,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/6d856e0f229d4832aa59aab53be9a3dd.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 129.7,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-016/processes.json",
+  "identity_assessment": "Supplied point-in-time evidence matches coordinator PID 24244 under supervisor 24243 and editor child 39535, with code-mode and pdflatex descendants. No duplicate coordinator shown; evidence cannot exclude unrecorded independent groups. No process intervention needed.",
+  "facts": [
+    "10/28 research and edit threads complete; Q4P4 now DRAFT and editing after completed verifier call.",
+    "Current calls within nominal deadlines, heartbeat fresh, no new child failure or stop.",
+    "outcomes.json is stale from prior finalization, including already repaired Q3P2; current aggregate and stage artifacts supersede it.",
+    "Root between-pairs stage and progress checkpoint lag current active child stage.",
+    "Previously recorded external lookup failures remain nonblocking."
+  ],
+  "action": "No campaign intervention.",
+  "pane_title": "Rename denied by sandbox; title not verified."
+}

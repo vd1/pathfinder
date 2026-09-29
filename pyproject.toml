@@ -17,3 +17,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["pathfinder"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"prompts" = "pathfinder/resources/prompts"

@@ -1,0 +1,31 @@
+{
+  "observed_at": "2026-09-25T20:11:25.340367+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "comparison_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-035/after.json",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-036/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-036/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-036/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "facts": [
+    "15 of 28 scheduled research/edit threads complete; 4 DRAFT papers ACCEPTED with build_ok true.",
+    "Repeat Q3P3 advanced from peer calls at previous audit to consolidate/ada. Peer emmy completed 2026-09-25T20:09:53Z.",
+    "Active call ac722a4d918e4a51abf082f7429971f4 has deadline 2026-09-25T20:39:53Z and is not overdue.",
+    "Supplied process evidence matches runner 24244 to supplied Python, parent supervisor 24243, and child codex 62741 to runner; no duplicate runner shown within evidence limits.",
+    "Root and child stop/failure fields empty; no new child failure records. Earlier external lookup failures already recorded, with editing completed.",
+    "outcomes.json is an older exit-time snapshot with repaired Q3P2 BLOCKED state; current child checkpoints and receipts confirm PAUSE and completed editing. launch.py writes outcomes in finally; progress.json updates between pairs.",
+    "No evidence of livelock: Q3P3 stage advanced since previous audit."
+  ],
+  "action": "No intervention; retained snapshots for next audit.",
+  "unfinished": {
+    "research_edit_threads": 13,
+    "current": "repeat/Q3P3 consolidate/ada",
+    "future_draft_pipelines": "Run if subsequent scheduled threads yield DRAFT."
+  }
+}

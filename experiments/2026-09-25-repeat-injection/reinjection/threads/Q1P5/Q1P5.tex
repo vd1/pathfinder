@@ -1,0 +1,58 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{When a Wrist Frame Needs a New Observation}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Paper P proposes the donor wrist pose as a substitute task frame when a held object is occluded during handover, while paper Q demonstrates rotation of a cube within the grasp of a hand observed through motor encoders and action history. P supplies a conditional handover obstruction and Q supplies a framework for observable predictions, task-specific error, and prediction cost; neither paper tests their systems together. \ledger{2, 9, 18}
+
+\section{The connexion pursued}
+
+The question is whether the receiver's complete available history is sufficient to choose a successful grasp when the object can rotate relative to a fixed donor wrist. If distinct hidden object poses share that history, a predictor using only the history cannot distinguish them; a new physical observation might help, but its value must be measured against sensing and delay costs. \ledger{9, 15, 18}
+
+\section{What was found}
+
+Let \(Z=z\) be the receiver-visible wrist, encoder, and action history, let \(G\) be the object-to-wrist pose, and let \(S(G)\) be the receiving actions that succeed at pose \(G\). For binary failure loss, the best history-only receiver has conditional risk
+\[
+R^*(z)
+ = \inf_a \Pr\{a\notin S(G)\mid Z=z\}
+ = 1-\sup_a\Pr\{a\in S(G)\mid Z=z\}.
+\]
+This measures decision-relevant ambiguity rather than pose dispersion alone. A zero-failure action for every pose compatible with \(z\) exists exactly when the corresponding successful-action sets have a common member. P's matched-observation proposition is the two-state obstruction when those sets are disjoint. \ledger{4, 6, 14, 18}
+
+A simple limiting calculation prices an additional observation. Suppose two hidden poses have equal prior probability, have nonempty but disjoint successful-action sets, and remain fixed while a sensor returns \(W\). Write \(K_0\) and \(K_1\) for the conditional laws of \(W\). Without sensing, minimum failure probability is \(1/2\); after sensing, binary decision theory gives
+\[
+\Pr(\text{failure})_{\mathrm{best}}
+ = \frac{1-\operatorname{TV}(K_0,K_1)}{2}.
+\]
+If failure costs \(M\) and sensing costs \(\kappa\), with no other costs in this model, sensing lowers expected additive cost precisely when
+\[
+\kappa < \frac{M\,\operatorname{TV}(K_0,K_1)}{2}.
+\]
+Repeated calls to a predictor that sees only the same \(z\), with randomness independent of the hidden pose, have identical output laws in both states and provide no discriminating information. The useful query must obtain a new state-dependent signal. This calculation is elementary and is not a new handover result. \ledger{13, 15, 16, 17}
+
+A prediction set offers a separate conditional certificate: if an action succeeds for every \(G\) in \(C(z)\), failure implies \(G\notin C(z)\). Marginal coverage of at least \(1-\alpha\) therefore bounds marginal failure probability by \(\alpha\), provided the object does not change before the action. It does not give a per-history safety guarantee. A grasp-point position bound alone is insufficient for an orientation-sensitive receiving task, since rotation about that point can preserve its position while changing the required approach. \ledger{4, 6}
+
+\section{Objections and their status}
+
+Q's formal consistency definition is not vacuous on the matched states: either state can be paired with a hypothetical exact prediction. The narrower deployment limit is that one predictor \(P(z)\) cannot output two distinct exact poses from identical \(z\) without extra information. Also, a one-shot binary-failure handover can have clairvoyant optimum zero, making a multiplicative competitive ratio undefined without an additive convention. The calculation above accordingly uses failure probability and additive sensing cost, extending Q's cost-accounting concern rather than applying its predictor-call ratio directly. \ledger{8, 11, 12, 15}
+
+The physical premise remains unproved. Q shows in-hand rotation but supplies no measured distribution of object pose conditional on full encoder and action history. Approximate matches in continuous histories do not establish exact indistinguishability, and a common safe grasp would remove the proposed action conflict. A sensor that moves the object would also invalidate the fixed-state calculation unless that transition were modeled. \ledger{6, 14, 15, 18}
+
+\section{Outside sources and remaining question}
+
+The peers' prior-work checks found pose-uncertainty grasping with information gathering, conformal object-pose sets, and reported handover failures caused by object movement relative to the giver; related robust grasp, moving-object handover, and haptic pose-estimation work also exists. These checks constrain novelty: neither the set certificate nor the value-of-information identity stands alone as a publication claim. The outside sources are recorded in \ledger{5, 7}; this note adds no independent verification of them.
+
+What remains open is whether complete histories on Q's hand leave materially different object poses that require incompatible receiving actions, and whether an attainable new observation reduces held-out handover loss enough to justify its full cost. The material is thin on both points. A null result is plausible if history disambiguates pose or one robust grasp succeeds. \ledger{9, 18}
+
+\section{Smallest decisive next step}
+
+Hold the donor wrist fixed, record the complete encoder and action history, and externally measure the marked object's pose across controlled in-hand rotations or reseating. First test whether histories matched under a justified tolerance retain object poses with incompatible successful receiving actions; if they do, compare held-out history-only and common-grasp decisions with one state-dependent sensing option, recording its discrimination, delay, and cost. This supplies the missing decision evidence without treating pose error alone as handover failure. \ledger{14, 18}
+
+\end{document}
+```

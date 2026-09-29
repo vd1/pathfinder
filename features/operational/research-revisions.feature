@@ -64,7 +64,7 @@ Feature: Preserve research revisions and supply complete assessment evidence
       Then the request contains the complete current account and peer artefact contents
       And the request contains the complete calculation evidence with its source paths
 
-    Scenario: Unreadable referenced evidence blocks tool-less assessment
+    Scenario: Unreadable referenced evidence blocks strict tool-less assessment
       Given a tool-less assessment requires a peer artefact that cannot be read
       When the research workflow prepares the assessment request
       Then the assessment is blocked before a provider call with the unreadable evidence identified

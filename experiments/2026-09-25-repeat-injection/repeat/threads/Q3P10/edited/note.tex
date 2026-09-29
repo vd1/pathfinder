@@ -1,0 +1,129 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When Inference Has a Cost: A Question for Language-Model Auctions}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note connects a study of language-model traders in a double auction with a study in which
+language-model agents spend energy when they generate tokens. The thread asked whether charging auction
+traders for each decision would stop repeated tiny improvements to their offers and help valuable trades
+happen before the round ends. The peers established the auction's gross-surplus benchmark and found that
+an earlier trade would not necessarily save model calls under the released stopping rule. Neither paper
+measures the traders' response to such a charge, so the verifier paused the thread pending a controlled
+comparison.
+\end{abstract}
+
+\section{Introduction}
+
+In \emph{Competitive Market Behavior of LLMs}, called Q here, buyers and sellers each know their own
+limit price and take turns offering to trade. A buyer can accept the best standing sell offer, or improve
+the standing buy offer and hope to trade later. Each round allows up to \(300\) turns. The paper reports
+that traders often improve an offer by just one cent. In its GPT Large markets, this reluctance to
+accept a standing offer leaves many possible gains from trade unrealised before the round ends \cite{q}.
+
+In \emph{The Energy Society}, called P, agents choose jobs in a small simulated economy. They gain energy
+from successful jobs and spend energy when they generate tokens, including reasoning tokens. An agent
+with no energy stops acting unless another agent donates to it. P varies incentives and parts of the
+interaction process, and finds that token spending and job allocation change. For example, removing the
+discussion phase lowers energy spending but increases the number of agents choosing the same job
+\cite{p}.
+
+The connection was a question about incentives. Q gives its traders no private charge for the computation
+used to decide whether to accept an offer or wait. P shows how a generated-token charge can enter an
+agent's objective. The peers asked whether putting such a charge into Q's market would change the choice
+between accepting an offer, improving it, and leaving the market. P's job results give no answer about an
+auction.
+
+\section{What was done}
+
+The thread began with two possible links. One peer considered moving P's discussion mechanism into Q's
+market. The other focused on Q's repeated one-cent offer improvements and proposed charging for inference
+at each decision. The peers converged on the second question because it can be stated as a direct change
+to the trader's choice, while keeping Q's market rules visible \cite{q,p}.
+
+They first separated an immediate trade from a better price that might arrive later. For a buyer,
+accepting a profitable standing sell offer secures a gain now. Improving a buy offer may secure a larger
+gain, but the offer might never be accepted and waiting may require more model calls. The peers'
+conditional calculation shows that a flat charge for the current call appears on both sides of this
+choice and cancels. Expected future call costs, or different token counts for the two responses, can
+change the comparison. They also noted that a charge could instead make a trader shorten its response,
+decline to post, or leave. The calculation identifies possible mechanisms, not what these models will do.
+
+Next, the peers checked what an improvement should mean. They used Q's published buyer values and seller
+costs to find the maximum gain from completed trades. They then questioned the idea that faster trades
+automatically save computation. Q selects traders who have not traded again on later turns, even if they
+previously chose not to post. The peers checked the released round-control code and found that, while at
+least two language-model traders remain active, its deadlock test normally leaves the round running to
+the \(300\)-turn cap \cite{qcode}. This check concerns the released code; the peers did not pin the code
+revision used for Q's reported runs.
+
+Finally, the peers narrowed the proposed comparison. They checked earlier human double-auction studies
+that charge for offers, so charging for an offer alone is not a new claim \cite{jamison, noussair}. They
+also corrected the proposed cost measure: P knows its local models' sizes, while Q does not give
+parameter sizes for its proprietary models. The peers therefore proposed starting with one fixed model
+and measuring its generated tokens, with the same permanent-exit action and stopping rule in charged and
+uncharged markets.
+
+\section{Results that hold}
+
+Q's market has eleven buyers and eleven sellers. The highest buyer value is \(3.25\), the lowest seller
+cost is \(0.75\), and each schedule changes in steps of \(0.25\) \cite{q}. Matching high-value buyers
+with low-cost sellers gives gains of \(2.5\), \(2\), \(1.5\), \(1\), \(0.5\), then \(0\). Their maximum
+total gross gain is therefore \(7.5\). Five positive-gain trades can reach that total, although Q gives
+six as the equilibrium quantity. Counting trades alone can therefore mistake a zero-gain sixth trade for
+an improvement. The peers independently checked this calculation in their derivations.
+
+For completed buyer-seller pairs, let \(G\) be the sum of each buyer's value less the matched seller's
+cost. Transaction prices cancel when the two traders' gains are added. To keep computation visible, the
+peers proposed the accounting measure
+\[
+N_{\lambda}=G-\lambda\sum_{i,t}Y_{i,t}.
+\]
+Here \(Y_{i,t}\) is the number of tokens generated by trader \(i\) on decision call \(t\), including a
+call on which it posts nothing. The declared scale \(\lambda\) converts a generated token into Q's price
+units. This is an operational net-value measure; it represents social welfare only if \(\lambda\)
+reflects a real resource cost. P's energy charge is in its own synthetic units and cannot supply that
+conversion for Q \cite{p}.
+
+The code check supports a further, narrower result. Under Q's released stopping rule, accepting an offer
+earlier does not by itself imply fewer model calls: traders who have not traded can still be selected
+until the cap. Fewer tokens per call, enough completed trades to end participation, or a common exit and
+stop rule could reduce computation, but those outcomes must be measured \cite{qcode}.
+
+\section{Objections and open points}
+
+A fee for posting an offer would miss calls on which a trader posts nothing. The proposed test therefore
+charges every decision call and records declines to post separately from permanent exits. Both arms need
+the same exit action and the same rule for ending a round when active traders are gone. Otherwise a
+difference in total calls could come from different market rules rather than the charge.
+
+P also warns against treating fewer calls as an automatic gain. Removing discussion in its job economy
+saves energy but produces more job collisions \cite{p}. Jobs are chosen together, whereas Q's traders
+respond to a public order book in turn. The direction of any effect in Q remains unknown. Moving P's
+discussion phase into Q, assigning different models to buyer and seller roles, and changing the price
+grid were considered, but the available results do not isolate their effects on Q's market.
+
+Nor can P's model-size multiplier be copied into Q. P uses local models with known sizes; Q reports no
+parameter sizes for its proprietary models \cite{p,q}. For one fixed model, a constant size factor can be
+folded into \(\lambda\). Across models, the cost schedule would need to be declared and observed. Input
+tokens would need separate reporting because P's formula counts generated tokens. Prior human studies
+report poorer equilibration or efficiency when offers are costly, which also rules out claiming that
+offer charges themselves are new \cite{jamison,noussair}.
+
+\section{Why the thread stopped}
+
+The verifier accepted the welfare calculation but paused because it does not answer the connection
+between the papers: how an inference charge changes auction behaviour. The smallest next step is a
+matched-seed comparison using one model, Q's values and order book, and a zero-charge arm against a
+metered-charge arm. Give both arms the same permanent-exit and stopping rules, charge every decision call
+in the metered arm, and record when traders accept standing offers, decline to post, or exit. Report
+calls, generated tokens, gross gain \(G\), and \(N_{\lambda}\) separately. Until that comparison is run,
+earlier acceptance, lower computation, and higher net value remain possibilities rather than findings.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

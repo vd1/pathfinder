@@ -1,0 +1,116 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When Hidden Auction Values Matter for a Trader's Next Bid}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account reads a study of language-model traders in a double auction alongside a conditional argument about hidden
+object pose in robotic handover. It asks whether the same visible auction history can hide different values that call
+for different bids to preserve gains from trade. The peers constructed such a pair of market states under a stated
+continuation rule, including the auction's random choice of the next trader. They did not establish that these states
+explain the losses measured in the trading study. The thread paused because that claim needs matched replays of actual
+decisions and an appropriate comparison trader.
+\end{abstract}
+
+\section{Introduction}
+
+\emph{Competitive Market Behavior of LLMs} puts language-model agents in a double auction, where buyers and sellers
+post prices and a crossing offer makes a trade \cite{q}. Each trader knows its own value or cost, the standing prices,
+and the public and personal trading histories. The paper compares the total gains from completed trades with the
+largest gains available under full information. Its model populations trade less efficiently than the human benchmark,
+with slow closing of the gap between bids and asks especially visible for one large model.
+
+\emph{When a Donor Wrist Cannot Locate a Rotating Held Object} considers robotic handover \cite{p}. It brings together
+a proposal to use the donor wrist as a guide when the held object is hidden and a demonstration that a hand can rotate
+an object within its grasp. Its claim is conditional: if two object positions give the receiver the same observations
+but need different approaches, a receiver restricted to those observations cannot be right in both cases. It does not
+report that such matched trials occur in a handover test. The robotics papers called Q and P inside that manuscript
+are different from the two papers paired here.
+
+The connexion was an information question. Could two auction states look identical to one trader yet require different
+next bids for the best gains from trade? If so, a full-information benchmark could count some loss that no trader with
+the stated observations can always avoid. That possibility alone would not explain the behaviour reported in the
+auction study.
+
+\section{What was done}
+
+The peers first transferred the handover paper's same-observation test to the auction. They used the trading paper's
+private values, visible order book, public history, and measure of total gains. An early example made a buyer prefer
+different prices for its own profit, but one bid still completed the beneficial trade in both states. It therefore
+failed to show a limit on market efficiency.
+
+They next found a late-round example in which one hidden seller was cheap in one state and dear in the other. The
+buyer should wait for the cheap seller in one state and accept the standing ask in the other. That calculation fixed
+who would receive the last invitation. A later check found that swapping costs between two otherwise alike active
+sellers leaves the result unchanged when the next invitation is random. It had shown a limit under a known future
+schedule, not a hidden-value gap under the auction's actual scheduling rule.
+
+The final construction swapped a hidden cost between an active seller and a seller who had already traded. It kept the
+auction's fixed set of costs and the buyer's visible history the same, while leaving the future invitations random.
+The detailed history and continuation checks are in \texttt{emmy/matched\_auction\_states.md};
+\texttt{ada/assessment.md} records the earlier fixed-schedule version and its limits.
+
+\section{Results}
+
+The final example has seven completed trades and six invitations left. Four buyers and four sellers remain. Buyer
+\(B\) values a unit at \(3\), sees a standing ask of \(2.50\) and a standing bid of \(1.25\), and has the same visible
+history in both states. The other buyers value a unit at \(1.25\), \(1\), and \(0.75\). Seller \(S_1\) has cost
+\(2.50\) and posted that ask. Seller \(S_2\) has cost \(1\) in state A and \(3\) in state B. The two other active
+sellers cost \(2.75\) and \(3.25\). A seller who previously traded at \(3.12\) has cost \(3\) in A and \(1\) in B.
+That swap preserves the full cost list, and the earlier trade works at either cost. The peer check gives a common
+public history in which \(S_2\) has made no revealing quote.
+
+The comparison assumes that sellers avoid loss-making trades, that \(S_2\) accepts a profitable standing bid when
+invited, and that \(B\) may accept the ask later if invited again. A trade's gain is the buyer's value less the
+seller's cost; its price only divides that gain. While all eight agents remain available, the chance that a specified
+one is invited at least once in six draws is
+\[
+r=1-(7/8)^6.
+\]
+If \(B\) first bids \(2\), below the ask, \(S_2\) trades when invited in A. Expected gain is at least \(2r>1.10\).
+Accepting the ask at once gives at most \(0.75\) in A, even allowing a later small trade. In B, accepting at once
+gives \(0.50\). Any first bid below the ask gives at most \(0.50r<0.28\) in B, since \(B\) must be invited again to
+make the remaining profitable trade. Thus the better first action differs between A and B although \(B\)'s information
+is the same. Neither comparison gives a trader knowledge of future invitations.
+
+For illustration, if A and B each have probability one half, the peers' bounds give an observation-only expected gain
+shortfall of at least
+\[
+\frac{1}{2}\min\{2r-0.75,\;0.50(1-r)\}>0.11
+\]
+against a trader who knows which state holds. This is a conditional bound for the constructed history and the stated
+continuation rule. It is not an estimate of the trading paper's observed efficiency loss. The auction agents are told
+to maximise their own profit, whereas this bound compares total gains from trade.
+
+\section{Objections and limits}
+
+The first objection concerned the outcome being measured: a change in the best price for one trader need not change
+total gains. The second concerned the future schedule: the active-seller swap seemed informative only after fixing an
+invitation that the trader could not know. The active-to-traded seller swap and the calculation over random
+invitations addressed those two points. They support a possible information limit within the auction rules, subject to
+the continuation assumptions.
+
+The empirical objection remains. Neither paper measures how often such matched histories arise, how likely each hidden
+assignment is under the agents' actual behaviour, or what the other traders would do in a replay. A mechanically
+possible common history could be very rare. The example therefore cannot assign any share of the reported slow trading
+to hidden information. Earlier work already studies efficient double auctions with simple budget-constrained traders
+\cite{gode1993} and the role of information in continuous double auctions \cite{anufriev2022,anufrievLimited}. Those
+precedents also limit a novelty claim based only on a matched-history example or a simple-agent comparison.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the conditional example, its chosen continuation, and its illustrative equal
+prior do not establish an explanation of the auction results. The smallest step that could reopen the question is to
+replay actual decision histories with hidden value assignments consistent with each visible history. Those replays
+would need a stated probability for each hidden state and a stated rule for the other traders, using the same random
+invitation schedules when comparing a recorded language-model action, a trader with the same observations, and a
+trader told the hidden state. The result would have to report how often consequential ambiguity occurs and whether the
+language-model loss remains after the observation-matched comparison. No such measurement is in the present material.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

@@ -9,8 +9,9 @@ from pathfinder import config, research, transport
 from pathfinder.ledger import Ledger
 
 
-OLD = '\\section{Account}\nThe bound applies to the original finite sample.\n'
-NEW = '\\section{Repaired account}\nThe corrected bound includes the variance term.\n'
+DOC = '\\documentclass{article}\\begin{document}\n%s\\end{document}\n'
+OLD = DOC % '\\section{Account}\nThe bound applies to the original finite sample.\n'
+NEW = DOC % '\\section{Repaired account}\nThe corrected bound includes the variance term.\n'
 
 
 def revision_setup(context, stage='verify', prior=True):
@@ -119,7 +120,7 @@ def verifier_revision(context):
 @given('pair "Q1P1" has an older account and a retained successful consolidation response for its current round')
 def retained_response(context):
     revision_setup(context, stage='consolidate')
-    original_write = Path.write_text
+    original_write = research._atomic_write
     context.interrupted = False
 
     class Interrupted(BaseException):
@@ -127,13 +128,13 @@ def retained_response(context):
 
     # @exceptional-double: interrupt canonical-account publication after response
     # retention, a crash window impossible to request from a live provider.
-    def interrupt_write(path, data, *args, **kwargs):
-        if path == context.note and data == NEW:
+    def interrupt_write(path, data):
+        if path == context.note and data == NEW.encode():
             context.interrupted = True
             raise Interrupted()
-        return original_write(path, data, *args, **kwargs)
+        return original_write(path, data)
 
-    with patch.object(Path, 'write_text', interrupt_write):
+    with patch.object(research, '_atomic_write', interrupt_write):
         try:
             revision_run(context)
         except Interrupted:
@@ -161,7 +162,7 @@ def empty_repairs(context):
 
 @when('every fresh repair response reports a provider failure')
 def failed_repairs(context):
-    context.responses = [{'text': NEW, 'error': 'Provider request failed', 'transport_failed': True}]
+    context.responses = [{'text': NEW, 'error': 'Provider request failed', 'transport_failed': False}]
     revision_run(context)
 
 
@@ -186,7 +187,7 @@ def one_attempt(context):
 @when('its consolidation response is empty or failed')
 def single_attempt_responses(context):
     context.attempt_results = []
-    for response in ('', {'text': NEW, 'error': 'Provider request failed', 'transport_failed': True}):
+    for response in ('', {'text': NEW, 'error': 'Provider request failed', 'transport_failed': False}):
         revision_setup(context, stage='consolidate', prior=False)
         context.c.raw['stage_attempts'] = 1
         context.responses = [response]
@@ -301,6 +302,7 @@ def complete_calculations(context):
 @given('a tool-less assessment requires a peer artefact that cannot be read')
 def unreadable_evidence(context):
     inline_evidence(context, 'consolidate')
+    context.c.raw['strict_evidence'] = True
     context.unreadable = 'ada/notes.tex'
     (context.d / context.unreadable).unlink()
 
@@ -478,6 +480,8 @@ def non_peer_calculations(context, nested, shared):
 @given('a research ledger references the missing local calculation "{name}"')
 def missing_non_peer_calculation(context, name):
     reference_cases(context)
+    for case in context.reference_cases:
+        case.c.raw['strict_evidence'] = True
     record_references(context, f'Calculation: {name}')
     assert all(not (case.d / name).exists() for case in context.reference_cases)
 

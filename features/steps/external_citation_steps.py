@@ -52,6 +52,8 @@ def change_bound_text(context):
 @given('another ledger entry references missing local "{path}"')
 def missing_local(context, path):
     assert not (context.d / path).exists()
+    context.manifest['strict_evidence'] = True
+    reload_campaign(context)
     context.ledger.add('emmy', 'finding', f'Local calculation evidence: {path}')
 
 
@@ -137,7 +139,10 @@ def joint_fixture(context, missing_sibling=False):
     Ledger(local / 'ledger.jsonl').add('emmy', 'finding', f'Local branch evidence: {CITED_PATH}')
     context.sibling_file = local / CITED_PATH
     context.sibling_content = '# Local branch calculation\nvariance = 0.125\n'
-    if not missing_sibling:
+    if missing_sibling:
+        context.manifest['strict_evidence'] = True
+        reload_campaign(context)
+    else:
         context.sibling_file.parent.mkdir(parents=True)
         context.sibling_file.write_text(context.sibling_content)
 

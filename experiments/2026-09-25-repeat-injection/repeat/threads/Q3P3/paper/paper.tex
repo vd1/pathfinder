@@ -1,0 +1,148 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{What a Reviewed Quote Can Establish About Double-Auction Welfare}
+\pathfinderpapers{2609.02580}{Competitive Market Behavior of LLMs}{2608.18167}{Adversarial Review:
+Structured Disagreement for Grounded Agentic Code Review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We examine what evidence-typed reviewer--critic scrutiny of an LLM trader's proposed quote could establish
+in the double auction of Struski et al.\ and what it could not. Under that paper's stated values, maximum
+surplus is \(7.50\) at either five or six trades, whereas the best seven-trade allocation yields \(7.00\).
+Seven individually profitable matches remain possible. Thus a review that increases crossings or trade
+count need not improve allocative efficiency. An exact split of surplus regret into quantity and selection
+contributions gives an evaluation measure, not a causal explanation. The underlying price-cancellation and
+inefficient-matching observations are established in earlier auction work; the contribution here is their
+application to this pair and a bounded proposal for testing the unmeasured review intervention.
+% ledger: 4, 5, 9, 13, 17, 20, 22
+\end{abstract}
+
+\section{Established setting and question}
+
+Struski et al.\ study LLM traders in a continuous double auction with eleven single-unit buyers and eleven
+single-unit sellers, each side having reservation values from \(0.75\) to \(3.25\) in \(0.25\) steps. The
+full schedules imply a competitive price of \(2.00\) and the paper's equilibrium quantity of six. A round
+selects one untraded agent at a time and stops after at most 300 iterations. A crossing order trades
+immediately at the resting quote. Traders know their own reservation value, standing quotes, and
+histories, and are instructed to maximise private profit. The authors report incomplete price convergence
+and allocative efficiency, including rounds spent on one-cent quote improvements without completing
+profitable trades. They already measure allocative efficiency; our argument concerns how to interpret
+trade count and a proposed intervention, not a correction of their reported efficiency figures
+\cite{struski2026}.
+% ledger: 1, 2, 5, 18, 24
+
+Qiu and Gill's Adversarial Review (AR) freezes a coding artefact while a reviewer and critic scrutinise a
+review before the main agent edits it. In their SWE-PRBench review task, a text constraint distinguishing
+evidence from epistemic concern raises review \(F_1\) from \(0.457\) for naive AR to \(0.533\). Their
+SWE-bench Verified AR experiment instead uses the baseline two-verdict protocol. Neither study tests
+auction quotes or auction welfare \cite{qiu2026}. The paired question is therefore whether such review
+changes realised surplus when a trader's proposed quote is the frozen artefact. The sign of that effect is
+unknown.
+% ledger: 1, 10, 17, 18
+
+\section{Accounting result for Q's values}
+
+Let \(W\) denote realised buyer profit plus seller profit in one round, and \(q\) its number of trades.
+For a completed match with buyer value \(v\), seller cost \(c\), and transaction price \(p\),
+\[
+(v-p)+(p-c)=v-c.
+\]
+Changing only the price for the same completed buyer--seller matches changes the division of rent but
+leaves \(W\) fixed. Preventing a match or changing the participating traders can change \(W\). The
+price-cancellation observation itself is standard and has appeared in prior continuous-double-auction
+analysis \cite{wah2017}.
+% ledger: 4, 18
+
+Write \(v_{(k)}\) for the \(k\)-th highest buyer value and \(c_{(k)}\) for the \(k\)-th lowest seller
+cost. For an allocation with exactly \(q\) trades, the largest possible surplus under Q's stated schedule
+is
+\[
+W_q=\sum_{k=1}^{q}\bigl(v_{(k)}-c_{(k)}\bigr),
+\qquad W^\star=\max_{0\leq q\leq11} W_q.
+\]
+For any realised allocation with \(q\) trades, the following is an exact ex post identity:
+\[
+W^\star-W=\underbrace{(W^\star-W_q)}_{\text{quantity contribution}}
+            +\underbrace{(W_q-W)}_{\text{selection contribution}}.
+\]
+The second term measures the loss from which buyers and sellers traded at that count; it does not depend
+on how those traders were paired once they are selected. The split is an accounting device, not a causal
+mediation result.
+% ledger: 5, 13, 20, 22
+
+\begin{proposition}
+Under Q's stated reservation values, \(W^\star=W_5=W_6=7.50\) and \(W_7=7.00\). There is a feasible
+seven-trade matching in which every match has strictly positive surplus. Consequently, neither a move from
+five to six trades nor a move from six to seven trades, by itself, establishes a welfare improvement.
+% ledger: 5, 9, 11, 13
+\end{proposition}
+
+\begin{proof}
+The successive differences \(v_{(k)}-c_{(k)}\) begin \(2.50,2.00,1.50,1.00,0.50,0,-0.50\), yielding the
+stated maxima. For seven trades, match buyers with values \(3.25,3.00,\ldots,1.75\) to sellers with costs
+\(2.25,2.00,\ldots,0.75\), respectively. Each pair has gain \(1.00\) and can transact at a price strictly
+between its own value and cost. These seven gains sum to \(7.00\). The first two conclusions compare the
+best allocations at each count; an actual six-trade allocation can still be worse than an actual
+five-trade allocation if selection changes.
+% ledger: 5, 9, 11, 13
+\end{proof}
+
+The proposition rebuts the initial inference that Q's reported mean above six trades must indicate an
+error or a violation of trader instructions. Heterogeneous transaction prices permit seven individually
+profitable bilateral matches. Q also states that its exchange does not enforce reservation bounds,
+although its trader prompts instruct agents to respect them. We do not infer from the reported mean
+whether any instruction was violated.
+% ledger: 7, 9, 11, 24
+
+\section{Prior work and interpretation}
+
+The main inefficient-matching step is already published. Wah, Wright and Wellman give a
+continuous-double-auction example in which two profitable matches yield less surplus than a different
+single match, and explain that the transaction price cancels from the two traders' combined surplus
+\cite{wah2017}. We claim no novelty for that principle or for the algebraic regret identity. What is
+specific here is the zero-surplus sixth margin in Q's schedule, the feasible profitable seventh trade, and
+the implication that a P-style quote review cannot be judged by crossings or volume alone. These are
+analytic statements about Q's design, not observations of a reviewed market.
+% ledger: 4, 5, 9, 12, 13, 18, 20
+
+Adjacent LLM work already uses a critic to shape bidding rewards in an electricity continuous double
+auction \cite{jadhav2025}, and checks protocol invariants in negotiation and auction messages
+\cite{albayaydh2026}. Debate in simulated portfolio allocation has also been studied \cite{huang2026}.
+These do not supply the missing outcome for a frozen-quote reviewer--critic intervention in Q's market.
+The reviewer's evidence can establish current facts such as whether a resting ask gives a buyer known
+immediate profit; it cannot establish that crossing maximises expected private profit without a model of
+later fills. In a simplified choice between crossing ask \(a\) now and posting a lower bid \(b\) that
+later fills with probability \(r\), crossing is privately preferable exactly when \(v-a>r(v-b)\). Q does
+not identify \(r\). The analyst's full value schedule and equilibrium price must therefore remain outside
+trader and reviewer prompts.
+% ledger: 6, 8, 12, 14, 15, 18
+
+\section{Open question and test}
+
+A direct test would randomise whole market runs between Q's unreviewed baseline, a token-matched
+extra-deliberation control, and evidence-typed reviewer--critic review. It would keep Q's private-profit
+objective, trader information, order book, and iteration cap fixed, and save each proposed and final
+action. The primary outcome would be realised \(W/W^\star\); secondary measures would include the two
+accounting contributions, trader profits, crossings, and calls, tokens, and wall time. Randomisation can
+estimate effects on these outcomes, but the accounting split alone cannot show that an effect was caused
+through trade count rather than trader selection.
+% ledger: 15, 17, 20, 22, 24
+
+\section{Limitations}
+
+No such intervention has been run here, so this paper makes no claim that review raises, lowers, or
+preserves surplus. The calculation uses Q's stated symmetric value schedule and single-unit design; it
+does not establish the same numerical margins for other schedules or models. The simple fill-probability
+inequality omits competing arrivals and strategic responses. Q's sequential mechanism can hold the book
+fixed during synchronous review, making added calls a resource cost in that setting; stale quotes would
+require an asynchronous market experiment. Whether any welfare effect survives other models or value
+schedules, and how forecast objections could be calibrated, remain open.
+% ledger: 3, 8, 15, 16, 17, 20, 24
+
+\clearpage
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

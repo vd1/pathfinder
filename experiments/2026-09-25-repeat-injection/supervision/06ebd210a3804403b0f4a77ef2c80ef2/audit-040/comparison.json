@@ -1,0 +1,139 @@
+{
+  "observed_at": "2026-09-25T20:31:31.910559+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_audit": "audit-039",
+  "research_edit_complete": 16,
+  "scheduled": 28,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    }
+  ],
+  "changed_work": [],
+  "comparison": "No additional completed threads since audit-039. Q4P9 emmy first peer call completed at 20:29:13Z and second call began; ada first call remains within deadline. Two peer calls permitted by frozen configuration and research.py loop. No evidence of livelock.",
+  "process_assessment": "Supplied evidence identifies Python owner 24244 and matching Codex children 66701 and 67753 with hosts. Fresh root and repeat heartbeats, calls within deadlines. Point-in-time identity limitations retained; no intervention warranted.",
+  "notes": [
+    "Root health omits child work; aggregate and stage artifacts used.",
+    "outcomes.json remains historical; old Q3P2 BLOCKED was repaired and current checkpoint is PAUSE/editor done.",
+    "progress.json is between-pair checkpoint; runner.json has live task and heartbeat.",
+    "Reinjection finished status concerns last admitted pair, not entire scheduled scope.",
+    "No new failures or stops. Previous external lookup failures already recorded; completed builds and five accepted papers verified.",
+    "HERDR_PANE_ID unavailable; pane title not changed."
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T20:14:07Z",
+        "thread": "Q3P3",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 163.6
+      },
+      {
+        "at": "2026-09-25T20:23:18Z",
+        "thread": "Q3P3",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 548.4
+      },
+      {
+        "at": "2026-09-25T20:24:54Z",
+        "thread": "Q3P3",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 92.0
+      },
+      {
+        "at": "2026-09-25T20:29:13Z",
+        "thread": "Q4P9",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 256.8
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T19:56:56Z",
+        "thread": "Q3P4",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 58.3
+      },
+      {
+        "at": "2026-09-25T19:58:07Z",
+        "thread": "Q3P4",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 70.9
+      },
+      {
+        "at": "2026-09-25T19:58:38Z",
+        "thread": "Q3P4",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 30.4
+      },
+      {
+        "at": "2026-09-25T20:02:27Z",
+        "thread": "Q3P4",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 229.0
+      }
+    ]
+  },
+  "action": "No intervention",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-040/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-040/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-040/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json"
+  ]
+}

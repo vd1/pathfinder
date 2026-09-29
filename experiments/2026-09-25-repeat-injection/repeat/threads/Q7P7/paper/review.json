@@ -1,0 +1,29 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T21:53:09Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "96239703573da6393f0856e579e18a09acf037118a624c80378f4508accf6138",
+  "decision": "ACCEPT",
+  "summary": "The claims stay within the note\u2019s restricted scope, the payment and regret arguments are sound, and the cited references are identifiable. Two minor clarifications would improve the paper before formatting.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Setting and contribution",
+    "issue": "The labels Q and P are used without being explicitly assigned to the two cited papers.",
+    "fix": "Define Q and P at their first use."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Conditional regret proof",
+    "issue": "The proof invokes a maximizer of realised welfare, but no regularity assumption ensures one exists.",
+    "fix": "State regret using a supremum, or assume continuity of e(x)."
+   }
+  ]
+ }
+]

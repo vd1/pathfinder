@@ -1,0 +1,28 @@
+# Every live deployment of the engine, with the exact revision a release is tested against.
+# status "supported": its contract test is required; a missing checkout, a revision mismatch, a skip or a
+# failure fails the release check. status "not-yet-supported": listed with the reason, excluded from the gate,
+# and named as unsupported in the release notes.
+
+[deployments.statarb]
+status = "supported"
+checkout = "../statarb"
+revision = "7064de3b715b58c4a9bc3351aa7e84bfc373206f"
+clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md"]   # what the contract runs
+contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
+notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb itself pins engine-v1.1."
+
+[deployments.coordinated-pilot]
+status = "supported"
+checkout = "."
+revision = "candidate"
+clean_paths = []
+contract = "tests/test_coordinator.py"
+notes = "The repeat and reinjection pilot's schedule semantics, now pathfinder coordinate; its archived run keeps its own frozen engine."
+
+[deployments.pathfinder-julien-2]
+status = "not-yet-supported"
+checkout = "../pathfinder-julien-2"
+revision = "5cc82db"
+clean_paths = []
+contract = ""
+notes = "Runs two forks of upstream 57e9a7a (dependencies/pathfinder and the EVA experiment copy); see deployments/pathfinder-julien-2/inventory.md and migration.md; its EVA research scheme is the remaining blocker."

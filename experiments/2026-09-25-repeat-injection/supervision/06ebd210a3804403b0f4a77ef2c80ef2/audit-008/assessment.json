@@ -1,0 +1,80 @@
+{
+  "observed_at": "2026-09-25T17:51:48.346035+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-007/aggregate-final.json",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-008/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-008/aggregate-final.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-008/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "completed_research_edit": 8,
+  "scheduled": 28,
+  "completed_records_unchanged": true,
+  "paper": "repeat/Q4P10 ACCEPTED; build_ok true; review ACCEPT",
+  "progress": "Q7P1 round 2 peer receipts completed since previous audit; fresh aggregate records current call. No evidence of livelock.",
+  "runner_identity": "PID 24244 matches parent session, supplied Python executable and parent PID 24243. Recorded child 32162 matches codex child of owner in supplied process tree. No duplicate runner in supplied evidence; point-in-time tree limits retained.",
+  "active_calls": [
+    {
+      "attempt_id": "d5ea7e9216ee425baaa0e12cc743d7fb",
+      "run_id": "16dadcbae68745c49ba2994e3b6bf730",
+      "pid": 24244,
+      "thread": "Q7P1",
+      "stage": "consolidate",
+      "actor": "ada",
+      "started_at": 1790358665.016578,
+      "deadline_at": 1790360465.016578,
+      "timeout_seconds": 1800,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1",
+      "child_pid": 32381,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/d5ea7e9216ee425baaa0e12cc743d7fb.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 43.3,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "last_completed_calls": {
+    "repeat": {
+      "at": "2026-09-25T17:51:05Z",
+      "thread": "Q7P1",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null
+    },
+    "reinjection": {
+      "at": "2026-09-25T17:13:48Z",
+      "thread": "Q3P2",
+      "stage": "edit",
+      "actor": "editor",
+      "outcome": "completed",
+      "error": null
+    }
+  },
+  "failures": {
+    "repeat": {
+      "failure_count": 0,
+      "failure": null,
+      "stop": null,
+      "recent_failures": []
+    },
+    "reinjection": {
+      "failure_count": 0,
+      "failure": null,
+      "stop": null,
+      "recent_failures": []
+    }
+  },
+  "historical_incidents": "Prior verifier repair resolved; arXiv HTTP 406 checks already recorded, nonblocking. No new failure or intervention.",
+  "instrumentation": "Root health omits child calls; use aggregate. progress.json updates between pairs; outcomes.json is written on launch finalization and retains pre-repair states. Current child checkpoints and receipts confirm advancement. Reinjection finished marker refers to last admitted pair, not whole assigned scope.",
+  "action": "none",
+  "next_audit": "Check current call completion and subsequent stage advancement; retain full 28-thread and DRAFT paper scope.",
+  "pane_title": "HERDR_PANE_ID absent; no pane rename attempted."
+}

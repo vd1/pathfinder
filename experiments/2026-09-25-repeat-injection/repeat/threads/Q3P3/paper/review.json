@@ -1,0 +1,29 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T20:24:54Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "fd539e6e20a091bc51c245e3b2ec44af7a6a6d291e15a9c7259a084073dd2c2a",
+  "decision": "ACCEPT",
+  "summary": "The mathematics, attribution, and bounded research claim are sound. The paper is fit to send to referees within its stated scope.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Prior work and interpretation",
+    "issue": "The simplified fill-probability comparison leaves its assumptions implicit.",
+    "fix": "State that a later fill occurs at bid b and that the comparison excludes other subsequent actions."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Open question and test",
+    "issue": "The information restriction names trader and reviewer prompts but does not explicitly name the critic.",
+    "fix": "State that the critic receives only the same trader-visible market information."
+   }
+  ]
+ }
+]

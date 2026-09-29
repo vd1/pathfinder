@@ -1,0 +1,8 @@
+The revised [paper](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3/paper/paper.pdf) states two conditional results on P’s fixed schedule: a completed scripted auction reaches gross surplus 7.5 without generated LLM tokens, and arbitrarily small price error can permit a 1.25 loss under rationing. Neither is presented as an observed run.
+
+The targeted searches are recorded in [search.md](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3/paper/search.md). They confirmed that the general fixed-price double-auction idea is [published prior work](https://arxiv.org/abs/1710.08394), so the paper limits its contribution to this instance and its stated conditions. The searches found no direct match for the specific rationing construction.
+
+- **F1:** P is included verbatim as Supplementary File S1 in the [review bundle](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3/paper/Q1P3-review-materials.zip). The [bibliography](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3/paper/references.bib) cites S1 and records its checksum.
+- **F2:** The text now says only that the recorded search found no arXiv or DOI record for P.
+
+`latexmk` built the four-page PDF successfully. I checked its text, first-page layout and S1 links; there are no undefined citations. The style gates reported no errors.

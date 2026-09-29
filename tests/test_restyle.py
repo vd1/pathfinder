@@ -44,3 +44,23 @@ def test_restyled_build_keeps_the_source(tmp_path):
     assert (tmp_path / "paper.tex").read_text() == src                                            # the judged source is untouched
     txt = subprocess.run(["pdftotext", str(tmp_path / "paper.pdf"), "-"], capture_output=True, text=True).stdout
     assert "PATHFINDER PAPER" in txt
+
+
+FENCED = "\n\n```latex\n\\documentclass{article}\n\\usepackage{pathfinder-note}\n\\title{T}\n\\begin{document}\n\\maketitle\nx\n\\end{document}\n```\n"
+
+
+def test_unfence_extracts_the_document_and_leaves_other_text():
+    from pathfinder.research import unfence, is_latex_document
+    doc = unfence(FENCED)
+    assert doc.startswith("\\documentclass") and doc.endswith("\\end{document}\n") and "```" not in doc
+    assert unfence(doc) == doc
+    assert unfence("You've hit your session limit") == "You've hit your session limit"
+    assert is_latex_document(doc) and not is_latex_document("You've hit your session limit")
+
+
+@pytest.mark.skipif(not shutil.which("latexmk"), reason="latexmk not installed")
+def test_fenced_note_builds_and_keeps_its_source(tmp_path):
+    (tmp_path / "Q1P1.tex").write_text(FENCED)
+    ok, log = paper.build(tmp_path, "Q1P1.tex", restyle="pathfinder-note")
+    assert ok, log
+    assert (tmp_path / "Q1P1.tex").read_text() == FENCED                                          # the judged source is untouched

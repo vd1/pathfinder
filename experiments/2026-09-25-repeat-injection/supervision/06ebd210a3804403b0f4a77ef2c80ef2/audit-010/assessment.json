@@ -1,0 +1,80 @@
+{
+  "observed_at": "2026-09-25T18:01:45.986916+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "facts": {
+    "scheduled_threads": 28,
+    "finished_research_edit_threads": 9,
+    "previous_completed_records_unchanged": true,
+    "previous_completed_count": 8,
+    "active": "repeat/Q7P1 author round 1",
+    "comparison": "Q7P1 editor completed at 17:57:45Z; editor done/build_ok at 17:57:48Z; author started at 17:57:49Z. Prior audit had editor active.",
+    "call": [
+      {
+        "attempt_id": "aea1789bfeed4c4885c97b656e7b3937",
+        "run_id": null,
+        "pid": 24244,
+        "thread": "Q7P1",
+        "stage": "author",
+        "actor": "author",
+        "started_at": 1790359069.0207949,
+        "deadline_at": 1790360869.0207949,
+        "timeout_seconds": 1800,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q7P1",
+        "child_pid": 33380,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/aea1789bfeed4c4885c97b656e7b3937.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 185.5,
+        "overdue_seconds": 0,
+        "arm": "repeat"
+      }
+    ],
+    "existing_paper": "repeat/Q4P10 ACCEPTED, build_ok true",
+    "failures": {
+      "repeat": {
+        "failure_count": 0,
+        "failure": null,
+        "recent_failures": [],
+        "stop": null,
+        "last_completed_call": {
+          "at": "2026-09-25T17:57:45Z",
+          "thread": "Q7P1",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        }
+      },
+      "reinjection": {
+        "failure_count": 0,
+        "failure": null,
+        "recent_failures": [],
+        "stop": null,
+        "last_completed_call": {
+          "at": "2026-09-25T17:13:48Z",
+          "thread": "Q3P2",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        }
+      }
+    },
+    "process_identity": "Supplied process evidence matches session runner PID 24244, parent 24243, Python executable; recorded codex child 33380 and descendant 33465 present. No duplicate runner in supplied tree. Point-in-time evidence cannot exclude unrecorded reparented groups.",
+    "progress_caveat": "progress.json last persists completed pair Q3P10; outcomes.json is older finalization output, including resolved Q3P2 blocker. Current aggregate, receipts and stage files establish advancement.",
+    "intervention": "none",
+    "pane_title": "HERDR_PANE_ID unavailable; no pane rename attempted"
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-010/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-010/status-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-010/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-009/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

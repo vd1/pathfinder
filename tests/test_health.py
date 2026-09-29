@@ -12,6 +12,16 @@ from pathfinder import cli, edit, health, monitor, research, runner, transport
 from test_runner import make
 
 
+def test_reference_warnings_remain_visible_after_acceptance(tmp_path):
+    c = make(tmp_path)
+    health.write(c.thread_dir("Q1P1") / "paper/paper.json", {
+        "status": "ACCEPTED", "checks": ["arXiv lookup failed: unavailable"]})
+    snap = health.snapshot(c)
+    assert snap["work"][0]["paper"]["status"] == "ACCEPTED"
+    assert snap["work"][0]["checks"]["paper"]
+    assert any("unresolved reference" in w for w in snap["warnings"])
+
+
 def test_heartbeat_is_not_progress_and_deadline_is_not_deadlock(tmp_path):
     c = make(tmp_path)
     now = time.time()

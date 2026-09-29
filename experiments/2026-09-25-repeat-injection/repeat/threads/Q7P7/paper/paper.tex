@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{A Corrected Quadratic Payment for Forecast-Conditioned Optional Loads}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Garjani, Shokri and Kebriaei propose a quadratic payment for efficient resource allocation, while Cai and coauthors schedule flexible demand using forecast nodal carbon intensity. We examine the displayed payment and a deliberately restricted use of that forecast. Q's strict uniqueness certificate conflicts with its implementation condition, and its payment can have multiple equilibrium prices and negative participant utility. An other-agent transfer corrects the equilibrium payment without changing best responses. For optional convex loads, a frozen nonnegative carbon forecast and a balanced carbon charge then implement a unique forecast-optimal allocation at every equilibrium, with equilibrium budget balance and nonnegative utility, provided a planner multiplier exists. A uniform counterfactual forecast-error premise yields an attributed-load regret bound; a separate accounting premise is needed for physical generation-emissions regret. These claims do not implement P's conserved workload or binary storage routing. % ledger: 4, 6, 8, 10, 11, 18, 20, 22, 23, 26
+\end{abstract}
+
+\section{Setting and contribution}
+
+Q maximises the sum of strongly concave private valuations over compact convex local resource sets with componentwise aggregate capacity constraints. It proposes the quadratic payment in its Eq.~(40), claiming a unique Nash equilibrium, efficient allocation, budget balance and individual rationality; it also studies stochastic learning. P forecasts day-ahead nodal carbon intensity (NCI) and schedules distributed data-centre (DDC) loads and mobile energy storage (MESS) against the frozen forecast in its Eq.~(26). P's workload-balance Eq.~(28) conserves service, and its MESS routing contains binary decisions. \cite{garjani2026systematic,cai2026emission} % ledger: 1, 2, 3, 7, 23
+
+Here the decision is an \emph{optional} nonnegative bus-time load vector, with convex local sets containing zero. The forecast is a fixed coefficient in the agents' objective. This is a different allocation problem from P's mandatory DDC workload and mixed-integer MESS dispatch. The new claim concerns Q's displayed payment in this restricted problem, not all payments in Q's quadratic family. % ledger: 7, 18, 23, 25
+
+Prior work already separates efficient allocations from unique equilibrium messages: Heydaribeni and Anastasopoulos exhibit a network mechanism with infinitely many Nash equilibria but the same efficient allocation, including multiplicity associated with dual prices \cite{heydaribeni2019distributed}. Chen and Zhao already claim carbon-aware social optimality, budget balance and individual rationality in a joint electricity-carbon pricing mechanism \cite{chen2024achieving}. Thus neither allocation-level implementation as a general pattern nor a balanced carbon charge alone is the contribution here. The specific contribution is a diagnosis and equilibrium-payment repair for Q's Eq.~(40), together with its limited forecast-conditioned consequence. % ledger: 4, 6, 10, 11, 14, 18, 19, 22
+
+\section{What fails for Q's displayed rule}
+
+Let \(N\geq2\), \(K\geq1\), \(x_n\in\mathcal X_n\subseteq\mathbb R_+^K\),
+\(p_n\in\mathbb R_+^K\), \(c\in\mathbb R_+^K\), and \(\alpha>0\).
+Write \(t_n^Q\) for Q's Eq.~(40), and set
+\[
+\bar p_{-n}=\sum_{m\ne n}p_m,\qquad
+\bar x_{-n}=\sum_{m\ne n}x_m,\qquad
+S=\sum_n x_n-c.
+\]
+For reference, the parts of Q's payment that depend on agent \(n\)'s own choice are
+\[
+t_n^Q=\alpha\left[\frac12p_n^\top p_n
+-\frac{p_n^\top(\bar p_{-n}+S)}{N-1}
++\frac{N}{(N-1)^2}\bar p_{-n}^\top x_n\right]
++\text{terms independent of }(x_n,p_n).
+\]
+This expression is only a best-response representation; equilibrium payment levels below use the complete Eq.~(40). % ledger: 8, 11, 18, 22
+
+\begin{proposition}[Failure of the strict LMI certificate]
+Q's Proposition 1 condition \(\Psi+\Psi^\top\preceq-\upsilon I\), \(\upsilon>0\), is incompatible with its Theorem P2(i) condition \(\sum_m A_{nm}^n=0\) for every \(n\). This rules out their joint use as a certificate, without ruling out efficient implementation. % ledger: 4
+\end{proposition}
+\begin{proof}
+Take a nonzero \(q\in\mathbb R^K\) and a direction \(v\) whose allocation blocks are zero and whose price blocks all equal \(q\). Q's price-price blocks give
+\[
+v^\top\Psi v=-\sum_n q^\top\Bigl(\sum_m A_{nm}^n\Bigr)q=0.
+\]
+Hence \(v^\top(\Psi+\Psi^\top)v=0\), contrary to strict negative definiteness. % ledger: 4
+\end{proof}
+
+Full strategy uniqueness fails directly for Eq.~(40). Let \(N=2\), \(K=1\), \(\alpha=1\), \(c=2\), \(\mathcal X_1=\mathcal X_2=[0,1]\), and \(V_n(x)=3x-x^2/2\). Every \((x_1,x_2,p_1,p_2)=(1,1,p,p)\), \(0\leq p\leq2\), is an equilibrium: a unilateral move \((x_n,p_n)=(1-d,p+u)\) changes utility by \(-(2-p)d-(d+u)^2/2\leq0\). The efficient allocation is unique, while the capacity multiplier and equilibrium price are not. % ledger: 6, 8
+
+The same payment need not be individually rational. For \(N=2\), \(\alpha=c=1\), \(\mathcal X_n=[0,1]\), \(V_1(x)=3x-x^2/2\), and \(V_2(x)=2x-x^2/2\), the profile \((x_1,x_2,p_1,p_2)=(1,0,2,2)\) is an equilibrium. Q's payments are \((3,-3)\), so player 1 receives \(V_1(1)-3=-1/2<0=V_1(0)\). These examples address Q's displayed Eq.~(40) and its associated claims. % ledger: 10, 13
+
+\section{A restricted correction}
+
+Assume each \(\mathcal X_n\) is compact and convex, \(0\in\mathcal X_n\subseteq\mathbb R_+^K\), and each \(V_n\) is continuously differentiable, \(\alpha\)-strongly concave and satisfies \(V_n(0)=0\). Let \(\hat e\in\mathbb R_+^K\) be frozen, \(\beta\geq0\), and assume the planner below has a primal-dual KKT pair. These are assumptions for the optional-load result, rather than properties established for P's full dispatch. % ledger: 3, 7, 18, 23
+\[
+\max_{x_n\in\mathcal X_n,\ \sum_n x_n\leq c}
+F_{\hat e}(x),\qquad
+F_{\hat e}(x)=\sum_n V_n(x_n)-\beta\hat e^\top\sum_n x_n.
+\tag{1}\label{eq:planner}
+\]
+
+Define two additions to Q's displayed payment:
+\begin{align}
+h_n&=\frac{\alpha N}{(N-1)^2}
+\left(\frac{\bar p_{-n}}{N-1}\right)^\top
+\left(\bar x_{-n}-\frac{N-1}{N}c\right),\label{eq:repair}\\
+b_n&=\beta\hat e^\top x_n
+-\frac{\beta}{N-1}\hat e^\top\bar x_{-n},\qquad
+t_n=t_n^Q+h_n+b_n.\label{eq:carbon}
+\end{align}
+The transfer \(h_n\) uses only other agents' actions. The second term of \(b_n\) also uses only other agents' actions, while \(\sum_n b_n=0\) at every strategy profile. % ledger: 5, 11, 13, 18, 22
+
+\begin{theorem}[Forecast-conditioned allocation and settlement]
+Under the assumptions above, the game with payments \eqref{eq:repair}--\eqref{eq:carbon} has an equilibrium. Every equilibrium has the unique allocation solving \eqref{eq:planner}; equilibrium prices may differ across equilibria. At every equilibrium the payments sum to zero and every agent's utility is nonnegative relative to the optional zero-service benchmark. % ledger: 8, 11, 13, 18, 22, 23
+\end{theorem}
+\begin{proof}
+Both additions leave the price best response unchanged; \(h_n\) leaves every best response unchanged, and \(b_n\) replaces \(V_n\) by the still strongly concave \(\widetilde V_n=V_n-\beta\hat e^\top x_n\). For coordinate \(k\), write \(P^k=\sum_n p_n^k\). Q's displayed rule yields
+\[
+p_n^k=\left[\frac{P^k-p_n^k+S^k}{N-1}\right]_+.
+\]
+If any \(p_n^k>0\), then \(Np_n^k=P^k+S^k>0\), forcing every agent's price in that coordinate to be positive. They are equal, and summation gives \(S^k=0\). If all prices are zero, \(S^k\leq0\). Thus prices are common, \(p\geq0\), allocations are feasible, and \(p^\top S=0\). % ledger: 8, 18, 22
+
+At common prices the marginal payment for an agent's allocation is \(\alpha p\). Allocation best responses are precisely the planner's local KKT conditions with multiplier \(\lambda=\alpha p\). Strong concavity gives a unique primal allocation. Conversely, a planner KKT pair supplies a common-price candidate \(p_n=\lambda/\alpha\); each player's payoff is jointly concave in its own allocation and price under the stated strong concavity and \(N\geq2\), so the KKT conditions make this candidate an equilibrium. % ledger: 8, 12, 18
+
+At equilibrium, direct substitution into the complete Q payment and complementarity give
+\[
+t_n^Q=\alpha\left(1+\frac{N}{(N-1)^2}\right)p^\top(x_n-c/N),
+\qquad t_n^Q+h_n=\alpha p^\top(x_n-c/N).
+\]
+These corrected base payments sum to zero by complementarity, and the carbon additions sum to zero identically. Finally, the allocation best response against feasible \(x_n=0\) gives \(V_n(x_n)-\beta\hat e^\top x_n-\alpha p^\top x_n\geq0\). Agent \(n\)'s equilibrium utility is this quantity plus \(\alpha p^\top c/N+\beta\hat e^\top\bar x_{-n}/(N-1)\), which is nonnegative. The budget claim for \(h_n\) is at equilibrium. % ledger: 11, 13, 18, 22
+\end{proof}
+
+\section{Forecast error and its interpretation}
+
+Let \(\mathcal F\) be the feasible allocations of \eqref{eq:planner}, \(X(x)=\sum_n x_n\), and let \(e(x)\) denote a possibly dispatch-dependent realised NCI. Define attributed-load welfare \(F_e(x)=\sum_n V_n(x_n)-\beta e(x)^\top X(x)\). This is an accounting objective; P's calculated NCI in Eq.~(23) and fixed-forecast objective in Eq.~(26) do not identify it with changes in physical generation emissions. % ledger: 2, 15, 18, 23
+
+\begin{proposition}[Conditional regret]
+If \(\sup_{x\in\mathcal F}\|e(x)-\hat e\|_\infty\leq\varepsilon\), then the forecast-optimal equilibrium allocation \(\hat x\) has attributed-load welfare regret at most \(2\beta\varepsilon\|c\|_1\). If realised intensity is instead a fixed vector \(e\) with \(\|e-\hat e\|_\infty\leq\varepsilon\), the bound is \(\beta\varepsilon\|c\|_1\). Neither premise follows from P's reported observational forecast errors. % ledger: 12, 18, 20, 22, 23
+\end{proposition}
+\begin{proof}
+For each feasible \(x\), \(0\leq X(x)\leq c\), so \(|F_e(x)-F_{\hat e}(x)|\leq\beta\varepsilon\|c\|_1\). Compare a maximiser of \(F_e\) and \(\hat x\) on both sides of forecast optimality. For a fixed \(e\), the forecast error instead multiplies \(X(x_e)-X(\hat x)\), whose \(\ell_1\) norm is at most \(\|c\|_1\). % ledger: 12, 18, 20, 22
+\end{proof}
+
+If actual generation emissions are \(C(x)\) and a fixed baseline is \(C_0\), the additional uniform accounting link \(\sup_{x\in\mathcal F}|C(x)-C_0-e(x)^\top X(x)|\leq\delta\) gives regret at most \(2\beta(\varepsilon\|c\|_1+\delta)\) for welfare \(\sum_n V_n(x_n)-\beta(C(x)-C_0)\). This follows by comparing physical welfare with forecast welfare at both feasible allocations. P establishes neither uniform premise. % ledger: 23, 25, 26
+
+To see why this qualification matters, consider a hypothetical two-location dispatch. Zero-carbon generation at A already meets its baseline demand and an added MWh there uses backup generation emitting one unit. At B, the added MWh emits one-half unit. Baseline average NCI is zero at A and one-half at B, so a frozen-NCI objective ranks A first even though B has lower incremental physical emissions. This is an interpretation stress test, not a result from P's IEEE 33-bus simulation. % ledger: 15, 18, 23
+
+\section{Limitations and open questions}
+
+The theorem changes P's service model: DDC workload is conserved in P, and MESS movement is binary. A zero-service outside option and Q's componentwise capacity form therefore do not establish participation or implementation for P's exact programme. The correction also leaves price multiplicity possible and supplies no stochastic-learning convergence result. Its equilibrium budget balance does not assert that \(h_n\) balances the budget off equilibrium. % ledger: 7, 18, 22, 23, 25
+
+The forecast regret bound requires a uniform \emph{counterfactual} error guarantee over feasible decisions. A physical-emissions conclusion additionally requires an accounting link to generation emissions. A concrete next question is to specify a small dispatch with an explicit \(C(x)\), derive its counterfactual \(e(x)\), and test both bounds. The present analysis does not establish those premises or an empirical improvement in P's network. % ledger: 15, 18, 23, 26
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

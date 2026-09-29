@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb}
+\title{Conditional feasibility bounds for metered learning}
+\author{Emmy}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Source scope}
+The assigned \texttt{inputs/Q.tex} is the stochastic resource allocation
+mechanism of Garjani, Shokri, and Kebriaei. Its Problem Formulation defines
+\(U_n=V_n(x_n)-t_n\), budget balance at equilibrium as
+\(\sum_n t_n=0\), and individual rationality as \(U_n\geq V_n(0)=0\).
+The assigned \texttt{inputs/P.tex} is a proposal about metering LLM decisions
+in a double auction. Its Gross and net surplus section defines a real
+inference expenditure \(C\) and net welfare \(G-\lambda C\). Its references
+to papers called Q and P concern different source papers. The bounds below
+apply only under the stated bridge assumptions.
+
+\section*{Accounting bound}
+Suppose agent \(n\)'s eventual gross gain is \(g_n\), its real inference
+expenditure is \(c_n\), and \(t_n\) is a transfer among agents. Let
+\(G=\sum_n g_n\), \(C=\sum_n c_n\), and let \(\lambda>0\) convert cost units
+to gain units. Then the participation payoff is
+\[
+u_n=g_n-\lambda c_n-t_n.
+\]
+If total transfers balance, \(\sum_n t_n=0\), summation gives
+\[
+\sum_n u_n=G-\lambda C.
+\]
+With zero outside payoff, individual rationality for every agent requires
+\(G\geq\lambda C\). Conversely, if \(G\geq\lambda C\) and arbitrary
+lump-sum transfers are permitted after the outcome is known, choose any
+nonnegative \(q_n\) summing to \(G-\lambda C\) and set
+\(t_n=g_n-\lambda c_n-q_n\). Then transfers balance and \(u_n=q_n\geq0\).
+This converse is only an accounting statement. It does not establish
+incentive compatibility, Nash implementation, or information feasibility.
+
+The need for a costless entry option already appears in Q's full valuation
+class. For example, take \(\mathcal X_n=[0,1]\) and
+\(V_n(x_n)=-\alpha x_n^2/2\) for every agent. These functions satisfy Q's
+strong concavity and zero-at-zero assumptions, but the optimal gross value
+is zero. If even the first sample call is compulsory and costs a positive
+amount, total net value is negative. Balanced transfers cannot make every
+agent willing to enter. This is an impossibility for a mandatory paid-sample
+extension over the full type class, not for Q's free-sample mechanism.
+
+The timing matters. In Q's Individual rationality (P4) proof, the
+comparison message is \(s_n'=\operatorname{col}(0,\tilde p)\), submitted
+inside the stage game after the learning process is specified. Its
+nonnegative stage utility does not reimburse a cost already paid to learn
+or submit that message. P's Mechanism and test section proposes a persistent
+withdrawal option but charges the first scheduled decision, including a
+decision to withdraw. Such withdrawal cannot serve as the costless
+pre-sample entry screen required for the full valuation class in the
+example above. An extension could instead offer an opt-out before the
+first charged call, fund that call externally, or restrict valuations to
+types with enough expected gain. A costless opt-out alone gives no useful
+welfare guarantee, since all agents could exit.
+
+For the auction schedule described in \texttt{inputs/P.tex}, Gross and net
+surplus gives \(G\leq7.5\) per round. Consequently
+\(\lambda C>7.5\) makes balanced transfers and universal participation
+impossible for that round. This ceiling comes from P's cited auction setting;
+it is not a bound on Q's resource allocation problem.
+
+\section*{Q's growing sample schedule under a token implementation}
+Q's Assumptions 1 and 2 make each \(\mathcal X_n\) compact and each
+\(V_n\) continuous. Therefore
+\[
+M=\max_{x\in\prod_n\mathcal X_n}\sum_n V_n(x_n)<\infty.
+\]
+Its Theorem 4 specifies
+\[
+Q_i=\left\lceil\frac{C_b}{\eta^{2(i+1)}}\right\rceil,
+\qquad C_b>0,\quad 0<\eta<1.
+\]
+Assume each of the \(NQ_i\) sample evaluations at iteration \(i\)
+requires a generated-token call of real cost at least \(d>0\). This is an
+additional implementation assumption: Q's original random samples need not
+use language models. Put \(r=\eta^{-2}>1\). After \(I\) iterations,
+\[
+C_I\geq dN\sum_{i=0}^{I-1}Q_i
+\geq dNC_b\sum_{i=0}^{I-1}r^{i+1}
+=dNC_b\frac{r(r^I-1)}{r-1}.
+\]
+Suppose the allocation yields value only once after learning, the agents
+have zero outside payoffs, and no external subsidy pays their cumulative
+learning costs. If all transfers over the protocol balance, aggregate
+participation payoff is at most \(M-C_I\). It is negative for all
+sufficiently large \(I\). Thus Q's exact asymptotic schedule cannot also
+provide universal ex ante individual rationality under this paid-oracle,
+single-allocation interpretation. A necessary condition for an \(I\)-step
+run to remain feasible is
+\[
+I\leq\log_r\!\left(1+\frac{M(r-1)}{dNC_b r}\right).
+\]
+The argument does not apply when samples are free, the cost is paid by an
+outside sponsor, or repeated benefits can repay learning costs. Q's IR
+theorem concerns the equilibrium payoff after learning. Q's Numerical
+Simulations state \(Q_i=\lceil0.96^{i+1}\rceil=1\), which is a different
+schedule from Theorem 4 and cannot validate its paid-oracle limit.
+
+If the sample schedule and each agent's bill are fixed independently of
+their messages, subtracting that bill does not change Q's stage best
+responses. It changes the earlier entry decision. A behavioural mechanism
+question therefore requires an endogenous choice to sample, stop, or exit,
+with a finite-cost welfare or accuracy target and an explicit cost-sharing
+rule. The accounting bounds alone do not provide such a mechanism.
+
+\section*{Why the auction is not Q's allocation model}
+Q assumes a separable planner objective \(\sum_nV_n(x_n)\), with strongly
+concave individual valuations on convex allocation sets. P's surplus
+depends on executed buyer--seller matches. For one buyer and one seller
+whose calls are both needed for a gain \(h>0\), the simple binary model
+\(G(x_b,x_s)=h x_bx_s\) has cross-difference
+\[
+G(1,1)-G(1,0)-G(0,1)+G(0,0)=h.
+\]
+Every additive expression \(V_b(x_b)+V_s(x_s)\) has cross-difference zero.
+This example shows that applying Q's quadratic payment theorem to the
+auction requires a new model of match spillovers and a relaxation of binary
+participation. It does not say that all auction settings have this exact
+binary payoff.
+
+\end{document}

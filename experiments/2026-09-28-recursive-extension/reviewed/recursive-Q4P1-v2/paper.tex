@@ -1,0 +1,212 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Truthful Peer Reports and Partial Identification of a Target Ranking}
+
+\date{28 September 2026; supervisor-clarified version 2}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Peer scoring can strictly reward an observer for reporting a private comparison label, while the
+resulting report law leaves an intended Bradley--Terry order unresolved. We compose the quadratic peer
+score of Q with the four-vertex ambiguity in P: the same score table supports strict truthful reporting
+in two worlds with identical complete report laws and opposite endpoint orders. In a model with
+independent, positive, edge-specific shared flips, the strict comparisons identified by the truthful
+report law are exactly those given by directed reachability in the observed edge-sign graph. A
+conditional sign-margin bound gives a finite-sample version. These statements concern a restricted
+report-only game and a specified noise class; they neither challenge Q's full-information implementation
+theorem nor select the truthful equilibrium. % ledger: 3, 8, 10, 12, 19, 21, 22, 24, 26, 28
+\end{abstract}
+
+\section{Question and source boundary}
+
+The question is which intended Bradley--Terry comparisons are functions of a truthful-equilibrium
+peer-report law. Here Q means \emph{Mechanism Design for Alignment and Control} \cite{Q}, and P means the
+supplied local manuscript \emph{When Peer Agreement Hides a Reversed Ranking} \cite{P}. P's own labels
+``Q'' and ``P'' refer to a different pair of papers. % ledger: 2, 13, 26, 28
+
+\paragraph{What Q establishes.}
+For finitely many supported types, Q assumes that distinct types induce distinct, known conditional
+distributions \(\beta_i[t]\) of co-player types. Against truthful co-player reports, its quadratic peer
+score gives type \(t\) a truthful-report advantage of \(\Lambda\|\beta_i[t]-\beta_i[s]\|_2^2\) over a
+false report \(s\). Its general implementation result also uses utility cancellation and an
+action-support penalty that may depend on the true state. Q permits correlated signals and gives the
+designer a model of state and types. % ledger: 3, 5, 10, 12, 26
+
+\paragraph{What P establishes.}
+P models intended edge comparisons with Bradley--Terry score differences. On a four-vertex path, it
+constructs a clean world and a world with a common shared flip that have the same complete peer-report
+law but opposite intended endpoint orders. Under a separately assumed constant positive shared-flip mean,
+P also derives identification from a nondegenerate short cycle after observer reliability calibration.
+% ledger: 2, 8, 9, 10, 26
+
+\section{A truthful equilibrium with an unidentified target}
+
+Orient the comparison path as \(1\to2\to3\to4\). For edge \(e=(u,v)\), let \(X_e\in\{-1,+1\}\) be an
+independent intended comparison with
+\[
+\mathbb E X_e=\tanh\!\left(\frac{c_u-c_v}{2}\right).
+\]
+In world \(W\), the intended differences along the path are \((4,-3/2,-3/2)\). Each edge draw receives an
+independent common flip \(B_e\) of mean \(b=1/2\). In world \(W'\), there is no common flip, and the
+intended differences are \(f_b(d_e)\), where
+\[
+f_b(d)=2\operatorname{artanh}\!\left(b\tanh(d/2)\right).
+\]
+The path makes these transformed differences consistent with a Bradley--Terry score vector.
+% ledger: 8, 10
+
+Two observers each receive a private label on every edge. Their reports are \(Y_{ei}=X_eB_eZ_{ei}\) in
+\(W\), with the common-flip factor omitted in \(W'\). The personal flips \(Z_{ei}\) are independent
+across observers and edges, independent of comparisons, and have fixed means \(a_i\in(0,1)\) in both
+worlds. Observer \(i\)'s reportable type is the three-label vector \(T_i=(Y_{ei})_{e\in E}\). Give each
+observer zero other utility and a singleton action set. The game thus concerns reporting an observed
+label vector. % ledger: 8, 10, 12
+
+\begin{proposition}[Truthful reports do not identify the endpoint order]
+In this two-observer game, one common quadratic peer-score table makes truthful label-vector reporting a
+strict best response for each observer in both worlds. The complete truthful-report laws coincide, yet
+\(c_1>c_4\) in \(W\) and \(c'_1<c'_4\) in \(W'\). For any report-based binary endpoint-order decision, at
+least one world has error probability at least \(1/2\), regardless of the number of independent
+repetitions. % ledger: 8, 10, 12
+\end{proposition}
+
+\begin{proof}
+The shared latent sign \(S_e=X_eB_e\) in \(W\) has mean
+\[
+w_e=b\tanh(d_e/2)=\tanh(f_b(d_e)/2),
+\]
+which is the mean of the intended sign in \(W'\). These binary signs are independent over edges, and the
+personal-label channels agree. Hence the entire joint law of \((T_1,T_2)\), not merely its agreement
+moments, is the same in both worlds. % ledger: 8, 10
+
+Let \(\beta_i[t]=\mathcal L(T_j\mid T_i=t)\). On each edge, direct conditioning gives
+\[
+\mathbb E[Y_{ej}\mid Y_{ei}=+1]
+-\mathbb E[Y_{ej}\mid Y_{ei}=-1]
+=\frac{2a_i a_j(1-w_e^2)}{1-a_i^2w_e^2}>0.
+\]
+All label vectors have positive probability. Independence across edges therefore makes
+\(\beta_i[t]\ne\beta_i[s]\) whenever \(t\ne s\). Use Q's report-only quadratic reward
+\[
+R_i(r_i,r_j)=\Lambda\left(2\beta_i[r_i](r_j)
+-\|\beta_i[r_i]\|_2^2\right),\qquad \Lambda>0.
+\]
+When the other observer reports truthfully, misreporting \(s\) loses
+\(\Lambda\|\beta_i[t]-\beta_i[s]\|_2^2>0\) in expectation. The identical joint label law gives the same
+score table in the two worlds. % ledger: 3, 8, 10, 12
+
+The intended endpoint differences are
+\[
+c_1-c_4=1>0,
+\qquad
+c'_1-c'_4=f_{1/2}(4)-2f_{1/2}(3/2)\simeq-0.26458<0.
+\]
+Any decision based on the reports has the same distribution in both worlds. Its two error probabilities
+sum to one, so their maximum is at least \(1/2\). % ledger: 8, 10
+\end{proof}
+
+The proposition asserts existence of a strict truthful equilibrium in the report-only specialisation. It
+does not assert that this equilibrium is unique. The label vectors also need not be identical full
+universal types in Q's model: those types include beliefs about the state, and Q gives the designer a
+state-and-type model. % ledger: 5, 10, 12, 26
+
+\section{Which orders survive edge-specific shared flips?}
+
+Let \(G=(V,E)\) be a finite undirected comparison graph.
+Now retain independent edge draws and personal-flip channels, but permit each edge to have an unknown
+positive shared-flip mean \(b_e\in(0,1]\). For an arbitrarily oriented edge \(e=(u,v)\), its calibrated
+corrupted-sign mean is
+\[
+w_e=b_e\tanh\!\left(\frac{c_u-c_v}{2}\right).
+\]
+Assume the population means are feasible under this model and nonzero. The sign of \(w_e\) is available
+either after calibration or directly from a truthful observer whose reliability is known to be positive.
+Orient each edge from its higher-score endpoint to its lower-score endpoint according to that sign,
+producing a directed graph \(H\). % ledger: 19, 21, 22, 24
+
+\begin{proposition}[Exact population ordinal certificate]
+Within this positive edge-specific flip model, the strict inequality \(c_u>c_v\) is forced by the
+complete truthful-report law exactly when \(H\) has a directed path from \(u\) to \(v\). If neither
+vertex reaches the other, two admissible worlds have the same complete report law and opposite strict
+orders for that pair. % ledger: 19, 21, 22
+\end{proposition}
+
+\begin{proof}
+Each directed edge has a positive score drop, so a directed path forces its endpoint inequality.
+Feasibility makes \(H\) acyclic. If \(u\) and \(v\) are incomparable, choose a linear extension with
+\(u\) above \(v\) and another with their positions reversed. In each extension, assign descending scores
+with adjacent gaps exceeding \(\max_e 2\operatorname{artanh}|w_e|\). For each edge put
+\[
+b_e=\frac{w_e}{\tanh((c_u-c_v)/2)}\in(0,1).
+\]
+Both score assignments give the prescribed sign and mean \(w_e\) on every corrupted binary edge sign.
+Independent edge draws and identical personal-flip channels therefore yield the same complete peer-report
+law, while the chosen pair reverses. % ledger: 19, 21, 22
+\end{proof}
+
+If a calibrated \(w_e\) is zero and \(b_e>0\), its endpoints have equal scores. Such edges may be
+contracted when the resulting data remain feasible; the strict-order statement then applies to the
+quotient. Under the stated class, a complete comparison graph is necessary and sufficient for a uniform
+certificate of every pairwise order across all distinct-score configurations. This is a uniform graph
+statement, whereas the proposition is specific to the realised signs. % ledger: 20, 21, 22
+
+The restriction on shared-flip means matters. P's constant-rate, nondegenerate-triangle formula can
+identify the common rate and repair its four-vertex path after adding edge \(1\)--\(3\), provided
+observer reliabilities are calibrated. The formula cannot verify rate constancy from reports: the
+recorded triangle-plus-tail construction has the same report law with positive edge-specific rates and
+opposite \(1\)-versus-\(4\) orders. A direct \(1\)--\(4\) comparison does certify that ordinal order
+under positive edge-specific flips. % ledger: 9, 18, 21, 25, 26
+
+\begin{proposition}[Conditional finite-sample sign certificate]
+Suppose truthful reports provide \(N\) independent labels per edge from one observer with positive
+reliability at least \(\alpha>0\) on every edge. If \(|w_e|\ge\kappa>0\) for every edge, then
+\[
+N\ge\frac{2}{\alpha^2\kappa^2}
+\log\!\left(\frac{2|E|}{\zeta}\right)
+\]
+is sufficient for all empirical edge signs, and thus every order certified by directed reachability, to
+be correct with probability at least \(1-\zeta\). % ledger: 22, 24
+\end{proposition}
+
+\begin{proof}
+Each label has mean \(a_ew_e\), with absolute value at least \(\alpha\kappa\). Hoeffding's inequality
+gives sign-error probability at most \(\exp(-N\alpha^2\kappa^2/2)\) for one edge. A union bound over
+edges yields the stated sufficient sample count. % ledger: 22, 24
+\end{proof}
+
+\section{Related work and interpretation}
+
+Miller, Resnick and Zeckhauser \cite{Miller2005} already use peer reports to reward truthful signals;
+Shnayder and co-authors \cite{Shnayder2016} study uninformative equilibria. Chen, Feng and Yu
+\cite{Chen2024} already obtain strict truthful elicitation of pairwise comparisons under Bayesian strong
+stochastic transitivity. Our claim is restricted to the composition with P's report-law reversal and the
+positive edge-specific flip criterion. The reachability step is elementary, and the searches in
+\url{search.md} do not establish priority for this precise formulation. % ledger: 11, 15, 26, 28
+
+Strategic truthfulness leaves the intended target outside the report law in the two-world example.
+Within the positive edge-specific flip class, a directed chain certifies its endpoint order; an
+incomparable pair requires further information, such as a direct comparison. This interpretation is
+conditional on the stated model and says nothing about downstream decision payoffs.
+% ledger: 8, 19, 21, 22, 26, 28
+
+\section{Limitations and open questions}
+
+The first proposition has label types, a singleton action and zero other utility. Q's broader theorem
+assumes known beliefs and may use state-contingent rewards. We establish neither a refutation of that
+theorem, equilibrium selection, nor truthfulness with a score table estimated from strategic reports.
+% ledger: 5, 10, 12, 24, 26
+
+The graph criterion assumes independent edges and positive shared-flip and observer means. Unknown or
+negative reliability signs remove its guarantee. The sample bound assumes truthful reports and a positive
+margin; without that margin there is no uniform rate. Finite-sample cycle calibration remains open.
+% ledger: 21, 22, 24, 26, 28
+
+Open work is to justify shared-noise restrictions externally, analyse strategic score-table estimation
+and equilibrium selection, and connect an identified comparison to a decision payoff and label cost.
+% ledger: 22, 24, 26, 28
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

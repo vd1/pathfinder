@@ -1,0 +1,83 @@
+{
+  "observed_at": "2026-09-25T22:35:47.959922+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-064/observed-status.json",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-065/aggregate-observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-065/processes.json",
+  "status": "continue",
+  "completed_research": 23,
+  "completed_edits": 22,
+  "scheduled": 28,
+  "accepted_papers": 7,
+  "changes": [
+    {
+      "arm": "reinjection",
+      "pair": "Q3P5",
+      "previous": {
+        "pair": "Q3P5",
+        "research": {
+          "pair_id": "Q3P5",
+          "round": 1,
+          "stage": "peers",
+          "status": "running",
+          "reason": null,
+          "started": "2026-09-25T22:17:38Z",
+          "updated": "2026-09-25T22:17:38Z"
+        },
+        "editor": {},
+        "needs_edit": false,
+        "arm": "reinjection"
+      },
+      "current": {
+        "pair": "Q3P5",
+        "research": {
+          "pair_id": "Q3P5",
+          "round": 1,
+          "stage": "done",
+          "status": "PAUSE",
+          "reason": "The matched-state construction supports a conditional auction example, but its welfare gap depends on a stipulated continuation and an illustrative prior. Neither paper shows that such states occur often enough to explain Q's losses, and the general information-limit idea has prior precedent. A publication claim needs decision logs or new replays that measure the ambiguity and compare traders with an information-matched control.",
+          "started": "2026-09-25T22:17:38Z",
+          "updated": "2026-09-25T22:34:28Z",
+          "repair": null
+        },
+        "editor": {
+          "status": "editing",
+          "attempt": 1,
+          "updated": "2026-09-25T22:34:28Z"
+        },
+        "needs_edit": true,
+        "arm": "reinjection"
+      }
+    }
+  ],
+  "facts": [
+    "Q3P5 progressed from peer Emmy to completed consolidation and verification, now editor attempt 1 within deadline.",
+    "Root PID 24244 matches session runner; supplied process tree shows Python runner parent 24243, Codex editor 95646 and code-mode-host descendant 95736. Point-in-time identity limitations retained.",
+    "Root and both child failure counts zero; no stop markers reported. Prior external lookup failures already recorded, no new failure found.",
+    "Seven DRAFT paper checkpoints independently inspected: all ACCEPTED with build_ok true.",
+    "progress.json is saved between pairs; outcomes.json is a prior shutdown snapshot, not current aggregate state.",
+    "No intervention or process mutation performed."
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "527864260cee4956ae418a12861820d9",
+      "run_id": "3dc956e69377496bb08811340dd778a7",
+      "pid": 24244,
+      "thread": "Q3P5",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790375668.4045582,
+      "deadline_at": 1790376568.4045582,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P5",
+      "child_pid": 95646,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/527864260cee4956ae418a12861820d9.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 79.6,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ]
+}

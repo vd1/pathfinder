@@ -1,0 +1,5 @@
+Round 1 is complete: [paper.tex](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/paper.tex), [references.bib](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/references.bib), and the [PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/paper.pdf).
+
+The paper derives the split-prize collision incentive and gives a conditional one-round priority-prize equilibrium result. It makes no claim of improved survival in P. The [search record](/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/search.md) documents 22 queries. They found that [Marden and Wierman’s Lemma 4.1](https://doi.org/10.1109/TAC.2013.2237831) already establishes the main priority-ordering step, so the paper presents it as a specialisation to this pair.
+
+`latexmk` built the four-page PDF successfully. I inspected it; there are no undefined citations or LaTeX warnings. Style checks found no errors, only source line-length warnings.

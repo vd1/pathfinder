@@ -7,6 +7,8 @@
 \usepackage[xcharter,vvarbb]{newtxmath}
 \usepackage[semibold,scale=0.98]{sourcesanspro}
 \usepackage[varqu,varl,scaled=0.96]{zi4}
+\DeclareMathAlphabet{\mathsf}{T1}{\sfdefault}{m}{n}
+\DeclareMathAlphabet{\mathtt}{T1}{\ttdefault}{m}{n}
 \usepackage[protrusion=true,expansion=true,tracking=smallcaps]{microtype}
 \SetTracking{encoding=*,shape=sc}{40}
 \linespread{1.07}
@@ -187,7 +189,7 @@
 \maketitle
 
 \begin{abstract}
-Pathfinder is an ``AI for science'' protocol aiming a creating new
+Pathfinder is an ``AI for science'' protocol aiming at creating new
 research ideas at scale by searching the
 scientific literature. Its engine scans and scores pairs of papers from selected
 corpora for potential connexions. Top scoring pairs are then given to AI agents
@@ -298,8 +300,8 @@ seed of an idea is provided by someone in the audience, and a connexion made,
 which, in favourable circumstances, can lead to a publication. By using modern
 agents (which are competent experts on every corpus, and always ``willing'' to
 contribute), one can do it faster, cheaper, and, therefore, at a larger scale.
-We have ran Pathfinder on sets of paper of size about a hundred each for a
-reasonable token budget (for budget related considerations \S\ref{eq:pilot-boundary}).
+We have run Pathfinder on sets of papers of size about a hundred each for a
+reasonable token budget (for budget-related considerations, see Appendix~\ref{app:resources}).
 
 Another comparison is with word embeddings and the idea that what a
 word means can be seen from the company it keeps. A scientific paper can likewise be
@@ -545,7 +547,7 @@ mechanism existing}; it does not prove that premise.
 
 A separate rerun exposed problems in \(q\), not \(p\), before introducing risk
 aversion. Its stability and implementation conditions are incompatible, and its
-printed payments can leave a participant receving less that what it pays out,
+printed payments can leave a participant receiving less than what it pays out,
 even at equilibrium. The first paper's approximation bound survives because it
 does not depend on those payments or conditions. Its mechanism application,
 however, remains unestablished: \(q\) as printed does not justify the guarantees
@@ -1785,8 +1787,8 @@ capitalisation and file-field names in the repository are serialization details.
 \section{Variability, evaluation and discovery comparison}
 \label{app:discovery-recovery}
 
-Repeating an investigation can produce a different connexion (), a different
-connexion, or a different verdict. Moreover, judging the resulting science is
+Repeating an investigation can produce a different connexion or a different
+verdict. Moreover, judging the resulting science is
 itself uncertain. These are separate questions: how variable is the research,
 and how reliably can we assess it? The following related work motivates a
 proposed experiment, not a further result of the pilot.

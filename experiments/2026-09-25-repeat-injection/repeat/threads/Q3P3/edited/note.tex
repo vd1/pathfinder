@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Can Structured Review Help a Market of Language Model Traders?}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects a study of language model traders in a double auction with a study of reviewer and
+critic agents for code review. The thread asked whether reviewing a trader's proposed quote could improve the
+market's total gains from trade. The peers found that a better price for one trader need not raise those
+gains, and that even an extra profitable trade can lower them under the auction's stated values. The thread
+ended as a draft because these checks sharpen the question but neither paper tests review in the auction.
+\end{abstract}
+
+\section{Introduction}
+
+Struski and colleagues study language model agents buying and selling a single good in a continuous double
+auction \cite{Q}. Buyers submit bids, sellers submit asks, and a trade occurs when an offer meets a standing
+quote. Each agent knows its own limit for a profitable trade, while the full pattern of buyer values and
+seller costs is hidden from it. The paper compares the resulting prices and total gains from trade with a
+human benchmark. It reports slower or absent convergence to the competitive price and less efficient
+allocations than in the human market.
+
+Qiu and Gill study a small team for code review \cite{P}. A main agent produces an artefact, a reviewer
+comments on it, and a critic challenges that review before the main agent edits. Their first protocol can
+produce agreement without enough evidence. On a code review benchmark, a revised prompt that requires the
+critic to distinguish evidence from concern improves review quality. The paper does not test that revised
+prompt in its repository repair experiment.
+
+The proposed connection was to freeze a trader's intended quote while a reviewer and critic examine it, then
+let the trader decide what to submit. The market paper gives a concrete setting: some traders make tiny quote
+improvements until a round's 300 opportunities are exhausted instead of completing available trades \cite{Q}.
+The review paper gives a way to challenge an action before revision \cite{P}. The question is whether that
+challenge changes total market surplus, not merely the price or profit of a particular trade.
+
+\section{What was done}
+
+The peers first considered applying the review protocol to each proposed quote. They checked what an immediate
+trade would mean for the trader and for the market. They then calculated the largest surplus possible at each
+trade count from the auction's stated values. This exposed a zero-gain sixth trade and the possibility of a
+harmful seventh trade, even when each pair trades at a price acceptable to both parties.
+
+An early objection claimed that the paper's reported mean above six trades suggested an error or a broken
+limit on bids and asks. The peers withdrew that claim after constructing seven profitable pairs at different
+prices. They also examined two other limits to the analogy. A reviewer can check a present quote against a
+known limit, but cannot know whether waiting will secure a better future trade. And, because the auction
+processes one chosen trader before moving to the next, a synchronous review does not make a quote stale while
+the book is held fixed.
+
+Finally, the peers narrowed the proposed test. The comparison would assign whole market runs to an unreviewed
+baseline, an independent reviewer, a basic reviewer and critic, or a reviewer and critic prompted to separate
+evidence from uncertainty. A matched allowance for extra deliberation would help distinguish a review effect
+from extra model calls. The trader's private-profit aim, available information, value schedule, and 300-step
+round limit would stay fixed. Proposed and submitted actions, realised surplus, trader profit, crossing
+behaviour, and call cost would be recorded. This was a design, not an experiment that the peers ran.
+
+\section{Results of the checks}
+
+For one completed trade, let \(v\) be the buyer's value, \(c\) the seller's cost, and \(p\) the trade price.
+Buyer and seller profit add to
+\[
+  (v-p)+(p-c)=v-c.
+\]
+Thus a change in \(p\) alone, with the same buyer and seller, changes who receives the gain but not its total.
+A review can change total surplus if it changes whether the trade happens or which agents trade. This is an
+accounting result, not evidence that review improves either outcome.
+
+The auction gives 11 buyers and 11 sellers values from \(0.75\) to \(3.25\), in steps of \(0.25\) \cite{Q}.
+Let \(W\) be the sum of \(v-c\) across trades that actually occur. Let \(W_q\) be the greatest such sum
+possible with exactly \(q\) trades, found by taking the \(q\) highest buyer values and \(q\) lowest seller
+costs. Let \(W^{\star}\) be the greatest surplus over all trade counts. The peers' calculation, also
+consistent with the released analysis helper \cite{Qanalysis}, gives
+\[
+  W^{\star}=W_5=W_6=7.50, \qquad W_7=7.00.
+\]
+Five well chosen trades can therefore attain the full surplus. A sixth adds nothing at the margin. Seven
+trades can all benefit their respective pairs: match the seven highest-value buyers with the seven lowest-cost
+sellers in reverse rank, and every pair has a gain of \(1.00\). Their combined gain is still only \(7.00\).
+This settles why a trade count above six alone does not show a data error or greater efficiency.
+
+The peers used the identity
+\[
+  W^{\star}-W=(W^{\star}-W_q)+(W_q-W)
+\]
+to separate the contribution of trade count from the contribution of which agents trade. Both terms are
+nonnegative: \(W^{\star}\) is the best result at any count, and \(W_q\) is the best result at the observed
+count. This split describes an observed run after the fact. Even if whole runs were assigned at random to
+review methods, the split alone would not show that a welfare change was caused through trade count rather
+than selection.
+
+\section{Objections and limits}
+
+The correction about seven trades matters because a profitable crossing is only a local fact. For example, a
+buyer with value \(3.25\) can accept an ask from a seller with cost \(2.25\) and generate surplus \(1.00\).
+Another buyer and seller can then make a second profitable trade, yet a different first match can generate
+more total surplus with fewer trades. A reviewer who sees the current ask cannot treat the unseen future match
+as certain. If \(a\) is an ask available now, \(b\) is a lower bid that might fill later, and \(r\) is its
+fill probability, a buyer with value \(v\) prefers the immediate trade in this simplified comparison only when
+\(v-a>r(v-b)\). The auction paper does not supply \(r\). Its full value schedule and competitive price are
+analyst information, not information for the trader or reviewer \cite{Q}.
+
+The review result has a similar boundary. The revised protocol raises the reported code review \(F_1\) score
+from \(0.457\) to \(0.533\) on SWE-PRBench, but its repository repair result uses the earlier protocol
+\cite{P}. Neither paper measures the revised protocol's effect on auction surplus. Reviewers would also need
+to retain the trader's instruction to seek private profit. Asking them to maximise social welfare would change
+the task being tested.
+
+The peers considered whether review time might leave a quote out of date. In this auction, offers are
+processed one at a time, so the book can remain fixed during a synchronous review \cite{Q}. Extra calls still
+cost time and tokens. A moving book would require a separate experiment. The ledger also records nearby work
+on a critic in an electricity auction \cite{electricityCritic}, debate in portfolio allocation
+\cite{portfolioDebate}, and checks of auction or negotiation actions \cite{auctionVerification}. These limited
+comparisons do not establish a broad claim of novelty.
+
+\section{Why the thread stopped}
+
+The verifier left the thread at \textsc{Draft}. The analytical connection is sound and useful: under these
+values, trade count and individually profitable crossings cannot stand in for market surplus. But the effect
+of adding reviewer and critic agents remains unmeasured. The smallest step that would restart the empirical
+question is a controlled market-run comparison with the unreviewed auction and a matched extra-deliberation
+control, keeping each trader's information and aim fixed. It would compare realised \(W/W^{\star}\), the two
+accounting contributions, and review cost, without treating those contributions as a causal explanation on
+their own.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

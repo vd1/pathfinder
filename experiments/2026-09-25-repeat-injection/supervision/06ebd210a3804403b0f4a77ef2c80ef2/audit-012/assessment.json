@@ -1,0 +1,141 @@
+{
+  "observed_at": "2026-09-25T18:11:24.148370+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "facts": {
+    "finished_research_edit_threads": 9,
+    "scheduled_threads": 28,
+    "previous_completed_records_unchanged": true,
+    "comparison": "Q7P1 reviewer completed and paper ACCEPTED; reinjection Q7P3 peers now active. No repeated stalled attempts.",
+    "runner": {
+      "pid": 24244,
+      "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+      "status": "running",
+      "started_at": 1790356224.425149,
+      "heartbeat_at": 1790359841.313195,
+      "last_progress": {
+        "block": 5,
+        "arm": "repeat",
+        "pair": "Q7P1",
+        "at": 1790359604.354261
+      },
+      "task": {
+        "block": 5,
+        "arm": "reinjection",
+        "pair": "Q7P3"
+      },
+      "stage": "between-pairs",
+      "pid_alive": true,
+      "heartbeat_age_seconds": 4.4
+    },
+    "active_calls": [
+      {
+        "attempt_id": "201f8a070ee54c72948f08996b0a7174",
+        "run_id": "63cd797555944e83a375d6a90a5a42c2",
+        "pid": 24244,
+        "thread": "Q7P3",
+        "stage": "peer",
+        "actor": "emmy",
+        "started_at": 1790359604.3698308,
+        "deadline_at": 1790360834.3698308,
+        "timeout_seconds": 1230,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q7P3",
+        "child_pid": 35301,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/201f8a070ee54c72948f08996b0a7174.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 241.3,
+        "overdue_seconds": 0,
+        "arm": "reinjection"
+      },
+      {
+        "attempt_id": "e5647ef7687141ccb8c06a3155022c0a",
+        "run_id": "63cd797555944e83a375d6a90a5a42c2",
+        "pid": 24244,
+        "thread": "Q7P3",
+        "stage": "peer",
+        "actor": "ada",
+        "started_at": 1790359604.369925,
+        "deadline_at": 1790360834.369925,
+        "timeout_seconds": 1230,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q7P3",
+        "child_pid": 35302,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/e5647ef7687141ccb8c06a3155022c0a.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 241.3,
+        "overdue_seconds": 0,
+        "arm": "reinjection"
+      }
+    ],
+    "papers": {
+      "repeat/threads/Q4P10/paper/paper.json": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+        "updated": "2026-09-25T15:11:00Z",
+        "build_ok": true
+      },
+      "repeat/threads/Q7P1/paper/paper.json": {
+        "status": "ACCEPTED",
+        "round": 1,
+        "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+        "updated": "2026-09-25T18:06:41Z",
+        "build_ok": true
+      }
+    },
+    "receipts": {
+      "repeat": {
+        "last": {
+          "at": "2026-09-25T18:06:41Z",
+          "thread": "Q7P1",
+          "stage": "review",
+          "actor": "reviewer",
+          "outcome": "completed",
+          "error": null
+        },
+        "errors": []
+      },
+      "reinjection": {
+        "last": {
+          "at": "2026-09-25T17:13:48Z",
+          "thread": "Q3P2",
+          "stage": "edit",
+          "actor": "editor",
+          "outcome": "completed",
+          "error": null
+        },
+        "errors": []
+      }
+    },
+    "child_failures": {
+      "repeat": {
+        "failure_count": 0,
+        "recent_failures": [],
+        "failure": null,
+        "stop": null
+      },
+      "reinjection": {
+        "failure_count": 0,
+        "recent_failures": [],
+        "failure": null,
+        "stop": null
+      }
+    },
+    "process_identity": "Supplied tree matches runner PID 24244, supervisor parent 24243, supplied Python executable, peer children 35301/35302 and their code-mode descendants. No duplicate runner shown. Point-in-time and PID reuse limitations retained.",
+    "progress_caveat": "progress.json is persisted between pairs; outcomes.json is saved on finalization. Historical Q3P2 blocker has been repaired and editing completed, as confirmed in child evidence and earlier incidents.",
+    "pane_title": "Rename denied by sandbox; not verified.",
+    "intervention": "none"
+  },
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-012/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-012/status-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-012/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl"
+  ]
+}

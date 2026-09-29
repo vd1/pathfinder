@@ -1,0 +1,149 @@
+{
+  "observed_at": "2026-09-25T20:16:41.339596+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "comparison_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-036/aggregate.json",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-037/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-037/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-037/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "facts": [
+    "Research/edit completed advanced from 15 to 16 of 28.",
+    "Repeat Q3P3 advanced from consolidation to DRAFT, completed editing, and author round 1 writing.",
+    "Four earlier papers ACCEPTED with build_ok true; twelve future research/edit threads remain.",
+    "Runner 24244 matches supplied Python under supervising parent 24243; codex call child 64717 and descendants present in supplied process evidence. No duplicate runner shown within its stated limitations.",
+    "Heartbeat fresh; author call not overdue. No root or child stop/failure fields; child failures.jsonl absent.",
+    "Historical outcomes.json retains repaired Q3P2 BLOCKED state; current checkpoints show PAUSE and completed editing. launch.py writes outcomes at exit and progress between pairs.",
+    "Q3P3 editor arXiv HTTP 406 lookup failed; build_ok true and author advanced. No evidence of stalled or repeated attempts."
+  ],
+  "papers": {
+    "repeat/threads/Q3P3/paper/paper.json": {
+      "status": "writing",
+      "round": 1,
+      "reason": null,
+      "updated": "2026-09-25T20:14:10Z"
+    },
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q1P3/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+      "updated": "2026-09-25T19:45:26Z",
+      "build_ok": true
+    }
+  },
+  "last_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T20:10:39Z",
+        "thread": "Q3P3",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 46.6
+      },
+      {
+        "at": "2026-09-25T20:11:23Z",
+        "thread": "Q3P3",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 43.8
+      },
+      {
+        "at": "2026-09-25T20:14:07Z",
+        "thread": "Q3P3",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 163.6
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T19:58:07Z",
+        "thread": "Q3P4",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 70.9
+      },
+      {
+        "at": "2026-09-25T19:58:38Z",
+        "thread": "Q3P4",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 30.4
+      },
+      {
+        "at": "2026-09-25T20:02:27Z",
+        "thread": "Q3P4",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 229.0
+      }
+    ]
+  },
+  "active_calls": [
+    {
+      "attempt_id": "ef0dfdf414c24d11b69cc33b7895704a",
+      "run_id": null,
+      "pid": 24244,
+      "thread": "Q3P3",
+      "stage": "author",
+      "actor": "author",
+      "started_at": 1790367250.181077,
+      "deadline_at": 1790369050.181077,
+      "timeout_seconds": 1800,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q3P3",
+      "child_pid": 64717,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/ef0dfdf414c24d11b69cc33b7895704a.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 103.5,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "action": "No intervention; record nonblocking lookup failure.",
+  "unfinished": {
+    "research_edit_threads": 12,
+    "current": "repeat/Q3P3 author round 1",
+    "future_draft_pipelines": "Required for later DRAFT outcomes."
+  }
+}

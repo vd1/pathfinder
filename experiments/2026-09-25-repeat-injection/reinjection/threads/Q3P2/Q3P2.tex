@@ -1,0 +1,64 @@
+The workspace is read-only, so I could not create or compile `Q3P2.tex`. Here is the complete source.
+
+```tex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Welfare Loss and Selective Guarantees in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q studies LLM traders in a continuous double auction and reports incomplete convergence, low allocative efficiency, and substantial differences among model populations. P gives an episode-level conformal certificate that transfers a calibrated wall-set error bound to simultaneous correctness of non-abstained decisions at one robotic detector gate. \ledger{1, 2, 3}
+
+\section{Connexion pursued}
+
+The initial question was whether P's selective interface certificate could apply to Q's order admission or spread-crossing decisions. Q's exchange compares exact posted bids and asks, however, and supplies no estimated quotes paired with reference quotes. A margin around that exact comparison would introduce an uncertainty problem absent from Q. The useful connexion is instead P's discipline of separating a certified interface event from the downstream outcome: in Q, a correct crossing decision alone does not certify realized market welfare. \ledger{2, 4, 9, 11}
+
+\section{What the pair establishes}
+
+Q's reservation schedule permits an exact decomposition of welfare loss. For exactly \(N\) trades, matching the highest-value buyers to the lowest-cost sellers gives marginal surpluses \(2.5,2,1.5,1,0.5,0,-0.5,\ldots\), and hence
+\[
+ f(N)=W_{\max}(N)=2.75N-0.25N^2,
+ \qquad W^*=7.5.
+\]
+If \(W\) is realized surplus, then
+\[
+ W^*-W
+ =
+ \underbrace{W^*-f(N)}_{\text{trade-count loss}}
+ +
+ \underbrace{f(N)-W}_{\text{selection and matching loss}}.
+\]
+The sixth optimal trade adds zero surplus, so five correctly selected trades already attain full allocative efficiency. Trade count alone therefore cannot explain every efficiency shortfall. Exact values for the two loss components require run-level records. \ledger{7, 11, 16, 22}
+
+The published means nevertheless bound one component. Writing \(\mu=\mathbb E[N]\),
+\[
+ \mathbb E[W^*-f(N)]
+ =
+ 7.5-f(\mu)+0.25\operatorname{Var}(N).
+\]
+Because \(N\) is integer-valued, a mean between adjacent integers imposes a positive minimum variance. Applying that fact to GPT Large's five reported mean trade counts gives minimum trade-count losses of \(2.10,0.70,1.50,2.70,1.00\) surplus units, respectively, or \(8.00\) in total. Its reported efficiencies imply a five-round total mean welfare deficit of about \(17.625\). Allowing for the displayed efficiencies' two-decimal rounding makes the denominator at most \(17.8125\), so trade count accounts for at least about \(44.9\%\) of that reported deficit. In round 4 alone, the corresponding lower bound is \(2.70\) of a deficit of at most \(4.8375\), or about \(55.8\%\). This supports Q's account of stalled trading, but does not establish its cause or determine the remaining selection loss. \ledger{14, 16, 18, 22, 24}
+
+P also suggests a properly scoped future-run statement. For each exchangeable complete market run \(i\), define \(R_i=1-\min_{r\leq5}E_{ir}\), where \(E_{ir}\) is efficiency in round \(r\). With a frozen model, prompt, and market policy, the split-conformal order statistic at \(k=\lceil(n+1)(1-\alpha)\rceil\) gives a marginal lower bound on all five efficiencies in a new run. Complete runs, rather than orders or scan points, are the sampling units. Q has only ten runs per model: at \(95\%\) coverage, \(k=11>n\), so this construction supplies no finite calibrated radius; at \(90\%\), it uses the worst observed run. Q's table of round means does not contain the run-level scores needed to calculate either bound. This is an application of P's rank argument, not a new conformal theorem. \ledger{5, 6, 11, 17, 19, 22}
+
+A second, conditional direction concerns the opportunity cost of a proposed trade. If \(F\) is optimal attainable surplus from a remaining state and \(F_e\) is optimal attainable surplus constrained to include edge \(e\), set \(D_e=F-F_e\). A locally profitable crossing can have a large \(D_e\): for remaining buyer values \(3.25,1.00\) and seller costs \(0.75,3.00\), forcing the \(1.00\)-value buyer to trade with the \(0.75\)-cost seller reduces attainable surplus from \(2.50\) to \(0.50\). If all value and cost prediction errors are at most \(\varepsilon\) and at most \(m\) trades remain, then \(D_e(x)\leq D_e(\widehat x)+4m\varepsilon\). A whole-episode calibrated error event could make such labels simultaneous, but this certifies attainable continuation surplus, not terminal realized welfare. \ledger{13, 15, 17, 20}
+
+\section{Objections and limits}
+
+Q's fixed reservation schedule is already known to its evaluator, so the opportunity cost \(D_e\) can be computed exactly in that simulator; calibrated hidden-value predictions become relevant only in a new setting. The \(4m\varepsilon\) allowance may also exceed the entire attainable surplus. Directly calibrating the maximum error in \(D_e\) could be tighter, but its candidate class must cover every state and, if predictions depend on quote history, every history that an adaptive deployment policy can reach. Scores from trajectories generated under a different policy or threshold do not provide the claimed guarantee. Neither paper supplies the predictor, calibration episodes, or evidence that such a certificate would be informative. \ledger{9, 15, 17, 19, 20, 22}
+
+The material is thin on measured outcomes beyond Q's aggregate table. In particular, it contains no per-run welfare decomposition, tested crossing intervention, or demonstrated lower-tail guarantee. The table bound is an analytical constraint on the reported averages, not evidence that a particular intervention improves welfare. \ledger{18, 22, 24, 25}
+
+\section{Sources outside the pair}
+
+The ledger records a check of the abstract of Lotan, Talgam-Cohen, and Romano's \emph{Statistically Truthful Auctions via Acceptance Rule}, \url{https://arxiv.org/abs/2405.12016}. Its use of conformal acceptance rules cautions against a broad novelty claim for conformal auction calibration. The ledger also records a check of Q's author repository, \url{https://github.com/jswistak/competitive-market-simulation}: its README describes supplementary run files and unseeded mechanism randomness, while Q describes ten different random seeds. That discrepancy matters for a proposed paired-seed comparison, but does not by itself refute exchangeability of independent runs. These external-source observations were recorded by the peers; they were not independently rechecked here. \ledger{6, 24, 25}
+
+\section{Open question and smallest next step}
+
+The immediate unresolved question is how much of Q's observed welfare loss comes from too few trades and how much comes from selecting or matching the wrong traders. The smallest step is to obtain the released run-level transaction records and calculate \(N\), \(W\), \(W^*-f(N)\), and \(f(N)-W\) for every round. That would settle the descriptive decomposition. Testing whether a stall-breaking rule improves the lower tail of realized welfare would then require a prespecified, randomized intervention, separate complete-run calibration for each frozen policy, and enough runs for a useful target coverage level. \ledger{18, 22, 24}
+
+\end{document}
+```

@@ -1,0 +1,185 @@
+{
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "observation_time": "2026-09-28T12:38:08.037847+00:00",
+  "status": "continue",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-013/observed.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-012/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-013/processes.json",
+  "facts": [
+    "Root run identity unchanged; supplied Python runner PID 49475 is a child of supervisor 49472 and recorded peer children match its process tree. Point-in-time evidence cannot resolve PID reuse or unrecorded reparented groups; no process intervention attempted.",
+    "Both arms inspected: repeat has no active calls; recursive Q1P2 has live peer follow-up activity within nominal deadline.",
+    "Since previous audit, Q1P2 Emmy completed at 12:35:53Z and Ada completed at 12:37:14Z; receipts report successful outcomes. New Emmy follow-up started at 12:36:53Z, with fresh ledger findings and readiness entries, not evidence of a retry failure loop.",
+    "Last completed investigation Q4P1 remains DRAFT, editor done, paper ACCEPTED. Q4P6 remains PAUSE with editor done. Q1P1 remains pending. Entire scope is not complete.",
+    "Root and recursive heartbeat fresh; no recorded runner/call failure, stop or censored arm. Finished repeat heartbeat is historical, not evidence of a deadlock.",
+    "Existing external reference lookup and missing identifier checks persist with successful builds; no operational blockage observed.",
+    "No repair, restart, schedule action, checkout modification or scientific change. HERDR_PANE_ID unavailable, so pane title could not be updated."
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-28T11:42:31Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:44:49Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:45:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:46:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:47:27Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:50:58Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "recursive": [
+      {
+        "at": "2026-09-28T12:10:52Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:14:55Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:23:14Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:25:02Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:35:53Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:37:14Z",
+        "run_id": "7a6cd2e649fd4b479b74fe2dc50b1b9f",
+        "thread": "Q1P2",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "stage_records": {
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q4P6/edited/edit.json": {
+      "status": "done",
+      "attempt": 1,
+      "updated": "2026-09-28T11:51:02Z",
+      "build_ok": true,
+      "checks": [
+        "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+      ]
+    },
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q4P1/edited/edit.json": {
+      "status": "done",
+      "attempt": 1,
+      "updated": "2026-09-28T12:14:59Z",
+      "build_ok": true,
+      "checks": [
+        "P: no URL, DOI or arXiv identifier",
+        "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+      ]
+    },
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q4P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The claims trace to the note and ledger, the proofs are correct within their stated models, and Q and P are represented fairly. The remaining issues are minor presentation and citation housekeeping.",
+      "updated": "2026-09-28T12:25:02Z",
+      "build_ok": true,
+      "checks": [
+        "P: no URL, DOI or arXiv identifier",
+        "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+      ]
+    }
+  },
+  "comparison": {
+    "previous_observation": 1790598742.926008,
+    "current_observation": 1790599088.037847,
+    "previous_last_call": {
+      "at": "2026-09-28T12:25:02Z",
+      "thread": "Q4P1",
+      "stage": "review",
+      "actor": "reviewer",
+      "outcome": "completed",
+      "error": null
+    },
+    "current_last_call": {
+      "at": "2026-09-28T12:37:14Z",
+      "thread": "Q1P2",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null
+    }
+  },
+  "next_audit": "Check Q1P2 stage progress, Q1P1 pending workload and open reference-check incidents. Preserve admission stop."
+}

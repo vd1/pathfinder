@@ -1,0 +1,148 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Can Visual Comparisons Reward Strategic Teamwork?}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note connects a paper on incentives for strategic AI agents with a paper on visual credit assignment in embodied
+teams. The peers asked whether pairwise visual judgements, perhaps joined to a sparse success signal, could reward
+agents for obeying recommended actions. They found that the second paper's potential-based shaping cannot change
+completed-episode incentives, while a separate comparison prize can work in a small model under stated monitor
+assumptions. Relative comparisons miss joint shirking, and a finite-monitor test shows that even visible deviations
+may be impossible to deter with one bounded payment. The thread paused because no one measured the comparison or
+success signals under strategic action and camera choices in a task like the second paper's.
+\end{abstract}
+
+\section{Introduction}
+
+Paper Q, \emph{Mechanism Design for Alignment and Control}, studies a designer who gives instructions and rewards to
+AI agents whose abilities and aims may be unknown \cite{q}. An able agent may conceal its ability, and an agent may
+disobey after receiving an instruction. Q asks when a reward rule makes truthful reporting and the recommended action
+each agent's best choice. Its multi-agent conditions test unilateral deviations; the paper leaves collusion and full
+implementation outside that requirement.
+
+Paper P, \emph{MARS-RA}, addresses credit assignment during embodied multi-agent learning \cite{p}. A large multimodal
+model compares images from active agents' own views, judging which agent contributed more. P combines those judgements
+into relative contribution scores, then uses the scores to shape training rewards. It also uses a sparse task reward.
+Its purpose is to help a team learn when the task result alone gives little guidance about individual contributions.
+
+The proposed connexion was to use P's visual comparisons as the observations on which a Q-style reward rule depends.
+The question became sharper as the peers worked: could such a monitor deter one agent's shirking and, with an absolute
+success signal, also distinguish joint shirking when agents can choose what their cameras show? This is a question
+about a new reward rule. P's own shaping rule has a different purpose.
+
+\section{What the peers did}
+
+The peers first checked P's reward formula against Q's obedience requirement. They next built a two-agent effort
+example and replaced shaping with an episode prize for winning a comparison. One peer pointed out that a relative
+ranking cannot see both agents lower their effort together. The other added a binary success signal and recalculated
+the incentives. They then checked P's score-estimation premise and examined hypothetical camera choices that could
+alter the comparison law. Finally, they reduced the reward question to a test using the probability laws of a finite
+monitor. The calculations and cross-checks are recorded in the peers' \texttt{monitor-obedience.md} and
+\texttt{rank-monitor-identification.md} notes.
+
+\section{Results of the checks}
+
+\subsection{Shaping and strategic incentives}
+
+P adds a shaping payment \(F_{i,t}=\gamma\psi_{i,t+1}-\psi_{i,t}\) for agent \(i\) at time \(t\). Here \(\gamma\) is
+the discount factor and \(\psi_{i,t}\) is that agent's potential, calculated from its relative score. P sets the
+terminal potential \(\psi_{i,T}\) to zero. Over an episode ending at time \(T\), the discounted payments cancel:
+\[
+\sum_{t=0}^{T-1}\gamma^t F_{i,t}
+=-\psi_{i,0}+\gamma^T\psi_{i,T}
+=-\psi_{i,0}.
+\]
+If the initial potential is fixed before strategic choices, every action strategy receives the same total addition.
+Thus P's shaping can guide learning but cannot, on its own, fix a missing obedience incentive. The same reasoning
+covers a report choice only if that choice cannot alter the initial potential. P already invokes prior work on
+equilibrium invariance; the peers treated this as a boundary of the connexion, not a new theorem
+\cite{devlin2012,lu2014}.
+
+\subsection{A prize and an absolute signal}
+
+The peers' example has two agents. Each chooses effort \(e_i\in\{0,1\}\), and agent \(i\)'s intrinsic payoff is
+\(\beta(e_1+e_2)-ke_i\). The number \(\beta\) is the benefit to each agent from one unit of team effort; \(k\) is the
+cost of its own effort. The model assumes \(k>\beta\), so effort needs an added incentive. It assumes that agent \(i\)
+wins the comparison with probability \(\sigma(\eta(e_i-e_j))\), where \(j\) is the other agent, \(\eta>0\) controls
+how informative the comparison is, and \(\sigma(x)=1/(1+\exp(-x))\). Write \(d=\sigma(\eta)-1/2\), the increase in win
+probability when one agent alone raises effort.
+
+Now let \(Y_i\) indicate a comparison win and \(Z\) indicate task success. Suppose success has probability
+\((e_1+e_2)/2\), and pay agent \(i\) the episode reward \(wY_i+bZ\), with non-negative prize weights \(w\) and \(b\).
+Against either action by the other agent, raising effort changes expected payoff by \(\beta-k+wd+b/2\). High effort is
+therefore strictly preferable in this model if
+\[
+wd+b/2>k-\beta.
+\]
+This is a new episode prize, not P's potential-shaped reward. The calculation appears in the peer check
+\texttt{rank-monitor-identification.md}; it requires the stated comparison and success laws even after an agent
+changes action or view.
+
+The comparison law is the same at effort profiles \((1,1)\) and \((0,0)\). If both agents switch from high effort to
+low effort, each saves \(k\), loses \(2\beta\) in intrinsic benefit, and loses \(b\) in expected success payment. The
+joint switch gives each \(k-2\beta-b\). Hence \(b\geq k-2\beta\) blocks this particular joint deviation, while a
+comparison-only prize cannot block it when \(k>2\beta\). This coalition check is stronger than Q's unilateral
+obedience requirement. P's actual sparse success signal has not been shown to follow the example's assumed probability
+law. The general concern about collusion under relative pay predates this thread
+\cite{gibbonsmurphy,relative2023,biasedtournaments}.
+
+\subsection{One payment for several deviations}
+
+Ada's \texttt{monitor-obedience.md} check gives an exact test for a fixed target and one agent. Let \(P_0\) be the
+probability law of a finite monitor on the target path. Let \(P_j\) be its law after listed unilateral deviation
+\(j\), and let \(g_j>0\) be that deviation's expected gain before monitor payments. A single payment based on the
+monitor and lying between zero and \(B\) deters all the listed deviations exactly when, for every set of non-negative
+weights \(\lambda_j\) summing to one,
+\[
+B\operatorname{TV}\!\left(P_0,\sum_j\lambda_jP_j\right)
+\geq\sum_j\lambda_jg_j.
+\]
+Here \(\operatorname{TV}\) is total variation distance between probability laws, and \(B\) is the payment cap. The
+test considers every mixture of deviations because the same payment must work against each one. Finite minimax
+exchanges the choice of payment with the choice of mixture; for a fixed mixture, the largest possible expected payment
+difference is \(B\) times its total variation distance from the target law.
+
+The distinction matters. A binary monitor may have a target success probability of \(1/2\) and two deviations with
+probabilities zero and one. Each deviation is visible alone, but their equal mixture reproduces the target law. No one
+payment deters both if both offer a positive gain. Emmy's \texttt{rank-monitor-identification.md} check also
+considered a hypothetical uninformative camera view whose law equals the target law directly. Neither case is an
+observation about P's environment. The test does not include Q's full set of false-report and action combinations,
+other agents' constraints, or changing coalitions.
+
+\section{Objections and remaining limits}
+
+The peer review narrowed the claim in two ways. First, the telescoping result and the problem of collusion under
+relative rewards have prior art, so the effort example is a benchmark rather than a new general result. Second, P's
+connected comparison graph alone does not support a finite error bound for its unregularised Bradley--Terry
+maximum-likelihood estimate. With two agents and only wins in one direction, the comparison graph is connected, but
+increasing the winner's score without bound keeps improving the likelihood. Scores also need a common translation
+fixed before an ordinary Euclidean error bound makes sense. P's softmax potential is unchanged by that translation, so
+this point need not spoil its shaping rule. The peers' counterexample and the existing maximum-likelihood literature
+support the statistical objection \cite{btmle}.
+
+More directly, the prize calculation assumes committed cardinal payments and comparison laws that remain informative
+after strategic changes in effort or camera view. P reports errors with uninformative views, but its reported
+comparison performance does not measure the laws under deliberate deviations. The finite-monitor test adds a payment
+cap \(B\), whereas Q can use richer and unbounded rewards. No empirical result in this thread says whether P's sparse
+outcome separates common shirking enough, or whether agents can in fact choose views that erase the comparison signal.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because its inequalities and monitor test are conditional on hypothetical comparison
+and success laws. The peers had not measured those laws under strategic camera choices and shirking in a P-like task.
+Without those data, the proposed reward rule does not yet support a paper claim about the pair.
+
+The smallest restart is to choose one two-agent task and list a finite set of shirking and camera-choice deviations.
+Sample the comparison and success outputs under the target and each deviation, then solve the bounded-payment
+obedience problem for those measured laws. A payment with a positive margin larger than sampling uncertainty would
+certify the listed deviations; a profitable mixture with the target monitor law would rule out that monitor and
+payment bound.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

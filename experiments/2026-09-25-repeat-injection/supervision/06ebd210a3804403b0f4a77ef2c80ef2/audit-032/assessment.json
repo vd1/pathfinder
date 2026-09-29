@@ -1,0 +1,95 @@
+{
+  "observed_at": "2026-09-25T19:51:23.699965+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "scheduled_threads": 28,
+  "completed_research_edit": 14,
+  "accepted_papers": 4,
+  "work_unchanged": true,
+  "papers_unchanged": true,
+  "papers": {
+    "repeat/threads/Q4P10/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/threads/Q7P1/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q4P4/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    },
+    "reinjection/threads/Q1P3/paper/paper.json": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The two conditional results follow from the supplied value schedule, and the paper keeps them separate from observed outcomes and Q\u2019s guarantees. The references are cited and supported by the supplied search record, subject to one bibliographic cleanup.",
+      "updated": "2026-09-25T19:45:26Z",
+      "build_ok": true
+    }
+  },
+  "calls": [
+    {
+      "attempt_id": "1301d0403bbc46c3aa97b8c245ba160a",
+      "run_id": "db7f296fce404cf4830d8e3439bc0269",
+      "pid": 24244,
+      "thread": "Q3P4",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790365529.5950432,
+      "deadline_at": 1790366759.5950432,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P4",
+      "child_pid": 53544,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/1301d0403bbc46c3aa97b8c245ba160a.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 318.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    },
+    {
+      "attempt_id": "35c031af99b34b6dacba4b44d7f167e3",
+      "run_id": "db7f296fce404cf4830d8e3439bc0269",
+      "pid": 24244,
+      "thread": "Q3P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790365529.595078,
+      "deadline_at": 1790366759.595078,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q3P4",
+      "child_pid": 53543,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/35c031af99b34b6dacba4b44d7f167e3.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 318.9,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "assessment": "Same first peer attempts for reinjection Q3P4, about 319 seconds into 1230-second deadlines. No repeated attempts or evidence of livelock. Last completed investigation Q1P3 DRAFT, edited; review completed 19:45:26Z. Root heartbeat age 0.9s and active child heartbeat 3.1s. Repeat finished its previous admitted pair and awaits schedule; not campaign completion.",
+  "process_identity": "Supplied process tree links coordinator Python PID 24244 to supervisor 24243 and recorded codex children 53543/53544 with their code-mode hosts. No additional coordinator shown. Point-in-time evidence cannot exclude PID reuse or independent reparented processes; no process intervention warranted.",
+  "failures": "No new root or child failures or stops. Historical outcomes.json Q3P2 BLOCKED is stale, as in prior audit; repaired checkpoint PAUSE and editor done remain unchanged. Existing citation lookup failures recorded in incidents.",
+  "persistence": "manifest.json covers 28 threads. progress.json records last completed pair; runner.json carries current task/heartbeat. launch.py writes outcomes.json on exit, so live child status and paper artifacts control current assessment.",
+  "action": "Observation only; no repair or restart.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-032/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-032/aggregate.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-032/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json"
+  ]
+}

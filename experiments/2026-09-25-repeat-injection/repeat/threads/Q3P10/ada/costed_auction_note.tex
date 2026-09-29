@@ -1,0 +1,116 @@
+\section*{A costed double auction: mechanism and test}
+
+Q's trading mechanism selects one untraded agent per iteration for at most
+\(300\) iterations. A crossing order executes immediately; an improving order
+can wait in the book. Q reports that many agents make one-cent improvements,
+and that GPT Large's reluctance to cross suppresses trade volume and gross
+allocative efficiency (Q, Trading Mechanism; Individual Behavior; Aggressive
+Rent-Seeking Suppresses Trade Volume). P explicitly prices generated tokens by
+\(C=kTS^{\alpha}\), including reasoning tokens (P, The Energy Society; Small
+vs. large models). P shows that removing its size multiplier changes survival,
+while larger agents still spend more tokens (P, No Size Penalty). This supplies
+an intervention to test in Q, not evidence of its effect in a market.
+
+Let a selected buyer have value \(v\), and suppose the standing ask is
+\(a\leq v\). Crossing now gives \(v-a\) before the cost of the current call.
+If the buyer instead posts a noncrossing improvement and uses continuation
+policy \(\sigma\), let \(F\) indicate a later fill, \(p\) its price, and
+\(K_{\sigma}\) the buyer's subsequent inference cost. Let
+\(c_{\mathrm{cross}}\) and \(c_{\mathrm{improve}}\) be expected costs of the
+current call under the two actions. Crossing is preferred when
+\[
+v-a-c_{\mathrm{cross}} \geq
+\mathbb{E}_{\sigma}\!\left[F(v-p)-K_{\sigma}\right]
+-c_{\mathrm{improve}}.
+\]
+For a flat call fee, the current-call terms cancel; only the expected cost of
+continuing differs. Under token metering, current-call token counts may also
+differ, so they must be measured. A larger anticipated \(K_{\sigma}\) can
+favor crossing, but high cost can also favor abstention or exit. Q's interface
+permits declining to announce, yet the trader remains eligible for later calls.
+An irrevocable exit option would need to be added in both treatment and control
+to make future computation avoidable. The experiment must record declines and
+exits separately. This inequality is a mechanism hypothesis, not a behavioral
+theorem about language models.
+
+For each executed buyer-seller pair \((b,s)\), the monetary transaction price
+cancels from combined trading surplus:
+\[
+W_{\mathrm{gross}}=\sum_{(b,s)}(v_b-v_s).
+\]
+For Q's symmetric reservation values the maximum is \(W^{\star}=7.5\):
+the six highest buyer values less the six lowest seller costs yield marginal
+surpluses \(2.5,2,1.5,1,0.5,0\). Five positive-gain trades can already attain
+full gross surplus; Q's sixth equilibrium trade has zero gross gain. With
+positive inference cost, inducing that sixth trade can reduce net welfare.
+To account for computation in a single-model Q treatment, let \(Y_{i,t}\)
+be generated output and reasoning tokens on decision call \(t\), including
+calls on which the agent posts no order. Assign a declared conversion
+\(\lambda\) from generated tokens to Q's price units and define an
+operational net-value measure
+\[
+W_{\mathrm{net}}(\lambda)=W_{\mathrm{gross}}
+-\lambda\sum_{i,t}Y_{i,t}.
+\]
+P's cost \(kTS^{\alpha}\) uses known local model sizes
+\(S\in\{4,8,9\}\) (P, Small vs. large models). Q instead tests
+proprietary GPT and Gemini models without disclosing parameter sizes
+(Q, Experimental Conditions). The size multiplier cannot therefore be
+populated literally for a mixed Q market. Within a fixed-model arm it is
+constant and may be absorbed into \(\lambda\). Sweep \(\lambda\) over a
+prespecified range that includes costs below, near, and above a price tick
+per typical call. Use the same \(\lambda\) to shadow-price the control's
+tokens. For cross-model comparison, use a declared model-specific metered
+cost schedule and report generated and input tokens separately, because P
+counts only generated tokens. P's numerical \(k\) is denominated in
+synthetic energy and cannot be copied into Q's prices. This metric is social
+welfare only if the conversion reflects real resource opportunity cost; a
+fee paid to an exchange is a transfer.
+
+The narrow experiment uses Q's same model, values, order book, horizon, and
+matched exogenous selection draws, with \(\lambda=0\) versus explicit metered cost in each
+agent's objective. Charge every call, including a no-post call. Add an
+irrevocable exit action in both arms, so an agent can avoid further calls. A
+flat per-call cost arm can distinguish sensitivity to future calls from
+sensitivity to variable token length. Record quote increments, crossing
+conditional on a profitable standing quote, declines to announce, permanent
+exits, total calls, tokens per completed trade, price dispersion, gross
+surplus, and operational net value. Repeat at more than one iteration cap: a
+cost effect mediated by waiting should depend on the available horizon. The
+decisive result would be an intermediate cost range with earlier crossing and
+higher gross surplus whose reduced total token use also improves net value.
+A null result or a drop in participation would be informative about the limits
+of this mechanism.
+
+The released Q code checks the tick cap, too few active agents, and a
+deadlock predicate, but treats an LLM agent as live for that predicate
+(\href{https://github.com/jswistak/competitive-market-simulation/blob/master/src/%
+market_simulation/graph/nodes/control.py}{released Q implementation}).
+Consequently, an early crossing can simply move later calls to remaining
+traders; the total may still hit the cap. The proposed exit and stop rule is
+therefore a distinct institution and belongs in both experimental arms.
+The repository README says its paper configs did not seed mechanism selection;
+matched draws require an implementation change
+(\href{https://github.com/jswistak/competitive-market-simulation}{repository README}).
+
+The main competing idea is to add P's nonbinding discussion phase to Q's
+auction. It is less clean as a first test. P's no-discussion arm has more raw
+job collisions, but it also has less deactivation and thus more opportunities
+for active agents to choose jobs (P, No Discussion Phase; Discussion). Q's
+public order book already transmits offers, and cheap talk might change
+information disclosure or strategic manipulation, not just coordination.
+
+Costly offers in human double auctions have already been studied; Jamison and
+Plott report slower equilibration and lower efficiency under a tax on bids
+and asks
+(\href{https://authors.library.caltech.edu/records/fnhzb-n0e58}{Caltech record}).
+The publishable comparison must be about LLM inference cost on every call,
+the observed one-tick quote loop, and the market's stopping institution,
+without presuming a beneficial cost effect.
+
+Limitations: Q and P use different models, objectives, currency units, and
+interaction structures. Neither paper establishes that a positive cost will
+cause earlier crossing or improve welfare. Q's \(300\)-iteration limit makes
+the finite horizon part of the outcome; findings must be checked against a
+longer cap. P's five-seed results and model heterogeneity do not justify a
+cross-paper model-size claim.

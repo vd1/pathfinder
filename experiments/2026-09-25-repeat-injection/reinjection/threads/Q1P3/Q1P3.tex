@@ -1,0 +1,49 @@
+The workspace is read-only, so I could not create `Q1P3.tex`. Here is its complete content:
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Price Advice and Inference Cost in a Double Auction}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q is Zhao et al.'s survey of learning-augmented algorithms, including typed predictions, error-sensitive guarantees, and the cost of predictor calls. P proposes charging LLM traders for quote decisions in a fixed-value double auction and reports no combined experiment; the auction paper it calls ``Q'' is different from the supplied Q.tex. \ledger{1, 2, 7}
+
+\section{Connection pursued}
+
+The useful connection is cost-aware decision making, rather than a transfer of Q's competitive-ratio theorem. P meters tokens generated during traders' decisions but specifies neither a separate predictor nor a prediction-error measure, so Q's consistency and robustness guarantees do not apply to P as written. An extension could make an optional LLM consultation produce a typed price recommendation for a cheap auction policy. It would need to declare the adviser's observable inputs, an error measure, and the cost of each consultation. \ledger{2, 7, 11, 20, 21}
+
+\section{What the pair establishes}
+
+P's value schedule has five strictly positive gains from trade: \(2.5,2,1.5,1,0.5\). Thus its gross ceiling is \(G^{\star}=7.5\); a sixth trade adds zero. Rename P's conversion from token cost to value units \(\rho\geq0\), since Q uses \(\lambda\) for an unrelated trust parameter. For realised gross surplus \(G\) and generated-token cost \(C\), additive welfare regret is
+\[
+R_{\rho}=G^{\star}-G+\rho C=7.5-(G-\rho C).
+\]
+This is an accounting identity, not a transferred LAA guarantee. \ledger{3, 5, 7, 8}
+
+The fixed schedule supplies a demanding no-query comparator. The five buyers with values above \(2\) sum to \(13.75\), and the five sellers with costs below \(2\) sum to \(6.25\). A scripted policy can bid \(2+\varepsilon\) or ask \(2-\varepsilon\), as appropriate, for \(0<\varepsilon<0.25\). If the auction executes all five eligible pairs, their pairing does not affect gross surplus:
+\[
+G=13.75-6.25=7.5.
+\]
+The script generates no LLM tokens under P's accounting. Consequently, conditional on those executions, paid LLM decisions cannot improve net welfare on this fixed instance when \(\rho>0\) and \(C>0\). The condition matters: P's random scheduler and finite call cap do not guarantee that all five trades occur. \ledger{4, 10, 14, 16}
+
+Small price error alone also fails to ensure small welfare loss under rationing. At an advised price \(2+\varepsilon\), the seller with cost \(2\) becomes eligible while only five buyers remain strictly eligible. If that seller trades and the seller with cost \(0.75\) does not, gross surplus falls to \(6.25\), a loss of \(1.25\), for arbitrarily small \(\varepsilon>0\). This is a possible response and execution path, not an observed run of P. Conversely, if price advice leaves the eligible buyer and seller sets unchanged and all eligible traders execute, price and pairing cancel from the gross-surplus sum. These arguments locate the missing assumptions in allocation and execution, not just numerical price accuracy. \ledger{15, 19, 24}
+
+\section{Objections and limits}
+
+Q prices predictor invocations in a cost-minimization ratio against an uncharged optimum; P studies strategic quote decisions and maximizes net gains from trade. A trader-facing tariff \(\tau\) should also be distinguished from the analyst's resource conversion \(\rho\): varying \(\tau\) changes incentives, while welfare is evaluated as \(G(\tau)-\rho C(\tau)\). P already proposes declaring a range of welfare conversions, so this distinction sharpens its test rather than identifying a demonstrated error. \ledger{6, 7, 9}
+
+An adviser given the full private value vector would have an information advantage over traders. Any price-advice comparison must restrict it and a no-query estimator to the same observable signals. The source auction's exact crossing, repeated-order, and stopping behavior also needs checking before the conditional script or possible rationing path is claimed as an implementation result. Strategic compliance and incentive compatibility remain unproved. \ledger{12, 20, 21, 22}
+
+No source outside the supplied Q and P was independently used in this account. The material is thin on outcomes: P reports a proposed intervention, and the ledger contains deductions and possible-path examples, not a combined experiment. \ledger{1, 12, 22}
+
+\section{Open question and next step}
+
+The open question is whether information-constrained, paid price advice improves net gains from trade when value schedules vary and the efficient price is unknown. After checking the released auction's execution and stopping rules, the smallest decisive test for a prespecified schedule family is a matched-seed comparison between a no-query policy and the same policy with optional typed advice. Give both the same public information, declare \(\tau\) and \(\rho\), and record gross surplus, tokens, participation, and executions. Include P's fixed schedule as a negative control. Such a test could settle the empirical comparison for that schedule family; it would not establish a general LAA guarantee. \ledger{11, 12, 20, 22}
+
+\end{document}
+```

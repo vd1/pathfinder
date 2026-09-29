@@ -1,0 +1,139 @@
+{
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "observation_time": "2026-09-28T12:33:05.401286+00:00",
+  "status": "continue",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-012/observed.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-011/observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-012/processes.json",
+  "facts": [
+    "Same root run and Q1P2 peer attempt IDs as previous audit; no retry loop observed.",
+    "Both recorded peer children match supplied process tree under runner 49475, linked to supervisor 49472; evidence cannot exclude PID reuse or unrecorded reparented groups.",
+    "Root and recursive heartbeats fresh; Q1P2 calls approximately 425 seconds into 1230-second deadlines at snapshot.",
+    "Q1P2 ledger updated at 12:31:44Z; new peer research artifacts written during audit at 12:32:18Z and 12:32:29Z, demonstrating work beyond heartbeat.",
+    "Repeat has no active calls. Q4P6 PAUSE with editor done; Q4P1 DRAFT with editor done and paper ACCEPTED; Q1P2 peers running; Q1P1 pending.",
+    "No stop, censorship, recorded call failures or runner failures; admission window unchanged.",
+    "Known reference checks persist with successful builds, without observed operational blockage.",
+    "No repair or restart attempted; checkout unchanged. Pane rename denied by sandbox, title unverified."
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-28T11:42:31Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:44:49Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:45:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:46:52Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:47:27Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T11:50:58Z",
+        "run_id": "57376373baef4bb5a1671ed7e1777960",
+        "thread": "Q4P6",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "recursive": [
+      {
+        "at": "2026-09-28T12:09:29Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:10:14Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:10:52Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:14:55Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:23:14Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-28T12:25:02Z",
+        "run_id": "6fac2a4e4d414d4f885a3adb7c601525",
+        "thread": "Q4P1",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "comparison": {
+    "previous_observation": 1790598456.071924,
+    "current_observation": 1790598742.926008,
+    "same_active_attempts": true
+  },
+  "next_audit": "Check Q1P2 stage advancement and Q1P1 pending workload; follow up open reference-check incidents."
+}

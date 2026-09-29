@@ -28,7 +28,7 @@ Feature: Distinguish local calculation evidence from citation and command text
       When the workflow prepares tool-less consolidation and verification requests
       Then both requests contain every referenced local calculation artefact in full
 
-    Scenario: A missing local calculation outside peer directories still blocks assessment
+    Scenario: A missing local calculation outside peer directories blocks strict assessment
       Given a research ledger references the missing local calculation "calculations/results/missing.json"
       When the workflow prepares a tool-less assessment request
       Then assessment blocks before provider dispatch and identifies "calculations/results/missing.json"

@@ -1,0 +1,49 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T20:57:47Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "270f9d981df75d8d5f0df9614053c00ff9bee9916c0ba3806ca6ae7518c4261e",
+  "decision": "AMEND",
+  "summary": "The score accounting and contract construction are consistent with the stated rules, and the references check out. The central all-board claim needs a reproducible enumeration in the paper or supplement before referee review.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "where": "Finite construction and proof of the reciprocal tile-contract proposition",
+    "issue": "The proposition depends on the exhaustive claim that all 396 asymmetric boards have a shortest Blue route with one or two Red cells. The paper cites a peer oracle and ledger that a referee cannot inspect, but gives no enumeration procedure or accessible script.",
+    "fix": "Add the board-class predicate and concise enumeration pseudocode, and provide the existing oracle script or its output as a supplement."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "Delivered coverage and observed outcomes",
+    "issue": "The 0.06 both-beat-baseline figure is for asymmetric boards, while the 0.80 contract-acceptance figure averages across board types; their denominators could be read as the same.",
+    "fix": "State explicitly that contract acceptance is the all-board mean."
+   }
+  ]
+ },
+ {
+  "round": 2,
+  "at": "2026-09-25T21:01:51Z",
+  "build_ok": true,
+  "checks": [
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "6e3fee0cc5cd375761ff9e9323350708967bb10082d5d890a2852865c90b2686",
+  "decision": "ACCEPT",
+  "summary": "The construction, score identity, attribution, and scoped related-work claim are supported by the supplied record. The paper is fit to send to referees after one minor clarification.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "Finite construction, reproducible board test",
+    "issue": "The stated outside score of 70 for Red depends on every retained board having a six-move Red-only route, but the listed enumeration steps do not explicitly check this.",
+    "fix": "Add that check to the enumeration description; the ledger records that it passed."
+   }
+  ]
+ }
+]

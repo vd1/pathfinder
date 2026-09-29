@@ -1,0 +1,161 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Truthful Peer Reports and an Uncertain Ranking}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note joins Q's method for rewarding truthful reports with P's method for learning a ranking from peer
+comparisons. We asked whether truthful peer reports identify the intended ranking. On a four-item path, the
+same reports and the same strict incentives occur with opposite endpoint rankings. Under positive noise that
+may vary by comparison, the reported edge signs identify exactly the orders joined by directed paths. The
+verifier left the thread at DRAFT because these restricted results support a paper section, while the
+strategic and decision-level questions remain open.
+\end{abstract}
+
+\section{Introduction}
+
+Q, \emph{Mechanism Design for Alignment and Control}, studies how a designer can steer AI agents whose
+preferences, abilities, and information are uncertain \cite{Q}. One part uses an agent's prediction of another
+agent's report to reward truthful reporting. When different types make different predictions, the score gives
+a strict reason to report one's type truthfully. Q also studies action rules, but its general implementation
+result assumes a known model of types and beliefs and can use rewards that depend on the true state.
+
+P, \emph{When Peer Agreement Hides a Reversed Ranking}, studies a ranking inferred from several observers'
+labels of the same comparisons \cite{P}. Each item has a Bradley--Terry score: the score difference sets the
+chance that one item beats another. Under P's clean model, observers make independent errors around each
+realised comparison. Their agreement helps calibrate observer reliability, after which their average labels
+recover score differences. P also shows that a shared error can leave the whole report distribution unchanged
+while reversing a ranking.
+
+We pursued the meeting point of these claims. Could Q's strict incentive to tell the truth make P's intended
+ranking trustworthy? The answer depends on what ``truth'' means: an agent can faithfully report the label it
+saw even when that label does not identify the comparison the designer cares about. P uses the letters Q and P
+for a different internal paper pair; here they always mean the two papers just introduced.
+
+\section{What was done}
+
+The peers first separated the incentive question from the identification question. Q's quadratic score
+compares a reported type with that type's known prediction of other reports. P's path example compares two
+possible worlds with the same complete report law. The peers then placed Q's score on the observers in that
+example. They checked that each observer's private vector of labels predicts the other observer's vector
+differently from every alternative vector. The same score table therefore rewards truthful labels in both
+worlds.
+
+Next they asked what extra comparisons could expose the hidden ranking. Under P's assumption that the shared
+error rate is the same on every comparison, a suitable short cycle identifies that rate. Adding the comparison
+between items 1 and 3 to the original path creates such a triangle. The peers then tested the assumption
+itself. They found two triangle-and-tail worlds with the same reports and opposite orders for items 1 and 4
+when the positive error rate may vary by edge. This led to a more general rule based on the directions of
+observed edge signs. Finally, they checked a sample bound for learning those directions from truthful reports.
+
+\section{Results}
+
+\subsection{Truthful reports can conceal an order}
+
+Consider items 1, 2, 3, and 4 compared along a path. Write \(c_v\) for item \(v\)'s intended Bradley--Terry
+score and \(d_{uv}=c_u-c_v\) for a score difference. In the shared-error world, the three edge differences are
+\[
+(d_{12},d_{23},d_{34})=(4,-3/2,-3/2),
+\qquad c_1-c_4=1.
+\]
+Each intended comparison is independently flipped for both observers with a common positive flip mean
+\(b=1/2\). In a clean world without that shared flip, use edge differences
+\[
+f_b(d)=2\operatorname{artanh}\bigl(b\tanh(d/2)\bigr).
+\]
+The clean world's endpoint difference is \(f_{1/2}(4)-2f_{1/2}(3/2)\simeq-0.26458\). A path permits both sets
+of edge differences as score vectors. Its shared corrupted comparison has the same binary distribution on each
+edge in the two worlds. Independent draws across edges and the same personal observer errors therefore give
+the same \emph{entire} joint distribution of reports, although the intended endpoint orders differ \cite{P}.
+
+The peers' direct check in \url{../ada/truthful_peer_scores_hidden_target.md} supplied the incentive step. Let
+\(Y_{ei}\) be observer \(i\)'s label on edge \(e\), let \(a_i\in(0,1)\) be that observer's personal
+reliability, and let \(w_e\) be the mean sign of the shared corrupted comparison. For a second observer \(j\),
+they obtained
+\[
+\mathbb E[Y_{ej}\mid Y_{ei}=+1]
+-\mathbb E[Y_{ej}\mid Y_{ei}=-1]
+=\frac{2a_i a_j(1-w_e^2)}{1-a_i^2w_e^2}>0.
+\]
+Thus any two distinct private label vectors predict different distributions of the other observer's vector.
+Call that prediction \(\beta_i[t]\) for private vector \(t\). Q's quadratic score, scaled by any
+\(\Lambda>0\), gives a truthful report an expected advantage \(\Lambda\|\beta_i[t]-\beta_i[s]\|_2^2>0\) over a
+false report \(s\), provided the other observer reports truthfully \cite{Q}. The check used a single feasible
+action and no other utility. It established a strict truthful equilibrium in both worlds, not a unique
+equilibrium or Q's full action-implementation claim.
+
+Any rule that sees only these reports has the same output law in both worlds. Its probabilities of choosing
+the wrong endpoint order add to at least one. Hence its error is at least \(1/2\) in one world, however many
+independent repetitions it sees.
+
+\subsection{Which orders the reports can certify}
+
+Now allow a separate unknown positive shared-flip mean \(b_e\in(0,1]\) on each comparison edge \(e=(u,v)\).
+Assume independent edge draws and positive observer reliabilities. The calibrated mean corrupted sign is
+\[
+w_e=b_e\tanh\bigl((c_u-c_v)/2\bigr).
+\]
+For a nonzero \(w_e\), its sign tells which endpoint has the higher intended score. Direct every edge from
+higher to lower. The peers proved that a strict order between two items is fixed by the full report law
+exactly when a directed path joins them. A path forces each score to fall. If neither item reaches the other,
+either order extends the observed directions. In each extension, sufficiently wide score gaps permit positive
+values of \(b_e\) that reproduce the same \(w_e\), and hence the same report law. This is the reachability
+argument checked by both peers in the ledger and set out in
+\url{../ada/truthful_peer_scores_hidden_target.md}. A zero-mean edge instead forces equal endpoint scores
+under the positive-flip assumption; feasible ties may be contracted first.
+
+This result is about the order of a particular pair under the stated noise model. Across all possible score
+patterns, certifying every pair requires a complete comparison graph. A sparse graph can still certify pairs
+linked by directed paths. For a direct comparison, even the numerical reliability need not be known if its
+sign is known to be positive.
+
+There is also a conditional sample statement. Suppose every observer used on an edge has reliability at least
+\(\alpha>0\), every \(|w_e|\) is at least \(\kappa>0\), and \(N\) independent truthful labels are collected
+per edge. For \(|E|\) edges and desired failure probability \(\zeta\), the peers checked that
+\[
+N\geq\frac{2}{\alpha^2\kappa^2}
+\log\frac{2|E|}{\zeta}
+\]
+makes all edge directions correct with probability at least \(1-\zeta\). Here \(E\) is the comparison-edge
+set. Hoeffding's inequality bounds each sign error and a union bound covers all edges. The guarantee then
+applies to every order certified by reachability. It assumes truthful reports and a positive signal margin; it
+does not show that a score table estimated from strategic reports preserves truthful play.
+
+\section{What did not hold}
+
+The path example does not contradict Q. Q's full type includes beliefs about the state, and its designer is
+given a state-and-type model. Its general reward can cancel reported utility and penalise unsupported actions
+using the true state. The peers' example deliberately used label vectors as types, a report-only score, and a
+single action. It tests what labels alone certify when the intended target is to be learned from them.
+
+P's short-cycle repair also has a precise boundary. A nondegenerate triangle or four-cycle can identify one
+common positive flip rate from calibrated population means, so a new edge between items 1 and 3 repairs the
+original path \emph{within that constant-rate model} \cite{P}. The peers' triangle-and-tail example showed
+that the reports cannot verify that the rate really is constant: positive edge-specific rates can give the
+same reports while reversing the order of items 1 and 4. A direct comparison of 1 and 4 would certify that
+particular order if the shared flip rates and observer reliabilities remain positive. If their signs can be
+negative or unknown, even this sign argument fails.
+
+Peer prediction and the problem of uninformative equilibria were already studied by Miller, Resnick, and
+Zeckhauser \cite{Miller2005} and by Shnayder and colleagues \cite{Shnayder2016}. The peers did not establish
+novelty for the present composition or graph criterion. They also left equilibrium selection, score tables
+learned from strategic reports, stable cycle calibration in finite samples, and a specified downstream
+decision payoff unresolved.
+
+\section{Why the thread stopped}
+
+The verifier marked the consolidated note DRAFT. Its stated reason was that the strict-scoring construction,
+the identical-report rank reversal, and the conditional reachability result were sound and useful as a paper
+section, with their limits stated. They did not yet amount to a finished account of strategic reporting and a
+decision benefit. The smallest concrete restart for this pair is to fix the decision between items 1 and 4,
+add their direct comparison, and derive its label count and decision-error bound under truthful reporting and
+positive edge-specific flips. That would answer this one ordinal audit question; the broader incentive and
+noise questions would still require work.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

@@ -76,7 +76,8 @@ def run_research(context, decisions, substantive=True):
         if stage == "consolidate":
             repair = research.status(campaign, pair_id).get("repair") or {}
             correction = repair.get("action", "initial account")
-            return {"text": correction, "error": None}
+            # the returned text becomes the account; a tool-less consolidator writes no file
+            return {"text": "\\documentclass{article}\\begin{document}\n" + correction + "\n\\end{document}\n", "error": None}
         if stage == "verify":
             decision, reason, action = next(replies)
             return {"text": json.dumps({"decision": decision, "reason": reason, "action": action}), "error": None}
@@ -405,7 +406,7 @@ def returned_to_research(context):
 
 @then('the current account is repaired using that correction')
 def account_repaired(context):
-    assert (context.campaign.thread_dir("Q1P1") / "Q1P1.tex").read_text() == context.correction
+    assert context.correction in (context.campaign.thread_dir("Q1P1") / "Q1P1.tex").read_text()
 
 
 @then('the repaired account is independently assessed again')
@@ -438,7 +439,7 @@ def request_stop(context):
     original = runner._work
     runner._work = work
     try:
-        runner._loop(context.campaign, ThreadPoolExecutor(1), 0, {})
+        runner._loop(context.campaign, ThreadPoolExecutor(1), 0, {}, {})
     finally:
         runner._work = original
     context.admitted = admitted
@@ -1302,7 +1303,7 @@ def execute_campaign_model_requests(context):
             Ledger(campaign.thread_dir("Q1P1") / "ledger.jsonl").add("ada", "finding", "finding")
             text = "peer"
         elif stage == "consolidate":
-            text = "account"
+            text = "\\documentclass{article}\\begin{document}account\\end{document}"
         else:
             text = '{"decision": "DRAFT", "reason": "ready", "action": null}'
         return {"text": text, "session": request.identity, "seconds": 0, "input_tokens": 1,
@@ -1362,6 +1363,7 @@ def pair_ready_for_model_stage(context):
     frozen_pair_enters_campaign(context)
     if hasattr(context, "assigned_models"):
         context.campaign.peers = context.assigned_models
+        context.campaign.peer_models = {model: model for model in context.assigned_models}
 
 
 @given('a campaign loaded from a manifest assigns models "{first}" and "{second}" to two peers')
@@ -1444,7 +1446,7 @@ def verify_campaign_execution_routing(context):
             ledger.add(request.actor, "ready", "ready", seen=seen)
         text = {
             "scan": '{"feasibility": 1, "gain": 1, "connexion": "c", "rationale": "r"}',
-            "peer": "peer", "consolidate": "account",
+            "peer": "peer", "consolidate": "\\documentclass{article}\\begin{document}account\\end{document}",
             "verify": '{"decision": "DRAFT", "reason": "ready", "action": null}',
         }[stage]
         return {"text": text, "session": request.identity, "seconds": 0, "input_tokens": 1,

@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Matched Observations and Auction Efficiency}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q, \emph{Competitive Market Behavior of LLMs}, reports incomplete convergence and lost allocative efficiency in double auctions populated by LLM traders. P, \emph{When a Donor Wrist Cannot Locate a Rotating Held Object}, gives a conditional matched-observation argument about robotic handover; its internal labels for two robotics papers do not refer to the assigned Q.\ledger{1, 6}
+
+\section{The connexion pursued}
+
+P asks whether identical observations can conceal states that require different actions. Applied to Q, the question is whether a trader's private value, standing quotes, and visible histories can be identical in two auction states whose welfare-maximizing next bids differ. Different bids that merely redistribute profit would not suffice: Q measures efficiency by realized surplus, so the required actions must differ in their welfare consequences.\ledger{2, 4, 6}
+
+\section{What was found}
+
+\begin{claim}
+Under a specified continuation policy, Q's auction rules permit observationally matched states with different welfare-optimal immediate bids, even when the future invitation schedule remains random.
+\end{claim}
+
+The constructed history has six invitations left after seven trades. A buyer \(B\) values the good at \(3\), faces a standing ask of \(2.50\) and a standing bid of \(1.25\), and sees the same history in both states. The other active buyers value the good at \(1.25\), \(1\), and \(0.75\). One active seller asks \(2.50\); another, \(S_2\), has cost \(1\) in state A and \(3\) in state B. Swapping \(S_2\)'s cost with that of a seller already traded at \(3.12\) preserves the fixed cost multiset and permits the same public history. The remaining active sellers cost \(2.75\) and \(3.25\).\ledger{19}
+
+Let \(r=1-(7/8)^6\), the probability that a specified agent is invited at least once in the six remaining draws while all eight agents remain eligible. Under the stipulated profit-preserving continuation, if \(B\) bids \(2\) without crossing the ask, cost-\(1\) seller \(S_2\) crosses when invited. In state A this gives expected surplus at least \(2r>1.10\). Crossing the \(2.50\) ask immediately yields at most \(0.75\), including any later trade available to another buyer. In state B, crossing immediately yields \(0.50\), whereas a noncrossing first bid yields at most \(0.50r<0.28\). Thus the two states favor different first actions without granting either comparator knowledge of future invitations. With an illustrative equal prior on A and B, the observation-only expected welfare regret is at least
+\[
+\frac{1}{2}\min\{2r-0.75,\;0.50(1-r)\}>0.11.
+\]
+This bound concerns the constructed history and continuation, not Q's reported efficiency loss.\ledger{19, 20}
+
+\section{Objections and their status}
+
+An initial example changed the buyer's preferred price but allowed a common welfare-producing action; it did not establish an efficiency limit. A later example conditioned on which seller would receive the final invitation. Swapping costs between otherwise symmetric untraded sellers then left the ex ante invitation distribution unchanged. The construction above addresses both objections by swapping a cost with an already traded seller and integrating over Q's uniform random invitations.\ledger{4, 5, 7, 15, 18, 19}
+
+The remaining empirical objection is unresolved. Neither input measures how often histories like this arise, what posterior weight the hidden states have under the generating trader policies, or how other agents would continue in a replay. Q instructs agents to maximize private profit, while the bound compares welfare; it cannot by itself explain Q's observed stalled trading or attribute any measured loss to hidden information. The material establishes a possible information limit and a test design, but is thin as evidence for a publication claim about Q's results.\ledger{6, 13, 16, 19, 21}
+
+\section{Outside sources}
+
+The peer checks identified prior work on allocative efficiency with budget-constrained zero-intelligence traders by \href{https://www.journals.uchicago.edu/doi/pdf/10.1086/261868}{Gode and Sunder}, and work on information in continuous double auctions by \href{https://authors.library.caltech.edu/records/2xr9q-wnz20}{Anufriev and colleagues} and on \href{https://link.springer.com/article/10.1007/s00191-011-0230-8}{full or limited information under evolutionary learning}. These precedents weaken any novelty claim based solely on an information-matched baseline or the existence of an information limit; they do not resolve the attribution question for Q's LLM traders.\ledger{8, 9, 21}
+
+\section{Open question and next step}
+
+What remains open is whether observation ambiguity accounts for a material share of Q's losses, or whether an LLM decision gap persists after controlling for that ambiguity. The smallest decisive next step is to replay actual Q decision histories with history-consistent hidden-value assignments and common random schedules, specifying the continuation policy and hidden-state prior. Compare the recorded LLM actions with an observation-matched control and a state-informed control, then report both the frequency of ambiguous histories and their welfare gaps. Without those measurements, the pair supports a conditional mechanism, not an empirical explanation or an established publishable advance.\ledger{13, 16, 21}
+
+\end{document}

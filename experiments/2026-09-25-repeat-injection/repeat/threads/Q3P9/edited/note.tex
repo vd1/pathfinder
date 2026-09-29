@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Opening Offers and Bargaining Power in Two LLM Markets}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q studies language-model traders in a double auction, while paper P studies their negotiated contracts
+in a resource game. This thread asked whether P's apparent advantage for one player reflects a better option
+outside the bargain, the chance to propose first, or both. Q reports that later quotes respond to an opening
+offer, and P reports favourable point contracts for the player who always proposes first, but the papers do
+not separate the two causes in P. The thread paused because that separation needs a small, repeated experiment
+in which player role and proposal order vary independently.
+\end{abstract}
+
+\section{Introduction}
+
+Q places language-model buyers and sellers in a continuous double auction. A buyer values a unit, a seller
+bears a cost, and a trade occurs as soon as a bid and an ask cross. Q reports slow or absent convergence
+towards market equilibrium and fewer trades than the market could support. It also reports that quotes from
+agents on the other side track the first quote, even though the trading rule does not require those agents to
+follow it \cite{Q}.
+
+P places two language-model players, P-Red and P-Blue, on a board where they need coloured chips to reach a
+goal. They can trade chips and negotiate contracts that enforce later transfers of chips or finishing points.
+Contracts can improve cooperation when a player must first help another player and wait for a return. On P's
+asymmetric boards, P-Red can reach the goal alone, while P-Blue needs help. P-Red also opens every contract
+negotiation \cite{P}.
+
+The connection pursued was a question about bargaining power. An independent player can refuse a poor deal and
+still finish; a first proposer can also set the starting terms. Q's opening-quote pattern suggested that
+proposal order might matter in P even when neither player has a stronger option outside the contract. That
+suggestion is a reason to test, not evidence that Q's market and P's game share a causal mechanism.
+
+\section{What was done}
+
+The peers first asked whether P's enforceable contracts could repair Q's missed trades. They checked Q's
+transaction rule against P's reason for using contracts. In Q, a crossing quote executes at once. In P, a
+promise to help later may be broken unless a contract enforces it. The peers therefore set aside a direct
+transfer of P's commitment remedy to Q. Q instead connects low trade volume to small successive quote changes
+and agents' reluctance to cross before the round ends \cite{Q,P}.
+
+One peer then considered whether contract-like wording could change behaviour even when Q's offers already
+bind. Another proposed comparing total gains with each trader's gain over an outside option. Checks against
+Q's prompts and P's measure of mutual benefit narrowed both ideas. The thread finally focused on the cleaner
+question: in P's point contracts, how much of P-Red's advantage comes from being able to finish independently,
+and how much from proposing first? The peers checked Q's opening-quote result, P's fixed assignment of roles
+and proposer, and P's own discussion of first-mover advantage \cite{Q,P}.
+
+The peers also made limited prior-work searches. The ledger records studies of anchoring in language-model
+negotiation \cite{Takenami2025,Rios2025} and adjacent work on binding offers, natural-language contracts, and
+supply-chain bargaining \cite{BindingOffers2026,LanguageContracts2026,SupplyChain2026}. Those searches did not
+establish that the proposed experiment is novel.
+
+\section{Results}
+
+The transaction rules give a narrow result about the first idea. Let \(v\) be a buyer's value for one unit,
+\(c\) the seller's cost, and \(p\) the price of an immediate trade. Their payoffs are \((v-p,\,p-c)\). If a
+contract merely transfers \(t\) from the buyer to the seller when that same trade occurs, the payoffs become
+\[
+  (v-p-t,\,p+t-c).
+\]
+These are exactly the payoffs from an immediate trade at the effective price \(p+t\). Under the peers' stated
+assumptions of one unit, feasible prices, and no later or third-party obligations, the transfer adds no new
+payoff possibility. P's contracts solve a different problem: they make later performance credible. This
+argument does not rule out a change in trading behaviour caused by the wording of an offer \cite{Q,P}.
+
+For the main question, P reports that P-Red receives about \(60\%\) of negotiated points in its programmatic
+points contracts even on independent and mutually dependent boards, where P-Red lacks the asymmetric
+outside-option advantage. P calls this a possible first-mover advantage. On asymmetric boards, however, P-Red
+is both the independent player and the first proposer. Its favourable contract terms there cannot be divided
+into a role effect and an order effect from the reported comparisons. P's finding that full state visibility
+improves P-Red's terms on asymmetric boards leaves the same distinction unresolved \cite{P}. Q's response to
+opening quotes makes an order effect plausible, but it supplies no estimate of that effect in P \cite{Q}.
+
+\section{What did not hold}
+
+The peers considered an objection based on individual losses hidden by aggregate gains. Q's exchange permits
+loss-making offers, but Q's prompts tell buyers not to bid above their value and sellers not to ask below
+their cost. If agents obey those instructions, an executed trade gives each side a non-negative gain. Q does
+not report how often agents disobey them, so the supplied material does not show a widespread loss problem
+\cite{Q}. P's measure requiring both players to beat their baseline is strict: it also fails when one player
+merely matches that baseline. A zero on that measure alone does not prove that either player was harmed
+\cite{P}.
+
+The other proposed link also remained open. P reports less subsequent trading with natural-language tile
+contracts than with programmatic tile contracts, despite similar numbers of covered moves. Q reports
+opening-quote responses in a market with immediate settlement \cite{P,Q}. These are observations in different
+games. They do not show that contract language would reduce trades in Q, or that cognitive anchoring caused
+P's point-contract split. Likewise, an early proposal and a favourable final deal can move together without
+proving why the agents chose those terms.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread because the main connection is still a hypothesis. Q's opening-quote pattern
+does not establish an effect of proposal order on P's contract bargains, and P already notes the possible
+first-mover advantage. The supplied work contains no outcomes from a test that separates order from the
+independent player's outside option.
+
+The smallest restart is to run P's programmatic points contract on matched original and red/blue-swapped
+asymmetric boards, while independently randomising which player proposes first and repeating matched runs.
+Keep the model pairing, board geometry, negotiation limit, and judge fixed. Compare net point transfers and
+final rewards to the independent player across the four role-by-order combinations; also record agreement
+rates, joint reward, gains over baseline, and opening proposals. An independent-player premium when that
+player proposes second would support an outside-option effect. A proposer premium within either role would
+support an order effect. Opening proposals would help describe the path to agreement, but would not by
+themselves prove cognitive anchoring.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

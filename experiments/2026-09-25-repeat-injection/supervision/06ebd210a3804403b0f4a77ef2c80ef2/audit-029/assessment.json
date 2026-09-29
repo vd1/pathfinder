@@ -1,0 +1,127 @@
+{
+  "observed_at": "2026-09-25T19:36:41.702104+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "scheduled": 28,
+  "completed_research_edit": 14,
+  "changed_work_since_previous": [
+    "reinjection/Q1P3"
+  ],
+  "changed_previously_completed_work": [],
+  "current_calls": [
+    {
+      "attempt_id": "c20b17779fc54c99a65a3ad3f5200488",
+      "run_id": null,
+      "pid": 24244,
+      "thread": "Q1P3",
+      "stage": "author",
+      "actor": "author",
+      "started_at": 1790364855.5758011,
+      "deadline_at": 1790366655.5758011,
+      "timeout_seconds": 1800,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3",
+      "child_pid": 51697,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/c20b17779fc54c99a65a3ad3f5200488.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 95.6,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "papers": {
+    "repeat/Q4P10": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The paper is fit to send to referees within its stated one-round scope. Its calculations and equilibrium proof are sound under the stated assumptions, and it distinguishes the established ordered-protocol argument from its application to P.",
+      "updated": "2026-09-25T15:11:00Z",
+      "build_ok": true
+    },
+    "repeat/Q7P1": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "reason": "The transfer identity and static CVaR bounds are correct under the stated conditions. The paper separates those results from Q\u2019s and P\u2019s claims and states the learning limitation clearly.",
+      "updated": "2026-09-25T18:06:41Z",
+      "build_ok": true
+    },
+    "reinjection/Q4P4": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "reason": "The claims and proofs are supported by the supplied material, and the paper keeps its conditional-risk result separate from Q\u2019s broader mechanism and P\u2019s tax game. One bibliographic correction is needed during formatting.",
+      "updated": "2026-09-25T18:42:48Z",
+      "build_ok": true
+    },
+    "reinjection/Q1P3": {
+      "status": "writing",
+      "round": 1,
+      "reason": null,
+      "updated": "2026-09-25T19:34:15Z"
+    }
+  },
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T19:13:56Z",
+        "thread": "Q1P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:14:48Z",
+        "thread": "Q1P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:18:29Z",
+        "thread": "Q1P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T19:28:14Z",
+        "thread": "Q1P3",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:28:40Z",
+        "thread": "Q1P3",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:34:12Z",
+        "thread": "Q1P3",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "diagnosis": "Q1P3 editing finished and author round 1 started. No stalled or overdue call, child failure record, or stop marker. Nonblocking lookup failure recorded. No recovery needed.",
+  "process_identity": "Parent session records coordinator PID 24244; supplied process evidence matches Python coordinator, recorded codex author child 51697 and code-mode host descendant 51795. Evidence has stated PID reuse limits; no process action taken.",
+  "checkpoint_interpretation": "progress.json records the preceding completed pair; outcomes.json retains historical Q3P2 BLOCKED state superseded by repaired child state. Current aggregate and paper files establish progress. Child research finished state does not finish active paper pipeline.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-029/aggregate-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-029/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-029/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3/paper/paper.json"
+  ],
+  "action": "none"
+}

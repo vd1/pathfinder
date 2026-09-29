@@ -1,0 +1,127 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When a Fixed-Batch Risk Estimate Changes an Obedience Test}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The supplied pair consists of a paper on rewards for AI agents and a local paper on fixed-batch risk estimates
+in a resource-allocation game. We asked whether an estimated risk value can change the first paper's test for
+supporting a signal-dependent action policy with rewards that do not depend on the state. For every finite
+batch size, the peers found a two-signal example that passes the test under the expected empirical estimate
+and fails it under true conditional risk. They also checked a margin test and a common-reward test for bounded
+value errors. The verifier accepted these narrow results but left the thread in DRAFT because the report stage
+under a specified risk timing, realised batches, and a broader novelty claim remain open.
+\end{abstract}
+
+\section{Introduction}
+
+The supplied Q, by Bergemann, Koh and Morris, studies how to reward an AI agent when its preferences and
+abilities are private. The agent may report a type and then choose an action after receiving a signal about
+the world. Q asks when rewards can make both the report and the action follow a desired policy. In the special
+case where an action's reward cannot depend on the state, Q gives a test based on cycles of signals: the gains
+from following the policy around every such cycle must add to at least zero \cite{Q}.
+
+The supplied P studies a different setting: a quadratic resource-allocation tax game evaluated with
+conditional value-at-risk, or CVaR. CVaR measures the average loss in a specified upper tail. P separates true
+CVaR from the average empirical CVaR produced by repeatedly drawing a fixed-size batch. Its one-sample example
+has an exact equilibrium for the empirical objective that fails participation under true risk. Its value-error
+bounds concern the expected empirical objective, subject to its bounded-loss and valid-query assumptions
+\cite{P}.
+
+P calls its resource-allocation source ``Q'', but that is a different paper from the Q supplied here. The
+peers therefore pursued a new, narrower connection: could P's sampling bias change Q's signal-cycle answer?
+They treated negative \emph{conditional} CVaR, evaluated after a signal, as the agent's action utility in Q.
+This is an explicit modelling choice, not a result about the tax game in P or about CVaR of an entire plan
+before the signal.
+
+\section{What was done}
+
+The peers first checked the identity of the papers and set aside a direct transfer of P's tax results. They
+then reduced Q to one agent type, two equally likely states that the signal reveals perfectly, and two
+actions, \(a\) and \(b\). They let a fresh batch estimate the risk of each action after the signal. Ada
+proposed the reversed-risk example; Emmy checked it against Q's cycle condition and extended it from one
+observation to every finite batch size. Both peers checked the reward inequalities independently. Ada then
+derived a test for a reward that works across a box of possible utility errors, and Emmy checked it. Emmy
+separately tested what happens if the agent instead assesses a whole plan by CVaR before seeing the signal.
+
+For the main example, fix a positive loss scale \(h\) and a finite batch size \(m\). A risky action loses
+either \(0\) or \(2h\), each with probability one half. A safe action has constant loss \(c_m\). In state
+\(0\), \(a\) is risky and \(b\) is safe; in state \(1\), their roles reverse. The proposed policy selects the
+risky action in both states. Let \(q_m\) be the expected empirical upper-half CVaR of the risky loss from
+\(m\) independent observations. An all-zero batch has probability \(2^{-m}\), so its empirical CVaR is zero;
+every other empirical value is at most \(2h\). The peers chose
+\[
+q_m\leq 2h(1-2^{-m})<c_m:=2h-h2^{-m}<2h.
+\]
+The true upper-half CVaR of the risky action is \(2h\). These inequalities put the safe loss between the
+estimated and true values of the risky loss.
+
+\section{Results}
+
+Under expected empirical CVaR, the proposed risky action has lower estimated loss than the safe one after
+either signal. A reward of zero for each action therefore supports the policy. Under true conditional CVaR,
+let \(r(a)\) and \(r(b)\) be rewards that depend only on the action. Obedience in state \(0\) requires
+\(r(a)-r(b)\geq 2h-c_m\); obedience in state \(1\) requires \(r(b)-r(a)\geq 2h-c_m\). Since
+\(2h-c_m=h2^{-m}>0\), both requirements cannot hold. Equivalently, Q's two-signal cycle has a positive
+estimated sum and the true sum \(-2h2^{-m}\). Thus, for every finite \(m\), some instance passes the expected
+empirical test but no state-independent reward supports the same policy under true conditional risk. The safe
+loss \(c_m\) varies with \(m\); this is not failure for one fixed instance as the batch grows. Ada's
+derivation in \texttt{ada/finite\_batch\_implementability.md} and Emmy's check in \texttt{emmy/findings.md}
+support this result.
+
+The peers also checked when value accuracy protects the cycle test. Write \(U(x,s)\) for true utility of
+action \(x\) after signal \(s\), and \(\widetilde U(x,s)\) for its estimated utility. If \(|U(x,s)-\widetilde
+U(x,s)|\leq e\) for every compared action and signal, each term of a signal cycle can change by at most
+\(2e\). Hence an estimated cycle of length \(K\) with a margin of at least \(2Ke\) still meets Q's true cycle
+condition. If all relevant simple cycles have that margin, Q's result supplies some supporting
+state-independent reward; the estimated reward itself need not work under true utility.
+
+A stronger question asks for \emph{one} reward that works for every utility array in an independent error box
+of width \(e\). Let \(B\) be the actions prescribed somewhere by the policy, and let \(a(s)\) be its action
+after signal \(s\). For distinct \(x,y\in B\), the peers assigned the directed edge \(x\) to \(y\) the weight
+\[
+w(x,y)=\max_{s:\,a(s)=x}\bigl\{\widetilde U(y,s)-\widetilde U(x,s)+2e\bigr\}.
+\]
+Their check showed that a common state-independent reward exists exactly when no directed cycle of these
+prescribed actions has positive total weight. The reason is that robust obedience says \(r(x)-r(y)\geq
+w(x,y)\). Summing those inequalities rules out a positive cycle, while Q's path construction gives rewards
+when none exists. Actions never prescribed can be prohibited. This exact statement concerns the independent
+error box; using P's bound for a particular application still requires P's assumptions.
+
+\section{Objections and limits}
+
+The main example uses risk assessed after each signal. Emmy checked a separate timing objection: an agent may
+instead rank a whole signal-dependent plan by CVaR of the joint signal-and-loss distribution before seeing a
+signal. In a two-signal example in the ledger, averaging conditional CVaRs favoured one report, while ex-ante
+CVaR favoured another. Thus, averaging local risk values does not generally give Q's report-stage continuation
+value. More generally, if a loss \(J\) lies between \(0\) and \(M\), \(S\) is the signal, and \(\beta\) is
+upper-tail mass, the peers established
+\[
+0\leq \operatorname{CVaR}_{\beta}(J)
+-\mathbb E\!\left[\operatorname{CVaR}_{\beta}(J\mid S)\right]
+\leq (1-\beta)M.
+\]
+This difference can remain with exact risk values. The ledger cites Miller and Yang \cite{MillerYang} and
+Rudloff, Street and Vallad\~ao \cite{RudloffStreetValladao} on the known dynamic-CVaR timing issue. Its
+limited searches did not settle novelty.
+
+Q also allows state-dependent rewards outside the subclass studied here. The example does not rule those out.
+It concerns the \emph{expected} empirical value, not a guarantee for one realised batch or convergence of
+strategic learning. The peers established a two-signal obstruction and value-error tests, not a full theorem
+combining Q's action and type-report cycles under CVaR.
+
+\section{Why the thread stopped}
+
+The verifier's single round accepted the finite-batch reversal, the reward inequalities, and the value-error
+graph test. It recorded DRAFT because the supported conclusion is narrow: the peers had not fixed a
+risk-timing model for the report stage or proved the corresponding nested-cycle result. The smallest next step
+is to specify whether reports are evaluated by ex-ante plan CVaR or by conditional CVaR after each signal,
+then solve a two-type, two-signal report game under that choice. A realised-batch guarantee and a fuller
+prior-work check would remain separate work.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

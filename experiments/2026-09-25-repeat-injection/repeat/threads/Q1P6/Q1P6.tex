@@ -1,0 +1,81 @@
+The workspace is read-only, so I cannot save `Q1P6.tex` here. Its complete contents follow.
+
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{When Do Multimodal Comparisons Improve Credit Assignment?}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q surveys learning-augmented algorithms through prediction error, robustness, predictor cost, and the conditions needed to compose guarantees across components. P uses language-model pairwise comparisons, Bradley--Terry rank aggregation, and potential-based reward shaping to train cooperative agents whose active set can change. \ledger{1, 2}
+
+\section{Connexion pursued}
+
+The question was whether Q's prediction contract gives a downstream guarantee for P's comparison pipeline. A useful contract would relate comparison error and query cost to finite-training performance, while specifying how rewards and potentials pass through changes in the active-agent set. Q requires those interface relations; P reports an accuracy and query-count trend, but its theoretical claims concern recovery of a latent comparator preference rather than a bound on learned-policy return. \ledger{7, 12, 19}
+
+\section{What the comparison established}
+
+\begin{claim}
+Connectedness alone does not support P's stated finite-sample guarantee for its unregularized Bradley--Terry estimator.
+\end{claim}
+With two agents and two independent comparisons at a true tie, the comparison graph is connected. Both outcomes favor the same agent with probability \(1/2\). On either unanimous sample, the likelihood increases as the corresponding score difference tends to infinity, so no finite unregularized maximum-likelihood estimate exists. This exceeds the \(1/4\) failure probability allowed by P's stated \(1-n^{-2}\) assertion at \(n=2\). A valid estimation result needs further conditions, such as a constrained or regularized estimator and suitable sampling and graph assumptions. This objection concerns P's estimator theorem, not its reported experimental outcomes. \ledger{3, 5, 12}
+
+\begin{claim}
+With complete potential accounting, intermediate comparison errors do not change the exact discounted episode objective.
+\end{claim}
+For a fixed agent coordinate, P's shaping term is \(F_{i,t}=\gamma\psi_{i,t+1}-\psi_{i,t}\). If that coordinate is retained across entry and exit, every transition is accounted for, and the terminal potential is zero, then pathwise
+\[
+\sum_{t=0}^{T-1}\gamma^t F_{i,t}
+=
+-\psi_{i,0}+\gamma^T\psi_{i,T}
+=
+-\psi_{i,0}.
+\]
+The intermediate ranks disappear from the exact return. Likewise, for a critic represented as
+\(\widetilde V_i=\widehat V_i^{\mathrm{env}}-\rho\psi_i\), the shaped temporal-difference residual equals the unshaped residual exactly. An additional critic mismatch \(e_i\) leaves the explicit difference
+\(\gamma e_{i,t+1}-e_{i,t}\). Thus any benefit from comparison quality must be sought in finite-training effects, reward routing, or approximation, rather than inferred from rank-estimation accuracy alone. \ledger{4, 5, 9, 12}
+
+The active-agent convention matters. Let \(a_{i,t}\) indicate that agent \(i\) is active, and set its potential to zero while inactive and at termination. If shaping is paid only on transitions for which that agent is active, then
+\[
+\sum_{t=0}^{T-1}\gamma^t a_{i,t}F_{i,t}
+=
+-a_{i,0}\psi_{i,0}
++
+\sum_{t=1}^{T-1}\gamma^t
+(a_{i,t-1}-a_{i,t})\psi_{i,t}.
+\]
+Reentry can therefore leave an uncompensated term. P does not specify enough reward-mask and critic-target detail to determine whether its implementation has this behavior. \ledger{10, 15, 16}
+
+There is a second routing fork. P's softmax potentials sum to one over a nonempty active coalition. If all agent coordinates are pooled into one team shaping reward, the pooled transition term depends on that sum and is independent of the individual rankings. Active-only pooling can retain rank dependence at coalition changes, precisely where boundary accounting needs attention. Separate per-agent rewards can affect approximate training even when exact matched-critic advantages cancel. These are conditional calculations, not findings about P's code. \ledger{14, 15, 17}
+
+\begin{claim}
+A more accurate contribution ranking need not reduce policy-gradient variance.
+\end{claim}
+In the ledger's one-step diagnostic, agent 2 is inert, agent 1 takes \(a_1\sim\operatorname{Bernoulli}(1/2)\), the return is \(G=a_1\), and the logit score is \(z=a_1-1/2\). For the state-only baseline \(b\), the estimator \(g_b=z(G-b)\) has mean \(1/4\) and variance \((b-1/2)^2/4\). A neutral baseline \(b=1/2\) has zero variance, while a rank-correct softmax of Shapley values \((1/2,0)\) assigns agent 1 a baseline greater than \(1/2\) and has positive variance. This tests the proposed error measure; it does not refute P's empirical results or establish a MAPPO performance result. \ledger{7, 11}
+
+\section{Objections and their status}
+
+The initial telescoping argument needed a qualification: zero potentials for inactive agents do not suffice when their shaping rewards are masked on some transitions. The active-mask calculation above resolves the mathematical objection, while P's actual routing remains unknown. The matched-critic cancellation and variance diagnostic are also existing ideas or narrow consequences of existing shaping analyses; the ledger does not establish novelty for either. Finally, repeated language-model calls may be correlated, and neither P's comparison accuracy nor its Shapley-alignment premise supplies a downstream error bound. \ledger{10, 11, 12, 16, 19}
+
+\section{Outside sources}
+
+The peer check used prior work on dynamic potential-based shaping by Devlin and Kudenko
+(\url{https://aamas.csc.liv.ac.uk/Proceedings/aamas2012/papers/2C_3.pdf}),
+shaping equivalence by Wiewiora
+(\url{https://www.cs.cmu.edu/afs/cs.cmu.edu/project/jair/pub/volume19/wiewiora03a.pdf}),
+and policy-gradient variance under potential shaping by Gupta et al.
+(\url{https://proceedings.neurips.cc/paper_files/paper/2023/file/a5357781c204d4412e44ed9cbcdb08d5-Paper-Conference.pdf}).
+These sources constrain any novelty claim; they do not settle P's open-team implementation or its cost-adjusted empirical effect. \ledger{6, 9, 11}
+
+\section{Open question and next step}
+
+The material supports a precise question, but not an improved-return theorem: does P's ranking signal improve held-out, unshaped return per charged comparison under a fixed training budget, and through which reward or critic channel? Query cost matters because P calls the comparator for each ordered active pair, giving \(q_t=|I^t|(|I^t|-1)\) calls at a queried step; its reported 50-million-step training times are 16 hours for MAPPO and 30 hours for MARS-RA. The ledger does not establish how those costs trade against success under matched budgets. \ledger{8, 12, 19}
+
+The smallest decisive step is to trace one coalition entry or reentry transition through P's reward tensor, inactive-agent mask, and critic target, then compare the resulting update with a matched-critic and neutral-potential control. If the ranking still affects updates, a fixed-step and fixed-wall-clock comparison of held-out unshaped return and query count can test whether that effect pays for its cost. Until that audit and control are run, the cross-paper connection is a testable research contract rather than a transferred guarantee. \ledger{17, 19, 20}
+
+\end{document}
+```

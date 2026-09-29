@@ -1,0 +1,113 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{When reviewers agree without finding the bug}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects a paper on incentives for AI agents with a paper on reviewer--critic code review. The
+thread asked whether incentives, preserved disagreement and checks on code evidence could prevent reviewers from
+agreeing on a wrong answer. The peers established limits on what peer scoring can reveal and derived a condition
+under which filtering review flags would improve F1. Neither result shows that a new protocol improves code
+review in the measured setting. The thread paused because the needed independent judgments, defect labels and
+checks of cited code have not been collected.
+\end{abstract}
+
+\section{Introduction}
+
+Bergemann, Koh and Morris study how to direct AI agents whose preferences and abilities are unknown \cite{Q}.
+Their mechanisms reward truthful reports and obedience. One example scores a report against peer reports. Another
+lets a weaker monitor influence a stronger actor. Both need stated assumptions about beliefs, rewards and actions.
+
+Qiu and Gill study Adversarial Review, a code-review procedure in which a critic challenges a review before a
+coding agent acts \cite{P}. On a review-only benchmark, the initial procedure scores \(0.457\) in matched-comment
+F1, a score combining precision and recall. The paper describes speculative concerns that survive agreement and a
+manually verified concern that
+disappears when the critic yields. Revised text instructions score \(0.533\) on the same benchmark.
+
+The connection was a question about false agreement. Could incentives explain it and suggest a way to keep useful
+disagreement? The peers separated truthful reporting from finding a real defect. The first paper speaks to
+reporting under its assumptions. Defect detection needs evidence about the code.
+
+\section{What was done}
+
+Emmy examined peer scoring; Ada examined the weak-monitor example. In the latter, more control can help a biased
+monitor and harm the human \cite{Q}. Ada used this as an analogy for the lost concern, not as a code-review
+theorem. Both peers checked the assumptions. The code-review paper reports neither conditional peer beliefs nor
+enforceable rewards. Its critic sees the reviewer's judgment before responding \cite{P}.
+
+Ada next modelled a gate that filters review flags. She checked the revised prompts: they combine verdict labels,
+code citations and flag-preservation rules, so the F1 gain cannot identify which change helped. Emmy then checked
+the peer-score incentive and whether an elicited report would say anything about a bug. The peers tested both
+directions with examples. A prior-work check found peer-score training, limited ground-truth checks and
+executable code-review verification \cite{peerwork,spotaaai,spotarxiv,codecheck}. This account relies only on the
+ledger's check of those sources.
+
+\section{Results}
+
+The incentives paper's peer result concerns truthful reporting by types that the model assigns positive
+probability \cite{Q}. For an agent's private type \(t\), let \(\beta[t]\) be its conditional probability
+distribution over the other agents' types. If two possible types \(t\) and \(\hat t\) give different
+distributions, the quadratic peer score gives truthful reporting an expected advantage of
+\[
+\Lambda\lVert\beta[t]-\beta[\hat t]\rVert_2^2.
+\]
+Here \(\Lambda\) is the score weight, and the squared norm measures the difference between the two
+distributions. The peers checked that, if the smallest such squared difference is \(\delta>0\) and all other
+gains from a false report are at most \(B\), then \(\Lambda\delta\geq B\) blocks that false report. The paper's
+full construction also needs known conditional beliefs, enforceable rewards and penalties for actions outside
+the target. It implements the desired rule for supported types in an equilibrium; it does not establish that
+every possible equilibrium has that outcome.
+
+The peers then showed why this reporting result is separate from defect detection. Let \(Y\) be a fair bit
+saying whether there is a bug, and let \(Z\) be an independent fair bit with no bearing on the bug. If both
+agents' private types equal \(Z\), each type predicts the other's perfectly. The squared difference \(\delta\)
+is \(2\), its maximum for two possible peer types, yet the reports give no information about \(Y\). Conversely,
+if one agent's type equals \(Y\) and the other's type is an independent fair bit, the first agent knows the bug
+state but its beliefs about the peer do not differ across its own types: \(\delta=0\). Emmy constructed these
+examples and Ada checked the first. They are examples inside the first paper's type-and-belief model, not
+measurements of the reviewers in the second paper. Peer predictability is therefore neither sufficient nor
+necessary for information about defects.
+
+Ada's filtering calculation gives a second, narrower result. Let \(\pi\) be the share of cases with a defect,
+\(t\) the original true-positive rate and \(f\) the original false-positive rate. Let a gate retain a fraction
+\(s\) of true flags and a fraction \(z\) of false flags. With a positive original true-positive count,
+substituting these rates into the F1 formula shows that the gate improves F1 exactly when
+\[
+(1-\pi)f(s-z)>\pi(1-s).
+\]
+The left side is the benefit from rejecting false flags more often than true ones. The right side is the cost of
+losing true flags. A citation request that keeps both kinds at the same rate cannot meet this condition. This
+calculation covers filtering existing flags; the review procedure can also create new flags during discussion.
+
+\section{Objections and limits}
+
+The peers did not infer that using the same model for two roles violates the incentive paper's separation
+condition. They found no measurement of that condition in the code-review paper. Nor did they treat a requested
+code citation as a checked certificate: the revised prompts ask for citations, but do not verify that the cited
+code supports the claimed defect. The revised protocol's \(0.533\) F1 belongs to a review-only benchmark. The
+paper's separate repository-repair result uses an earlier form of the protocol \cite{P}.
+
+The review benchmark matches generated comments to human comments. That measure can miss a valid finding absent
+from the human review \cite{P}. The papers also do not provide independent judgments from reviewer and critic
+before dialogue, a measured record of when true dissent turns into false agreement, or blinded decisions on
+whether citations support real defects. These gaps prevent a causal claim that preserving dissent or checking
+evidence would improve review quality. The peers also left open whether cheap checks can cover enough findings
+and whether any review gain would carry over to successful repairs.
+
+\section{Why the thread stopped}
+
+The verifier paused the thread after one round. The counterexamples and F1 calculation were sound, but they
+establish limits and a conditional prediction, not an observed improvement to the reviewer--critic procedure.
+The smallest restart is a study on held-out pull requests that records reviewer and critic bug judgments
+independently before dialogue. It would vary whether initial dissent is preserved and whether cited code
+receives an independent check. Blinded adjudication of defects and citation support would then show whether
+these changes reduce false agreement, and at what review and audit cost. Peer scoring would require a further
+test of its belief and incentive assumptions before it could support a claim about this procedure.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

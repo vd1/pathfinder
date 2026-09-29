@@ -1,0 +1,8 @@
+The revised [paper](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4/paper/paper.pdf>) shows that, for every finite batch size, expected empirical conditional CVaR can pass Q’s state-independent obedience-cycle test while true conditional CVaR fails it. It also gives the ledger’s bounded-error certificates and states their limits.
+
+The targeted queries are recorded in [search.md](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4/paper/search.md>). They found Q’s existing cycle theorem, published sampling-and-incentives work, and known CVaR timing issues; I found no direct match for the specific reversal and make no priority claim.
+
+- **F1:** Included an unchanged P.tex in the [referee package](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4/paper/referee-package.zip>) and identified it in [references.bib](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P4/paper/references.bib>) as supplied manuscript item `pathfinder-local-S4`.
+- **F2:** Added the ledger’s numerical report-ranking comparison to the limitations section.
+
+`latexmk` built the four-page PDF successfully. I checked the rendered PDF; there are no undefined citations or build errors. Style checks reported zero errors and line-length warnings.

@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-25T17:45:48Z",
+  "note_sha256": "3edeaed6df3c5a63cbb0dffcb9328122abacb3abd308b8eca40aa80faa8a31a8",
+  "decision": "ITERATE",
+  "reason": "The connection is promising, but the note\u2019s payment identity is wrong for general \\(N\\). Expanding Q\u2019s Eq. (40) at equilibrium gives \\(t_n=(N+1)\\lambda^\\top(x_n-c/N)/(N-1)^2\\); the proposed rebate then gives \\((t_n+g_n)=\\lambda^\\top(x_n-c/N)/(N-1)^2\\), rather than the claimed coefficient \\(1\\). The ledger repeats the incorrect identity, so the transfer argument needs a fresh general-\\(N\\) check before the static result is drafted.",
+  "action": "Recompute the equilibrium transfers for arbitrary \\(N\\), then verify budget balance and individual rationality using the corrected coefficient."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-25T17:52:59Z",
+  "note_sha256": "3edeaed6df3c5a63cbb0dffcb9328122abacb3abd308b8eca40aa80faa8a31a8",
+  "decision": "DRAFT",
+  "reason": "The ledger supports the note\u2019s non-obvious static connection: an others-only transfer correction preserves Q\u2019s efficient equilibrium allocations while restoring budget balance and individual rationality, and P\u2019s empirical-CVaR bound yields quantitative guarantees for the true objective. The corrected transfer coefficient checks out for general \\(N\\). The note states the oracle and multiplier conditions and does not claim that P\u2019s algorithm proves convergence for Q\u2019s game.",
+  "action": null
+ }
+]

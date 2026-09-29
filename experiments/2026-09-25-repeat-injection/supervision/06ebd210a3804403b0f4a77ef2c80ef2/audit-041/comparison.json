@@ -1,0 +1,178 @@
+{
+  "observed_at": "2026-09-25T20:35:51.009260+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "previous_audit": "audit-040",
+  "research_edit_complete": 16,
+  "scheduled": 28,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    }
+  ],
+  "changed_work": [],
+  "active_calls": [
+    {
+      "attempt_id": "bd4f1f0b424b45c6ac064ed7d1dfc026",
+      "run_id": "3980959e1e364571aac4e8170df72ebb",
+      "pid": 24244,
+      "thread": "Q4P9",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790368198.733954,
+      "deadline_at": 1790369428.733954,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9",
+      "child_pid": 67753,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/bd4f1f0b424b45c6ac064ed7d1dfc026.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 352.3,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    },
+    {
+      "attempt_id": "eb9ef845aaf045a7b92a471e87b3b12c",
+      "run_id": "3980959e1e364571aac4e8170df72ebb",
+      "pid": 24244,
+      "thread": "Q4P9",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790367896.888132,
+      "deadline_at": 1790369126.888132,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9",
+      "child_pid": 66701,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/eb9ef845aaf045a7b92a471e87b3b12c.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 654.1,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "recent_receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T20:14:07Z",
+        "thread": "Q3P3",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 163.6
+      },
+      {
+        "at": "2026-09-25T20:23:18Z",
+        "thread": "Q3P3",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 548.4
+      },
+      {
+        "at": "2026-09-25T20:24:54Z",
+        "thread": "Q3P3",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 92.0
+      },
+      {
+        "at": "2026-09-25T20:29:13Z",
+        "thread": "Q4P9",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 256.8
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T19:56:56Z",
+        "thread": "Q3P4",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 58.3
+      },
+      {
+        "at": "2026-09-25T19:58:07Z",
+        "thread": "Q3P4",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 70.9
+      },
+      {
+        "at": "2026-09-25T19:58:38Z",
+        "thread": "Q3P4",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 30.4
+      },
+      {
+        "at": "2026-09-25T20:02:27Z",
+        "thread": "Q3P4",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 229.0
+      }
+    ]
+  },
+  "comparison": "Same Q4P9 peer attempts as prior audit; both within nominal deadlines. No new completed thread or call. No repeated attempts or evidence of livelock.",
+  "process_assessment": "Supplied point-in-time evidence links Python owner 24244 to Codex children 66701 and 67753 and their hosts, consistent with recorded calls and session. Root and repeat heartbeats fresh. No intervention warranted; process evidence limitations retained.",
+  "notes": [
+    "Read manifest, progress and outcomes. outcomes is historical, including repaired Q3P2 blocker; live checkpoint shows PAUSE and editor done. launch.py saves progress between pairs and outcomes at exit.",
+    "Reinjection finished refers to last admitted pair; twelve scheduled research/edit threads remain unfinished overall.",
+    "Prior external lookup failures recorded already; no new child failure records, stops or paper failures.",
+    "HERDR_PANE_ID unavailable; pane title unchanged."
+  ],
+  "action": "No intervention",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-041/health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-041/status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-041/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ]
+}

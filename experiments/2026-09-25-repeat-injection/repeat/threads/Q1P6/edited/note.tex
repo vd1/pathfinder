@@ -1,0 +1,146 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{What Rank-Based Reward Shaping Can Learn from Prediction Guarantees}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Q surveys guarantees for algorithms that use fallible predictions, while P uses multimodal pairwise judgements
+to assign credit during cooperative agent training. The thread asked whether Q's account of prediction error
+and cost gives a guarantee for P's learned policy. The peer checks found exact cancellation of P's shaping
+signal under complete reward accounting, alongside conditional effects from pooling rewards or masking
+inactive agents. They also found that P's stated graph condition does not suffice for its unregularised score
+estimate. The verifier ended the thread as a draft because these results locate a useful test, but the reward
+routing and finite-training benefit in P remain unverified.
+\end{abstract}
+
+\section{Introduction}
+
+Q is a survey of learning-augmented algorithms: methods that use predictions while stating what happens when
+those predictions are wrong. It separates a predictor's error from the cost of the decision made with it. It
+also asks how guarantees pass from one component to the next and how the cost of obtaining a prediction enters
+the account. A model's output needs a task-specific meaning and an error measure before an algorithmic
+guarantee can use it \cite{Q}.
+
+P addresses credit assignment in cooperative multi-agent learning, including teams whose active members
+change. Its MARS-RA method asks a large multimodal model which of two active agents contributed more, fits
+Bradley--Terry scores to the judgements, and turns the scores into reward-shaping potentials. P reports
+training outcomes and a trend in which more accurate comparisons and more queries accompany better
+performance. Its score-estimation claim concerns a latent preference of the comparator; its Shapley-value
+interpretation assumes that this preference matches the agents' true contributions \cite{P}.
+
+The thread first asked whether Q's prediction contract could explain a downstream benefit in P. That would
+require a link from comparison error to learned-policy performance, together with the price of making
+comparisons and a rule for agents entering or leaving the team. The work narrowed to the point where that link
+would have to act: the shaped reward and the critic used during finite training.
+
+\section{What was done}
+
+The peers first checked P's score-estimation premise. They then traced one agent's potential through a whole
+episode and through a matched critic. An objection about changing teams forced them to repeat the calculation
+with an active-agent reward mask. They next checked what happens if the vector of shaped rewards is pooled
+into one team reward. Finally, they used a small policy-gradient example to test whether an accurate ranking
+is necessarily a useful training signal, and set these results against Q's requirements for downstream error
+and query cost.
+
+P's stated protocol compares every ordered pair in the active set. If \(m_t\) agents are active at a queried
+step \(t\), this calls the comparator \(m_t(m_t-1)\) times. P reports that, in its experimental setup,
+training for 50 million environment steps took 16 hours for MAPPO and 30 hours for MARS-RA. These figures
+motivate a charged-query comparison; they do not give a return-per-query guarantee \cite{P}. Q's cost
+convention requires a declared conversion from calls to the objective being measured \cite{Q}.
+
+\section{Results}
+
+\subsection{What the potential does exactly}
+
+Let \(i\) denote one member of a fixed agent population, \(t\) a time step, \(T\) the end of an episode, and
+\(\gamma\) the discount factor. Write \(\psi_{i,t}\) for that agent's potential at step \(t\), using the same
+realised value on the two transitions that meet there. P's shaping increment is
+\(F_{i,t}=\gamma\psi_{i,t+1}-\psi_{i,t}\). If every transition is credited and the terminal potential
+\(\psi_{i,T}\) is zero, the peers checked the pathwise identity
+\[
+\sum_{t=0}^{T-1}\gamma^t F_{i,t}
+=-\psi_{i,0}+\gamma^T\psi_{i,T}
+=-\psi_{i,0}.
+\]
+The intermediate comparison scores cancel. When the initial potential is fixed before the first action,
+shaping shifts an exact episode return by a fixed amount and leaves its policy ordering unchanged. This is an
+application of existing potential-shaping results, including work on changing potentials and their relation to
+value initialisation \cite{dynamicArchive,dynamicConference,wiewiora}.
+
+The same cancellation reaches an exactly matched critic. Let \(\rho\) be P's shaping weight, \(\widehat
+V_i^{\mathrm{env}}\) an unshaped value estimate, and \(\widetilde V_i=\widehat V_i^{\mathrm{env}}-\rho\psi_i\)
+its matched shaped version. The peers checked that their one-step temporal-difference residuals are equal. If
+the shaped critic has an additional error \(e_i\), the shaped residual differs by \(\gamma
+e_{i,t+1}-e_{i,t}\). Thus the comparison signal has no effect through an exactly matched residual, but critic
+mismatch gives a specific channel to measure during approximate training. This calculation does not show how
+P's implementation represents its critic.
+
+\subsection{What changes with a changing team}
+
+Complete accounting matters. Let \(a_{i,t}\) equal one when agent \(i\) is active at \(t\) and zero otherwise.
+If the shaping increment is paid only when the agent is active, the peers obtained, with a zero terminal
+potential,
+\[
+\sum_{t=0}^{T-1}\gamma^t a_{i,t}F_{i,t}
+=-a_{i,0}\psi_{i,0}
++\sum_{t=1}^{T-1}\gamma^t(a_{i,t-1}-a_{i,t})\psi_{i,t}.
+\]
+On re-entry, the final sum can contain an uncompensated negative term. Setting the potential to zero while an
+agent is absent does not remove it. P gives a potential over the current active set but does not specify
+enough about inactive-agent rewards and critic targets to determine whether its training uses this mask
+\cite{P}.
+
+Pooling gives another conditional result. P forms potentials by taking a softmax of the active agents' scores,
+so their potentials sum to one whenever the active set is nonempty. If all agent coordinates, including zero
+coordinates for absent agents, are summed before a common team update, the pooled shaping increment depends
+only on this sum and carries no individual ranking information. Pooling only agents active at the start of a
+transition can retain a rank effect at entry, where the boundary accounting above also matters. Separate
+per-agent rewards can affect approximate updates. The peers established these alternatives from P's equations,
+but did not establish which route its implementation takes.
+
+\subsection{Why a better ranking is not enough}
+
+The peers also checked a one-step diagnostic. One agent chooses a binary action \(a\), with each action
+equally likely; a second agent is inert, and the team return is \(G=a\). For a logit policy, the score is
+\(z=a-1/2\). With a state-only baseline \(b\), the gradient sample \(g_b=z(G-b)\) has variance
+\((b-1/2)^2/4\). The neutral baseline \(b=1/2\) therefore has zero variance, while the softmax of the
+rank-correct Shapley scores \((1/2,0)\) gives the first agent \(b>1/2\) and positive variance. This tests
+whether ordinal accuracy alone predicts gradient quality; it is neither a MAPPO result nor a contradiction of
+P's reported experiments. Prior work already shows that potential shaping can raise policy-gradient variance
+\cite{gupta}. Work on preference queries also identifies a gap between query choice and policy improvement
+\cite{preferenceQueries}.
+
+\section{Objections and their status}
+
+The first objection was to P's finite-sample Bradley--Terry claim. With two agents at a true tie and two
+independent comparisons, the comparison graph is connected. Both outcomes favour the same agent with
+probability \(1/2\). On those samples an unregularised likelihood has no finite maximiser: the favoured score
+can keep moving away. This exceeds the failure probability \(1/4\) allowed by P's stated \(1-n^{-2}\) claim
+when the number of agents \(n\) is two. The peers agreed on this counterexample. A constrained or regularised
+estimator and suitable sampling assumptions would be needed for a repaired result; the calculation does not
+dispute P's empirical outcomes \cite{P}.
+
+The second objection was to a simpler cancellation argument. Zero potentials at absence and termination are
+insufficient when shaping rewards are masked for inactive agents. The active-mask identity above settled the
+mathematical point, while the implementation question remained open. The peers also noted that repeated model
+calls need not be independent, that P's comparison accuracy does not by itself control critic error, and that
+cancellation and variance effects have prior literature. No improved-return theorem or novelty claim follows
+from these checks.
+
+\section{Why the thread stopped}
+
+The verifier marked the thread DRAFT because it had reached a conditional result with a clear limit. Complete
+shaping cancels from exact returns; full pooling removes the ranking from a common reward; active-only masking
+can instead leave a re-entry term. These facts explain why Q's prediction-error framework cannot yet be
+transferred to P's learned-policy return. The smallest step to restart the work is to trace one entry or
+re-entry transition through P's reward tensor, inactive-agent mask, and critic target. A matched-critic and
+neutral-potential control could then test whether any remaining effect improves held-out unshaped return under
+stated step, time, and query budgets.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

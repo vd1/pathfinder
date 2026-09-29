@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-09-25T15:58:46.101713+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "completed_pipelines": 4,
+  "scheduled_pipelines": 28,
+  "comparison": {
+    "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-015/observed-status.json",
+    "new_completed_call": {
+      "at": "2026-09-25T15:55:41Z",
+      "thread": "Q4P6",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null
+    },
+    "new_ledger_entries": 15,
+    "latest_ledger_entry": {
+      "seq": 22,
+      "at": "2026-09-25T15:58:28Z",
+      "actor": "ada",
+      "kind": "finding"
+    },
+    "completed_work_unchanged": true
+  },
+  "process_identity": "Supplied process evidence matches session runner 89044, Python executable, parent 89043, and recorded codex call children 5845 and 6603 with host descendants. No duplicate runner shown. Point-in-time evidence cannot exclude PID reuse or unrelated reparented processes; no process action taken.",
+  "health": "Fresh root and repeat heartbeats; ada second peer call and emmy first peer call within nominal deadlines. Ada first call completed successfully; new substantive ledger findings demonstrate progress. Two-call peer allowance and ready rechecks in research.py explain continuation; no livelock evidence.",
+  "scope": "4/28 research/edit threads done. Only current DRAFT, repeat/Q4P10, has ACCEPTED paper round 1, build_ok true and ACCEPT review. Other completed research verdicts are PAUSE, not operator stops. Reinjection awaits next serial admission.",
+  "instrumentation": "Root between-pairs stage is retained while the next child research runs. progress.json records last completed pair. outcomes.json absent as expected until launch.py finally block. Root empty work is not used for completion.",
+  "failures": "No root or child failure records, receipt errors, stop markers or overdue calls. Prior nonblocking HTTP 406 checks already recorded in incidents.jsonl; no new failure discovered.",
+  "action": "No intervention; no incident append needed.",
+  "next_audit": "Check Q4P6 peers and stage advancement, remaining scheduled pairs, and every DRAFT author/reviewer pipeline.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-016/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-016/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-016/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-016/before.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/launch.py",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/receipts.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P6/ledger.jsonl",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/paper.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/review.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/runner.log"
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "observed_at": "2026-09-25T19:31:47.139870+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "scheduled": 28,
+  "completed_research_edit": 13,
+  "changed_work_since_previous": [
+    "reinjection/Q1P3"
+  ],
+  "changed_previously_completed_work": [],
+  "current_calls": [
+    {
+      "attempt_id": "b319237779e04efb97de31d3f903fcc8",
+      "run_id": "7070889c541d43078266de9ac86a7e6d",
+      "pid": 24244,
+      "thread": "Q1P3",
+      "stage": "edit",
+      "actor": "editor",
+      "started_at": 1790364520.2200341,
+      "deadline_at": 1790365420.2200341,
+      "timeout_seconds": 900,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q1P3",
+      "child_pid": 50616,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/b319237779e04efb97de31d3f903fcc8.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 131.4,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "papers": {
+    "repeat/Q4P10": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "build_ok": true
+    },
+    "repeat/Q7P1": {
+      "status": "ACCEPTED",
+      "round": 1,
+      "build_ok": true
+    },
+    "reinjection/Q4P4": {
+      "status": "ACCEPTED",
+      "round": 2,
+      "build_ok": true
+    }
+  },
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-25T19:13:56Z",
+        "thread": "Q1P1",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:14:48Z",
+        "thread": "Q1P1",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:18:29Z",
+        "thread": "Q1P1",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null
+      }
+    ],
+    "reinjection": [
+      {
+        "at": "2026-09-25T19:27:00Z",
+        "thread": "Q1P3",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:28:14Z",
+        "thread": "Q1P3",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null
+      },
+      {
+        "at": "2026-09-25T19:28:40Z",
+        "thread": "Q1P3",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null
+      }
+    ]
+  },
+  "diagnosis": "Q1P3 advanced from peers through consolidation and DRAFT verification to editing. Active editor within deadline. No new child failures or stop markers. Existing external lookup incidents already recorded. No intervention required.",
+  "process_identity": "Supplied process evidence matches coordinator PID 24244, recorded editor child 50616 and descendant 50711; executable/tree evidence has stated PID-reuse limits. No process action taken.",
+  "checkpoint_interpretation": "progress.json is saved between pairs; outcomes.json is saved on coordinator exit (launch.py lines 271-286). Historical BLOCKED Q3P2 in outcomes is superseded by repaired child state and completed editing.",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-028/status-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-028/health-observed.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-028/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-027/after.json"
+  ],
+  "action": "none"
+}

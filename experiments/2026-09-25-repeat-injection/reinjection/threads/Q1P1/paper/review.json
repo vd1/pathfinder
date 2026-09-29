@@ -1,0 +1,30 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-27T15:34:49Z",
+  "build_ok": true,
+  "checks": [
+   "P: no URL, DOI or arXiv identifier",
+   "arXiv lookup failed: HTTP Error 406: Not Acceptable"
+  ],
+  "paper_sha256": "a7d58d7518c4a021d9445154fba0e2340d4e9ac0a55d01d13030ebc924a8b76b",
+  "decision": "ACCEPT",
+  "summary": "The claims and mathematics are supported within the paper\u2019s stated scope. Only minor clarification and bibliographic corrections are needed before sending it to referees.",
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "where": "references.bib, P entry",
+    "issue": "The relative file path is presented as a URL, although the reference checks found no public URL or identifier for P.",
+    "fix": "Identify P explicitly as the supplied local manuscript and verify the file path; do not present it as a public URL."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "where": "A conditional error and label budget",
+    "issue": "The bound divides by \u03c4 without explicitly stating its required range, and the sampling description does not restate that observers on each overlap link label the same realised draw.",
+    "fix": "State 0 < \u03c4 \u2264 1/2 and specify shared-draw joint labels for each measured overlap population."
+   }
+  ]
+ }
+]

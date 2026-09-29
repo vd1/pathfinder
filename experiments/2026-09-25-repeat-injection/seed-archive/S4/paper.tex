@@ -1,0 +1,102 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Fixed-Batch CVaR and Participation in a Quadratic Resource-Allocation Mechanism}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We examine a risk-adjusted use of the quadratic resource-allocation mechanism of Garjani, Shokri and Kebriaei with the empirical conditional value-at-risk (CVaR) oracle studied by Wang, Huang, Xu and Johansson. A one-sample example has strongly convex true and expected empirical CVaR losses, yet the exact surrogate-game equilibrium gives each agent true-risk utility \(-3/32\) relative to opting out. Under a uniform value-error bound and an exact surrogate equilibrium, we obtain a \(2e_n\) bound on unilateral incentives and participation, and a \(2\sum_n e_n\) bound on separable-risk welfare when the surrogate planner is implemented. These are equilibrium statements, not a convergence theorem for a strategic learning algorithm. % ledger: 6, 9, 14, 15, 16
+\end{abstract}
+
+\section{Setting and relation to prior work}
+
+Garjani, Shokri and Kebriaei (Q) construct quadratic payments for strategic agents with private expected valuations and local resource constraints. Under their assumptions, the induced game has a unique Nash equilibrium that implements the expected-welfare optimum with budget balance and individual rationality; their variable-sample proximal best-response method converges in mean square. Wang, Huang, Xu and Johansson (P) instead study cooperative minimisation of local CVaRs at a shared decision. Their projected, one-point method uses empirical CVaR, and its fixed-batch result concerns an optimum of an expected empirical surrogate. It does not establish convergence in Q's strategic game \cite{garjani2026mechanism,wang2026distributed}. % ledger: 1, 2, 8
+
+Two parts of the surrounding argument are already in the literature. Wang, Shen, Zavlanos and Johansson give an example in which a strongly monotone risk-neutral game loses uniqueness under CVaR, and analyse learning in strongly monotone risk-averse games \cite{wang2024learning}. Cherukuri proves consistency and finite-sample guarantees for sample-average CVaR variational inequalities, including a routing equilibrium application \cite{cherukuri2024sample}. Thus loss of curvature under a risk change and sensitivity of CVaR equilibria to sampling are published steps. Our claim is the narrower, mechanism-specific fixed-batch participation failure and the conditional value-level consequences recorded below; we make no priority claim for either ingredient. % ledger: 3, 5, 6, 11, 12, 14, 16
+
+Let \(J_n(x_n,\xi_n)=-\psi_n(x_n,\xi_n)\) be an agent's loss and let \(\beta_n\in(0,1)\) denote upper-tail mass. Write
+\[
+ C_n(x_n)=\operatorname{CVaR}_{\beta_n}[J_n(x_n,\xi_n)],
+ \qquad R_n(x_n)=-C_n(x_n).
+\]
+At a message profile \(s\), Q's deterministic tax \(t_n(s)\) gives risk-adjusted utility \(R_n(x_n)-t_n(s)\) by CVaR cash translation. The associated welfare target is \(\sum_n R_n(x_n)\), with the same capacity and local constraints as in Q. Participation is measured against \(R_n(0)\), which may be normalised to zero. % ledger: 4, 7, 10
+
+Q assumes strong concavity of the \emph{expected} valuation. This alone does not give strong concavity of \(R_n\): on \([0,1]\), two equiprobable losses \(0\) and \(x^2-1\) have strongly convex expectation while their upper-half CVaR is identically zero. Uniform samplewise \(m\)-strong convexity is a sufficient curvature repair, since cash translation makes \(C_n(x)-m\|x\|^2/2\) convex. It need not make CVaR differentiable, so applying all of Q's smooth-game conclusions still requires suitable nonsmooth and constraint arguments. The general loss-of-uniqueness phenomenon was also exhibited in \cite{wang2024learning}. % ledger: 3, 4, 5
+
+\section{A fixed-batch participation failure}
+
+The example concerns the \emph{expected empirical} CVaR objective to which a repeatedly sampled, fixed-batch oracle is directed. It makes no assertion that P's algorithm can run on Q's feasible set or that Q's learning process converges to this equilibrium. % ledger: 6, 8, 9
+
+\begin{proposition}
+For \(N\geq2\) agents with \(x_n\in[0,1]\), capacity \(c=N\), and Q's explicit quadratic tax, there is a one-sample CVaR surrogate game with an exact equilibrium at \(x_n=1/4\) and zero price bids. Each agent's true-risk utility there is \(-3/32<R_n(0)=0\), although both the true and surrogate CVaR losses are strongly convex. % ledger: 6, 9
+\end{proposition}
+
+\begin{proof}
+Take independent, equiprobable \(\xi_n\in\{0,1\}\), tail mass \(\beta_n=1/2\), and
+\[
+J_n(x,\xi_n)=\frac{x^2}{2}-\frac{3x}{4}+\xi_n x.
+\]
+For \(x\geq0\), the upper-half loss is the \(\xi_n=1\) loss, so
+\[
+C_n(x)=\frac{x^2}{2}+\frac{x}{4},
+\qquad
+\widetilde C_n(x):=\mathbb E_{\rm batch}\widehat C_n(x)
+=\frac{x^2}{2}-\frac{x}{4}.
+\]
+With one observation, empirical CVaR equals that observation. The true minimum is \(x=0\); the surrogate minimum is \(x=1/4\). Both second derivatives equal one. When the other agents bid zero, Q's explicit tax reduces to
+\[
+t_n=\alpha\left[\frac{p_n^2}{2}+\frac{p_n}{N-1}
+\left(c-x_n-\sum_{m\ne n}x_m\right)\right].
+\]
+Here \(\alpha>0\) and feasible price bids satisfy \(p_n\geq0\). Because \(c=N\) and each feasible allocation lies in \([0,1]\), this tax is nonnegative for every feasible unilateral allocation and price bid. It is zero at \(p_n=0\), where maximising surrogate utility amounts to minimising \(\widetilde C_n\). Thus \(x_n=1/4,p_n=0\) is an exact equilibrium of the surrogate game. There \(C_n(1/4)=3/32\), whereas \(C_n(0)=0\), proving the stated true-risk participation failure. This is a failure under the true CVaR valuation, not a claim about every realised payoff. % ledger: 6, 9
+\end{proof}
+
+\section{Conditional value-level guarantees}
+
+Let \(\widetilde R_n\) be the negative expectation, over a fresh batch and smoothing direction, of P's empirical CVaR at a valid perturbed point. Suppose \(|J_n|\leq U_n\), local CVaR is \(L_n\)-Lipschitz, batch size is \(s_n\), and every smoothing query used below is valid. P's smoothing estimate and its empirical-distribution bound imply, uniformly on the domain under consideration,
+\[
+\sup_x|\widetilde R_n(x)-R_n(x)|\leq e_n,
+\qquad e_n:=L_n\delta_n+
+\frac{U_n\sqrt{2\pi}}{\beta_n\sqrt{s_n}}.
+\]
+This is a deterministic bound for the expected empirical surrogate. It is not a uniform guarantee for a particular realised batch. % ledger: 14, 16
+
+\begin{proposition}
+Suppose \(\widetilde s\) is an exact Nash equilibrium of Q's tax game with valuations \(\widetilde R_n\), and the preceding bound holds for all allocations in every unilateral deviation. Then no agent can improve its \emph{true-risk} utility by more than \(2e_n\) through a unilateral deviation. If Q's opt-out deviation has nonpositive tax at \(\widetilde s\), then
+\[
+R_n(\widetilde x_n)-t_n(\widetilde s)-R_n(0)\geq-2e_n.
+\]
+If, in addition, Q's implementation conditions ensure that \(\widetilde x\) maximises \(\sum_n\widetilde R_n\) on the feasible allocation set, then its true separable-risk welfare gap is at most \(2\sum_n e_n\). If the surrogate game also meets Q's budget-balance conditions, with the symmetric equilibrium prices and planner complementarity used in Q's proof, the taxes sum to zero at this equilibrium. % ledger: 14, 15, 16
+\end{proposition}
+
+\begin{proof}
+For any unilateral deviation, substitute \(R_n\) for \(\widetilde R_n\) on each side of the surrogate Nash inequality. The fixed tax at each message profile is unchanged, and the two valuation substitutions cost at most \(e_n\) each. Q's opt-out message with zero allocation then yields the participation inequality when its tax is nonpositive. For welfare, insert \(\sum_n\widetilde R_n\) between true welfare at a true optimum and at \(\widetilde x\); surrogate optimality makes its middle difference nonpositive, and the two remaining differences are each bounded by \(\sum_n e_n\). For balance, Q evaluates its tax at a surrogate planner allocation with symmetric prices, then uses planner complementarity and its P3 coefficient conditions. Without those implementation properties, its budget proof does not apply to an arbitrary surrogate equilibrium. % ledger: 14, 15, 16
+\end{proof}
+
+The ledger also records a conditional equilibrium-distance calculation. If a feasible smoothing oracle exists and the smoothed strategic operator is strongly monotone with constant \(\nu>0\), comparison of its two variational inequalities with P's gradient-error bound gives
+\[
+\|\widetilde s_{\delta,s}-s_{\delta}\|
+\leq\frac{1}{\nu}\sqrt{\sum_n
+\frac{2\pi d_n^2U_n^2}{\beta_n^2\delta_n^2s_n}}.
+\]
+Here both equilibria are for smoothed games, with true and expected empirical CVaR respectively. This sensitivity statement assumes the required operator and oracle; it is not a learning-dynamics result. % ledger: 11
+
+\section{Interpretation}
+
+Deterministic payments with individual CVaR valuations optimise the sum of local CVaRs, not generally CVaR of aggregate loss. To see the distinction, take two agents with \(x_1,x_2\geq0\), \(x_1+x_2\leq1\), and equally likely, mutually exclusive scenarios \((Z_1,Z_2)=(1,0)\) and \((0,1)\). Set
+\[
+J_1=2x_1Z_1+qx_1^2-Bx_1,\qquad
+J_2=x_2Z_2+qx_2^2-Bx_2,
+\quad 0<q<\frac12,\quad B>2+2q,
+\]
+and take upper-tail mass \(\beta=1/2\). Every sample loss is strongly convex. The sum of local CVaRs is \(2x_1+x_2+q(x_1^2+x_2^2)-B(x_1+x_2)\), uniquely minimised at \((0,1)\). CVaR of aggregate loss is \(\max\{2x_1,x_2\}+q(x_1^2+x_2^2)-B(x_1+x_2)\), uniquely minimised at \((1/3,2/3)\). The aggregate-risk regret at the local-risk solution is exactly \(1/3+4q/9>0\). Scenario-contingent pooling transfers yield an algebraic risk-aggregation identity if realised losses are verifiable, but no incentive-compatible pooling mechanism is established. % ledger: 7, 9, 10
+
+\section{Limitations and open questions}
+
+The main geometric obstacle is immediate: P's perturbation construction assumes an origin-centred ball inside the feasible set, while Q's allocations are nonnegative and its electric-vehicle example has affine flow equalities. A relative-interior oracle or a justified extension of the loss would be needed. Q's strategic proximal best-response convergence theorem does not cover P's cooperative consensus update or its biased CVaR estimates. The propositions here require an exact surrogate equilibrium; they do not show that agents learn one. They also leave exact true-risk participation unsupported without a positive margin exceeding \(2e_n\). Establishing a feasible oracle and an inexact strategic learning theorem remains open. % ledger: 1, 2, 8, 11, 12, 14, 17
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

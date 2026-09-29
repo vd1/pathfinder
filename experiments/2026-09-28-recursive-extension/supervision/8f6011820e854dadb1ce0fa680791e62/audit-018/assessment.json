@@ -1,0 +1,148 @@
+{
+  "observation_time": "2026-09-28T13:03:05.880084+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension",
+  "run_id": "ad6c24c6e1ef431baca4fde017595707",
+  "status": "continue",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-018/observed.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-017/after.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/supervision/8f6011820e854dadb1ce0fa680791e62/audit-018/processes.json",
+  "facts": [
+    "Root PID 49475 matches session runner and supplied Python process tree; active emmy child 76015 and descendant 76113 match the recorded owner. Evidence is point-in-time and cannot exclude PID reuse or unrecorded reparented groups.",
+    "Both arms inspected. Root and repeat heartbeats fresh; recursive finished with no active calls. Emmy peer call is within nominal deadline; no stop, censored arms or recorded call failures.",
+    "Since prior audit emmy completed initial peer call at 12:59:21Z and ada completed follow-up at 13:01:44Z. Current emmy follow-up is active; successful receipts demonstrate progress rather than failed retry livelock.",
+    "Q4P6 has a scientific PAUSE verdict and completed editing; Q4P1 and Q1P2 have completed editing and ACCEPTED papers. Q1P1 research, editing and any required DRAFT paper remain unfinished.",
+    "Existing reference checks persist with successful builds and are retained as open incidents. No restart or repair warranted.",
+    "Herdr pane rename failed with sandbox PermissionDenied; title change not verified."
+  ],
+  "completed_work_unchanged": true,
+  "receipts": {
+    "repeat": [
+      {
+        "at": "2026-09-28T11:47:27Z",
+        "thread": "Q4P6",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 35.2,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T11:50:58Z",
+        "thread": "Q4P6",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 211.4,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:57:37Z",
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 344.1,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:59:21Z",
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "emmy",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 448.1,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T13:01:44Z",
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 231.6,
+        "exit_status": 0
+      }
+    ],
+    "recursive": [
+      {
+        "at": "2026-09-28T12:41:17Z",
+        "thread": "Q1P2",
+        "stage": "consolidate",
+        "actor": "ada",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 85.6,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:41:53Z",
+        "thread": "Q1P2",
+        "stage": "verify",
+        "actor": "verifier",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 36.2,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:45:14Z",
+        "thread": "Q1P2",
+        "stage": "edit",
+        "actor": "editor",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 200.5,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:50:10Z",
+        "thread": "Q1P2",
+        "stage": "author",
+        "actor": "author",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 293.1,
+        "exit_status": 0
+      },
+      {
+        "at": "2026-09-28T12:51:50Z",
+        "thread": "Q1P2",
+        "stage": "review",
+        "actor": "reviewer",
+        "outcome": "completed",
+        "error": null,
+        "seconds": 97.4,
+        "exit_status": 0
+      }
+    ]
+  },
+  "active_calls": {
+    "repeat": [
+      {
+        "attempt_id": "eaf4e1aaa42d407abfaa40022561ed64",
+        "run_id": "b3c08f89f1e54709a76212379677046d",
+        "pid": 49475,
+        "thread": "Q1P1",
+        "stage": "peer",
+        "actor": "emmy",
+        "started_at": 1790600361.806838,
+        "deadline_at": 1790601398.806838,
+        "timeout_seconds": 1037,
+        "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/threads/Q1P1",
+        "child_pid": 76015,
+        "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/repeat/active-calls/eaf4e1aaa42d407abfaa40022561ed64.json",
+        "pid_alive": true,
+        "child_alive": true,
+        "age_seconds": 224.1,
+        "overdue_seconds": 0
+      }
+    ],
+    "recursive": []
+  },
+  "action": "Observation only; no campaign intervention."
+}

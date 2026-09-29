@@ -1,0 +1,129 @@
+\documentclass{article}
+\usepackage{pathfinder-paper}
+
+\title{Finite-Batch CVaR Can Reverse an Obedience-Cycle Test}
+
+\date{28 September 2026; clarified version 2}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An expected empirical conditional value-at-risk (CVaR) value can select a policy that passes an obedience-cycle test although the same policy fails the test under true conditional CVaR. We give a one-type, two-signal example for every finite batch size and an exact common-reward test for independently bounded utility errors. These statements concern state-independent action rewards and conditional risk values embedded as reduced-form utilities; they do not address CVaR of an entire plan before its signal is observed. % ledger: 6, 9, 10, 11, 12, 14, 15, 16
+\end{abstract}
+
+\section{The two inputs and the question}
+
+Bergemann, Koh and Morris \cite{bergemann2026alignment}, denoted Q, study mechanisms for agents with private preferences and capabilities. For a fixed type and a state-independent action reward, their signal-policy lemma says that a feasible policy can be supported precisely when every signal cycle has nonnegative utility sum. Their broader characterization also imposes report-stage conditions. The supplied P \cite{pathfinder2026fixedbatch} studies a quadratic resource-allocation tax game and distinguishes true CVaR from the expectation of an empirical CVaR oracle using a fixed batch. Its one-sample example concerns participation in that different game, while its value-error result concerns the expected empirical surrogate. P's reference to a paper called Q identifies a quadratic-tax paper, not the supplied Q; its tax and participation conclusions therefore do not transfer to Q here. % ledger: 1, 6, 9, 12, 16, 18
+
+The question here is whether the expected empirical CVaR values used in a fixed-batch calculation can change the answer to Q's \emph{state-independent} obedience test. We use one type, so Q's report-stage condition is vacuous. After a signal, the agent ranks actions by negative conditional CVaR of an auxiliary loss shock, and this conditional value serves as Q's reduced-form state utility. Continuation values across signals are averaged as in Q. This is a modelling choice, not a CVaR extension of Q's full report mechanism. % ledger: 2, 6, 9, 12, 16
+
+\section{A finite-batch reversal}
+
+Write \(\operatorname{CVaR}_{1/2}\) for upper-half CVaR. Let \(q_m\) be the expectation, over a fresh independent batch of size \(m\), of empirical upper-half CVaR for a loss that equals \(0\) or \(2h\) with equal probability, where \(h>0\). % ledger: 6, 10, 11, 16
+
+\begin{proposition}\label{prop:reversal}
+For each finite \(m\geq 1\), there is a one-type, two-signal policy supported by zero state-independent rewards under expected empirical conditional CVaR but unsupported by every state-independent action reward under true conditional CVaR. The losses in this construction depend on \(m\). % ledger: 6, 9, 10, 11, 16
+\end{proposition}
+
+\begin{proof}
+Take two equally likely states \(0,1\), revealed exactly by the signal, and actions \(a,b\). At state \(0\), \(a\) has the risky loss above and \(b\) has constant loss \(c_m\); at state \(1\), exchange the actions' losses. Prescribe \(a\) at \(0\) and \(b\) at \(1\). The all-zero batch has probability \(2^{-m}\). Empirical CVaR is zero on that event and at most \(2h\) elsewhere, hence
+\[
+q_m\leq 2h(1-2^{-m})<c_m:=2h-h2^{-m}<2h.
+\]
+The surrogate ranks the prescribed risky action above the safe action after either signal, so zero rewards support the policy. % ledger: 6, 9, 10, 11, 16
+
+True conditional CVaR is \(2h\) for the risky loss and \(c_m\) for the safe loss. If \(r(a),r(b)\) supported the policy, obedience at state \(0\) and state \(1\), respectively, would require
+\[
+r(a)-r(b)\geq 2h-c_m=h2^{-m},\qquad
+r(b)-r(a)\geq 2h-c_m=h2^{-m}.
+\]
+Their sum is impossible. Equivalently, Q's two-signal cycle is \(2(c_m-2h)=-2h2^{-m}<0\) for true utility, whereas the surrogate cycle is \(2(c_m-q_m)\geq2h2^{-m}>0\). % ledger: 6, 9, 10, 11, 16
+\end{proof}
+
+At \(m=1\) and \(h=1\), the risky action has true CVaR \(2\), expected empirical CVaR \(1\), and safe loss \(3/2\). This uses the one-sample downward-bias mechanism in P, with Q's cycle condition translating the ordering change into a failure of exact implementability. The proposition gives a different instance for each batch size; it does not say one fixed instance continues to fail as \(m\) increases. % ledger: 6, 9, 10, 12, 16
+
+\section{Certificates from value bounds}
+
+The next statements apply to a finite-signal, one-type policy when every compared conditional action value satisfies \(\lvert U(a,s)-\widetilde U(a,s)\rvert\leq e\). They are deterministic statements about a specified bound; applying P's oracle estimate requires its bounded-loss and valid-query assumptions at every action and signal used. % ledger: 11, 14, 15, 16
+
+\begin{proposition}\label{prop:margin}
+A length-\(K\) signal cycle changes value by at most \(2Ke\) between \(U\) and \(\widetilde U\). If every simple cycle with at least two distinct prescribed actions has surrogate sum at least \(2Ke\), the policy has a state-independent supporting reward under \(U\). This need not be the surrogate supporting reward. % ledger: 11, 14, 15
+\end{proposition}
+
+\begin{proof}
+Each cycle edge compares two action values at one signal, so its change is at most \(2e\). A cycle using only one prescribed action has sum zero under either array. All other cycles decompose into simple cycles; the stated margins make each true simple-cycle sum nonnegative. Q's signal-policy lemma then supplies a supporting reward. % ledger: 11, 14, 15
+\end{proof}
+
+There is a separate, stronger requirement when a \emph{single} reward must work for every utility array in an independent rectangular error set. Let \(B\) be the distinct prescribed actions, allow every \(U(a,s)\) to vary independently in \([\widetilde U(a,s)-e,\widetilde U(a,s)+e]\), and define, for distinct \(a,b\in B\),
+\[
+w(a,b)=\max_{s:\,a(s)=a}
+\bigl\{\widetilde U(b,s)-\widetilde U(a,s)+2e\bigr\}.
+\]
+% ledger: 11, 15
+
+\begin{proposition}\label{prop:robust}
+One state-independent reward supports the policy for every utility array in that rectangular set if and only if every directed cycle on \(B\) has total weight at most zero. Unprescribed actions may be prohibited. % ledger: 11, 15
+\end{proposition}
+
+\begin{proof}
+Robust obedience at a signal prescribing \(a\) against \(b\) is exactly \(r(a)-r(b)\geq w(a,b)\). Summing these difference constraints around a directed cycle proves necessity. With no positive cycle, the finite path-potential construction used in Q's signal-policy proof yields a solution to all difference constraints. % ledger: 11, 15
+\end{proof}
+
+The rectangular set is an uncertainty model, not a claim that P's empirical errors are independent. The first certificate establishes existence of some true supporting reward; the second tests whether there exists a single common reward that works across the entire box. Neither is a guarantee for one realised batch. % ledger: 11, 12, 14, 15, 16
+
+\section{Related work and interpretation}
+
+Q already establishes the signal-cycle criterion and its path-potential sufficiency argument \cite{bergemann2026alignment}. P already supplies the distinction between true and expected empirical CVaR, including a one-sample failure in its own tax game \cite{pathfinder2026fixedbatch}. Ieong, So and Sundararajan \cite{ieong2007stochastic} study how sampling-based approximation affects incentive compatibility in a two-stage stochastic mechanism; their published result concerns approximate sequential incentives under risk-neutral expected utility. These antecedents contain the main ingredients and a broader sampling-and-incentives theme. The contribution here is the explicit conditional-CVaR example crossing Q's state-independent cycle boundary for each finite batch, together with the bounded-error readings of that boundary. The searches recorded in the accompanying search log did not establish publication priority for this example. % ledger: 1, 6, 9, 10, 11, 12, 15, 16, 18
+
+The example shows why an exact implementability decision can be sensitive to a small value error at a cycle boundary. It does not imply that a designer cannot support the same policy with Q's unrestricted state-dependent rewards. The graph criterion describes robustness of a reward across a prescribed utility box, while the cycle-margin test concerns existence of some reward for the true array. % ledger: 9, 10, 11, 12, 15, 18
+
+\section{Limitations and open questions}
+
+The conditional-risk embedding is deliberately narrow. For example, suppose two signals \(s_1,s_2\) each have probability \(1/2\), with upper-tail mass \(\beta=1/4\). At \(s_1\), report \(R\) permits an action with loss \(100\) with probability \(1/1000\) and zero otherwise, while report \(Q\) permits an action with constant loss \(2\). Both reports permit an action with constant loss \(3\) at \(s_2\); other actions are barred. With zero payments, averaging conditional CVaRs ranks \(R\) better: \((1/2)(2/5)+(1/2)3=17/10<5/2=(1/2)2+(1/2)3\). Ex-ante CVaR of the induced joint losses ranks \(Q\) better: \(3<1597/500\), the risk of \(R\). The comparison concerns report choice before the signal; it does not show that either report is incentive compatible in a full two-type mechanism. % ledger: 5, 7
+
+More generally, for \(0\leq J\leq U\) and tail mass \(\beta\), the ledger establishes
+\[
+0\leq \operatorname{CVaR}_{\beta}(J)
+-\mathbb{E}\bigl[\operatorname{CVaR}_{\beta}(J\mid S)\bigr]
+\leq (1-\beta)U.
+\]
+That timing gap persists with exact risk evaluation; the broader time-inconsistency issue is known in CVaR control \cite{miller2015optimal}. The displayed bound and report comparison do not constitute a new outer report-cycle theorem. % ledger: 5, 7, 8, 11, 12, 18
+
+Our reversal uses the expectation of an empirical CVaR computed from a fresh fixed-size batch. It gives no guarantee for a realised batch, no result on strategic learning, and no impossibility for state-dependent rewards. The rectangular graph test assumes independently variable utilities, and a CVaR oracle bound applies only where its hypotheses hold. A next question is how to handle Q's report-stage and double-deviation conditions after explicitly choosing whether report-stage preferences use conditional or ex-ante CVaR. A separate question is how to certify a cycle margin from realised data. % ledger: 11, 12, 14, 15, 16, 18
+
+
+\begin{thebibliography}{1}
+
+\bibitem{bergemann2026alignment}
+Dirk Bergemann, Andrew Koh, and Stephen Morris.
+\newblock Mechanism design for alignment and control, 2026.
+\newblock URL: \url{https://arxiv.org/abs/2609.01595}, \href
+  {https://arxiv.org/abs/2609.01595} {\path{arXiv:2609.01595}}.
+
+\bibitem{ieong2007stochastic}
+Samuel Ieong, Anthony Man-Cho So, and Mukund Sundararajan.
+\newblock Stochastic mechanism design.
+\newblock In {\em Internet and Network Economics}, pages 269--280, 2007.
+\newblock URL:
+  \url{https://link.springer.com/chapter/10.1007/978-3-540-77105-0_26}, \href
+  {https://doi.org/10.1007/978-3-540-77105-0_26}
+  {\path{doi:10.1007/978-3-540-77105-0_26}}.
+
+\bibitem{miller2015optimal}
+Christopher~W. Miller and Insoon Yang.
+\newblock Optimal control of conditional value-at-risk in continuous time,
+  2015.
+\newblock URL: \url{https://arxiv.org/abs/1512.05015}, \href
+  {https://arxiv.org/abs/1512.05015} {\path{arXiv:1512.05015}}.
+
+\bibitem{pathfinder2026fixedbatch}
+{Pathfinder research campaign}.
+\newblock Fixed-batch {CVaR} and participation in a quadratic
+  resource-allocation mechanism, 2026.
+\newblock Supplied unpublished manuscript; package item local-source/P.tex;
+  original pilot seed S4.
+
+\end{thebibliography}
+
+
+\end{document}

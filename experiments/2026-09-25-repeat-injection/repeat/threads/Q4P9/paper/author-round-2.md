@@ -1,0 +1,7 @@
+The revised [paper](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9/paper/paper.pdf>) claims a finite contract-and-path witness: on each of P’s 396 asymmetric boards, an accepted reciprocal tile contract can give both players scores above their outside options and reach the maximum joint score. It does not claim that agents will negotiate or follow that outcome.
+
+- **F1:** Added the board-class predicate and enumeration steps to [paper.tex](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9/paper/paper.tex>), and supplied the runnable [oracle script](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9/paper/asymmetric_oracle.py>). It reproduced 396 boards, split 314 and 82.
+- **F2:** Stated that 0.06 is measured on asymmetric boards, while 0.80 contract acceptance is the all-board mean.
+- **Search:** Logged the focused queries in [search.md](</Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P9/paper/search.md>). They found [prior Pareto benchmarking in Colored Trails](https://www.ijcai.org/proceedings/2025/0019.pdf), but no published statement of this specific witness. That keeps the contribution scoped to P’s board class.
+
+`latexmk` built the four-page PDF successfully. The PDF was inspected, citations resolved, and the artifact style gates passed.

@@ -1,0 +1,57 @@
+```latex
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Tail Risk and Trade Completion in an LLM Double Auction}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q is Struski et al.'s study of LLM traders in a finite-horizon double auction, where repeated small quote improvements sometimes leave profitable trades unexecuted \ledger{1, 14}. P is a note on fixed-batch CVaR in a quadratic resource-allocation mechanism; its internal labels ``Q'' and ``P'' refer to Garjani et al. and Wang et al., rather than to the assigned pair \ledger{1, 14}.
+
+\section{Connexion pursued}
+
+Q's trading rules create a local choice between crossing a standing quote for certain profit and posting a better quote that may earn more if a counterparty arrives before the round ends. The peers examined whether P's distinction between true CVaR and expected empirical CVaR can reverse that choice. This is a conditional counterfactual: Q instructed its agents to maximize profit and did not give them a CVaR oracle \ledger{2, 14, 16}.
+
+\section{What was found}
+
+Let crossing yield certain profit \(g>0\). Suppose a specified continuation after a noncrossing quote yields profit \(W=h>g\) with probability \(p\), and zero otherwise; write \(f=1-p\). For upper-tail mass \(\beta\), risk-adjusted utility is negative CVaR of loss. Direct calculation gives
+\[
+ U_\beta(W):=-\operatorname{CVaR}_\beta(-W)
+ =h\left(1-\frac{f}{\beta}\right)_+.
+\]
+If \(f\geq\beta\), true CVaR assigns waiting utility zero and prefers crossing. With \(s\) fresh observations, let \(M\sim\operatorname{Binomial}(s,f)\) count failures. The utility implied by the expected empirical CVaR oracle is
+\[
+ U_{\beta,s}(W)
+ =h\,\mathbb{E}\left[
+   \left(1-\frac{M}{\beta s}\right)_+
+ \right].
+\]
+In particular, \(U_{\beta,1}(W)=ph\). Thus \(ph>g>0\) and \(f\geq\beta\) make the expected one-sample surrogate prefer waiting while true CVaR prefers crossing \ledger{4, 5, 9, 18}. This is an action-ranking reversal, not P's negative-participation example: waiting has true-risk utility zero, equal to no trade \ledger{17, 20}.
+
+The peers constructed a state consistent with Q's trading rules. At a penultimate iteration with no earlier trades, a buyer values the unit at \(3.25\), faces a standing ask of \(3.00\) from a seller with cost \(1.00\), and can post an improving bid of \(2.25\). Crossing earns \(g=1/4\); a seller crossing the new bid would give the buyer \(h=1\). Seven of Q's 22 untraded agents are sellers with costs at most \(2.25\). Under the stipulated continuation policy that each of those sellers crosses if selected next and nobody else trades, \(p=7/22\) and \(f=15/22\). At \(\beta=1/2\), true waiting utility is zero, one-sample expected empirical utility is \(7/22>1/4\), and two-sample expected empirical utility is \((7/22)^2<1/4\) \ledger{4, 6, 9}. The example depends on that continuation policy; the ledger does not establish that this state occurred in Q's runs \ledger{16, 17}.
+
+Under the same policy, immediate crossing produces market surplus \(3.25-1=9/4\). Waiting produces expected surplus
+\[
+ \frac{1}{22}
+ \sum_{c\in\{0.75,1,1.25,1.5,1.75,2,2.25\}}(3.25-c)
+ =\frac{49}{88}.
+\]
+This comparison supports the example only. In another state, crossing can consume a unit that a higher-value buyer would otherwise obtain, so more crossing need not raise allocative efficiency \ledger{5, 7, 9, 10}.
+
+\section{Objections and limits}
+
+Q's trader observes its own value, the order book, and histories, but not the seven sellers' private costs. The probability \(7/22\) is available to an analyst using the experimental design and stipulated policy, not generally to that trader; an oracle or an information-respecting belief estimator remains necessary \ledger{12, 16}. The reversal concerns the \emph{expected} empirical oracle. A decision based on one realised sample can instead choose either action according to the sampled outcome \ledger{11}.
+
+P's quadratic-tax equilibrium and value-error bounds cannot be transferred to Q's discrete, spread-crossing game. Q's ten independent evaluation runs are also distinct from the number \(s\) of observations in a trader's CVaR batch \ledger{13}. P's distinction between a sum of individual CVaRs and CVaR of aggregate loss is separate from the allocation-displacement concern. Q reports means across runs, which do not identify the downside tail of market efficiency: for example, a mean efficiency of \(0.91\) alone permits either ten values of \(0.91\) or nine values of \(1\) and one of \(0.1\) \ledger{3, 7, 14}.
+
+\section{Outside sources and next step}
+
+The ledger records prior risk-based continuous-double-auction bidding by Vytelingum et al. (\url{https://eprints.soton.ac.uk/259567/}), CVaR bidding in a double-auctioned power market by Panda et al. (\url{https://doi.org/10.1049/iet-gtd.2018.5905}), and work on sampling bias in CVaR (\url{https://doi.org/10.1609/aaai.v29i1.9561}). These sources limit any novelty claim for the individual ingredients; the recorded searches do not establish priority for their combination \ledger{8, 9}.
+
+The material is thin: it establishes a constructed decision reversal, not an observed LLM effect or a full-market improvement. The smallest next step is to count reachable late states in Q's simulator whose action-specific continuation rollouts, under fixed other-agent policies, satisfy \(ph>g>h(1-f/\beta)_+\). If such states occur, subsequent tests can compare oracle probabilities with beliefs available from public histories, vary batch size, and measure both total surplus and its downside tail \ledger{11, 14, 16, 20}.
+
+\end{document}
+```

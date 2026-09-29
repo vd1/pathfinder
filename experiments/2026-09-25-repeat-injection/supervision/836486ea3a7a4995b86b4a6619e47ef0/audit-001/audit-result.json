@@ -1,0 +1,53 @@
+{
+  "observed_at": "2026-09-27T13:55:32.704332+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "9672a1685b814030b5d0e08c6ebaea6b",
+  "status": "continue",
+  "completed_pipelines": 23,
+  "remaining_pipelines": [
+    "repeat/Q3P6",
+    "repeat/Q1P6",
+    "repeat/Q1P2",
+    "reinjection/Q1P5",
+    "reinjection/Q1P1"
+  ],
+  "completed_artifact_hashes_checked": 720,
+  "completed_artifact_mismatches": [],
+  "accepted_papers": 7,
+  "comparison": "Supplied before snapshot and observed snapshot show same work and call IDs. During audit Emmy completed another peer call at 13:54:45Z; ledger has new findings, correction and ready entries. No evidence of livelock.",
+  "runner_identity": "Supplied process evidence links Python runner 53766 to supervisor 53765 and recorded Codex children. Session command, run records and log corroborate identity; evidence is point-in-time. No process intervention needed.",
+  "checkpoints": "progress.json is saved between pairs; outcomes.json is written in finally. Historical stopped outcome for Q3P6 is superseded by live running child checkpoint and successful receipts.",
+  "calls": [
+    {
+      "attempt_id": "2358b174630f47948faadc91d01e2207",
+      "run_id": "a54d1f9187d24e589722418bb52b4654",
+      "pid": 53766,
+      "thread": "Q3P6",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790517230.830709,
+      "deadline_at": 1790518460.830709,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q3P6",
+      "child_pid": 54430,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/2358b174630f47948faadc91d01e2207.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 101.8,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "failures": "Two historical repeat/Q3P6 transport failures on September 25: HTTP 401 authentication and disconnected stream. No recurrent failure after authorized resumption; successful calls on September 27. Reinjection has no failure receipts.",
+  "stop": null,
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-001/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-001/after.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/836486ea3a7a4995b86b4a6619e47ef0/audit-001/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/renewed-window.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/receipts.jsonl"
+  ],
+  "action": "No repair or restart. Saved audit evidence only.",
+  "next_audit": "Verify Q3P6 advances beyond peers and remaining full pipelines proceed; retain six-hour deadline.",
+  "pane_title": "Rename was denied by sandbox; no broader access requested."
+}

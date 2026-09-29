@@ -1,0 +1,178 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{A Carbon Forecast in a Resource Allocation Game: A Restricted Result}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper Q designs payments for strategic users of a shared resource, while paper P forecasts the carbon
+intensity of electricity and schedules movable demand. The thread asked whether Q's game could put P's
+forecast to work in decentralised scheduling. The peers found faults in Q's claims about unique prices
+and voluntary participation, then checked a corrected payment that gives a unique forecast-optimal
+allocation, a balanced budget and voluntary participation for optional convex loads. That result does not
+cover P's fixed workload or mobile-storage routes, and a forecast-optimal allocation need not reduce
+actual generation emissions. The thread ended as a draft because the link from forecast carbon accounting
+to physical emissions remains unproved.
+\end{abstract}
+
+\section{Introduction}
+
+Q asks how a manager can share limited resources among users who know their own benefits. Each user
+requests an amount and proposes a price. The manager uses a quadratic payment to make the users' choices
+serve a common objective. Q states that its rule has a unique Nash equilibrium, balances payments, gives
+users a reason to participate and supports a learning algorithm \cite{Q}.
+
+P forecasts the carbon intensity of electricity at each network location and time. It then uses those
+day-ahead figures to schedule flexible demand, including data-centre work and mobile energy storage. Its
+scheduling problem includes workload that must be served and storage routes that require yes-or-no travel
+decisions. Its reported test uses a modified IEEE 33-bus system \cite{P}.
+
+The proposed connection was to put P's forecast into a Q-style payment. Users could then choose loads in
+response to a carbon charge while the resulting allocation followed the forecast-based plan. The peers
+asked two prior questions: whether Q's guarantees held for its displayed payment, and whether P's
+scheduling and carbon measure fit the assumptions needed for those guarantees. Their answers narrowed the
+connection to an optional, continuous load market. Here ``optional'' means that each user can choose zero
+load.
+
+\section{What was done}
+
+The peers first compared the two models. Q's local choices are continuous and convex, and users share
+componentwise upper capacity limits. P has a continuous data-centre workload component, but its total
+workload is fixed and its mobile-storage model has binary route choices. The peers therefore did not
+treat P's full programme as an instance of Q's game. They also noticed that P calculates nodal intensity
+using generation, power flows and storage discharge, then schedules against a forecast held fixed during
+the decision \cite{Q,P}.
+
+Next, Emmy checked Q's uniqueness conditions. One condition requires a strictly negative quadratic form
+for all nonzero directions; another requires certain price-block coefficients to sum to zero. In a
+direction where all users change their price by the same amount and no allocation changes, the latter
+condition makes that quadratic form zero. The two conditions cannot both hold. Emmy then gave a two-user
+example in which Q's displayed payment has many equilibrium prices but only one efficient allocation. Ada
+independently checked participation and found an equilibrium at which one user's utility is negative,
+despite efficient allocation and a balanced budget. Both checks are recorded in their derivations and the
+ledger.
+
+The peers then worked back from Q's displayed payment, rather than its claimed uniqueness certificate.
+Emmy derived its price best responses and the allocation result they imply. Ada found a payment
+adjustment based only on other users' actions, so it changes no user's best response. She combined it
+with a carbon charge based on P's frozen forecast and a rebate based on other users' loads. Emmy checked
+the adjustment and the two forecast-error bounds; Ada added the condition needed to speak about physical
+generation emissions. The remaining objections concerned P's required workload, its route decisions and
+the difference between average intensity and emissions caused by an added load.
+
+\section{Results for optional loads}
+
+Here is the precise scope of the repaired result. There are \(N\geq2\) users and \(K\) load coordinates,
+such as bus and hour pairs. User \(n\) chooses a nonnegative vector \(x_n\) from a compact convex set
+\(\mathcal X_n\) that contains zero. Its benefit \(V_n(x_n)\) is strongly concave and \(V_n(0)=0\). The
+users' total load \(X=\sum_n x_n\) cannot exceed a nonnegative capacity vector \(c\), coordinate by
+coordinate. The positive constant \(\alpha\) scales Q's payment. A nonnegative vector \(\hat e\) gives
+P-style forecast intensities, held fixed while users choose. A nonnegative constant \(\beta\) weights
+carbon in the objective. Assume that the resulting planner problem has an optimum and a capacity
+multiplier. The planner maximises
+\[
+F_{\hat e}(x)=\sum_{n=1}^{N}V_n(x_n)-\beta\hat e^{\top}X
+\quad\text{subject to}\quad x_n\in\mathcal X_n,\qquad X\leq c.
+\]
+
+The central check is short. Let \(p_n^k\geq0\) be user \(n\)'s proposed price for coordinate \(k\), let
+\(S^k=X^k-c^k\) be unused capacity with its sign reversed, and let \(P^k=\sum_n p_n^k\). Q's displayed
+rule gives the price best response
+\[
+p_n^k=\left[\frac{P^k-p_n^k+S^k}{N-1}\right]_+,
+\]
+where brackets mean the maximum of the enclosed value and zero. If any price for a coordinate is
+positive, all users' prices for it must be equal and its capacity must be exactly filled. If all prices
+are zero, the capacity cannot be exceeded. Thus every equilibrium has a common nonnegative price vector
+\(p\), feasible loads and a zero product between each price and its capacity slack. At that common price,
+a user's marginal payment for load is \(\alpha p\). The users' allocation conditions are therefore the
+planner's conditions, with capacity multiplier \(\alpha p\). Conversely, a planner optimum and multiplier
+give an equilibrium. Strong concavity makes the allocation unique, although the price need not be unique.
+Emmy's derivation gives the full best-response and converse checks \cite{Q}.
+
+Q's raw payment, denoted \(t_n^Q\) for user \(n\), charges too much in the participation example below.
+Ada's correction adds a transfer \(h_n\) that depends only on the other users' prices and loads. Writing
+\(\bar p_{-n}=\sum_{m\ne n}p_m\) and \(\bar x_{-n}=\sum_{m\ne n}x_m\), it is
+\[
+h_n=\frac{\alpha N}{(N-1)^2}
+\left(\frac{\bar p_{-n}}{N-1}\right)^{\top}
+\left(\bar x_{-n}-\frac{N-1}{N}c\right).
+\]
+The forecast charge with its rebate is
+\[
+b_n=\beta\hat e^{\top}x_n-
+\frac{\beta}{N-1}\hat e^{\top}\bar x_{-n}.
+\]
+The repaired payment is \(t_n=t_n^Q+h_n+b_n\). Neither \(h_n\) nor the rebate part of \(b_n\) depends on
+user \(n\)'s action. Its choices are therefore those under Q's game with benefit \(V_n(x_n)-\beta\hat
+e^{\top}x_n\). At equilibrium, direct substitution reduces \(t_n^Q+h_n\) to \(\alpha p^{\top}(x_n-c/N)\).
+These terms sum to zero because a positive price implies filled capacity; the \(b_n\) terms sum to zero
+at every profile. The repaired game is budget balanced at equilibrium.
+
+For participation, zero load is a feasible choice. The user's allocation best response implies that its
+benefit, less the forecast carbon charge and \(\alpha p^{\top}x_n\), is at least zero. Its equilibrium
+utility also includes the nonnegative amounts \(\alpha p^{\top}c/N\) and \(\beta\hat e^{\top}\bar
+x_{-n}/(N-1)\). It is therefore at least zero relative to the zero-service option. Ada's derivation and
+Emmy's independent check support the payment and participation calculations.
+
+There is a conditional forecast guarantee. Let \(\mathcal F\) be the feasible allocations and let
+\(e(x)\) be the intensity that would result if allocation \(x\) were chosen. If every feasible
+counterfactual obeys \(\lVert e(x)-\hat e\rVert_\infty\leq\varepsilon\), the loss of the forecast-optimal
+allocation in the objective that charges \(\beta e(x)^{\top}X\) is at most \(2\beta\varepsilon\lVert
+c\rVert_1\). Here \(\varepsilon\) is a uniform forecast-error limit, \(\lVert\cdot\rVert_\infty\) is the
+largest coordinate magnitude, and \(\lVert c\rVert_1\) is the sum of capacities. The proof compares the
+true and forecast objectives at both the forecast choice and the true optimum. If true intensity is a
+fixed vector, the tighter limit is \(\beta\varepsilon\lVert c\rVert_1\). Both limits concern the carbon
+attributed to the chosen load.
+
+To bound loss in actual generation emissions, Ada required one more premise. Let \(C(x)\) be generation
+emissions under \(x\), let \(C_0\) be a fixed baseline, and suppose \(\lvert
+C(x)-C_0-e(x)^{\top}X\rvert\leq\delta\) for every feasible \(x\). Then loss in the objective using
+\(C(x)-C_0\) is at most \(2\beta(\varepsilon\lVert c\rVert_1+\delta)\). The nonnegative number \(\delta\)
+limits the gap between attributed load emissions and changed generation emissions. P's reported forecast
+tests establish neither of these uniform premises \cite{P}.
+
+\section{What did not hold}
+
+Q's strict uniqueness certificate fails the common-price direction test described above. Full equilibrium
+uniqueness also fails directly. Give each of two users a load in \([0,1]\) and benefit \(3x-x^2/2\). Set
+capacity to \(2\) and \(\alpha=1\). Every profile with both loads equal to \(1\) and both prices equal to
+any value from \(0\) to \(2\) is an equilibrium. The allocation is unique. This is a failure of unique
+prices, not of the allocation argument \cite{Q}.
+
+Q's displayed payment also fails its stated individual-rationality claim. In Ada's two-user example,
+capacity and \(\alpha\) are both \(1\); the users' benefits are \(3x-x^2/2\) and \(2x-x^2/2\), with each
+load in \([0,1]\). Loads \((1,0)\) and prices \((2,2)\) form an equilibrium. Q's payments are \((3,-3)\),
+leaving the first user with utility \(-1/2\). The repaired transfer removes this failure for the
+optional-load setting; it does not establish participation for P's workload that must be served.
+
+The carbon objection remains. In Emmy's two-location thought experiment, location A's zero-carbon supply
+already meets its baseline load and is at capacity. An extra unit at A uses backup generation that emits
+one unit. Location B can supply that unit with one-half unit of emissions. Baseline average intensity
+ranks A as cleaner, so a scheduler using it sends the movable unit to A, although B causes fewer added
+emissions. This is a constructed check, not a result from P's test network. It shows why even an exact
+baseline intensity forecast need not rank physical responses correctly.
+
+The peers also checked prior work. Chen and Zhao already claim social optimality, budget balance and
+individual rationality in a joint electricity-carbon pricing mechanism \cite{ChenZhao}. The ledger
+contains no exhaustive review. A balanced carbon charge alone therefore cannot carry a novelty claim
+here. Nor did the peers establish stochastic learning convergence for the repaired game or a mechanism
+for P's binary mobile-storage routes.
+
+\section{Why the thread stopped}
+
+The verifier left the thread at DRAFT after one round. It accepted the narrower, checked result: a
+corrected payment implements the unique forecast-conditioned allocation with balanced payments and
+voluntary participation for optional convex loads. It also accepted the note's limits: P's fixed-workload
+and binary-routing programme is outside that result, and no physical emissions reduction follows from the
+forecast alone. The smallest useful restart is one explicit two-location movable-load dispatch: calculate
+generation emissions \(C(x)\) and counterfactual intensity \(e(x)\) for its feasible choices, then test
+the two uniform bounds above. That would show whether the accounting guarantee says anything about
+physical emissions in that instance.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,77 @@
+{
+  "observed_at": "2026-09-25T22:31:37.512636+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "completed_research_edit": 22,
+  "scheduled": 28,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "status": "ACCEPTED",
+      "round": 1
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "round": 1
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P7",
+      "status": "ACCEPTED",
+      "round": 1
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "round": 1
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P9",
+      "status": "ACCEPTED",
+      "round": 2
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "round": 2
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "round": 2
+    }
+  ],
+  "comparison": {
+    "previous": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-063/before.json",
+    "previous_active_calls": 2,
+    "active_calls": 1,
+    "advance": "Q3P5 ada peer completed at 22:25:45Z; emmy continues within deadline. Last finished investigation remains reinjection Q8P4.",
+    "completed_work_unchanged": true
+  },
+  "evidence": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-064/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-064/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-064/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/outcomes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/runner.log"
+  ],
+  "findings": [
+    "Root and active child heartbeats fresh; supplied process tree associates runner PID 24244 with parent 24243 and call PID 93995 with runner. No intervention or process termination.",
+    "No current child failures or stop markers. Historical Q3P2 verifier block in stale outcomes.json was already repaired and editing completed.",
+    "Outcomes.json is historical; current aggregate health and paper checkpoints used. Progress.json records last completed pair; runner.json records current pair.",
+    "All seven DRAFT papers ACCEPTED. Six research/edit threads unfinished, including active Q3P5.",
+    "Previously recorded HTTP 406 editor lookup issues remain nonblocking; no new failure found.",
+    "HERDR_PANE_ID absent, so pane rename unavailable."
+  ],
+  "action": "none"
+}

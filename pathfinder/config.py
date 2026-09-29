@@ -23,6 +23,10 @@ class Campaign:
     call_estimate_usd: float = 2.0
     raw: dict = field(default_factory=dict)
     peers: tuple = ("ada", "emmy")
+    peer_models: dict = field(default_factory=dict)     # peer name -> model, when a peer does not use `model`
+
+    def peer_model(self, actor: str) -> str:
+        return self.peer_models.get(actor) or self.model
 
     def path(self, name: str) -> Path:
         return self.root / name
@@ -49,4 +53,5 @@ def load(root: Path) -> Campaign:
         budget_usd=raw["budget_usd"], prices=raw.get("prices", {}),
         scan_fulltext=(raw.get("scan") or {}).get("fulltext"),
         call_estimate_usd=raw.get("call_estimate_usd", 2.0), raw=raw,
-        peers=tuple(raw.get("peers") or ("ada", "emmy")))
+        peers=tuple(p["name"] if isinstance(p, dict) else p for p in (raw.get("peers") or ("ada", "emmy"))),
+        peer_models={p["name"]: p["model"] for p in (raw.get("peers") or ()) if isinstance(p, dict) and p.get("model")})

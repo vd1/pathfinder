@@ -1,0 +1,135 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Paid Price Advice in a Double Auction: A Conditional Benchmark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This account connects Zhao and colleagues' survey of learning-augmented algorithms with a proposed study
+of token costs in an LLM double auction. The peers looked for a way to judge whether paid price advice
+improves gains from trade after its inference cost. On the study's fixed value schedule, they found a
+conditional, cost-free benchmark that reaches the gross surplus ceiling, and a possible rationing path
+where an arbitrarily small price error loses a fixed amount of surplus. These are deductions from the
+stated schedule, not measured auction outcomes; the thread ended as a draft because execution rules and
+the proposed comparison still need checking.
+\end{abstract}
+
+\section{Introduction}
+
+Zhao and colleagues' survey, the supplied paper Q, explains how an algorithm can use a prediction while
+still stating what happens when the prediction is wrong \cite{zhao2026learning}. It distinguishes the
+thing predicted, the measure of its error, and the information available when the prediction is made. It
+also asks what happens when obtaining advice has a cost. Its charged-prediction ratio concerns a
+cost-minimising algorithm and an uncharged optimum; it does not directly describe an auction's gains from
+trade.
+
+The supplied paper P proposes charging language-model traders for the tokens they generate while deciding
+whether and how to quote in a double auction \cite{pathfinder2026price}. Buyers and sellers have private
+reservation values, and a crossing quote can execute a trade. The paper uses a fixed, symmetric value
+schedule to calculate possible gains from trade. It proposes comparisons with and without a trader-facing
+charge, but reports no combined experiment. P calls a different paper, by Struski and colleagues, ``Q''
+\cite{struski2026competitive}; that name does not refer to the supplied survey.
+
+The peers used Q's framework to ask what a paid price recommendation would have to beat, what price error
+would say about welfare, and what information the adviser could use. Advice was an extension of P, which
+specifies costly trader decisions but no separate predictor.
+
+\section{What was done}
+
+The peers first separated Q's cost per predictor call from P's cost for traders' generated tokens. They
+used an additive welfare shortfall for P, whose objective differs from Q's cost ratio.
+
+They then checked P's fixed schedule. Its five profitable matches have gains of \(2.5\), \(2\), \(1.5\),
+\(1\), and \(0.5\); the next match adds nothing. The peers constructed a scripted price policy with no
+language-model calls and checked its outcome if all five pairs traded.
+
+Next they tested a proposed measure of advice quality: the distance between an advised price and the
+clearing price. A price just above \(2\) admits an extra seller. Under a possible order of execution,
+that seller can take the place of a lower-cost seller, even though the price error is arbitrarily small.
+The peers also checked the complementary case: if changing the price changes neither the eligible buyers
+nor the eligible sellers, and all of them trade, the price itself does not change gross surplus.
+
+Finally they raised two design objections. A trader's token tariff can change behaviour, while the
+analyst's conversion of token use into welfare units measures resource cost. The adviser and a scripted
+comparator must also see the same public signals and permitted private information. Neither point was
+tested experimentally.
+
+\section{Results}
+
+Let \(G\) be realised gross gains from executed trades, \(C\) the cost of generated tokens under P's
+accounting, and \(\rho\geq 0\) the stated conversion of that cost into the same units as gains. Let
+\(G^{\star}=7.5\) be the fixed schedule's gross ceiling. The peers' net welfare and additive shortfall
+are
+\[
+W_{\rho}=G-\rho C,
+\qquad
+R_{\rho}=G^{\star}-W_{\rho}=7.5-G+\rho C.
+\]
+This is an accounting identity. The symbol \(\rho\) replaces P's conversion symbol because Q uses that
+symbol for an unrelated trust setting.
+
+The first result is a conditional benchmark. P's five buyers valued above \(2\) have values totalling
+\(13.75\). Its five sellers with costs below \(2\) have costs totalling \(6.25\). A scripted buyer could
+bid \(2+\varepsilon\), and a scripted seller could ask \(2-\varepsilon\), when each has a strictly
+profitable trade, where \(0<\varepsilon<0.25\); the other traders could abstain. If the auction executes
+all five eligible pairs, their order and pairing do not affect the total:
+\[
+G=13.75-6.25=7.5.
+\]
+The script uses no generated language-model tokens. On that completed path it attains \(W_{\rho}=7.5\).
+No policy on the same values can exceed \(G=7.5\); if \(\rho>0\) and a paid policy uses \(C>0\), its net
+welfare is strictly lower. The peers independently checked the sums and construction. P's random
+scheduler and finite call cap do not ensure that the script completes the five trades.
+
+The second result concerns price error under rationing. In a posted-price response to P's same values,
+price \(2\) makes five buyers and five sellers strictly eligible. At an advised price \(2+\varepsilon\),
+where \(0<\varepsilon<0.25\), the seller whose cost is \(2\) also becomes eligible, while the eligible
+buyer set stays the same. If that seller trades and the seller whose cost is \(0.75\) does not, then the
+seller costs rise from \(6.25\) to \(7.5\). Gross surplus falls to \(6.25\), a loss of \(1.25\), even as
+\(\varepsilon\) tends to zero. The peers checked this arithmetic and described a possible crossing-order
+path. They did not establish that P's actual auction takes that path.
+
+There is also a simple sufficient condition for avoiding this particular loss. If the advised price
+leaves both eligible sets unchanged, both sets have the same number of traders, and every eligible trader
+executes once, gross surplus equals the sum of their buyer values less the sum of their seller costs.
+Pairing and price then cancel from that sum. This is a statement about full execution with fixed
+participation, not a guarantee for P's auction.
+
+\section{What did not hold}
+
+Q's prediction guarantee did not transfer to P. Q's charged ratio is for cost minimisation against an
+uncharged positive optimum. P seeks to maximise gains after token costs and does not define a separate
+prediction object or prediction error. The additive shortfall above keeps the accounting clear, but
+proves no consistency or robustness guarantee.
+
+Small numerical price error did not by itself control welfare. The possible loss of \(1.25\) depends on
+which seller trades, so a useful guarantee would need assumptions about allocation, arrival order, or the
+margin around the advised price. The example does not show that language-model traders would follow the
+proposed quotes.
+
+The tariff question remained open. Write \(\tau\) for the charge a trader faces per token. Changing
+\(\tau\) may change both \(G\) and \(C\), while welfare at a fixed resource conversion remains
+\(G(\tau)-\rho C(\tau)\). P already proposes declaring a range of welfare conversions, so this
+distinction sharpens a future comparison rather than correcting a demonstrated error. The adviser must
+also be restricted to information available when advice is issued; giving it the full private value
+vector would make a comparison with an ordinary trader unfair. The peers had no run that resolved these
+behavioural and information questions.
+
+\section{Why the thread stopped}
+
+The verifier left the thread at \emph{DRAFT} after one round. It accepted the cost-free benchmark and the
+small-error rationing example as useful conditional results, and noted that the account kept them
+separate from observed behaviour. It also identified execution and stopping rules that still require
+implementation checks. The smallest immediate step is to check the released auction's crossing,
+repeated-order, and stopping behaviour against the proposed script and rationing path. A decisive next
+study would then compare a no-query policy with the same policy offered optional, typed price advice on
+prespecified variable value schedules. Both arms would need the same information and scheduler, with
+gross surplus, tokens, participation, and executions recorded. P's fixed schedule would serve as a
+negative control; no gain from paid advice has yet been shown.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+
+\end{document}

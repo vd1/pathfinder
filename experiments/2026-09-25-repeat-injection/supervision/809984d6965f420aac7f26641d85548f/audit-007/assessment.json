@@ -1,0 +1,200 @@
+{
+  "observed_at": "2026-09-25T15:13:30.740654+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "98e346417570428d95f88ffae05db3cc",
+  "status": "continue",
+  "previous_audit": "audit-006",
+  "facts": [
+    "1 of 28 full pipelines complete: repeat/Q4P10 research DRAFT, editor done, paper ACCEPTED round 1 with build_ok and reviewer ACCEPT at 15:11:00Z.",
+    "Previous author attempt completed; reinjection/Q4P2 peer actors ada and emmy now active within nominal deadlines. No repeated-attempt or livelock evidence.",
+    "Supplied process evidence matches session runner 89044 with expected Python executable and direct Codex children 98424 and 98426 plus host descendants. Point-in-time identity limitations retained; no process intervention.",
+    "Root and active child heartbeats fresh. Root stage between-pairs is stale stage labeling while child peer work is active, as explained by launch.py state updates.",
+    "26 scheduled threads await serial admission; current reinjection thread incomplete. Root shortlist not used for completion.",
+    "progress.json records first whole-pair completion. outcomes.json absent as expected before launch.py finalization.",
+    "No root or child failure/stop records; runner log shows serial admission. Review repeats prior nonblocking HTTP 406 lookup check."
+  ],
+  "receipts": [
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:46:42Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 557.8
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:47:48Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 624.1
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:48:37Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 100.4
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:49:37Z",
+      "thread": "Q4P10",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 64.0
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:50:25Z",
+      "thread": "Q4P10",
+      "stage": "consolidate",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 47.9
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T14:51:03Z",
+      "thread": "Q4P10",
+      "stage": "verify",
+      "actor": "verifier",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 37.6
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T15:01:36Z",
+      "thread": "Q4P10",
+      "stage": "edit",
+      "actor": "editor",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 633.2
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T15:10:25Z",
+      "thread": "Q4P10",
+      "stage": "author",
+      "actor": "author",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 525.8
+    },
+    {
+      "arm": "repeat",
+      "at": "2026-09-25T15:11:00Z",
+      "thread": "Q4P10",
+      "stage": "review",
+      "actor": "reviewer",
+      "outcome": "completed",
+      "error": null,
+      "seconds": 31.5
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "1b0c005d1ef64ab1b3cc42f0bbf8426f",
+      "run_id": "ddc01ce9be994142be491af7c9c8b1ff",
+      "pid": 89044,
+      "thread": "Q4P2",
+      "stage": "peer",
+      "actor": "ada",
+      "started_at": 1790349063.331703,
+      "deadline_at": 1790350293.331703,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P2",
+      "child_pid": 98424,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/1b0c005d1ef64ab1b3cc42f0bbf8426f.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 114.7,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    },
+    {
+      "attempt_id": "c50c35b14ce343d39436a88a689409fa",
+      "run_id": "ddc01ce9be994142be491af7c9c8b1ff",
+      "pid": 89044,
+      "thread": "Q4P2",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790349063.331681,
+      "deadline_at": 1790350293.331681,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q4P2",
+      "child_pid": 98426,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/c50c35b14ce343d39436a88a689409fa.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 114.7,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "previous_active_calls": [
+    {
+      "attempt_id": "c0789ce1bc204c5bb99fa3b84469656d",
+      "run_id": null,
+      "pid": 89044,
+      "thread": "Q4P10",
+      "stage": "author",
+      "actor": "author",
+      "started_at": 1790348499.9538639,
+      "deadline_at": 1790350299.9538639,
+      "timeout_seconds": 1800,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10",
+      "child_pid": 95044,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/active-calls/c0789ce1bc204c5bb99fa3b84469656d.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 405.2,
+      "overdue_seconds": 0,
+      "arm": "repeat"
+    }
+  ],
+  "progress": {
+    "pid": 89044,
+    "run_id": "98e346417570428d95f88ffae05db3cc",
+    "status": "running",
+    "started_at": 1790347044.478713,
+    "heartbeat_at": 1790347044.478713,
+    "last_progress": {
+      "block": 1,
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "at": 1790349063.326608
+    },
+    "task": {
+      "block": 1,
+      "arm": "repeat",
+      "pair": "Q4P10"
+    },
+    "stage": "between-pairs"
+  },
+  "action": "observe only",
+  "evidence_paths": [
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-007/observed-health.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-007/observed-status.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/audit-007/processes.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/manifest.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/progress.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/paper.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/repeat/threads/Q4P10/paper/review.json",
+    "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/809984d6965f420aac7f26641d85548f/runner.log"
+  ],
+  "follow_up": "Next parent audit checks reinjection peer advancement, child failures, deadlines, and remaining 27 pipelines."
+}

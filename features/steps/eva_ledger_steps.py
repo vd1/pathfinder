@@ -423,6 +423,8 @@ def distinct_identities(context):
 @given('an EVA-minus ledger referencing a missing calculation output')
 def missing_evidence(context):
     setup(context)
+    context.manifest['strict_evidence'] = True
+    reload_campaign(context)
     context.missing = 'calculations/missing-covariance.json'
     context.ledger.add('ada', 'finding', f'Calculation: {context.missing}')
 

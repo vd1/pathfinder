@@ -1,0 +1,7 @@
+Round 1 is complete: [paper.tex](/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q1P2/paper/paper.tex), [references.bib](/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q1P2/paper/references.bib), [search.md](/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q1P2/paper/search.md), and the [PDF](/Users/v/Code_2026/pathfinder/experiments/2026-09-28-recursive-extension/recursive/threads/Q1P2/paper/paper.pdf).
+
+The paper claims a high-confidence, realised-batch obedience certificate and a local bound on the reward cap and sampling cost under a strict cycle margin. It keeps that result separate from Q’s system guarantees and P’s existing graph test.
+
+The search log records 12 targeted queries. Published [CVaR concentration](https://arxiv.org/abs/1901.00997), [tail-risk identification](https://proceedings.neurips.cc/paper/2021/hash/d69c7ebb6a253532b266151eac6591af-Abstract.html), and [incentive-margin](https://arxiv.org/abs/2605.12094) work narrowed the contribution claim; the searches did not establish priority for the combined reward-cap result.
+
+`latexmk` built a five-page PDF. The final log has no undefined citations or layout warnings, and the style checks passed. P is an unpublished local manuscript, so its reference points to the supplied file.

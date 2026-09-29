@@ -1,0 +1,121 @@
+{
+  "observed_at": "2026-09-25T22:11:40.640511+00:00",
+  "campaign": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection",
+  "run_id": "904fc56e9b5e42b5b299af357e7b5705",
+  "status": "continue",
+  "snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-060/aggregate-latest.json",
+  "health_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-060/observed-health.json",
+  "previous_snapshot": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-059/aggregate-observed.json",
+  "process_evidence": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/supervision/06ebd210a3804403b0f4a77ef2c80ef2/audit-060/processes.json",
+  "completed_research_edit": 21,
+  "scheduled": 28,
+  "papers": [
+    {
+      "arm": "repeat",
+      "pair": "Q3P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P10",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P7",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q7P1",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "repeat",
+      "pair": "Q4P9",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q4P4",
+      "status": "ACCEPTED",
+      "build_ok": true
+    },
+    {
+      "arm": "reinjection",
+      "pair": "Q1P3",
+      "status": "ACCEPTED",
+      "build_ok": true
+    }
+  ],
+  "active_calls": [
+    {
+      "attempt_id": "4c246a0416bb490e984022835e89398a",
+      "run_id": "78f993de41b84170b531f84ae3ef8163",
+      "pid": 24244,
+      "thread": "Q8P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "started_at": 1790374245.750984,
+      "deadline_at": 1790375475.750984,
+      "timeout_seconds": 1230,
+      "cwd": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/threads/Q8P4",
+      "child_pid": 90336,
+      "record": "/Users/v/Code_2026/pathfinder/experiments/2026-09-25-repeat-injection/reinjection/active-calls/4c246a0416bb490e984022835e89398a.json",
+      "pid_alive": true,
+      "child_alive": true,
+      "age_seconds": 54.8,
+      "overdue_seconds": 0,
+      "arm": "reinjection"
+    }
+  ],
+  "facts": [
+    "Repeat Q8P8 editing completed; moved to reinjection Q8P4. Meaningful progress since audit 059.",
+    "Supplied Python owner PID 24244 and Codex child tree match session and recorded peer calls; point-in-time identity limits retained. No process intervention.",
+    "Root and active child heartbeats fresh; no stop or current child failure.",
+    "Historical outcomes.json includes previously repaired Q3P2; current child state supersedes it. Outcomes written in launch.py finalization; progress checkpointed between pairs.",
+    "Seven DRAFT papers accepted with successful builds; remaining scheduled work pending.",
+    "HERDR_PANE_ID unavailable; no pane rename attempted.",
+    "Q8P4 initial peer calls completed successfully; later Emmy peer call is within deadline. No failed receipt among latest four; process evidence predates the later call, so no intervention based on inferred identity."
+  ],
+  "action": "none",
+  "recent_child_receipts": [
+    {
+      "at": "2026-09-25T21:24:56Z",
+      "thread": "Q7P2",
+      "stage": "verify",
+      "actor": "verifier",
+      "outcome": "completed",
+      "error": null
+    },
+    {
+      "at": "2026-09-25T21:28:10Z",
+      "thread": "Q7P2",
+      "stage": "edit",
+      "actor": "editor",
+      "outcome": "completed",
+      "error": null
+    },
+    {
+      "at": "2026-09-25T22:10:45Z",
+      "thread": "Q8P4",
+      "stage": "peer",
+      "actor": "emmy",
+      "outcome": "completed",
+      "error": null
+    },
+    {
+      "at": "2026-09-25T22:11:06Z",
+      "thread": "Q8P4",
+      "stage": "peer",
+      "actor": "ada",
+      "outcome": "completed",
+      "error": null
+    }
+  ]
+}
