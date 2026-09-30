@@ -491,6 +491,15 @@ generalise to the canonical engine and belong in the refactor specification.
   forbid automated access and full-text storage, so research prompts must forbid
   fetching from it. NBER and RePEc NEP feeds and further arXiv categories with a
   keyword filter are straightforward.
+\item \textbf{The operator view reads documents, not sources.} Learned from the
+  statarb watchboard on 1 October. A unit's produced documents open as their
+  PDF in a reader inside the page, with the \LaTeX{} source one click away and a
+  visible warning when the PDF is older than its source; a unit without a PDF
+  falls back to its source text. Every unit's document has a stable link
+  (\texttt{\#note=<unit>}) so a PDF can be cited in a message. The page opens
+  with the pipeline itself: one count per stage, split by state, each state a
+  filter on the unit list. PDFs are served inline and may be framed only by the
+  view's own origin.
 \end{enumerate}
 
 \section{Decisions taken}
