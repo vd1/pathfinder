@@ -239,3 +239,27 @@ def test_quota_receipt_stops_the_campaign(tmp_path, monkeypatch):
     transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=True, search=False, cwd=tmp_path,
                    timeout=10, thread="T", stage="peer", actor="ada")
     assert json.loads((tmp_path / "stop.json").read_text())["failure"]["class"] == "quota"
+
+
+def test_prompt_at_limit_runs_and_one_over_is_refused_without_launch(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "codex")
+    c = campaign(tmp_path, "codex"); c.raw["max_prompt_chars"] = 50
+    r = transport.call("x" * 50, campaign=c, model="m", tools=False, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="verify", actor="judge")
+    assert r["outcome"] == "completed"
+    monkeypatch.setenv("PATHFINDER_CODEX", str(tmp_path / "must-not-launch"))
+    with pytest.raises(transport.PromptTooLarge, match="51 characters exceed 50"):
+        transport.call("x" * 51, campaign=c, model="m", tools=False, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="verify", actor="judge")
+    row = rows(tmp_path)[-1]
+    assert row["outcome"] == "refused" and row["prompt_chars"] == 51
+    assert row["failure"]["class"] == "input_too_large" and row["usage"] is None
+    assert not (tmp_path / "stop.json").exists()          # a call-scoped refusal, not a campaign stop
+    assert len(rows(tmp_path)) == 2                       # no launch-failed receipt: nothing was launched
+
+
+def test_default_limit():
+    from pathfinder.config import Campaign
+    assert transport.max_prompt_chars(Campaign(root=Path("."), backend="codex", model="m", scan_model="m",
+                                               peer_search=False, seats=1, cut=1, rounds=1, allowances={},
+                                               budget_usd=1, prices={}, scan_fulltext=None)) == 1_000_000

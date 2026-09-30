@@ -34,6 +34,18 @@ class TransportFailed(Exception):
     """Raised by callers when a call never reached a model session."""
 
 
+DEFAULT_MAX_PROMPT_CHARS = 1_000_000          # the Codex CLI rejects prompts over 1,048,576 characters
+
+
+class PromptTooLarge(Exception):
+    """A prompt over the campaign's limit: refused before admission, with a receipt and no launch."""
+    failure_class = "input_too_large"
+
+
+def max_prompt_chars(campaign) -> int:
+    return int((campaign.raw or {}).get("max_prompt_chars", DEFAULT_MAX_PROMPT_CHARS))
+
+
 def _env(campaign):
     env = {k: v for k, v in os.environ.items() if not any(s in k for s in SCRUB)}
     from . import resources                             # the agents build with latexmk themselves; they must see the style files
@@ -254,8 +266,16 @@ def execute_batch(requests: list[ModelRequest], adapter):
 
 
 def execute(campaign, request: ModelRequest):
-    """Admit the call, then record an active attempt before launching it, including abrupt-exit evidence.
-    A refused call raises admission.Refused before any active-call record exists."""
+    """Refuse an oversized prompt, then admit the call, then record an active attempt before launching it,
+    including abrupt-exit evidence. A refused call raises before any active-call record exists."""
+    limit, size = max_prompt_chars(campaign), len(request.prompt)
+    if size > limit:
+        error = f"input too large: {size} characters exceed {limit}; no model call started"
+        _receipt(campaign, request.thread, request.stage, request.actor, request.model, {
+            "outcome": "refused", "seconds": 0.0, "usage": None, "input_tokens": None, "output_tokens": None,
+            "cache_write": None, "cache_read": None, "prefix_read": None, "cost": None, "cost_basis": None,
+            "error": error, "prompt_chars": size, "tool_calls": None})
+        raise PromptTooLarge(error)
     from . import admission
     with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
         return _attempt(campaign, request)
