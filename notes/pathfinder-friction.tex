@@ -502,6 +502,40 @@ generalise to the canonical engine and belong in the refactor specification.
   view's own origin.
 \end{enumerate}
 
+\section{Evidence and state failures from julien-2, 1 October}\label{sec:julien-evidence}
+
+Source: \path{pathfinder-julien-2/reviews/pathfinder-failure-modes-2026-10-01T002939+0200.md},
+an inventory of the exploratory pass of 29 September (ten pairs: four DRAFT and one
+PAUSE in joint research, three controller exits 0 and seven exits 2). Most belong to
+the provenance family of the catalogue; together they argue for one typed evidence
+inventory and resolver shared by every stage, instead of more exception strings.
+
+{\footnotesize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.15}
+\begin{xltabular}{\linewidth}{L{8mm}L{52mm}Y}
+\toprule Item & Failure & Refactor target and regression\\\midrule\endhead
+\bottomrule\endfoot
+F01 & A citation loses its branch namespace at the joint boundary (\sig{ada/repository-audit.json} lives under \sig{branches/branch-2/}) & Stable artefact identity with origin namespace through export and joint citation; test exact, unique-branch and conflicting-branch matches; ambiguity stays explicit.\\
+F02 & Campaign source paths (\sig{sources/P072/raw.json}) leak into thread evidence & Source registry resolving source and manifestation identifiers; a thread moved to another root keeps its citations; no silent raw-to-text substitution.\\
+F03 & A code string fragment (\sig{.raw.txt} suffix) blocks collection as a required file & Explicit declared dependencies, never strings found in executable source; never execute scripts to find dependencies.\\
+F04 & A generated output name (\sig{coverage-and-checks.json}) is taken as a consumed input & Declared inputs, planned outputs and observed outputs are distinct; a claim resting on an absent output stays an evidence gap.\\
+F05 & A page locator (\sig{prose/p.1653}) is parsed as a path & Typed citations with document, page and section fields.\\
+F06 & External repository paths (\sig{chemle/emle-engine.git}) are treated as local evidence & Retained local bytes, external citations, unavailable external assets and generated artefacts are distinct kinds; an external citation cannot support a claim of inspection without retained evidence.\\
+F07 & Repairing evidence leaves a stale terminal BLOCKED status & Explicit reconciliation: verify the repaired precondition, record the old state, keep retained responses and charges, resume at the right checkpoint, once.\\
+F08 & Research accepts (DRAFT) and delivery then fails on a different evidence contract & One evidence manifest and resolver for research, verification and delivery; validate the next stage's contract before spending on it; packaging failure keeps the verdict and resumes without rerunning Vera.\\
+F09 & A truncated monitoring summary is reported as progress & Bounded structured events; truncation means unknown progress until the full record is read.\\
+F10 & One finished/blocked label mixes research and delivery state & Separate research decision, evidence readiness, editorial, assessment and controller states.\\
+R01 & Repair helper appends \emph{unavailable} declarations until collection passes & Repairs propose classifications with evidence; alias, non-dependency and genuinely unavailable stay distinct.\\
+R02 & Declaration repair is incremental and rescans everything per item & Build the whole repair from one inventory, validate on scratch data, commit atomically with before and after hashes; idempotent.\\
+R03 & Recovery parses exception messages & Typed error records with origin, document, citation, phase and recovery policy; simultaneous errors stay separate.\\
+R04 & Pass records name only the Git head while the working tree differs & An execution identifier covering uncommitted code and configuration, without copying the engine per experiment.\\
+\end{xltabular}}
+
+Placement in the roadmap: F01 to F06, F08, R01 and R03 define phase 3 (typed
+evidence inventory and resolver, together with context by reference); F07 and R02
+go to phase 4 (reconciliation transitions); F09, F10 and R04 go to phase 2 (event
+log, separated states, execution identity). Phase 1's typed failure records are
+the model for the typed evidence errors of R03.
+
 \section{Decisions taken}
 
 Settled by the operator on 29 September.
