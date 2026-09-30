@@ -199,3 +199,19 @@ def test_supervision_drill_crashes_and_resumes_only_the_fixture_editor(tmp_path)
     assert health.read(tmp_path / "runner.json")["status"] == "finished"
     assert health.read(tmp_path / "resumed-stage.json")["stage"] == "edit"
     assert (tmp_path / "threads/Q1P1/status.json").read_bytes() == before
+
+
+def test_snapshot_counts_failures_by_class_and_explains_a_quota_stop(tmp_path):
+    import json
+    from pathfinder import health
+    from stubcampaign import make
+    c = make(tmp_path)
+    rows = [{"outcome": "error", "error": "usage limit", "failure": {"class": "quota", "scope": "campaign", "retry": False, "reset_at": "Oct 4th"}},
+            {"outcome": "timeout", "error": "timeout", "failure": {"class": "timeout", "scope": "call", "retry": True, "reset_at": None}},
+            {"outcome": "completed", "error": None, "failure": None}]
+    c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    c.path("stop.json").write_text(json.dumps({"reason": "quota: usage limit", "failure": rows[0]["failure"]}))
+    s = health.snapshot(c)
+    assert s["failures_by_class"] == {"quota": 1, "timeout": 1}
+    assert s["recent_failures"][0]["failure"]["class"] == "quota"
+    assert any("quota" in w and "Oct 4th" in w for w in s["warnings"])

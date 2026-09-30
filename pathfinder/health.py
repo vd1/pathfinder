@@ -150,8 +150,13 @@ def snapshot(campaign):
             except json.JSONDecodeError:
                 warnings.append(f"Incomplete or invalid receipt at {receipt_path}:{number}; retry audit before treating it as corruption.")
     fields = ("at", "thread", "stage", "actor", "outcome", "error")
-    failures = [{k: row.get(k) for k in fields} for row in receipts
+    failures = [{**{k: row.get(k) for k in fields}, "failure": row.get("failure")} for row in receipts
                 if row.get("error") or row.get("outcome") in {"timeout", "error", "launch failed", "no session"}]
+    by_class = {}
+    for row in receipts:
+        name = (row.get("failure") or {}).get("class")
+        if name:
+            by_class[name] = by_class.get(name, 0) + 1
     completed = [row for row in receipts if row.get("outcome") == "completed" and not row.get("error")]
     work = []
     for pair in (inspect(campaign.path("shortlist.json")) or {}).get("pairs", []):
@@ -169,10 +174,16 @@ def snapshot(campaign):
     failure = inspect(campaign.path("health.json"))
     if failure:
         warnings.append("Recorded operational failure requires diagnosis and an explicit restart.")
+    stop = inspect(campaign.path("stop.json"))
+    stopped_by = (stop or {}).get("failure") or {}
+    if stopped_by.get("scope") == "campaign":
+        warnings.append(f"Stopped by a {stopped_by['class']} failure"
+                        + (f"; resets {stopped_by['reset_at']}" if stopped_by.get("reset_at") else "")
+                        + ". Retrying before that changes nothing; escalate to the operator if it needs a key or a repair.")
     out = {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
             "active_calls": active, "last_completed_call": ({k: completed[-1].get(k) for k in fields} if completed else None),
             "failure_count": len(failures), "recent_failures": failures[-10:], "failure": failure,
-            "stop": inspect(campaign.path("stop.json")), "work": work, "warnings": warnings,
+            "stop": stop, "failures_by_class": by_class, "work": work, "warnings": warnings,
             "evidence": {"receipts": str(campaign.path("receipts.jsonl")),
                          "runner": str(campaign.path("runner.json")),
                          "failures": str(campaign.path("failures.jsonl"))},
