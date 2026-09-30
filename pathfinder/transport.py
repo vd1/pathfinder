@@ -128,7 +128,8 @@ def _parse(campaign, model, lines):
             if not terminal_failure:
                 err = None  # A completed turn can recover from transient reconnect events.
         elif t in ("error", "turn.failed"):
-            err = str(row.get("error") or row.get("message") or t)
+            detail = row.get("error") or row.get("message") or t
+            err = str(detail.get("message") or detail) if isinstance(detail, dict) else str(detail)
             terminal_failure = terminal_failure or t == "turn.failed"
     return text, session, usage, cost, err, prefix_read
 
@@ -141,6 +142,27 @@ def _counters(backend, usage):
                 "cache_write": u.get("cache_creation_input_tokens"), "cache_read": u.get("cache_read_input_tokens")}
     return {"input_tokens": u.get("input_tokens"), "output_tokens": u.get("output_tokens"),
             "cache_write": u.get("cache_write_input_tokens"), "cache_read": u.get("cached_input_tokens")}
+
+
+TOOL_ITEMS = {"command_execution", "web_search", "mcp_tool_call", "file_change"}
+
+
+def _tool_calls(lines) -> int:
+    """Tool uses the session reported: Codex items of a tool type, Claude tool_use content blocks."""
+    count = 0
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(row, dict):
+            continue
+        if row.get("type") == "item.completed" and (row.get("item") or {}).get("type") in TOOL_ITEMS:
+            count += 1
+        elif row.get("type") == "assistant":
+            count += sum(1 for block in (row.get("message") or {}).get("content") or []
+                         if isinstance(block, dict) and block.get("type") == "tool_use")
+    return count
 
 
 def _cost(campaign, model, reported, counters):
@@ -160,30 +182,36 @@ def _cost(campaign, model, reported, counters):
 
 
 def _receipt(campaign, thread, stage, actor, model, r):
-    row = {"v": 2, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
+    """Append one receipt and classify the call; r gains the same "failure" value the receipt records."""
+    from . import failures
+    failure = failures.classify(r.get("outcome"), r.get("error"), failures.rules_for(campaign))
+    r["failure"] = failure.record() if failure else None
+    row = {"v": 3, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
            "thread": thread, "stage": stage,
            "actor": actor, "backend": campaign.backend, "model": model,
            **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
-                                     "raw_events", "error")}}
+                                     "raw_events", "error", "failure", "prompt_chars", "tool_calls")}}
     if r.get("rates"):
         row["rates"] = r["rates"]
     with open(campaign.path("receipts.jsonl"), "a") as f:
         f.write(json.dumps(row) + "\n")
+    return failure
 
 
-def _failed(campaign, thread, stage, actor, model, started, outcome, error):
+def _failed(campaign, thread, stage, actor, model, started, outcome, error, prompt_chars=None):
     """A call that never reached a model session: a receipt with no usage and no cost."""
     r = {"text": "", "session": None, "seconds": round(time.time() - started, 1), "usage": None, "input_tokens": None,
          "output_tokens": None, "cache_write": None, "cache_read": None, "prefix_read": None, "cost": None,
-         "cost_basis": None, "outcome": outcome, "error": error, "transport_failed": True}
+         "cost_basis": None, "outcome": outcome, "error": error, "transport_failed": True,
+         "prompt_chars": prompt_chars, "tool_calls": None}
     _receipt(campaign, thread, stage, actor, model, r)
     return r
 
 
 RESULT_KEYS = ("text", "session", "seconds", "usage", "input_tokens", "output_tokens", "cache_write", "cache_read",
                "prefix_read", "cost", "cost_basis", "rates", "outcome", "error", "transport_failed", "exit_status",
-               "terminal_event", "raw_events")
+               "terminal_event", "raw_events", "failure", "prompt_chars", "tool_calls")
 
 
 def _extension_call(campaign, request, dispatcher):
@@ -195,7 +223,7 @@ def _extension_call(campaign, request, dispatcher):
         raw = dispatcher(campaign, request)
     except Exception as error:
         r = {"text": "", "outcome": "error", "error": f"transport extension: {error!r}", "transport_failed": True,
-             "seconds": round(time.time() - started, 1)}
+             "seconds": round(time.time() - started, 1), "prompt_chars": len(request.prompt)}
         _receipt(campaign, request.thread, request.stage, request.actor, request.model, {k: r.get(k) for k in RESULT_KEYS})
         raise
     if not isinstance(raw, dict) or not isinstance(raw.get("text", ""), str):
@@ -207,6 +235,7 @@ def _extension_call(campaign, request, dispatcher):
     r["seconds"] = raw.get("seconds") if raw.get("seconds") is not None else round(time.time() - started, 1)
     r["outcome"] = raw.get("outcome") or ("error" if r["error"] or r["transport_failed"] else "completed")
     r["cost_basis"] = raw.get("cost_basis") or ("reported" if raw.get("cost") is not None else None)
+    r["prompt_chars"] = len(request.prompt)
     _receipt(campaign, request.thread, request.stage, request.actor, request.model, r)
     return r
 
@@ -279,7 +308,8 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 text=True, start_new_session=True)
     except OSError as e:
-        return _failed(campaign, thread, stage, actor, model, started, "launch failed", f"launch failed: {e}")
+        return _failed(campaign, thread, stage, actor, model, started, "launch failed", f"launch failed: {e}",
+                       prompt_chars=len(prompt))
     from . import health
     activity["child_pid"] = proc.pid
     health.write(activity_path, activity)
@@ -302,10 +332,12 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         if proc.poll() is not None:
             t.join(1)
             error = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode} before session"
-            return _failed(campaign, thread, stage, actor, model, started, "launch failed", error)
+            return _failed(campaign, thread, stage, actor, model, started, "launch failed", error,
+                           prompt_chars=len(prompt))
         if time.monotonic() >= deadline:
             _kill(proc)
-            return _failed(campaign, thread, stage, actor, model, started, "no session", "no session")
+            return _failed(campaign, thread, stage, actor, model, started, "no session", "no session",
+                           prompt_chars=len(prompt))
     try:
         proc.wait(timeout=max(1, timeout - (time.time() - started)))
         error = None
@@ -333,6 +365,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
           "outcome": "timeout" if error else "error" if err else "completed", "error": error or err,
           "transport_failed": bool(error or err), "exit_status": proc.returncode,
           "terminal_event": lines[-1].rstrip("\n") if lines else None,
+          "prompt_chars": len(prompt), "tool_calls": _tool_calls(lines),
           "raw_events": [line.rstrip("\n") for line in lines]}
     _receipt(campaign, thread, stage, actor, model, r)
     return r

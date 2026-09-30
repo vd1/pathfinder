@@ -78,4 +78,5 @@ def execute(campaign, request) -> dict:
     return {"text": text, "session": "stub", "seconds": 0.0, "usage": {"input_tokens": 0, "output_tokens": 0},
             "input_tokens": 0, "output_tokens": 0, "cache_write": None, "cache_read": None, "prefix_read": None,
             "cost": 0.0, "cost_basis": "stub", "rates": None, "outcome": "completed", "error": None,
-            "transport_failed": False, "exit_status": 0, "terminal_event": None, "raw_events": []}
+            "transport_failed": False, "exit_status": 0, "terminal_event": None, "raw_events": [],
+            "prompt_chars": len(request.prompt), "tool_calls": 0}

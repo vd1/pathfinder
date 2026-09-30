@@ -63,7 +63,7 @@ def test_no_session_is_transport_failure_with_a_receipt(tmp_path, monkeypatch):
                        timeout=10, thread="T", stage="scan", actor="judge")
     assert r["transport_failed"] and r["cost"] is None
     row = rows(tmp_path)[0]
-    assert row["v"] == 2 and row["outcome"] == "no session" and row["usage"] is None and row["cost"] is None
+    assert row["v"] == 3 and row["outcome"] == "no session" and row["usage"] is None and row["cost"] is None
     assert row["input_tokens"] is None and row["cost_basis"] is None
     assert transport.spend(campaign(tmp_path)) == 0                    # never reached a session: the guard does not charge it
 
@@ -188,3 +188,47 @@ def test_transport_requires_successful_terminal_completion(tmp_path, monkeypatch
     assert result["outcome"] == expected
     assert result["transport_failed"] == (expected != "completed")
     assert any("Reconnecting" in e for e in result["raw_events"])
+
+
+def test_quota_failure_is_classified_from_structured_events(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "codex")
+    monkeypatch.setenv("FAKE_FAIL", "You've hit your usage limit ... try again at Oct 4th, 2026 2:07 AM.")
+    r = transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=True, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="peer", actor="ada")
+    assert r["error"].startswith("You've hit your usage limit")          # the message, not a dict repr
+    row = rows(tmp_path)[0]
+    assert row["failure"] == {"class": "quota", "scope": "campaign", "retry": False, "reset_at": "Oct 4th, 2026 2:07 AM"}
+    assert r["failure"] == row["failure"]
+
+
+def test_completed_call_mentioning_limits_is_not_a_failure(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "codex"); monkeypatch.setenv("FAKE_REPLY", "the usage limit and HTTP 429 in the paper")
+    transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=True, search=False, cwd=tmp_path,
+                   timeout=10, thread="T", stage="peer", actor="ada")
+    assert rows(tmp_path)[0]["failure"] is None
+
+
+def test_receipt_records_prompt_size_and_tool_calls(tmp_path, monkeypatch):
+    for mode in ("codex", "claude"):
+        (tmp_path / "receipts.jsonl").unlink(missing_ok=True)
+        monkeypatch.setenv("FAKE_MODE", mode); monkeypatch.setenv("FAKE_TOOLS", "3")
+        transport.call("x" * 1234, campaign=campaign(tmp_path, mode), model="m", tools=True, search=False,
+                       cwd=tmp_path, timeout=10, thread="T", stage="peer", actor="ada")
+        row = rows(tmp_path)[0]
+        assert (row["prompt_chars"], row["tool_calls"]) == (1234, 3)
+
+
+def test_no_session_receipt_is_classified_and_sized(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_HANG", "1")
+    transport.call("abc", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
+                   timeout=10, thread="T", stage="scan", actor="judge")
+    row = rows(tmp_path)[0]
+    assert row["failure"]["class"] == "no_session" and row["prompt_chars"] == 3 and row["tool_calls"] is None
+
+
+def test_transient_error_then_completion_stays_unclassified(tmp_path):
+    c = campaign(tmp_path, "codex")
+    events = [{"type": "error", "message": "Reconnecting... 2/5 (stream disconnected before completion)"},
+              {"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}},
+              {"type": "turn.completed", "usage": {"input_tokens": 1}}]
+    assert transport._parse(c, "m", [json.dumps(x) for x in events])[4] is None
