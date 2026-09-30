@@ -94,8 +94,8 @@ def stopped(campaign) -> bool:
     return _stop_marker(campaign) is not None
 
 
-def request_stop(campaign, reason: str):
-    campaign.path("stop.json").write_text(json.dumps({"reason": reason, "at": _now()}))
+def request_stop(campaign, reason: str, **details):
+    campaign.path("stop.json").write_text(json.dumps({"reason": reason, "at": _now(), **details}))
 
 
 def unhealthy(campaign) -> bool:

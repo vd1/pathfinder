@@ -232,3 +232,10 @@ def test_transient_error_then_completion_stays_unclassified(tmp_path):
               {"type": "item.completed", "item": {"type": "agent_message", "text": "ok"}},
               {"type": "turn.completed", "usage": {"input_tokens": 1}}]
     assert transport._parse(c, "m", [json.dumps(x) for x in events])[4] is None
+
+
+def test_quota_receipt_stops_the_campaign(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "codex"); monkeypatch.setenv("FAKE_FAIL", "You've hit your usage limit.")
+    transport.call("p", campaign=campaign(tmp_path, "codex"), model="m", tools=True, search=False, cwd=tmp_path,
+                   timeout=10, thread="T", stage="peer", actor="ada")
+    assert json.loads((tmp_path / "stop.json").read_text())["failure"]["class"] == "quota"

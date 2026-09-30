@@ -165,3 +165,26 @@ def test_a_failing_transport_extension_leaves_a_receipt_and_the_evidence(tmp_pat
         transport.execute(c, _request(cwd=tmp_path))
     assert transport.receipts(c)[-1]["outcome"] == "error" and admission.reserved(c) == 0
     assert list((tmp_path / "active-calls").glob("*.json"))          # the abrupt-exit evidence stays, as for any call
+
+
+def test_quota_failure_stops_campaign_and_parent_and_keeps_first_reason(tmp_path, monkeypatch):
+    from pathfinder import failures
+    parent = tmp_path / "parent"; parent.mkdir()
+    c = make(tmp_path / "arm", parent="../parent")
+    quota = failures.classify("error", "You've hit your usage limit ... try again at Oct 4th, 2026 2:07 AM.")
+    failures.stop_for(c, quota, "usage limit")
+    first = json.loads((c.root / "stop.json").read_text())
+    assert first["failure"]["class"] == "quota" and first["reason"].startswith("quota")
+    assert json.loads((parent / "stop.json").read_text())["failure"]["reset_at"] == "Oct 4th, 2026 2:07 AM"
+    failures.stop_for(c, failures.classify("error", "401 Unauthorized"), "401")
+    assert json.loads((c.root / "stop.json").read_text()) == first
+    with pytest.raises(Refused):
+        with admission.admission(c, "peer", "ada"):
+            pass
+
+
+def test_call_scoped_failure_does_not_stop(tmp_path):
+    from pathfinder import failures
+    c = make(tmp_path)
+    failures.stop_for(c, failures.classify("timeout", "timeout"), "timeout")
+    assert not (c.root / "stop.json").exists()

@@ -196,6 +196,7 @@ def _receipt(campaign, thread, stage, actor, model, r):
         row["rates"] = r["rates"]
     with open(campaign.path("receipts.jsonl"), "a") as f:
         f.write(json.dumps(row) + "\n")
+    failures.stop_for(campaign, failure, r.get("error"))
     return failure
 
 

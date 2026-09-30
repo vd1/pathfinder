@@ -77,3 +77,22 @@ def rules_for(campaign) -> tuple:
         if name not in SCOPES:
             raise ValueError(f"unknown failure class {name!r} in failure_rules; expected one of {', '.join(CLASSES)}")
     return compiled
+
+
+def stop_for(campaign, failure: Failure | None, error: str | None):
+    """A campaign-scoped failure stops the campaign and, under a coordinator, its parent, so no further
+    call is launched into the same wall. The first stop marker is kept: its reason is the root cause."""
+    if failure is None or failure.scope != "campaign":
+        return
+    import json, time
+    from pathlib import Path
+    reason = f"{failure.cls}: {(error or '').strip()[:300]}"
+    record = {"reason": reason, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "failure": failure.record()}
+    roots = [Path(campaign.root)]
+    parent = (campaign.raw or {}).get("parent")
+    if parent:
+        roots.append((Path(campaign.root) / parent).resolve())
+    for root in roots:
+        marker = root / "stop.json"
+        if not marker.exists():
+            marker.write_text(json.dumps(record))
