@@ -263,3 +263,15 @@ def test_default_limit():
     assert transport.max_prompt_chars(Campaign(root=Path("."), backend="codex", model="m", scan_model="m",
                                                peer_search=False, seats=1, cut=1, rounds=1, allowances={},
                                                budget_usd=1, prices={}, scan_fulltext=None)) == 1_000_000
+
+
+def test_a_broken_failure_rules_extension_still_writes_the_receipt(tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_MODE", "codex")
+    deploy = tmp_path / "deploy"; deploy.mkdir()
+    (deploy / "bad_rules_pkg.py").write_text("RULES = [('contract', 'x')]\n")
+    c = campaign(tmp_path, "codex"); c.raw["extensions"] = {"path": "deploy", "failure_rules": "bad_rules_pkg:RULES"}
+    r = transport.call("p", campaign=c, model="m", tools=False, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="verify", actor="judge")
+    assert r["outcome"] == "completed"
+    row = rows(tmp_path)[0]
+    assert row["outcome"] == "completed" and "unknown failure class" in row["failure_rules_error"]

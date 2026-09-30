@@ -552,6 +552,9 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason")); write_meta(campaign, pair_id, d); return final
     except (Stopped, Refused):
         _set(campaign, pair_id, status="stopped"); return "stopped"
+    except transport.PromptTooLarge as error:
+        _set(campaign, pair_id, status="BLOCKED", reason=f"{status(campaign, pair_id).get('stage')}: {error}")
+        return "BLOCKED"
     except transport.TransportFailed:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
 
@@ -751,6 +754,14 @@ def next_requests(campaign, pair_id):
                 if waiting:
                     return [transport.ModelRequest(**{**item["request"], "cwd": d}) for item in waiting]
                 failed = next((item for item in pending if item["result"].get("transport_failed") or item["result"].get("error")), None)
+                if failed and ((failed["result"].get("failure") or {}).get("scope") == "campaign"):
+                    # the call hit a campaign-wide wall (quota, auth, launch); after the operator resumes, issue it again
+                    for item in pending:
+                        if (item["result"].get("failure") or {}).get("scope") == "campaign":
+                            path = _request_file(campaign, pair_id, item["request"]["identity"])
+                            saved = json.loads(path.read_text()); saved.pop("result", None)
+                            temporary = path.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(path)
+                    continue
                 if failed:
                     _set(campaign, pair_id, status="BLOCKED", reason=f"{s['stage']}: {failed['result'].get('error') or 'transport failed'}")
                     return []
@@ -870,7 +881,12 @@ def _run_composable(campaign, pair_id, stop):
             def execute(request):
                 """@planks("the standard research entry point opens the investigation")"""
                 _check(stop)
-                result = transport.execute(campaign, request)
+                try:
+                    result = transport.execute(campaign, request)
+                except transport.PromptTooLarge as error:   # retained as a failed result: the pair blocks, the run goes on
+                    retain_response(campaign, pair_id, request, {"text": "", "seconds": 0.0, "transport_failed": True,
+                                                                 "error": str(error), "outcome": "refused"})
+                    return
                 retain_response(campaign, pair_id, request, result)
                 if result.get("transport_failed"):
                     raise transport.TransportFailed(pair_id)

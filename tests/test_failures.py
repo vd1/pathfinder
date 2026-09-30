@@ -12,7 +12,7 @@ from pathfinder import failures
     ("error", "API Error: Opus 5's safeguards flagged this message", "refusal", "pair"),
     ("error", "Selected model is at capacity. Please try a different model.", "rate", "call"),
     ("error", "HTTP 429 Too Many Requests", "rate", "call"),
-    ("launch failed", "error: unexpected argument '--search' found", "launch", "campaign"),
+    ("launch failed", "error: unexpected argument '--search' found", "launch", "call"),   # repeats escalate
     ("no session", "no session", "no_session", "call"),
     ("timeout", "timeout", "timeout", "call"),
     ("error", "CLI exited without a completed turn", "undiagnosed", "call"),
@@ -66,3 +66,31 @@ def test_campaign_failure_rules_extension(tmp_path):
 def test_no_extension_means_no_extra_rules(tmp_path):
     from stubcampaign import make
     assert failures.rules_for(make(tmp_path)) == ()
+
+
+@pytest.mark.parametrize("error,cls,scope", [
+    ("launch failed: [Errno 2] No such file or directory: 'codex'", "launch", "campaign"),
+    ("exit 139 before session", "launch", "call"),
+    ("HTTP 429 Too Many Requests; exit 1 before session", "rate", "call"),
+])
+def test_launch_failures_stop_the_campaign_only_when_the_binary_cannot_start(error, cls, scope):
+    f = failures.classify("launch failed", error)
+    assert (f.cls, f.scope) == (cls, scope)
+
+
+def test_repeated_launch_failures_escalate_to_a_campaign_stop(tmp_path):
+    import json
+    from stubcampaign import make
+    c = make(tmp_path)
+    launch = failures.classify("launch failed", "exit 139 before session")
+    row = {"outcome": "launch failed", "failure": launch.record()}
+    for n in range(1, failures.LAUNCH_REPEAT + 1):
+        with c.path("receipts.jsonl").open("a") as f:
+            f.write(json.dumps(row) + "\n")
+        failures.stop_for(c, launch, "exit 139 before session")
+        assert c.path("stop.json").exists() == (n == failures.LAUNCH_REPEAT)
+    assert json.loads(c.path("stop.json").read_text())["failure"]["scope"] == "campaign"
+
+
+def test_rate_limit_wording_about_policy_is_still_a_rate_limit():
+    assert failures.classify("error", "Rate limit reached; see our usage policy").cls == "rate"

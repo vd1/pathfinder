@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 
 SCOPES = {
-    "quota": ("campaign", False), "auth": ("campaign", False), "launch": ("campaign", False),
+    "quota": ("campaign", False), "auth": ("campaign", False), "launch": ("call", True),
     "refusal": ("pair", False), "input_too_large": ("call", False),
     "rate": ("call", True), "no_session": ("call", True), "timeout": ("call", True),
     "undiagnosed": ("call", False),
@@ -22,9 +22,11 @@ RULES = (
     ("quota", re.compile(r"usage limit|session limit|hit your limit|insufficient_quota|quota exceeded|credit balance", re.I)),
     ("auth", re.compile(r"\b401\b|unauthori[sz]ed|incorrect api key|invalid api key|authentication failed|missing environment variable", re.I)),
     ("input_too_large", re.compile(r"input_too_large|input too large|exceeds the maximum length|context length|prompt is too long", re.I)),
-    ("refusal", re.compile(r"flagged for possible|safeguards flagged|content filter|usage polic", re.I)),
     ("rate", re.compile(r"\b429\b|rate limit|too many requests|at capacity|overloaded|\b503\b|service unavailable", re.I)),
+    ("refusal", re.compile(r"flagged for possible|safeguards flagged|content filter|usage polic", re.I)),
 )
+OVERSIZE = RULES[2][1]
+LAUNCH_REPEAT = 3                 # consecutive launch failures that make a launch problem campaign-wide
 RESET = re.compile(r"try again at ([^\n]+?)\.?\s*$|resets? (?:at )?([0-9][^\n,.]*)", re.I | re.M)
 OUTCOMES = {"launch failed": "launch", "no session": "no_session", "timeout": "timeout"}
 
@@ -51,9 +53,13 @@ def classify(outcome: str | None, error: str | None, extra_rules=()) -> Failure 
         return None
     rules = (*extra_rules, *RULES)
     if outcome == "refused":
-        if not RULES[2][1].search(message):
+        if not OVERSIZE.search(message):
             return None
         cls = "input_too_large"
+    elif outcome == "launch failed" and message.startswith("launch failed:"):
+        return Failure("launch", "campaign", False)       # the executable itself could not be started
+    elif outcome == "launch failed":
+        cls = next((name for name, pattern in rules if pattern.search(message)), "launch")
     elif outcome in OUTCOMES:
         cls = OUTCOMES[outcome]
     else:
@@ -82,10 +88,13 @@ def rules_for(campaign) -> tuple:
 def stop_for(campaign, failure: Failure | None, error: str | None):
     """A campaign-scoped failure stops the campaign and, under a coordinator, its parent, so no further
     call is launched into the same wall. The first stop marker is kept: its reason is the root cause."""
-    if failure is None or failure.scope != "campaign":
-        return
     import json, time
     from pathlib import Path
+    if failure is not None and failure.cls == "launch" and failure.scope != "campaign" and _launch_streak(campaign):
+        failure = Failure("launch", "campaign", False)
+        error = f"{LAUNCH_REPEAT} consecutive launch failures; last: {error}"
+    if failure is None or failure.scope != "campaign":
+        return
     reason = f"{failure.cls}: {(error or '').strip()[:300]}"
     record = {"reason": reason, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "failure": failure.record()}
     roots = [Path(campaign.root)]
@@ -96,3 +105,17 @@ def stop_for(campaign, failure: Failure | None, error: str | None):
         marker = root / "stop.json"
         if not marker.exists():
             marker.write_text(json.dumps(record))
+
+
+def _launch_streak(campaign) -> bool:
+    """True when the last LAUNCH_REPEAT receipts are all launch failures."""
+    import json
+    path = campaign.path("receipts.jsonl")
+    if not path.exists():
+        return False
+    tail = [line for line in path.read_text().splitlines() if line.strip()][-LAUNCH_REPEAT:]
+    try:
+        classes = [(json.loads(line).get("failure") or {}).get("class") for line in tail]
+    except ValueError:
+        return False
+    return len(classes) == LAUNCH_REPEAT and all(name == "launch" for name in classes)

@@ -140,6 +140,8 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         return _run(campaign, pair_id, stop)
     except Refused as refused:
         _set(campaign, pair_id, status="stopped", reason=f"refused: {refused}"); return "stopped"
+    except transport.PromptTooLarge as error:
+        _set(campaign, pair_id, status="blocked", reason=str(error)); return "blocked"
 
 
 def _run(campaign, pair_id: str, stop) -> str:
