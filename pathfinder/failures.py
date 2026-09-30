@@ -64,3 +64,16 @@ def classify(outcome: str | None, error: str | None, extra_rules=()) -> Failure 
         match = RESET.search(message)
         reset = (match.group(1) or match.group(2)).strip() if match else None
     return Failure(cls, scope, retry, reset)
+
+
+def rules_for(campaign) -> tuple:
+    """A deployment's own failure rules, compiled and checked, or () when the campaign names none."""
+    from . import extensions
+    spec = extensions.load(campaign, "failure_rules")
+    if spec is None:
+        return ()
+    compiled = tuple((name, re.compile(pattern, re.I)) for name, pattern in spec)
+    for name, _ in compiled:
+        if name not in SCOPES:
+            raise ValueError(f"unknown failure class {name!r} in failure_rules; expected one of {', '.join(CLASSES)}")
+    return compiled

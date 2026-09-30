@@ -48,3 +48,21 @@ def test_deployment_rules_come_first_and_must_name_a_known_class():
     assert failures.classify("error", "key file mode 0644", extra_rules=rule).cls == "auth"
     with pytest.raises(ValueError):
         failures.classify("error", "x", extra_rules=[("mystery", re.compile("x"))])
+
+
+def test_campaign_failure_rules_extension(tmp_path):
+    from stubcampaign import make
+    c = make(tmp_path, extensions={"path": "deploy", "failure_rules": "drip_rules:RULES"})
+    d = tmp_path / "deploy"; d.mkdir(exist_ok=True)
+    (d / "drip_rules.py").write_text("RULES = [('contract', 'READY needs code and feeds')]\n")
+    with pytest.raises(ValueError):                       # 'contract' is not a transport failure class
+        failures.rules_for(c)
+    (d / "drip_rules.py").write_text("RULES = [('auth', 'key file .* not 0600')]\n")
+    import sys; sys.modules.pop("drip_rules", None)
+    rules = failures.rules_for(c)
+    assert failures.classify("error", "key file x not 0600", extra_rules=rules).cls == "auth"
+
+
+def test_no_extension_means_no_extra_rules(tmp_path):
+    from stubcampaign import make
+    assert failures.rules_for(make(tmp_path)) == ()
