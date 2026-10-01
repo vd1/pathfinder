@@ -512,6 +512,12 @@ generalise to the canonical engine and belong in the refactor specification.
   access to the TeX installation with \texttt{TEXINPUTS} preserved and local TeX
   caches, and must count tool errors per call in the receipt.
   Done in phase 3a (up to bf8d85e): workspace ledger helper, local \texttt{TMPDIR}, \texttt{TMPPREFIX} and \texttt{TEXMFVAR}, \texttt{tool\_errors} in receipts; TeX read access remains a deployment sandbox matter.
+  Deployment notes from the phase 3a review: deployments that track thread
+  directories in git should ignore \path{**/threads/**/.pathfinder/}; julien-2 dispatches
+  through its own \texttt{eva2} transport, so neither \texttt{reads} nor the workspace
+  environment reaches its agents until it adopts the engine transport; a read-only Codex
+  verifier cannot use here-documents. Single-engine peers still receive both papers
+  inline when a campaign sets \texttt{inline\_papers}, which statarb no longer does.
 \item \textbf{Allowances calibrated from observed durations.} proofTree lost two
   peer calls at a 300\,s allowance (one peer had already declared readiness) and a
   joint editor at 240\,s; the fixes were 900\,s and 600\,s by hand. The engine should

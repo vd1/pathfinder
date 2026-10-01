@@ -1,5 +1,5 @@
 You are an independent reviewer. You have not taken part in this work.
-Above you have, in order: the two papers {{Q_INPUT}} and {{P_INPUT}},
+Above you have, in order: the two papers {{Q_INPUT}} and {{P_INPUT}} (or their file references),
 the ledger, and the note {{NOTE}} to judge.
 
 Decide one of:

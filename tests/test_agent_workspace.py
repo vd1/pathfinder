@@ -100,3 +100,25 @@ def test_verification_requests_are_read_only(tmp_path, monkeypatch):
     monkeypatch.setattr(research.transport, "execute", capture)
     research.run_thread(make(tmp_path), "Q1P1")
     assert ("verify", True) in seen and all(reads is False for stage, reads in seen if stage != "verify")
+
+
+def test_workspace_helper_files_stay_out_of_the_monitor_and_export(tmp_path):
+    from pathfinder import monitor
+    c = make(tmp_path)
+    d = research.prepare(c, "Q1P1")
+    (d / ".pathfinder" / "tmp").mkdir(parents=True, exist_ok=True)
+    (d / ".pathfinder" / "tmp" / "scratch.txt").write_text("x")
+    files = monitor.state(c)["threads"]["Q1P1"]["files"]
+    assert not any(f.startswith(".pathfinder") for f in files)
+    out = monitor.export(c, tmp_path / "bundle")
+    assert not (out / "threads" / "Q1P1" / ".pathfinder").exists()
+
+
+def test_paper_digests_are_over_the_file_bytes(tmp_path):
+    import hashlib
+    c = make(tmp_path, inline_papers_max_chars=10)
+    d = research.prepare(c, "Q1P1"); inp = research._inputs(d)
+    raw = b"caf\xe9 " * 10                                   # not UTF-8
+    (d / "inputs" / inp["Q"]).write_bytes(raw)
+    head = research.thread_head(d, inp, inline_limit=research.papers_limit(c))
+    assert hashlib.sha256(raw).hexdigest() in head and f"{len(raw)} bytes" in head

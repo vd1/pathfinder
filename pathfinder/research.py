@@ -67,7 +67,7 @@ def install_helper(d: Path) -> str:
     source = Path(ledger_module.__file__).read_bytes()
     if not target.is_file() or target.read_bytes() != source:
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(source)
+        _atomic_write(target, source)                  # an agent may be running the old copy right now
     return f"{sys.executable} {HELPER_DIR}/ledger.py --root ."
 
 
@@ -108,9 +108,10 @@ def thread_head(d, inp, papers: bool = True, ledger: bool = True, inline_limit: 
     if papers:
         texts = {name: (d / "inputs" / name).read_text(errors="replace") for name in (inp["Q"], inp["P"])}
         if inline_limit is not None and sum(len(t) for t in texts.values()) > inline_limit:
-            for name, text in texts.items():
-                parts.append(f"## {name}\n\n(file inputs/{name}: {len(text)} characters, sha256 "
-                             f"{hashlib.sha256(text.encode()).hexdigest()}; read it with your tools)")
+            for name in texts:
+                data = (d / "inputs" / name).read_bytes()          # the digest a reader can reproduce from the file
+                parts.append(f"## {name}\n\n(file inputs/{name}: {len(data)} bytes, sha256 "
+                             f"{hashlib.sha256(data).hexdigest()}; read it with your tools)")
         else:
             parts.extend("## " + name + "\n\n" + text for name, text in texts.items())
     if ledger:
@@ -287,8 +288,8 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
 
 
 READING = ("Files listed by path, size and sha256 are in your working directory, not pasted here. Read them in "
-           "slices with your tools (rg -n, sed -n 'a,bp', head) as far as the task needs, read each file once, and "
-           "quote by path and line.")
+           "slices with your tools (a line range or a search, not the whole file) as far as the task needs, read each "
+           "file once, and quote by path and line.")
 
 
 def evidence_by_reference(campaign) -> bool:
@@ -852,7 +853,7 @@ def next_requests(campaign, pair_id):
                     prompt = material + "\n\n" + _prompt(campaign, "peer", ACTOR=actor,
                         PEERS=" and ".join(a for a in campaign.peers if a != actor),
                         Q_INPUT=f"inputs/{_inputs(d)['Q']}", P_INPUT=f"inputs/{_inputs(d)['P']}",
-                        MATERIAL="Both papers, the attributed ledger and evidence are above.",
+                        MATERIAL="Both papers (or their file references), the attributed ledger and the evidence index are above.",
                         LEDGER=f"{install_helper(d)} --actor {actor}",
                         LAST_SEQ=ledger.count(), SECONDS=int(seconds),
                         CALLS_LEFT=campaign.allowances["peer_calls"] - s.get("peer_call", 0) - 1,

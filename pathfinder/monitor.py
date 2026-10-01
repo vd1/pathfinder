@@ -37,7 +37,7 @@ def state(campaign) -> dict:
         verd = json.loads((d / f"{pid}.verdict.json").read_text()) if (d / f"{pid}.verdict.json").exists() else []
         noise = {".aux", ".log", ".out", ".fls", ".fdb_latexmk", ".blg", ".bbl", ".pdf", ".synctex.gz", ".toc"}
         files = sorted(str(x.relative_to(d)) for x in d.rglob("*") if x.is_file() and "__pycache__" not in x.parts
-                       and ".build" not in x.parts and x.suffix not in noise
+                       and ".build" not in x.parts and ".pathfinder" not in x.parts and x.suffix not in noise
                        and x.name not in ("lock", "ledger.lock", "pathfinder-meta.tex")) if d.exists() else []
         threads[pid] = {"status": s, "entries": len(led), "by_kind": dict(Counter(e["kind"] for e in led)),
                         "by_actor": dict(Counter(e["actor"] for e in led)), "ledger": led, "verdicts": verd,
@@ -202,7 +202,8 @@ def export(campaign, out: Path, with_sources: bool = False, zip_it: bool = False
             continue
         for f in src.rglob("*"):
             rel = f.relative_to(src)
-            if not f.is_file() or "__pycache__" in rel.parts or ".build" in rel.parts or f.suffix not in KEEP:
+            if (not f.is_file() or "__pycache__" in rel.parts or ".build" in rel.parts or ".pathfinder" in rel.parts
+                    or f.suffix not in KEEP):
                 continue
             if rel.parts[0] == "inputs" and f.suffix != ".json" and not with_sources:
                 continue
