@@ -32,4 +32,4 @@ Continuous rules for every phase:
 Plans:
 
 - Phase 1: `plans/2026-10-01-0030-phase1-failure-classification.md` (merged 99db88e)
-- Phase 2 is split: 2a events, execution identifier and state document (`plans/2026-10-01-0130-phase2a-events-and-state.md`); 2b operator web page and server hardening on that document (plan to follow).
+- Phase 2 is split: 2a events, execution identifier and state document (`plans/2026-10-01-0130-phase2a-events-and-state.md`); 2b operator web page and server hardening on that document (`plans/2026-10-01-0300-phase2b-operator-view.md`); 2a merged ef20a38.
