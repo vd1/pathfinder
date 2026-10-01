@@ -56,10 +56,26 @@ def _pair(campaign, pair_id):
     return corpus.read(campaign.path("Q.jsonl"))[i - 1], corpus.read(campaign.path("P.jsonl"))[j - 1]
 
 
+HELPER_DIR = ".pathfinder"
+
+
+def install_helper(d: Path) -> str:
+    """Copy the ledger helper into the thread: agents run it as a script, because their sandbox may not
+    reach the environment that imports pathfinder (seen in J2, statarb and proofTree). Returns the command."""
+    from . import ledger as ledger_module
+    target = d / HELPER_DIR / "ledger.py"
+    source = Path(ledger_module.__file__).read_bytes()
+    if not target.is_file() or target.read_bytes() != source:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source)
+    return f"{sys.executable} {HELPER_DIR}/ledger.py --root ."
+
+
 def prepare(campaign, pair_id: str) -> Path:
     """@planks("the standard research entry point opens the investigation")"""
     d = campaign.thread_dir(pair_id)
     if (d / "status.json").exists():
+        install_helper(d)
         return d
     (d / "inputs").mkdir(parents=True, exist_ok=True)
     for side, row in zip("QP", _pair(campaign, pair_id)):
@@ -74,6 +90,7 @@ def prepare(campaign, pair_id: str) -> Path:
     imported = campaign.raw.get("research_scheme") == "eva_minus" and campaign.raw.get("imported_research", False)
     _set(campaign, pair_id, round=0 if imported else 1,
          stage="ledger_review" if imported else "peers", status="running", reason=None, started=_now())
+    install_helper(d)
     return d
 
 
@@ -346,7 +363,7 @@ def _peers(campaign, pair_id, stop):
     """
     d, L = campaign.thread_dir(pair_id), Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
     A = campaign.allowances; inp = _inputs(d); row = _scan_row(campaign, pair_id)
-    helper = f"{sys.executable} -m pathfinder.ledger --root ."
+    helper = install_helper(d)
     used = {"seconds": 0.0}; lock = threading.Lock()
 
     peers = list(campaign.peers)
@@ -809,7 +826,7 @@ def next_requests(campaign, pair_id):
                         PEERS=" and ".join(a for a in campaign.peers if a != actor),
                         Q_INPUT=f"inputs/{_inputs(d)['Q']}", P_INPUT=f"inputs/{_inputs(d)['P']}",
                         MATERIAL="Both papers, the attributed ledger and evidence are above.",
-                        LEDGER=f"{sys.executable} -m pathfinder.ledger --root . --actor {actor}",
+                        LEDGER=f"{install_helper(d)} --actor {actor}",
                         LAST_SEQ=ledger.count(), SECONDS=int(seconds),
                         CALLS_LEFT=campaign.allowances["peer_calls"] - s.get("peer_call", 0) - 1,
                         FEASIBILITY=row.get("feasibility", "?"), GAIN=row.get("gain", "?"),
