@@ -254,3 +254,10 @@ dialog.reader #detail-content { flex: 1; min-height: 0; display: flex; flex-dire
 #params dt { color: var(--muted); } #params dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
 .block-list { list-style: none; margin: 0; padding: 0; } .block-list li { padding: 6px 0; border-bottom: 1px solid var(--rule-soft); }
 .link-button { background: none; border: 0; padding: 0 4px; color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.state-handoff { color: var(--pause); } .stage-bar .state-handoff { background: var(--pause); } .badge.handoff { color: var(--pause); }
+/* Research cards: the left border takes the unit's pipeline colour */
+.research-card.status-draft, .research-card.status-noted, .research-card.status-accepted { border-left-color: var(--ready); }
+.research-card.status-amend, .research-card.status-handoff { border-left-color: var(--pause); }
+.research-card.status-note-blocked, .research-card.status-paper-blocked { border-left-color: var(--reject); }
+.research-card.status-editing, .research-card.status-writing { border-left-color: var(--scored); }
+.research-card.status-orphaned, .research-card.status-stopped { border-left-color: var(--stopped); }

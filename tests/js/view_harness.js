@@ -38,7 +38,7 @@ async function world(first, hash = "") {
   };
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(source + "\n;globalThis.__api = { render, refresh, openFromHash };", context);
+  vm.runInContext(source + "\n;globalThis.__api = { render, refresh, openFromHash, showUnit };", context);
   await new Promise((resolve) => setTimeout(resolve, 0));        // let the load-time refresh finish
   return { api: context.__api, writes, location, responses, el: context.document.getElementById };
 }
@@ -79,6 +79,15 @@ const state = (activity, summary) => ({
   await w.api.refresh();
   out.failed_refresh_keeps_snapshot = w.el("queue-body").innerHTML === queue && w.el("error-banner").hidden === false;
   out.pipeline_counts_from_server = w.el("pipeline").innerHTML.includes("Paper") && w.el("pipeline").innerHTML.includes("Accepted");
+  const selectWrites = w.writes["status-filter"];
+  w.responses.push(state("c"));
+  await w.api.refresh();
+  out.filter_select_not_rebuilt_on_refresh = w.writes["status-filter"] === selectWrites;
+  const local = state("a"); local.units[0].p.id = "pathfinder-recursive-R1-v2"; local.units[0].gain = null;
+  w = await world(local);
+  w.api.showUnit("Q1P1");
+  out.no_arxiv_link_for_local_ids = !w.el("detail-content").innerHTML.includes("arxiv.org/abs/pathfinder");
+  out.no_null_scores = !w.el("queue-body").innerHTML.includes("null");
   w = await world(state("a", "<img src=x onerror=1>"));
   const html = w.el("research-list").innerHTML;
   out.escaped = html.includes("&lt;img") && !html.includes("<img");

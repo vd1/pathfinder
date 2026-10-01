@@ -206,3 +206,8 @@ def test_units_carry_titles_scores_summary_and_usage(tmp_path):
     assert u["usage"] == {"calls": 2, "input_tokens": 100, "output_tokens": 5, "seconds": 12.0}
     usage = campaign_state.build(c)["usage"]
     assert (usage["calls"], usage["completed"], usage["calls_with_usage"]) == (2, 1, 1)
+
+
+def test_handed_off_research_is_an_outcome_not_a_stop(tmp_path):
+    assert campaign_state.lifecycle({"status": "HANDOFF"}, {}, {}, "waiting") == "handoff"
+    assert "handoff" in [k for _, states in campaign_state.PIPELINE for k, _ in states]

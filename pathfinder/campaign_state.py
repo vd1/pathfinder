@@ -74,7 +74,7 @@ def _documents(campaign, unit: str) -> list[dict]:
 PIPELINE = [
     ("Selected", [("waiting", "Waiting")]),
     ("Research", [("researching", "In progress"), ("stopped", "Stopped"), ("orphaned", "Orphaned")]),
-    ("Outcome", [("draft", "DRAFT"), ("pause", "Paused"), ("blocked", "Blocked")]),
+    ("Outcome", [("draft", "DRAFT"), ("pause", "Paused"), ("handoff", "Handed off"), ("blocked", "Blocked")]),
     ("Readable note", [("editing", "Editing"), ("noted", "Note ready"), ("note-blocked", "Note blocked")]),
     ("Paper", [("writing", "Writing"), ("accepted", "Accepted"), ("amend", "Amendments asked"), ("paper-blocked", "Paper blocked")]),
 ]
@@ -92,6 +92,8 @@ def lifecycle(research_s: dict, edit_s: dict, paper_s: dict, controller: str) ->
         return "draft" if r == "DRAFT" else "pause"
     if r == "BLOCKED":
         return "blocked"
+    if r == "HANDOFF":
+        return "handoff"
     if r == "new":
         return "waiting"
     return {"running": "researching", "orphaned": "orphaned"}.get(controller, "stopped")

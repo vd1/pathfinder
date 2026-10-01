@@ -17,6 +17,9 @@ const duration = (seconds) => seconds == null ? "Unknown"
   : seconds < 86400 ? num(seconds / 3600) + " h" : num(seconds / 86400) + " d";
 const docURL = (path) => "/doc?path=" + encodeURIComponent(path);
 const arxivURL = (id) => "https://arxiv.org/abs/" + encodeURIComponent(id);
+// Local manuscripts and dossiers are not arXiv papers: link only identifiers arXiv would resolve.
+const isArxiv = (id) => /^\d{4}\.\d{4,5}(v\d+)?$/.test(String(id || "")) || /^[a-z-]+(\.[A-Z]{2})?\/\d{7}(v\d+)?$/.test(String(id || ""));
+let filterKeys = null;
 
 function labels() {
   const out = {};
@@ -56,10 +59,16 @@ function renderPipeline() {
   // Sizes go through the CSSOM: the page's content security policy forbids inline style attributes.
   for (const bar of $("pipeline").querySelectorAll("[data-width]")) bar.style.width = bar.dataset.width + "%";
   for (const part of $("pipeline").querySelectorAll("[data-grow]")) part.style.flexGrow = part.dataset.grow;
-  const select = $("status-filter"), chosen = select.value;
-  select.innerHTML = `<option value="all">All states</option>` + current.pipeline.flatMap((stage) => stage.states.map((s) =>
-    `<option value="${esc(s.key)}">${esc(stage.title)}: ${esc(s.label)}</option>`)).join("");
-  select.value = chosen || "all";
+  // Rebuild the state list only when the pipeline's states change: replacing the options of an open select
+  // would close it under the operator's hand on every refresh.
+  const keys = current.pipeline.flatMap((stage) => stage.states.map((s) => s.key)).join(",");
+  if (keys !== filterKeys) {
+    filterKeys = keys;
+    const select = $("status-filter"), chosen = select.value;
+    select.innerHTML = `<option value="all">All states</option>` + current.pipeline.flatMap((stage) => stage.states.map((s) =>
+      `<option value="${esc(s.key)}">${esc(stage.title)}: ${esc(s.label)}</option>`)).join("");
+    select.value = chosen || "all";
+  }
 }
 
 function renderQueue() {
@@ -73,7 +82,7 @@ function renderQueue() {
         <div class="paper-meta">${esc(u.unit)} / ${esc(u.q?.id || "")} × ${esc(u.p?.id || "")}</div>
         ${u.connexion ? `<div class="seed-preview">${esc(short(u.connexion))}</div>` : ""}</td>
       <td>${badge(u.lifecycle)}</td>
-      <td class="numeric">${u.feasibility == null ? '<span class="pending-score">--</span>' : esc(u.feasibility + " / " + u.gain)}</td>
+      <td class="numeric">${u.feasibility == null || u.gain == null ? '<span class="pending-score">--</span>' : esc(u.feasibility + " / " + u.gain)}</td>
       <td class="numeric">${u.score == null ? '<span class="pending-score">--</span>' : `<span class="score">${num(u.score)}</span>`}</td></tr>`).join("")
     : '<tr><td colspan="4" class="empty">No unit matches this filter.</td></tr>';
   $("queue-foot").textContent = "Score = feasibility × gain from the scan. A state counts each unit once, at the furthest stage it reached.";
@@ -137,7 +146,8 @@ function showDialog(label, content, {wide = false, actions = ""} = {}) {
 
 function showDocument(id, kind) {
   const u = unitOf(id);
-  if (!u || !u.documents.length) return;
+  if (!u) return;
+  if (!u.documents.length) return showUnit(id);             // nothing to read yet: show what is known
   const doc = u.documents.find((d) => d.kind === kind) || bestDocument(u);
   setHash(u.unit, doc.kind);
   const others = u.documents.filter((d) => d !== doc).map((d) =>
@@ -154,6 +164,7 @@ function showDocument(id, kind) {
 }
 
 async function showSource(path, label, actions = "") {
+  actions = `<a href="${docURL(path)}" target="_blank" rel="noopener noreferrer">Open as text</a>${actions}`;
   showDialog(label || path.split("/").at(-1), '<p class="empty">Loading source.</p>', {actions});
   try {
     const response = await fetch(docURL(path), {cache: "no-store"});
@@ -169,8 +180,8 @@ function showUnit(id) {
   const u = unitOf(id);
   if (!u) return;
   setHash(null);
-  const side = (label, paper) => paper?.id ? `<section class="detail-section"><h3>${label}: <a href="${arxivURL(paper.id)}" target="_blank"
-      rel="noopener noreferrer">${esc(paper.id)}</a></h3><p><strong>${esc(paper.title)}</strong></p><p class="detail-abstract">${esc(paper.abstract)}</p></section>` : "";
+  const side = (label, paper) => paper?.id ? `<section class="detail-section"><h3>${label}: ${isArxiv(paper.id)
+      ? `<a href="${arxivURL(paper.id)}" target="_blank" rel="noopener noreferrer">${esc(paper.id)}</a>` : esc(paper.id)}</h3><p><strong>${esc(paper.title)}</strong></p><p class="detail-abstract">${esc(paper.abstract)}</p></section>` : "";
   const axis = (label, s) => `<p><strong>${label}</strong> ${esc(s.status || "none")}${s.reason ? ": " + esc(s.reason) : ""}</p>`;
   showDialog("Unit " + u.unit, `<h2>${esc(pairTitle(u))}</h2><p>${badge(u.lifecycle)}</p>
     <div class="record-actions">${u.documents.map((d) => readButton(u, d, d.kind + (d.stale ? " (stale)" : ""))).join("")}</div>
