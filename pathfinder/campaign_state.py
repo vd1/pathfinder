@@ -4,7 +4,7 @@ Derived, never authoritative: status files say where each unit stands, receipts 
 when things happened. Research, editorial and assessment states stay separate, so "DRAFT" research with
 a blocked edit reads as both. A cut event stream makes progress "unknown" rather than inferred."""
 from __future__ import annotations
-import calendar, json, os, time
+import calendar, json, os, re, time
 from collections import Counter
 from pathlib import Path
 from . import edit, events, paper, research, transport
@@ -21,7 +21,8 @@ def _json(path: Path):
         return None
 
 
-def _scores(campaign) -> dict:
+def _scan(campaign) -> dict:
+    """The scan row per pair (feasibility, gain, connexion, rationale)."""
     out = {}
     path = campaign.path("scan.jsonl")
     for line in (path.read_text().splitlines() if path.is_file() else []):
@@ -29,9 +30,33 @@ def _scores(campaign) -> dict:
             row = json.loads(line)
         except ValueError:
             continue
-        if row.get("feasibility") is not None and row.get("gain") is not None:
-            out[row["pair_id"]] = row["feasibility"] * row["gain"]
+        if isinstance(row, dict) and row.get("pair_id"):
+            out[row["pair_id"]] = row
     return out
+
+
+def _corpus(campaign, side: str) -> list[dict]:
+    path = campaign.path(f"{side}.jsonl")
+    rows = []
+    for line in (path.read_text().splitlines() if path.is_file() else []):
+        try:
+            row = json.loads(line)
+        except ValueError:
+            row = {}
+        rows.append(row if isinstance(row, dict) else {})
+    return rows
+
+
+def _paper(rows: list[dict], index: int) -> dict:
+    row = rows[index - 1] if 0 < index <= len(rows) else {}
+    return {"id": row.get("id"), "title": row.get("title"), "abstract": row.get("abstract")}
+
+
+def _summary(campaign, unit: str, research_s: dict) -> str | None:
+    verdicts = _json(campaign.thread_dir(unit) / f"{unit}.verdict.json") or []
+    if isinstance(verdicts, list) and verdicts and isinstance(verdicts[-1], dict) and verdicts[-1].get("reason"):
+        return verdicts[-1]["reason"]
+    return research_s.get("reason")
 
 
 def _documents(campaign, unit: str) -> list[dict]:
@@ -116,7 +141,15 @@ def build(campaign) -> dict:
     runner_alive = bool(runner_info["pid_alive"]) and runner_info["status"] in ("running", "draining")
     receipts = transport.receipts(campaign)
     shortlist = (_json(campaign.path("shortlist.json")) or {}).get("pairs", [])
-    scores = _scores(campaign)
+    scan = _scan(campaign)
+    Q, P = _corpus(campaign, "Q"), _corpus(campaign, "P")
+    per_unit = {}
+    for r in receipts:
+        u = per_unit.setdefault(r.get("thread"), {"calls": 0, "input_tokens": 0, "output_tokens": 0, "seconds": 0.0})
+        u["calls"] += 1
+        u["input_tokens"] += r.get("input_tokens") or 0
+        u["output_tokens"] += r.get("output_tokens") or 0
+        u["seconds"] += r.get("seconds") or 0
     active = set()
     for path in sorted(campaign.path("active-calls").glob("*.json")) if campaign.path("active-calls").is_dir() else []:
         call = _json(path) or {}
@@ -146,7 +179,14 @@ def build(campaign) -> dict:
             if status_doc.get("status") in ("BLOCKED", "blocked"):
                 blocks.setdefault(_block_key(status_doc), []).append(unit)
         controller = _controller(r_s, e_s, p_s, active, set(runner_info["active_pairs"]), runner_alive, unit)
-        units.append({"unit": unit, "score": scores.get(unit),
+        row = scan.get(unit, {})
+        f, g = row.get("feasibility"), row.get("gain")
+        match = re.fullmatch(r"Q(\d+)P(\d+)", unit)
+        q, p = (_paper(Q, int(match.group(1))), _paper(P, int(match.group(2)))) if match else ({}, {})
+        units.append({"unit": unit, "score": f * g if f is not None and g is not None else None,
+                      "feasibility": f, "gain": g, "connexion": row.get("connexion"), "q": q, "p": p,
+                      "summary": _summary(campaign, unit, r_s),
+                      "usage": per_unit.get(unit, {"calls": 0, "input_tokens": 0, "output_tokens": 0, "seconds": 0.0}),
                       "research": {k: r_s.get(k) for k in ("status", "stage", "round", "reason")},
                       "editorial": {"status": e_s.get("status"), "reason": e_s.get("reason")},
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
@@ -180,6 +220,12 @@ def build(campaign) -> dict:
         "runner": runner_info,
         "stages": {name: dict(c) for name, c in stages.items()},
         "pipeline": pipeline,
+        "usage": {"calls": len(receipts), "completed": sum(r.get("outcome") == "completed" for r in receipts),
+                  "calls_with_usage": sum(r.get("input_tokens") is not None for r in receipts),
+                  "input_tokens": sum(r.get("input_tokens") or 0 for r in receipts),
+                  "cache_read": sum(r.get("cache_read") or 0 for r in receipts),
+                  "output_tokens": sum(r.get("output_tokens") or 0 for r in receipts),
+                  "seconds": round(sum(r.get("seconds") or 0 for r in receipts), 1)},
         "blocks": [{"class": cls, "cause": cause, "units": sorted(set(us)), "count": len(us)}
                    for (cls, cause), us in sorted(blocks.items(), key=lambda kv: -len(kv[1]))],
         "units": units,

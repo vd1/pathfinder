@@ -189,3 +189,20 @@ def test_every_unit_has_exactly_one_pipeline_position(tmp_path):
     assert position == {"Q1P1": "accepted", "Q1P2": "noted", "Q1P3": "blocked", "Q1P4": "orphaned", "Q1P5": "waiting"}
     assert sum(stage["count"] for stage in s["pipeline"]) == len(units)
     assert [stage["title"] for stage in s["pipeline"]] == [t for t, _ in campaign_state.PIPELINE]
+
+
+def test_units_carry_titles_scores_summary_and_usage(tmp_path):
+    c = make(tmp_path)
+    c.path("scan.jsonl").write_text(json.dumps({"pair_id": "Q1P1", "feasibility": 7, "gain": 6, "connexion": "a bridge"}) + "\n")
+    c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in (
+        {"thread": "Q1P1", "stage": "peer", "outcome": "completed", "input_tokens": 100, "output_tokens": 5, "seconds": 3.0},
+        {"thread": "Q1P1", "stage": "verify", "outcome": "timeout", "input_tokens": None, "output_tokens": None, "seconds": 9.0})))
+    d = c.thread_dir("Q1P1"); d.mkdir(parents=True)
+    (d / "Q1P1.verdict.json").write_text(json.dumps([{"decision": "PAUSE", "reason": "missing proof"}]))
+    u = campaign_state.build(c)["units"][0]
+    assert u["q"]["title"] == "Q paper 1" and u["p"]["abstract"] == "Abstract of P1."
+    assert (u["feasibility"], u["gain"], u["connexion"]) == (7, 6, "a bridge")
+    assert u["summary"] == "missing proof"
+    assert u["usage"] == {"calls": 2, "input_tokens": 100, "output_tokens": 5, "seconds": 12.0}
+    usage = campaign_state.build(c)["usage"]
+    assert (usage["calls"], usage["completed"], usage["calls_with_usage"]) == (2, 1, 1)
