@@ -158,9 +158,12 @@ def _external_citations(d):
             document = Path(record["document"])
             if any((d / parent).is_symlink() for parent in (document, *document.parents)):
                 raise ValueError(f"Aliased external citation document: {document}")
-            url = urlsplit(record["url"])
-            if url.scheme not in ("http", "https") or not url.netloc or record["status"] not in ("external", "unavailable"):
-                raise ValueError("external citation requires an absolute HTTP(S) URL and availability status")
+            if record["status"] not in ("external", "unavailable", "output"):
+                raise ValueError("external citation status must be external, unavailable or output")
+            if record["status"] != "output":       # a planned output of the cited work has no URL
+                url = urlsplit(record["url"])
+                if url.scheme not in ("http", "https") or not url.netloc:
+                    raise ValueError("external citation requires an absolute HTTP(S) URL and availability status")
             bound = (d / document).read_bytes()
             seq = None
             if str(document) == "ledger.jsonl":
@@ -180,6 +183,15 @@ def _external_citations(d):
         return content, citations
     except (OSError, UnicodeError, ValueError, KeyError, TypeError) as error:
         raise EvidenceUnavailable(f"Invalid external citation declaration: {error}") from error
+
+
+def _declared_outputs(d) -> set:
+    """(document, ledger_seq, path) of every planned output in the declaration; call after _external_citations."""
+    declaration = d / "external-references.json"
+    if not declaration.is_file():
+        return set()
+    records = json.loads(declaration.read_text()).get("references", [])
+    return {(r["document"], r.get("ledger_seq"), r["path"]) for r in records if r.get("status") == "output"}
 
 
 def _stage_attempts(campaign):
@@ -262,6 +274,9 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
                 else:
                     paths.add(d / name)
     parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
+    for document, seq, name in sorted(_declared_outputs(d), key=str):
+        if not (d / name).exists():                 # planned but not produced: a gap in the record, not a dependency
+            parts.append(f"## {name}\n\n(declared planned output of {document} entry {seq}; not produced, so not evidence)")
     errors = []                              # every problem of this review, typed, raised together at the end
 
     def problem(code, path, message, detail=None):

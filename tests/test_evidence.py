@@ -86,3 +86,20 @@ def test_all_strict_errors_are_reported_together(tmp_path):
     assert [e["path"] for e in error.errors] == ["ada/one.json", "ada/two.json"]
     assert all(e["code"] == "missing" for e in error.errors)
     assert str(error).startswith("missing evidence: ada/one.json") and "and 1 more" in str(error)
+
+
+def test_a_declared_output_that_does_not_exist_is_a_gap(tmp_path):
+    import hashlib, json
+    from pathfinder import research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    d = research.prepare(c, "Q1P1")
+    text = "the script ada/audit.py writes ada/coverage.json"
+    (d / "ada" / "audit.py").write_text("print(1)")
+    seq = Ledger(d / "ledger.jsonl").add("ada", "finding", text)
+    (d / "external-references.json").write_text(json.dumps({"version": 1, "references": [
+        {"document": "ledger.jsonl", "ledger_seq": seq, "path": "ada/coverage.json", "status": "output",
+         "text_sha256": hashlib.sha256(text.encode()).hexdigest()}]}))
+    material = research._review_material(c, "Q1P1")
+    assert "declared planned output" in material and "ada/coverage.json" in material
