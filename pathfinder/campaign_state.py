@@ -46,6 +46,32 @@ def _documents(campaign, unit: str) -> list[dict]:
     return out
 
 
+PIPELINE = [
+    ("Selected", [("waiting", "Waiting")]),
+    ("Research", [("researching", "In progress"), ("stopped", "Stopped"), ("orphaned", "Orphaned")]),
+    ("Outcome", [("draft", "DRAFT"), ("pause", "Paused"), ("blocked", "Blocked")]),
+    ("Readable note", [("editing", "Editing"), ("noted", "Note ready"), ("note-blocked", "Note blocked")]),
+    ("Paper", [("writing", "Writing"), ("accepted", "Accepted"), ("amend", "Amendments asked"), ("paper-blocked", "Paper blocked")]),
+]
+
+
+def lifecycle(research_s: dict, edit_s: dict, paper_s: dict, controller: str) -> str:
+    """The unit's single pipeline position: the furthest stage it has reached, then that stage's state."""
+    p, e, r = paper_s.get("status"), edit_s.get("status"), research_s.get("status", "new")
+    if p:
+        return {"ACCEPTED": "accepted", "PAUSE-ON-AMEND": "amend", "blocked": "paper-blocked",
+                "stopped": "paper-blocked"}.get(p, "writing")
+    if e and e != "none":
+        return {"done": "noted", "blocked": "note-blocked", "stopped": "note-blocked"}.get(e, "editing")
+    if r in research.TERMINAL:
+        return "draft" if r == "DRAFT" else "pause"
+    if r == "BLOCKED":
+        return "blocked"
+    if r == "new":
+        return "waiting"
+    return {"running": "researching", "orphaned": "orphaned"}.get(controller, "stopped")
+
+
 IN_PROGRESS = {"running", "editing", "writing", "reviewing"}
 
 
@@ -119,12 +145,17 @@ def build(campaign) -> dict:
         for status_doc in (r_s, e_s, p_s):
             if status_doc.get("status") in ("BLOCKED", "blocked"):
                 blocks.setdefault(_block_key(status_doc), []).append(unit)
+        controller = _controller(r_s, e_s, p_s, active, set(runner_info["active_pairs"]), runner_alive, unit)
         units.append({"unit": unit, "score": scores.get(unit),
                       "research": {k: r_s.get(k) for k in ("status", "stage", "round", "reason")},
                       "editorial": {"status": e_s.get("status"), "reason": e_s.get("reason")},
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
-                      "controller": _controller(r_s, e_s, p_s, active, set(runner_info["active_pairs"]), runner_alive, unit),
+                      "controller": controller, "lifecycle": lifecycle(r_s, e_s, p_s, controller),
                       "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit)})
+    counts = Counter(u["lifecycle"] for u in units)
+    pipeline = [{"title": title, "count": sum(counts[k] for k, _ in states),
+                 "states": [{"key": k, "label": label, "count": counts[k]} for k, label in states]}
+                for title, states in PIPELINE]
     stamps = [row["at"] for row in rows if isinstance(row.get("at"), str)]
     last = stamps[-1] if stamps else None
     try:
@@ -147,7 +178,8 @@ def build(campaign) -> dict:
                      "execution_id": run.get("execution_id"), "stop": _json(campaign.path("stop.json"))},
         "progress": {"status": progress, "last_event_at": last, "events_truncated": truncated, "events_corrupt": corrupt},
         "runner": runner_info,
-        "stages": {name: dict(counts) for name, counts in stages.items()},
+        "stages": {name: dict(c) for name, c in stages.items()},
+        "pipeline": pipeline,
         "blocks": [{"class": cls, "cause": cause, "units": sorted(set(us)), "count": len(us)}
                    for (cls, cause), us in sorted(blocks.items(), key=lambda kv: -len(kv[1]))],
         "units": units,

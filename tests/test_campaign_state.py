@@ -165,3 +165,27 @@ def test_terminal_research_awaiting_edit_is_queued_in_the_edit_stage(tmp_path):
     s = campaign_state.build(c)
     assert s["stages"]["edit"] == {"queued": 1, "done": 1}
     assert s["stages"]["paper"] == {"queued": 1}
+
+
+def _states(c, unit, research_status, edit_status=None, paper_status=None):
+    c.thread_dir(unit).mkdir(parents=True, exist_ok=True)
+    research._set(c, unit, status=research_status)
+    if edit_status:
+        edit._set(c, unit, status=edit_status)
+    if paper_status:
+        from pathfinder import paper
+        paper._set(c, unit, status=paper_status)
+
+
+def test_every_unit_has_exactly_one_pipeline_position(tmp_path):
+    units = ("Q1P1", "Q1P2", "Q1P3", "Q1P4", "Q1P5")
+    c = make(tmp_path, pairs=units)
+    _states(c, "Q1P1", "DRAFT", "done", "ACCEPTED")
+    _states(c, "Q1P2", "PAUSE", "done")
+    _states(c, "Q1P3", "BLOCKED")
+    _states(c, "Q1P4", "running")
+    s = campaign_state.build(c)
+    position = {u["unit"]: u["lifecycle"] for u in s["units"]}
+    assert position == {"Q1P1": "accepted", "Q1P2": "noted", "Q1P3": "blocked", "Q1P4": "orphaned", "Q1P5": "waiting"}
+    assert sum(stage["count"] for stage in s["pipeline"]) == len(units)
+    assert [stage["title"] for stage in s["pipeline"]] == [t for t, _ in campaign_state.PIPELINE]
