@@ -55,3 +55,17 @@ def test_foreign_host_origin_and_paths_are_refused(server):
     assert get(port, "/api/state", {"Origin": "http://evil.example"})[0] == 403
     assert get(port, "/doc?path=campaign.json")[0] == 404
     assert get(port, "/campaign.json")[0] == 404
+
+
+def test_page_has_the_operator_sections_and_valid_script(server):
+    import shutil, subprocess
+    from pathlib import Path
+    _, port = server
+    body = get(port, "/")[2].decode()
+    for section in ('id="params"', 'id="pipeline"', 'id="blocks"', 'id="units"', 'id="reader"'):
+        assert section in body
+    script = Path(view.__file__).with_name("view.js")
+    assert "#note=" in script.read_text() and "stale" in script.read_text()
+    node = shutil.which("node")
+    if node:
+        assert subprocess.run([node, "--check", str(script)], capture_output=True).returncode == 0

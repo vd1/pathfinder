@@ -1,1 +1,22 @@
-<!doctype html><html><head><link rel="stylesheet" href="view.css"></head><body><script src="view.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pathfinder view</title>
+<link rel="stylesheet" href="view.css">
+</head>
+<body>
+<header><h1 id="title">Pathfinder</h1><span id="progress" class="pill"></span><span class="spacer"></span><span id="updated" class="muted"></span></header>
+<main>
+  <section id="params" class="card"></section>
+  <section id="pipeline"></section>
+  <section id="blocks"></section>
+  <div class="split">
+    <section id="units" class="card"></section>
+    <section id="reader" class="card"><p class="muted">Select a unit to read its documents.</p></section>
+  </div>
+</main>
+<script src="view.js"></script>
+</body>
+</html>
