@@ -88,6 +88,11 @@ const state = (activity, summary) => ({
   w.api.showUnit("Q1P1");
   out.no_arxiv_link_for_local_ids = !w.el("detail-content").innerHTML.includes("arxiv.org/abs/pathfinder");
   out.no_null_scores = !w.el("queue-body").innerHTML.includes("null");
+  const big = state("a"); big.usage.input_tokens = 21621252; big.usage.cache_read = 20201984; big.usage.output_tokens = 182469;
+  w = await world(big);
+  const shown = w.el("usage").innerHTML.replace(/<[^>]*>/g, "");          // visible text; exact counts stay in titles
+  out.usage_in_human_units = shown.includes("21.6 M") && shown.includes("182 k") && !shown.includes("21,621,252")
+    && w.el("usage").innerHTML.includes('title="21,621,252"');
   w = await world(state("a", "<img src=x onerror=1>"));
   const html = w.el("research-list").innerHTML;
   out.escaped = html.includes("&lt;img") && !html.includes("<img");

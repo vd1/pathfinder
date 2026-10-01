@@ -8,6 +8,15 @@ const $ = (id) => document.getElementById(id);
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) =>
   ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const num = (value) => value == null ? "Unknown" : Number(value).toLocaleString("en-GB", {maximumFractionDigits: 1});
+// Large counts in human units: 21.6 M, 182 k; the exact value stays in the title attribute.
+const human = (value) => {
+  if (value == null) return "Unknown";
+  const n = Number(value), abs = Math.abs(n);
+  const [div, unit] = abs >= 1e9 ? [1e9, " G"] : abs >= 1e6 ? [1e6, " M"] : abs >= 1e3 ? [1e3, " k"] : [1, ""];
+  const scaled = n / div;
+  return (div === 1 ? String(n) : scaled.toFixed(Math.abs(scaled) >= 100 ? 0 : 1)) + unit;
+};
+const tokens = (value) => `<span title="${esc(num(value))}">${esc(human(value))}</span>`;
 const short = (value, length = 180) => String(value || "").length > length
   ? String(value).slice(0, length - 3) + "..." : String(value || "");
 const when = (value) => value ? String(value).replace("T", " ").replace("Z", " UTC") : "Not yet";
@@ -103,8 +112,8 @@ function renderDesk() {
 function renderUsage() {
   const u = current.usage;
   $("usage").innerHTML = `<dl class="usage-grid">
-    <div><dt>Input tokens reported</dt><dd>${num(u.input_tokens)} <small>${num(u.cache_read)} cached</small></dd></div>
-    <div><dt>Output tokens reported</dt><dd>${num(u.output_tokens)}</dd></div>
+    <div><dt>Input tokens reported</dt><dd>${tokens(u.input_tokens)} <small>${tokens(u.cache_read)} cached</small></dd></div>
+    <div><dt>Output tokens reported</dt><dd>${tokens(u.output_tokens)}</dd></div>
     <div><dt>Summed call time</dt><dd>${duration(u.seconds)}</dd></div>
     <div><dt>Calls completed</dt><dd>${u.completed} <small>of ${u.calls}</small></dd></div></dl>
     <p class="small-copy">Subscription-backed: dollar cost and the remaining allowance are not reported.
@@ -190,8 +199,8 @@ function showUnit(id) {
       <p>${esc(u.connexion || "")}</p></section>
     <section class="detail-section"><h3>States</h3>${axis("Research", u.research)}${axis("Readable note", u.editorial)}${axis("Paper", u.assessment)}
       <p class="small-copy">Now ${esc(u.controller)}; last activity ${esc(when(u.last_activity))}.</p></section>
-    <section class="detail-section"><h3>Usage</h3><p>${u.usage.calls} calls, ${num(u.usage.input_tokens)} input and
-      ${num(u.usage.output_tokens)} output tokens, ${duration(u.usage.seconds)} of call time.</p></section>`);
+    <section class="detail-section"><h3>Usage</h3><p>${u.usage.calls} calls, ${tokens(u.usage.input_tokens)} input and
+      ${tokens(u.usage.output_tokens)} output tokens, ${duration(u.usage.seconds)} of call time.</p></section>`);
 }
 
 // A link such as #note=Q1P1&doc=paper opens that unit's document, so a note can be shared as a URL.
