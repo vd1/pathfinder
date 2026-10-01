@@ -223,8 +223,12 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
     campaign.json a cited file that is missing, unreadable, not UTF-8 text or larger than
     "evidence_max_bytes" also blocks; otherwise readable binary or oversized files are listed with
     size and digest, while missing or unreadable files are explicitly named as unavailable."""
+    from . import evidence
     strict = bool(campaign.raw.get("strict_evidence"))
     limit = int(campaign.raw.get("evidence_max_bytes", EVIDENCE_MAX_BYTES))
+    bundles = list((campaign.raw or {}).get("research_bundles") or [])
+    sources = evidence.registered_sources(campaign, d.name)
+    resolved, ambiguous = {}, {}            # path -> (cited name, kind); cited name -> candidate paths
     paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
     declaration, citations = _external_citations(d)
     for _, _, name in citations:                    # present declared files keep the ordinary checks
@@ -237,11 +241,32 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
     for line in references.splitlines():            # exempt only the declared entry; another may need the file
         if line.strip():
             row = json.loads(line)
-            paths.update(d / name for name in _evidence_references(row["text"])
-                         if ("ledger.jsonl", row["seq"], name) not in citations)
+            for name in _evidence_references(row["text"]):
+                if ("ledger.jsonl", row["seq"], name) in citations:
+                    continue
+                found = evidence.resolve(d, name, bundles, sources)
+                if found.kind in ("namespace", "source"):
+                    resolved[found.path] = (name, found.kind)
+                    paths.add(found.path)
+                elif found.kind == "ambiguous":
+                    ambiguous[name] = found.candidates
+                else:
+                    paths.add(d / name)
     parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
+    for name, candidates in sorted(ambiguous.items()):
+        if strict:
+            raise EvidenceUnavailable(f"missing evidence: {name} (ambiguous: {', '.join(candidates)})")
+        parts.append(f"## {name}\n\n(cited in the ledger; ambiguous between {', '.join(candidates)}; declare which one)")
     for path in sorted(paths):
+        cited, how = resolved.get(path, (None, "local"))
+        if how == "source":                      # a campaign file registered for this pair, read by its own bytes
+            data = path.read_bytes()
+            label = f"{cited} (resolved to campaign:{path.relative_to(Path(campaign.root).resolve())})"
+            parts.append(f"## {label}\n\n(file: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})"
+                         if by_reference or len(data) > limit else f"## {label}\n\n{data.decode('utf-8', errors='replace')}")
+            continue
         relative = path.relative_to(d)
+        heading = f"{cited} (resolved to {relative})" if how == "namespace" else str(relative)
         if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
             raise EvidenceUnavailable(f"aliased evidence path: {relative}")
         if path.exists() and not path.resolve().is_relative_to(d.resolve()):
@@ -259,7 +284,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
             parts.append(f"## {relative}\n\n(not inlined: unreadable file: {error})")
             continue
         if by_reference:
-            parts.append(f"## {relative}\n\n(file in your working directory: {len(data)} bytes, "
+            parts.append(f"## {heading}\n\n(file in your working directory: {len(data)} bytes, "
                          f"sha256 {hashlib.sha256(data).hexdigest()}; read it with your tools)")
             continue
         try:
@@ -269,9 +294,9 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
         except UnicodeError as error:
             if strict:
                 raise EvidenceUnavailable(f"evidence not inlinable as text: {relative}: {error}") from error
-            parts.append(f"## {relative}\n\n(not inlined: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})")
+            parts.append(f"## {heading}\n\n(not inlined: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})")
             continue
-        parts.append(f"## {relative}\n\n{text}")
+        parts.append(f"## {heading}\n\n{text}")
     return "\n\n".join(parts)
 
 

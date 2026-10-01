@@ -36,3 +36,45 @@ def cited_files(text: str) -> list[str]:
         if classify(token) == "file" and token not in out:
             out.append(token)
     return out
+
+
+@dataclass(frozen=True)
+class Resolution:
+    kind: str                                  # local, namespace, source, missing or ambiguous
+    path: Path | None = None
+    candidates: tuple = ()
+
+
+def resolve(d: Path, name: str, bundles: list[str], sources: dict) -> Resolution:
+    """Where a cited file is: in the thread, in exactly one branch bundle under the same relative name,
+    or as a campaign source registered for this pair. Two bundle matches are an ambiguity."""
+    if (d / name).is_file():
+        return Resolution("local", d / name)
+    matches = tuple(f"{b}/{name}" for b in bundles if (d / b / name).is_file())
+    if len(matches) == 1:
+        return Resolution("namespace", d / matches[0], matches)
+    if len(matches) > 1:
+        return Resolution("ambiguous", None, matches)
+    if name in sources:
+        return Resolution("source", sources[name])
+    return Resolution("missing")
+
+
+def registered_sources(campaign, pair_id: str) -> dict:
+    """Campaign files named by the pair's corpus rows (text, raw, any string field), by campaign-relative path."""
+    import json
+    m = re.fullmatch(r"Q(\d+)P(\d+)", pair_id)
+    if not m:
+        return {}
+    root = Path(campaign.root).resolve()
+    out = {}
+    for side, index in (("Q", int(m.group(1))), ("P", int(m.group(2)))):
+        path = campaign.path(f"{side}.jsonl")
+        rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()] if path.is_file() else []
+        row = rows[index - 1] if 0 < index <= len(rows) else {}
+        for value in row.values():
+            if isinstance(value, str) and "/" in value and not value.startswith(("http://", "https://")):
+                target = (root / value).resolve()
+                if target.is_relative_to(root) and target.is_file():
+                    out[value] = target
+    return out
