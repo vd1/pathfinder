@@ -135,6 +135,13 @@ def components(rec: dict) -> dict:
             "styles": rec.get("styles"), "tex": rec.get("tex"), "corpus": rec.get("corpus")}
 
 
+def execution_id(rec: dict) -> str:
+    """One identifier for what actually ran: the runtime bytes (uncommitted changes included), the
+    deployment, extensions, configuration, prompts and styles. Two runs from one commit with different
+    working files differ; a commit id alone is not used."""
+    return _sha(json.dumps(components(rec), sort_keys=True, default=str).encode())
+
+
 def changes(previous: dict, current: dict) -> list[str]:
     a, b = components(previous), components(current)
     return [k for k in COMPONENTS if a.get(k) != b.get(k)]
@@ -174,9 +181,13 @@ def start(campaign, run_id: str, accept_change: str | None = None, links: dict |
         current["previous_run_id"] = previous.get("run_id")
     if changed:
         current["accepted_change"] = {"components": changed, "reason": accept_change}
+    current["execution_id"] = execution_id(current)
     path.write_text(json.dumps(current, indent=1))
     with campaign.path("runs.jsonl").open("a") as stream:
         stream.write(json.dumps(current) + "\n")
+    from . import events
+    events.emit(campaign, "run_started", execution_id=current["execution_id"],
+                previous_run_id=current.get("previous_run_id"))
     return current, changed
 
 

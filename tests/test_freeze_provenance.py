@@ -234,3 +234,22 @@ def test_a_foreign_run_id_on_a_shared_campaign_object_is_not_a_nested_run(tmp_pa
     c.run_id = "someone-else"
     with provenance.run_context(c) as run_id:
         assert run_id != "someone-else" and json.loads((tmp_path / "run.json").read_text())["run_id"] == run_id
+
+
+def test_execution_id_follows_the_running_bytes_not_the_commit():
+    from pathfinder import provenance
+    rec = {"engine": {"kind": "checkout", "runtime_sha256": "a" * 64}, "config": {"sha256": "c"}}
+    same = {"engine": {"kind": "checkout", "runtime_sha256": "a" * 64, "commit": "different"}, "config": {"sha256": "c"}}
+    dirty = {"engine": {"kind": "checkout", "runtime_sha256": "b" * 64}, "config": {"sha256": "c"}}
+    assert provenance.execution_id(rec) == provenance.execution_id(same)
+    assert provenance.execution_id(rec) != provenance.execution_id(dirty)
+
+
+def test_a_run_record_carries_its_execution_id_and_emits_run_started(tmp_path):
+    from pathfinder import events, provenance
+    from stubcampaign import make
+    c = make(tmp_path)
+    rec, _ = provenance.start(c, "run-1")
+    assert rec["execution_id"] == provenance.execution_id(rec)
+    started = [r for r in events.read(c)[0] if r["kind"] == "run_started"]
+    assert started[-1]["execution_id"] == rec["execution_id"]
