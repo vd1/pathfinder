@@ -211,3 +211,17 @@ def test_snapshot_counts_failures_by_class_and_explains_a_quota_stop(tmp_path):
     assert s["failures_by_class"] == {"quota": 1, "timeout": 1}
     assert s["recent_failures"][0]["failure"]["class"] == "quota"
     assert any("quota" in w and "Oct 4th" in w for w in s["warnings"])
+
+
+def test_snapshot_warns_when_an_allowance_is_below_observed_durations(tmp_path):
+    import json
+    from pathfinder import health
+    from stubcampaign import make
+    c = make(tmp_path)
+    rows = [{"stage": "edit", "outcome": "timeout", "seconds": 240.0, "error": "timeout"},
+            {"stage": "edit", "outcome": "completed", "seconds": 410.0}]
+    c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    s = health.snapshot(c)
+    row = next(a for a in s["allowances"] if a["stage"] == "edit")
+    assert (row["timeouts"], row["longest_completed_seconds"], row["allowance"]) == (1, 410.0, 60)
+    assert any("edit_seconds" in w and "410" in w for w in s["warnings"])

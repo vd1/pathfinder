@@ -102,6 +102,28 @@ def owner(campaign, nested: bool = False):
             fcntl.flock(handle, fcntl.LOCK_UN)
 
 
+ALLOWANCE_KEYS = {"peer": "peer_seconds", "consolidate": "consolidate_seconds", "verify": "verify_seconds",
+                  "edit": "edit_seconds", "author": "paper_seconds", "review": "review_seconds"}
+
+
+def _allowances(campaign, receipts, warnings) -> list[dict]:
+    """Per stage: the allowance, its timeouts, and the longest completed call, so a too-short allowance is visible."""
+    out = []
+    for stage, key in ALLOWANCE_KEYS.items():
+        rows = [r for r in receipts if r.get("stage") == stage]
+        if not rows:
+            continue
+        timeouts = sum(r.get("outcome") == "timeout" for r in rows)
+        completed = [r.get("seconds") or 0 for r in rows if r.get("outcome") == "completed"]
+        longest = max(completed) if completed else None
+        allowance = (campaign.allowances or {}).get(key)
+        out.append({"stage": stage, "allowance": allowance, "timeouts": timeouts, "longest_completed_seconds": longest})
+        if timeouts:
+            warnings.append(f"{timeouts} {stage} call(s) timed out at the {allowance} s allowance ({key})"
+                            + (f"; completed {stage} calls took up to {longest:.0f} s." if longest is not None else "."))
+    return out
+
+
 def snapshot(campaign):
     """Evidence only: overdue work is suspicious, not proof of deadlock."""
     from . import research
@@ -183,7 +205,7 @@ def snapshot(campaign):
     out = {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
             "active_calls": active, "last_completed_call": ({k: completed[-1].get(k) for k in fields} if completed else None),
             "failure_count": len(failures), "recent_failures": failures[-10:], "failure": failure,
-            "stop": stop, "failures_by_class": by_class, "work": work, "warnings": warnings,
+            "stop": stop, "failures_by_class": by_class, "allowances": _allowances(campaign, receipts, warnings), "work": work, "warnings": warnings,
             "evidence": {"receipts": str(campaign.path("receipts.jsonl")),
                          "runner": str(campaign.path("runner.json")),
                          "failures": str(campaign.path("failures.jsonl"))},
