@@ -188,3 +188,21 @@ def test_evidence_command_without_a_thread_says_so(tmp_path, capsys):
     make(tmp_path)
     assert cli.main(["--root", str(tmp_path), "evidence", "Q1P1"]) == 1
     assert "no thread for Q1P1" in capsys.readouterr().out
+
+
+def test_reconcile_unblocks_only_after_the_evidence_is_repaired(tmp_path):
+    from pathfinder import reconcile, research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True, imported_research=True)
+    d = research.prepare(c, "Q1P1")
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/result.json")
+    research.run_thread(c, "Q1P1")
+    assert research.status(c, "Q1P1")["status"] == "BLOCKED"
+    assert reconcile.inspect(c, "Q1P1")["action"].startswith("nothing: evidence still blocked: missing evidence: ada/result.json")
+    (d / "ada" / "result.json").write_text("{}")
+    assert reconcile.inspect(c, "Q1P1")["action"] == "unblock: evidence repaired"
+    reconcile.apply(c, "Q1P1")
+    s = research.status(c, "Q1P1")
+    assert s["status"] != "BLOCKED" or "missing evidence" not in (s.get("reason") or "")
+    assert s["history"][0]["from_status"] == "BLOCKED" and s["history"][0]["action"] == "unblock: evidence repaired"
