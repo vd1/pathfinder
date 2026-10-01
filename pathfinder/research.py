@@ -220,7 +220,7 @@ def _evidence_references(text: str) -> list[str]:
     return evidence.cited_files(text)
 
 
-def _assessment_evidence(campaign, d, references=None, by_reference=False) -> str:
+def _assessment_evidence(campaign, d, references=None, by_reference=False, record=None) -> str:
     """@planks("the request contains the complete calculation evidence with its source paths")
     @planks("the request contains the complete prior account and peer artefact contents")
     @planks("the request contains the complete current account and peer artefact contents")
@@ -273,24 +273,33 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
                     ambiguous[name] = found.candidates
                 else:
                     paths.add(d / name)
-    parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
-    for document, seq, name in sorted(_declared_outputs(d), key=str):
-        if not (d / name).exists():                 # planned but not produced: a gap in the record, not a dependency
-            parts.append(f"## {name}\n\n(declared planned output of {document} entry {seq}; not produced, so not evidence)")
     errors = []                              # every problem of this review, typed, raised together at the end
 
     def problem(code, path, message, detail=None):
         errors.append({"code": code, "path": str(path), "detail": detail, "message": message})
+        keep(None, path, code)
 
+    def keep(cited, path, kind, data=None):           # one manifest entry per decision, when asked for
+        if record is not None:
+            record.append({"cited": cited, "path": str(path), "kind": kind, "bytes": len(data) if data is not None else None,
+                           "sha256": hashlib.sha256(data).hexdigest() if data is not None else None})
+
+    parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
+    for document, seq, name in sorted(_declared_outputs(d), key=str):
+        if not (d / name).exists():                 # planned but not produced: a gap in the record, not a dependency
+            keep(name, name, "declared-output")
+            parts.append(f"## {name}\n\n(declared planned output of {document} entry {seq}; not produced, so not evidence)")
     for name, candidates in sorted(ambiguous.items()):
         if strict:
             problem("ambiguous", name, f"missing evidence: {name} (ambiguous: {', '.join(candidates)})", list(candidates))
             continue
+        keep(name, name, "ambiguous")
         parts.append(f"## {name}\n\n(cited in the ledger; ambiguous between {', '.join(candidates)}; declare which one)")
     for path in sorted(paths):
         cited, how = resolved.get(path, (None, "local"))
         if how == "source":                      # a campaign file registered for this pair, read by its own bytes
             data = path.read_bytes()
+            keep(cited, "campaign:" + str(path.relative_to(Path(campaign.root).resolve())), "source", data)
             label = f"{cited} (resolved to campaign:{path.relative_to(Path(campaign.root).resolve())})"
             parts.append(f"## {label}\n\n(file: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})"
                          if by_reference or len(data) > limit else f"## {label}\n\n{data.decode('utf-8', errors='replace')}")
@@ -307,6 +316,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
             if strict:
                 problem("missing", relative, f"missing evidence: {relative}")
                 continue
+            keep(None, relative, "missing")
             parts.append(f"## {relative}\n\n(cited in the ledger; no such file)")
             continue
         try:
@@ -317,6 +327,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
                 continue
             parts.append(f"## {relative}\n\n(not inlined: unreadable file: {error})")
             continue
+        keep(cited, relative, "namespace" if how == "namespace" else "local", data)
         if by_reference:
             parts.append(f"## {heading}\n\n(file in your working directory: {len(data)} bytes, "
                          f"sha256 {hashlib.sha256(data).hexdigest()}; read it with your tools)")
@@ -668,7 +679,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
 
 
-def _bundle_evidence(campaign, d, by_reference=False):
+def _bundle_evidence(campaign, d, by_reference=False, record=None):
     """@planks("each stage receives all three ledgers and their referenced evidence")
     @planks("it includes those thread-relative bundle directories with their original reference namespaces")
     """
@@ -686,7 +697,10 @@ def _bundle_evidence(campaign, d, by_reference=False):
         except (OSError, UnicodeError) as error:
             raise EvidenceUnavailable(f"Unreadable evidence {name}/ledger.jsonl: {error}") from error
         parts.append(f"## {name}/ledger.jsonl\n\n{content}")
-        evidence = _assessment_evidence(campaign, root, by_reference=by_reference)
+        inner = [] if record is not None else None
+        evidence = _assessment_evidence(campaign, root, by_reference=by_reference, record=inner)
+        for entry in inner or []:
+            record.append({**entry, "path": f"{name}/{entry['path']}"})
         parts.append(evidence.replace("## ", f"## {name}/"))
     return "\n\n".join(parts)
 
@@ -709,8 +723,18 @@ def _review_material(campaign, pair_id, review_id=None):
     material = (thread_head(d, _inputs(d), ledger=False, inline_limit=papers_limit(campaign))
                 + "\n\n## ledger.jsonl\n\n" + ledger_text)
     by_reference = evidence_by_reference(campaign)
-    material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference)
-    material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference)
+    record, failure = [], None
+    try:
+        material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference, record=record)
+        material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference, record=record)
+    except EvidenceUnavailable as error:
+        failure = error
+        raise
+    finally:                                      # the manifest records what this review found, blocked or not
+        _atomic_write(d / "evidence-manifest.json", json.dumps({
+            "generated_at": _now(), "files": record,
+            "errors": getattr(failure, "errors", [{"code": "declaration", "path": None, "detail": None,
+                                                   "message": str(failure)}] if failure else [])}, indent=1).encode())
     if by_reference:
         material += "\n\n" + READING
     if campaign.raw.get("research_scheme", "eva") == "eva":

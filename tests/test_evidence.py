@@ -103,3 +103,23 @@ def test_a_declared_output_that_does_not_exist_is_a_gap(tmp_path):
          "text_sha256": hashlib.sha256(text.encode()).hexdigest()}]}))
     material = research._review_material(c, "Q1P1")
     assert "declared planned output" in material and "ada/coverage.json" in material
+
+
+def test_manifest_and_proposals(tmp_path, capsys):
+    import json
+    from pathfinder import cli, research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    d = research.prepare(c, "Q1P1")
+    (d / "ada" / "run.py").write_text("print(1)")
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "ran ada/run.py, see ada/missing.json")
+    m = evidence.manifest(c, "Q1P1")
+    kinds = {f["path"]: f["kind"] for f in m["files"]}
+    assert kinds["ada/run.py"] == "local" and kinds["ada/missing.json"] == "missing"
+    assert m["errors"][0]["code"] == "missing"
+    assert json.loads((d / "evidence-manifest.json").read_text())["files"] == m["files"]
+    p = evidence.proposals(m, c.thread_dir("Q1P1"))[0]
+    assert p["path"] == "ada/missing.json" and p["ledger_seq"] == 1 and len(p["text_sha256"]) == 64
+    assert cli.main(["--root", str(tmp_path), "evidence", "Q1P1", "--json"]) in (0, None)
+    assert json.loads(capsys.readouterr().out)["errors"][0]["path"] == "ada/missing.json"

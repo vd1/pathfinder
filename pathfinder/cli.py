@@ -34,6 +34,8 @@ def main(argv=None):
     vf.add_argument("dest"); vf.add_argument("--repo")
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
     sub.add_parser("status", help="print campaign and shortlist state")
+    ev = sub.add_parser("evidence", help="a pair's evidence manifest: cited files, resolutions, errors and proposed declarations")
+    ev.add_argument("pair"); ev.add_argument("--json", action="store_true")
     sub.add_parser("state", help="the campaign state document: unit states, stage counts, blocks, token budget").add_argument("--json", action="store_true")
     sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
@@ -119,6 +121,11 @@ def _dispatch(ns, c):
             c.path("stop.json").unlink(missing_ok=True); print("stop marker cleared")
         else:
             runner.request_stop(c, "operator"); print("stop requested; running commands will drain and exit")
+    elif ns.cmd == "evidence":
+        from . import evidence
+        m = evidence.manifest(c, ns.pair)
+        proposed = evidence.proposals(m, c.thread_dir(ns.pair))
+        print(json.dumps({**m, "proposals": proposed}, indent=1) if ns.json else evidence.text(m, proposed))
     elif ns.cmd == "status":
         print(monitor.status_text(c))
     elif ns.cmd == "state":

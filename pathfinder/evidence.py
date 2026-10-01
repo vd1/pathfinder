@@ -85,3 +85,48 @@ def __getattr__(name):
         from .research import EvidenceError
         return EvidenceError
     raise AttributeError(name)
+
+
+def manifest(campaign, pair_id: str) -> dict:
+    """Build the pair's review material once, which refreshes its evidence-manifest.json, and return it."""
+    import json
+    from . import research
+    try:
+        research._review_material(campaign, pair_id)
+    except research.EvidenceUnavailable:
+        pass
+    return json.loads((campaign.thread_dir(pair_id) / "evidence-manifest.json").read_text())
+
+
+def proposals(m: dict, d: Path) -> list[dict]:
+    """One proposed declaration per evidence error; nothing is written. The ledger entry binding (seq and
+    text_sha256) is filled in so a declaration can be pasted into external-references.json."""
+    import hashlib, json
+    rows = [json.loads(l) for l in (d / "ledger.jsonl").read_text().splitlines() if l.strip()] if (d / "ledger.jsonl").is_file() else []
+    out = []
+    for error in m.get("errors", []):
+        path = error.get("path")
+        entry = next((r for r in rows if path and path in cited_files(r.get("text", ""))), None)
+        binding = {"ledger_seq": entry["seq"], "text_sha256": hashlib.sha256(entry["text"].encode()).hexdigest()} if entry else {}
+        if error["code"] == "missing":
+            out.append({"path": path, **binding, "choices": ["unavailable (give the URL where it should be)",
+                                                            "output (the cited work writes it; it was not produced)",
+                                                            "external (give the URL)"]})
+        elif error["code"] == "ambiguous":
+            out.append({"path": path, **binding, "candidates": error.get("detail"),
+                        "choices": ["declare which candidate the entry means"]})
+        else:
+            out.append({"path": path, **binding, "choices": [f"repair the file: {error['message']}"]})
+    return out
+
+
+def text(m: dict, proposed: list[dict]) -> str:
+    lines = [f"evidence manifest, {m.get('generated_at')}: {len(m.get('files', []))} entries, {len(m.get('errors', []))} errors"]
+    for f in m.get("files", []):
+        size = f" {f['bytes']} bytes" if f.get("bytes") is not None else ""
+        lines.append(f"  {f['kind']:<15} {f['path']}{size}" + (f"  (cited as {f['cited']})" if f.get("cited") and f["cited"] != f["path"] else ""))
+    for e in m.get("errors", []):
+        lines.append(f"error {e['code']}: {e['message']}")
+    for p in proposed:
+        lines.append(f"proposal for {p['path']}: " + " | ".join(p["choices"]) + (f" (ledger entry {p['ledger_seq']})" if p.get("ledger_seq") else ""))
+    return "\n".join(lines)
