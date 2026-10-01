@@ -50,6 +50,11 @@ DEFAULT_MAX_PROMPT_CHARS = 1_000_000          # the Codex CLI rejects prompts ov
 UNSERVED = {"rate", "no_session", "launch"}          # the model never served the call: safe to ask again
 
 
+def _campaign_stopped(campaign) -> bool:
+    from .admission import _stop_marker
+    return _stop_marker(campaign) is not None
+
+
 def retry_policy(campaign) -> tuple[int, float]:
     raw = campaign.raw or {}
     return int(raw.get("unserved_retries", 1)), float(raw.get("retry_backoff_seconds", 30))
@@ -360,7 +365,11 @@ def execute(campaign, request: ModelRequest):
         with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
             result = _attempt(campaign, request)
         failure = result.get("failure") or {}
-        unserved = failure.get("class") in UNSERVED and failure.get("scope") != "campaign" and failure.get("retry")
+        # only a call the model never served: no session opened, so nothing was read, written or spent
+        unserved = (failure.get("class") in UNSERVED and failure.get("scope") != "campaign" and failure.get("retry")
+                    and result.get("session") is None)
+        if unserved and _campaign_stopped(campaign):  # a launch streak may have just stopped the campaign
+            return result
         if not unserved or attempt == retries:
             return result
         time.sleep(backoff)                       # the model never served it: ask once more, outside admission

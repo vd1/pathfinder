@@ -119,7 +119,8 @@ def _allowances(campaign, receipts, warnings) -> list[dict]:
         allowance = (campaign.allowances or {}).get(key)
         out.append({"stage": stage, "allowance": allowance, "timeouts": timeouts, "longest_completed_seconds": longest})
         if timeouts:
-            warnings.append(f"{timeouts} {stage} call(s) timed out at the {allowance} s allowance ({key})"
+            warnings.append(f"{timeouts} {stage} call(s) timed out; the current {key} is "
+                            + (f"{allowance} s" if allowance is not None else "unset")
                             + (f"; completed {stage} calls took up to {longest:.0f} s." if longest is not None else "."))
     return out
 

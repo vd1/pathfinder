@@ -272,14 +272,17 @@ def _run(campaign, interval, metadata):
 def _blocked(campaign) -> list[str]:
     """BLOCKED pairs in scope: the whole shortlist, or only the selection of a bounded run."""
     selection = getattr(campaign, "selection", None)
+    from . import edit
     return [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]
             if (selection is None or p["pair_id"] in selection)
-            and research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"]
+            and (research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"
+                 or edit.status(campaign, p["pair_id"]).get("status") == "blocked")]
 
 
 def _loop(campaign, ex, interval, futures, metadata):
     """@planks("When the operator requests a stop")"""
     metadata.setdefault("consecutive_failures", 0)
+    metadata.setdefault("pair_failures", {})          # a pair is retried once, whatever succeeds elsewhere
     while True:
         metadata.update(heartbeat_at=time.time(), active_pairs=list(futures.values()),
                         status="draining" if stopped(campaign) or unhealthy(campaign) else "running")
@@ -322,6 +325,7 @@ def _loop(campaign, ex, interval, futures, metadata):
             except Exception as e:
                 print(f"{_now()} {pair_id}: error {e!r}")
                 metadata["consecutive_failures"] = metadata.get("consecutive_failures", 0) + 1
+                metadata["pair_failures"][pair_id] = metadata["pair_failures"].get(pair_id, 0) + 1
                 failure = {"run_id": campaign.run_id, "at": _now(), "pair": pair_id,
                            "stage": getattr(e, "stage", None), "reason": repr(e),
                            "receipts": "receipts.jsonl", "counted": True,
@@ -331,7 +335,8 @@ def _loop(campaign, ex, interval, futures, metadata):
                 # the first failure is retried with one seat; the second in a row needs a person or the supervisor
                 stop = _stop_marker_record(campaign)
                 campaign_wide = ((stop or {}).get("failure") or {}).get("scope") == "campaign"
-                if (metadata["consecutive_failures"] >= 2 or campaign_wide) and not unhealthy(campaign):
+                repeated = metadata["pair_failures"][pair_id] >= 2
+                if (metadata["consecutive_failures"] >= 2 or repeated or campaign_wide) and not unhealthy(campaign):
                     health.write(campaign.path("health.json"), failure)
                     alerts.emit(campaign, "runner stage failed twice in a row", campaign.path("health.json"))
 

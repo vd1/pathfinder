@@ -129,3 +129,27 @@ def test_an_editor_block_is_not_an_operational_failure(tmp_path, monkeypatch):
         edit._set(campaign, pair_id, status="blocked", reason="no note"), "blocked")[1])
     runner.run(c, interval=0.01)
     assert not c.path("health.json").exists()
+
+
+def test_a_pair_that_keeps_failing_is_flagged_after_its_second_failure(tmp_path, monkeypatch):
+    from pathfinder import research, runner, transport
+    from stubcampaign import make
+    c = make(tmp_path, pairs=("Q1P1", "Q1P2", "Q1P3", "Q1P4", "Q1P5"), seats=2)
+    real, attempts = research.run_thread, []
+    def run_thread(campaign, pair_id, stop=lambda: False):
+        if pair_id == "Q1P1":
+            attempts.append(pair_id)
+            raise transport.TransportFailed(pair_id)
+        return real(campaign, pair_id, stop=stop)
+    monkeypatch.setattr(research, "run_thread", run_thread)
+    runner.run(c, interval=0.01)
+    assert c.path("health.json").exists() and len(attempts) == 2
+
+
+def test_an_edit_blocked_pair_is_reported_at_the_end(tmp_path, monkeypatch):
+    from pathfinder import edit, runner
+    from stubcampaign import make
+    c = make(tmp_path, pairs=("Q1P1",))
+    monkeypatch.setattr(edit, "run", lambda campaign, pair_id, stop=lambda: False: (
+        edit._set(campaign, pair_id, status="blocked", reason="no note"), "blocked")[1])
+    assert runner.run(c, interval=0.01) == 1

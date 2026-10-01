@@ -5,14 +5,15 @@ from . import research, runner
 
 EVIDENCE_PREFIXES = ("missing evidence:", "aliased evidence path:", "evidence outside the investigation:",
                      "unreadable evidence:", "evidence not inlinable as text:", "Invalid external citation declaration",
-                     "Aliased evidence", "Unreadable evidence")
+                     "Aliased evidence", "Unreadable evidence", "review: missing evidence",
+                     "stale review: research evidence changed")
 UNBLOCK = "unblock: evidence repaired"
 
 
 def _evidence_check(campaign, pair_id) -> str | None:
     """None when the pair's review material now builds; otherwise the first evidence error."""
     try:
-        research._review_material(campaign, pair_id)
+        research._review_material(campaign, pair_id, record_manifest=False)   # a check, not a review: no record
     except research.EvidenceUnavailable as error:
         return str(error)
     return None

@@ -206,3 +206,18 @@ def test_reconcile_unblocks_only_after_the_evidence_is_repaired(tmp_path):
     s = research.status(c, "Q1P1")
     assert s["status"] != "BLOCKED" or "missing evidence" not in (s.get("reason") or "")
     assert s["history"][0]["from_status"] == "BLOCKED" and s["history"][0]["action"] == "unblock: evidence repaired"
+
+
+def test_a_read_only_reconcile_inspection_does_not_rewrite_the_manifest(tmp_path):
+    import os
+    from pathfinder import reconcile, research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True, imported_research=True)
+    d = research.prepare(c, "Q1P1")
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/result.json")
+    research.run_thread(c, "Q1P1")
+    manifest = d / "evidence-manifest.json"
+    before = manifest.read_bytes(); os.utime(manifest, (1, 1))
+    reconcile.inspect(c, "Q1P1")
+    assert manifest.stat().st_mtime == 1 and manifest.read_bytes() == before

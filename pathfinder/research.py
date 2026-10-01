@@ -722,7 +722,7 @@ def _bundle_evidence(campaign, d, by_reference=False, record=None, errors=None):
     return "\n\n".join(parts)
 
 
-def _review_material(campaign, pair_id, review_id=None):
+def _review_material(campaign, pair_id, review_id=None, record_manifest=True):
     """@planks("Vera receives both papers and the complete attributed research ledger")
     @planks("Vera receives all referenced peer evidence without a consolidated account")
     @planks("Pathfinder blocks the stale response before a research transition")
@@ -753,10 +753,11 @@ def _review_material(campaign, pair_id, review_id=None):
         failure = error
         raise
     finally:                                      # the manifest records what this review found, blocked or not
-        _atomic_write(d / "evidence-manifest.json", json.dumps({
-            "generated_at": _now(), "files": record,
-            "errors": getattr(failure, "errors", [{"code": "declaration", "path": None, "detail": None,
-                                                   "message": str(failure)}] if failure else [])}, indent=1).encode())
+        if record_manifest:
+            _atomic_write(d / "evidence-manifest.json", json.dumps({
+                "generated_at": _now(), "files": record,
+                "errors": getattr(failure, "errors", [{"code": "declaration", "path": None, "detail": None,
+                                                       "message": str(failure)}] if failure else [])}, indent=1).encode())
     if by_reference:
         material += "\n\n" + READING
     if campaign.raw.get("research_scheme", "eva") == "eva":
