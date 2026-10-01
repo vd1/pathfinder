@@ -62,3 +62,21 @@ def test_write_is_atomic_json(tmp_path):
     c = make(tmp_path)
     path = campaign_state.write(c)
     assert json.loads(path.read_text())["campaign"]["name"] == tmp_path.name
+
+
+def test_text_view_names_unknown_progress_and_blocks(tmp_path):
+    c = make(tmp_path)
+    c.thread_dir("Q1P1").mkdir(parents=True)
+    research._set(c, "Q1P1", status="BLOCKED", reason="consolidate: input too large: 12 characters exceed 10")
+    events.emit(c, "run_started")
+    with c.path("events.jsonl").open("a") as f:
+        f.write("{")
+    out = campaign_state.text(campaign_state.build(c))
+    assert "progress unknown" in out and "input_too_large" in out and "Q1P1" in out
+
+
+def test_cli_state_json(tmp_path, capsys):
+    from pathfinder import cli
+    make(tmp_path)
+    assert cli.main(["--root", str(tmp_path), "state", "--json"]) in (0, None)
+    assert json.loads(capsys.readouterr().out)["campaign"]["name"] == tmp_path.name

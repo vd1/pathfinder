@@ -198,13 +198,22 @@ def _owned_run(campaign, interval, accept_change=None):
             return 1
 
 
+def _write_state(campaign):
+    """Refresh state.json beside each heartbeat; the state document must never stop a run."""
+    try:
+        from . import campaign_state
+        campaign_state.write(campaign)
+    except Exception as error:
+        print(f"{_now()} state.json not written: {error!r}")
+
+
 def _recorded_run(campaign, interval):
     old = health.read(campaign.path("health.json"))
     metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
                 "started_at": time.time(), "heartbeat_at": time.time(),
                 "last_progress": None, "previous_failure": old}
     campaign.path("health.json").unlink(missing_ok=True)
-    health.write(campaign.path("runner.json"), metadata)
+    health.write(campaign.path("runner.json"), metadata); _write_state(campaign)
     try:
         result = _run(campaign, interval, metadata)
         metadata["status"] = "failed" if unhealthy(campaign) else "stopped" if stopped(campaign) else "blocked" if result else "finished"
@@ -217,7 +226,9 @@ def _recorded_run(campaign, interval):
         raise
     finally:
         metadata.update(heartbeat_at=time.time(), finished_at=time.time())
-        health.write(campaign.path("runner.json"), metadata)
+        from . import events
+        events.emit(campaign, "run_finished", status=metadata.get("status"), error=metadata.get("error"))
+        health.write(campaign.path("runner.json"), metadata); _write_state(campaign)
 
 
 def _run(campaign, interval, metadata):
@@ -258,7 +269,7 @@ def _loop(campaign, ex, interval, futures, metadata):
     while True:
         metadata.update(heartbeat_at=time.time(), active_pairs=list(futures.values()),
                         status="draining" if stopped(campaign) or unhealthy(campaign) else "running")
-        health.write(campaign.path("runner.json"), metadata)
+        health.write(campaign.path("runner.json"), metadata); _write_state(campaign)
         queue = [] if (stopped(campaign) or unhealthy(campaign)) else pending(campaign)
         for pair_id in queue:
             if len(futures) >= campaign.seats:

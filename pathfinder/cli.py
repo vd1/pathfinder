@@ -34,6 +34,7 @@ def main(argv=None):
     vf.add_argument("dest"); vf.add_argument("--repo")
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
     sub.add_parser("status", help="print campaign and shortlist state")
+    sub.add_parser("state", help="the campaign state document: unit states, stage counts, blocks, token budget").add_argument("--json", action="store_true")
     sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
     w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
@@ -119,6 +120,10 @@ def _dispatch(ns, c):
             runner.request_stop(c, "operator"); print("stop requested; running commands will drain and exit")
     elif ns.cmd == "status":
         print(monitor.status_text(c))
+    elif ns.cmd == "state":
+        from . import campaign_state
+        doc = campaign_state.build(c)
+        print(json.dumps(doc, indent=1, default=str) if ns.json else campaign_state.text(doc))
     elif ns.cmd == "health":
         print(json.dumps(health.snapshot(c), indent=2) if ns.json else health.text(c))
     elif ns.cmd == "serve":

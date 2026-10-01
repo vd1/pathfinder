@@ -131,3 +131,22 @@ def write(campaign) -> Path:
     temporary.write_text(json.dumps(build(campaign), indent=1, default=str))
     os.replace(temporary, path)
     return path
+
+
+def text(state: dict) -> str:
+    c, p = state["campaign"], state["progress"]
+    lines = [f"{c['name']}  {c['backend']}/{c['model']}  scheme {c['research_scheme']}  execution {str(c['execution_id'])[:12]}",
+             f"progress {p['status']}" + (f"  last event {p['last_event_at']}" if p["last_event_at"] else "")
+             + ("  (event stream cut: read the full record before trusting progress)" if p["events_truncated"] else ""),
+             f"budget {c['budget']['calls']} calls, {c['budget']['input_tokens']} input tokens "
+             f"({c['budget']['cache_read']} cached), {c['budget']['output_tokens']} output",
+             "stages " + "; ".join(f"{name}: " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items()))
+                                    for name, counts in state["stages"].items() if counts)]
+    if c["stop"]:
+        lines.append(f"stopped: {c['stop'].get('reason')}")
+    for block in state["blocks"]:
+        lines.append(f"block {block['class']}: {block['cause']} x{block['count']} ({', '.join(block['units'])})")
+    for u in state["units"]:
+        lines.append(f"{u['unit']:>8} score {u['score'] if u['score'] is not None else '-':>4}  {u['controller']:<8} "
+                     f"research {u['research']['status']}  edit {u['editorial']['status']}  paper {u['assessment']['status']}")
+    return "\n".join(lines)
