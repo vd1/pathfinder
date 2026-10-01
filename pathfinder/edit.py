@@ -75,7 +75,7 @@ def _run(campaign, pair_id: str, stop) -> str:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=False, cwd=d,
                                timeout=campaign.allowances.get("edit_seconds", 900), thread=pair_id, stage="edit", actor="editor")
         except transport.PromptTooLarge as error:
-            _set(campaign, pair_id, status="blocked", reason=str(error)); return "blocked"
+            _set(campaign, pair_id, status="blocked", reason=str(error), failure=research.OVERSIZE_FAILURE); return "blocked"
         if r["transport_failed"]:
             _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
         (ed / f"editor-{attempt + 1}.md").write_text(r["text"] or "")

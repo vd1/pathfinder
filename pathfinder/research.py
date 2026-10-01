@@ -40,6 +40,9 @@ def status(campaign, pair_id) -> dict:
     return json.loads(p.read_text()) if p.exists() else {"pair_id": pair_id, "round": 0, "stage": "peers", "status": "new"}
 
 
+OVERSIZE_FAILURE = {"class": "input_too_large", "scope": "call", "retry": False, "reset_at": None}
+
+
 def _set(campaign, pair_id, **kw):
     s = status(campaign, pair_id); before = dict(s); s.update(kw, updated=_now())
     _atomic_write(campaign.thread_dir(pair_id) / "status.json", json.dumps(s, indent=1).encode())
@@ -555,7 +558,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     except (Stopped, Refused):
         _set(campaign, pair_id, status="stopped"); return "stopped"
     except transport.PromptTooLarge as error:
-        _set(campaign, pair_id, status="BLOCKED", reason=f"{status(campaign, pair_id).get('stage')}: {error}")
+        _set(campaign, pair_id, status="BLOCKED", reason=f"{status(campaign, pair_id).get('stage')}: {error}",
+             failure=OVERSIZE_FAILURE)
         return "BLOCKED"
     except transport.TransportFailed:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
@@ -765,7 +769,8 @@ def next_requests(campaign, pair_id):
                             temporary = path.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(path)
                     continue
                 if failed:
-                    _set(campaign, pair_id, status="BLOCKED", reason=f"{s['stage']}: {failed['result'].get('error') or 'transport failed'}")
+                    _set(campaign, pair_id, status="BLOCKED", reason=f"{s['stage']}: {failed['result'].get('error') or 'transport failed'}",
+                         failure=failed["result"].get("failure"))
                     return []
                 if s["stage"] == "peers":
                     calls = s.get("peer_call", 0) + 1
@@ -887,7 +892,8 @@ def _run_composable(campaign, pair_id, stop):
                     result = transport.execute(campaign, request)
                 except transport.PromptTooLarge as error:   # retained as a failed result: the pair blocks, the run goes on
                     retain_response(campaign, pair_id, request, {"text": "", "seconds": 0.0, "transport_failed": True,
-                                                                 "error": str(error), "outcome": "refused"})
+                                                                 "error": str(error), "outcome": "refused",
+                                                                 "failure": OVERSIZE_FAILURE})
                     return
                 retain_response(campaign, pair_id, request, result)
                 if result.get("transport_failed"):

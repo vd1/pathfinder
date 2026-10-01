@@ -46,27 +46,48 @@ def _documents(campaign, unit: str) -> list[dict]:
     return out
 
 
-def _block_class(reason: str | None) -> str:
-    from . import failures
-    found = failures.classify("error", reason or "")
-    return found.cls if found and found.cls != "undiagnosed" else "contract" if reason else "undiagnosed"
+IN_PROGRESS = {"running", "editing", "writing", "reviewing"}
 
 
-def _controller(research_s: dict, edit_s: dict, paper_s: dict, active: set, unit: str) -> str:
-    if unit in active:
+def _block_key(doc: dict) -> tuple[str, str]:
+    """(class, cause): the class only from a structured failure the stage recorded, never from prose."""
+    reason = doc.get("reason") or ""
+    cause = reason.split(":")[0].strip() if ":" in reason else (reason or "unknown")
+    return (doc.get("failure") or {}).get("class") or "undiagnosed", cause
+
+
+def _controller(research_s: dict, edit_s: dict, paper_s: dict, active: set, seated: set, runner_alive: bool, unit: str) -> str:
+    if unit in active or (runner_alive and unit in seated):
         return "running"
     states = (research_s.get("status"), edit_s.get("status"), paper_s.get("status"))
     if "BLOCKED" in states or "blocked" in states:
         return "blocked"
     if "stopped" in states:
         return "stopped"
+    if any(s in IN_PROGRESS for s in states):
+        return "orphaned"                         # recorded as in progress, but no live runner or call holds it
     if research_s.get("status") in research.TERMINAL and edit_s.get("status") == "done":
         return "done"
-    return "waiting"
+    if research_s.get("status") in research.TERMINAL:
+        return "queued"
+    return "new" if research_s.get("status", "new") == "new" else "waiting"
+
+
+def _runner(campaign) -> dict:
+    from . import health
+    meta = _json(campaign.path("runner.json")) or {}
+    if not meta:
+        return {"status": None, "pid_alive": None, "heartbeat_age_seconds": None, "active_pairs": []}
+    beat = meta.get("heartbeat_at")
+    return {"status": meta.get("status"), "pid_alive": health.alive(meta.get("pid")),
+            "heartbeat_age_seconds": round(time.time() - beat, 1) if beat else None,
+            "active_pairs": list(meta.get("active_pairs") or [])}
 
 
 def build(campaign) -> dict:
-    rows, truncated = events.read(campaign)
+    rows, truncated, corrupt = events.scan(campaign)
+    runner_info = _runner(campaign)
+    runner_alive = bool(runner_info["pid_alive"]) and runner_info["status"] in ("running", "draining")
     receipts = transport.receipts(campaign)
     shortlist = (_json(campaign.path("shortlist.json")) or {}).get("pairs", [])
     scores = _scores(campaign)
@@ -89,22 +110,29 @@ def build(campaign) -> dict:
         stages["research"][r_s.get("status", "new")] += 1
         if e_s:
             stages["edit"][e_s.get("status")] += 1
+        elif r_s.get("status") in research.TERMINAL:
+            stages["edit"]["queued"] += 1
         if p_s:
             stages["paper"][p_s.get("status")] += 1
+        elif r_s.get("status") == "DRAFT" and e_s.get("status") == "done":
+            stages["paper"]["queued"] += 1
         for status_doc in (r_s, e_s, p_s):
             if status_doc.get("status") in ("BLOCKED", "blocked"):
-                reason = status_doc.get("reason") or ""
-                key = (_block_class(reason), reason.split(":")[0] if ":" in reason else reason)
-                blocks.setdefault(key, []).append(unit)
+                blocks.setdefault(_block_key(status_doc), []).append(unit)
         units.append({"unit": unit, "score": scores.get(unit),
                       "research": {k: r_s.get(k) for k in ("status", "stage", "round", "reason")},
                       "editorial": {"status": e_s.get("status"), "reason": e_s.get("reason")},
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
-                      "controller": _controller(r_s, e_s, p_s, active, unit),
+                      "controller": _controller(r_s, e_s, p_s, active, set(runner_info["active_pairs"]), runner_alive, unit),
                       "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit)})
-    last = rows[-1]["at"] if rows else None
-    age = (time.time() - calendar.timegm(time.strptime(last, "%Y-%m-%dT%H:%M:%SZ"))) if last else None
-    progress = "unknown" if truncated else "active" if (active or (age is not None and age < ACTIVE_SECONDS)) else "idle"
+    stamps = [row["at"] for row in rows if isinstance(row.get("at"), str)]
+    last = stamps[-1] if stamps else None
+    try:
+        age = (time.time() - calendar.timegm(time.strptime(last, "%Y-%m-%dT%H:%M:%SZ"))) if last else None
+    except ValueError:
+        age = None
+    progress = ("unknown" if truncated else "active" if (active or runner_alive)
+                else "recent" if (age is not None and age < ACTIVE_SECONDS) else "idle")
     run = _json(campaign.path("run.json")) or {}
     raw = campaign.raw or {}
     return {
@@ -117,7 +145,8 @@ def build(campaign) -> dict:
                                 "output_tokens": sum(r.get("output_tokens") or 0 for r in receipts),
                                 "cache_read": sum(r.get("cache_read") or 0 for r in receipts)},
                      "execution_id": run.get("execution_id"), "stop": _json(campaign.path("stop.json"))},
-        "progress": {"status": progress, "last_event_at": last, "events_truncated": truncated},
+        "progress": {"status": progress, "last_event_at": last, "events_truncated": truncated, "events_corrupt": corrupt},
+        "runner": runner_info,
         "stages": {name: dict(counts) for name, counts in stages.items()},
         "blocks": [{"class": cls, "cause": cause, "units": sorted(set(us)), "count": len(us)}
                    for (cls, cause), us in sorted(blocks.items(), key=lambda kv: -len(kv[1]))],
@@ -137,7 +166,8 @@ def text(state: dict) -> str:
     c, p = state["campaign"], state["progress"]
     lines = [f"{c['name']}  {c['backend']}/{c['model']}  scheme {c['research_scheme']}  execution {str(c['execution_id'])[:12]}",
              f"progress {p['status']}" + (f"  last event {p['last_event_at']}" if p["last_event_at"] else "")
-             + ("  (event stream cut: read the full record before trusting progress)" if p["events_truncated"] else ""),
+             + ("  (event stream cut: read the full record before trusting progress)" if p["events_truncated"] else "")
+             + (f"  ({p['events_corrupt']} unreadable event line{'s' if p['events_corrupt'] != 1 else ''} skipped)" if p.get("events_corrupt") else ""),
              f"budget {c['budget']['calls']} calls, {c['budget']['input_tokens']} input tokens "
              f"({c['budget']['cache_read']} cached), {c['budget']['output_tokens']} output",
              "stages " + "; ".join(f"{name}: " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items()))

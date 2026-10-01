@@ -18,7 +18,8 @@ def test_stage_counts_and_blocks(tmp_path):
     c = make(tmp_path, pairs=("Q1P1", "Q1P2"))
     for unit in ("Q1P1", "Q1P2"):
         c.thread_dir(unit).mkdir(parents=True)
-    research._set(c, "Q1P1", status="BLOCKED", reason="consolidate: input too large: 1200 characters exceed 10")
+    research._set(c, "Q1P1", status="BLOCKED", reason="consolidate: input too large: 1200 characters exceed 10",
+                  failure={"class": "input_too_large", "scope": "call", "retry": False, "reset_at": None})
     research._set(c, "Q1P2", status="DRAFT")
     s = campaign_state.build(c)
     assert s["stages"]["research"] == {"BLOCKED": 1, "DRAFT": 1}
@@ -67,7 +68,8 @@ def test_write_is_atomic_json(tmp_path):
 def test_text_view_names_unknown_progress_and_blocks(tmp_path):
     c = make(tmp_path)
     c.thread_dir("Q1P1").mkdir(parents=True)
-    research._set(c, "Q1P1", status="BLOCKED", reason="consolidate: input too large: 12 characters exceed 10")
+    research._set(c, "Q1P1", status="BLOCKED", reason="consolidate: input too large: 12 characters exceed 10",
+                  failure={"class": "input_too_large", "scope": "call", "retry": False, "reset_at": None})
     events.emit(c, "run_started")
     with c.path("events.jsonl").open("a") as f:
         f.write("{")
@@ -80,3 +82,86 @@ def test_cli_state_json(tmp_path, capsys):
     make(tmp_path)
     assert cli.main(["--root", str(tmp_path), "state", "--json"]) in (0, None)
     assert json.loads(capsys.readouterr().out)["campaign"]["name"] == tmp_path.name
+
+
+def test_run_started_carries_the_run_id(tmp_path):
+    from pathfinder import provenance
+    c = make(tmp_path)
+    provenance.start(c, "run-7")
+    started = [r for r in events.read(c)[0] if r["kind"] == "run_started"]
+    assert started[-1]["run_id"] == "run-7"
+
+
+def test_a_corrupt_interior_line_is_counted_not_fatal(tmp_path):
+    c = make(tmp_path)
+    events.emit(c, "run_started")
+    with c.path("events.jsonl").open("a") as f:
+        f.write("garbage\n")
+    events.emit(c, "run_finished")
+    rows, truncated = events.read(c)
+    assert not truncated and len(rows) == 2
+    s = campaign_state.build(c)
+    assert s["progress"]["status"] != "unknown" and s["progress"]["events_corrupt"] == 1
+    assert "1 unreadable event line" in campaign_state.text(s)
+
+
+def test_an_event_without_a_timestamp_does_not_break_the_state(tmp_path):
+    c = make(tmp_path)
+    c.path("events.jsonl").write_text('{"v": 1, "kind": "run_started"}\n')
+    assert campaign_state.build(c)["progress"]["last_event_at"] is None
+
+
+def _runner(c, alive, pairs):
+    import os
+    c.path("runner.json").write_text(json.dumps({"status": "running", "pid": os.getpid() if alive else 999999,
+                                                 "heartbeat_at": time.time(), "active_pairs": pairs}))
+
+
+def test_a_seated_unit_between_calls_is_running_and_without_a_runner_is_orphaned(tmp_path):
+    c = make(tmp_path, pairs=("Q1P1", "Q1P2"))
+    for unit in ("Q1P1", "Q1P2"):
+        c.thread_dir(unit).mkdir(parents=True)
+    research._set(c, "Q1P1", status="running")
+    research._set(c, "Q1P2", status="PAUSE")
+    _runner(c, True, ["Q1P1"])
+    s = campaign_state.build(c)
+    assert {u["unit"]: u["controller"] for u in s["units"]} == {"Q1P1": "running", "Q1P2": "queued"}
+    assert s["runner"]["pid_alive"] is True and s["progress"]["status"] == "active"
+    _runner(c, False, ["Q1P1"])
+    s = campaign_state.build(c)
+    assert s["units"][0]["controller"] == "orphaned" and s["progress"]["status"] != "active"
+
+
+def test_recent_events_without_a_live_runner_are_not_active(tmp_path):
+    c = make(tmp_path)
+    events.emit(c, "run_finished")
+    assert campaign_state.build(c)["progress"]["status"] == "recent"
+
+
+def test_blocks_use_structured_failures_not_prose(tmp_path):
+    c = make(tmp_path, pairs=("Q1P1", "Q1P2"))
+    for unit in ("Q1P1", "Q1P2"):
+        c.thread_dir(unit).mkdir(parents=True)
+    research._set(c, "Q1P1", status="BLOCKED", reason="review: overloaded with citations")
+    research._set(c, "Q1P2", status="BLOCKED", reason="consolidate: input too large",
+                  failure={"class": "input_too_large", "scope": "call", "retry": False, "reset_at": None})
+    blocks = {b["units"][0]: (b["class"], b["cause"]) for b in campaign_state.build(c)["blocks"]}
+    assert blocks == {"Q1P1": ("undiagnosed", "review"), "Q1P2": ("input_too_large", "consolidate")}
+
+
+def test_oversized_prompt_blocks_carry_a_structured_failure(tmp_path):
+    c = make(tmp_path, max_prompt_chars=10)
+    research.run_thread(c, "Q1P1")
+    assert research.status(c, "Q1P1")["failure"]["class"] == "input_too_large"
+
+
+def test_terminal_research_awaiting_edit_is_queued_in_the_edit_stage(tmp_path):
+    c = make(tmp_path, pairs=("Q1P1", "Q1P2"))
+    for unit in ("Q1P1", "Q1P2"):
+        c.thread_dir(unit).mkdir(parents=True)
+    research._set(c, "Q1P1", status="PAUSE")
+    research._set(c, "Q1P2", status="DRAFT")
+    edit._set(c, "Q1P2", status="done")
+    s = campaign_state.build(c)
+    assert s["stages"]["edit"] == {"queued": 1, "done": 1}
+    assert s["stages"]["paper"] == {"queued": 1}

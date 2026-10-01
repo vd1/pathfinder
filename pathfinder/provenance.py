@@ -186,7 +186,7 @@ def start(campaign, run_id: str, accept_change: str | None = None, links: dict |
     with campaign.path("runs.jsonl").open("a") as stream:
         stream.write(json.dumps(current) + "\n")
     from . import events
-    events.emit(campaign, "run_started", execution_id=current["execution_id"],
+    events.emit(campaign, "run_started", run_id=run_id, execution_id=current["execution_id"],
                 previous_run_id=current.get("previous_run_id"))
     return current, changed
 

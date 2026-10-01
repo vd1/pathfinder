@@ -16,7 +16,8 @@ def emit(campaign, kind: str, **fields) -> None:
     if kind not in KINDS:
         raise ValueError(f"unknown event kind {kind!r}; expected one of {', '.join(sorted(KINDS))}")
     row = {"v": 1, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-           "run_id": getattr(campaign, "run_id", None), "kind": kind, **fields}
+           "run_id": getattr(campaign, "run_id", None), "kind": kind}
+    row.update(fields)
     line = json.dumps(row, default=str) + "\n"
     try:
         with _lock, open(campaign.path("events.jsonl"), "a") as stream:
@@ -26,22 +27,33 @@ def emit(campaign, kind: str, **fields) -> None:
 
 
 def read(campaign) -> tuple[list[dict], bool]:
+    rows, truncated, _ = scan(campaign)
+    return rows, truncated
+
+
+def scan(campaign) -> tuple[list[dict], bool, int]:
+    """(events, truncated, corrupt): truncated when the last record is cut (no final newline, or an
+    unreadable last line), so the latest state is unknown; corrupt counts unreadable earlier lines,
+    which are reported but do not hide the records after them."""
     path = campaign.path("events.jsonl")
     if not path.is_file():
-        return [], False
-    rows, truncated = [], False
+        return [], False, 0
     text = path.read_text(errors="replace")
-    lines = text.split("\n")
+    lines = [line for line in text.split("\n") if line.strip()]
+    rows, bad = [], []
     for number, line in enumerate(lines):
-        if not line.strip():
-            continue
         try:
-            rows.append(json.loads(line))
+            row = json.loads(line)
         except json.JSONDecodeError:
-            truncated = True                       # a cut or corrupt line: progress cannot be read past it
-    if text and not text.endswith("\n"):
-        truncated = True
-    return rows, truncated
+            bad.append(number)
+            continue
+        if isinstance(row, dict):
+            rows.append(row)
+        else:
+            bad.append(number)
+    truncated = bool(text) and (not text.endswith("\n") or (bool(lines) and bad[-1:] == [len(lines) - 1]))
+    corrupt = len(bad) - (1 if truncated and bad[-1:] == [len(lines) - 1] else 0)
+    return rows, truncated, corrupt
 
 
 def transition(campaign, unit: str, axis: str, before: dict, after: dict) -> None:
