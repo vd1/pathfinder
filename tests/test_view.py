@@ -76,3 +76,43 @@ def test_cli_has_a_view_command():
     with pytest.raises(SystemExit) as done:
         cli.main(["view", "--help"])
     assert done.value.code == 0
+
+
+def _harness():
+    import shutil, subprocess
+    from pathlib import Path
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node not installed")
+    out = subprocess.run([node, str(Path(__file__).parent / "js" / "view_harness.js")], capture_output=True, text=True)
+    assert out.returncode == 0, out.stderr
+    return json.loads(out.stdout)
+
+
+def test_reader_is_not_rebuilt_when_an_unrelated_unit_changes():
+    assert _harness()["reader_rebuilt_on_unrelated_change"] is False
+
+
+def test_opening_a_unit_keeps_the_pipeline_filter():
+    assert _harness()["unit_link_keeps_filter"] is True
+
+
+def test_parameters_show_allowances_and_scores_are_rounded():
+    result = _harness()
+    assert result["allowances_shown"] and result["score_rounded"]
+
+
+def test_monitor_file_links_for_scripts_and_tables_resolve(tmp_path):
+    from pathfinder import webguard
+    d = tmp_path / "threads" / "Q1P1" / "ada"; d.mkdir(parents=True)
+    (d / "check.py").write_text("print(1)"); (d / "table.csv").write_text("a,b")
+    assert webguard.resolve(tmp_path, "threads/Q1P1/ada/check.py").name == "check.py"
+    assert webguard.resolve(tmp_path, "threads/Q1P1/ada/table.csv").name == "table.csv"
+
+
+def test_a_nul_byte_in_a_document_path_is_a_404(tmp_path):
+    from pathfinder import webguard
+    (tmp_path / "threads" / "Q1P1").mkdir(parents=True)
+    with pytest.raises(webguard.Refused) as refused:
+        webguard.resolve(tmp_path, "threads/Q1P1/x\x00.pdf")
+    assert refused.value.code == 404

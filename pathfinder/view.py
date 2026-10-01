@@ -41,9 +41,13 @@ def make_server(campaign, port: int) -> ThreadingHTTPServer:
                     target = webguard.resolve(campaign.root, parse_qs(request.query).get("path", [""])[0])
                 except webguard.Refused as error:
                     return self.reply(error.code, str(error).encode(), "text/plain; charset=utf-8")
+                try:
+                    data = target.read_bytes()
+                except OSError as error:
+                    return self.reply(500, f"document unreadable: {error}".encode(), "text/plain; charset=utf-8")
                 if target.suffix == ".pdf":
-                    return self.reply(200, target.read_bytes(), "application/pdf", "pdf", target.name)
-                return self.reply(200, target.read_bytes(), "text/plain; charset=utf-8", "text")
+                    return self.reply(200, data, "application/pdf", "pdf", target.name)
+                return self.reply(200, data, "text/plain; charset=utf-8", "text")
             return self.reply(404, b"not found", "text/plain; charset=utf-8")
 
         def log_message(self, *args):

@@ -14,6 +14,16 @@ function setHash(update) {
   location.hash = new URLSearchParams(h).toString();
 }
 function docUrl(path) { return "/doc?path=" + encodeURIComponent(path); }
+// An href that changes some hash keys and keeps the others, so opening a unit keeps the filter.
+function link(update) {
+  const h = { ...hash(), ...update };
+  Object.keys(h).forEach((k) => (h[k] === null || h[k] === undefined) && delete h[k]);
+  return "#" + new URLSearchParams(h).toString();
+}
+function score(value) {
+  return value === null || value === undefined ? "" : Number.isInteger(value) ? String(value) : Number(value).toFixed(2);
+}
+let readerKey = null;
 
 function renderParams() {
   const c = state.campaign, b = c.budget, r = state.runner || {};
@@ -23,7 +33,8 @@ function renderParams() {
   $("updated").textContent = "updated " + state.generated_at;
   const rows = [["backend", c.backend + " / " + c.model], ["scheme", c.research_scheme], ["seats", c.seats],
     ["rounds", c.rounds], ["calls", b.calls], ["input tokens", b.input_tokens + " (" + b.cache_read + " cached)"],
-    ["output tokens", b.output_tokens], ["runner", (r.status || "none") + (r.pid_alive ? "" : r.status ? " (not alive)" : "")],
+    ["output tokens", b.output_tokens],
+    ["allowances", Object.entries(c.allowances || {}).map(([k, v]) => k + " " + v).join(", ")], ["runner", (r.status || "none") + (r.pid_alive ? "" : r.status ? " (not alive)" : "")],
     ["execution", String(c.execution_id || "").slice(0, 12)]];
   let html = "<dl>" + rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("") + "</dl>";
   if (c.stop) html += `<p class="warn">Stopped: ${esc(c.stop.reason)}</p>`;
@@ -50,7 +61,7 @@ function renderPipeline() {
 
 function renderBlocks() {
   $("blocks").innerHTML = state.blocks.length ? `<div class="card"><h2>Blocks</h2><ul>` + state.blocks.map((b) =>
-    `<li><b>${esc(b["class"])}</b> ${esc(b.cause)} &times;${b.count}: ${b.units.map((u) => `<a href="#note=${esc(u)}">${esc(u)}</a>`).join(", ")}</li>`).join("") + `</ul></div>` : "";
+    `<li><b>${esc(b["class"])}</b> ${esc(b.cause)} &times;${b.count}: ${b.units.map((u) => `<a href="${esc(link({ note: u, doc: null }))}">${esc(u)}</a>`).join(", ")}</li>`).join("") + `</ul></div>` : "";
 }
 
 function axisState(unit, stage) {
@@ -64,30 +75,37 @@ function renderUnits() {
   if (h.stage && h.state) units = units.filter((u) => axisState(u, h.stage) === h.state);
   const head = "<tr><th>unit</th><th>score</th><th>now</th><th>research</th><th>edit</th><th>paper</th><th>last activity</th><th>documents</th></tr>";
   const rows = units.map((u) => `<tr class="${h.note === u.unit ? "sel" : ""}">
-    <td><a href="#note=${esc(u.unit)}">${esc(u.unit)}</a></td><td>${esc(u.score ?? "")}</td>
+    <td><a href="${esc(link({ note: u.unit, doc: null }))}">${esc(u.unit)}</a></td><td>${esc(score(u.score))}</td>
     <td><span class="pill ${esc(u.controller)}">${esc(u.controller)}</span></td>
     <td title="${esc(u.research.reason)}">${esc(u.research.status)}</td><td title="${esc(u.editorial.reason)}">${esc(u.editorial.status ?? "")}</td>
     <td title="${esc(u.assessment.reason)}">${esc(u.assessment.status ?? "")}</td><td>${esc(u.last_activity ?? "")}</td>
-    <td>${u.documents.map((d) => `<a href="#note=${esc(u.unit)}&doc=${encodeURIComponent(d.kind)}">${esc(d.kind)}${d.stale ? " (stale)" : ""}</a>`).join(" · ")}</td></tr>`).join("");
-  const filter = h.stage ? `<p class="muted">Filter: ${esc(h.stage)} = ${esc(h.state)} <a href="#">clear</a></p>` : "";
+    <td>${u.documents.map((d) => `<a href="${esc(link({ note: u.unit, doc: d.kind }))}">${esc(d.kind)}${d.stale ? " (stale)" : ""}</a>`).join(" · ")}</td></tr>`).join("");
+  const filter = h.stage ? `<p class="muted">Filter: ${esc(h.stage)} = ${esc(h.state)} <a href="${esc(link({ stage: null, state: null }))}">clear</a></p>` : "";
   $("units").innerHTML = `<h2>Units (${units.length})</h2>${filter}<table>${head}${rows}</table>`;
 }
 
 function renderReader() {
   const h = hash();
   const unit = state.units.find((u) => u.unit === h.note);
+  const doc = unit && unit.documents.length ? (unit.documents.find((d) => d.kind === h.doc) || unit.documents[unit.documents.length - 1]) : null;
+  // Rebuild only when what is shown changes: a refresh or a filter click must not reload the PDF being read.
+  const key = JSON.stringify([unit ? unit.unit : null, doc]);
+  if (key === readerKey) return;
+  readerKey = key;
   if (!unit) { $("reader").innerHTML = `<p class="muted">Select a unit to read its documents.</p>`; return; }
-  if (!unit.documents.length) { $("reader").innerHTML = `<h2>${esc(unit.unit)}</h2><p class="muted">No document yet.</p>`; return; }
-  const doc = unit.documents.find((d) => d.kind === h.doc) || unit.documents[unit.documents.length - 1];
-  const tabs = unit.documents.map((d) => `<a class="tab${d === doc ? " on" : ""}" href="#note=${esc(unit.unit)}&doc=${encodeURIComponent(d.kind)}">${esc(d.kind)}</a>`).join("");
+  if (!doc) { $("reader").innerHTML = `<h2>${esc(unit.unit)}</h2><p class="muted">No document yet.</p>`; return; }
+  const tabs = unit.documents.map((d) => `<a class="tab${d === doc ? " on" : ""}" href="${esc(link({ note: unit.unit, doc: d.kind }))}">${esc(d.kind)}</a>`).join("");
   const links = [doc.source ? `<a href="${docUrl(doc.source)}" target="_blank" rel="noopener">LaTeX source</a>` : "",
     doc.pdf ? `<a href="${docUrl(doc.pdf)}" target="_blank" rel="noopener">open PDF</a>` : "",
-    `<a href="#note=${esc(unit.unit)}&doc=${encodeURIComponent(doc.kind)}">link to this document</a>`].filter(Boolean).join(" · ");
+    `<a href="#note=${encodeURIComponent(unit.unit)}&doc=${encodeURIComponent(doc.kind)}">link to this document</a>`].filter(Boolean).join(" · ");
   const warn = doc.stale ? `<p class="warn">This PDF is older than its source; the source has changed since it was built.</p>` : "";
   const body = doc.pdf ? `<iframe title="${esc(doc.kind)}" src="${docUrl(doc.pdf)}"></iframe>` : `<pre id="source">loading source…</pre>`;
   $("reader").innerHTML = `<h2>${esc(unit.unit)}</h2><nav>${tabs}</nav><p>${links}</p>${warn}${body}`;
   if (!doc.pdf && doc.source) {
-    fetch(docUrl(doc.source)).then((r) => r.text()).then((t) => { const el = $("source"); if (el) el.textContent = t; });
+    fetch(docUrl(doc.source))
+      .then((r) => r.text().then((t) => ({ ok: r.ok, t })))
+      .then(({ ok, t }) => { const el = $("source"); if (el) { el.textContent = ok ? t : "Source unavailable: " + t; if (!ok) el.className = "warn"; } })
+      .catch((error) => { const el = $("source"); if (el) { el.textContent = "Source unavailable: " + error.message; el.className = "warn"; } });
   }
 }
 
@@ -98,9 +116,8 @@ async function load() {
     const r = await fetch("/api/state", { cache: "no-store" });
     const doc = await r.json();
     if (!r.ok) throw new Error(doc.error || r.status);
-    const reading = hash().note && state && JSON.stringify(state.units) === JSON.stringify(doc.units);
     state = doc;
-    if (reading) { renderParams(); renderPipeline(); renderBlocks(); renderUnits(); } else { render(); }
+    render();
   } catch (error) {
     $("progress").textContent = "state unavailable: " + error.message;
     $("progress").className = "pill unknown";

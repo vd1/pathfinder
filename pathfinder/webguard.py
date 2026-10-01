@@ -8,7 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 
 MAX_BYTES = 8 * 1024 * 1024
-SUFFIXES = {".pdf", ".tex", ".bib", ".md", ".txt", ".json", ".jsonl", ".log"}
+SUFFIXES = {".pdf", ".tex", ".bib", ".md", ".txt", ".json", ".jsonl", ".log", ".py", ".csv", ".out"}   # all served as text/plain
 PAGE_POLICY = ("default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; "
                "frame-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'")
 
@@ -45,7 +45,7 @@ def resolve(root: Path, relative: str) -> Path:
     candidate = root / relative
     try:
         target = candidate.resolve(strict=True)
-    except (FileNotFoundError, RuntimeError, OSError):
+    except (RuntimeError, OSError, ValueError):            # ValueError: an embedded NUL byte
         raise Refused(404, "document not found")
     if not target.is_relative_to(threads) or not target.is_file() or target.suffix not in SUFFIXES:
         raise Refused(404, "document not found")

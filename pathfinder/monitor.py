@@ -157,7 +157,10 @@ def make_server(campaign, port: int = 8790):
                 tex = campaign.thread_dir(m.group(1)) / f"{m.group(1)}.tex"
                 if not tex.exists():
                     return self._send(b"no note yet", "text/plain; charset=utf-8", 404)
-                data, log = pdf(tex)
+                try:
+                    data, log = pdf(tex)
+                except (OSError, subprocess.SubprocessError) as error:
+                    return self._send(f"compile failed: {error}".encode(), "text/plain; charset=utf-8", 500)
                 return (self._send(data, "application/pdf", kind="pdf", filename=f"{m.group(1)}.pdf") if data
                         else self._send(log.encode(), "text/plain; charset=utf-8", 500))
             try:
