@@ -38,6 +38,14 @@ class TransportFailed(Exception):
 DEFAULT_MAX_PROMPT_CHARS = 1_000_000          # the Codex CLI rejects prompts over 1,048,576 characters
 
 
+UNSERVED = {"rate", "no_session", "launch"}          # the model never served the call: safe to ask again
+
+
+def retry_policy(campaign) -> tuple[int, float]:
+    raw = campaign.raw or {}
+    return int(raw.get("unserved_retries", 1)), float(raw.get("retry_backoff_seconds", 30))
+
+
 class PromptTooLarge(Exception):
     """A prompt over the campaign's limit: refused before admission, with a receipt and no launch."""
     failure_class = "input_too_large"
@@ -323,8 +331,16 @@ def execute(campaign, request: ModelRequest):
             "error": error, "prompt_chars": size, "tool_calls": None})
         raise PromptTooLarge(error)
     from . import admission
-    with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
-        return _attempt(campaign, request)
+    retries, backoff = retry_policy(campaign)
+    for attempt in range(retries + 1):
+        with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+            result = _attempt(campaign, request)
+        failure = result.get("failure") or {}
+        unserved = failure.get("class") in UNSERVED and failure.get("scope") != "campaign" and failure.get("retry")
+        if not unserved or attempt == retries:
+            return result
+        time.sleep(backoff)                       # the model never served it: ask once more, outside admission
+    return result
 
 
 def _attempt(campaign, request: ModelRequest):

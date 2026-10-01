@@ -10,7 +10,7 @@ FAKE = str(Path(__file__).parent / "fake_cli.py")
 def campaign(tmp_path, backend="claude"):
     return Campaign(root=tmp_path, backend=backend, model="m", scan_model="m", peer_search=True, seats=1,
                     cut=1, rounds=1, allowances={}, budget_usd=9, prices={"m": {"input_per_m": 1.0, "output_per_m": 1.0}},
-                    scan_fulltext=None)
+                    scan_fulltext=None, raw={"unserved_retries": 0})   # retries are tested on their own
 
 
 @pytest.fixture(autouse=True)
@@ -293,3 +293,33 @@ def test_readers_get_read_only_tools(tmp_path):
     assert codex[codex.index("--sandbox") + 1] == "read-only" and "features.shell_tool=false" not in " ".join(codex)
     claude = transport._command(campaign(tmp_path), "m", True, False, tmp_path, reads=True)
     assert claude[claude.index("--tools") + 1] == "Read,Glob,Grep"
+
+
+def _results(*classes):
+    out = []
+    for cls in classes:
+        if cls is None:
+            out.append({"text": "ok", "transport_failed": False, "error": None, "outcome": "completed", "failure": None})
+        else:
+            out.append({"text": "", "transport_failed": True, "error": cls, "outcome": "error",
+                        "failure": {"class": cls, "scope": "call", "retry": cls != "timeout", "reset_at": None}})
+    return out
+
+
+def test_an_unserved_call_is_retried_once(tmp_path, monkeypatch):
+    c = campaign(tmp_path, "codex"); c.raw.update(retry_backoff_seconds=0, unserved_retries=1)
+    queue = _results("rate", None)
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
+    r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,
+                                                    timeout=5, thread="T", stage="verify", actor="judge"))
+    assert r["outcome"] == "completed" and queue == []
+
+
+def test_timeouts_and_second_failures_are_not_retried(tmp_path, monkeypatch):
+    c = campaign(tmp_path, "codex"); c.raw.update(retry_backoff_seconds=0, unserved_retries=1)
+    for classes, calls in ((("timeout", None), 1), (("no_session", "no_session", None), 2)):
+        queue = _results(*classes)
+        monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
+        r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,
+                                                        timeout=5, thread="T", stage="verify", actor="judge"))
+        assert r["transport_failed"] and len(classes) - len(queue) == calls
