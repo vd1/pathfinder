@@ -32,4 +32,5 @@ Continuous rules for every phase:
 Plans:
 
 - Phase 1: `plans/2026-10-01-0030-phase1-failure-classification.md` (merged 99db88e)
-- Phase 2 is split: 2a events, execution identifier and state document (`plans/2026-10-01-0130-phase2a-events-and-state.md`); 2b operator web page and server hardening on that document (`plans/2026-10-01-0300-phase2b-operator-view.md`); 2a merged ef20a38.
+- Phase 2 is split: 2a events, execution identifier and state document (`plans/2026-10-01-0130-phase2a-events-and-state.md`); 2b operator web page and server hardening on that document (`plans/2026-10-01-0300-phase2b-operator-view.md`); 2a merged ef20a38, 2b merged c669dbe.
+- Phase 3 is split: 3a agent workspace, evidence and papers by reference, read-only verifiers, tool-error receipts (`plans/2026-10-01-1130-phase3a-agent-workspace-and-context.md`); 3b typed evidence inventory and resolver (outline at the end of the 3a plan).
