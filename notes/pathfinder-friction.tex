@@ -500,6 +500,26 @@ generalise to the canonical engine and belong in the refactor specification.
   with the pipeline itself: one count per stage, split by state, each state a
   filter on the unit list. PDFs are served inline and may be framed only by the
   view's own origin.
+\item \textbf{Agent sandbox environment, seen in a third deployment} (proofTree,
+  1 October; also J2 and SA). Peers call the ledger helper as \texttt{python -m
+  pathfinder.ledger}, which fails inside the agent sandbox because the editable
+  install points outside it (20 occurrences in one run); here-documents fail because
+  the shell's temporary directory is not writable; a TeX lookup is denied. Agents
+  recover by improvising, which costs turns and hides the problem. The engine must
+  give each agent workspace a self-contained ledger helper (a script in the thread,
+  not an import), a workspace-local \texttt{TMPDIR} and \texttt{TMPPREFIX}, read
+  access to the TeX installation with \texttt{TEXINPUTS} preserved and local TeX
+  caches, and must count tool errors per call in the receipt.
+\item \textbf{Allowances calibrated from observed durations.} proofTree lost two
+  peer calls at a 300\,s allowance (one peer had already declared readiness) and a
+  joint editor at 240\,s; the fixes were 900\,s and 600\,s by hand. The engine should
+  warn when a stage allowance is below the durations its receipts have recorded for
+  that stage, and a timed-out session's saved files stay the starting point of the
+  retry.
+\item \textbf{Stopped statuses carry their failure class.} A timeout still reaches
+  the stage status as ``transport failed''; the receipt knows it was a timeout. The
+  structured \texttt{failure} recorded for blocks in phase 2a should also be written
+  on stopped statuses.
 \end{enumerate}
 
 \section{Evidence and state failures from julien-2, 1 October}\label{sec:julien-evidence}
