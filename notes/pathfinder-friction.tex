@@ -400,7 +400,7 @@ H6 & Recovery: one admission per attempt; reconcile actions to collect retained 
 H7 & Cross-process seat pool keyed by account, reservations bound to PIDs, dead ones reaped & AQ \path{coordination.py} & Admission counts within one process. Needed before statarb and agQSL share one subscription.\\
 H8 & Schema-constrained single calls & SA (\sig{codex exec --output-schema}) & \path{transport.call} has no schema support. Add; statarb's scan, implementation and review then use the engine.\\
 H9 & Post-edit consumer stage, which cannot overturn the verifier & SA implementation stage & No such hook. Adapt as an extension point.\\
-H10 & Monitor: Host and Origin checks, CSP, file allowlist and size cap; aggregate across campaigns; per-stage unit counts & SA watchboard & \path{monitor.state()} already has parameters, scores, blocks, stages and PDF links, and is the base for the operator page; its server serves any file under the root.\\
+H10 & Monitor: Host and Origin checks, CSP, file allowlist and size cap; aggregate across campaigns; per-stage unit counts & SA watchboard & \path{monitor.state()} already has parameters, scores, blocks, stages and PDF links, and is the base for the operator page; its server serves any file under the root. Done in phase 2b (\texttt{pathfinder view}, hardened \texttt{serve}, up to e78c8db) except the aggregate across campaigns, which moves to phase 4 with the batch coordinator.\\
 H11 & Incremental intake: watermark advanced on success, dated negative cache & SA intake & \path{corpus.fetch} makes one request with no retry.\\
 H12 & Test that a repair survives a transport failure during consolidation & AQ & Behaviour already correct in \path{research.py}; add the contract test.\\
 \end{xltabular}}
