@@ -63,3 +63,25 @@ def test_export_writes_a_static_page_and_thread_files(tmp_path):
     assert not (out / "threads" / "Q1P1" / "inputs" / "Q.tex").exists() and not (out / "threads" / "Q1P1" / "Q1P1.aux").exists()
     z = monitor.export(c, tmp_path / "bundle2", zip_it=True)
     assert z.suffix == ".zip" and z.exists()
+
+
+def test_monitor_server_checks_host_and_serves_no_arbitrary_files(tmp_path):
+    import threading, urllib.error, urllib.request
+    c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=True, seats=2, cut=50,
+                 rounds=3, allowances={}, budget_usd=10, prices={}, scan_fulltext=None)
+    (tmp_path / "shortlist.json").write_text(json.dumps({"pairs": []}))
+    (tmp_path / ".env").write_text("SECRET=1"); (tmp_path / "notes.txt").write_text("private")
+    srv = monitor.make_server(c, 0); port = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    def code(path, headers=None):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(f"http://127.0.0.1:{port}{path}", headers=headers or {})) as r:
+                return r.status
+        except urllib.error.HTTPError as e:
+            return e.code
+    try:
+        assert code("/") == 200 and code("/state") == 200
+        assert code("/.env") == 404 and code("/notes.txt") == 404
+        assert code("/state", {"Origin": "http://evil.example"}) == 403
+    finally:
+        srv.shutdown()

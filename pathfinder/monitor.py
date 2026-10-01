@@ -1,8 +1,8 @@
 """Read-only view of a campaign: a state document, a text status, a local server with one live page."""
 from __future__ import annotations
-import json, mimetypes, re, shutil, subprocess, tempfile, time
+import json, re, shutil, subprocess, tempfile, time
 from collections import Counter
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from . import corpus, edit, health, paper, reconcile, research, transport
 
@@ -102,7 +102,6 @@ def status_text(campaign) -> str:
 
 
 PAGE = Path(__file__).parent / "monitor.html"
-TEXT = {".jsonl", ".json", ".md", ".py", ".tex", ".bib", ".txt", ".out", ".log", ".csv"}
 _pdf_cache: dict = {}
 
 
@@ -130,22 +129,27 @@ def pdf(tex: Path) -> tuple[bytes, str]:
     return data, text
 
 
-def serve(campaign, port: int = 8790):
+def make_server(campaign, port: int = 8790):
+    from . import webguard
     root = campaign.root
 
-    class H(SimpleHTTPRequestHandler):
-        def __init__(self, *a, **k):
-            super().__init__(*a, directory=str(root), **k)
-
-        def _send(self, body: bytes, ctype: str, code: int = 200):
+    class H(BaseHTTPRequestHandler):
+        def _send(self, body: bytes, ctype: str, code: int = 200, kind: str = "text", filename=None):
             self.send_response(code); self.send_header("Content-Type", ctype)
-            self.send_header("Content-Length", str(len(body))); self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            for name, value in webguard.headers(kind, filename).items():
+                if kind == "monitor-page" and name == "Content-Security-Policy":
+                    continue                                   # the classic page uses inline script and KaTeX from a CDN
+                self.send_header(name, value)
             self.end_headers(); self.wfile.write(body)
 
         def do_GET(self):
+            refused = webguard.refusal(self.headers, self.server.server_address[1])
+            if refused:
+                return self._send(refused.encode(), "text/plain; charset=utf-8", 403)
             path = self.path.split("?", 1)[0]
             if path in ("/", "/index.html"):
-                return self._send(PAGE.read_bytes(), "text/html; charset=utf-8")
+                return self._send(PAGE.read_bytes(), "text/html; charset=utf-8", kind="monitor-page")
             if path == "/state":
                 return self._send(json.dumps(state(campaign)).encode(), "application/json")
             m = re.fullmatch(r"/threads/(Q\d+P\d+)/\1\.pdf", path)
@@ -154,18 +158,25 @@ def serve(campaign, port: int = 8790):
                 if not tex.exists():
                     return self._send(b"no note yet", "text/plain; charset=utf-8", 404)
                 data, log = pdf(tex)
-                return self._send(data, "application/pdf") if data else self._send(log.encode(), "text/plain; charset=utf-8", 500)
-            if Path(path).suffix in TEXT:
-                f = root / path.lstrip("/")
-                if f.is_file() and root in f.resolve().parents:
-                    return self._send(f.read_bytes(), "text/plain; charset=utf-8")
-            return super().do_GET()
+                return (self._send(data, "application/pdf", kind="pdf", filename=f"{m.group(1)}.pdf") if data
+                        else self._send(log.encode(), "text/plain; charset=utf-8", 500))
+            try:
+                target = webguard.resolve(root, path.lstrip("/"))
+            except webguard.Refused as error:
+                return self._send(str(error).encode(), "text/plain; charset=utf-8", error.code)
+            if target.suffix == ".pdf":
+                return self._send(target.read_bytes(), "application/pdf", kind="pdf", filename=target.name)
+            return self._send(target.read_bytes(), "text/plain; charset=utf-8")
 
         def log_message(self, *a):
             pass
 
+    return ThreadingHTTPServer(("127.0.0.1", port), H)
+
+
+def serve(campaign, port: int = 8790):
     print(f"monitor at http://localhost:{port}/  (state at /state, thread files under /threads/)")
-    HTTPServer(("127.0.0.1", port), H).serve_forever()
+    make_server(campaign, port).serve_forever()
 
 
 KEEP = {".tex", ".bib", ".pdf", ".json", ".jsonl", ".md", ".txt", ".py", ".out", ".csv"}

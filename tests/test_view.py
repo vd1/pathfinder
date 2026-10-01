@@ -69,3 +69,10 @@ def test_page_has_the_operator_sections_and_valid_script(server):
     node = shutil.which("node")
     if node:
         assert subprocess.run([node, "--check", str(script)], capture_output=True).returncode == 0
+
+
+def test_cli_has_a_view_command():
+    from pathfinder import cli
+    with pytest.raises(SystemExit) as done:
+        cli.main(["view", "--help"])
+    assert done.value.code == 0

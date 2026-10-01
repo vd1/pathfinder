@@ -37,6 +37,7 @@ def main(argv=None):
     sub.add_parser("state", help="the campaign state document: unit states, stage counts, blocks, token budget").add_argument("--json", action="store_true")
     sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
+    sub.add_parser("view", help="serve the operator view: state, pipeline, units and documents").add_argument("--port", type=int, default=8791)
     w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
@@ -126,6 +127,9 @@ def _dispatch(ns, c):
         print(json.dumps(doc, indent=1, default=str) if ns.json else campaign_state.text(doc))
     elif ns.cmd == "health":
         print(json.dumps(health.snapshot(c), indent=2) if ns.json else health.text(c))
+    elif ns.cmd == "view":
+        from . import view
+        view.serve(c, ns.port)
     elif ns.cmd == "serve":
         monitor.serve(c, ns.port)
     elif ns.cmd == "paper" and ns.review:
