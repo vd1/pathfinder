@@ -41,3 +41,15 @@ def test_edit_blocks_the_pair_on_an_oversized_prompt(tmp_path):
     c.raw["max_prompt_chars"] = 10
     assert edit.run(c, "Q1P1") == "blocked"
     assert "input too large" in json.loads((c.thread_dir("Q1P1") / "edited/edit.json").read_text())["reason"]
+
+
+def test_a_stopped_thread_records_the_failure_class(tmp_path, monkeypatch):
+    c = make(tmp_path)
+    timeout = {"text": "", "seconds": 1.0, "transport_failed": True, "error": "timeout", "outcome": "timeout",
+               "failure": {"class": "timeout", "scope": "call", "retry": True, "reset_at": None}}
+    monkeypatch.setattr(research.transport, "execute", lambda campaign, request: timeout)
+    with pytest.raises(transport.TransportFailed) as raised:
+        research.run_thread(c, "Q1P1")
+    assert raised.value.failure["class"] == "timeout"
+    s = research.status(c, "Q1P1")
+    assert s["status"] == "stopped" and s["failure"]["class"] == "timeout" and s["reason"] == "transport failed: timeout"

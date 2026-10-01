@@ -510,7 +510,7 @@ def _peers(campaign, pair_id, stop):
             with lock:
                 used["seconds"] += r["seconds"]
             if r["transport_failed"]:
-                raise transport.TransportFailed(pair_id)
+                raise transport.TransportFailed(pair_id, failure=r.get("failure"))
 
     done = {a: False for a in peers}
 
@@ -548,11 +548,11 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
             actor=campaign.peers[0] if stage == "consolidate" else "verifier", reads=stage == "verify",
         ))
         if r["transport_failed"]:
-            raise transport.TransportFailed(pair_id)
+            raise transport.TransportFailed(pair_id, failure=r.get("failure"))
         if r.get("error"):
             if stage == "consolidate":
                 continue
-            raise transport.TransportFailed(pair_id)
+            raise transport.TransportFailed(pair_id, failure=r.get("failure"))
         if done() or r["text"].strip():
             return r
     return r
@@ -683,8 +683,8 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
         _set(campaign, pair_id, status="BLOCKED", reason=f"{status(campaign, pair_id).get('stage')}: {error}",
              failure=OVERSIZE_FAILURE)
         return "BLOCKED"
-    except transport.TransportFailed:
-        _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
+    except transport.TransportFailed as error:
+        _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(error.failure), failure=error.failure); raise
 
 
 def _bundle_evidence(campaign, d, by_reference=False, record=None, errors=None):
@@ -1050,13 +1050,13 @@ def _run_composable(campaign, pair_id, stop):
                     return
                 retain_response(campaign, pair_id, request, result)
                 if result.get("transport_failed"):
-                    raise transport.TransportFailed(pair_id)
+                    raise transport.TransportFailed(pair_id, failure=result.get("failure"))
             with ThreadPoolExecutor(len(requests)) as pool:
                 for future in [pool.submit(execute, request) for request in requests]:
                     future.result()
     except Stopped:
         _set(campaign, pair_id, status="stopped")
         return "stopped"
-    except transport.TransportFailed:
-        _set(campaign, pair_id, status="stopped", reason="transport failed")
+    except transport.TransportFailed as error:
+        _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(error.failure), failure=error.failure)
         raise

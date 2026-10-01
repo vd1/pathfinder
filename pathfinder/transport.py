@@ -32,7 +32,16 @@ class ModelRequest:
 
 
 class TransportFailed(Exception):
-    """Raised by callers when a call never reached a model session."""
+    """Raised by callers when a call never reached a model session, or failed in transport; carries the
+    classified failure so the stage's stopped status can say which."""
+
+    def __init__(self, pair_id, failure: dict | None = None):
+        super().__init__(pair_id)
+        self.failure = failure
+
+
+def stopped_reason(failure: dict | None) -> str:
+    return f"transport failed: {(failure or {}).get('class', 'unknown')}"
 
 
 DEFAULT_MAX_PROMPT_CHARS = 1_000_000          # the Codex CLI rejects prompts over 1,048,576 characters

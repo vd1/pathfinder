@@ -77,7 +77,7 @@ def _run(campaign, pair_id: str, stop) -> str:
         except transport.PromptTooLarge as error:
             _set(campaign, pair_id, status="blocked", reason=str(error), failure=research.OVERSIZE_FAILURE); return "blocked"
         if r["transport_failed"]:
-            _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
+            _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
         (ed / f"editor-{attempt + 1}.md").write_text(r["text"] or "")
         if not (ed / "note.tex").exists() or not (ed / "references.bib").exists():
             _set(campaign, pair_id, status="blocked", reason="editor wrote no note.tex or references.bib"); return "blocked"

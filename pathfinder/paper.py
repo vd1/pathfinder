@@ -169,7 +169,7 @@ def _run(campaign, pair_id: str, stop) -> str:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=True, cwd=d,
                                timeout=A.get("paper_seconds", 1800), thread=pair_id, stage="author", actor="author")
             if r["transport_failed"]:
-                _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
+                _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
             (pd / f"author-round-{rnd}.md").write_text(r["text"] or "")
         if not (pd / "paper.tex").exists() or not (pd / "references.bib").exists():
             _set(campaign, pair_id, status="blocked", reason="author wrote no paper.tex or references.bib"); return "blocked"
@@ -198,7 +198,7 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
     r = transport.call(q, campaign=campaign, model=campaign.model, tools=False, search=False, cwd=d,
                        timeout=A.get("review_seconds", 900), thread=pair_id, stage="review", actor="reviewer")
     if r["transport_failed"]:
-        _set(campaign, pair_id, status="stopped", reason="transport failed"); raise transport.TransportFailed(pair_id)
+        _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
     try:
         v = parse_json(r["text"]); dec = {"REVISE": "AMEND"}.get(v["decision"].upper(), v["decision"].upper()); v["decision"] = dec
         assert dec in ("ACCEPT", "AMEND")
