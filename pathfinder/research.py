@@ -463,7 +463,7 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
         r = transport.execute(campaign, transport.ModelRequest(
             identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
             search=False, cwd=d, timeout=seconds, thread=pair_id, stage=stage,
-            actor=campaign.peers[0] if stage == "consolidate" else "verifier",
+            actor=campaign.peers[0] if stage == "consolidate" else "verifier", reads=stage == "verify",
         ))
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id)
@@ -889,7 +889,7 @@ def next_requests(campaign, pair_id):
                 request = transport.ModelRequest(identity=identity, prompt=prompt, model=campaign.model,
                     tools=True, search=campaign.peer_search if stage == "peers" else False,
                     cwd=d, timeout=int(seconds) + (30 if stage == "peers" else 0), thread=pair_id,
-                    stage="peer" if stage == "peers" else stage, actor=actor)
+                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage == "verify")
                 path = _request_file(campaign, pair_id, identity)
                 path.parent.mkdir(exist_ok=True)
                 path.write_text(json.dumps({"request": {**asdict(request), "cwd": str(d)},

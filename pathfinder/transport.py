@@ -28,6 +28,7 @@ class ModelRequest:
     stage: str
     actor: str
     cwd: Path | None = None
+    reads: bool = False           # a reader: tools to read the workspace, never to change it
 
 
 class TransportFailed(Exception):
@@ -72,11 +73,13 @@ def _key_from_file(path, name):
     raise RuntimeError(f"{name} not found in {path}")
 
 
-def _command(campaign, model, tools, search, cwd):
+def _command(campaign, model, tools, search, cwd, reads=False):
     if campaign.backend == "claude":
         cmd = shlex.split(os.environ.get("PATHFINDER_CLAUDE", "claude"))
         cmd += ["-p", "--model", model, "--output-format", "stream-json", "--verbose", "--no-session-persistence"]
-        if tools:
+        if tools and reads:
+            cmd += ["--tools", "Read,Glob,Grep" + (",WebSearch,WebFetch" if search else ""), "--dangerously-skip-permissions"]
+        elif tools:
             cmd += ["--tools", CLAUDE_TOOLS + (",WebSearch,WebFetch" if search else ""),
                     "--dangerously-skip-permissions"]
         else:
@@ -90,8 +93,8 @@ def _command(campaign, model, tools, search, cwd):
         cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
-            "--sandbox", "workspace-write" if tools else "read-only"]
-    if tools and search:                           # the workspace sandbox has no network unless asked
+            "--sandbox", "workspace-write" if tools and not reads else "read-only"]
+    if tools and search and not reads:                           # the workspace sandbox has no network unless asked
         cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     prov = (campaign.raw or {}).get("codex") or {}
     if prov.get("persist_sessions"):
@@ -371,7 +374,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         return _extension_call(campaign, request, dispatcher)
     started = time.time()
     try:
-        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign, cwd),
+        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd, request.reads), cwd=cwd, env=_env(campaign, cwd),
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 text=True, start_new_session=True)
     except OSError as e:

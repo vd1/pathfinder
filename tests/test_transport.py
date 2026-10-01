@@ -286,3 +286,10 @@ def test_receipt_counts_tool_errors_with_samples(tmp_path, monkeypatch):
         row = rows(tmp_path)[0]
         assert row["tool_calls"] == 4 and row["tool_errors"] == 2
         assert all("No module named pathfinder.ledger" in s for s in row["tool_error_samples"])
+
+
+def test_readers_get_read_only_tools(tmp_path):
+    codex = transport._command(campaign(tmp_path, "codex"), "m", True, False, tmp_path, reads=True)
+    assert codex[codex.index("--sandbox") + 1] == "read-only" and "features.shell_tool=false" not in " ".join(codex)
+    claude = transport._command(campaign(tmp_path), "m", True, False, tmp_path, reads=True)
+    assert claude[claude.index("--tools") + 1] == "Read,Glob,Grep"

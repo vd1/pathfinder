@@ -89,3 +89,14 @@ def test_papers_are_referenced_only_above_the_budget(tmp_path):
     (d / "inputs" / inp["P"]).write_text("p" * 601)
     head = research.thread_head(d, inp, inline_limit=research.papers_limit(c))
     assert "q" * 400 not in head and "sha256" in head and f"inputs/{inp['Q']}" in head
+
+
+def test_verification_requests_are_read_only(tmp_path, monkeypatch):
+    seen = []
+    real = research.transport.execute
+    def capture(campaign, request):
+        seen.append((request.stage, request.reads))
+        return real(campaign, request)
+    monkeypatch.setattr(research.transport, "execute", capture)
+    research.run_thread(make(tmp_path), "Q1P1")
+    assert ("verify", True) in seen and all(reads is False for stage, reads in seen if stage != "verify")
