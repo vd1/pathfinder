@@ -194,9 +194,9 @@ EVIDENCE_MAX_BYTES = 300_000
 
 
 def _evidence_references(text: str) -> list[str]:
-    """Relative file paths cited in ledger text; DOIs and scholarly figure locators are citations, not files."""
-    return [name for name in EVIDENCE_PATH.findall(text)
-            if not re.match(r"10\.\d{4,9}/", name) and not re.search(r"/Fig\.\d+$", name)]
+    """Relative file paths cited in ledger text; locators, numbers, DOIs, URLs and repositories are not files."""
+    from . import evidence
+    return evidence.cited_files(text)
 
 
 def _assessment_evidence(campaign, d, references=None, by_reference=False) -> str:
