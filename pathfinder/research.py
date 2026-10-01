@@ -188,7 +188,7 @@ def _evidence_references(text: str) -> list[str]:
             if not re.match(r"10\.\d{4,9}/", name) and not re.search(r"/Fig\.\d+$", name)]
 
 
-def _assessment_evidence(campaign, d, references=None) -> str:
+def _assessment_evidence(campaign, d, references=None, by_reference=False) -> str:
     """@planks("the request contains the complete calculation evidence with its source paths")
     @planks("the request contains the complete prior account and peer artefact contents")
     @planks("the request contains the complete current account and peer artefact contents")
@@ -247,6 +247,10 @@ def _assessment_evidence(campaign, d, references=None) -> str:
                 raise EvidenceUnavailable(f"unreadable evidence: {relative}: {error}") from error
             parts.append(f"## {relative}\n\n(not inlined: unreadable file: {error})")
             continue
+        if by_reference:
+            parts.append(f"## {relative}\n\n(file in your working directory: {len(data)} bytes, "
+                         f"sha256 {hashlib.sha256(data).hexdigest()}; read it with your tools)")
+            continue
         try:
             if len(data) > limit:
                 raise UnicodeError(f"{len(data)} bytes, over the {limit}-byte inline limit")
@@ -272,11 +276,20 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
             + "\n\nReturn the complete research account, the LaTeX document itself, in your response; do not write it to a file.\n")
 
 
+READING = ("Files listed by path, size and sha256 are in your working directory, not pasted here. Read them in "
+           "slices with your tools (rg -n, sed -n 'a,bp', head) as far as the task needs, read each file once, and "
+           "quote by path and line.")
+
+
+def evidence_by_reference(campaign) -> bool:
+    return not (campaign.raw or {}).get("inline_evidence", False)
+
+
 def evidence_pointer(campaign) -> str:
     """Where the evidence is: consolidator and verifier read it with their own file tools."""
     dirs = ", ".join(f"{a}/" for a in campaign.peers)
     return (f"The peers' working files are in {dirs} beside you, and every path the ledger cites is relative to your "
-            "working directory: read whatever you need to check a claim.")
+            "working directory: read whatever you need to check a claim. " + READING)
 
 
 def unfence(text: str) -> str:
@@ -582,7 +595,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
 
 
-def _bundle_evidence(campaign, d):
+def _bundle_evidence(campaign, d, by_reference=False):
     """@planks("each stage receives all three ledgers and their referenced evidence")
     @planks("it includes those thread-relative bundle directories with their original reference namespaces")
     """
@@ -600,7 +613,7 @@ def _bundle_evidence(campaign, d):
         except (OSError, UnicodeError) as error:
             raise EvidenceUnavailable(f"Unreadable evidence {name}/ledger.jsonl: {error}") from error
         parts.append(f"## {name}/ledger.jsonl\n\n{content}")
-        evidence = _assessment_evidence(campaign, root)
+        evidence = _assessment_evidence(campaign, root, by_reference=by_reference)
         parts.append(evidence.replace("## ", f"## {name}/"))
     return "\n\n".join(parts)
 
@@ -621,8 +634,11 @@ def _review_material(campaign, pair_id, review_id=None):
             json.loads(line)["text"].startswith('{"review_id": ' + json.dumps(review_id) + ','))]
     ledger_text = "".join(lines)
     material = thread_head(d, _inputs(d), ledger=False) + "\n\n## ledger.jsonl\n\n" + ledger_text
-    material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text)
-    material += "\n\n" + _bundle_evidence(campaign, d)
+    by_reference = evidence_by_reference(campaign)
+    material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference)
+    material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference)
+    if by_reference:
+        material += "\n\n" + READING
     if campaign.raw.get("research_scheme", "eva") == "eva":
         note = d / f"{pair_id}.tex"
         if note.exists():
@@ -843,7 +859,7 @@ def next_requests(campaign, pair_id):
                     prior = ("Repair the existing account from existing evidence. Preserve accepted results. " + json.dumps(repair)
                              if repair else "Preserve prior results that still stand and append this round's work.")
                     prompt = _consolidate_prompt(campaign, d, _inputs(d), pair_id, "", f"{pair_id}.tex", prior)
-                    prompt += "\n\n" + _bundle_evidence(campaign, d)
+                    prompt += "\n\n" + _bundle_evidence(campaign, d, by_reference=evidence_by_reference(campaign))
                     write_meta(campaign, pair_id, d)
                 else:
                     seconds = campaign.allowances["verify_seconds"]

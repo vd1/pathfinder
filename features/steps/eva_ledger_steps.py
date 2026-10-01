@@ -31,6 +31,7 @@ def setup(context, scheme='eva_minus', imported=True, rounds=2, reviews=4):
                        'consolidate_seconds': 60, 'verify_seconds': 60},
         'research_scheme': scheme, 'imported_research': imported,
         'ledger_reviews': reviews, 'inline_papers': True, 'inline_ledger': True,
+        'inline_evidence': True,   # these scenarios specify inlined evidence; reference mode is covered by tests/test_agent_workspace.py
         'peers': ['emmy', 'ada'], 'repairs': 2,
     }
     reload_campaign(context)

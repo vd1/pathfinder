@@ -39,3 +39,43 @@ def test_agent_environment_keeps_temporary_files_and_tex_caches_in_the_workspace
     assert env["TMPPREFIX"] == str(base / "tmp" / "zsh")
     assert env["TEXMFVAR"] == str(base / "texmf-var") and (base / "texmf-var").is_dir()
     assert "TEXINPUTS" in env
+
+
+import pytest
+
+
+def _composable(tmp_path, **raw):
+    c = make(tmp_path, research_scheme="eva_minus", **raw)
+    d = research.prepare(c, "Q1P1")
+    (d / "ada").mkdir(exist_ok=True)
+    (d / "ada" / "derivation.txt").write_text("the derivation " * 1000)
+    return c, d
+
+
+def test_review_material_lists_evidence_by_size_and_digest(tmp_path):
+    import hashlib
+    c, d = _composable(tmp_path)
+    material = research._review_material(c, "Q1P1")
+    data = (d / "ada" / "derivation.txt").read_bytes()
+    assert hashlib.sha256(data).hexdigest() in material and "the derivation the derivation" not in material
+    assert research.READING in material
+
+
+def test_one_changed_byte_changes_the_material(tmp_path):
+    c, d = _composable(tmp_path)
+    before = research._review_material(c, "Q1P1")
+    (d / "ada" / "derivation.txt").write_text("the derivatioN " * 1000)
+    assert research._review_material(c, "Q1P1") != before
+
+
+def test_aliased_evidence_still_blocks_by_reference(tmp_path):
+    c, d = _composable(tmp_path)
+    (tmp_path / "outside.txt").write_text("secret")
+    os.symlink(tmp_path / "outside.txt", d / "ada" / "link.txt")
+    with pytest.raises(research.EvidenceUnavailable):
+        research._review_material(c, "Q1P1")
+
+
+def test_inline_evidence_switch_restores_the_text(tmp_path):
+    c, d = _composable(tmp_path, inline_evidence=True)
+    assert "the derivation the derivation" in research._review_material(c, "Q1P1")
