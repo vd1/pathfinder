@@ -46,7 +46,7 @@ def max_prompt_chars(campaign) -> int:
     return int((campaign.raw or {}).get("max_prompt_chars", DEFAULT_MAX_PROMPT_CHARS))
 
 
-def _env(campaign):
+def _env(campaign, cwd=None):
     env = {k: v for k, v in os.environ.items() if not any(s in k for s in SCRUB)}
     from . import resources                             # the agents build with latexmk themselves; they must see the style files
     env["TEXINPUTS"] = resources.texinputs(campaign, env.get("TEXINPUTS", ""))
@@ -55,6 +55,11 @@ def _env(campaign):
         env[prov["env_key"]] = os.environ[prov["env_key"]]
     if campaign.backend == "codex" and prov.get("key_file"):
         env[prov["env_key"]] = _key_from_file(campaign.path(prov["key_file"]), prov["env_key"])
+    if cwd is not None:                            # the agent's shell, here-documents and TeX write inside its workspace
+        base = Path(cwd) / ".pathfinder"
+        (base / "tmp").mkdir(parents=True, exist_ok=True)
+        (base / "texmf-var").mkdir(parents=True, exist_ok=True)
+        env.update(TMPDIR=str(base / "tmp"), TMPPREFIX=str(base / "tmp" / "zsh"), TEXMFVAR=str(base / "texmf-var"))
     return env
 
 
@@ -339,7 +344,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         return _extension_call(campaign, request, dispatcher)
     started = time.time()
     try:
-        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign),
+        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd), cwd=cwd, env=_env(campaign, cwd),
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 text=True, start_new_session=True)
     except OSError as e:
