@@ -35,10 +35,12 @@ def prepare_for_editing(campaign, pair_id: str) -> str:
 
 def _set(campaign, pair_id, **kw):
     d = campaign.thread_dir(pair_id) / "edited"; d.mkdir(exist_ok=True)
-    s = status(campaign, pair_id); s.update(kw, updated=_now())
+    s = status(campaign, pair_id); before = dict(s); s.update(kw, updated=_now())
     if kw.get("status") == "done":
         s.pop("reason", None)
     (d / "edit.json").write_text(json.dumps(s, indent=1))
+    from . import events
+    events.transition(campaign, pair_id, "editorial", before, s)
     return s
 
 

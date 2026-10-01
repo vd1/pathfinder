@@ -42,3 +42,10 @@ def read(campaign) -> tuple[list[dict], bool]:
     if text and not text.endswith("\n"):
         truncated = True
     return rows, truncated
+
+
+def transition(campaign, unit: str, axis: str, before: dict, after: dict) -> None:
+    """A status_changed event when a status file's "status" value changed."""
+    if before.get("status") != after.get("status"):
+        emit(campaign, "status_changed", unit=unit, axis=axis, **{"from": before.get("status")},
+             to=after.get("status"), reason=after.get("reason"))

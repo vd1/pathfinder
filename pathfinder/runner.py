@@ -96,6 +96,9 @@ def stopped(campaign) -> bool:
 
 def request_stop(campaign, reason: str, **details):
     campaign.path("stop.json").write_text(json.dumps({"reason": reason, "at": _now(), **details}))
+    from . import events
+    events.emit(campaign, "stop_requested", reason=reason, scope="campaign",
+                failure_class=(details.get("failure") or {}).get("class"))
 
 
 def unhealthy(campaign) -> bool:

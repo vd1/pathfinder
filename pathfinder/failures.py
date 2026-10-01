@@ -105,6 +105,9 @@ def stop_for(campaign, failure: Failure | None, error: str | None):
         marker = root / "stop.json"
         if not marker.exists():
             marker.write_text(json.dumps(record))
+            from . import events
+            events.emit(campaign, "stop_requested", reason=reason, failure_class=failure.cls,
+                        scope="campaign" if root == Path(campaign.root) else "parent")
 
 
 def _launch_streak(campaign) -> bool:

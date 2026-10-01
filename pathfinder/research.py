@@ -41,8 +41,10 @@ def status(campaign, pair_id) -> dict:
 
 
 def _set(campaign, pair_id, **kw):
-    s = status(campaign, pair_id); s.update(kw, updated=_now())
+    s = status(campaign, pair_id); before = dict(s); s.update(kw, updated=_now())
     _atomic_write(campaign.thread_dir(pair_id) / "status.json", json.dumps(s, indent=1).encode())
+    from . import events
+    events.transition(campaign, pair_id, "research", before, s)
     return s
 
 

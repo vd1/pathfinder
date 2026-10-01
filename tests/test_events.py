@@ -42,3 +42,36 @@ def test_a_write_error_does_not_raise(tmp_path, capsys):
     c.path("events.jsonl").mkdir()                    # a directory where the file should be
     events.emit(c, "run_started")
     assert "event not recorded" in capsys.readouterr().err
+
+
+def test_a_stub_research_run_records_calls_and_transitions(tmp_path):
+    from pathfinder import research
+    c = make(tmp_path)
+    research.run_thread(c, "Q1P1")
+    rows, _ = events.read(c)
+    kinds = [r["kind"] for r in rows]
+    assert kinds.count("call_started") == kinds.count("call_finished") > 0
+    research_changes = [r for r in rows if r["kind"] == "status_changed" and r["axis"] == "research"]
+    assert research_changes[0]["from"] in (None, "new") and research_changes[-1]["to"] == research.status(c, "Q1P1")["status"]
+    assert all(r["unit"] == "Q1P1" for r in rows if r["kind"] in ("call_started", "call_finished"))
+
+
+def test_status_changed_only_when_the_status_changes(tmp_path):
+    from pathfinder import edit
+    c = make(tmp_path)
+    c.thread_dir("Q1P1").mkdir(parents=True)
+    edit._set(c, "Q1P1", status="editing", attempt=1)
+    edit._set(c, "Q1P1", status="editing", attempt=2)
+    edit._set(c, "Q1P1", status="blocked", reason="r")
+    changes = [r for r in events.read(c)[0] if r["kind"] == "status_changed"]
+    assert [(r["axis"], r["from"], r["to"]) for r in changes] == [("editorial", "none", "editing"), ("editorial", "editing", "blocked")]
+
+
+def test_stops_are_recorded_with_their_class(tmp_path):
+    from pathfinder import failures, runner
+    c = make(tmp_path)
+    failures.stop_for(c, failures.classify("error", "You've hit your usage limit."), "usage limit")
+    runner.request_stop(c, "operator")
+    stops = [r for r in events.read(c)[0] if r["kind"] == "stop_requested"]
+    assert stops[0]["failure_class"] == "quota" and stops[0]["scope"] == "campaign"
+    assert stops[1]["failure_class"] is None and stops[1]["reason"] == "operator"

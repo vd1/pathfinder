@@ -214,6 +214,11 @@ def _receipt(campaign, thread, stage, actor, model, r):
         row["failure_rules_error"] = rules_error
     with open(campaign.path("receipts.jsonl"), "a") as f:
         f.write(json.dumps(row) + "\n")
+    from . import events
+    events.emit(campaign, "call_finished", unit=thread, stage=stage, actor=actor, outcome=r.get("outcome"),
+                failure_class=(r["failure"] or {}).get("class"), seconds=r.get("seconds"),
+                input_tokens=r.get("input_tokens"), output_tokens=r.get("output_tokens"),
+                cache_read=r.get("cache_read"), tool_calls=r.get("tool_calls"))
     failures.stop_for(campaign, failure, r.get("error"))
     return failure
 
@@ -298,6 +303,9 @@ def _attempt(campaign, request: ModelRequest):
                 "deadline_at": started + request.timeout, "timeout_seconds": request.timeout,
                 "cwd": str(request.cwd) if request.cwd else None}
     health.write(path, activity)
+    from . import events
+    events.emit(campaign, "call_started", unit=request.thread, stage=request.stage, actor=request.actor,
+                attempt_id=attempt, prompt_chars=len(request.prompt))
     try:
         result = _execute(campaign, request, path, activity)
     except BaseException as error:

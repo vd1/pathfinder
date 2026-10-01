@@ -22,8 +22,10 @@ def status(campaign, pair_id) -> dict:
 
 def _set(campaign, pair_id, **kw):
     d = campaign.thread_dir(pair_id) / "paper"; d.mkdir(exist_ok=True)
-    s = status(campaign, pair_id); s.update(kw, updated=_now())
+    s = status(campaign, pair_id); before = dict(s); s.update(kw, updated=_now())
     (d / "paper.json").write_text(json.dumps(s, indent=1))
+    from . import events
+    events.transition(campaign, pair_id, "assessment", before, s)
     return s
 
 
