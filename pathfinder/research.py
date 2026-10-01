@@ -220,7 +220,7 @@ def _evidence_references(text: str) -> list[str]:
     return evidence.cited_files(text)
 
 
-def _assessment_evidence(campaign, d, references=None, by_reference=False, record=None) -> str:
+def _assessment_evidence(campaign, d, references=None, by_reference=False, record=None, pair_id=None) -> str:
     """@planks("the request contains the complete calculation evidence with its source paths")
     @planks("the request contains the complete prior account and peer artefact contents")
     @planks("the request contains the complete current account and peer artefact contents")
@@ -248,7 +248,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     strict = bool(campaign.raw.get("strict_evidence"))
     limit = int(campaign.raw.get("evidence_max_bytes", EVIDENCE_MAX_BYTES))
     bundles = list((campaign.raw or {}).get("research_bundles") or [])
-    sources = evidence.registered_sources(campaign, d.name)
+    sources = evidence.registered_sources(campaign, pair_id or d.name)   # a bundle reads its pair's registrations
     resolved, ambiguous = {}, {}            # path -> (cited name, kind); cited name -> candidate paths
     paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
     declaration, citations = _external_citations(d)
@@ -300,9 +300,17 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
         if how == "source":                      # a campaign file registered for this pair, read by its own bytes
             data = path.read_bytes()
             keep(cited, "campaign:" + str(path.relative_to(Path(campaign.root).resolve())), "source", data)
-            label = f"{cited} (resolved to campaign:{path.relative_to(Path(campaign.root).resolve())})"
-            parts.append(f"## {label}\n\n(file: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})"
-                         if by_reference or len(data) > limit else f"## {label}\n\n{data.decode('utf-8', errors='replace')}")
+            label = f"{cited} (resolved to campaign:{path.relative_to(Path(campaign.root).resolve())}, sha256 {hashlib.sha256(data).hexdigest()})"
+            # outside the reader's working directory, so inlined even by reference; same text rules as thread files
+            try:
+                if len(data) > limit:
+                    raise UnicodeError(f"{len(data)} bytes, over the {limit}-byte inline limit")
+                parts.append(f"## {label}\n\n{data.decode('utf-8')}")
+            except UnicodeError as error:
+                if strict:
+                    problem("not_text", cited, f"evidence not inlinable as text: {cited}: {error}", str(error))
+                else:
+                    parts.append(f"## {label}\n\n(not inlined: {len(data)} bytes)")
             continue
         relative = path.relative_to(d)
         heading = f"{cited} (resolved to {relative})" if how == "namespace" else str(relative)
@@ -679,7 +687,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
         _set(campaign, pair_id, status="stopped", reason="transport failed"); raise
 
 
-def _bundle_evidence(campaign, d, by_reference=False, record=None):
+def _bundle_evidence(campaign, d, by_reference=False, record=None, errors=None):
     """@planks("each stage receives all three ledgers and their referenced evidence")
     @planks("it includes those thread-relative bundle directories with their original reference namespaces")
     """
@@ -698,9 +706,18 @@ def _bundle_evidence(campaign, d, by_reference=False, record=None):
             raise EvidenceUnavailable(f"Unreadable evidence {name}/ledger.jsonl: {error}") from error
         parts.append(f"## {name}/ledger.jsonl\n\n{content}")
         inner = [] if record is not None else None
-        evidence = _assessment_evidence(campaign, root, by_reference=by_reference, record=inner)
-        for entry in inner or []:
-            record.append({**entry, "path": f"{name}/{entry['path']}"})
+        try:
+            evidence = _assessment_evidence(campaign, root, by_reference=by_reference, record=inner, pair_id=d.name)
+        except EvidenceError as failure:            # keep the bundle's namespace on each error, and go on
+            if errors is None:
+                raise
+            for e in failure.errors:
+                errors.append({**e, "path": f"{name}/{e['path']}", "origin": name, "cited": e["path"],
+                               "message": e["message"].replace(e["path"], f"{name}/{e['path']}", 1)})
+            evidence = ""
+        finally:
+            for entry in inner or []:
+                record.append({**entry, "path": f"{name}/{entry['path']}"})
         parts.append(evidence.replace("## ", f"## {name}/"))
     return "\n\n".join(parts)
 
@@ -723,10 +740,15 @@ def _review_material(campaign, pair_id, review_id=None):
     material = (thread_head(d, _inputs(d), ledger=False, inline_limit=papers_limit(campaign))
                 + "\n\n## ledger.jsonl\n\n" + ledger_text)
     by_reference = evidence_by_reference(campaign)
-    record, failure = [], None
+    record, failure, collected = [], None, []
     try:
-        material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference, record=record)
-        material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference, record=record)
+        try:
+            material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference, record=record)
+        except EvidenceError as joint:              # report the bundles' problems too, all together
+            collected.extend(joint.errors)
+        material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference, record=record, errors=collected)
+        if collected:
+            raise EvidenceError(collected)
     except EvidenceUnavailable as error:
         failure = error
         raise

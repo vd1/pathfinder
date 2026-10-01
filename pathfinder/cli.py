@@ -123,6 +123,8 @@ def _dispatch(ns, c):
             runner.request_stop(c, "operator"); print("stop requested; running commands will drain and exit")
     elif ns.cmd == "evidence":
         from . import evidence
+        if not (c.thread_dir(ns.pair) / "status.json").exists():
+            print(f"no thread for {ns.pair}"); return 1
         m = evidence.manifest(c, ns.pair)
         proposed = evidence.proposals(m, c.thread_dir(ns.pair))
         print(json.dumps({**m, "proposals": proposed}, indent=1) if ns.json else evidence.text(m, proposed))

@@ -123,3 +123,68 @@ def test_manifest_and_proposals(tmp_path, capsys):
     assert p["path"] == "ada/missing.json" and p["ledger_seq"] == 1 and len(p["text_sha256"]) == 64
     assert cli.main(["--root", str(tmp_path), "evidence", "Q1P1", "--json"]) in (0, None)
     assert json.loads(capsys.readouterr().out)["errors"][0]["path"] == "ada/missing.json"
+
+
+@pytest.mark.parametrize("token", ["ada/app.py", "ada/fig.py", "ada/p.py", "ada/table.csv", "ada/tab.tsv", "ada/def.json",
+                                   "ada/alg.py", "ada/ch.tex", "ada/eq.py", "ada/fig.1.png", "ada/sec.data/x.json", "src/app.js"])
+def test_files_named_like_locators_are_files(token):
+    assert evidence.classify(token) == "file"
+
+
+def _joint(tmp_path, **raw):
+    import json
+    from pathfinder import research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", research_bundles=["branches/b1"], **raw)
+    d = research.prepare(c, "Q1P1")
+    (d / "branches/b1/ada").mkdir(parents=True)
+    raw_file = tmp_path / "sources" / "P001" / "raw.json"; raw_file.parent.mkdir(parents=True); raw_file.write_text('{"raw": 1}')
+    rows = [json.loads(l) for l in c.path("P.jsonl").read_text().splitlines()]
+    rows[0]["raw"] = "sources/P001/raw.json"
+    c.path("P.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return c, d, Ledger
+
+
+def test_bundle_errors_keep_their_namespace_and_manifest_entries(tmp_path):
+    import json
+    from pathfinder import research
+    c, d, Ledger = _joint(tmp_path, strict_evidence=True)
+    (d / "branches/b1/ada/kept.json").write_text("{}")
+    Ledger(d / "branches/b1/ledger.jsonl").add("ada", "finding", "see ada/kept.json and ada/lost.json")
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/gone.json")
+    with pytest.raises(research.EvidenceUnavailable) as raised:
+        research._review_material(c, "Q1P1")
+    paths = sorted(e["path"] for e in raised.value.errors)
+    assert paths == ["ada/gone.json", "branches/b1/ada/lost.json"]
+    files = [f["path"] for f in json.loads((d / "evidence-manifest.json").read_text())["files"]]
+    assert "branches/b1/ada/kept.json" in files
+    bound = {p["path"]: p.get("ledger_seq") for p in evidence.proposals(json.loads((d / "evidence-manifest.json").read_text()), d)}
+    assert bound["branches/b1/ada/lost.json"] == 1 and bound["ada/gone.json"] == 1
+
+
+def test_bundle_ledgers_resolve_registered_sources_and_by_reference_inlines_them(tmp_path):
+    from pathfinder import research
+    c, d, Ledger = _joint(tmp_path, strict_evidence=True)
+    Ledger(d / "branches/b1/ledger.jsonl").add("ada", "finding", "used sources/P001/raw.json")
+    material = research._review_material(c, "Q1P1")          # no error: resolved through the pair's registration
+    assert '{"raw": 1}' in material                          # readable without leaving the working directory
+
+
+def test_only_safe_source_paths_are_registered(tmp_path):
+    import json
+    from stubcampaign import make
+    c = make(tmp_path)
+    (tmp_path / "threads" / "Q1P2").mkdir(parents=True); (tmp_path / "threads" / "Q1P2" / "ledger.jsonl").write_text("x")
+    rows = [json.loads(l) for l in c.path("P.jsonl").read_text().splitlines()]
+    rows[0].update(x="Q.jsonl/../campaign.json", y="threads/Q1P2/ledger.jsonl")
+    c.path("P.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    assert evidence.registered_sources(c, "Q1P1") == {}
+
+
+def test_evidence_command_without_a_thread_says_so(tmp_path, capsys):
+    from pathfinder import cli
+    from stubcampaign import make
+    make(tmp_path)
+    assert cli.main(["--root", str(tmp_path), "evidence", "Q1P1"]) == 1
+    assert "no thread for Q1P1" in capsys.readouterr().out

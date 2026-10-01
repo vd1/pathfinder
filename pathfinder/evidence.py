@@ -12,7 +12,9 @@ from pathlib import Path
 
 PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
 URL = re.compile(r"\b[a-z][a-z0-9+.-]*://\S+", re.I)
-LOCATOR = re.compile(r"(?:^|/)(?:p|pp|eq|eqs|fig|figs|table|tab|sec|thm|lem|prop|def|ch|app|alg)\.[\w.-]*$", re.I)
+# A locator needs a number after its dot (p.1653, Eq.1, Fig.3); app.py, table.csv and sec.data/ are files.
+LOCATOR = re.compile(r"(?:^|/)(?:p|pp|eq|eqs|fig|figs|table|tab|sec|thm|lem|prop|def|ch|app|alg)\.\d[\w.-]*$", re.I)
+FILE_EXTENSION = re.compile(r"\.[A-Za-z]{1,5}$")
 NUMBER = re.compile(r"^[\d.]+(?:/[\d.]+)+$")
 DOI = re.compile(r"^10\.\d{4,9}/")
 
@@ -24,6 +26,8 @@ def classify(token: str) -> str:
         return "number"
     if token.endswith(".git"):
         return "repository"
+    if FILE_EXTENSION.search(token):                 # fig.1.png ends like a file, whatever comes before
+        return "file"
     if LOCATOR.search(token) or any(LOCATOR.search(part) for part in token.split("/")[:-1]):
         return "locator"
     return "file"
@@ -72,11 +76,15 @@ def registered_sources(campaign, pair_id: str) -> dict:
         path = campaign.path(f"{side}.jsonl")
         rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()] if path.is_file() else []
         row = rows[index - 1] if 0 < index <= len(rows) else {}
-        for value in row.values():
-            if isinstance(value, str) and "/" in value and not value.startswith(("http://", "https://")):
-                target = (root / value).resolve()
-                if target.is_relative_to(root) and target.is_file():
-                    out[value] = target
+        for key, value in row.items():
+            # the pair's own text, or a manifestation kept under sources/; never '..', never another thread
+            if not isinstance(value, str) or "/" not in value or Path(value).is_absolute() or ".." in Path(value).parts:
+                continue
+            if key != "text" and not value.startswith("sources/"):
+                continue
+            target = (root / value).resolve()
+            if target.is_relative_to(root) and target.is_file():
+                out[value] = target
     return out
 
 
@@ -102,11 +110,15 @@ def proposals(m: dict, d: Path) -> list[dict]:
     """One proposed declaration per evidence error; nothing is written. The ledger entry binding (seq and
     text_sha256) is filled in so a declaration can be pasted into external-references.json."""
     import hashlib, json
-    rows = [json.loads(l) for l in (d / "ledger.jsonl").read_text().splitlines() if l.strip()] if (d / "ledger.jsonl").is_file() else []
+    def ledger(origin):
+        path = (d / origin / "ledger.jsonl") if origin else (d / "ledger.jsonl")
+        return [json.loads(l) for l in path.read_text().splitlines() if l.strip()] if path.is_file() else []
+
     out = []
     for error in m.get("errors", []):
-        path = error.get("path")
-        entry = next((r for r in rows if path and path in cited_files(r.get("text", ""))), None)
+        path, origin = error.get("path"), error.get("origin")
+        cited = error.get("cited") or (path[len(origin) + 1:] if origin and path and path.startswith(origin + "/") else path)
+        entry = next((r for r in ledger(origin) if cited and cited in cited_files(r.get("text", ""))), None)
         binding = {"ledger_seq": entry["seq"], "text_sha256": hashlib.sha256(entry["text"].encode()).hexdigest()} if entry else {}
         if error["code"] == "missing":
             out.append({"path": path, **binding, "choices": ["unavailable (give the URL where it should be)",
