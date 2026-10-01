@@ -123,6 +123,15 @@ class EvidenceUnavailable(Exception):
     """Evidence a composable review must inline cannot be supplied; the thread blocks before any call."""
 
 
+class EvidenceError(EvidenceUnavailable):
+    """Every evidence problem of one review, typed, so each can be repaired on its own (R03)."""
+
+    def __init__(self, errors: list[dict]):
+        self.errors = errors
+        more = (f" (and {len(errors) - 1} more: " + "; ".join(e["message"] for e in errors[1:]) + ")") if len(errors) > 1 else ""
+        super().__init__(errors[0]["message"] + more)
+
+
 def _external_citations(d):
     """@planks("Vera receives the ledger and its external citation declaration")
     @planks("research blocks before provider dispatch because the citation binding is stale")
@@ -253,9 +262,15 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
                 else:
                     paths.add(d / name)
     parts = ["## external-references.json\n\n" + declaration] if declaration is not None else []
+    errors = []                              # every problem of this review, typed, raised together at the end
+
+    def problem(code, path, message, detail=None):
+        errors.append({"code": code, "path": str(path), "detail": detail, "message": message})
+
     for name, candidates in sorted(ambiguous.items()):
         if strict:
-            raise EvidenceUnavailable(f"missing evidence: {name} (ambiguous: {', '.join(candidates)})")
+            problem("ambiguous", name, f"missing evidence: {name} (ambiguous: {', '.join(candidates)})", list(candidates))
+            continue
         parts.append(f"## {name}\n\n(cited in the ledger; ambiguous between {', '.join(candidates)}; declare which one)")
     for path in sorted(paths):
         cited, how = resolved.get(path, (None, "local"))
@@ -268,19 +283,23 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
         relative = path.relative_to(d)
         heading = f"{cited} (resolved to {relative})" if how == "namespace" else str(relative)
         if ".." in relative.parts or any((d / parent).is_symlink() for parent in (relative, *relative.parents)):
-            raise EvidenceUnavailable(f"aliased evidence path: {relative}")
+            problem("aliased", relative, f"aliased evidence path: {relative}")
+            continue
         if path.exists() and not path.resolve().is_relative_to(d.resolve()):
-            raise EvidenceUnavailable(f"evidence outside the investigation: {relative}")
+            problem("outside", relative, f"evidence outside the investigation: {relative}")
+            continue
         if not path.is_file():
             if strict:
-                raise EvidenceUnavailable(f"missing evidence: {relative}")
+                problem("missing", relative, f"missing evidence: {relative}")
+                continue
             parts.append(f"## {relative}\n\n(cited in the ledger; no such file)")
             continue
         try:
             data = path.read_bytes()
         except OSError as error:
             if strict:
-                raise EvidenceUnavailable(f"unreadable evidence: {relative}: {error}") from error
+                problem("unreadable", relative, f"unreadable evidence: {relative}: {error}", str(error))
+                continue
             parts.append(f"## {relative}\n\n(not inlined: unreadable file: {error})")
             continue
         if by_reference:
@@ -293,10 +312,13 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
             text = data.decode("utf-8")
         except UnicodeError as error:
             if strict:
-                raise EvidenceUnavailable(f"evidence not inlinable as text: {relative}: {error}") from error
+                problem("not_text", relative, f"evidence not inlinable as text: {relative}: {error}", str(error))
+                continue
             parts.append(f"## {heading}\n\n(not inlined: {len(data)} bytes, sha256 {hashlib.sha256(data).hexdigest()})")
             continue
         parts.append(f"## {heading}\n\n{text}")
+    if errors:
+        raise EvidenceError(errors)
     return "\n\n".join(parts)
 
 

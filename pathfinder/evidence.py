@@ -78,3 +78,10 @@ def registered_sources(campaign, pair_id: str) -> dict:
                 if target.is_relative_to(root) and target.is_file():
                     out[value] = target
     return out
+
+
+def __getattr__(name):
+    if name == "EvidenceError":                 # defined beside EvidenceUnavailable, so every existing catch holds
+        from .research import EvidenceError
+        return EvidenceError
+    raise AttributeError(name)

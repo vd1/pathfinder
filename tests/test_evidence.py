@@ -70,3 +70,19 @@ def test_strict_review_reads_a_namespaced_file_instead_of_blocking(tmp_path):
     Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/audit.json")
     material = research._review_material(c, "Q1P1")
     assert "branches/b1/ada/audit.json" in material
+
+
+def test_all_strict_errors_are_reported_together(tmp_path):
+    from pathfinder import research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    d = research.prepare(c, "Q1P1")
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/one.json and ada/two.json")
+    with pytest.raises(research.EvidenceUnavailable) as raised:
+        research._review_material(c, "Q1P1")
+    error = raised.value
+    assert isinstance(error, evidence.EvidenceError)
+    assert [e["path"] for e in error.errors] == ["ada/one.json", "ada/two.json"]
+    assert all(e["code"] == "missing" for e in error.errors)
+    assert str(error).startswith("missing evidence: ada/one.json") and "and 1 more" in str(error)
