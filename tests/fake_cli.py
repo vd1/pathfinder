@@ -18,10 +18,16 @@ if mode != "claude" and os.environ.get("FAKE_FAIL"):
     print(json.dumps({"type": "turn.failed", "error": {"message": os.environ["FAKE_FAIL"]}}), flush=True)
     sys.exit(1)
 for i in range(int(os.environ.get("FAKE_TOOLS", "0"))):
+    failed = i < int(os.environ.get("FAKE_TOOL_FAIL", "0"))     # FAKE_TOOL_FAIL: how many of them fail
     if mode == "claude":
         print(json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "name": "Bash", "input": {}}]}}))
+        if failed:
+            print(json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "is_error": True,
+                                                                         "content": "No module named pathfinder.ledger"}]}}))
     else:
-        print(json.dumps({"type": "item.completed", "item": {"type": "command_execution", "command": f"cmd {i}"}}))
+        print(json.dumps({"type": "item.completed", "item": {"type": "command_execution", "command": f"cmd {i}",
+                          "exit_code": 1 if failed else 0,
+                          "aggregated_output": "No module named pathfinder.ledger" if failed else "ok"}}))
 final = json.loads(os.environ["FAKE_USAGE"]) if "FAKE_USAGE" in os.environ else "default"
 if os.environ.get("FAKE_PARTIAL"):
     print(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 4, "output_tokens": 1}}}), flush=True)

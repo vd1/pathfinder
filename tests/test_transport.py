@@ -275,3 +275,14 @@ def test_a_broken_failure_rules_extension_still_writes_the_receipt(tmp_path, mon
     assert r["outcome"] == "completed"
     row = rows(tmp_path)[0]
     assert row["outcome"] == "completed" and "unknown failure class" in row["failure_rules_error"]
+
+
+def test_receipt_counts_tool_errors_with_samples(tmp_path, monkeypatch):
+    for mode in ("codex", "claude"):
+        (tmp_path / "receipts.jsonl").unlink(missing_ok=True)
+        monkeypatch.setenv("FAKE_MODE", mode); monkeypatch.setenv("FAKE_TOOLS", "4"); monkeypatch.setenv("FAKE_TOOL_FAIL", "2")
+        transport.call("p", campaign=campaign(tmp_path, mode), model="m", tools=True, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="peer", actor="ada")
+        row = rows(tmp_path)[0]
+        assert row["tool_calls"] == 4 and row["tool_errors"] == 2
+        assert all("No module named pathfinder.ledger" in s for s in row["tool_error_samples"])

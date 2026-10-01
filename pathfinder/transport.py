@@ -182,6 +182,32 @@ def _tool_calls(lines) -> int:
     return count
 
 
+def _tool_errors(lines) -> tuple[int, list[str]]:
+    """Failed tool uses the session reported (Codex non-zero exit codes, Claude tool results marked as
+    errors), with up to five samples of their output, so environment friction shows in the receipt."""
+    count, samples = 0, []
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(row, dict):
+            continue
+        texts = []
+        item = row.get("item") or {}
+        if row.get("type") == "item.completed" and item.get("type") == "command_execution" and item.get("exit_code") not in (0, None):
+            texts.append(str(item.get("aggregated_output") or f"exit {item.get('exit_code')}"))
+        if row.get("type") == "user":
+            for block in (row.get("message") or {}).get("content") or []:
+                if isinstance(block, dict) and block.get("type") == "tool_result" and block.get("is_error"):
+                    texts.append(str(block.get("content")))
+        for text in texts:
+            count += 1
+            if len(samples) < 5:
+                samples.append(text.strip()[-200:])
+    return count, samples
+
+
 def _cost(campaign, model, reported, counters):
     """(cost in USD, basis, rates). Reported by the provider, or priced from reported counters with the
     campaign's table, an approximation; otherwise unknown. Codex counts cached tokens inside its input
@@ -212,7 +238,8 @@ def _receipt(campaign, thread, stage, actor, model, r):
            "actor": actor, "backend": campaign.backend, "model": model,
            **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
-                                     "raw_events", "error", "failure", "prompt_chars", "tool_calls")}}
+                                     "raw_events", "error", "failure", "prompt_chars", "tool_calls", "tool_errors",
+                                     "tool_error_samples")}}
     if r.get("rates"):
         row["rates"] = r["rates"]
     if rules_error:
@@ -223,7 +250,7 @@ def _receipt(campaign, thread, stage, actor, model, r):
     events.emit(campaign, "call_finished", unit=thread, stage=stage, actor=actor, outcome=r.get("outcome"),
                 failure_class=(r["failure"] or {}).get("class"), seconds=r.get("seconds"),
                 input_tokens=r.get("input_tokens"), output_tokens=r.get("output_tokens"),
-                cache_read=r.get("cache_read"), tool_calls=r.get("tool_calls"))
+                cache_read=r.get("cache_read"), tool_calls=r.get("tool_calls"), tool_errors=r.get("tool_errors"))
     failures.stop_for(campaign, failure, r.get("error"))
     return failure
 
@@ -240,7 +267,7 @@ def _failed(campaign, thread, stage, actor, model, started, outcome, error, prom
 
 RESULT_KEYS = ("text", "session", "seconds", "usage", "input_tokens", "output_tokens", "cache_write", "cache_read",
                "prefix_read", "cost", "cost_basis", "rates", "outcome", "error", "transport_failed", "exit_status",
-               "terminal_event", "raw_events", "failure", "prompt_chars", "tool_calls")
+               "terminal_event", "raw_events", "failure", "prompt_chars", "tool_calls", "tool_errors", "tool_error_samples")
 
 
 def _extension_call(campaign, request, dispatcher):
@@ -406,6 +433,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
           "transport_failed": bool(error or err), "exit_status": proc.returncode,
           "terminal_event": lines[-1].rstrip("\n") if lines else None,
           "prompt_chars": len(prompt), "tool_calls": _tool_calls(lines),
+          **dict(zip(("tool_errors", "tool_error_samples"), _tool_errors(lines))),
           "raw_events": [line.rstrip("\n") for line in lines]}
     _receipt(campaign, thread, stage, actor, model, r)
     return r
