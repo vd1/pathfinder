@@ -392,12 +392,12 @@ ignored), each compared with canonical \texttt{pathfinder} at \texttt{81f888e}.
 \begin{xltabular}{\linewidth}{L{8mm}L{42mm}L{20mm}Y}
 \toprule Item & Mechanism & Source & Canonical today, and what to do\\\midrule\endhead
 \bottomrule\endfoot
-H1 & Failure classes from structured events: quota, auth, rate, with deployment-registerable rules & AQ QuotaPaused; SA recovery diagnoser & Only generic outcomes. Classify from \sig{turn.failed} payloads, never stderr. Quota stops admission with reason \sig{quota} and does not BLOCK the thread; auth stops; 429 defers. (D2) Done in phase 1 (commits 77da501 to 20f283e): classes, scopes, reset time, campaign stops, deployment rules; 429 deferral left to phase 4.\\
+H1 & Failure classes from structured events: quota, auth, rate, with deployment-registerable rules & AQ QuotaPaused; SA recovery diagnoser & Only generic outcomes. Classify from \sig{turn.failed} payloads, never stderr. Quota stops admission with reason \sig{quota} and does not BLOCK the thread; auth stops; 429 defers. (D2) Done in phase 1 (commits 77da501 to 20f283e): classes, scopes, reset time, campaign stops, deployment rules; 429 deferral done in phase 4a as a campaign cooldown at admission, with one retry of unserved calls.\\
 H2 & Prompt size gate before admission, refusal receipt, lossless JSON compaction, pooling of large sources & SA \path{prompt_context.py}; AQ input hygiene & Only a word count at the edit stage. Take into \path{transport.execute}. (D3, D4) Size gate done in phase 1 (4b1f9b9); compaction and pooling in phase 3.\\
-H3 & Health policy: retry once, flag after two consecutive failures, auto-clear, single-seat probe & AQ runner & Any stage exception drains the run; restart is manual. Adapt. (D6)\\
+H3 & Health policy: retry once, flag after two consecutive failures, auto-clear, single-seat probe & AQ runner & Any stage exception drains the run; restart is manual. Adapt. (D6) Done in phase 4a (up to 2dee0d9).\\
 H4 & Per-call last-event time & AQ runner & \path{health.snapshot} has heartbeat and overdue calls but no event age. Stamp it in \path{active-calls/*.json}. (D1) Done in phase 2a as the event stream (call\_started, call\_finished with tokens and tool calls) up to 49ba31f.\\
 H5 & Coordinator batch mode: deadline, maximum units, stop marker, opt-in tolerance of $k$ consecutive failures, recovery first, deployment \texttt{next\_unit()} & SA \path{overnight.py} & \path{coordinator.py} runs a fixed schedule and stops on the first failure. Adapt, opt-in.\\
-H6 & Recovery: one admission per attempt; reconcile actions to collect retained verify output, retry a stage refused before any turn, and mark terminal failure & SA \path{recovery.py}; AQ \path{reconcile.py} & \path{reconcile.py} has four actions, \path{recovery.py} only repairs verdict JSON. Adapt.\\
+H6 & Recovery: one admission per attempt; reconcile actions to collect retained verify output, retry a stage refused before any turn, and mark terminal failure & SA \path{recovery.py}; AQ \path{reconcile.py} & \path{reconcile.py} has four actions, \path{recovery.py} only repairs verdict JSON. Adapt. Phase 4a: reconcile unblocks a repaired evidence block with a recorded transition (up to 2dee0d9); one-admission recovery receipts remain for 4c.\\
 H7 & Cross-process seat pool keyed by account, reservations bound to PIDs, dead ones reaped & AQ \path{coordination.py} & Admission counts within one process. Needed before statarb and agQSL share one subscription.\\
 H8 & Schema-constrained single calls & SA (\sig{codex exec --output-schema}) & \path{transport.call} has no schema support. Add; statarb's scan, implementation and review then use the engine.\\
 H9 & Post-edit consumer stage, which cannot overturn the verifier & SA implementation stage & No such hook. Adapt as an extension point.\\
@@ -525,10 +525,12 @@ generalise to the canonical engine and belong in the refactor specification.
   warn when a stage allowance is below the durations its receipts have recorded for
   that stage, and a timed-out session's saved files stay the starting point of the
   retry.
+  Done in phase 4a (up to 2dee0d9).
 \item \textbf{Stopped statuses carry their failure class.} A timeout still reaches
   the stage status as ``transport failed''; the receipt knows it was a timeout. The
   structured \texttt{failure} recorded for blocks in phase 2a should also be written
   on stopped statuses.
+  Done in phase 4a (up to 2dee0d9).
 \end{enumerate}
 
 \section{Evidence and state failures from julien-2, 1 October}\label{sec:julien-evidence}
@@ -549,7 +551,7 @@ F03 & A code string fragment (\sig{.raw.txt} suffix) blocks collection as a requ
 F04 & A generated output name (\sig{coverage-and-checks.json}) is taken as a consumed input & Declared inputs, planned outputs and observed outputs are distinct; a claim resting on an absent output stays an evidence gap. Done in phase 3b: declaration status \texttt{output}; a missing planned output is a gap. (up to 5203d1c)\\
 F05 & A page locator (\sig{prose/p.1653}) is parsed as a path & Typed citations with document, page and section fields. Done in phase 3b: locators, numbers, DOIs, URLs and repositories are typed, not files. (up to 5203d1c)\\
 F06 & External repository paths (\sig{chemle/emle-engine.git}) are treated as local evidence & Retained local bytes, external citations, unavailable external assets and generated artefacts are distinct kinds; an external citation cannot support a claim of inspection without retained evidence. Done in phase 3b for typing; retained local, external and unavailable stay declaration statuses. (up to 5203d1c)\\
-F07 & Repairing evidence leaves a stale terminal BLOCKED status & Explicit reconciliation: verify the repaired precondition, record the old state, keep retained responses and charges, resume at the right checkpoint, once.\\
+F07 & Repairing evidence leaves a stale terminal BLOCKED status & Explicit reconciliation: verify the repaired precondition, record the old state, keep retained responses and charges, resume at the right checkpoint, once. Done in phase 4a (up to 2dee0d9).\\
 F08 & Research accepts (DRAFT) and delivery then fails on a different evidence contract & One evidence manifest and resolver for research, verification and delivery; validate the next stage's contract before spending on it; packaging failure keeps the verdict and resumes without rerunning Vera. Phase 3b: one evidence manifest per review (\path{evidence-manifest.json}); validation before delivery belongs to julien-2's collector and moves with its migration. (up to 5203d1c)\\
 F09 & A truncated monitoring summary is reported as progress & Bounded structured events; truncation means unknown progress until the full record is read. Done in phase 2a: a cut event stream gives progress unknown.\\
 F10 & One finished/blocked label mixes research and delivery state & Separate research decision, evidence readiness, editorial, assessment and controller states. Done in phase 2a: research, editorial, assessment and controller states in \path{state.json}.\\
