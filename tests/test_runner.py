@@ -89,3 +89,43 @@ def test_blocked_threads_are_not_readmitted(tmp_path):
     d = c.thread_dir("Q1P1"); d.mkdir(parents=True)
     (d / "status.json").write_text(json.dumps({"pair_id": "Q1P1", "round": 1, "stage": "verify", "status": "BLOCKED"}))
     assert "Q1P1" not in runner.pending(c) and "Q1P2" in runner.pending(c)
+
+
+def _flaky(monkeypatch, plan):
+    from pathfinder import research, transport
+    real = research.run_thread
+    def run_thread(campaign, pair_id, stop=lambda: False):
+        if plan and plan.pop(0):
+            raise transport.TransportFailed(pair_id)
+        return real(campaign, pair_id, stop=stop)
+    monkeypatch.setattr(research, "run_thread", run_thread)
+
+
+def test_one_pair_failure_is_retried_without_draining(tmp_path, monkeypatch):
+    from pathfinder import runner
+    from stubcampaign import make
+    c = make(tmp_path, pairs=("Q1P1",))
+    _flaky(monkeypatch, [True])
+    runner.run(c, interval=0.01)
+    assert not c.path("health.json").exists()
+    rows = [json.loads(l) for l in c.path("failures.jsonl").read_text().splitlines()]
+    assert len(rows) == 1 and rows[0]["counted"] is True
+
+
+def test_two_consecutive_failures_raise_the_health_flag(tmp_path, monkeypatch):
+    from pathfinder import runner
+    from stubcampaign import make
+    c = make(tmp_path, pairs=("Q1P1",))
+    _flaky(monkeypatch, [True, True])
+    runner.run(c, interval=0.01)
+    assert c.path("health.json").exists()
+
+
+def test_an_editor_block_is_not_an_operational_failure(tmp_path, monkeypatch):
+    from pathfinder import edit, runner
+    from stubcampaign import make
+    c = make(tmp_path, pairs=("Q1P1",))
+    monkeypatch.setattr(edit, "run", lambda campaign, pair_id, stop=lambda: False: (
+        edit._set(campaign, pair_id, status="blocked", reason="no note"), "blocked")[1])
+    runner.run(c, interval=0.01)
+    assert not c.path("health.json").exists()

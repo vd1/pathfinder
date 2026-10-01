@@ -101,6 +101,17 @@ def request_stop(campaign, reason: str, **details):
                 failure_class=(details.get("failure") or {}).get("class"))
 
 
+def _stop_marker_record(campaign) -> dict | None:
+    try:
+        return json.loads(campaign.path("stop.json").read_text())
+    except (OSError, ValueError):
+        return None
+
+
+class PairBlocked(Exception):
+    """A pair ended blocked in a stage (for example the editor wrote no note): the pair waits, the run goes on."""
+
+
 def unhealthy(campaign) -> bool:
     return campaign.path("health.json").exists()
 
@@ -126,6 +137,7 @@ def pending(campaign) -> list[str]:
     from . import edit
     return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
             and research.status(campaign, p).get("status") not in {"BLOCKED", "HANDOFF"}
+            and edit.status(campaign, p).get("status") != "blocked"
             and (research.status(campaign, p).get("status") not in research.TERMINAL
                  or edit.status(campaign, p).get("status") != "done")]
 
@@ -145,7 +157,8 @@ def _work(campaign, pair_id):
                 if edit.status(campaign, pair_id).get("status") != "done":
                     edited = edit.run(campaign, pair_id, stop=stop)
                     if edited != "done" and not stop():
-                        raise RuntimeError(f"editor {edited}: {edit.status(campaign, pair_id).get('reason')}")
+                        message = f"editor {edited}: {edit.status(campaign, pair_id).get('reason')}"
+                        raise PairBlocked(message) if edited == "blocked" else RuntimeError(message)
         except Exception as error:
             error.stage = stage if stage == "edit" else research.status(campaign, pair_id).get("stage")
             raise
@@ -266,13 +279,15 @@ def _blocked(campaign) -> list[str]:
 
 def _loop(campaign, ex, interval, futures, metadata):
     """@planks("When the operator requests a stop")"""
+    metadata.setdefault("consecutive_failures", 0)
     while True:
         metadata.update(heartbeat_at=time.time(), active_pairs=list(futures.values()),
                         status="draining" if stopped(campaign) or unhealthy(campaign) else "running")
         health.write(campaign.path("runner.json"), metadata); _write_state(campaign)
         queue = [] if (stopped(campaign) or unhealthy(campaign)) else pending(campaign)
+        seats = 1 if metadata["consecutive_failures"] else campaign.seats     # after a failure, probe with one seat
         for pair_id in queue:
-            if len(futures) >= campaign.seats:
+            if len(futures) >= seats:
                 break
             if pair_id in futures.values():
                 continue
@@ -290,6 +305,7 @@ def _loop(campaign, ex, interval, futures, metadata):
             pair_id = futures.pop(f)
             try:
                 result = f.result()
+                metadata["consecutive_failures"] = 0
                 print(f"{_now()} {pair_id}: {result}")
                 from . import edit
                 if result in research.TERMINAL and edit.status(campaign, pair_id).get("status") == "done":
@@ -298,16 +314,26 @@ def _loop(campaign, ex, interval, futures, metadata):
                 print(f"{_now()} {pair_id}: refused ({e}); stopping")
                 if not stopped(campaign):
                     request_stop(campaign, f"refused: {e}")
+            except PairBlocked as e:
+                print(f"{_now()} {pair_id}: blocked ({e})")
+                with campaign.path("failures.jsonl").open("a") as stream:
+                    stream.write(json.dumps({"run_id": campaign.run_id, "at": _now(), "pair": pair_id, "stage": "edit",
+                                             "reason": str(e), "counted": False}) + "\n")
             except Exception as e:
                 print(f"{_now()} {pair_id}: error {e!r}")
+                metadata["consecutive_failures"] = metadata.get("consecutive_failures", 0) + 1
                 failure = {"run_id": campaign.run_id, "at": _now(), "pair": pair_id,
                            "stage": getattr(e, "stage", None), "reason": repr(e),
-                           "receipts": "receipts.jsonl"}
+                           "receipts": "receipts.jsonl", "counted": True,
+                           "consecutive": metadata["consecutive_failures"]}
                 with campaign.path("failures.jsonl").open("a") as stream:
                     stream.write(json.dumps(failure) + "\n")
-                if not unhealthy(campaign):
+                # the first failure is retried with one seat; the second in a row needs a person or the supervisor
+                stop = _stop_marker_record(campaign)
+                campaign_wide = ((stop or {}).get("failure") or {}).get("scope") == "campaign"
+                if (metadata["consecutive_failures"] >= 2 or campaign_wide) and not unhealthy(campaign):
                     health.write(campaign.path("health.json"), failure)
-                    alerts.emit(campaign, "runner stage failed", campaign.path("health.json"))
+                    alerts.emit(campaign, "runner stage failed twice in a row", campaign.path("health.json"))
 
 
 PAPER_DONE = {"ACCEPTED", "PAUSE-ON-AMEND"}

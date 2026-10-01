@@ -92,25 +92,21 @@ def test_editor_failure_is_visible_and_restart_retains_incident(tmp_path, monkey
     assert health.snapshot(c)["failure"]["stage"] == "edit"
     assert health.snapshot(c)["work"][0]["needs_edit"]
     assert runner.run(c, interval=.01) == 1
-    assert len(c.path("failures.jsonl").read_text().splitlines()) == 2
+    assert len(c.path("failures.jsonl").read_text().splitlines()) == 4      # each run retries once before flagging
     assert health.read(c.path("runner.json"))["previous_failure"]["stage"] == "edit"
 
 
 def test_unrelated_success_does_not_clear_failure(tmp_path, monkeypatch):
     c = make(tmp_path, seats=2)
     health.write(c.path("shortlist.json"), {"pairs": [{"pair_id": "Q1P1"}, {"pair_id": "Q1P2"}]})
-    both_started = threading.Barrier(2)
     def work(campaign, pair_id):
-        both_started.wait(timeout=5)
         if pair_id == "Q1P1":
             raise transport.TransportFailed("failed pair")
-        deadline = time.monotonic() + 5
-        while not runner.unhealthy(campaign) and time.monotonic() < deadline:
-            time.sleep(.01)
-        assert runner.unhealthy(campaign)
+        health.write(campaign.thread_dir(pair_id) / "status.json", {"status": "PAUSE", "stage": "done"})
+        health.write(campaign.thread_dir(pair_id) / "edited" / "edit.json", {"status": "done"})
         return "PAUSE"
     monkeypatch.setattr(runner, "_work", work)
-    assert runner.run(c, interval=.01) == 1
+    assert runner.run(c, interval=.01) == 1           # the other pair's success does not keep Q1P1 from flagging
     assert health.read(c.path("health.json"))["pair"] == "Q1P1"
 
 
