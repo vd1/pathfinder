@@ -263,7 +263,22 @@ def _receipt(campaign, thread, stage, actor, model, r):
                 input_tokens=r.get("input_tokens"), output_tokens=r.get("output_tokens"),
                 cache_read=r.get("cache_read"), tool_calls=r.get("tool_calls"), tool_errors=r.get("tool_errors"))
     failures.stop_for(campaign, failure, r.get("error"))
+    if failure is not None and failure.cls == "rate":
+        _cool_down(campaign, r.get("error"))
     return failure
+
+
+def _cool_down(campaign, reason):
+    """Hold admission for the retry backoff after a rate limit; a later cooldown keeps the later end."""
+    path = campaign.path("cooldown.json")
+    until = time.time() + retry_policy(campaign)[1]
+    try:
+        until = max(until, float(json.loads(path.read_text()).get("until", 0)))
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"until": until, "reason": reason}))
+    temporary.replace(path)
 
 
 def _failed(campaign, thread, stage, actor, model, started, outcome, error, prompt_chars=None):

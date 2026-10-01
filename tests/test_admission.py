@@ -188,3 +188,13 @@ def test_call_scoped_failure_does_not_stop(tmp_path):
     c = make(tmp_path)
     failures.stop_for(c, failures.classify("timeout", "timeout"), "timeout")
     assert not (c.root / "stop.json").exists()
+
+
+def test_a_rate_limit_cools_the_whole_campaign_down(tmp_path):
+    c = make(tmp_path, retry_backoff_seconds=0.4)
+    transport._receipt(c, "Q1P1", "peer", "ada", "m", {"outcome": "error", "error": "HTTP 429 Too Many Requests"})
+    assert 0 < admission.cooldown(c) <= 0.4
+    started = time.time()
+    with admission.admission(c, "peer", "emmy"):
+        waited = time.time() - started
+    assert waited >= 0.3

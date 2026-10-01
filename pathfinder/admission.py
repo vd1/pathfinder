@@ -66,6 +66,16 @@ def _stop_marker(campaign) -> str | None:
     return None
 
 
+def cooldown(campaign) -> float:
+    """Seconds left in a campaign-wide cooldown after a rate limit, 0 when none."""
+    import json
+    try:
+        until = float(json.loads((Path(campaign.root) / "cooldown.json").read_text()).get("until", 0))
+    except (OSError, ValueError, TypeError, AttributeError):
+        return 0.0
+    return max(0.0, until - time.time())
+
+
 def _refuse(campaign, thread, stage, actor, model, reason):
     from . import transport
     transport._receipt(campaign, thread, stage, actor, model, {
@@ -85,6 +95,10 @@ def admission(campaign, stage: str, role: str, *, thread: str | None = None, mod
             reason = _stop_marker(campaign)
             if reason is not None:
                 break
+            remaining = cooldown(campaign)
+            if remaining > 0:                      # a rate limit holds every call, not only the one that hit it
+                _cond.wait(timeout=min(remaining, STOP_POLL))
+                continue
             decision = ADMIT if policy is None else policy(campaign, stage, role, _reserved.get(key, 0))
             if not isinstance(decision, Decision) or decision.kind not in ("admit", "defer", "stop"):
                 raise TypeError(f"admission policy returned {decision!r}; expected admit, defer or stop")
