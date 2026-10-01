@@ -327,6 +327,7 @@ removes per unit of work. Each names the root causes it addresses.
   papers. The two differ on read-only versus writable tools and on keeping
   validation, and account, editor and fidelity stages still inline the whole
   thread.
+  Phase 3a (up to bf8d85e) passes evidence and, above a budget, papers by path, size and sha256, with validation kept and read-only verifiers; session economy is measured on the next live run against the 30 September statarb figures (3.8 to 5.9\,M input tokens per paper).
 \item \textbf{Contracts over parsers} (R4). One declared schema per stage,
   validated once, with a single repair turn on violation. Contract failures become
   an operational class, separate from scientific outcomes. Provenance checks
@@ -510,6 +511,7 @@ generalise to the canonical engine and belong in the refactor specification.
   not an import), a workspace-local \texttt{TMPDIR} and \texttt{TMPPREFIX}, read
   access to the TeX installation with \texttt{TEXINPUTS} preserved and local TeX
   caches, and must count tool errors per call in the receipt.
+  Done in phase 3a (up to bf8d85e): workspace ledger helper, local \texttt{TMPDIR}, \texttt{TMPPREFIX} and \texttt{TEXMFVAR}, \texttt{tool\_errors} in receipts; TeX read access remains a deployment sandbox matter.
 \item \textbf{Allowances calibrated from observed durations.} proofTree lost two
   peer calls at a 300\,s allowance (one peer had already declared readiness) and a
   joint editor at 240\,s; the fixes were 900\,s and 600\,s by hand. The engine should
