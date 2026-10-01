@@ -62,7 +62,8 @@ def test_page_has_the_operator_sections_and_valid_script(server):
     from pathlib import Path
     _, port = server
     body = get(port, "/")[2].decode()
-    for section in ('id="params"', 'id="pipeline"', 'id="blocks"', 'id="units"', 'id="reader"'):
+    for section in ('id="params"', 'id="pipeline"', 'id="queue-body"', 'id="research-list"', 'id="usage"',
+                    'id="blocks"', 'id="detail-dialog"'):
         assert section in body
     script = Path(view.__file__).with_name("view.js")
     assert "#note=" in script.read_text() and "stale" in script.read_text()
@@ -89,17 +90,10 @@ def _harness():
     return json.loads(out.stdout)
 
 
-def test_reader_is_not_rebuilt_when_an_unrelated_unit_changes():
-    assert _harness()["reader_rebuilt_on_unrelated_change"] is False
-
-
-def test_opening_a_unit_keeps_the_pipeline_filter():
-    assert _harness()["unit_link_keeps_filter"] is True
-
-
-def test_parameters_show_allowances_and_scores_are_rounded():
-    result = _harness()
-    assert result["allowances_shown"] and result["score_rounded"]
+@pytest.mark.parametrize("scenario", ["hash_opens_document", "dialog_survives_refresh", "close_clears_hash",
+                                      "failed_refresh_keeps_snapshot", "pipeline_counts_from_server", "escaped"])
+def test_page_scenarios(scenario):
+    assert _harness()[scenario] is True
 
 
 def test_monitor_file_links_for_scripts_and_tables_resolve(tmp_path):

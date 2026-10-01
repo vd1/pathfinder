@@ -1,22 +1,91 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pathfinder view</title>
-<link rel="stylesheet" href="view.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pathfinder operator view</title>
+  <link rel="stylesheet" href="view.css">
+  <script src="view.js" defer></script>
 </head>
 <body>
-<header><h1 id="title">Pathfinder</h1><span id="progress" class="pill"></span><span class="spacer"></span><span id="updated" class="muted"></span></header>
-<main>
-  <section id="params" class="card"></section>
-  <section id="pipeline"></section>
-  <section id="blocks"></section>
-  <div class="split">
-    <section id="units" class="card"></section>
-    <section id="reader" class="card"><p class="muted">Select a unit to read its documents.</p></section>
+  <div class="page">
+    <header class="masthead">
+      <div class="brand"><strong>Pathfinder</strong> operator view</div>
+      <div class="connection"><span class="status-dot" id="connection-dot"></span>
+        <span id="connection-text" aria-live="polite">Connecting to the campaign</span>
+        <button class="quiet-button" id="refresh-button" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">Campaign</h1>
+          <p class="lede" id="lede">Pairs of papers are scored, the strongest are researched by two peers and an
+            independent verifier, and the accepted accounts are edited into readable notes and papers.</p>
+        </div>
+        <dl class="clock" id="params" aria-label="Campaign parameters"></dl>
+      </section>
+
+      <div id="error-banner" class="error-banner" role="alert" hidden></div>
+
+      <section class="pipeline" aria-label="Where every unit stands">
+        <ol id="pipeline" class="stages"></ol>
+      </section>
+
+      <div class="work-grid">
+        <section class="panel queue-panel" aria-labelledby="queue-heading">
+          <div class="section-heading">
+            <h2 id="queue-heading">Units</h2>
+            <span id="queue-count" class="count-label"></span>
+          </div>
+          <div class="filters">
+            <label class="search-label"><span class="sr-only">Search units</span>
+              <input id="search" type="search" placeholder="Search titles, unit or arXiv ID"></label>
+            <label><span class="sr-only">Filter by state</span>
+              <select id="status-filter"><option value="all">All states</option></select></label>
+          </div>
+          <div class="table-scroll queue-scroll"><table>
+            <thead><tr><th>Pair and proposed connexion</th><th>State</th>
+              <th class="numeric" title="Feasibility and gain from the scan">F / G</th>
+              <th class="numeric" title="Feasibility times gain">Score</th></tr></thead>
+            <tbody id="queue-body"></tbody>
+          </table></div>
+          <p class="panel-foot" id="queue-foot">Waiting for the campaign state.</p>
+        </section>
+
+        <section class="panel desk-panel" aria-labelledby="research-heading">
+          <div class="section-heading">
+            <h2 id="research-heading">Research desk</h2>
+            <span id="research-count" class="count-label"></span>
+          </div>
+          <div id="research-list" class="research-list"><p class="empty">Loading investigations.</p></div>
+        </section>
+      </div>
+
+      <div class="lower-grid">
+        <section class="panel usage-panel" aria-labelledby="usage-heading">
+          <h2 id="usage-heading">Model usage</h2>
+          <div id="usage"></div>
+        </section>
+        <section class="panel" aria-labelledby="blocks-heading">
+          <h2 id="blocks-heading">Blocks</h2>
+          <div id="blocks"><p class="empty">No blocked unit.</p></div>
+        </section>
+      </div>
+    </main>
+
+    <footer><span>Local and read-only. Refreshes every 20 seconds. Times are UTC.</span>
+      <span id="snapshot-time">No snapshot yet</span></footer>
   </div>
-</main>
-<script src="view.js"></script>
+
+  <dialog id="detail-dialog" aria-labelledby="detail-label">
+    <div class="dialog-top">
+      <p class="dialog-label" id="detail-label">Record</p>
+      <div class="dialog-actions" id="dialog-actions"></div>
+      <button class="quiet-button" id="close-dialog" type="button">Close</button>
+    </div>
+    <div id="detail-content"></div>
+  </dialog>
 </body>
 </html>

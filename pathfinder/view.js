@@ -1,129 +1,237 @@
 "use strict";
-// Renders /api/state. Filters and the open document live in the URL hash, so a view can be linked:
-// #stage=edit&state=blocked filters the units; #note=Q1P1&doc=paper opens a unit's document.
+// The operator view, ported from statarb's arXiv watchboard. It renders /api/state; every unit sits in
+// exactly one pipeline state, decided by the server. Documents and details open in one dialog that
+// refreshes never touch. A link such as #note=Q1P1&doc=paper opens that document directly.
+let current = null;
+let refreshing = false;
 const $ = (id) => document.getElementById(id);
-let state = null;
+const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) =>
+  ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const num = (value) => value == null ? "Unknown" : Number(value).toLocaleString("en-GB", {maximumFractionDigits: 1});
+const short = (value, length = 180) => String(value || "").length > length
+  ? String(value).slice(0, length - 3) + "..." : String(value || "");
+const when = (value) => value ? String(value).replace("T", " ").replace("Z", " UTC") : "Not yet";
+const duration = (seconds) => seconds == null ? "Unknown"
+  : seconds < 60 ? Math.round(seconds) + " s"
+  : seconds < 3600 ? Math.round(seconds / 60) + " min"
+  : seconds < 86400 ? num(seconds / 3600) + " h" : num(seconds / 86400) + " d";
+const docURL = (path) => "/doc?path=" + encodeURIComponent(path);
+const arxivURL = (id) => "https://arxiv.org/abs/" + encodeURIComponent(id);
 
-function esc(text) {
-  return String(text ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+function labels() {
+  const out = {};
+  for (const stage of current?.pipeline || []) for (const s of stage.states) out[s.key] = s.label;
+  return out;
 }
-function hash() { return Object.fromEntries(new URLSearchParams(location.hash.slice(1))); }
-function setHash(update) {
-  const h = { ...hash(), ...update };
-  Object.keys(h).forEach((k) => (h[k] === null || h[k] === undefined) && delete h[k]);
-  location.hash = new URLSearchParams(h).toString();
-}
-function docUrl(path) { return "/doc?path=" + encodeURIComponent(path); }
-// An href that changes some hash keys and keeps the others, so opening a unit keeps the filter.
-function link(update) {
-  const h = { ...hash(), ...update };
-  Object.keys(h).forEach((k) => (h[k] === null || h[k] === undefined) && delete h[k]);
-  return "#" + new URLSearchParams(h).toString();
-}
-function score(value) {
-  return value === null || value === undefined ? "" : Number.isInteger(value) ? String(value) : Number(value).toFixed(2);
-}
-let readerKey = null;
+const badge = (key) => `<span class="badge ${esc(key)}">${esc(labels()[key] || key)}</span>`;
+const unitOf = (id) => current?.units.find((u) => u.unit === id);
+const pairTitle = (u) => `${u.q?.title || "Q"} × ${u.p?.title || "P"}`;
+// The most refined document: paper, then readable note, then research note.
+const bestDocument = (u) => u.documents[u.documents.length - 1];
+const readButton = (u, doc = bestDocument(u), label = "Read note") => doc
+  ? `<button type="button" class="primary-action" data-doc="${esc(doc.kind)}" data-unit-doc="${esc(u.unit)}">${esc(label)}</button>` : "";
 
 function renderParams() {
-  const c = state.campaign, b = c.budget, r = state.runner || {};
-  $("title").textContent = c.name;
-  $("progress").textContent = "progress " + state.progress.status;
-  $("progress").className = "pill " + state.progress.status;
-  $("updated").textContent = "updated " + state.generated_at;
-  const rows = [["backend", c.backend + " / " + c.model], ["scheme", c.research_scheme], ["seats", c.seats],
-    ["rounds", c.rounds], ["calls", b.calls], ["input tokens", b.input_tokens + " (" + b.cache_read + " cached)"],
-    ["output tokens", b.output_tokens],
-    ["allowances", Object.entries(c.allowances || {}).map(([k, v]) => k + " " + v).join(", ")], ["runner", (r.status || "none") + (r.pid_alive ? "" : r.status ? " (not alive)" : "")],
-    ["execution", String(c.execution_id || "").slice(0, 12)]];
-  let html = "<dl>" + rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("") + "</dl>";
-  if (c.stop) html += `<p class="warn">Stopped: ${esc(c.stop.reason)}</p>`;
-  if (state.progress.events_truncated) html += `<p class="warn">The event stream is cut: progress is unknown until the full record is read.</p>`;
-  $("params").innerHTML = html;
+  const c = current.campaign, r = current.runner || {}, p = current.progress || {};
+  $("page-title").textContent = c.name;
+  $("lede").textContent = `${c.backend} / ${c.model}, scheme ${c.research_scheme}. Pairs are scored, the strongest researched by peers and an independent verifier, and accepted accounts edited into readable notes and papers.`;
+  const rows = [["Seats", c.seats], ["Rounds", c.rounds],
+    ["Allowances", Object.entries(c.allowances || {}).map(([k, v]) => k.replace("_seconds", " s").replace("_", " ") + " " + v).join(", ")],
+    ["Runner", (r.status || "none") + (r.status ? (r.pid_alive ? ", alive" : ", not alive") : "")],
+    ["Progress", p.status], ["Execution", String(c.execution_id || "unknown").slice(0, 12)]];
+  if (c.stop) rows.push(["Stopped", c.stop.reason]);
+  $("params").innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
 }
 
 function renderPipeline() {
-  const h = hash();
-  $("pipeline").innerHTML = Object.entries(state.stages).map(([stage, counts]) => {
-    const total = Object.values(counts).reduce((a, n) => a + n, 0);
-    const chips = Object.entries(counts).map(([s, n]) => {
-      const on = h.stage === stage && h.state === s ? " on" : "";
-      return `<button class="chip ${esc(s)}${on}" data-stage="${esc(stage)}" data-state="${esc(s)}">${esc(s)} ${n}</button>`;
-    }).join("");
-    return `<div class="card stage"><b>${total}</b><span>${esc(stage)}</span><div>${chips}</div></div>`;
+  const total = current.units.length || 1, filter = $("status-filter").value;
+  $("pipeline").innerHTML = current.pipeline.map((stage) => {
+    const parts = stage.states.map((s) => `<button type="button" class="stage-state state-${esc(s.key)} ${filter === s.key ? "selected" : ""}"
+        data-filter="${esc(s.key)}" aria-pressed="${filter === s.key}"><b>${s.count}</b> ${esc(s.label)}</button>`).join("");
+    const bar = stage.states.map((s) => s.count ? `<i class="state-${esc(s.key)}" data-grow="${s.count}"></i>` : "").join("");
+    return `<li class="stage"><h3>${esc(stage.title)}</h3><p class="stage-count">${stage.count}</p>
+      <div class="stage-bar" data-width="${Math.max(6, 100 * stage.count / total)}" aria-hidden="true">${bar}</div>
+      <div class="stage-states">${parts}</div></li>`;
   }).join("");
-  $("pipeline").querySelectorAll("button.chip").forEach((el) => el.addEventListener("click", () => {
-    const h2 = hash();
-    const same = h2.stage === el.dataset.stage && h2.state === el.dataset.state;
-    setHash({ stage: same ? null : el.dataset.stage, state: same ? null : el.dataset.state });
-  }));
+  // Sizes go through the CSSOM: the page's content security policy forbids inline style attributes.
+  for (const bar of $("pipeline").querySelectorAll("[data-width]")) bar.style.width = bar.dataset.width + "%";
+  for (const part of $("pipeline").querySelectorAll("[data-grow]")) part.style.flexGrow = part.dataset.grow;
+  const select = $("status-filter"), chosen = select.value;
+  select.innerHTML = `<option value="all">All states</option>` + current.pipeline.flatMap((stage) => stage.states.map((s) =>
+    `<option value="${esc(s.key)}">${esc(stage.title)}: ${esc(s.label)}</option>`)).join("");
+  select.value = chosen || "all";
+}
+
+function renderQueue() {
+  const query = $("search").value.toLowerCase().trim(), filter = $("status-filter").value;
+  const units = current.units.filter((u) => (filter === "all" || u.lifecycle === filter) && (!query ||
+    [u.unit, u.q?.id, u.q?.title, u.p?.id, u.p?.title].join(" ").toLowerCase().includes(query)))
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+  $("queue-count").textContent = units.length + " / " + current.units.length + " units";
+  $("queue-body").innerHTML = units.length ? units.map((u) => `<tr>
+      <td><button type="button" class="paper-title" data-unit="${esc(u.unit)}">${esc(pairTitle(u))}</button>
+        <div class="paper-meta">${esc(u.unit)} / ${esc(u.q?.id || "")} × ${esc(u.p?.id || "")}</div>
+        ${u.connexion ? `<div class="seed-preview">${esc(short(u.connexion))}</div>` : ""}</td>
+      <td>${badge(u.lifecycle)}</td>
+      <td class="numeric">${u.feasibility == null ? '<span class="pending-score">--</span>' : esc(u.feasibility + " / " + u.gain)}</td>
+      <td class="numeric">${u.score == null ? '<span class="pending-score">--</span>' : `<span class="score">${num(u.score)}</span>`}</td></tr>`).join("")
+    : '<tr><td colspan="4" class="empty">No unit matches this filter.</td></tr>';
+  $("queue-foot").textContent = "Score = feasibility × gain from the scan. A state counts each unit once, at the furthest stage it reached.";
+}
+
+function renderDesk() {
+  const started = current.units.filter((u) => u.lifecycle !== "waiting");
+  $("research-count").textContent = started.length + " investigations";
+  $("research-list").innerHTML = started.length ? started.map((u) => `<article class="research-card status-${esc(u.lifecycle)}">
+      <div class="card-meta">${badge(u.lifecycle)}<span>${esc(u.unit)}</span>
+        <span>research ${esc(u.research.status)} / edit ${esc(u.editorial.status || "none")} / paper ${esc(u.assessment.status || "none")}</span></div>
+      <h3>${esc(pairTitle(u))}</h3>
+      <p class="card-summary">${esc(u.summary || "In progress: no verdict recorded yet.")}</p>
+      <div class="record-actions">${readButton(u)}<button type="button" data-unit="${esc(u.unit)}">Details and receipts</button></div>
+    </article>`).join("") : '<p class="empty">No investigation has started yet.</p>';
+}
+
+function renderUsage() {
+  const u = current.usage;
+  $("usage").innerHTML = `<dl class="usage-grid">
+    <div><dt>Input tokens reported</dt><dd>${num(u.input_tokens)} <small>${num(u.cache_read)} cached</small></dd></div>
+    <div><dt>Output tokens reported</dt><dd>${num(u.output_tokens)}</dd></div>
+    <div><dt>Summed call time</dt><dd>${duration(u.seconds)}</dd></div>
+    <div><dt>Calls completed</dt><dd>${u.completed} <small>of ${u.calls}</small></dd></div></dl>
+    <p class="small-copy">Subscription-backed: dollar cost and the remaining allowance are not reported.
+    Usage was reported for ${u.calls_with_usage} of ${u.calls} calls; call time is summed, not wall time.</p>`;
 }
 
 function renderBlocks() {
-  $("blocks").innerHTML = state.blocks.length ? `<div class="card"><h2>Blocks</h2><ul>` + state.blocks.map((b) =>
-    `<li><b>${esc(b["class"])}</b> ${esc(b.cause)} &times;${b.count}: ${b.units.map((u) => `<a href="${esc(link({ note: u, doc: null }))}">${esc(u)}</a>`).join(", ")}</li>`).join("") + `</ul></div>` : "";
+  $("blocks").innerHTML = current.blocks.length ? `<ul class="block-list">` + current.blocks.map((b) =>
+    `<li><b>${esc(b["class"])}</b> ${esc(b.cause)} × ${b.count}: ${b.units.map((id) =>
+      `<button type="button" class="link-button" data-unit="${esc(id)}">${esc(id)}</button>`).join(" ")}</li>`).join("") + `</ul>`
+    : '<p class="empty">No blocked unit.</p>';
 }
 
-function axisState(unit, stage) {
-  return stage === "research" ? unit.research.status : stage === "edit" ? (unit.editorial.status || (["PAUSE", "DRAFT", "REJECT", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"].includes(unit.research.status) ? "queued" : null))
-    : (unit.assessment.status || (unit.research.status === "DRAFT" && unit.editorial.status === "done" ? "queued" : null));
+function render() {
+  if (!current) return;
+  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks();
+  $("snapshot-time").textContent = "Snapshot " + when(current.generated_at);
+  const issues = [];
+  if (current.campaign.stop) issues.push("Stopped: " + current.campaign.stop.reason);
+  if (current.progress?.events_truncated) issues.push("The event stream is cut: progress is unknown until the full record is read.");
+  $("error-banner").hidden = issues.length === 0;
+  $("error-banner").textContent = issues.join(" / ");
 }
 
-function renderUnits() {
-  const h = hash();
-  let units = state.units.slice().sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
-  if (h.stage && h.state) units = units.filter((u) => axisState(u, h.stage) === h.state);
-  const head = "<tr><th>unit</th><th>score</th><th>now</th><th>research</th><th>edit</th><th>paper</th><th>last activity</th><th>documents</th></tr>";
-  const rows = units.map((u) => `<tr class="${h.note === u.unit ? "sel" : ""}">
-    <td><a href="${esc(link({ note: u.unit, doc: null }))}">${esc(u.unit)}</a></td><td>${esc(score(u.score))}</td>
-    <td><span class="pill ${esc(u.controller)}">${esc(u.controller)}</span></td>
-    <td title="${esc(u.research.reason)}">${esc(u.research.status)}</td><td title="${esc(u.editorial.reason)}">${esc(u.editorial.status ?? "")}</td>
-    <td title="${esc(u.assessment.reason)}">${esc(u.assessment.status ?? "")}</td><td>${esc(u.last_activity ?? "")}</td>
-    <td>${u.documents.map((d) => `<a href="${esc(link({ note: u.unit, doc: d.kind }))}">${esc(d.kind)}${d.stale ? " (stale)" : ""}</a>`).join(" · ")}</td></tr>`).join("");
-  const filter = h.stage ? `<p class="muted">Filter: ${esc(h.stage)} = ${esc(h.state)} <a href="${esc(link({ stage: null, state: null }))}">clear</a></p>` : "";
-  $("units").innerHTML = `<h2>Units (${units.length})</h2>${filter}<table>${head}${rows}</table>`;
+function setHash(note, doc) {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (note) { h.set("note", note); if (doc) h.set("doc", doc); else h.delete("doc"); } else { h.delete("note"); h.delete("doc"); }
+  const text = h.toString();
+  history.replaceState(null, "", location.pathname + (text ? "#" + text : ""));
 }
 
-function renderReader() {
-  const h = hash();
-  const unit = state.units.find((u) => u.unit === h.note);
-  const doc = unit && unit.documents.length ? (unit.documents.find((d) => d.kind === h.doc) || unit.documents[unit.documents.length - 1]) : null;
-  // Rebuild only when what is shown changes: a refresh or a filter click must not reload the PDF being read.
-  const key = JSON.stringify([unit ? unit.unit : null, doc]);
-  if (key === readerKey) return;
-  readerKey = key;
-  if (!unit) { $("reader").innerHTML = `<p class="muted">Select a unit to read its documents.</p>`; return; }
-  if (!doc) { $("reader").innerHTML = `<h2>${esc(unit.unit)}</h2><p class="muted">No document yet.</p>`; return; }
-  const tabs = unit.documents.map((d) => `<a class="tab${d === doc ? " on" : ""}" href="${esc(link({ note: unit.unit, doc: d.kind }))}">${esc(d.kind)}</a>`).join("");
-  const links = [doc.source ? `<a href="${docUrl(doc.source)}" target="_blank" rel="noopener">LaTeX source</a>` : "",
-    doc.pdf ? `<a href="${docUrl(doc.pdf)}" target="_blank" rel="noopener">open PDF</a>` : "",
-    `<a href="#note=${encodeURIComponent(unit.unit)}&doc=${encodeURIComponent(doc.kind)}">link to this document</a>`].filter(Boolean).join(" · ");
-  const warn = doc.stale ? `<p class="warn">This PDF is older than its source; the source has changed since it was built.</p>` : "";
-  const body = doc.pdf ? `<iframe title="${esc(doc.kind)}" src="${docUrl(doc.pdf)}"></iframe>` : `<pre id="source">loading source…</pre>`;
-  $("reader").innerHTML = `<h2>${esc(unit.unit)}</h2><nav>${tabs}</nav><p>${links}</p>${warn}${body}`;
-  if (!doc.pdf && doc.source) {
-    fetch(docUrl(doc.source))
-      .then((r) => r.text().then((t) => ({ ok: r.ok, t })))
-      .then(({ ok, t }) => { const el = $("source"); if (el) { el.textContent = ok ? t : "Source unavailable: " + t; if (!ok) el.className = "warn"; } })
-      .catch((error) => { const el = $("source"); if (el) { el.textContent = "Source unavailable: " + error.message; el.className = "warn"; } });
+function showDialog(label, content, {wide = false, actions = ""} = {}) {
+  $("detail-label").textContent = label;
+  $("dialog-actions").innerHTML = actions;
+  $("detail-content").innerHTML = content;
+  $("detail-dialog").classList.toggle("reader", wide);
+  if (!$("detail-dialog").open) $("detail-dialog").showModal();
+}
+
+function showDocument(id, kind) {
+  const u = unitOf(id);
+  if (!u || !u.documents.length) return;
+  const doc = u.documents.find((d) => d.kind === kind) || bestDocument(u);
+  setHash(u.unit, doc.kind);
+  const others = u.documents.filter((d) => d !== doc).map((d) =>
+    `<button type="button" data-doc="${esc(d.kind)}" data-unit-doc="${esc(u.unit)}">${esc(d.kind)}</button>`).join("");
+  if (doc.pdf) {
+    const actions = `<a href="${docURL(doc.pdf)}" target="_blank" rel="noopener noreferrer">Open in a new tab</a>
+      ${doc.source ? `<button type="button" data-source="${esc(doc.source)}">View LaTeX source</button>` : ""}${others}`;
+    showDialog(`${u.unit}: ${doc.kind}`, `${doc.stale ? `<p class="stale-note">This PDF is older than its LaTeX source;
+        the source may hold later edits.</p>` : ""}<iframe class="pdf-frame" src="${docURL(doc.pdf)}" title="${esc(doc.kind)}"></iframe>`,
+      {wide: true, actions});
+  } else if (doc.source) {
+    showSource(doc.source, `${u.unit}: ${doc.kind}`, others);
   }
 }
 
-function render() { if (!state) return; renderParams(); renderPipeline(); renderBlocks(); renderUnits(); renderReader(); }
-
-async function load() {
+async function showSource(path, label, actions = "") {
+  showDialog(label || path.split("/").at(-1), '<p class="empty">Loading source.</p>', {actions});
   try {
-    const r = await fetch("/api/state", { cache: "no-store" });
-    const doc = await r.json();
-    if (!r.ok) throw new Error(doc.error || r.status);
-    state = doc;
-    render();
+    const response = await fetch(docURL(path), {cache: "no-store"});
+    const text = await response.text();
+    if (!response.ok) throw new Error("Source unavailable: " + text);
+    $("detail-content").innerHTML = `<pre class="note-content">${esc(text)}</pre>`;
   } catch (error) {
-    $("progress").textContent = "state unavailable: " + error.message;
-    $("progress").className = "pill unknown";
+    $("detail-content").textContent = error.message;
   }
 }
 
-window.addEventListener("hashchange", render);
-load();
-setInterval(load, 10000);
+function showUnit(id) {
+  const u = unitOf(id);
+  if (!u) return;
+  setHash(null);
+  const side = (label, paper) => paper?.id ? `<section class="detail-section"><h3>${label}: <a href="${arxivURL(paper.id)}" target="_blank"
+      rel="noopener noreferrer">${esc(paper.id)}</a></h3><p><strong>${esc(paper.title)}</strong></p><p class="detail-abstract">${esc(paper.abstract)}</p></section>` : "";
+  const axis = (label, s) => `<p><strong>${label}</strong> ${esc(s.status || "none")}${s.reason ? ": " + esc(s.reason) : ""}</p>`;
+  showDialog("Unit " + u.unit, `<h2>${esc(pairTitle(u))}</h2><p>${badge(u.lifecycle)}</p>
+    <div class="record-actions">${u.documents.map((d) => readButton(u, d, d.kind + (d.stale ? " (stale)" : ""))).join("")}</div>
+    ${side("Q", u.q)}${side("P", u.p)}
+    <section class="detail-section"><h3>Scan</h3><p>Feasibility ${esc(u.feasibility ?? "--")}; gain ${esc(u.gain ?? "--")}; score ${esc(u.score ?? "--")}.</p>
+      <p>${esc(u.connexion || "")}</p></section>
+    <section class="detail-section"><h3>States</h3>${axis("Research", u.research)}${axis("Readable note", u.editorial)}${axis("Paper", u.assessment)}
+      <p class="small-copy">Now ${esc(u.controller)}; last activity ${esc(when(u.last_activity))}.</p></section>
+    <section class="detail-section"><h3>Usage</h3><p>${u.usage.calls} calls, ${num(u.usage.input_tokens)} input and
+      ${num(u.usage.output_tokens)} output tokens, ${duration(u.usage.seconds)} of call time.</p></section>`);
+}
+
+// A link such as #note=Q1P1&doc=paper opens that unit's document, so a note can be shared as a URL.
+function openFromHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("note") && current) showDocument(h.get("note"), h.get("doc"));
+}
+
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-unit],[data-unit-doc],[data-source],[data-filter]");
+  if (!target || !current) return;
+  if (target.dataset.filter) {
+    const select = $("status-filter");
+    select.value = select.value === target.dataset.filter ? "all" : target.dataset.filter;
+    renderQueue(); renderPipeline();
+    $("queue-heading").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+  } else if (target.dataset.unitDoc) showDocument(target.dataset.unitDoc, target.dataset.doc);
+  else if (target.dataset.source) showSource(target.dataset.source);
+  else if (target.dataset.unit) showUnit(target.dataset.unit);
+});
+$("close-dialog").addEventListener("click", () => $("detail-dialog").close());
+$("detail-dialog").addEventListener("close", () => setHash(null));
+$("search").addEventListener("input", renderQueue);
+$("status-filter").addEventListener("change", () => { renderQueue(); renderPipeline(); });
+$("refresh-button").addEventListener("click", refresh);
+window.addEventListener("hashchange", openFromHash);
+
+async function refresh() {
+  if (refreshing) return;
+  refreshing = true;
+  $("refresh-button").disabled = true;
+  try {
+    const response = await fetch("/api/state", {cache: "no-store"});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Campaign state unavailable");
+    const first = current === null;
+    current = data;
+    render();
+    if (first) openFromHash();
+    $("connection-dot").classList.add("connected");
+    $("connection-text").textContent = "Campaign state connected";
+  } catch (error) {
+    $("connection-dot").classList.remove("connected");
+    $("connection-text").textContent = "Refresh unavailable";
+    $("error-banner").hidden = false;
+    $("error-banner").textContent = error.message + (current ? " Showing the last successful snapshot." : "");
+  } finally {
+    refreshing = false;
+    $("refresh-button").disabled = false;
+  }
+}
+
+refresh();
+setInterval(refresh, 20000);
