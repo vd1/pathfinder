@@ -79,3 +79,13 @@ def test_aliased_evidence_still_blocks_by_reference(tmp_path):
 def test_inline_evidence_switch_restores_the_text(tmp_path):
     c, d = _composable(tmp_path, inline_evidence=True)
     assert "the derivation the derivation" in research._review_material(c, "Q1P1")
+
+
+def test_papers_are_referenced_only_above_the_budget(tmp_path):
+    c = make(tmp_path, inline_papers_max_chars=1000)
+    d = research.prepare(c, "Q1P1"); inp = research._inputs(d)
+    (d / "inputs" / inp["Q"]).write_text("q" * 400); (d / "inputs" / inp["P"]).write_text("p" * 599)
+    assert "q" * 400 in research.thread_head(d, inp, inline_limit=research.papers_limit(c))
+    (d / "inputs" / inp["P"]).write_text("p" * 601)
+    head = research.thread_head(d, inp, inline_limit=research.papers_limit(c))
+    assert "q" * 400 not in head and "sha256" in head and f"inputs/{inp['Q']}" in head

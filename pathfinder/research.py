@@ -94,15 +94,25 @@ def prepare(campaign, pair_id: str) -> Path:
     return d
 
 
-def thread_head(d, inp, papers: bool = True, ledger: bool = True) -> str:
+def papers_limit(campaign) -> int:
+    return int((campaign.raw or {}).get("inline_papers_max_chars", 400_000))
+
+
+def thread_head(d, inp, papers: bool = True, ledger: bool = True, inline_limit: int | None = None) -> str:
     """The static head of a call in a thread: the two papers, then the ledger as it stands, each optional.
     The same bytes for every caller that gets it, and across calls a prefix of the previous call's, since
     the ledger only grows; a prompt cache serves everything but what the ledger gained since. Whatever
-    differs between callers goes after it."""
+    differs between callers goes after it. Above inline_limit characters together, both papers are listed by
+    path, size and sha256 instead: an agent session would otherwise resend them on every turn."""
     parts = []
     if papers:
-        parts.append("## " + inp["Q"] + "\n\n" + (d / "inputs" / inp["Q"]).read_text(errors="replace"))
-        parts.append("## " + inp["P"] + "\n\n" + (d / "inputs" / inp["P"]).read_text(errors="replace"))
+        texts = {name: (d / "inputs" / name).read_text(errors="replace") for name in (inp["Q"], inp["P"])}
+        if inline_limit is not None and sum(len(t) for t in texts.values()) > inline_limit:
+            for name, text in texts.items():
+                parts.append(f"## {name}\n\n(file inputs/{name}: {len(text)} characters, sha256 "
+                             f"{hashlib.sha256(text.encode()).hexdigest()}; read it with your tools)")
+        else:
+            parts.extend("## " + name + "\n\n" + text for name, text in texts.items())
     if ledger:
         parts.append("## ledger.jsonl\n\n" + ((d / "ledger.jsonl").read_text() if (d / "ledger.jsonl").exists() else ""))
     return "\n\n".join(parts)
@@ -173,9 +183,9 @@ def _stage_attempts(campaign):
     return attempts
 
 
-def judge_head(d, inp, note_name: str) -> str:
-    """The thread head plus the note, for the verifier and the paper reviewer."""
-    return thread_head(d, inp) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+def judge_head(d, inp, note_name: str, inline_limit: int | None = None) -> str:
+    """The thread head plus the note, for the verifier and the paper reviewer (who has no tools, so no limit)."""
+    return thread_head(d, inp, inline_limit=inline_limit) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
 
 
 EVIDENCE_PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
@@ -266,7 +276,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False) -> st
 
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
     """@planks("When the research workflow prepares its consolidation and verification requests")"""
-    head = thread_head(d, inp)
+    head = thread_head(d, inp, inline_limit=papers_limit(campaign))
     if (d / note_name).exists():                    # the account a repair or a next round must keep
         head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
     head += "\n\n## your task\n\n"
@@ -561,7 +571,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
             elif s["stage"] == "verify":
                 _check(stop)
                 # static material first, the instruction last: the head is shared with every other judge call
-                p = judge_head(d, inp, note.name) + "\n\n## your task\n\n"
+                p = judge_head(d, inp, note.name, inline_limit=papers_limit(campaign)) + "\n\n## your task\n\n"
                 p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
                 p += "\n\n" + evidence_pointer(campaign) + " Do not modify any file.\n"
                 r = _stage_call(campaign, pair_id, "verify", p, True, A["verify_seconds"], done=lambda: True)
@@ -633,7 +643,8 @@ def _review_material(campaign, pair_id, review_id=None):
             json.loads(line)["kind"] == "review" and
             json.loads(line)["text"].startswith('{"review_id": ' + json.dumps(review_id) + ','))]
     ledger_text = "".join(lines)
-    material = thread_head(d, _inputs(d), ledger=False) + "\n\n## ledger.jsonl\n\n" + ledger_text
+    material = (thread_head(d, _inputs(d), ledger=False, inline_limit=papers_limit(campaign))
+                + "\n\n## ledger.jsonl\n\n" + ledger_text)
     by_reference = evidence_by_reference(campaign)
     material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference)
     material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference)
