@@ -18,6 +18,7 @@ def _statarb_module(statarb: Path):
 
 @needs_tex
 def test_statarb_prepares_freezes_and_runs_the_candidate_engine(tmp_path, monkeypatch):
+    pytest.importorskip("requests", reason="statarb's arxiv_drip needs requests, absent from this environment")
     statarb = deployment_matrix.checkout("statarb")
     module = _statarb_module(statarb)
     monkeypatch.setattr(module, "frozen_inputs", lambda d: (
