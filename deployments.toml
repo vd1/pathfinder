@@ -6,10 +6,10 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "b02f9d6accb9e57b3742749627b340efbafa56f9"
-clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md"]   # what the contract runs
+revision = "c0c236c209617aa91c971f8a05cabd5896aae312"
+clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
-notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb itself pins engine-v1.1."
+notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.2.1 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats."
 
 [deployments.coordinated-pilot]
 status = "supported"
