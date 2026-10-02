@@ -26,3 +26,11 @@ revision = "5cc82db"
 clean_paths = []
 contract = ""
 notes = "Runs two forks of upstream 57e9a7a (dependencies/pathfinder and the EVA experiment copy); see deployments/pathfinder-julien-2/inventory.md and migration.md. Its EVA scheme now exists in canon as research_scheme composable (engine-v1.2); what remains is moving its eva2 driver onto it."
+
+[deployments.prooftree]
+status = "not-yet-supported"
+checkout = "../proofTree"
+revision = "c16180d"
+clean_paths = []
+contract = ""
+notes = "Editable dependency on ../pathfinder. Its own suite (31 tests) passes against the engine-v1.2 candidate, which keeps pathfinder.scan.parse_json and reads research_scheme eva_minus as direct_eva with a deprecation warning; its working tree is under active development, so no contract is pinned yet."

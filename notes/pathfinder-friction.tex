@@ -655,7 +655,7 @@ Settled by the operator on 29 September.
   branch. \path{branches/metrics.json} records the D10 measurements: Vera's
   rejection rate per branch and overall, and thread divergence (mean pairwise
   Jaccard distance of word 3-grams over the branches' substantive ledger text).
-  The value \texttt{eva\_minus} is refused, named \texttt{direct\_eva}.
+  The value \texttt{eva\_minus} is still read, as \texttt{direct\_eva} with a deprecation warning, because proofTree writes it.
 \item \textbf{Other lineages.} \texttt{statarb} and \texttt{agQSL} are first
   explored for variants worth reusing (for example agQSL's quota detection,
   no-start timeout, size preflight and idle watcher, and statarb's recovery

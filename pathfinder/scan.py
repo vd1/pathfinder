@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from . import contracts, corpus, transport
+from .contracts import extract_json as parse_json   # kept for deployments that import it from here (proofTree)
 from .admission import Refused
 
 

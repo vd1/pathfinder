@@ -5,12 +5,13 @@ from pathfinder import composable, config, research, transport
 from stubcampaign import make
 
 
-def test_the_old_scheme_name_is_refused(tmp_path):
+def test_the_old_scheme_name_is_read_as_direct_eva_with_a_warning(tmp_path):
     make(tmp_path)
     raw = json.loads((tmp_path / "campaign.json").read_text()); raw["research_scheme"] = "eva_minus"
     (tmp_path / "campaign.json").write_text(json.dumps(raw))
-    with pytest.raises(ValueError, match="direct_eva"):
-        config.load(tmp_path)
+    with pytest.warns(DeprecationWarning, match="direct_eva"):
+        c = config.load(tmp_path)
+    assert c.raw["research_scheme"] == "direct_eva"      # deployments such as proofTree still write eva_minus
 
 
 def _composable(tmp_path, **raw):

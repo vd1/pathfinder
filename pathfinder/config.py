@@ -44,8 +44,11 @@ class Campaign:
 def load(root: Path) -> Campaign:
     root = Path(root).resolve()
     raw = json.loads((root / "campaign.json").read_text())
-    if raw.get("research_scheme") == "eva_minus":
-        raise ValueError('research_scheme "eva_minus" is now "direct_eva" (E writes no synthesis, V reads the ledger)')
+    if raw.get("research_scheme") == "eva_minus":     # the former name, still written by deployments (proofTree)
+        import warnings
+        warnings.warn('research_scheme "eva_minus" is now "direct_eva" (E writes no synthesis, V reads the ledger)',
+                      DeprecationWarning, stacklevel=2)
+        raw = {**raw, "research_scheme": "direct_eva"}
     if raw.get("research_scheme") == "composable":
         n = raw.get("branches", 3)
         if not isinstance(n, int) or isinstance(n, bool) or n < 1:

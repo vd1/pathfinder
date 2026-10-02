@@ -17,3 +17,8 @@ def test_scan_is_resumable_and_parses(tmp_path, monkeypatch):
     scan.run(c)
     rows = [json.loads(l) for l in (tmp_path / "scan.jsonl").read_text().splitlines()]
     assert [r["pair_id"] for r in rows] == ["Q1P1", "Q1P2"] and rows[1]["feasibility"] == 70
+
+
+def test_parse_json_stays_importable_from_scan_for_deployments():
+    from pathfinder import contracts
+    assert scan.parse_json is contracts.extract_json          # proofTree imports it from here
