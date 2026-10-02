@@ -215,3 +215,24 @@ def test_a_rate_limit_with_a_missing_parent_still_cools_the_campaign(tmp_path):
     c = make(tmp_path / "arm", parent="../missing-parent", retry_backoff_seconds=5)
     transport._receipt(c, "Q1P1", "peer", "ada", "m", {"outcome": "error", "error": "HTTP 429 Too Many Requests"})
     assert admission.cooldown(c) > 0 and not (tmp_path / "missing-parent").exists()
+
+
+def test_a_peer_call_refused_by_a_stop_marker_does_not_use_an_attempt(tmp_path, monkeypatch):
+    c = make(tmp_path, research_scheme="eva_minus")
+    research.prepare(c, "Q1P1")
+    (tmp_path / "stop.json").write_text(json.dumps({"reason": "operator"}))
+    assert research.run_thread(c, "Q1P1") == "stopped"
+    assert research.status(c, "Q1P1").get("peer_call", 0) == 0
+    (tmp_path / "stop.json").unlink()
+    seen = []
+    real = transport.execute
+    monkeypatch.setattr(research.transport, "execute", lambda campaign, request: seen.append(request.identity) or real(campaign, request))
+    research.run_thread(c, "Q1P1")
+    assert seen and seen[0].endswith("call-0")
+
+
+def test_a_size_refusal_does_not_use_an_attempt(tmp_path):
+    c = make(tmp_path, research_scheme="eva_minus", max_prompt_chars=10)
+    assert research.run_thread(c, "Q1P1") == "BLOCKED"
+    s = research.status(c, "Q1P1")
+    assert s.get("peer_call", 0) == 0 and s["failure"]["class"] == "input_too_large"

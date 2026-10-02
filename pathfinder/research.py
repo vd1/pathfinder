@@ -1055,7 +1055,7 @@ def _run_composable(campaign, pair_id, stop):
             with ThreadPoolExecutor(len(requests)) as pool:
                 for future in [pool.submit(execute, request) for request in requests]:
                     future.result()
-    except Stopped:
+    except (Stopped, Refused):                     # a refused call used no attempt: the same request is issued on resume
         _set(campaign, pair_id, status="stopped")
         return "stopped"
     except transport.TransportFailed as error:
