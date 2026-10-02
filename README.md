@@ -165,6 +165,18 @@ your own campaign directory and edit the models and the budget.
   blocks the thread. Otherwise a missing file is named as missing and a
   binary or oversized file (`evidence_max_bytes`, default 300000) is listed
   with its size and digest; with `strict_evidence` both block the thread.
+- `research_scheme`: absent for the classic single-engine EVA thread;
+  `direct_eva` (formerly `eva_minus`: the peers research, Vera reviews the
+  ledger directly and issues requests, no synthesis; the thread ends HANDOFF);
+  `eva` with `research_bundles` for a joint thread over frozen bundles; or
+  `composable`: each pair runs as `branches` direct-EVA branches (default 3,
+  in `threads/<pair>/branch-runs/<label>/`), each handoff is frozen read-only
+  into `threads/<pair>/branches/<label>/` with a `bundle.json` inventory, and a
+  joint EVA thread then researches over the bundles in the pair's directory,
+  followed by the usual edit and paper. Optional `branch` and `joint` blocks
+  override any campaign key (typically `rounds`, `ledger_reviews`) for the
+  branches or the joint thread. `branches/metrics.json` records Vera's
+  rejection rate and the divergence between branches.
 - `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
   deployments" below.
 

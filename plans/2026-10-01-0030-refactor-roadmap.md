@@ -37,4 +37,4 @@ Plans:
 - Phase 4 is split: 4a health policy and recovery (`plans/2026-10-01-1700-phase4a-health-and-recovery.md`); 4b batch coordinator, launcher and aggregate view; 4c supervisor and atomic repairs. 3a, 3b and 2c merged.
 - Phase 4c scope adds J02 (refused calls never consume attempts), J03 (immutable attempt identity under recovery) and J05 (reconcile every stage), from the julien-2 ten-pair run of 2 October; 4a and 4b merged.
 - Phase 5: `plans/2026-10-02-1110-phase5-context-and-contracts.md` (4c merged 8e1eabd).
-- Phase 6: `plans/2026-10-02-1500-phase6-composable-eva.md` (5 merged f77b190).
+- Phase 6: `plans/2026-10-02-1500-phase6-composable-eva.md` (5 merged f77b190; 6 done on refactor/phase6).

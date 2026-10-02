@@ -11,7 +11,7 @@ Branches and the joint thread are views of the one campaign: the same root, rece
 and admission, with their own research settings; a branch view also has its own thread directory and
 names its branch on every receipt and event."""
 from __future__ import annotations
-import copy, hashlib, json, os, shutil, time
+import copy, hashlib, json, os, re, shutil, time
 from pathlib import Path
 
 SCHEME_KEYS = ("research_scheme", "research_bundles", "branches", "branch", "joint")
@@ -212,5 +212,42 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
     return research.run_thread(joint, pair_id, stop)
 
 
+def _shingles(text: str, n: int = 3) -> set:
+    words = re.findall(r"[a-z0-9]+", text.lower())
+    return {tuple(words[i:i + n]) for i in range(max(len(words) - n + 1, 1))} if words else set()
+
+
 def metrics(campaign, pair_id: str) -> dict:
-    return {}
+    """The D10 measurements over the frozen bundles: per branch, its reviews, the requests they issued and how
+    those ended; Vera's rejection rate (the share of reviews that asked for more work); and thread divergence,
+    the mean pairwise Jaccard distance between the branches' word 3-grams over their substantive ledger text
+    (0 when the branches wrote the same, 1 when they share nothing, null with fewer than two branches)."""
+    from .ledger import SUBSTANTIVE, Ledger
+    root = campaign.thread_dir(pair_id) / "branches"
+    per, grams, reviews_total, rejecting_total = {}, {}, 0, 0
+    for label in labels(campaign):
+        rows = Ledger(root / label / "ledger.jsonl").read() if (root / label / "ledger.jsonl").exists() else []
+        status = json.loads((root / label / "status.json").read_text()) if (root / label / "status.json").exists() else {}
+        responses = []
+        for row in rows:
+            if row["kind"] == "review":
+                try:
+                    responses.append(json.loads(row["text"]).get("response") or {})
+                except ValueError:
+                    responses.append({})
+        rejecting = sum(1 for r in responses if r.get("requests"))
+        requests = (status.get("requests") or {}).values()
+        substantive = [r["text"] for r in rows if r["kind"] in SUBSTANTIVE]
+        per[label] = {"reviews": len(responses), "rejecting_reviews": rejecting,
+                      "rejection_rate": rejecting / len(responses) if responses else None,
+                      "requests_issued": sum(len(r.get("requests") or []) for r in responses),
+                      "resolved": sum(1 for r in requests if r.get("status") == "resolved"),
+                      "deferred": sum(1 for r in requests if r.get("status") == "deferred"),
+                      "handoff_reason": status.get("handoff_reason"), "substantive_entries": len(substantive)}
+        grams[label] = _shingles("\n".join(substantive))
+        reviews_total += len(responses); rejecting_total += rejecting
+    pairs = [(a, b) for i, a in enumerate(grams) for b in list(grams)[i + 1:]]
+    distances = [1 - len(grams[a] & grams[b]) / len(grams[a] | grams[b]) if grams[a] | grams[b] else 0.0 for a, b in pairs]
+    return {"branches": per, "rejection_rate": rejecting_total / reviews_total if reviews_total else None,
+            "divergence": sum(distances) / len(distances) if distances else None,
+            "pairwise": {f"{a}|{b}": d for (a, b), d in zip(pairs, distances)}}

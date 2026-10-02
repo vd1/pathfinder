@@ -203,3 +203,43 @@ def test_a_changed_bundle_goes_to_the_operator(tmp_path, monkeypatch):
     assert reconcile.inspect(c, "Q1P1")["action"].startswith("nothing: frozen bundle changed")
     match = [a for a in playbook.next_actions(c) if a["action"].startswith("Q1P1")]
     assert match and match[0]["owner"] == "operator"
+
+
+def _fake_branches(c, texts, reviews=()):
+    from pathfinder.ledger import Ledger
+    d = c.thread_dir("Q1P1") / "branches"
+    for n, text in enumerate(texts, 1):
+        root = d / f"branch-{n}"; root.mkdir(parents=True)
+        ledger = Ledger(root / "ledger.jsonl")
+        ledger.add("ada", "finding", text)
+        for requests in (reviews[n - 1] if reviews else ()):
+            ledger.add("verifier", "review", json.dumps({"review_id": "r", "response": {"requests": requests, "dispositions": []}}))
+        (root / "status.json").write_text(json.dumps({"status": "HANDOFF", "handoff_reason": "no_further_requests",
+                                                     "reviews": len(reviews[n - 1]) if reviews else 0, "requests": {}}))
+
+
+def test_identical_branches_do_not_diverge_and_disjoint_ones_fully_do(tmp_path):
+    c = _composable(tmp_path / "same", branches=2)
+    _fake_branches(c, ["the covariance bound holds for every lag", "the covariance bound holds for every lag"])
+    assert composable.metrics(c, "Q1P1")["divergence"] == 0
+    c = _composable(tmp_path / "apart", branches=2)
+    _fake_branches(c, ["the covariance bound holds for every lag", "spectral gaps close under weak mixing assumptions"])
+    assert composable.metrics(c, "Q1P1")["divergence"] == 1
+    c = _composable(tmp_path / "one", branches=1)
+    _fake_branches(c, ["alone"])
+    assert composable.metrics(c, "Q1P1")["divergence"] is None
+
+
+def test_the_rejection_rate_counts_reviews_that_asked_for_more(tmp_path):
+    c = _composable(tmp_path, branches=1)
+    _fake_branches(c, ["a finding"], reviews=[[[{"id": "r1", "action": "ITERATE", "text": "check lag 2"}], []]])
+    m = composable.metrics(c, "Q1P1")
+    assert m["branches"]["branch-1"]["rejection_rate"] == 0.5 and m["rejection_rate"] == 0.5
+    assert m["branches"]["branch-1"]["requests_issued"] == 1
+
+
+def test_metrics_are_written_when_the_joint_thread_starts(tmp_path):
+    c = _composable(tmp_path, branches=2)
+    research.run_thread(c, "Q1P1")
+    m = json.loads((c.thread_dir("Q1P1") / "branches" / "metrics.json").read_text())
+    assert set(m["branches"]) == {"branch-1", "branch-2"} and "divergence" in m

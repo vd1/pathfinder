@@ -643,6 +643,18 @@ Settled by the operator on 29 September.
   then N direct-EVA branches followed by one joint EVA thread; the engine's
   \texttt{research\_scheme} value \texttt{eva\_minus} is renamed accordingly in
   phase 6.
+  Done in phase 6: \texttt{"research\_scheme": "composable"} with
+  \texttt{"branches": N} (default 3) and optional \texttt{branch} and
+  \texttt{joint} overrides runs every pair as N direct-EVA branches inside the
+  engine (\path{branch-runs/<label>/}), freezes each handoff as a read-only
+  bundle with a sha256 inventory (\path{branches/<label>/bundle.json}), and then
+  runs the joint EVA thread in the pair's own directory under the ordinary
+  runner, edit and paper. The joint thread starts only once every branch has
+  handed off; a blocked branch blocks the pair and reconcile repairs that
+  branch. \path{branches/metrics.json} records the D10 measurements: Vera's
+  rejection rate per branch and overall, and thread divergence (mean pairwise
+  Jaccard distance of word 3-grams over the branches' substantive ledger text).
+  The value \texttt{eva\_minus} is refused, named \texttt{direct\_eva}.
 \item \textbf{Other lineages.} \texttt{statarb} and \texttt{agQSL} are first
   explored for variants worth reusing (for example agQSL's quota detection,
   no-start timeout, size preflight and idle watcher, and statarb's recovery
