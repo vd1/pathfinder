@@ -45,6 +45,10 @@ def load(root: Path) -> Campaign:
     raw = json.loads((root / "campaign.json").read_text())
     if raw.get("research_scheme") == "eva_minus":
         raise ValueError('research_scheme "eva_minus" is now "direct_eva" (E writes no synthesis, V reads the ledger)')
+    if raw.get("research_scheme") == "composable":
+        n = raw.get("branches", 3)
+        if not isinstance(n, int) or isinstance(n, bool) or n < 1:
+            raise ValueError(f"branches must be an integer of at least 1, got {n!r}")
     return Campaign(
         root=root, backend=raw["backend"], model=raw["model"],
         scan_model=raw.get("scan_model") or raw["model"],

@@ -145,3 +145,72 @@ def verify(bundle: Path) -> dict:
         if _sha(present[name]) != entry["sha256"]:
             raise BundleError(f"{bundle.name}: {name} changed after the freeze")
     return record
+
+
+def run(campaign, pair_id: str, stop=lambda: False) -> str:
+    """The pair's research: the branches until every one has handed off, then the joint thread over their
+    frozen bundles. A stopped branch stops the pair; another unfinished branch blocks it, named; the branches
+    already handed off are never run again."""
+    from concurrent.futures import ThreadPoolExecutor
+    from . import research
+    joint = joint_view(campaign, pair_id)
+    d = campaign.thread_dir(pair_id)
+    s = research.status(campaign, pair_id)
+    if s.get("branches_frozen"):
+        if s.get("status") in research.TERMINAL | {"HANDOFF", "BLOCKED"}:
+            return s["status"]
+        try:
+            for label in labels(campaign):
+                verify(d / "branches" / label)
+        except BundleError as error:
+            research._set(campaign, pair_id, status="BLOCKED", reason=f"frozen bundle changed: {error}")
+            return "BLOCKED"
+        return research.run_thread(joint, pair_id, stop)
+    if not (d / "status.json").exists():
+        research.prepare(joint, pair_id)            # the joint thread's inputs and peer directories, waiting
+    if s.get("stage") != "branches" or s.get("status") != "running":
+        research._set(campaign, pair_id, stage="branches", status="running", round=0, reason=None, failure=None)
+    todo = [label for label in labels(campaign)
+            if research.status(branch_view(campaign, pair_id, label), pair_id).get("status") != "HANDOFF"]
+
+    def one(label):
+        view = branch_view(campaign, pair_id, label)
+        research.prepare(view, pair_id)
+        return research.run_thread(view, pair_id, stop)
+    errors = []
+    if todo:
+        with ThreadPoolExecutor(len(todo)) as pool:
+            for future in [pool.submit(one, label) for label in todo]:
+                try:
+                    future.result()
+                except Exception as error:          # drain the others first: their paid work is kept
+                    errors.append(error)
+    states = {label: research.status(branch_view(campaign, pair_id, label), pair_id) for label in labels(campaign)}
+    waiting = {label: b for label, b in states.items() if b.get("status") != "HANDOFF"}
+    stopped = [label for label, b in waiting.items() if b.get("status") in ("stopped", "running")]
+    if errors or stopped:
+        label = stopped[0] if stopped else next(iter(waiting), None)
+        b = waiting.get(label) or {}
+        research._set(campaign, pair_id, status="stopped", reason=f"{label}: {b.get('reason') or 'stopped'}",
+                      failure=b.get("failure"))
+        if errors:
+            raise errors[0]
+        return "stopped"
+    if waiting:
+        label, b = next(iter(waiting.items()))
+        research._set(campaign, pair_id, status="BLOCKED", reason=f"{label}: {b.get('reason') or b.get('status')}",
+                      failure=b.get("failure"))
+        return "BLOCKED"
+    try:
+        frozen = {label: verify(freeze(campaign, pair_id, label))["inventory_sha256"] for label in labels(campaign)}
+    except BundleError as error:
+        research._set(campaign, pair_id, status="BLOCKED", reason=f"freeze: {error}")
+        return "BLOCKED"
+    (d / "branches" / "metrics.json").write_text(json.dumps(metrics(campaign, pair_id), indent=1))
+    research._set(campaign, pair_id, stage="peers", round=1, status="running", reason=None, failure=None,
+                  branches_frozen=frozen)
+    return research.run_thread(joint, pair_id, stop)
+
+
+def metrics(campaign, pair_id: str) -> dict:
+    return {}

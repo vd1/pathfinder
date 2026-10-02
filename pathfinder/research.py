@@ -578,6 +578,9 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
     @planks("the previous account remains available as an immutable version")
     """
     _stage_attempts(campaign)                   # an invalid setting fails before any call
+    if campaign.raw.get("research_scheme") == "composable":
+        from . import composable
+        return composable.run(campaign, pair_id, stop)
     if campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"):
         return _run_composable(campaign, pair_id, stop)
     d = prepare(campaign, pair_id); L = Ledger(d / "ledger.jsonl"); A = campaign.allowances

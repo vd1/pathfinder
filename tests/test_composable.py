@@ -84,3 +84,73 @@ def test_verify_names_a_changed_or_an_extra_file(tmp_path):
     (bundle2 / "ada" / "late.txt").write_text("added after the freeze")
     with pytest.raises(composable.BundleError, match="ada/late.txt"):
         composable.verify(bundle2)
+
+
+def test_a_composable_pair_runs_its_branches_then_the_joint_thread(tmp_path):
+    from pathfinder import runner
+    c = _composable(tmp_path)
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    d = c.thread_dir("Q1P1")
+    for label in composable.labels(c):
+        composable.verify(d / "branches" / label)
+    assert (d / "ledger.jsonl").exists() and (d / "Q1P1.tex").exists()
+    s = research.status(c, "Q1P1")
+    assert set(s["branches_frozen"]) == {"branch-1", "branch-2", "branch-3"}
+    joint = [r for r in transport.receipts(c) if r["branch"] is None]
+    assert {"consolidate", "verify"} <= {r["stage"] for r in joint}
+    assert {r["branch"] for r in transport.receipts(c)} == {None, "branch-1", "branch-2", "branch-3"}
+
+
+def test_the_runner_takes_a_composable_pair_through_edit(tmp_path):
+    from pathfinder import edit, runner
+    c = _composable(tmp_path, branches=2)
+    runner._work(c, "Q1P1")
+    assert research.status(c, "Q1P1")["status"] == "DRAFT" and edit.status(c, "Q1P1")["status"] == "done"
+
+
+@pytest.mark.parametrize("n", [1, 5])
+def test_any_number_of_branches(tmp_path, n):
+    c = _composable(tmp_path, branches=n)
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    assert len(list((c.thread_dir("Q1P1") / "branches").glob("branch-*/bundle.json"))) == n
+
+
+@pytest.mark.parametrize("bad", [0, -1, "three"])
+def test_a_bad_branch_count_is_refused(tmp_path, bad):
+    with pytest.raises(ValueError, match="branches"):
+        _composable(tmp_path, branches=bad)              # make() loads the campaign it writes
+
+
+def _stop_where(monkeypatch, where):
+    from pathfinder.admission import Refused
+    real, calls, armed = transport.execute, [], {"on": True}
+
+    def execute(campaign, request):
+        calls.append(str(request.cwd))
+        if armed["on"] and where(str(request.cwd)):
+            armed["on"] = False
+            raise Refused("stop requested")
+        return real(campaign, request)
+    monkeypatch.setattr(transport, "execute", execute)
+    return calls
+
+
+def test_a_stop_in_one_branch_resumes_without_paying_finished_branches_again(tmp_path, monkeypatch):
+    c = _composable(tmp_path)
+    calls = _stop_where(monkeypatch, lambda cwd: cwd.endswith("branch-runs/branch-2"))
+    assert research.run_thread(c, "Q1P1") == "stopped"
+    done = {label: len([x for x in calls if x.endswith(label)]) for label in ("branch-1", "branch-3")}
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    assert {label: len([x for x in calls if x.endswith(label)]) for label in ("branch-1", "branch-3")} == done
+
+
+def test_a_bundle_changed_after_the_freeze_blocks_the_joint_thread(tmp_path, monkeypatch):
+    import os
+    c = _composable(tmp_path)
+    d = c.thread_dir("Q1P1")
+    _stop_where(monkeypatch, lambda cwd: cwd == str(d))
+    assert research.run_thread(c, "Q1P1") == "stopped"
+    ledger = d / "branches" / "branch-2" / "ledger.jsonl"
+    os.chmod(ledger, 0o644); ledger.write_text(ledger.read_text() + "\n")
+    assert research.run_thread(c, "Q1P1") == "BLOCKED"
+    assert research.status(c, "Q1P1")["reason"].startswith("frozen bundle changed: branch-2: ledger.jsonl")
