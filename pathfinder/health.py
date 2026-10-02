@@ -197,6 +197,10 @@ def snapshot(campaign):
     failure = inspect(campaign.path("health.json"))
     if failure:
         warnings.append("Recorded operational failure requires diagnosis and an explicit restart.")
+    from . import admission
+    cooling = admission.cooldown_record(campaign)
+    if cooling:
+        warnings.append(f"Admission is cooling down for {cooling['remaining_seconds']:.0f} s after a rate limit: {cooling['reason']}")
     stop = inspect(campaign.path("stop.json"))
     stopped_by = (stop or {}).get("failure") or {}
     if stopped_by.get("scope") == "campaign":
@@ -206,7 +210,7 @@ def snapshot(campaign):
     out = {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
             "active_calls": active, "last_completed_call": ({k: completed[-1].get(k) for k in fields} if completed else None),
             "failure_count": len(failures), "recent_failures": failures[-10:], "failure": failure,
-            "stop": stop, "failures_by_class": by_class, "allowances": _allowances(campaign, receipts, warnings), "work": work, "warnings": warnings,
+            "stop": stop, "failures_by_class": by_class, "cooldown": cooling, "allowances": _allowances(campaign, receipts, warnings), "work": work, "warnings": warnings,
             "evidence": {"receipts": str(campaign.path("receipts.jsonl")),
                          "runner": str(campaign.path("runner.json")),
                          "failures": str(campaign.path("failures.jsonl"))},

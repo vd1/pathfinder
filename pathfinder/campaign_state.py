@@ -7,7 +7,7 @@ from __future__ import annotations
 import calendar, json, os, re, time
 from collections import Counter
 from pathlib import Path
-from . import edit, events, paper, research, transport
+from . import admission, edit, events, paper, research, transport
 
 ACTIVE_SECONDS = 600                       # an event this recent means the campaign is active
 DOCUMENTS = (("research note", "{u}.tex", "{u}.pdf"), ("readable note", "edited/note.tex", "edited/note.pdf"),
@@ -218,7 +218,7 @@ def build(campaign) -> dict:
                                 "output_tokens": sum(r.get("output_tokens") or 0 for r in receipts),
                                 "cache_read": sum(r.get("cache_read") or 0 for r in receipts)},
                      "execution_id": run.get("execution_id"), "stop": _json(campaign.path("stop.json"))},
-        "progress": {"status": progress, "last_event_at": last, "events_truncated": truncated, "events_corrupt": corrupt},
+        "progress": {"cooldown_seconds": admission.cooldown(campaign), "status": progress, "last_event_at": last, "events_truncated": truncated, "events_corrupt": corrupt},
         "runner": runner_info,
         "stages": {name: dict(c) for name, c in stages.items()},
         "pipeline": pipeline,

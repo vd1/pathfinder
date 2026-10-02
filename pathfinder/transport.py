@@ -284,15 +284,17 @@ def _receipt(campaign, thread, stage, actor, model, r):
 
 def _cool_down(campaign, reason):
     """Hold admission for the retry backoff after a rate limit; a later cooldown keeps the later end."""
-    path = campaign.path("cooldown.json")
-    until = time.time() + retry_policy(campaign)[1]
-    try:
-        until = max(until, float(json.loads(path.read_text()).get("until", 0)))
-    except (OSError, ValueError, TypeError, AttributeError):
-        pass
-    temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps({"until": until, "reason": reason}))
-    temporary.replace(path)
+    from .admission import _cooldown_roots
+    for root in _cooldown_roots(campaign):           # the arms of one parent share the account, so they cool together
+        path = root / "cooldown.json"
+        until = time.time() + retry_policy(campaign)[1]
+        try:
+            until = max(until, float(json.loads(path.read_text()).get("until", 0)))
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(json.dumps({"until": until, "reason": reason}))
+        temporary.replace(path)
 
 
 def _failed(campaign, thread, stage, actor, model, started, outcome, error, prompt_chars=None):

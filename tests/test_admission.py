@@ -198,3 +198,14 @@ def test_a_rate_limit_cools_the_whole_campaign_down(tmp_path):
     with admission.admission(c, "peer", "emmy"):
         waited = time.time() - started
     assert waited >= 0.3
+
+
+def test_a_cooldown_in_one_arm_holds_its_siblings_and_is_shown(tmp_path):
+    from pathfinder import health
+    (tmp_path / "parent").mkdir()
+    arm1 = make(tmp_path / "arm1", parent="../parent", retry_backoff_seconds=5)
+    arm2 = make(tmp_path / "arm2", parent="../parent", retry_backoff_seconds=5)
+    transport._receipt(arm1, "Q1P1", "peer", "ada", "m", {"outcome": "error", "error": "HTTP 429 Too Many Requests"})
+    assert admission.cooldown(arm2) > 0
+    snap = health.snapshot(arm2)
+    assert snap["cooldown"]["remaining_seconds"] > 0 and any("cooling down" in w for w in snap["warnings"])

@@ -66,14 +66,33 @@ def _stop_marker(campaign) -> str | None:
     return None
 
 
-def cooldown(campaign) -> float:
-    """Seconds left in a campaign-wide cooldown after a rate limit, 0 when none."""
+def _cooldown_roots(campaign) -> list[Path]:
+    roots = [Path(campaign.root)]
+    parent = (campaign.raw or {}).get("parent")
+    if parent:
+        roots.append((Path(campaign.root) / parent).resolve())
+    return roots
+
+
+def cooldown_record(campaign) -> dict | None:
+    """The longest active cooldown of the campaign or its coordinator parent: {remaining_seconds, reason}."""
     import json
-    try:
-        until = float(json.loads((Path(campaign.root) / "cooldown.json").read_text()).get("until", 0))
-    except (OSError, ValueError, TypeError, AttributeError):
-        return 0.0
-    return max(0.0, until - time.time())
+    best = None
+    for root in _cooldown_roots(campaign):
+        try:
+            data = json.loads((root / "cooldown.json").read_text())
+            remaining = float(data.get("until", 0)) - time.time()
+        except (OSError, ValueError, TypeError, AttributeError):
+            continue
+        if remaining > 0 and (best is None or remaining > best["remaining_seconds"]):
+            best = {"remaining_seconds": round(remaining, 1), "reason": data.get("reason")}
+    return best
+
+
+def cooldown(campaign) -> float:
+    """Seconds left in the cooldown after a rate limit, shared by the arms of one parent; 0 when none."""
+    record = cooldown_record(campaign)
+    return record["remaining_seconds"] if record else 0.0
 
 
 def _refuse(campaign, thread, stage, actor, model, reason):
