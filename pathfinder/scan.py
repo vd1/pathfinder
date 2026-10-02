@@ -53,7 +53,7 @@ def run(campaign, stop=lambda: False):
                 request = transport.ModelRequest(
                     identity=f"{pid}:scan:{attempt}", prompt=render(campaign, q, p), model=campaign.scan_model,
                     tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
-                    stage="scan", actor="judge")
+                    stage="scan", actor="judge", schema=contracts.SCHEMAS["scan"])
                 try:
                     r = transport.execute(campaign, request)
                     row["seconds"] += r["seconds"]; row["cost"] += r["cost"] or 0

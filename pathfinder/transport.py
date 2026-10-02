@@ -4,7 +4,7 @@ Every attempted call appends one receipt. What the provider did not report stays
 zero, never an estimate."""
 from __future__ import annotations
 from dataclasses import dataclass
-import json, os, shlex, signal, subprocess, threading, time, uuid
+import hashlib, json, os, shlex, signal, subprocess, threading, time, uuid
 from pathlib import Path
 
 SESSION_GRACE = 60
@@ -29,6 +29,7 @@ class ModelRequest:
     actor: str
     cwd: Path | None = None
     reads: bool = False           # a reader: tools to read the workspace, never to change it
+    schema: dict | None = None    # the reply's declared contract (pathfinder.contracts); validated by the engine
 
 
 class TransportFailed(Exception):
@@ -95,7 +96,23 @@ def _key_from_file(path, name):
     raise RuntimeError(f"{name} not found in {path}")
 
 
-def _command(campaign, model, tools, search, cwd, reads=False):
+def schema_file(campaign, request) -> Path | None:
+    """The strict form of the request's contract as a file for the Codex CLI's --output-schema, when the
+    campaign asks for it ("codex": {"output_schema": true}). The Claude CLI gets none: the engine validates."""
+    if request.schema is None or campaign.backend in ("claude", "stub"):
+        return None
+    if not ((campaign.raw or {}).get("codex") or {}).get("output_schema"):
+        return None
+    from . import contracts
+    data = json.dumps(contracts.strict(request.schema), indent=1, sort_keys=True).encode()
+    path = campaign.path(f"schemas/{hashlib.sha256(data).hexdigest()}.json")
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    return path
+
+
+def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None):
     if campaign.backend == "claude":
         cmd = shlex.split(os.environ.get("PATHFINDER_CLAUDE", "claude"))
         cmd += ["-p", "--model", model, "--output-format", "stream-json", "--verbose", "--no-session-persistence"]
@@ -123,6 +140,8 @@ def _command(campaign, model, tools, search, cwd, reads=False):
         cmd.remove("--ephemeral")
     if prov.get("reasoning_effort"):
         cmd += ["-c", f'model_reasoning_effort="{prov["reasoning_effort"]}"']
+    if schema_path is not None:
+        cmd += ["--output-schema", str(schema_path)]
     if prov.get("disable_toolless_shell") and not tools:
         cmd += ["-c", "features.shell_tool=false"]
     if campaign.backend == "elm":
@@ -430,7 +449,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         return _extension_call(campaign, request, dispatcher)
     started = time.time()
     try:
-        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd, request.reads), cwd=cwd, env=_env(campaign, cwd),
+        proc = subprocess.Popen(_command(campaign, model, tools, search, cwd, request.reads, schema_file(campaign, request)), cwd=cwd, env=_env(campaign, cwd),
                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 text=True, start_new_session=True)
     except OSError as e:
@@ -498,14 +517,14 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
     return r
 
 
-def request(prompt, *, model, tools, search, cwd, timeout, thread, stage, actor) -> ModelRequest:
+def request(prompt, *, model, tools, search, cwd, timeout, thread, stage, actor, schema=None) -> ModelRequest:
     return ModelRequest(identity=f"{thread}:{stage}", prompt=prompt, model=model, tools=tools, search=search,
-                        cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor)
+                        cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor, schema=schema)
 
 
-def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
+def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor, schema=None):
     return execute(campaign, request(prompt, model=model, tools=tools, search=search, cwd=cwd, timeout=timeout,
-                                     thread=thread, stage=stage, actor=actor))
+                                     thread=thread, stage=stage, actor=actor, schema=schema))
 
 
 def _kill(proc):

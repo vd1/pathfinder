@@ -165,6 +165,7 @@ def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
     events.emit(campaign, "contract_repair", unit=request.thread, stage=request.stage, actor=request.actor,
                 contract=name, errors=first.errors[:5])
     repair = replace(request, identity=request.identity + ":contract-repair", tools=False, search=False, reads=False,
+                     schema=SCHEMAS[name],
                      prompt=_repair_prompt(name, result.get("text") or "", first.errors))
     repaired = transport.execute(campaign, repair)
     if repaired.get("transport_failed"):

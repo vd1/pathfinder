@@ -200,7 +200,7 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
                       Section("reference checks", text="\n".join(checks) or "no findings", keep=True),
                       Section("your task", text=_prompt(campaign, "review"), keep=True)], tools=False, cwd=d, unit=pair_id)
     kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=A.get("review_seconds", 900),
-              thread=pair_id, stage="review", actor="reviewer")
+              thread=pair_id, stage="review", actor="reviewer", schema=contracts.SCHEMAS["paper_review"])
     r = transport.call(q, campaign=campaign, **kw)
     if not r["transport_failed"]:                 # read once under the review contract, repaired at most once
         v, r = contracts.ensure(campaign, transport.request(q, **kw), r, "paper_review")

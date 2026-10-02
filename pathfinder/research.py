@@ -519,7 +519,8 @@ def _stage_request(campaign, pair_id, stage, prompt, tools, seconds, attempt=0):
     return transport.ModelRequest(
         identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
         search=False, cwd=campaign.thread_dir(pair_id), timeout=seconds, thread=pair_id, stage=stage,
-        actor=campaign.peers[0] if stage == "consolidate" else "verifier", reads=stage == "verify")
+        actor=campaign.peers[0] if stage == "consolidate" else "verifier", reads=stage == "verify",
+        schema=contracts.SCHEMAS["verify"] if stage == "verify" else None)
 
 
 def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
@@ -1009,7 +1010,8 @@ def next_requests(campaign, pair_id):
                 request = transport.ModelRequest(identity=identity, prompt=prompt, model=campaign.model,
                     tools=True, search=campaign.peer_search if stage == "peers" else False,
                     cwd=d, timeout=int(seconds) + (30 if stage == "peers" else 0), thread=pair_id,
-                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage == "verify")
+                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage == "verify",
+                    schema=contracts.SCHEMAS[_review_contract(campaign, s)[0]] if stage in ("verify", "ledger_review") else None)
                 path = _request_file(campaign, pair_id, identity)
                 path.parent.mkdir(exist_ok=True)
                 path.write_text(json.dumps({"request": {**asdict(request), "cwd": str(d)},

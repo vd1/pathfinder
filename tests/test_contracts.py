@@ -182,3 +182,34 @@ def test_a_scan_reply_in_prose_is_repaired(tmp_path, monkeypatch):
     scan.run(c)
     row = json.loads(c.path("scan.jsonl").read_text().splitlines()[0])
     assert row["feasibility"] == 50 and row["error"] is None and calls[1].endswith(":contract-repair")
+
+
+# --- schema-constrained Codex calls (H8) --------------------------------------------------------------
+
+def _schema_request(tmp_path):
+    return transport.ModelRequest(identity="Q1P1:verify:0", prompt="p", model="m", tools=True, search=False, timeout=60,
+                                  thread="Q1P1", stage="verify", actor="verifier", cwd=tmp_path, schema=contracts.SCHEMAS["verify"])
+
+
+def test_codex_carries_the_strict_schema_when_asked(tmp_path):
+    c = make(tmp_path / "c", backend="codex", codex={"output_schema": True})
+    path = transport.schema_file(c, _schema_request(tmp_path))
+    assert json.loads(path.read_text()) == contracts.strict(contracts.SCHEMAS["verify"])
+    cmd = transport._command(c, "m", True, False, tmp_path, schema_path=path)
+    assert cmd[cmd.index("--output-schema") + 1] == str(path)
+
+
+def test_no_schema_flag_without_the_option_or_on_claude(tmp_path):
+    assert transport.schema_file(make(tmp_path / "a", backend="codex"), _schema_request(tmp_path)) is None
+    assert transport.schema_file(make(tmp_path / "b", backend="claude", codex={"output_schema": True}), _schema_request(tmp_path)) is None
+    assert "--output-schema" not in transport._command(make(tmp_path / "d", backend="codex"), "m", True, False, tmp_path)
+
+
+def test_structured_requests_carry_their_schema(tmp_path, monkeypatch):
+    c = make(tmp_path)
+    schemas = {}
+    real = research.transport.execute
+    monkeypatch.setattr(research.transport, "execute",
+                        lambda campaign, request: schemas.setdefault(request.stage, request.schema) and None or real(campaign, request))
+    research.run_thread(c, "Q1P1")
+    assert schemas["verify"] == contracts.SCHEMAS["verify"] and schemas["consolidate"] is None
