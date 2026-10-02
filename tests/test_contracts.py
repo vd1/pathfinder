@@ -213,3 +213,14 @@ def test_structured_requests_carry_their_schema(tmp_path, monkeypatch):
                         lambda campaign, request: schemas.setdefault(request.stage, request.schema) and None or real(campaign, request))
     research.run_thread(c, "Q1P1")
     assert schemas["verify"] == contracts.SCHEMAS["verify"] and schemas["consolidate"] is None
+
+
+def test_a_deployment_can_bring_its_own_contract(tmp_path, monkeypatch):
+    schema = {"type": "object", "required": ["verdict"], "properties": {"verdict": {"enum": ["READY", "NOT_READY"]}}}
+    assert contracts.parse(schema, '{"verdict": "READY"}') == {"verdict": "READY"}
+    with pytest.raises(contracts.ContractViolation):
+        contracts.parse(schema, '{"verdict": "maybe"}')
+    c = make(tmp_path)
+    monkeypatch.setattr(contracts.transport, "execute", lambda campaign, request: {"transport_failed": False, "text": '{"verdict": "NOT_READY"}'})
+    value, result = contracts.ensure(c, _request(), {"transport_failed": False, "text": "ready, I think"}, schema)
+    assert value == {"verdict": "NOT_READY"} and result["repaired"] is True

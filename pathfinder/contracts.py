@@ -96,7 +96,16 @@ def violations(value, schema: dict, where: str = "reply") -> list[str]:
     return errors
 
 
-def parse(name: str, text: str, check=None):
+def schema_of(contract) -> dict:
+    """A contract is the name of an engine schema or, for a deployment's own replies, a schema itself."""
+    return contract if isinstance(contract, dict) else SCHEMAS[contract]
+
+
+def _label(contract) -> str:
+    return contract if isinstance(contract, str) else "deployment"
+
+
+def parse(name, text: str, check=None):
     """The reply's value under contract `name`, or ContractViolation listing every problem."""
     try:
         value = extract_json(text)
@@ -104,7 +113,7 @@ def parse(name: str, text: str, check=None):
         raise ContractViolation([f"no readable JSON object: {error}"]) from None
     if isinstance(value, dict) and isinstance(value.get("decision"), str):
         value["decision"] = value["decision"].upper()
-    errors = violations(value, SCHEMAS[name])
+    errors = violations(value, schema_of(name))
     if not errors and check is not None:
         try:
             check(value)
@@ -144,17 +153,17 @@ def strict(schema: dict) -> dict:
 REPAIR_REPLY_CHARS = 50_000
 
 
-def _repair_prompt(name: str, reply: str, errors: list[str]) -> str:
+def _repair_prompt(name, reply: str, errors: list[str]) -> str:
     shown = reply if len(reply) <= REPAIR_REPLY_CHARS else reply[:REPAIR_REPLY_CHARS] + "\n[... reply truncated ...]"
     return ("Your previous reply could not be read under its required format. Problems found:\n"
             + "\n".join(f"- {e}" for e in errors[:20])
             + "\n\nRestate the same answer as exactly one JSON object matching this JSON Schema, and nothing else "
             "(no prose, no code fences). Keep the substance of your reply; change only its form, and where the "
             "schema needs something your reply did not say, say it briefly.\n\n## schema\n\n"
-            + json.dumps(SCHEMAS[name], indent=1) + "\n\n## your previous reply\n\n" + shown + "\n")
+            + json.dumps(schema_of(name), indent=1) + "\n\n## your previous reply\n\n" + shown + "\n")
 
 
-def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
+def ensure(campaign, request, result: dict, name, check=None) -> tuple:
     """(value, result) for a reply under contract `name`, after at most one tool-less repair turn in the same
     stage. A transport failure passes through untouched as (None, result). A reply that still violates the
     contract gives (None, result) with failure class "contract" and the violations."""
@@ -165,9 +174,9 @@ def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
     except ContractViolation as violation:
         first = violation
     events.emit(campaign, "contract_repair", unit=request.thread, stage=request.stage, actor=request.actor,
-                contract=name, errors=first.errors[:5])
+                contract=_label(name), errors=first.errors[:5])
     repair = replace(request, identity=request.identity + ":contract-repair", tools=False, search=False, reads=False,
-                     schema=SCHEMAS[name],
+                     schema=schema_of(name),
                      prompt=_repair_prompt(name, result.get("text") or "", first.errors))
     contract_failure = failures.Failure("contract", *failures.SCOPES["contract"]).record()
     try:
@@ -182,6 +191,6 @@ def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
         return parse(name, repaired.get("text") or "", check), repaired
     except ContractViolation as violation:
         events.emit(campaign, "contract_failed", unit=request.thread, stage=request.stage, actor=request.actor,
-                    contract=name, errors=violation.errors[:5])
+                    contract=_label(name), errors=violation.errors[:5])
         return None, {**repaired, "failure": contract_failure,
                       "error": "contract: " + "; ".join(violation.errors[:5]), "contract_errors": violation.errors}
