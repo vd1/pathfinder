@@ -151,6 +151,8 @@ def apply_declarations(campaign, pair_id: str, records: list[dict]) -> dict:
     same records again changes nothing."""
     import hashlib, json, os, tempfile, time
     from . import research
+    if not isinstance(records, list) or not all(isinstance(r, dict) for r in records):
+        raise research.EvidenceUnavailable("declarations must be a list of JSON objects")
     d = campaign.thread_dir(pair_id)
     target = d / "external-references.json"
     before = target.read_bytes() if target.is_file() else None

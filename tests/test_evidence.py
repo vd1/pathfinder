@@ -258,3 +258,12 @@ def test_an_invalid_declaration_set_leaves_the_file_unchanged(tmp_path):
     with pytest.raises(research.EvidenceUnavailable):
         evidence.apply_declarations(c, "Q1P1", [dict(record, path="ada/third.json"), bad])
     assert (d / "external-references.json").read_bytes() == before
+
+
+@pytest.mark.parametrize("records", [["not a record"], [None], "not a list"])
+def test_malformed_declarations_are_refused_as_evidence_errors(tmp_path, records):
+    from pathfinder import research
+    c, d, _ = _declarable(tmp_path)
+    with pytest.raises(research.EvidenceUnavailable):
+        evidence.apply_declarations(c, "Q1P1", records)
+    assert not (d / "external-references.json").exists()

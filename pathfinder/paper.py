@@ -155,7 +155,8 @@ def _run(campaign, pair_id: str, stop) -> str:
         if stop():
             _set(campaign, pair_id, status="stopped", round=rnd); return "stopped"
         s = status(campaign, pair_id)
-        resume_review = s.get("round") == rnd and s.get("status") in ("reviewing", "stopped") and (pd / "paper.tex").exists()
+        resume_review = (s.get("author_done") == rnd and s.get("status") in ("reviewing", "stopped")
+                         and (pd / "paper.tex").exists())       # resume at the review only once this round's author call has returned
         if not resume_review:
             _set(campaign, pair_id, status="writing", round=rnd, reason=None)
         findings = ""
@@ -171,6 +172,7 @@ def _run(campaign, pair_id: str, stop) -> str:
             if r["transport_failed"]:
                 _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
             (pd / f"author-round-{rnd}.md").write_text(r["text"] or "")
+            _set(campaign, pair_id, author_done=rnd)
         if not (pd / "paper.tex").exists() or not (pd / "references.bib").exists():
             _set(campaign, pair_id, status="blocked", reason="author wrote no paper.tex or references.bib"); return "blocked"
         result = _review_round(campaign, pair_id, rnd, reviews)

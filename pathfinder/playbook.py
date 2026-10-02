@@ -49,10 +49,17 @@ def next_actions(campaign) -> list[dict]:
             out.append({"owner": "apex", "action": f"{pair}: repair or declare its evidence",
                         "why": action.removeprefix("nothing: ") + ". The command lists proposed declarations; one that needs a URL goes to the operator.",
                         "command": _cmd(campaign, "evidence", pair)})
+        elif action.startswith("nothing: edit blocked"):
+            out.append({"owner": "operator", "action": f"{pair}: decide on the edit",
+                        "why": action.removeprefix("nothing: "), "command": None})
         elif action == "nothing: paper needs the operator":
             out.append({"owner": "operator", "action": f"{pair}: decide on the paper",
                         "why": f"paper {unit['assessment']['status']}: {unit['assessment']['reason']}", "command": None})
         elif not action.startswith("nothing") and action != "start" and unit["controller"] not in ("running",):
+            if stop:                                  # nothing runs under a stop; the action waits for the restart
+                out.append({"owner": "engine", "action": f"{pair}: {action} when the campaign restarts",
+                            "why": "the campaign is stopped; clear the stop first", "command": None})
+                continue
             out.append({"owner": "apex", "action": f"{pair}: {action}",
                         "why": f"research {unit['research']['status']}, edit {unit['editorial']['status']}, paper {unit['assessment']['status']}",
                         "command": _cmd(campaign, "reconcile", pair, "--apply")})

@@ -55,8 +55,13 @@ def _later_stage(campaign, pair_id, s) -> str:
     """After a research ending: the editor, then for a DRAFT the paper, each with its one safe action."""
     from . import edit, paper
     e = edit.status(campaign, pair_id)
-    if e.get("status") == "stopped" or (e.get("status") == "blocked" and e.get("failure")):
-        return "run edit"
+    failure = e.get("failure") or {}
+    if e.get("status") == "blocked" and failure.get("class") == "input_too_large":
+        return "nothing: edit blocked: input too large (raise max_prompt_chars or shorten the inputs)"
+    if e.get("status") == "stopped" or (e.get("status") == "blocked" and failure):
+        return "run edit"                             # a transport failure: running the editor again is safe
+    if e.get("status") == "blocked":
+        return f"nothing: edit blocked: {e.get('reason') or 'no reason recorded'}"
     if s.get("status") == "DRAFT" and e.get("status") == "done":
         p = paper.status(campaign, pair_id).get("status")
         if p == "stopped":
@@ -81,14 +86,14 @@ def apply(campaign, pair_id: str) -> str:
     info = inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
+    if not runner.guard_ok(campaign, inflight=1):
+        return "nothing: budget guard refused (stop marker written)"
     if info["action"] in ("run edit", "run paper"):
         from . import edit, paper
         module = edit if info["action"] == "run edit" else paper
-        _record(module, campaign, pair_id, info["action"])
         with runner.Lock(campaign.thread_dir(pair_id)):
+            _record(module, campaign, pair_id, info["action"])
             return module.run(campaign, pair_id, stop=lambda: runner.stopped(campaign))
-    if not runner.guard_ok(campaign, inflight=1):
-        return "nothing: budget guard refused (stop marker written)"
     if info["action"] == REISSUE:                 # keep the old answer, with its lineage, and ask again
         s = research.status(campaign, pair_id)
         d = campaign.thread_dir(pair_id)

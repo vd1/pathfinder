@@ -37,5 +37,19 @@ def test_a_repeated_alert_is_counted_not_resent(tmp_path, monkeypatch):
     c = make(tmp_path, notifications={"desktop": False})
     alerts.emit(c, "runner stage failed", c.path("health.json"))
     alerts.emit(c, "runner stage failed", c.path("health.json"))
-    assert len(c.path("alerts.jsonl").read_text().splitlines()) == 1
+    rows = [json.loads(line) for line in c.path("alerts.jsonl").read_text().splitlines()]
+    assert [r.get("repeat", False) for r in rows] == [False, True]
     assert json.loads(c.path("alert.json").read_text())["repeats"] == 1
+
+
+def test_an_alert_on_changed_evidence_is_sent_again(tmp_path):
+    import json
+    from stubcampaign import make
+    c = make(tmp_path, notifications={"desktop": False})
+    c.path("health.json").write_text('{"failure": {"pair": "Q1P1"}}')
+    alerts.emit(c, "runner stage failed", c.path("health.json"))
+    c.path("health.json").write_text('{"failure": {"pair": "Q2P1"}}')
+    alerts.emit(c, "runner stage failed", c.path("health.json"))
+    rows = [json.loads(line) for line in c.path("alerts.jsonl").read_text().splitlines()]
+    assert [r.get("repeat", False) for r in rows] == [False, False]
+    assert json.loads(c.path("alert.json").read_text())["repeats"] == 0
