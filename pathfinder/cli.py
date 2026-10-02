@@ -36,6 +36,7 @@ def main(argv=None):
     la = sub.add_parser("launch", help="start a long command detached and confirm it is alive: pathfinder launch -- research")
     la.add_argument("--settle", type=float, default=20.0, help="seconds to wait before checking the process")
     la.add_argument("args", nargs=argparse.REMAINDER, help="the pathfinder subcommand and its arguments, after --")
+    sub.add_parser("playbook", help="the next actions for the operator or the supervising agent, with commands").add_argument("--json", action="store_true")
     sub.add_parser("status", help="print campaign and shortlist state")
     ev = sub.add_parser("evidence", help="a pair's evidence manifest: cited files, resolutions, errors and proposed declarations")
     ev.add_argument("pair"); ev.add_argument("--json", action="store_true")
@@ -149,6 +150,10 @@ def _dispatch(ns, c):
         m = evidence.manifest(c, ns.pair)
         proposed = evidence.proposals(m, c.thread_dir(ns.pair))
         print(json.dumps({**m, "proposals": proposed}, indent=1) if ns.json else evidence.text(m, proposed))
+    elif ns.cmd == "playbook":
+        from . import playbook
+        actions = playbook.next_actions(c)
+        print(json.dumps(actions, indent=1) if ns.json else playbook.text(actions))
     elif ns.cmd == "status":
         print(monitor.status_text(c))
     elif ns.cmd == "state":

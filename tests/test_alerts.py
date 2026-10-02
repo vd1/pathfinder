@@ -29,3 +29,13 @@ def test_alert_storage_failure_does_not_mask_original_error(tmp_path, monkeypatc
     monkeypatch.setattr(health, "write", fail)
     alerts.emit(make(tmp_path), "runner failed", "runner.json")
     assert "Cannot persist" in capsys.readouterr().err
+
+
+def test_a_repeated_alert_is_counted_not_resent(tmp_path, monkeypatch):
+    import json
+    from stubcampaign import make
+    c = make(tmp_path, notifications={"desktop": False})
+    alerts.emit(c, "runner stage failed", c.path("health.json"))
+    alerts.emit(c, "runner stage failed", c.path("health.json"))
+    assert len(c.path("alerts.jsonl").read_text().splitlines()) == 1
+    assert json.loads(c.path("alert.json").read_text())["repeats"] == 1

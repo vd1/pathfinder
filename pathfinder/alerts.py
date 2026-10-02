@@ -21,10 +21,26 @@ def _desktop(title, message):
 
 
 def emit(campaign, kind, evidence):
-    """Never mask the underlying failure, including when notification itself fails."""
+    """Never mask the underlying failure, including when notification itself fails. An alert identical to
+    the last one within alert_repeat_seconds (default 3600) is counted, not sent again: repeated
+    notifications of one state train the operator to ignore them."""
     message = f"{campaign.root.name}: {kind}. Inspect the local campaign health and supervision records."
+    window = float((campaign.raw or {}).get("alert_repeat_seconds", 3600))
+    try:
+        last = json.loads(campaign.path("alert.json").read_text())
+    except (OSError, ValueError):
+        last = None
+    if last and last.get("kind") == kind and last.get("evidence") == str(evidence) and time.time() - last.get("at", 0) < window:
+        last["repeats"] = last.get("repeats", 0) + 1
+        last["last_repeat_at"] = time.time()
+        try:
+            health.write(campaign.path("alert.json"), last)
+        except OSError:
+            pass
+        print(f"Pathfinder still needs attention ({last['repeats']} repeat(s)): {message}", file=sys.stderr, flush=True)
+        return
     record = {"at": time.time(), "kind": kind, "evidence": str(evidence),
-              "desktop": "disabled"}
+              "desktop": "disabled", "repeats": 0}
     print(f"\aPathfinder needs attention: {message}", file=sys.stderr, flush=True)
     try:
         # Persist before attempting desktop delivery; no model or network is needed.
