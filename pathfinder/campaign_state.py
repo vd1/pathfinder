@@ -147,6 +147,16 @@ def _branches(campaign, unit) -> list[dict]:
     return out
 
 
+def _account(campaign) -> dict | None:
+    """The shared account the campaign draws its seats from, with the seats in use across processes."""
+    from . import seats
+    try:
+        spec = seats.account(campaign)
+    except ValueError as error:
+        return {"error": str(error)}
+    return {"name": spec["name"], "seats": spec["seats"], "in_use": seats.in_use(campaign)} if spec else None
+
+
 def build(campaign) -> dict:
     rows, truncated, corrupt = events.scan(campaign)
     runner_info = _runner(campaign)
@@ -224,6 +234,7 @@ def build(campaign) -> dict:
         "campaign": {"name": campaign.root.name, "backend": campaign.backend, "model": campaign.model,
                      "seats": campaign.seats, "rounds": campaign.rounds, "allowances": campaign.allowances,
                      "research_scheme": raw.get("research_scheme", "eva"),
+                     "account": _account(campaign),
                      "budget": {"calls": len(receipts),
                                 "input_tokens": sum(r.get("input_tokens") or 0 for r in receipts),
                                 "output_tokens": sum(r.get("output_tokens") or 0 for r in receipts),

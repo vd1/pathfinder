@@ -106,9 +106,28 @@ def _refuse(campaign, thread, stage, actor, model, reason):
 
 @contextmanager
 def admission(campaign, stage: str, role: str, *, thread: str | None = None, model: str | None = None):
-    from . import extensions, runner
+    from . import extensions, runner, seats
     policy = extensions.load(campaign, "admission")
     key = str(Path(campaign.root))
+    seat = None
+    if seats.account(campaign):                    # a seat of the shared account first, across processes
+        while True:
+            reason = _stop_marker(campaign)
+            if reason is not None:
+                _refuse(campaign, thread, stage, role, model, reason)
+            seat = seats.take(campaign, stage=stage, actor=role, thread=thread)
+            if seat is not None:
+                break
+            time.sleep(STOP_POLL)
+    try:
+        with _admitted(campaign, stage, role, thread, model, policy, key, runner):
+            yield
+    finally:
+        seats.release(seat)
+
+
+@contextmanager
+def _admitted(campaign, stage, role, thread, model, policy, key, runner):
     with _cond:
         while True:
             reason = _stop_marker(campaign)
