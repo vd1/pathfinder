@@ -32,7 +32,7 @@ def inspect(campaign, pair_id: str) -> dict:
         problem = _evidence_check(campaign, pair_id)
         action = UNBLOCK if problem is None else f"nothing: evidence still blocked: {problem}"
     elif s.get("status") in research.TERMINAL:
-        action = "nothing: terminal"
+        action = _later_stage(campaign, pair_id, s)
     elif s.get("status") == "new":
         action = "start"
     elif s.get("stage") == "peers":
@@ -47,6 +47,29 @@ def inspect(campaign, pair_id: str) -> dict:
             "reason": s.get("reason"), "lock": holder, "action": action}
 
 
+def _later_stage(campaign, pair_id, s) -> str:
+    """After a research ending: the editor, then for a DRAFT the paper, each with its one safe action."""
+    from . import edit, paper
+    e = edit.status(campaign, pair_id)
+    if e.get("status") == "stopped" or (e.get("status") == "blocked" and e.get("failure")):
+        return "run edit"
+    if s.get("status") == "DRAFT" and e.get("status") == "done":
+        p = paper.status(campaign, pair_id).get("status")
+        if p == "stopped":
+            return "run paper"
+        if p in ("blocked", "PAUSE-ON-AMEND"):
+            return "nothing: paper needs the operator"
+    return "nothing: terminal"
+
+
+def _record(module, campaign, pair_id, action):
+    """Append the transition to the stage's own status history before acting."""
+    s = module.status(campaign, pair_id)
+    history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
+                                               "from_reason": s.get("reason"), "action": action}]
+    module._set(campaign, pair_id, history=history)
+
+
 def apply(campaign, pair_id: str) -> str:
     """@planks("When the operator applies the recovery action for pair \"Q1P1\"")
     @planks("When the operator applies reconciliation to the shortlist")
@@ -54,6 +77,12 @@ def apply(campaign, pair_id: str) -> str:
     info = inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
+    if info["action"] in ("run edit", "run paper"):
+        from . import edit, paper
+        module = edit if info["action"] == "run edit" else paper
+        _record(module, campaign, pair_id, info["action"])
+        with runner.Lock(campaign.thread_dir(pair_id)):
+            return module.run(campaign, pair_id, stop=lambda: runner.stopped(campaign))
     if not runner.guard_ok(campaign, inflight=1):
         return "nothing: budget guard refused (stop marker written)"
     if info["action"] == UNBLOCK:                 # the transition is recorded; retained responses and the stage stay
