@@ -18,6 +18,8 @@ def emit(campaign, kind: str, **fields) -> None:
         raise ValueError(f"unknown event kind {kind!r}; expected one of {', '.join(sorted(KINDS))}")
     row = {"v": 1, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "run_id": getattr(campaign, "run_id", None), "kind": kind}
+    if getattr(campaign, "branch", None):          # a composable pair's branch (pathfinder.composable)
+        row["branch"] = campaign.branch
     row.update(fields)
     line = json.dumps(row, default=str) + "\n"
     try:

@@ -278,7 +278,7 @@ def _receipt(campaign, thread, stage, actor, model, r):
     failure = failures.classify(r.get("outcome"), r.get("error"), rules)
     r["failure"] = failure.record() if failure else None
     row = {"v": 3, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
-           "thread": thread, "stage": stage,
+           "thread": thread, "branch": getattr(campaign, "branch", None), "stage": stage,
            "actor": actor, "backend": campaign.backend, "model": model,
            **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
