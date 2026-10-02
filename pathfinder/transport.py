@@ -498,12 +498,14 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
     return r
 
 
+def request(prompt, *, model, tools, search, cwd, timeout, thread, stage, actor) -> ModelRequest:
+    return ModelRequest(identity=f"{thread}:{stage}", prompt=prompt, model=model, tools=tools, search=search,
+                        cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor)
+
+
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor):
-    request = ModelRequest(
-        identity=f"{thread}:{stage}", prompt=prompt, model=model, tools=tools, search=search,
-        cwd=Path(cwd), timeout=timeout, thread=thread, stage=stage, actor=actor,
-    )
-    return execute(campaign, request)
+    return execute(campaign, request(prompt, model=model, tools=tools, search=search, cwd=cwd, timeout=timeout,
+                                     thread=thread, stage=stage, actor=actor))
 
 
 def _kill(proc):

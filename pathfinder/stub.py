@@ -55,6 +55,10 @@ def reply(campaign, request) -> str:
         return "stub peer turn"
     if stage == "consolidate":
         return NOTE
+    if stage in ("verify", "ledger_review") and (campaign.raw or {}).get("research_scheme") == "eva_minus":
+        prior = request.prompt.rsplit("Prior requests and dispositions:\n", 1)
+        active = [k for k, v in (json.loads(prior[1]) if len(prior) == 2 else {}).items() if v.get("status") == "active"]
+        return json.dumps({"requests": [], "dispositions": [{"id": k, "status": "resolved", "reason": "stub"} for k in active]})
     if stage == "verify":
         return json.dumps({"decision": settings.get("verify", "DRAFT"), "reason": "stub verdict", "action": ""})
     if stage == "edit" and request.actor == "editor":

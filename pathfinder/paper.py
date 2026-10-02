@@ -3,10 +3,9 @@ from __future__ import annotations
 import hashlib, json, os, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from . import context, corpus, research, transport
+from . import context, contracts, corpus, research, transport
 from .context import Section
 from .research import _inputs, _prompt, _now
-from .contracts import extract_json as parse_json
 from .admission import Refused
 
 
@@ -200,15 +199,17 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
                       Section("paper.tex", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
                       Section("reference checks", text="\n".join(checks) or "no findings", keep=True),
                       Section("your task", text=_prompt(campaign, "review"), keep=True)], tools=False, cwd=d, unit=pair_id)
-    r = transport.call(q, campaign=campaign, model=campaign.model, tools=False, search=False, cwd=d,
-                       timeout=A.get("review_seconds", 900), thread=pair_id, stage="review", actor="reviewer")
+    kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=A.get("review_seconds", 900),
+              thread=pair_id, stage="review", actor="reviewer")
+    r = transport.call(q, campaign=campaign, **kw)
+    if not r["transport_failed"]:                 # read once under the review contract, repaired at most once
+        v, r = contracts.ensure(campaign, transport.request(q, **kw), r, "paper_review")
     if r["transport_failed"]:
         _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
-    try:
-        v = parse_json(r["text"]); dec = {"REVISE": "AMEND"}.get(v["decision"].upper(), v["decision"].upper()); v["decision"] = dec
-        assert dec in ("ACCEPT", "AMEND")
-    except Exception as e:
-        _set(campaign, pair_id, status="blocked", reason=f"review: unreadable decision ({e})"); return "blocked"
+    if v is None:                                 # an operational failure, not a review outcome
+        _set(campaign, pair_id, status="blocked", reason=f"contract: review: {r['error'].removeprefix('contract: ')}",
+             failure=r["failure"]); return "blocked"
+    dec = v["decision"] = {"REVISE": "AMEND"}.get(v["decision"], v["decision"])
     reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks,
                     "paper_sha256": hashlib.sha256(tex.encode()).hexdigest(), **v})
     (pd / "review.json").write_text(json.dumps(reviews, indent=1))

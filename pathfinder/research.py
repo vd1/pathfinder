@@ -5,11 +5,10 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlsplit
 from dataclasses import asdict
-from . import context, corpus, transport
+from . import context, contracts, corpus, failures, transport
 from .context import Section
 from .ledger import Ledger
 from .scan import prompts_dir
-from .contracts import extract_json as parse_json
 from .admission import Refused
 
 PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json
@@ -516,6 +515,13 @@ def _peers(campaign, pair_id, stop):
             f.result()
 
 
+def _stage_request(campaign, pair_id, stage, prompt, tools, seconds, attempt=0):
+    return transport.ModelRequest(
+        identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
+        search=False, cwd=campaign.thread_dir(pair_id), timeout=seconds, thread=pair_id, stage=stage,
+        actor=campaign.peers[0] if stage == "consolidate" else "verifier", reads=stage == "verify")
+
+
 def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: False):
     """@planks("When Pathfinder consolidates pair \"Q1P1\"")
     @planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
@@ -531,13 +537,8 @@ def _stage_call(campaign, pair_id, stage, prompt, tools, seconds, done=lambda: F
     answer: consolidation tries again, and a verifier reply with an error raises TransportFailed rather
     than being read as a verdict. An empty consolidation reply is retried.
     """
-    d = campaign.thread_dir(pair_id)
     for attempt in range(_stage_attempts(campaign)):
-        r = transport.execute(campaign, transport.ModelRequest(
-            identity=f"{pair_id}:{stage}:{attempt}", prompt=prompt, model=campaign.model, tools=tools,
-            search=False, cwd=d, timeout=seconds, thread=pair_id, stage=stage,
-            actor=campaign.peers[0] if stage == "consolidate" else "verifier", reads=stage == "verify",
-        ))
+        r = transport.execute(campaign, _stage_request(campaign, pair_id, stage, prompt, tools, seconds, attempt))
         if r["transport_failed"]:
             raise transport.TransportFailed(pair_id, failure=r.get("failure"))
         if r.get("error"):
@@ -649,12 +650,15 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 p = context.build(campaign, "verify", judge_sections(d, inp, note.name) + [Section("", text=task, keep=True)],
                                   tools=True, cwd=d, unit=pair_id)
                 r = _stage_call(campaign, pair_id, "verify", p, True, A["verify_seconds"], done=lambda: True)
-                try:
-                    v = parse_json(r["text"]); dec = v["decision"].upper()
-                    assert dec in ("DRAFT", "REVISE", "ITERATE", "PAUSE")
-                except Exception as e:
-                    (d / "verify-unreadable.txt").write_text(r["text"] or "")     # keep the paid reply for inspection
-                    _set(campaign, pair_id, status="BLOCKED", reason=f"verify: unreadable decision ({e})"); return "BLOCKED"
+                first = r.get("text") or ""                  # read once under the verdict contract, repaired at most once
+                v, r = contracts.ensure(campaign, _stage_request(campaign, pair_id, "verify", p, True, A["verify_seconds"]), r, "verify")
+                if v is None and r.get("transport_failed"):
+                    raise transport.TransportFailed(pair_id, failure=r.get("failure"))
+                if v is None:                             # an operational failure, not a verdict
+                    (d / "verify-unreadable.txt").write_text(first + "\n\n--- repair reply ---\n\n" + (r.get("text") or ""))
+                    _set(campaign, pair_id, status="BLOCKED", reason=f"contract: verify: {r['error'].removeprefix('contract: ')}",
+                         failure=r["failure"]); return "BLOCKED"
+                dec = v["decision"]
                 hist = json.loads(verdicts.read_text()) if verdicts.exists() else []
                 hist.append({"round": s["round"], "at": _now(), "note_sha256": hashlib.sha256(note.read_bytes()).hexdigest(), **v})
                 verdicts.write_text(json.dumps(hist, indent=1))
@@ -815,6 +819,13 @@ def _minus_requests(response, existing):
     return updated
 
 
+def _review_contract(campaign, s):
+    """(contract name, check) for a composable review: a request review under direct EVA, else a verdict."""
+    if campaign.raw.get("research_scheme", "eva") == "eva_minus":
+        return "request_review", (lambda value: _minus_requests(value, s.get("requests", {})))
+    return "verify", None
+
+
 def _apply_research_review(campaign, pair_id, saved, s):
     """@planks("the review is appended to the ledger with its reviewed evidence identity")
     @planks("the full review is appended to the ledger exactly once")
@@ -833,14 +844,14 @@ def _apply_research_review(campaign, pair_id, saved, s):
         _set(campaign, pair_id, status="BLOCKED", reason="stale review: research evidence changed")
         return
     minus = campaign.raw.get("research_scheme", "eva") == "eva_minus"
-    try:
-        value = parse_json(saved["result"]["text"])
+    try:                                        # the retained reply was read and repaired under its contract when it came
+        name, check = _review_contract(campaign, s)
+        value = contracts.parse(name, saved["result"]["text"], check)
         if minus:
             requests = _minus_requests(value, s.get("requests", {}))
-        elif not isinstance(value, dict) or value.get("decision") not in ("DRAFT", "REVISE", "ITERATE", "PAUSE"):
-            raise ValueError("unreadable scientific decision")
-    except (ValueError, KeyError, TypeError) as error:
-        _set(campaign, pair_id, status="BLOCKED", reason=f"review: {error}")
+    except contracts.ContractViolation as violation:
+        failure = failures.Failure("contract", *failures.SCOPES["contract"]).record()
+        _set(campaign, pair_id, status="BLOCKED", reason=f"contract: review: {violation}", failure=failure)
         return
     ledger = Ledger(d / "ledger.jsonl")
     feedback = {"review_id": identity, "evidence_id": saved["evidence_id"], "response": value}
@@ -920,8 +931,10 @@ def next_requests(campaign, pair_id):
                             temporary = path.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(path)
                     continue
                 if failed:
-                    _set(campaign, pair_id, status="BLOCKED", reason=f"{s['stage']}: {failed['result'].get('error') or 'transport failed'}",
-                         failure=failed["result"].get("failure"))
+                    error = failed["result"].get("error") or "transport failed"
+                    reason = (f"contract: review: {error.removeprefix('contract: ')}"
+                              if (failed["result"].get("failure") or {}).get("class") == "contract" else f"{s['stage']}: {error}")
+                    _set(campaign, pair_id, status="BLOCKED", reason=reason, failure=failed["result"].get("failure"))
                     return []
                 if s["stage"] == "peers":
                     calls = s.get("peer_call", 0) + 1
@@ -1049,6 +1062,9 @@ def _run_composable(campaign, pair_id, stop):
                                                                  "error": str(error), "outcome": "refused",
                                                                  "failure": OVERSIZE_FAILURE})
                     return
+                if request.stage in ("verify", "ledger_review"):   # repaired once under its contract before it is kept
+                    name, check = _review_contract(campaign, status(campaign, pair_id))
+                    _, result = contracts.ensure(campaign, request, result, name, check)
                 retain_response(campaign, pair_id, request, result)
                 if result.get("transport_failed"):
                     raise transport.TransportFailed(pair_id, failure=result.get("failure"))

@@ -50,22 +50,25 @@ def run(campaign, stop=lambda: False):
             row = {"pair_id": pid, "q": q["id"], "p": p["id"], "feasibility": None, "gain": None,
                    "connexion": None, "rationale": None, "model": campaign.scan_model, "seconds": 0, "cost": 0, "error": None}
             for attempt in range(2):
+                request = transport.ModelRequest(
+                    identity=f"{pid}:scan:{attempt}", prompt=render(campaign, q, p), model=campaign.scan_model,
+                    tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
+                    stage="scan", actor="judge")
                 try:
-                    r = transport.execute(campaign, transport.ModelRequest(
-                        identity=f"{pid}:scan:{attempt}", prompt=render(campaign, q, p), model=campaign.scan_model,
-                        tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
-                        stage="scan", actor="judge",
-                    ))
+                    r = transport.execute(campaign, request)
+                    row["seconds"] += r["seconds"]; row["cost"] += r["cost"] or 0
+                    if r.get("transport_failed") or r.get("error"):
+                        row["error"] = r.get("error") or "transport failed"; continue      # the call failed: ask again
+                    v, fixed = contracts.ensure(campaign, request, r, "scan")
                 except Refused:
                     return                                # a stop: the scan resumes from scan.jsonl
-                row["seconds"] += r["seconds"]; row["cost"] += r["cost"] or 0
-                try:
-                    v = contracts.extract_json(r["text"])
-                    row.update(feasibility=int(v["feasibility"]), gain=int(v["gain"]), connexion=v.get("connexion"),
-                               rationale=v.get("rationale"), error=None)
-                    break
-                except (ValueError, KeyError, TypeError) as e:
-                    row["error"] = r["error"] or f"unparseable: {e}"
+                if fixed is not r:
+                    row["seconds"] += fixed.get("seconds") or 0; row["cost"] += fixed.get("cost") or 0
+                if v is None:
+                    row["error"] = fixed.get("error") or "transport failed"; break
+                row.update(feasibility=int(v["feasibility"]), gain=int(v["gain"]), connexion=v.get("connexion"),
+                           rationale=v.get("rationale"), error=None)
+                break
             with open(campaign.path("scan.jsonl"), "a") as f:
                 f.write(json.dumps(row) + "\n")
             print(f"{pid} feasibility={row['feasibility']} gain={row['gain']} {row['error'] or ''}")

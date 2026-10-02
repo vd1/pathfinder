@@ -12,6 +12,8 @@ from __future__ import annotations
 import copy
 import json
 import re
+from dataclasses import replace
+from . import events, failures, transport
 
 _FINDING = {"type": "object", "properties": {
     "id": {"type": ["string", "null"]}, "severity": {"type": ["string", "null"]}, "where": {"type": ["string", "null"]},
@@ -135,3 +137,43 @@ def strict(schema: dict) -> dict:
     if "items" in s:
         s["items"] = strict(s["items"])
     return s
+
+
+REPAIR_REPLY_CHARS = 50_000
+
+
+def _repair_prompt(name: str, reply: str, errors: list[str]) -> str:
+    shown = reply if len(reply) <= REPAIR_REPLY_CHARS else reply[:REPAIR_REPLY_CHARS] + "\n[... reply truncated ...]"
+    return ("Your previous reply could not be read under its required format. Problems found:\n"
+            + "\n".join(f"- {e}" for e in errors[:20])
+            + "\n\nRestate the same answer as exactly one JSON object matching this JSON Schema, and nothing else "
+            "(no prose, no code fences). Keep the substance of your reply; change only its form, and where the "
+            "schema needs something your reply did not say, say it briefly.\n\n## schema\n\n"
+            + json.dumps(SCHEMAS[name], indent=1) + "\n\n## your previous reply\n\n" + shown + "\n")
+
+
+def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
+    """(value, result) for a reply under contract `name`, after at most one tool-less repair turn in the same
+    stage. A transport failure passes through untouched as (None, result). A reply that still violates the
+    contract gives (None, result) with failure class "contract" and the violations."""
+    if result.get("transport_failed"):
+        return None, result
+    try:
+        return parse(name, result.get("text") or "", check), result
+    except ContractViolation as violation:
+        first = violation
+    events.emit(campaign, "contract_repair", unit=request.thread, stage=request.stage, actor=request.actor,
+                contract=name, errors=first.errors[:5])
+    repair = replace(request, identity=request.identity + ":contract-repair", tools=False, search=False, reads=False,
+                     prompt=_repair_prompt(name, result.get("text") or "", first.errors))
+    repaired = transport.execute(campaign, repair)
+    if repaired.get("transport_failed"):
+        return None, repaired
+    try:
+        return parse(name, repaired.get("text") or "", check), repaired
+    except ContractViolation as violation:
+        events.emit(campaign, "contract_failed", unit=request.thread, stage=request.stage, actor=request.actor,
+                    contract=name, errors=violation.errors[:5])
+        return None, {**repaired, "failure": failures.Failure("contract", *failures.SCOPES["contract"]).record(),
+                      "error": "contract: " + "; ".join(violation.errors[:5]), "contract_errors": violation.errors,
+                      "first_text": result.get("text")}
