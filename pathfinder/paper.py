@@ -3,7 +3,8 @@ from __future__ import annotations
 import hashlib, json, os, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from . import corpus, research, transport
+from . import context, corpus, research, transport
+from .context import Section
 from .research import _inputs, _prompt, _now
 from .scan import parse_json
 from .admission import Refused
@@ -192,11 +193,13 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
     (pd / f"checks-round-{rnd}.txt").write_text("\n".join(checks) or "no findings")
     _set(campaign, pair_id, status="reviewing", round=rnd, build_ok=ok, checks=checks)
     # static material first (the same head as the verifier's), then what changes each round, the instruction last
-    q = research.judge_head(d, inp, f"{pair_id}.tex")
-    q += "\n\n## paper/search.md\n\n" + ((pd / "search.md").read_text(errors="replace") if (pd / "search.md").exists() else "no search record was written")
-    q += "\n\n## paper.tex\n\n" + tex + "\n\n## references.bib\n\n" + bib
-    q += "\n\n## reference checks\n\n" + ("\n".join(checks) or "no findings")
-    q += "\n\n## your task\n\n" + _prompt(campaign, "review")
+    # the reviewer has no tools: what does not fit its budget is digested, never the paper under review
+    search = (Section("paper/search.md", path=pd / "search.md") if (pd / "search.md").exists()
+              else Section("paper/search.md", text="no search record was written"))
+    q = context.build(campaign, "review", research.judge_sections(d, inp, f"{pair_id}.tex") + [search,
+                      Section("paper.tex", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
+                      Section("reference checks", text="\n".join(checks) or "no findings", keep=True),
+                      Section("your task", text=_prompt(campaign, "review"), keep=True)], tools=False, cwd=d, unit=pair_id)
     r = transport.call(q, campaign=campaign, model=campaign.model, tools=False, search=False, cwd=d,
                        timeout=A.get("review_seconds", 900), thread=pair_id, stage="review", actor="reviewer")
     if r["transport_failed"]:

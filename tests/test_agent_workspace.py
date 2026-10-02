@@ -82,13 +82,15 @@ def test_inline_evidence_switch_restores_the_text(tmp_path):
 
 
 def test_papers_are_referenced_only_above_the_budget(tmp_path):
-    c = make(tmp_path, inline_papers_max_chars=1000)
+    from pathfinder import context
+    c = make(tmp_path, prompt_budgets={"default": 1100})
     d = research.prepare(c, "Q1P1"); inp = research._inputs(d)
-    (d / "inputs" / inp["Q"]).write_text("q" * 400); (d / "inputs" / inp["P"]).write_text("p" * 599)
-    assert "q" * 400 in research.thread_head(d, inp, inline_limit=research.papers_limit(c))
-    (d / "inputs" / inp["P"]).write_text("p" * 601)
-    head = research.thread_head(d, inp, inline_limit=research.papers_limit(c))
-    assert "q" * 400 not in head and "sha256" in head and f"inputs/{inp['Q']}" in head
+    (d / "inputs" / inp["Q"]).write_text("q" * 400); (d / "inputs" / inp["P"]).write_text("p" * 500)
+    build = lambda: context.build(c, "verify", research.thread_sections(d, inp, ledger=False), tools=True, cwd=d)
+    assert "q" * 400 in build()
+    (d / "inputs" / inp["P"]).write_text("p" * 1000)
+    head = build()
+    assert "p" * 1000 not in head and "sha256" in head and f"inputs/{inp['P']}" in head
 
 
 def test_verification_requests_are_read_only(tmp_path, monkeypatch):
@@ -116,9 +118,14 @@ def test_workspace_helper_files_stay_out_of_the_monitor_and_export(tmp_path):
 
 def test_paper_digests_are_over_the_file_bytes(tmp_path):
     import hashlib
-    c = make(tmp_path, inline_papers_max_chars=10)
+    from pathfinder import context
+    c = make(tmp_path, prompt_budgets={"default": 10})
     d = research.prepare(c, "Q1P1"); inp = research._inputs(d)
     raw = b"caf\xe9 " * 10                                   # not UTF-8
     (d / "inputs" / inp["Q"]).write_bytes(raw)
-    head = research.thread_head(d, inp, inline_limit=research.papers_limit(c))
+    try:
+        context.build(c, "verify", research.thread_sections(d, inp, ledger=False), tools=True, cwd=d)
+    except context.transport.PromptTooLarge:
+        pass
+    head = context._reference(context.Section(inp["Q"], path=d / "inputs" / inp["Q"]), d)
     assert hashlib.sha256(raw).hexdigest() in head and f"{len(raw)} bytes" in head

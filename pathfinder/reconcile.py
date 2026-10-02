@@ -18,6 +18,8 @@ def _evidence_check(campaign, pair_id) -> str | None:
         research._review_material(campaign, pair_id, record_manifest=False)   # a check, not a review: no record
     except research.EvidenceUnavailable as error:
         return str(error)
+    except research.transport.PromptTooLarge as error:
+        return str(error)
     return None
 
 

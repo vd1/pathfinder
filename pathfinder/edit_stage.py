@@ -52,7 +52,10 @@ def finish(campaign, pair_id: str) -> bool:
     """
     admitted = admit(campaign, pair_id)
     if admitted:
-        account = (campaign.thread_dir(pair_id) / f"{pair_id}.tex").read_text()
+        from . import context
+        d = campaign.thread_dir(pair_id)
+        account = context.build(campaign, "edit", [context.Section("", path=d / f"{pair_id}.tex")],
+                                tools=False, cwd=d, unit=pair_id)   # the editor has no tools: a digest above the budget
         receipt = _dispatch(campaign, pair_id, "editor", account)
         draft = receipt["text"]
         _append_history(campaign, pair_id, 0, draft)

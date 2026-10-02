@@ -15,9 +15,18 @@ def prompts_dir(campaign) -> Path:
 
 def render(campaign, q: dict, p: dict) -> str:
     from . import resources
+    from . import context
     ft = campaign.scan_fulltext
-    return resources.prompt(campaign, "scan", Q_TITLE=q["title"], Q_BODY=corpus.body(campaign, q, ft in ("q", "both")),
-                            P_TITLE=p["title"], P_BODY=corpus.body(campaign, p, ft in ("p", "both")))
+    bodies = {"Q": corpus.body(campaign, q, ft in ("q", "both")), "P": corpus.body(campaign, p, ft in ("p", "both"))}
+    fill = lambda b: resources.prompt(campaign, "scan", Q_TITLE=q["title"], Q_BODY=b["Q"], P_TITLE=p["title"], P_BODY=b["P"])
+    prompt, limit = fill(bodies), context.budget(campaign, "scan")
+    if len(prompt) > limit:                       # the judge has no tools: each body gets an equal share of what is left
+        share = max((limit - (len(prompt) - len(bodies["Q"]) - len(bodies["P"]))) // 2, 0)
+        prompt = fill({side: context.digest_text(side, text, share) if len(text) > share else text
+                       for side, text in bodies.items()})
+    if len(prompt) > limit:
+        raise transport.PromptTooLarge(f"input too large: scan prompt is {len(prompt)} characters, budget {limit}")
+    return prompt
 
 
 def parse_json(text: str) -> dict:

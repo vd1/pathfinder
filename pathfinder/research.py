@@ -5,7 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from urllib.parse import urlsplit
 from dataclasses import asdict
-from . import corpus, transport
+from . import context, corpus, transport
+from .context import Section
 from .ledger import Ledger
 from .scan import prompts_dir, parse_json
 from .admission import Refused
@@ -94,29 +95,16 @@ def prepare(campaign, pair_id: str) -> Path:
     return d
 
 
-def papers_limit(campaign) -> int:
-    return int((campaign.raw or {}).get("inline_papers_max_chars", 400_000))
-
-
-def thread_head(d, inp, papers: bool = True, ledger: bool = True, inline_limit: int | None = None) -> str:
-    """The static head of a call in a thread: the two papers, then the ledger as it stands, each optional.
-    The same bytes for every caller that gets it, and across calls a prefix of the previous call's, since
-    the ledger only grows; a prompt cache serves everything but what the ledger gained since. Whatever
-    differs between callers goes after it. Above inline_limit characters together, both papers are listed by
-    path, size and sha256 instead: an agent session would otherwise resend them on every turn."""
-    parts = []
-    if papers:
-        texts = {name: (d / "inputs" / name).read_text(errors="replace") for name in (inp["Q"], inp["P"])}
-        if inline_limit is not None and sum(len(t) for t in texts.values()) > inline_limit:
-            for name in texts:
-                data = (d / "inputs" / name).read_bytes()          # the digest a reader can reproduce from the file
-                parts.append(f"## {name}\n\n(file inputs/{name}: {len(data)} bytes, sha256 "
-                             f"{hashlib.sha256(data).hexdigest()}; read it with your tools)")
-        else:
-            parts.extend("## " + name + "\n\n" + text for name, text in texts.items())
+def thread_sections(d, inp, papers: bool = True, ledger: bool = True) -> list[Section]:
+    """The static head of a call in a thread: the two papers, then the ledger as it stands, each optional,
+    as file sections for the context builder. The same bytes for every caller that gets them, and across
+    calls a prefix of the previous call's, since the ledger only grows; a prompt cache serves everything
+    but what the ledger gained since. Whatever differs between callers goes after them."""
+    out = [Section(name, path=d / "inputs" / name) for name in (inp["Q"], inp["P"])] if papers else []
     if ledger:
-        parts.append("## ledger.jsonl\n\n" + ((d / "ledger.jsonl").read_text() if (d / "ledger.jsonl").exists() else ""))
-    return "\n\n".join(parts)
+        out.append(Section("ledger.jsonl", path=d / "ledger.jsonl") if (d / "ledger.jsonl").exists()
+                   else Section("ledger.jsonl", text=""))
+    return out
 
 
 class EvidenceUnavailable(Exception):
@@ -205,9 +193,9 @@ def _stage_attempts(campaign):
     return attempts
 
 
-def judge_head(d, inp, note_name: str, inline_limit: int | None = None) -> str:
-    """The thread head plus the note, for the verifier and the paper reviewer (who has no tools, so no limit)."""
-    return thread_head(d, inp, inline_limit=inline_limit) + "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
+def judge_sections(d, inp, note_name: str) -> list[Section]:
+    """The thread sections plus the note, for the verifier and the paper reviewer."""
+    return thread_sections(d, inp) + [Section(note_name, path=d / note_name)]
 
 
 EVIDENCE_PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
@@ -358,14 +346,14 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
 
 def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
     """@planks("When the research workflow prepares its consolidation and verification requests")"""
-    head = thread_head(d, inp, inline_limit=papers_limit(campaign))
+    sections = thread_sections(d, inp)
     if (d / note_name).exists():                    # the account a repair or a next round must keep
-        head += "\n\n## " + note_name + "\n\n" + (d / note_name).read_text(errors="replace")
-    head += "\n\n## your task\n\n"
-    return (head + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id,
-                           PRIOR=prior, MATERIAL="Q, P and the ledger are above.")
+        sections.append(Section(note_name, path=d / note_name))
+    task = ("## your task\n\n" + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id,
+                                          PRIOR=prior, MATERIAL="Q, P and the ledger are above.")
             + "\n\n" + evidence_pointer(campaign)
             + "\n\nReturn the complete research account, the LaTeX document itself, in your response; do not write it to a file.\n")
+    return context.build(campaign, "consolidate", sections + [Section("", text=task, keep=True)], tools=True, cwd=d, unit=pair_id)
 
 
 READING = ("Files listed by path, size and sha256 are in your working directory, not pasted here. Read them in "
@@ -494,14 +482,16 @@ def _peers(campaign, pair_id, stop):
                         + (f"; the ledger as it stood when this call began is above too, ending at entry {last}."
                            if in_ledger else ", then the ledger with the read command below.")
                         + (f" The files are inputs/{inp['Q']}, inputs/{inp['P']} and ledger.jsonl if you need to quote by line." if in_papers or in_ledger else ""))
-            p = (thread_head(d, inp, in_papers, in_ledger) + "\n\n## your task\n\n") if (in_papers or in_ledger) else ""
-            p += _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
+            p = _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
                         MATERIAL=material, LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, 1200)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
+            if in_papers or in_ledger:
+                p = context.build(campaign, "peer", thread_sections(d, inp, in_papers, in_ledger)
+                                  + [Section("", text="## your task\n\n" + p, keep=True)], tools=True, cwd=d, unit=pair_id)
             r = transport.execute(campaign, transport.ModelRequest(
                 identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.peer_model(actor), tools=True,
                 search=campaign.peer_search, cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id,
@@ -653,9 +643,10 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
             elif s["stage"] == "verify":
                 _check(stop)
                 # static material first, the instruction last: the head is shared with every other judge call
-                p = judge_head(d, inp, note.name, inline_limit=papers_limit(campaign)) + "\n\n## your task\n\n"
-                p += _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
-                p += "\n\n" + evidence_pointer(campaign) + " Do not modify any file.\n"
+                task = "## your task\n\n" + _prompt(campaign, "verify", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=note.name)
+                task += "\n\n" + evidence_pointer(campaign) + " Do not modify any file.\n"
+                p = context.build(campaign, "verify", judge_sections(d, inp, note.name) + [Section("", text=task, keep=True)],
+                                  tools=True, cwd=d, unit=pair_id)
                 r = _stage_call(campaign, pair_id, "verify", p, True, A["verify_seconds"], done=lambda: True)
                 try:
                     v = parse_json(r["text"]); dec = v["decision"].upper()
@@ -737,8 +728,10 @@ def _review_material(campaign, pair_id, review_id=None, record_manifest=True):
             json.loads(line)["kind"] == "review" and
             json.loads(line)["text"].startswith('{"review_id": ' + json.dumps(review_id) + ','))]
     ledger_text = "".join(lines)
-    material = (thread_head(d, _inputs(d), ledger=False, inline_limit=papers_limit(campaign))
-                + "\n\n## ledger.jsonl\n\n" + ledger_text)
+    unfiltered = ledger.exists() and ledger_text == ledger.read_text()
+    sections = thread_sections(d, _inputs(d), ledger=False) + [
+        Section("ledger.jsonl", path=ledger) if unfiltered else Section("ledger.jsonl", text=ledger_text)]
+    material = ""
     by_reference = evidence_by_reference(campaign)
     record, failure, collected = [], None, []
     try:
@@ -758,13 +751,16 @@ def _review_material(campaign, pair_id, review_id=None, record_manifest=True):
                 "generated_at": _now(), "files": record,
                 "errors": getattr(failure, "errors", [{"code": "declaration", "path": None, "detail": None,
                                                        "message": str(failure)}] if failure else [])}, indent=1).encode())
+    if material.strip():
+        sections.append(Section("", text=material.lstrip("\n")))
     if by_reference:
-        material += "\n\n" + READING
+        sections.append(Section("", text=READING, keep=True))
     if campaign.raw.get("research_scheme", "eva") == "eva":
         note = d / f"{pair_id}.tex"
         if note.exists():
-            material += f"\n\n## {note.name}\n\n" + note.read_text()
-    return material
+            sections.append(Section(note.name, path=note))
+    # the review's task follows this material; its sha256 identifies the evidence the review saw
+    return context.build(campaign, "verify", sections, tools=True, cwd=d, unit=pair_id, record=record_manifest)
 
 
 def _request_file(campaign, pair_id, identity):
@@ -1009,6 +1005,9 @@ def next_requests(campaign, pair_id):
             return batch
     except EvidenceUnavailable as error:
         _set(campaign, pair_id, status="BLOCKED", reason=str(error))
+        return []
+    except transport.PromptTooLarge as error:           # the review material does not fit the verify budget
+        _set(campaign, pair_id, status="BLOCKED", reason=f"verify: {error}", failure=OVERSIZE_FAILURE)
         return []
 
 
