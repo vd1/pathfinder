@@ -44,6 +44,11 @@ explicit rather than manufacturing consensus.
 
 You have {{SECONDS}} seconds in this call and {{CALLS_LEFT}} calls after it.
 You may search the web. Cite anything you use from outside Q and P by URL.
+arXiv rate-limits automated requests: query it through
+https://export.arxiv.org/api/query, wait at least 3 seconds between requests,
+and if it answers "Rate exceeded." or HTTP 429, wait 30 seconds before one
+retry; after three throttled answers stop querying arXiv and record which
+searches you could not run.
 If you searched for prior work and found none, record the query you ran,
 not a novelty claim. Return promptly once ready; do not wait for your
 partners.

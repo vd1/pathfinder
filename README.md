@@ -408,7 +408,26 @@ pairs. `runner.run_pair` takes one pair through research, edit and, for a
 DRAFT, the paper, resuming where it stands. `pathfinder coordinate
 schedule.json` runs a fixed schedule of (arm, pair) entries across child
 campaigns one pair at a time; the schedule is recorded in
-`coordination.json`, and a changed schedule needs `--accept-change`.
+`coordination.json`, and a changed schedule needs `--accept-change`. A
+`"batch"` block (`deadline`, `max_units`, `max_consecutive_failures`) bounds
+it. With `"next_unit": "module:callable"` (and `"path"`, relative to the
+schedule, put on `sys.path` with the same safeguards as extensions), the
+coordinator asks the deployment for each unit after the fixed schedule:
+`next_unit(arms, progress)` returns `{"arm", "pair"}` or `None`;
+`progress["done"]` lists the units run or found finished in this run.
+
+**Shared seats.** Campaigns on one subscription name it:
+`"account": {"name": "codex-main", "seats": 6}`. A call then holds one seat
+of the account, across every process, from admission to its end; the pool
+lives in `$PATHFINDER_ACCOUNTS` (default `~/.pathfinder/accounts`), one
+reservation file per call, reaped when its process is gone. One account has
+one seat count: a campaign naming it with another count is refused. A call
+waiting for a seat emits `admission_deferred`.
+
+**Sources that throttle agents.** Every receipt counts the rate-limit answers
+the agents met in their own tool calls (`source_limits`, arXiv for now);
+`pathfinder health` warns about the last 50 calls and the playbook gives the
+apex agent an action.
 
 **Run records.** Every command that calls a model takes campaign ownership
 and writes `run.json` (appended to `runs.jsonl`): engine commit and a digest

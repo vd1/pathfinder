@@ -4,7 +4,7 @@ Every attempted call appends one receipt. What the provider did not report stays
 zero, never an estimate."""
 from __future__ import annotations
 from dataclasses import dataclass
-import hashlib, json, os, shlex, signal, subprocess, threading, time, uuid
+import hashlib, json, os, re, shlex, signal, subprocess, threading, time, uuid
 from pathlib import Path
 
 SESSION_GRACE = 60
@@ -252,6 +252,38 @@ def _tool_errors(lines) -> tuple[int, list[str]]:
     return count, samples
 
 
+SOURCE_LIMITS = {   # a source that rate-limits the agents' own requests: (where, what it answers when it does)
+    "arxiv": (re.compile(r"arxiv\.org", re.I), re.compile(r"rate exceeded|\b429\b|too many requests", re.I)),
+}
+
+
+def _source_limits(lines) -> dict:
+    """Rate limits the agents met in their own tool calls, by source. arXiv answers "Rate exceeded." with a
+    successful exit code, so every tool output is read, not only failed ones; a hit needs both the source's
+    address (in the command or the output) and its rate-limit answer."""
+    hits = {}
+    for line in lines:
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(row, dict):
+            continue
+        texts = []
+        item = row.get("item") or {}
+        if row.get("type") == "item.completed" and item.get("type") in ("command_execution", "mcp_tool_call", "web_search"):
+            texts.append(f"{item.get('command') or item.get('query') or ''}\n{item.get('aggregated_output') or item.get('result') or ''}")
+        if row.get("type") == "user":
+            for block in (row.get("message") or {}).get("content") or []:
+                if isinstance(block, dict) and block.get("type") == "tool_result":
+                    texts.append(str(block.get("content")))
+        for text in texts:
+            for source, (where, limited) in SOURCE_LIMITS.items():
+                if where.search(text) and limited.search(text):
+                    hits[source] = hits.get(source, 0) + 1
+    return hits
+
+
 def _cost(campaign, model, reported, counters):
     """(cost in USD, basis, rates). Reported by the provider, or priced from reported counters with the
     campaign's table, an approximation; otherwise unknown. Codex counts cached tokens inside its input
@@ -283,7 +315,7 @@ def _receipt(campaign, thread, stage, actor, model, r):
            **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
                                      "raw_events", "error", "failure", "prompt_chars", "tool_calls", "tool_errors",
-                                     "tool_error_samples")}}
+                                     "tool_error_samples", "source_limits")}}
     if r.get("rates"):
         row["rates"] = r["rates"]
     if rules_error:
@@ -512,6 +544,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
           "terminal_event": lines[-1].rstrip("\n") if lines else None,
           "prompt_chars": len(prompt), "tool_calls": _tool_calls(lines),
           **dict(zip(("tool_errors", "tool_error_samples"), _tool_errors(lines))),
+          "source_limits": _source_limits(lines) or None,
           "raw_events": [line.rstrip("\n") for line in lines]}
     _receipt(campaign, thread, stage, actor, model, r)
     return r

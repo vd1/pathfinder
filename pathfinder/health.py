@@ -181,6 +181,13 @@ def snapshot(campaign):
         if name:
             by_class[name] = by_class.get(name, 0) + 1
     completed = [row for row in receipts if row.get("outcome") == "completed" and not row.get("error")]
+    limits = {}                                    # sources that rate-limited the agents in the last 50 calls
+    for row in receipts[-50:]:
+        for source, n in (row.get("source_limits") or {}).items():
+            limits[source] = limits.get(source, 0) + n
+    if limits:
+        warnings.append("Agents met rate limits in their own requests: "
+                        + ", ".join(f"{source} {n}" for source, n in sorted(limits.items())) + " in the last 50 calls.")
     work = []
     for pair in (inspect(campaign.path("shortlist.json")) or {}).get("pairs", []):
         pid = pair["pair_id"]
@@ -210,7 +217,7 @@ def snapshot(campaign):
     out = {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
             "active_calls": active, "last_completed_call": ({k: completed[-1].get(k) for k in fields} if completed else None),
             "failure_count": len(failures), "recent_failures": failures[-10:], "failure": failure,
-            "stop": stop, "failures_by_class": by_class, "cooldown": cooling, "allowances": _allowances(campaign, receipts, warnings), "work": work, "warnings": warnings,
+            "stop": stop, "failures_by_class": by_class, "cooldown": cooling, "source_limits": limits, "allowances": _allowances(campaign, receipts, warnings), "work": work, "warnings": warnings,
             "evidence": {"receipts": str(campaign.path("receipts.jsonl")),
                          "runner": str(campaign.path("runner.json")),
                          "failures": str(campaign.path("failures.jsonl"))},

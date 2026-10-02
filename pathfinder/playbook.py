@@ -8,6 +8,7 @@ from __future__ import annotations
 import re, shlex
 from . import campaign_state, health, reconcile
 
+SOURCE_NAMES = {"arxiv": "arXiv"}
 ESCALATE = {
     "quota": "Wait for the usage limit to reset{reset}, then clear the stop marker; retrying earlier changes nothing.",
     "auth": "Provide or repair the credentials the CLI uses, then clear the stop marker.",
@@ -68,6 +69,11 @@ def next_actions(campaign) -> list[dict]:
             out.append({"owner": "apex", "action": f"{pair}: {action}",
                         "why": f"research {unit['research']['status']}, edit {unit['editorial']['status']}, paper {unit['assessment']['status']}",
                         "command": _cmd(campaign, "reconcile", pair, "--apply")})
+    for source, n in (snap.get("source_limits") or {}).items():
+        out.append({"owner": "apex", "action": f"agents hit {SOURCE_NAMES.get(source, source)} rate limits ({n} in the last 50 calls)",
+                    "why": "Their searches were throttled, so findings may rest on fewer sources than intended. Lower seats "
+                           "or peer_calls, or add a prompts/peer.append.md with stricter spacing; check the ledgers for "
+                           "claims of no prior work made while throttled.", "command": _cmd(campaign, "health")})
     for row in snap.get("allowances", []):
         if row["timeouts"]:
             out.append({"owner": "operator", "action": f"raise the {row['stage']} allowance",
