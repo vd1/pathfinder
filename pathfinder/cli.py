@@ -33,6 +33,9 @@ def main(argv=None):
     vf = sub.add_parser("verify-frozen", help="compare a frozen copy with its commit: verified, modified or unverifiable")
     vf.add_argument("dest"); vf.add_argument("--repo")
     sub.add_parser("stop", help="ask a running scan or research to drain and exit").add_argument("--clear", action="store_true", help="remove the stop marker instead")
+    la = sub.add_parser("launch", help="start a long command detached and confirm it is alive: pathfinder launch -- research")
+    la.add_argument("--settle", type=float, default=20.0, help="seconds to wait before checking the process")
+    la.add_argument("args", nargs=argparse.REMAINDER, help="the pathfinder subcommand and its arguments, after --")
     sub.add_parser("status", help="print campaign and shortlist state")
     ev = sub.add_parser("evidence", help="a pair's evidence manifest: cited files, resolutions, errors and proposed declarations")
     ev.add_argument("pair"); ev.add_argument("--json", action="store_true")
@@ -71,6 +74,14 @@ def main(argv=None):
             return 0
         result = freeze.verify(Path(ns.dest), repo); print(json.dumps(result, indent=1))
         return 0 if result["status"] == "verified" else 1
+    if ns.cmd == "launch":                       # before loading: the launched command loads the campaign itself
+        from . import launch
+        args = ns.args[1:] if ns.args[:1] == ["--"] else ns.args
+        try:
+            print(json.dumps(launch.run(Path(ns.root), args, ns.settle), indent=1))
+        except RuntimeError as error:
+            print(f"launched command exited: {error}"); return 1
+        return 0
     c = config.load(Path(ns.root))
     if ns.cmd in DISPATCHING and ns.cmd != "research":       # research opens its own run inside runner.run
         from . import provenance
