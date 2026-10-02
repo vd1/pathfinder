@@ -15,8 +15,10 @@ SCOPES = {
     "refusal": ("pair", False), "input_too_large": ("call", False),
     "rate": ("call", True), "no_session": ("call", True), "timeout": ("call", True),
     "undiagnosed": ("call", False),
+    "contract": ("call", False),       # a readable reply that still breaks its declared schema after one repair turn
 }
 CLASSES = tuple(SCOPES)
+TRANSPORT_CLASSES = tuple(c for c in CLASSES if c != "contract")   # contract comes from reading a reply, not from a call
 
 RULES = (
     ("quota", re.compile(r"usage limit|session limit|hit your limit|insufficient_quota|quota exceeded|credit balance", re.I)),
@@ -46,8 +48,8 @@ def classify(outcome: str | None, error: str | None, extra_rules=()) -> Failure 
     """The failure a receipt records, or None for a completed call or an ordinary admission refusal.
     extra_rules, a deployment's (class, compiled pattern) pairs, are tried before the built-in rules."""
     for name, _ in extra_rules:
-        if name not in SCOPES:
-            raise ValueError(f"unknown failure class {name!r}; expected one of {', '.join(CLASSES)}")
+        if name not in TRANSPORT_CLASSES:
+            raise ValueError(f"unknown failure class {name!r}; expected one of {', '.join(TRANSPORT_CLASSES)}")
     message = error or ""
     if outcome in (None, "completed") and not message:
         return None
@@ -80,8 +82,8 @@ def rules_for(campaign) -> tuple:
         return ()
     compiled = tuple((name, re.compile(pattern, re.I)) for name, pattern in spec)
     for name, _ in compiled:
-        if name not in SCOPES:
-            raise ValueError(f"unknown failure class {name!r} in failure_rules; expected one of {', '.join(CLASSES)}")
+        if name not in TRANSPORT_CLASSES:
+            raise ValueError(f"unknown failure class {name!r} in failure_rules; expected one of {', '.join(TRANSPORT_CLASSES)}")
     return compiled
 
 

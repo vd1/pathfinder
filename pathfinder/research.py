@@ -8,7 +8,8 @@ from dataclasses import asdict
 from . import context, corpus, transport
 from .context import Section
 from .ledger import Ledger
-from .scan import prompts_dir, parse_json
+from .scan import prompts_dir
+from .contracts import extract_json as parse_json
 from .admission import Refused
 
 PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json

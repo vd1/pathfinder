@@ -6,7 +6,7 @@ from pathlib import Path
 from . import context, corpus, research, transport
 from .context import Section
 from .research import _inputs, _prompt, _now
-from .scan import parse_json
+from .contracts import extract_json as parse_json
 from .admission import Refused
 
 

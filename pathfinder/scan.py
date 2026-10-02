@@ -1,8 +1,8 @@
 """Phase A: score every pair, row by row, one tool-less call each. Resumable."""
 from __future__ import annotations
-import json, re
+import json
 from pathlib import Path
-from . import corpus, transport
+from . import contracts, corpus, transport
 from .admission import Refused
 
 
@@ -27,19 +27,6 @@ def render(campaign, q: dict, p: dict) -> str:
     if len(prompt) > limit:
         raise transport.PromptTooLarge(f"input too large: scan prompt is {len(prompt)} characters, budget {limit}")
     return prompt
-
-
-def parse_json(text: str) -> dict:
-    """The first JSON object in a reply. TeX in string values, such as \\( x \\), is not valid JSON escaping;
-    a second attempt doubles every backslash that does not start a JSON escape."""
-    m = re.search(r"\{.*\}", text, re.S)
-    if not m:
-        raise ValueError("no JSON object in reply")
-    try:
-        return json.loads(m.group(0))
-    except json.JSONDecodeError:
-        # treat every backslash as literal TeX except an escaped quote or backslash; \beta must not become a backspace
-        return json.loads(re.sub(r'\\(?!["\\])', r"\\\\", m.group(0)))
 
 
 def done(campaign) -> set[str]:
@@ -73,7 +60,7 @@ def run(campaign, stop=lambda: False):
                     return                                # a stop: the scan resumes from scan.jsonl
                 row["seconds"] += r["seconds"]; row["cost"] += r["cost"] or 0
                 try:
-                    v = parse_json(r["text"])
+                    v = contracts.extract_json(r["text"])
                     row.update(feasibility=int(v["feasibility"]), gain=int(v["gain"]), connexion=v.get("connexion"),
                                rationale=v.get("rationale"), error=None)
                     break
