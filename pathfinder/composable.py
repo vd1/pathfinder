@@ -22,14 +22,21 @@ def labels(campaign) -> list[str]:
 
 
 def _view(campaign, overrides: dict, scheme: dict):
+    """The campaign as the overrides change it: every field resolved again from the merged settings, as
+    config.load would (model, peers, peer_search, rounds, allowances merged key by key), while the runtime
+    state the run attached (run_id, selection) is kept."""
+    from dataclasses import fields
+    from . import config
+    overrides = dict(overrides or {})
     raw = {k: v for k, v in (campaign.raw or {}).items() if k not in SCHEME_KEYS}
-    raw.update(overrides or {})
+    if "allowances" in overrides:
+        overrides["allowances"] = {**raw.get("allowances", {}), **overrides["allowances"]}
+    raw.update(overrides)
     raw.update(scheme)
+    fresh = config.campaign_from(campaign.root, raw)
     view = copy.copy(campaign)
-    view.raw = raw
-    view.rounds = raw.get("rounds", 3)
-    if "allowances" in (overrides or {}):
-        view.allowances = {**campaign.allowances, **overrides["allowances"]}
+    for f in fields(fresh):
+        setattr(view, f.name, getattr(fresh, f.name))
     return view
 
 
@@ -57,18 +64,14 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _files(root: Path) -> list[Path]:
+def _files(root: Path, label: str, base: Path | None = None) -> list[Path]:
     out = []
     for path in sorted(root.rglob("*")):
         if path.is_symlink():
-            raise BundleError(f"{label_of(root)}: {path.relative_to(root).as_posix()} is a symbolic link")
+            raise BundleError(f"{label}: {path.relative_to(base or root).as_posix()} is a symbolic link")
         if path.is_file():
             out.append(path)
     return out
-
-
-def label_of(root: Path) -> str:
-    return Path(root).name
 
 
 def _check_handoff(campaign, pair_id: str, label: str) -> dict:
@@ -110,7 +113,7 @@ def freeze(campaign, pair_id: str, label: str) -> Path:
             raise BundleError(f"{label}: {name} is a symbolic link")
         if source.is_dir():
             (dst / name).mkdir(exist_ok=True)       # a peer that wrote no file keeps its (empty) directory
-            for path in _files(source):
+            for path in _files(source, label, src):
                 if ".pathfinder" in path.relative_to(src).parts:
                     continue
                 target = dst / path.relative_to(src)
@@ -120,13 +123,18 @@ def freeze(campaign, pair_id: str, label: str) -> Path:
             shutil.copyfile(source, dst / name)
     (dst / "handoff.json").write_text(json.dumps(outcome, indent=1))
     inventory = {path.relative_to(dst).as_posix(): {"sha256": _sha(path), "bytes": path.stat().st_size}
-                 for path in _files(dst)}
-    record = {"label": label, "files": inventory, "frozen_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-              "inventory_sha256": hashlib.sha256(json.dumps(inventory, sort_keys=True).encode()).hexdigest()}
-    (dst / "bundle.json").write_text(json.dumps(record, indent=1))
-    for path in _files(dst):
+                 for path in _files(dst, label)}
+    for path in _files(dst, label):                 # read-only before the record that says the freeze is complete
         os.chmod(path, 0o444)
+    record = {"label": label, "files": inventory, "frozen_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+              "inventory_sha256": _inventory_sha(inventory)}
+    (dst / "bundle.json").write_text(json.dumps(record, indent=1))
+    os.chmod(dst / "bundle.json", 0o444)
     return dst
+
+
+def _inventory_sha(inventory: dict) -> str:
+    return hashlib.sha256(json.dumps(inventory, sort_keys=True).encode()).hexdigest()
 
 
 def verify(bundle: Path) -> dict:
@@ -136,15 +144,49 @@ def verify(bundle: Path) -> dict:
         record = json.loads((bundle / "bundle.json").read_text())
     except (OSError, ValueError) as error:
         raise BundleError(f"{bundle.name}: unreadable bundle.json ({error})") from None
-    present = {path.relative_to(bundle).as_posix(): path for path in _files(bundle) if path != bundle / "bundle.json"}
+    if record.get("label") != bundle.name or record.get("inventory_sha256") != _inventory_sha(record.get("files") or {}):
+        raise BundleError(f"{bundle.name}: bundle.json does not match its own inventory digest")
+    present = {path.relative_to(bundle).as_posix(): path for path in _files(bundle, bundle.name) if path != bundle / "bundle.json"}
     for name in sorted(set(record["files"]) - set(present)):
         raise BundleError(f"{bundle.name}: {name} is missing")
     for name in sorted(set(present) - set(record["files"])):
         raise BundleError(f"{bundle.name}: {name} was added after the freeze")
     for name, entry in sorted(record["files"].items()):
-        if _sha(present[name]) != entry["sha256"]:
+        if present[name].stat().st_size != entry["bytes"] or _sha(present[name]) != entry["sha256"]:
             raise BundleError(f"{bundle.name}: {name} changed after the freeze")
     return record
+
+
+def check_frozen(campaign, pair_id: str) -> None:
+    """Every bundle verifies, and matches the inventory digest the pair recorded when it froze them; the
+    campaign still names the same branches."""
+    from . import research
+    frozen = research.status(campaign, pair_id).get("branches_frozen") or {}
+    if set(frozen) != set(labels(campaign)):
+        raise BundleError(f"branches changed since the freeze: frozen {sorted(frozen)}, configured {labels(campaign)}")
+    for label in labels(campaign):
+        record = verify(campaign.thread_dir(pair_id) / "branches" / label)
+        if record["inventory_sha256"] != frozen[label]:
+            raise BundleError(f"{label}: inventory differs from the one recorded at the freeze")
+
+
+def resolve(campaign, pair_id: str):
+    """The view that owns the pair's research now: the joint thread after the freeze, else the branch the
+    pair's reason names, else the first branch that has not handed off; a non-composable campaign itself."""
+    from . import research
+    if (campaign.raw or {}).get("research_scheme") != "composable":
+        return campaign
+    s = research.status(campaign, pair_id)
+    if s.get("branches_frozen"):
+        return joint_view(campaign, pair_id)
+    named = (s.get("reason") or "").split(":", 1)[0]
+    if named in labels(campaign):
+        return branch_view(campaign, pair_id, named)
+    for label in labels(campaign):
+        view = branch_view(campaign, pair_id, label)
+        if research.status(view, pair_id).get("status") != "HANDOFF":
+            return view
+    return joint_view(campaign, pair_id)
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
@@ -160,8 +202,7 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         if s.get("status") in research.TERMINAL | {"HANDOFF", "BLOCKED"}:
             return s["status"]
         try:
-            for label in labels(campaign):
-                verify(d / "branches" / label)
+            check_frozen(campaign, pair_id)
         except BundleError as error:
             research._set(campaign, pair_id, status="BLOCKED", reason=f"frozen bundle changed: {error}")
             return "BLOCKED"
@@ -204,7 +245,7 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
     try:
         frozen = {label: verify(freeze(campaign, pair_id, label))["inventory_sha256"] for label in labels(campaign)}
     except BundleError as error:
-        research._set(campaign, pair_id, status="BLOCKED", reason=f"freeze: {error}")
+        research._set(campaign, pair_id, status="BLOCKED", reason=f"freeze: {error}")   # the error names its branch
         return "BLOCKED"
     (d / "branches" / "metrics.json").write_text(json.dumps(metrics(campaign, pair_id), indent=1))
     research._set(campaign, pair_id, stage="peers", round=1, status="running", reason=None, failure=None,

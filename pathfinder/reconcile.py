@@ -24,6 +24,8 @@ def _evidence_check(campaign, pair_id) -> str | None:
 
 
 FROZEN = "nothing: frozen bundle changed"
+VERIFIED = "unblock: bundles verified"
+RETRIABLE = {"timeout", "rate", "no_session", "launch", "undiagnosed"}   # a failed reply worth asking for again
 
 
 def inspect(campaign, pair_id: str) -> dict:
@@ -40,15 +42,22 @@ def _inspect_composable(campaign, pair_id: str) -> dict:
     its label; once they are frozen, the joint thread is inspected as an ordinary thread."""
     from . import composable
     s = research.status(campaign, pair_id)
-    if s.get("branches_frozen"):
-        if s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("frozen bundle changed"):
-            info = _inspect(composable.joint_view(campaign, pair_id), pair_id)
-            return {**info, "action": f"{FROZEN}: {s['reason'].removeprefix('frozen bundle changed: ')}"}
-        return _inspect(composable.joint_view(campaign, pair_id), pair_id)
     info = {"pair_id": pair_id, "status": s.get("status"), "stage": s.get("stage"), "round": s.get("round"),
             "reason": s.get("reason"), "lock": runner.Lock.holder(campaign.thread_dir(pair_id))}
     if info["lock"]:
         return {**info, "action": "nothing: in progress"}
+    if s.get("status", "new") == "new":
+        return {**info, "action": "start"}
+    if s.get("branches_frozen"):
+        if s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("frozen bundle changed"):
+            try:                                    # restored bundles lift the block; anything else stays with the operator
+                composable.check_frozen(campaign, pair_id)
+            except composable.BundleError as error:
+                return {**info, "action": f"{FROZEN}: {error}"}
+            return {**info, "action": VERIFIED}
+        return _inspect(composable.joint_view(campaign, pair_id), pair_id)
+    if s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("freeze:"):
+        return {**info, "action": f"nothing: freeze failed: {s['reason'].removeprefix('freeze: ')}"}
     for label in composable.labels(campaign):
         view = composable.branch_view(campaign, pair_id, label)
         if research.status(view, pair_id).get("status") != "HANDOFF":
@@ -70,6 +79,10 @@ def _inspect(campaign, pair_id: str) -> dict:
     elif (s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("contract:")
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
         action = REISSUE                            # the retained reply broke its contract twice: keep it, ask again
+    elif (s.get("status") == "BLOCKED" and s.get("pending") and (s.get("failure") or {}).get("class") in RETRIABLE
+          and (s.get("failure") or {}).get("scope") != "campaign"
+          and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
+        action = REISSUE                            # a retained reply that failed in transport: keep it, ask again
     elif evidence_block:                            # repaired evidence is verified before the block is lifted
         problem = _evidence_check(campaign, pair_id)
         action = UNBLOCK if problem is None else f"nothing: evidence still blocked: {problem}"
@@ -83,6 +96,8 @@ def _inspect(campaign, pair_id: str) -> dict:
         action = "run consolidate"
     elif s.get("stage") == "verify":
         action = "run verify"
+    elif s.get("stage") == "ledger_review":
+        action = "run review"
     else:
         action = "nothing: unknown state"
     return {"pair_id": pair_id, "status": s.get("status"), "stage": s.get("stage"), "round": s.get("round"),
@@ -133,7 +148,12 @@ def _apply_composable(campaign, pair_id: str) -> str:
     info = inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
-    if research.status(campaign, pair_id).get("branches_frozen"):
+    if info["action"] != VERIFIED and research.status(campaign, pair_id).get("branches_frozen"):
+        try:                                        # never a joint run over bundles that do not verify
+            composable.check_frozen(campaign, pair_id)
+        except composable.BundleError as error:
+            research._set(campaign, pair_id, status="BLOCKED", reason=f"frozen bundle changed: {error}")
+            return "BLOCKED"
         return _apply(composable.joint_view(campaign, pair_id), pair_id)
     if info.get("branch"):
         _apply(composable.branch_view(campaign, pair_id, info["branch"]), pair_id)

@@ -141,7 +141,8 @@ def _dispatch(ns, c):
         else:
             runner.request_stop(c, "operator"); print("stop requested; running commands will drain and exit")
     elif ns.cmd == "evidence":
-        from . import evidence
+        from . import composable, evidence
+        c = composable.resolve(c, ns.pair)           # a composable pair: the branch or joint thread that owns the evidence
         if not (c.thread_dir(ns.pair) / "status.json").exists():
             print(f"no thread for {ns.pair}"); return 1
         if ns.apply:

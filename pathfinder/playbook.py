@@ -5,7 +5,7 @@ a usage limit (wait for the reset, never retry), missing credentials or a broken
 to the operator. Owners: engine (it resolves itself), apex (the supervising agent acts), operator (a person
 decides). The order is the order to act in: campaign-wide stops, the health flag, cooldown, then each pair."""
 from __future__ import annotations
-import shlex
+import re, shlex
 from . import campaign_state, health, reconcile
 
 ESCALATE = {
@@ -45,18 +45,19 @@ def next_actions(campaign) -> list[dict]:
     for unit in state["units"]:
         pair = unit["unit"]
         action = reconcile.inspect(campaign, pair)["action"]
-        if action.startswith("nothing: evidence still blocked"):
+        family = re.sub(r"^(nothing: )?branch-\d+: ", r"\1", action)    # a composable branch's own action
+        if family.startswith("nothing: evidence still blocked"):
             out.append({"owner": "apex", "action": f"{pair}: repair or declare its evidence",
                         "why": action.removeprefix("nothing: ") + ". The command lists proposed declarations; one that needs a URL goes to the operator.",
                         "command": _cmd(campaign, "evidence", pair)})
-        elif action.startswith("nothing: frozen bundle changed"):
-            out.append({"owner": "operator", "action": f"{pair}: a frozen branch bundle changed",
+        elif family.startswith(("nothing: frozen bundle changed", "nothing: freeze failed")):
+            out.append({"owner": "operator", "action": f"{pair}: its branch bundles need the operator",
                         "why": action.removeprefix("nothing: ") + ". Restore the bundle or decide to rerun the branches.",
                         "command": None})
-        elif action.startswith("nothing: edit blocked"):
+        elif family.startswith("nothing: edit blocked"):
             out.append({"owner": "operator", "action": f"{pair}: decide on the edit",
                         "why": action.removeprefix("nothing: "), "command": None})
-        elif action == "nothing: paper needs the operator":
+        elif family == "nothing: paper needs the operator":
             out.append({"owner": "operator", "action": f"{pair}: decide on the paper",
                         "why": f"paper {unit['assessment']['status']}: {unit['assessment']['reason']}", "command": None})
         elif not action.startswith("nothing") and action != "start" and unit["controller"] not in ("running",):

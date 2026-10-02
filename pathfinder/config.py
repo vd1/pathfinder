@@ -49,6 +49,14 @@ def load(root: Path) -> Campaign:
         n = raw.get("branches", 3)
         if not isinstance(n, int) or isinstance(n, bool) or n < 1:
             raise ValueError(f"branches must be an integer of at least 1, got {n!r}")
+        for block in ("branch", "joint"):
+            if not isinstance(raw.get(block, {}), dict):
+                raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
+    return campaign_from(root, raw)
+
+
+def campaign_from(root: Path, raw: dict) -> Campaign:
+    """The campaign a configuration describes; composable views build theirs from merged settings with it."""
     return Campaign(
         root=root, backend=raw["backend"], model=raw["model"],
         scan_model=raw.get("scan_model") or raw["model"],
