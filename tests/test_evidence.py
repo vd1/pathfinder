@@ -267,3 +267,16 @@ def test_malformed_declarations_are_refused_as_evidence_errors(tmp_path, records
     with pytest.raises(research.EvidenceUnavailable):
         evidence.apply_declarations(c, "Q1P1", records)
     assert not (d / "external-references.json").exists()
+
+
+@pytest.mark.parametrize("token", ["1/public/cm-super/sfrm1728.pfb", "dist/fonts/type1/public/amsfonts/cm/cmr10.pfb",
+                                   "T1/cmr/m/n/10.95", "OT1/cmr/bx/n/12", "texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc",
+                                   "fonts/tfm/public/cm/cmr10.tfm"])
+def test_tex_installation_paths_quoted_from_a_build_log_are_not_evidence(token):
+    assert evidence.classify(token) == "tex"
+    assert evidence.cited_files(f"the build log says {token} was loaded") == []
+
+
+def test_a_cited_calculation_is_still_a_file():
+    assert evidence.cited_files("see ada/work/out.txt, emmy/fonts.py and ada/fonts/table.csv") == [
+        "ada/work/out.txt", "emmy/fonts.py", "ada/fonts/table.csv"]

@@ -17,6 +17,12 @@ LOCATOR = re.compile(r"(?:^|/)(?:p|pp|eq|eqs|fig|figs|table|tab|sec|thm|lem|prop
 FILE_EXTENSION = re.compile(r"\.[A-Za-z]{1,5}$")
 NUMBER = re.compile(r"^[\d.]+(?:/[\d.]+)+$")
 DOI = re.compile(r"^10\.\d{4,9}/")
+# The TeX installation as a build log names it: font and encoding files, texmf trees, and NFSS font shapes
+# such as T1/cmr/m/n/10.95 (encoding/family/series/shape/size). Never research evidence (quack, 2 October:
+# 84 such fragments from compile logs stopped a composition twice).
+TEX_FILE = re.compile(r"\.(?:pfb|pfa|pfm|tfm|vf|enc|map|pk|afm|fd|otf|ttf|fmt|ofm|ovf)$", re.I)
+TEX_TREE = re.compile(r"(?:^|/)(?:texmf[\w-]*/|fonts/(?:type1|tfm|enc|map|vf|opentype|truetype|afm|pk)/|public/(?:cm-super|amsfonts|lm)/)", re.I)
+FONT_SHAPE = re.compile(r"^(?:T1|OT1|TS1|LY1|OML|OMS|OMX|U|T2A|LGR)/[\w-]+/[\w-]+/[\w-]+(?:/[\d.]+)?$")
 
 
 def classify(token: str) -> str:
@@ -26,6 +32,8 @@ def classify(token: str) -> str:
         return "number"
     if token.endswith(".git"):
         return "repository"
+    if TEX_FILE.search(token) or TEX_TREE.search(token) or FONT_SHAPE.match(token):
+        return "tex"
     if FILE_EXTENSION.search(token):                 # fig.1.png ends like a file, whatever comes before
         return "file"
     if LOCATOR.search(token) or any(LOCATOR.search(part) for part in token.split("/")[:-1]):
