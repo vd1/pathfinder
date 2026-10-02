@@ -155,7 +155,8 @@ def _run(campaign, pair_id: str, stop) -> str:
         if stop():
             _set(campaign, pair_id, status="stopped", round=rnd); return "stopped"
         s = status(campaign, pair_id)
-        resume_review = (s.get("author_done") == rnd and s.get("status") in ("reviewing", "stopped")
+        unread = s.get("status") == "blocked" and (s.get("failure") or {}).get("class") == "contract"
+        resume_review = (s.get("author_done") == rnd and (s.get("status") in ("reviewing", "stopped") or unread)
                          and (pd / "paper.tex").exists())       # resume at the review only once this round's author call has returned
         if not resume_review:
             _set(campaign, pair_id, status="writing", round=rnd, reason=None)

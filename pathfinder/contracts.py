@@ -10,6 +10,7 @@ The validator covers the subset the schemas use: type, enum, required, propertie
 maximum. `strict` gives the closed form the Codex CLI's --output-schema accepts."""
 from __future__ import annotations
 import copy
+import math
 import json
 import re
 from dataclasses import replace
@@ -64,8 +65,9 @@ _TYPES = {"object": dict, "array": list, "string": str, "null": type(None)}
 
 
 def _is(value, kind: str) -> bool:
-    if kind in ("integer", "number"):
-        return isinstance(value, (int, float)) and not isinstance(value, bool) and (kind == "number" or float(value).is_integer())
+    if kind in ("integer", "number"):           # NaN and infinities are valid JSON to Python, never a score
+        return (isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+                and (kind == "number" or float(value).is_integer()))
     return isinstance(value, _TYPES[kind])
 
 
@@ -167,7 +169,13 @@ def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
     repair = replace(request, identity=request.identity + ":contract-repair", tools=False, search=False, reads=False,
                      schema=SCHEMAS[name],
                      prompt=_repair_prompt(name, result.get("text") or "", first.errors))
-    repaired = transport.execute(campaign, repair)
+    contract_failure = failures.Failure("contract", *failures.SCOPES["contract"]).record()
+    try:
+        repaired = transport.execute(campaign, repair)
+    except transport.PromptTooLarge as error:      # the repair turn itself does not fit: the reply stays unreadable
+        return None, {**result, "failure": contract_failure, "error": f"contract: {first}; repair refused: {error}",
+                      "contract_errors": first.errors, "first_text": result.get("text")}
+    repaired = {**repaired, "first_text": result.get("text"), "repaired": True}   # what the model said before restating it
     if repaired.get("transport_failed"):
         return None, repaired
     try:
@@ -175,6 +183,5 @@ def ensure(campaign, request, result: dict, name: str, check=None) -> tuple:
     except ContractViolation as violation:
         events.emit(campaign, "contract_failed", unit=request.thread, stage=request.stage, actor=request.actor,
                     contract=name, errors=violation.errors[:5])
-        return None, {**repaired, "failure": failures.Failure("contract", *failures.SCOPES["contract"]).record(),
-                      "error": "contract: " + "; ".join(violation.errors[:5]), "contract_errors": violation.errors,
-                      "first_text": result.get("text")}
+        return None, {**repaired, "failure": contract_failure,
+                      "error": "contract: " + "; ".join(violation.errors[:5]), "contract_errors": violation.errors}

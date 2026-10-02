@@ -68,9 +68,9 @@ def _later_stage(campaign, pair_id, s) -> str:
     if e.get("status") == "blocked":
         return f"nothing: edit blocked: {e.get('reason') or 'no reason recorded'}"
     if s.get("status") == "DRAFT" and e.get("status") == "done":
-        p = paper.status(campaign, pair_id).get("status")
-        if p == "stopped":
-            return "run paper"
+        ps = paper.status(campaign, pair_id); p = ps.get("status")
+        if p == "stopped" or (p == "blocked" and (ps.get("failure") or {}).get("class") == "contract"):
+            return "run paper"                        # a stopped step, or a review reply that broke its contract
         if p in ("blocked", "PAUSE-ON-AMEND"):
             return "nothing: paper needs the operator"
     return "nothing: terminal"

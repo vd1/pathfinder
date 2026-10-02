@@ -344,7 +344,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     return "\n\n".join(parts)
 
 
-def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str:
+def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior, extra=()) -> str:
     """@planks("When the research workflow prepares its consolidation and verification requests")"""
     sections = thread_sections(d, inp)
     if (d / note_name).exists():                    # the account a repair or a next round must keep
@@ -353,7 +353,8 @@ def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior) -> str
                                           PRIOR=prior, MATERIAL="Q, P and the ledger are above.")
             + "\n\n" + evidence_pointer(campaign)
             + "\n\nReturn the complete research account, the LaTeX document itself, in your response; do not write it to a file.\n")
-    return context.build(campaign, "consolidate", sections + [Section("", text=task, keep=True)], tools=True, cwd=d, unit=pair_id)
+    return context.build(campaign, "consolidate", sections + list(extra) + [Section("", text=task, keep=True)],
+                         tools=True, cwd=d, unit=pair_id)
 
 
 READING = ("Files listed by path, size and sha256 are in your working directory, not pasted here. Read them in "
@@ -650,11 +651,20 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 task += "\n\n" + evidence_pointer(campaign) + " Do not modify any file.\n"
                 p = context.build(campaign, "verify", judge_sections(d, inp, note.name) + [Section("", text=task, keep=True)],
                                   tools=True, cwd=d, unit=pair_id)
-                r = _stage_call(campaign, pair_id, "verify", p, True, A["verify_seconds"], done=lambda: True)
+                # a paid reply to this very prompt, kept before its repair turn, is reused after a stop
+                pending, prompt_sha = d / "verify-pending.json", hashlib.sha256(p.encode()).hexdigest()
+                kept = json.loads(pending.read_text()) if pending.exists() else {}
+                if kept.get("prompt_sha256") == prompt_sha:
+                    r = kept["result"]
+                else:
+                    r = _stage_call(campaign, pair_id, "verify", p, True, A["verify_seconds"], done=lambda: True)
+                    _atomic_write(pending, json.dumps({"prompt_sha256": prompt_sha, "result": {
+                        k: r.get(k) for k in ("text", "session", "seconds", "transport_failed", "error", "failure")}}).encode())
                 first = r.get("text") or ""                  # read once under the verdict contract, repaired at most once
                 v, r = contracts.ensure(campaign, _stage_request(campaign, pair_id, "verify", p, True, A["verify_seconds"]), r, "verify")
-                if v is None and r.get("transport_failed"):
+                if v is None and r.get("transport_failed"):   # the repair turn failed in transport: the kept reply waits
                     raise transport.TransportFailed(pair_id, failure=r.get("failure"))
+                pending.unlink(missing_ok=True)
                 if v is None:                             # an operational failure, not a verdict
                     (d / "verify-unreadable.txt").write_text(first + "\n\n--- repair reply ---\n\n" + (r.get("text") or ""))
                     _set(campaign, pair_id, status="BLOCKED", reason=f"contract: verify: {r['error'].removeprefix('contract: ')}",
@@ -719,7 +729,7 @@ def _bundle_evidence(campaign, d, by_reference=False, record=None, errors=None):
     return "\n\n".join(parts)
 
 
-def _review_material(campaign, pair_id, review_id=None, record_manifest=True):
+def _review_material(campaign, pair_id, review_id=None, record_manifest=True, with_id=False):
     """@planks("Vera receives both papers and the complete attributed research ledger")
     @planks("Vera receives all referenced peer evidence without a consolidated account")
     @planks("Pathfinder blocks the stale response before a research transition")
@@ -765,8 +775,12 @@ def _review_material(campaign, pair_id, review_id=None, record_manifest=True):
         note = d / f"{pair_id}.tex"
         if note.exists():
             sections.append(Section(note.name, path=note))
-    # the review's task follows this material; its sha256 identifies the evidence the review saw
-    return context.build(campaign, "verify", sections, tools=True, cwd=d, unit=pair_id, record=record_manifest)
+    # the review's task follows this material. The evidence identifier hashes what the sections hold, not how the
+    # budget presented them: a ledger given by path at request time and as filtered text on replay is the same evidence
+    material = context.build(campaign, "verify", sections, tools=True, cwd=d, unit=pair_id, record=record_manifest)
+    if not with_id:
+        return material
+    return material, hashlib.sha256(json.dumps([[x.name, x.body()] for x in sections]).encode()).hexdigest()
 
 
 def _request_file(campaign, pair_id, identity):
@@ -840,11 +854,15 @@ def _apply_research_review(campaign, pair_id, saved, s):
     """
     d = campaign.thread_dir(pair_id)
     identity = saved["request"]["identity"]
-    material = _review_material(campaign, pair_id, identity)
-    if hashlib.sha256(material.encode()).hexdigest() != saved["evidence_id"]:
+    _, evidence_id = _review_material(campaign, pair_id, identity, with_id=True)
+    if evidence_id != saved["evidence_id"]:
         _set(campaign, pair_id, status="BLOCKED", reason="stale review: research evidence changed")
         return
     minus = campaign.raw.get("research_scheme", "eva") == "eva_minus"
+    verdict = _verdict_under_direct_eva(campaign, saved["result"].get("text"))
+    if verdict:
+        _set(campaign, pair_id, status="BLOCKED", reason=f"review: {verdict}")
+        return
     try:                                        # the retained reply was read and repaired under its contract when it came
         name, check = _review_contract(campaign, s)
         value = contracts.parse(name, saved["result"]["text"], check)
@@ -962,8 +980,7 @@ def next_requests(campaign, pair_id):
             if stage == "ledger_review" and s.get("reviews", 0) >= campaign.raw.get("ledger_reviews", campaign.rounds + 1):
                 _set(campaign, pair_id, status="HANDOFF", stage="done", handoff_reason="review_allowance_exhausted")
                 return []
-            material = _review_material(campaign, pair_id)
-            evidence_id = hashlib.sha256(material.encode()).hexdigest()
+            material, evidence_id = _review_material(campaign, pair_id, with_id=True)
             actors = campaign.peers if stage == "peers" else (campaign.peers[0],) if stage == "consolidate" else ("verifier",)
             batch = []
             for actor in actors:
@@ -990,8 +1007,9 @@ def next_requests(campaign, pair_id):
                     repair = s.get("repair")
                     prior = ("Repair the existing account from existing evidence. Preserve accepted results. " + json.dumps(repair)
                              if repair else "Preserve prior results that still stand and append this round's work.")
-                    prompt = _consolidate_prompt(campaign, d, _inputs(d), pair_id, "", f"{pair_id}.tex", prior)
-                    prompt += "\n\n" + _bundle_evidence(campaign, d, by_reference=evidence_by_reference(campaign))
+                    bundles = _bundle_evidence(campaign, d, by_reference=evidence_by_reference(campaign))
+                    prompt = _consolidate_prompt(campaign, d, _inputs(d), pair_id, "", f"{pair_id}.tex", prior,
+                                                 extra=[Section("", text=bundles)] if bundles.strip() else [])
                     write_meta(campaign, pair_id, d)
                 else:
                     seconds = campaign.allowances["verify_seconds"]
@@ -1045,12 +1063,49 @@ def export_outcome(campaign, pair_id):
             "provenance": [row for row in ledger.read() if row["kind"] == "review"]}
 
 
+def _verdict_under_direct_eva(campaign, text) -> str | None:
+    """Under direct EVA a scientific verdict is not a malformed request review: it is never repaired into one."""
+    if campaign.raw.get("research_scheme") != "eva_minus":
+        return None
+    try:
+        value = contracts.extract_json(text or "")
+    except ValueError:
+        return None
+    if isinstance(value, dict) and isinstance(value.get("decision"), str) and value["decision"].upper() in ("DRAFT", "PAUSE"):
+        return "EVA-minus requires a request review without a scientific verdict"
+    return None
+
+
+def _repair_review(campaign, pair_id, request, result):
+    """Retain a review reply, then read it under its contract with at most one repair turn, then retain the outcome.
+    The raw reply is kept first with contract_pending, so a stop during the repair turn loses nothing paid for."""
+    if _verdict_under_direct_eva(campaign, result.get("text")):
+        retain_response(campaign, pair_id, request, result); return      # applied, and blocked, as a verdict
+    retain_response(campaign, pair_id, request, {**result, "contract_pending": True})
+    name, check = _review_contract(campaign, status(campaign, pair_id))
+    _, outcome = contracts.ensure(campaign, request, result, name, check)
+    retain_response(campaign, pair_id, request, outcome)
+
+
+def _finish_repairs(campaign, pair_id):
+    """Complete any repair turn a stop interrupted, from the retained reply, before anything else is decided."""
+    d = campaign.thread_dir(pair_id)
+    for identity in status(campaign, pair_id).get("pending", []):
+        path = _request_file(campaign, pair_id, identity)
+        saved = json.loads(path.read_text()) if path.exists() else {}
+        result = saved.get("result") or {}
+        if result.get("contract_pending"):
+            request = transport.ModelRequest(**{**saved["request"], "cwd": d})
+            _repair_review(campaign, pair_id, request, {k: v for k, v in result.items() if k != "contract_pending"})
+
+
 def _run_composable(campaign, pair_id, stop):
     """@planks("the standard research entry point opens the investigation")"""
     prepare(campaign, pair_id)
     try:
         while True:
             _check(stop)
+            _finish_repairs(campaign, pair_id)
             requests = next_requests(campaign, pair_id)
             if not requests:
                 return status(campaign, pair_id)["status"]
@@ -1064,9 +1119,9 @@ def _run_composable(campaign, pair_id, stop):
                                                                  "error": str(error), "outcome": "refused",
                                                                  "failure": OVERSIZE_FAILURE})
                     return
-                if request.stage in ("verify", "ledger_review"):   # repaired once under its contract before it is kept
-                    name, check = _review_contract(campaign, status(campaign, pair_id))
-                    _, result = contracts.ensure(campaign, request, result, name, check)
+                if request.stage in ("verify", "ledger_review") and not result.get("transport_failed"):
+                    _repair_review(campaign, pair_id, request, result)     # kept first, so a stop never loses a paid reply
+                    return
                 retain_response(campaign, pair_id, request, result)
                 if result.get("transport_failed"):
                     raise transport.TransportFailed(pair_id, failure=result.get("failure"))
