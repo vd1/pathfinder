@@ -124,3 +124,51 @@ def test_coordinate_can_accept_a_child_record_change(tmp_path):
     with pytest.raises(provenance.ChangeRefused):
         coordinator.run(path, interval=0.05, heartbeat=0.05)
     assert coordinator.run(path, interval=0.05, heartbeat=0.05, accept_change="brief agreed")["status"] == "complete"
+
+
+def _batch(tmp_path, batch, entries=None):
+    path = staged(tmp_path, schedule=entries or [{"arm": "repeat", "pair": "Q1P1"}, {"arm": "repeat", "pair": "Q1P2"}])
+    data = json.loads(path.read_text()); data["batch"] = batch; path.write_text(json.dumps(data))
+    return path
+
+
+def _fake_pairs(monkeypatch, outcomes, seen=None, sleep=0.0):
+    import time
+    def run_pair(c, pair, **kw):
+        if seen is not None:
+            seen.append(pair)
+        time.sleep(sleep)
+        ok = outcomes.pop(0)
+        return {"code": 0 if ok else 1, "complete": ok, "research": "PAUSE", "edit": "done", "paper": None}
+    monkeypatch.setattr(runner, "run_pair", run_pair)
+
+
+def test_batch_deadline_stops_admitting_without_interrupting(tmp_path, monkeypatch):
+    import datetime
+    deadline = (datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=0.2)).isoformat()
+    seen = []
+    _fake_pairs(monkeypatch, [True, True], seen, sleep=0.4)
+    state = coordinator.run(_batch(tmp_path, {"deadline": deadline}), interval=0.01, heartbeat=0.05)
+    assert state["status"] == "deadline" and seen == ["Q1P1"]
+
+
+def test_batch_unit_limit(tmp_path, monkeypatch):
+    seen = []
+    _fake_pairs(monkeypatch, [True, True], seen)
+    state = coordinator.run(_batch(tmp_path, {"max_units": 1}), interval=0.01, heartbeat=0.05)
+    assert state["status"] == "unit limit" and seen == ["Q1P1"]
+
+
+def test_batch_tolerates_one_failed_entry_and_fails_on_two(tmp_path, monkeypatch):
+    _fake_pairs(monkeypatch, [False, True])
+    state = coordinator.run(_batch(tmp_path, {"max_consecutive_failures": 2}), interval=0.01, heartbeat=0.05)
+    assert state["status"] == "complete" and len(state["failed_entries"]) == 1
+    _fake_pairs(monkeypatch, [False, False])
+    with pytest.raises(RuntimeError):
+        coordinator.run(_batch(tmp_path / "again", {"max_consecutive_failures": 2}), interval=0.01, heartbeat=0.05)
+
+
+def test_without_batch_the_first_failure_still_fails(tmp_path, monkeypatch):
+    _fake_pairs(monkeypatch, [False, True])
+    with pytest.raises(RuntimeError):
+        coordinator.run(_batch(tmp_path, {}), interval=0.01, heartbeat=0.05)

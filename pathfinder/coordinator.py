@@ -14,9 +14,15 @@ Semantics, as the repeat and reinjection pilot established them:
 - a budget stop in one arm censors that arm and the others continue;
 - a stop on the parent, or an operator stop in an arm, halts everything;
 - a research, edit or paper failure stops before the next entry;
-- progress.json after every entry, outcomes.json at the end, status complete, censored, stopped or failed."""
+- progress.json after every entry, outcomes.json at the end, status complete, censored, stopped or failed.
+
+An optional "batch" block bounds the run: {"deadline": "<ISO UTC>", "max_units": n, "max_consecutive_failures": k}.
+The deadline and the unit limit stop admitting entries (status deadline or unit limit) and never interrupt the
+entry in flight; with k set, a failed entry is recorded in failed_entries and the next one runs, and k failed
+entries in a row fail the coordination. Without the block the first failure fails it, as before."""
 from __future__ import annotations
 import json, os, threading, time, uuid
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from . import config, edit, health, paper, research, runner
@@ -109,8 +115,13 @@ def start_coordination(parent, arms, schedule, accept_change=None) -> dict:
 def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, accept_change: str | None = None) -> dict:
     """accept_change covers a changed schedule and changed child run records in this coordination."""
     parent, arms, schedule = load(schedule_path)
+    batch = schedule.get("batch") or {}
+    deadline = datetime.fromisoformat(batch["deadline"].replace("Z", "+00:00")).timestamp() if batch.get("deadline") else None
+    tolerance = batch.get("max_consecutive_failures")
     state = {"pid": os.getpid(), "run_id": uuid.uuid4().hex, "status": "running", "started_at": time.time(),
-             "heartbeat_at": time.time(), "last_progress": None, "censored_arms": []}
+             "heartbeat_at": time.time(), "last_progress": None, "censored_arms": [],
+             "units_started": 0, "failed_entries": [], "consecutive_failures": 0}
+    ended = None                                  # deadline or unit limit
     stop_beating = threading.Event()
 
     def beat():
@@ -126,6 +137,11 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
         try:
             for entry in schedule["schedule"]:
                 c, pair = arms[entry["arm"]], entry["pair"]
+                finished = bool(batch) and runner.pair_complete(c, pair, schedule["stages"])   # resumed: not a new unit
+                if not finished and deadline is not None and time.time() >= deadline:
+                    ended = "deadline"; break
+                if not finished and batch.get("max_units") is not None and state["units_started"] >= batch["max_units"]:
+                    ended = "unit limit"; break
                 if runner.stopped(parent):
                     raise CoordinatorStopped("parent stop marker exists")
                 if runner.stopped(c):
@@ -135,6 +151,7 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
                         continue
                     raise CoordinatorStopped(f"operator stop in arm {entry['arm']}")
                 state.update(entry=entry, stage="pair")
+                state["units_started"] += 0 if finished else 1
                 out = runner.run_pair(c, pair, stages=schedule["stages"], interval=interval,
                                       accept_change=accept_change, links={"coordination": link})
                 if runner.stopped(c) and not runner.stopped(parent) and _budget_stop(c):
@@ -145,14 +162,23 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
                     raise CoordinatorStopped("parent stop marker exists")
                 if runner.stopped(c):
                     raise CoordinatorStopped(f"operator stop in arm {entry['arm']}")
+                problem = None
                 if out["code"]:
-                    raise RuntimeError(f"research or edit failed: {entry}: {out}")
-                if not out["complete"]:
+                    problem = f"research or edit failed: {entry}: {out}"
+                elif not out["complete"]:
                     stage = "paper" if out["edit"] == "done" and out["research"] in research.TERMINAL else "research or edit"
-                    raise RuntimeError(f"{stage} incomplete: {entry}: {out}")
+                    problem = f"{stage} incomplete: {entry}: {out}"
+                if problem:
+                    state["consecutive_failures"] += 1
+                    if not tolerance or state["consecutive_failures"] >= tolerance:
+                        raise RuntimeError(problem)
+                    state["failed_entries"].append({"entry": entry, "error": problem, "at": time.time()})
+                    health.write(parent.path("progress.json"), state)
+                    continue
+                state["consecutive_failures"] = 0
                 state.update(last_progress=dict(entry, at=time.time()), stage="between-pairs")
                 health.write(parent.path("progress.json"), state)
-            state["status"] = "censored" if state["censored_arms"] else "complete"
+            state["status"] = ended or ("censored" if state["censored_arms"] else "complete")
         except CoordinatorStopped as stop:
             state.update(status="stopped", reason=str(stop))
         except BaseException as error:
