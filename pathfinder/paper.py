@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib, json, os, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from . import context, contracts, corpus, research, transport
+from . import context, contracts, corpus, net, research, transport
 from .context import Section
 from .research import _inputs, _prompt, _now
 from .admission import Refused
@@ -125,7 +125,7 @@ def _arxiv_titles(ids: list[str]) -> dict:
     q = urllib.parse.urlencode({"id_list": ",".join(ids), "max_results": len(ids)})
     for attempt in range(3):                       # the arXiv API rate-limits; back off and retry
         try:
-            with urllib.request.urlopen(corpus.API + q, timeout=60) as r:
+            with net.urlopen(corpus.API + q, timeout=60) as r:
                 rows = corpus.parse_atom(r.read().decode())
             return {r["id"]: r["title"] for r in rows}
         except urllib.error.HTTPError as e:

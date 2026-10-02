@@ -3,9 +3,10 @@ from __future__ import annotations
 import gzip, io, json, re, shutil, subprocess, tarfile, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from . import net
 
 NS = {"a": "http://www.w3.org/2005/Atom"}
-API = "http://export.arxiv.org/api/query?"
+API = "https://export.arxiv.org/api/query?"
 
 
 def pair_id(i: int, j: int) -> str:
@@ -32,7 +33,7 @@ def fetch(query: str, n: int, start: int = 0) -> list[dict]:
     """The n most recent papers matching query, skipping the first `start` (older pages have larger start)."""
     q = urllib.parse.urlencode({"search_query": f'all:"{query}"', "sortBy": "submittedDate",
                                 "sortOrder": "descending", "max_results": n, "start": start})
-    with urllib.request.urlopen(API + q, timeout=60) as r:
+    with net.urlopen(API + q, timeout=60) as r:
         return parse_atom(r.read().decode())
 
 
@@ -86,7 +87,7 @@ def flatten(aid: str, out_dir: Path) -> str:
     """Download the e-print for aid, flatten to out_dir/aid.tex or .txt; return the relative name."""
     out_dir.mkdir(parents=True, exist_ok=True)
     req = urllib.request.Request(f"https://arxiv.org/e-print/{aid}", headers={"User-Agent": "pathfinder/0.1"})
-    with urllib.request.urlopen(req, timeout=120) as r:
+    with net.urlopen(req, timeout=120) as r:
         blob, ctype = r.read(), r.headers.get("Content-Type", "")
     work = out_dir / aid; shutil.rmtree(work, ignore_errors=True); work.mkdir()
     if blob[:4] == b"%PDF" or "pdf" in ctype:
@@ -107,7 +108,7 @@ def flatten(aid: str, out_dir: Path) -> str:
         (out_dir / f"{aid}.tex").unlink(missing_ok=True)
         print(f"{aid}: latexpand failed ({e.__class__.__name__}); using the PDF text instead")
         req = urllib.request.Request(f"https://arxiv.org/pdf/{aid}", headers={"User-Agent": "pathfinder/0.1"})
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with net.urlopen(req, timeout=120) as r:
             return _pdf_text(aid, out_dir, r.read())
 
 
