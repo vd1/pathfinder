@@ -106,28 +106,11 @@ def _refuse(campaign, thread, stage, actor, model, reason):
 
 @contextmanager
 def admission(campaign, stage: str, role: str, *, thread: str | None = None, model: str | None = None):
-    from . import extensions, runner, seats
+    from . import events, extensions, runner, seats
     policy = extensions.load(campaign, "admission")
     key = str(Path(campaign.root))
-    seat = None
-    if seats.account(campaign):                    # a seat of the shared account first, across processes
-        while True:
-            reason = _stop_marker(campaign)
-            if reason is not None:
-                _refuse(campaign, thread, stage, role, model, reason)
-            seat = seats.take(campaign, stage=stage, actor=role, thread=thread)
-            if seat is not None:
-                break
-            time.sleep(STOP_POLL)
-    try:
-        with _admitted(campaign, stage, role, thread, model, policy, key, runner):
-            yield
-    finally:
-        seats.release(seat)
-
-
-@contextmanager
-def _admitted(campaign, stage, role, thread, model, policy, key, runner):
+    shared = seats.account(campaign)
+    seat, waited = None, False
     with _cond:
         while True:
             reason = _stop_marker(campaign)
@@ -141,6 +124,15 @@ def _admitted(campaign, stage, role, thread, model, policy, key, runner):
             if not isinstance(decision, Decision) or decision.kind not in ("admit", "defer", "stop"):
                 raise TypeError(f"admission policy returned {decision!r}; expected admit, defer or stop")
             if decision.kind == "admit":
+                if shared:                         # the shared account's seat last: held only by a call about to launch
+                    seat = seats.take(campaign, stage=stage, actor=role, thread=thread)
+                    if seat is None:
+                        if not waited:
+                            waited = True
+                            events.emit(campaign, "admission_deferred", unit=thread, stage=stage, actor=role,
+                                        reason="account seat", account=shared["name"], seats=shared["seats"])
+                        _cond.wait(timeout=STOP_POLL)          # another process frees it: no wakeup crosses processes
+                        continue
                 _reserved[key] = _reserved.get(key, 0) + 1
                 break
             if decision.kind == "stop":
@@ -154,6 +146,7 @@ def _admitted(campaign, stage, role, thread, model, policy, key, runner):
     try:
         yield
     finally:
+        seats.release(seat)
         with _cond:
             _reserved[key] -= 1
             if not _reserved[key]:

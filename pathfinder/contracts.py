@@ -102,7 +102,7 @@ def schema_of(contract) -> dict:
 
 
 def _label(contract) -> str:
-    return contract if isinstance(contract, str) else "deployment"
+    return contract if isinstance(contract, str) else contract.get("title") or "deployment"
 
 
 def parse(name, text: str, check=None):
@@ -111,7 +111,7 @@ def parse(name, text: str, check=None):
         value = extract_json(text)
     except ValueError as error:                       # json.JSONDecodeError is a ValueError
         raise ContractViolation([f"no readable JSON object: {error}"]) from None
-    if isinstance(value, dict) and isinstance(value.get("decision"), str):
+    if isinstance(name, str) and isinstance(value, dict) and isinstance(value.get("decision"), str):   # engine words
         value["decision"] = value["decision"].upper()
     errors = violations(value, schema_of(name))
     if not errors and check is not None:

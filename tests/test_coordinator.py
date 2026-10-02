@@ -249,3 +249,50 @@ def test_the_schedule_digest_covers_the_next_unit_target(tmp_path):
     path = _dynamic(tmp_path, QUEUE)
     parent, arms, schedule = coordinator.load(path)
     assert coordinator.normalized(parent, arms, schedule)["next_unit"] == schedule["next_unit"]
+
+
+def test_outcomes_cover_the_units_next_unit_chose(tmp_path, monkeypatch):
+    _fake_pairs(monkeypatch, [True, True])
+    coordinator.run(_dynamic(tmp_path, QUEUE), interval=0.01, heartbeat=0.05)
+    outcomes = json.loads((tmp_path / "outcomes.json").read_text())
+    assert "Q1P1" in outcomes["repeat"] and "Q1P2" in outcomes["reinjection"]
+
+
+def test_a_dynamic_coordination_resumes_past_finished_units(tmp_path, monkeypatch):
+    path = _dynamic(tmp_path, QUEUE)
+    complete = set()
+    monkeypatch.setattr(runner, "pair_complete", lambda c, pair, stages: (c.root.name, pair) in complete)
+    seen = []
+    _fake_pairs(monkeypatch, [True], seen)
+    complete.add(("repeat", "Q1P1"))                    # finished in an earlier night
+    state = coordinator.run(path, interval=0.01, heartbeat=0.05)
+    assert state["status"] == "complete" and seen == ["Q1P2"]
+
+
+def test_units_not_run_are_not_recorded_as_done(tmp_path, monkeypatch):
+    _fake_pairs(monkeypatch, [True, True])
+    state = coordinator.run(_dynamic(tmp_path, QUEUE, {"max_units": 1}), interval=0.01, heartbeat=0.05)
+    assert [e["pair"] for e in state["done"]] == ["Q1P1"]
+
+
+def test_next_unit_is_loaded_with_the_extension_safeguards(tmp_path, monkeypatch):
+    _fake_pairs(monkeypatch, [True, True, True, True])
+    first = tmp_path / "one"; second = tmp_path / "two"
+    for root, pair in ((first, "Q1P1"), (second, "Q1P2")):
+        path = staged(root, schedule=[])
+        data = json.loads(path.read_text())
+        (root / "deploy").mkdir()
+        (root / "deploy" / "picker.py").write_text(
+            f"def next_unit(arms, progress):\n    return None if progress['done'] else {{'arm': 'repeat', 'pair': {pair!r}}}\n")
+        data.update(schedule=[], next_unit="picker:next_unit", path="deploy")
+        path.write_text(json.dumps(data))
+    coordinator.run(first / "schedule.json", interval=0.01, heartbeat=0.05)
+    with pytest.raises(ImportError, match="already loaded"):
+        coordinator.run(second / "schedule.json", interval=0.01, heartbeat=0.05)
+
+
+def test_an_empty_callable_name_is_refused(tmp_path):
+    path = staged(tmp_path, schedule=[])
+    data = json.loads(path.read_text()); data.update(next_unit="picker:"); path.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match="next_unit"):
+        coordinator.load(path)

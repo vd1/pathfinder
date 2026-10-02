@@ -28,22 +28,26 @@ def load(campaign, name: str):
     target = spec.get(name)
     if not target:
         return None
-    if spec.get("path"):
-        path = str((Path(campaign.root) / spec["path"]).resolve())
-        if path not in sys.path:
-            sys.path.insert(0, path)
+    return resolve(campaign.root, spec.get("path"), target, f"extension {name}")
+
+
+def resolve(root, path, target: str, what: str = "extension"):
+    """The object "module:object" names, imported with `path` (relative to `root`) first on sys.path; a module
+    already loaded from elsewhere, or resolving outside `path`, is refused rather than silently reused."""
     module, _, attr = target.partition(":")
-    if not attr:
-        raise ValueError(f"extension {name} must be module:object, got {target!r}")
-    if spec.get("path"):
-        root = Path(path)
+    if not module or not attr:
+        raise ValueError(f"{what} must be module:object, got {target!r}")
+    if path:
+        base = (Path(root) / path).resolve()
+        if str(base) not in sys.path:
+            sys.path.insert(0, str(base))
         loaded = sys.modules.get(module)
-        if loaded is not None and not _within(loaded, root):
-            raise ImportError(f"extension module {module!r} is already loaded from {getattr(loaded, '__file__', None)},"
-                              f" not from {root}; give each deployment a uniquely named package")
+        if loaded is not None and not _within(loaded, base):
+            raise ImportError(f"{what}: module {module!r} is already loaded from {getattr(loaded, '__file__', None)},"
+                              f" not from {base}; give each deployment a uniquely named package")
         mod = importlib.import_module(module)
-        if not _within(mod, root):
-            raise ImportError(f"extension module {module!r} resolved to {getattr(mod, '__file__', None)}, outside {root}")
+        if not _within(mod, base):
+            raise ImportError(f"{what}: module {module!r} resolved to {getattr(mod, '__file__', None)}, outside {base}")
         return getattr(mod, attr)
     return getattr(importlib.import_module(module), attr)
 

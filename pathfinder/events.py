@@ -9,7 +9,7 @@ from __future__ import annotations
 import json, sys, threading, time
 
 KINDS = frozenset({"run_started", "run_finished", "call_started", "call_finished", "status_changed", "stop_requested",
-                   "context_built", "contract_repair", "contract_failed"})
+                   "context_built", "contract_repair", "contract_failed", "admission_deferred"})
 _lock = threading.Lock()
 
 

@@ -84,3 +84,57 @@ def test_the_state_shows_the_account(tmp_path, accounts):
     held = seats.take(c, stage="peer", actor="ada", thread="Q1P1")
     assert campaign_state.build(c)["campaign"]["account"] == {"name": "main", "seats": 3, "in_use": 1}
     seats.release(held)
+
+
+def test_a_seat_is_taken_only_when_the_call_is_about_to_launch(tmp_path, accounts):
+    from pathfinder import admission as adm
+    c = make(tmp_path / "c", account={"name": "main", "seats": 1})
+    (tmp_path / "c" / "cooldown.json").write_text(json.dumps({"until": time.time() + 0.6, "reason": "429"}))
+    seen = {}
+
+    def call():
+        with adm.admission(c, "peer", "ada", thread="Q1P1"):
+            seen["in_use_inside"] = seats.in_use(c)
+    t = threading.Thread(target=call); t.start()
+    time.sleep(0.3)
+    seen["in_use_during_cooldown"] = seats.in_use(c)
+    t.join(timeout=5)
+    assert seen == {"in_use_during_cooldown": 0, "in_use_inside": 1}
+
+
+def test_waiting_for_a_seat_is_recorded(tmp_path, accounts):
+    c = make(tmp_path / "c", account={"name": "main", "seats": 1})
+    held = seats.take(c, stage="peer", actor="ada", thread="Q1P1")
+    t = threading.Thread(target=lambda: admission.admission(c, "peer", "emmy", thread="Q1P1").__enter__())
+    t.daemon = True; t.start()
+    time.sleep(0.8)
+    seats.release(held)
+    t.join(timeout=5)
+    events = [json.loads(l) for l in c.path("events.jsonl").read_text().splitlines()]
+    waits = [e for e in events if e["kind"] == "admission_deferred"]
+    assert len(waits) == 1 and waits[0]["reason"] == "account seat" and waits[0]["account"] == "main"
+
+
+def test_an_unwritable_accounts_directory_does_not_break_the_state(tmp_path, monkeypatch):
+    blocked = tmp_path / "ro"; blocked.mkdir(); os.chmod(blocked, 0o500)
+    monkeypatch.setenv("PATHFINDER_ACCOUNTS", str(blocked / "accounts"))
+    c = make(tmp_path / "c", account={"name": "main", "seats": 2})
+    try:
+        assert campaign_state.build(c)["campaign"]["account"]["in_use"] == 0
+        with pytest.raises(RuntimeError, match="PATHFINDER_ACCOUNTS"):
+            seats.take(c, stage="peer", actor="ada", thread="Q1P1")
+    finally:
+        os.chmod(blocked, 0o700)
+
+
+def test_one_account_has_one_seat_count(tmp_path, accounts):
+    a = make(tmp_path / "a", account={"name": "main", "seats": 2})
+    b = make(tmp_path / "b", account={"name": "main", "seats": 6})
+    seats.release(seats.take(a, stage="peer", actor="ada", thread="Q1P1"))
+    with pytest.raises(ValueError, match="seats"):
+        seats.take(b, stage="peer", actor="ada", thread="Q1P1")
+
+
+def test_a_malformed_account_is_refused_at_load(tmp_path):
+    with pytest.raises(ValueError, match="account"):
+        make(tmp_path / "c", account={"name": "main", "seats": 0})

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import SimpleNamespace
 
 
 @dataclass
@@ -52,6 +53,9 @@ def load(root: Path) -> Campaign:
         for block in ("branch", "joint"):
             if not isinstance(raw.get(block, {}), dict):
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
+    if raw.get("account"):
+        from . import seats
+        seats.account(SimpleNamespace(raw=raw))      # a malformed account fails here, not inside a call
     return campaign_from(root, raw)
 
 

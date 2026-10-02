@@ -224,3 +224,13 @@ def test_a_deployment_can_bring_its_own_contract(tmp_path, monkeypatch):
     monkeypatch.setattr(contracts.transport, "execute", lambda campaign, request: {"transport_failed": False, "text": '{"verdict": "NOT_READY"}'})
     value, result = contracts.ensure(c, _request(), {"transport_failed": False, "text": "ready, I think"}, schema)
     assert value == {"verdict": "NOT_READY"} and result["repaired"] is True
+
+
+def test_a_deployment_contract_keeps_its_own_case_and_title(tmp_path, monkeypatch):
+    schema = {"title": "drip-review", "type": "object", "required": ["decision"], "properties": {"decision": {"enum": ["ready", "hold"]}}}
+    assert contracts.parse(schema, '{"decision": "ready"}') == {"decision": "ready"}
+    c = make(tmp_path)
+    monkeypatch.setattr(contracts.transport, "execute", lambda campaign, request: {"transport_failed": False, "text": '{"decision": "hold"}'})
+    contracts.ensure(c, _request(), {"transport_failed": False, "text": "prose"}, schema)
+    kinds = [json.loads(l) for l in c.path("events.jsonl").read_text().splitlines()]
+    assert any(e["kind"] == "contract_repair" and e["contract"] == "drip-review" for e in kinds)

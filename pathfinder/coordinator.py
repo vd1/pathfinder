@@ -64,7 +64,7 @@ def load(schedule_path: Path) -> tuple[SimpleNamespace, dict, dict]:
         shortlist = {p["pair_id"] for p in json.loads(arms[entry["arm"]].path("shortlist.json").read_text())["pairs"]}
         if entry["pair"] not in shortlist:              # checked before any dispatch, not when the entry is reached
             raise ValueError(f"{entry['pair']} is not on the shortlist of arm {entry['arm']}")
-    if schedule.get("next_unit") and ":" not in schedule["next_unit"]:
+    if schedule.get("next_unit") and not all(schedule["next_unit"].partition(":")[0::2]):
         raise ValueError(f"next_unit must be module:callable, got {schedule['next_unit']!r}")
     stages = tuple(schedule.get("stages") or ("research", "edit", "paper"))
     if stages not in runner.STAGE_SETS:
@@ -76,10 +76,12 @@ def _budget_stop(campaign) -> bool:
     return "budget:" in str(_read(campaign.path("stop.json")).get("reason"))
 
 
-def outcomes(arms, schedule) -> dict:
+def outcomes(arms, schedule, done=()) -> dict:
+    """Every unit of the fixed schedule and every unit next_unit chose, by arm."""
+    units = list(schedule["schedule"]) + [e for e in done if e not in schedule["schedule"]]
     return {a: {e["pair"]: {"research": research.status(c, e["pair"]), "editor": edit.status(c, e["pair"]),
                             "paper": paper.status(c, e["pair"])}
-                for e in schedule["schedule"] if e["arm"] == a}
+                for e in units if e["arm"] == a}
             for a, c in arms.items()}
 
 
@@ -137,7 +139,11 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
             entry = pick(arms, {**state, "done": list(state["done"])})
             if entry is None:
                 return
-            yield _checked(arms, schedule, state, entry)
+            entry = _checked(arms, schedule, state, entry)
+            if runner.pair_complete(arms[entry["arm"]], entry["pair"], schedule["stages"]):
+                state["done"].append(dict(entry, skipped="complete"))   # finished in an earlier run: ask again
+                continue
+            yield entry
     ended = None                                  # deadline or unit limit
     stop_beating = threading.Event()
 
@@ -154,7 +160,6 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
         try:
             for entry in entries():
                 c, pair = arms[entry["arm"]], entry["pair"]
-                state["done"].append({"arm": entry["arm"], "pair": pair})
                 finished = bool(batch) and runner.pair_complete(c, pair, schedule["stages"])   # resumed: not a new unit
                 if not finished and deadline is not None and time.time() >= deadline:
                     ended = "deadline"; break
@@ -169,6 +174,7 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
                         continue
                     raise CoordinatorStopped(f"operator stop in arm {entry['arm']}")
                 state.update(entry=entry, stage="pair")
+                state["done"].append({"arm": entry["arm"], "pair": pair})
                 state["units_started"] += 0 if finished else 1
                 out = runner.run_pair(c, pair, stages=schedule["stages"], interval=interval,
                                       accept_change=accept_change, links={"coordination": link})
@@ -211,7 +217,7 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
             state.update(heartbeat_at=time.time(), finished_at=time.time())
             health.write(parent.path("runner.json"), state)
             health.write(parent.path("progress.json"), state)
-            health.write(parent.path("outcomes.json"), outcomes(arms, schedule))
+            health.write(parent.path("outcomes.json"), outcomes(arms, schedule, state["done"]))
     return state
 
 
@@ -221,13 +227,11 @@ def _next_unit(parent, schedule):
     target = schedule.get("next_unit")
     if not target:
         return None
-    import importlib, sys
-    if schedule.get("path"):
-        path = str((parent.root / schedule["path"]).resolve())
-        if path not in sys.path:
-            sys.path.insert(0, path)
-    module, _, attr = target.partition(":")
-    return getattr(importlib.import_module(module), attr)
+    from . import extensions
+    pick = extensions.resolve(parent.root, schedule.get("path"), target, "next_unit")
+    if not callable(pick):
+        raise TypeError(f"next_unit {target!r} is not callable")
+    return pick
 
 
 def _checked(arms, schedule, state, entry) -> dict:
@@ -239,8 +243,8 @@ def _checked(arms, schedule, state, entry) -> dict:
     shortlist = {p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]}
     if pair not in shortlist:
         raise RuntimeError(f"next_unit returned {pair!r}, not on the shortlist of arm {entry['arm']}")
-    if {"arm": entry["arm"], "pair": pair} in state["done"] or runner.pair_complete(c, pair, schedule["stages"]):
-        raise RuntimeError(f"next_unit returned a unit already done: {entry['arm']} {pair}")
+    if any(e["arm"] == entry["arm"] and e["pair"] == pair for e in state["done"]):
+        raise RuntimeError(f"next_unit returned a unit already done in this run: {entry['arm']} {pair}")
     return {"arm": entry["arm"], "pair": pair}
 
 
