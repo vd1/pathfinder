@@ -155,7 +155,9 @@ your own campaign directory and edit the models and the budget.
   variable Codex reads the key from), `key_file` (a dotenv file holding
   `env_key=value`, read into the child environment only) and `wire_api`.
   Leave it out to use the ChatGPT login. `"search": "config"` passes web
-  search as `web_search` configuration instead of the `--search` flag.
+  search as `web_search` configuration instead of the `--search` flag;
+  `"search": "always"` lets a tool-less call search too. `"config"`: a list
+  of further Codex settings, each passed with `-c`.
 - `stage_attempts`: attempts for consolidation and verification (default 2);
   a value that is not a positive integer fails before any call.
 - `strict_evidence`: `false` by default; only for composable schemes

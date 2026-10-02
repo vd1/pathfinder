@@ -128,7 +128,7 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
     prov = (campaign.raw or {}).get("codex") or {}
     if prov.get("search") == "config":             # CLIs that take web search as configuration, not a flag
         cmd += ["-c", f'web_search="{"live" if tools and search else "disabled"}"']
-    elif tools and search:
+    elif search and (tools or prov.get("search") == "always"):   # "always": a tool-less call may still search
         cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
@@ -144,6 +144,8 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
         cmd += ["--output-schema", str(schema_path)]
     if prov.get("disable_toolless_shell") and not tools:
         cmd += ["-c", "features.shell_tool=false"]
+    for entry in prov.get("config") or ():           # a deployment's own Codex settings, each passed with -c
+        cmd += ["-c", str(entry)]
     if campaign.backend == "elm":
         prov = {**prov, "name": "elm", "base_url": "https://elm.edina.ac.uk/api/v1"}
     if prov.get("base_url"):                       # a custom OpenAI-compatible provider, e.g. a university proxy

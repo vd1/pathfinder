@@ -236,3 +236,12 @@ def test_a_size_refusal_does_not_use_an_attempt(tmp_path):
     assert research.run_thread(c, "Q1P1") == "BLOCKED"
     s = research.status(c, "Q1P1")
     assert s.get("peer_call", 0) == 0 and s["failure"]["class"] == "input_too_large"
+
+
+def test_codex_search_always_and_extra_configuration(tmp_path):
+    from pathfinder import transport
+    c = make(tmp_path / "a", backend="codex", codex={"search": "always", "config": ['shell_environment_policy.inherit="none"']})
+    cmd = transport._command(c, "m", False, True, tmp_path, reads=True)
+    assert "--search" in cmd and cmd.index("--search") < cmd.index("exec")       # a tool-less reader may still search
+    assert cmd[cmd.index('shell_environment_policy.inherit="none"') - 1] == "-c"
+    assert "--search" not in transport._command(c, "m", False, False, tmp_path, reads=True)
