@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "7064de3b715b58c4a9bc3351aa7e84bfc373206f"
+revision = "b02f9d6accb9e57b3742749627b340efbafa56f9"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb itself pins engine-v1.1."
@@ -25,4 +25,4 @@ checkout = "../pathfinder-julien-2"
 revision = "5cc82db"
 clean_paths = []
 contract = ""
-notes = "Runs two forks of upstream 57e9a7a (dependencies/pathfinder and the EVA experiment copy); see deployments/pathfinder-julien-2/inventory.md and migration.md; its EVA research scheme is the remaining blocker."
+notes = "Runs two forks of upstream 57e9a7a (dependencies/pathfinder and the EVA experiment copy); see deployments/pathfinder-julien-2/inventory.md and migration.md. Its EVA scheme now exists in canon as research_scheme composable (engine-v1.2); what remains is moving its eva2 driver onto it."
