@@ -38,3 +38,4 @@ Plans:
 - Phase 4c scope adds J02 (refused calls never consume attempts), J03 (immutable attempt identity under recovery) and J05 (reconcile every stage), from the julien-2 ten-pair run of 2 October; 4a and 4b merged.
 - Phase 5: `plans/2026-10-02-1110-phase5-context-and-contracts.md` (4c merged 8e1eabd).
 - Phase 6: `plans/2026-10-02-1500-phase6-composable-eva.md` (5 merged f77b190; 6 done on refactor/phase6).
+- Phase 7: 7a `plans/2026-10-02-1800-phase7a-shared-seats-next-unit-release.md` (engine-v1.2, engine-v1.2.1 tagged); statarb on engine-v1.2.1 (statarb c0c236c); agQSL canon/ campaign (agQSL 83b59a496 and after); julien-2 cherry-picks not started.

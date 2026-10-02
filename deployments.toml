@@ -34,3 +34,11 @@ revision = "c16180d"
 clean_paths = []
 contract = ""
 notes = "Editable dependency on ../pathfinder. Its own suite (31 tests) passes against the engine-v1.2 candidate, which keeps pathfinder.scan.parse_json and reads research_scheme eva_minus as direct_eva with a deprecation warning; its working tree is under active development, so no contract is pinned yet."
+
+[deployments.agqsl]
+status = "not-yet-supported"
+checkout = "../agQSL"
+revision = "8fa76600aa92ce0e23c0fe07457182539e6e4226"
+clean_paths = []
+contract = ""
+notes = "Campaign repository: canon/ is a canonical campaign of agQSL's five open pairs, imported once by canon/import_open_pairs.py, run on a frozen engine-v1.2.1 (canon/engine-ref). Piloted live on two pairs on 2 October. No contract test yet."

@@ -439,6 +439,17 @@ verdict drift from \texttt{81f888e} while statarb sets inline evidence, to be
 measured before repinning; ``paper'' means paper trading in statarb and the
 manuscript in the engine; two lock regimes during the transition; hard-coded host
 paths.
+Done in phase 7 (statarb c0c236c, engine-v1.2.1): statarb pins engine-v1.2.1, makes its
+own scan, implementation and review calls through the engine with its own schemas
+(contracts with one repair turn, receipts with failure classes, stop markers and
+cooldowns) on the shared \texttt{codex-subscription} seats (H7), and builds repair
+notes on the frozen engine instead of a moving checkout. A live smoke call passed.
+Not done: \path{overnight.py} still selects units itself, because statarb runs
+one campaign per paper while the coordinator's arms are fixed at load
+(\texttt{next\_unit} exists for deployments whose units live in fixed arms); the
+watchboard is not yet retired; the engine compatibility shim stays for archived
+investigations frozen at engine-v1.0 and v1.1, where it is still needed and is
+harmless on later engines.
 
 \textbf{agQSL.} Becomes a campaign repository pinning a frozen engine release.
 Domain content stays: question and paper sets, papers, prompt overlays, styles,
@@ -452,6 +463,16 @@ go to a compressed archive with a checksum manifest. Risks: ledger schema
 translation, paths cited by published supplements (leave redirect notes, do not
 move), the ELM key held outside the repository, and account oversubscription
 until H7 lands.
+Done in phase 7: tag \texttt{pre-pathfinder-roof} pushed; the five open pairs
+imported into a canonical campaign in \path{canon/} (ledger translated: epoch
+\texttt{time} to ISO \texttt{at}, \texttt{Ada}/\texttt{Emmy} to lowercase, peer
+directories renamed, each pair's \path{question.md} kept as an input with its
+exclusions enforced by an overlay and \texttt{peer\_search} off; decision words
+mapped in the verify overlay); engine-v1.2.1 frozen in \path{canon/engine}; two
+pairs piloted live: Q1P1 (ART 110) ended research PAUSE with its readable note edited; Q2P2 (ART 37) ended research PAUSE and its edit retry is stopped by a Codex CLI crash (O02). Untracked bulk removed rather than archived, at the
+operator's instruction (build output, probe outputs, full-text cache, typeset
+output and an exported package); prunable worktrees and merged feature branches
+removed, four unmerged ones kept.
 
 \section{Refactor specification additions from statarb fixes}\label{sec:spec-additions}
 
@@ -589,6 +610,7 @@ J03 & Account recovery changes the prompt under an existing attempt identifier, 
 J04 & Monitoring reports activity after the controller exits because \texttt{pgrep} loops match themselves & Liveness comes from the runner record (PID, heartbeat) and active-call records, never from process-name patterns (S items on watching by PID). Already the rule in \texttt{state.json} since phase 2a; to be the rule in every supervisor script.\\
 J05 & A PCE author call timed out and needs explicit reconciliation & Reconcile covers every stage, not only research: a stopped edit, author or review step names its failure class (phase 4a) and its one safe action. Done in phase 4c: reconcile reruns a stopped edit or paper, resumes the review only after the round's author call returned, and names a blocked edit for the operator.\\
 O01 & Agents searching arXiv meet its rate limit (``Rate exceeded.'', HTTP 429), often inside a command that exits 0, so no failure is recorded & Read every tool output, not only failed ones, for each source's rate-limit answer; count the hits per call in the receipt (\texttt{source\_limits}), warn in \texttt{health} over the last 50 calls, give the apex agent an action, and tell peers the arXiv etiquette (API endpoint, 3\,s spacing, one retry after 30\,s, record searches not run). Reported by the operator on 2 October: in the proofTree sphere-packing campaign arXiv returned HTTP 429 on queries 14 to 18 of a burst. Done in phase 7a.\\
+O02 & Codex CLI 0.160 exits with signal 11 within 0.1\,s of launch, before any session, on the agQSL Q2P2 edit retry: six engine attempts in a row, while the same command and prompt run from a shell or a plain subprocess succeed & Classified as \texttt{launch}; three in a row stop the campaign, as designed. Cause not found (no crash report). Next: capture the child's stderr and core, try without \texttt{start\_new\_session}, and report upstream if it reproduces. Observed 2 October in phase 7.\\
 \end{xltabular}}
 
 The common lesson: prompt budgeting and recovery must be uniform across stages, not
