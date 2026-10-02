@@ -30,3 +30,27 @@ def test_a_stopped_paper_is_rerun_and_an_amend_pause_needs_the_operator(tmp_path
     assert reconcile.inspect(c, "Q1P1")["action"] == "run paper"
     paper._set(c, "Q1P1", status="PAUSE-ON-AMEND", reason="amend")
     assert reconcile.inspect(c, "Q1P1")["action"] == "nothing: paper needs the operator"
+
+
+def test_a_stale_retained_review_is_superseded_and_reissued(tmp_path, monkeypatch):
+    c = make(tmp_path, research_scheme="eva_minus", imported_research=True)
+    d = research.prepare(c, "Q1P1")
+    real = transport.execute
+
+    def execute_then_change_evidence(campaign, request):
+        result = real(campaign, request)
+        (d / "ada" / "late.txt").write_text("evidence written after the request was built")
+        return result
+    monkeypatch.setattr(research.transport, "execute", execute_then_change_evidence)
+    research.run_thread(c, "Q1P1")
+    s = research.status(c, "Q1P1")
+    assert s["status"] == "BLOCKED" and s["reason"] == "stale review: research evidence changed"
+    monkeypatch.setattr(research.transport, "execute", real)
+    assert reconcile.inspect(c, "Q1P1")["action"] == "reissue: evidence changed since the request"
+    reconcile.apply(c, "Q1P1")
+    superseded = list((d / "research-requests" / "superseded").glob("*.json"))
+    assert len(superseded) == 1 and "result" in json.loads(superseded[0].read_text())
+    s = research.status(c, "Q1P1")
+    assert s.get("reason") != "stale review: research evidence changed"
+    entry = s["history"][-1]
+    assert entry["action"] == "reissue: evidence changed since the request" and len(entry["superseded"]) == 1

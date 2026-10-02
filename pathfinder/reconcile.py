@@ -1,12 +1,14 @@
 """Inspect one thread and name the one safe action; apply it on request."""
 from __future__ import annotations
+import time
 from . import research, runner
 
 
 EVIDENCE_PREFIXES = ("missing evidence:", "aliased evidence path:", "evidence outside the investigation:",
                      "unreadable evidence:", "evidence not inlinable as text:", "Invalid external citation declaration",
-                     "Aliased evidence", "Unreadable evidence", "review: missing evidence",
-                     "stale review: research evidence changed")
+                     "Aliased evidence", "Unreadable evidence", "review: missing evidence")
+STALE = "stale review: research evidence changed"
+REISSUE = "reissue: evidence changed since the request"
 UNBLOCK = "unblock: evidence repaired"
 
 
@@ -28,6 +30,8 @@ def inspect(campaign, pair_id: str) -> dict:
     evidence_block = s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith(EVIDENCE_PREFIXES)
     if holder:
         action = "nothing: in progress"
+    elif s.get("status") == "BLOCKED" and s.get("reason") == STALE:   # a retained answer to an outdated question
+        action = REISSUE
     elif evidence_block:                            # repaired evidence is verified before the block is lifted
         problem = _evidence_check(campaign, pair_id)
         action = UNBLOCK if problem is None else f"nothing: evidence still blocked: {problem}"
@@ -85,7 +89,22 @@ def apply(campaign, pair_id: str) -> str:
             return module.run(campaign, pair_id, stop=lambda: runner.stopped(campaign))
     if not runner.guard_ok(campaign, inflight=1):
         return "nothing: budget guard refused (stop marker written)"
-    if info["action"] == UNBLOCK:                 # the transition is recorded; retained responses and the stage stay
+    if info["action"] == REISSUE:                 # keep the old answer, with its lineage, and ask again
+        s = research.status(campaign, pair_id)
+        d = campaign.thread_dir(pair_id)
+        stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+        moved = []
+        for identity in s.get("pending", []):
+            source = research._request_file(campaign, pair_id, identity)
+            if source.exists():
+                target = d / "research-requests" / "superseded" / f"{stamp}-{source.name}"
+                target.parent.mkdir(parents=True, exist_ok=True)
+                source.replace(target)
+                moved.append(str(target.relative_to(d)))
+        history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
+                                                   "from_reason": s.get("reason"), "action": REISSUE, "superseded": moved}]
+        research._set(campaign, pair_id, status="running", reason=None, pending=[], history=history)
+    elif info["action"] == UNBLOCK:                 # the transition is recorded; retained responses and the stage stay
         s = research.status(campaign, pair_id)
         history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
                                                    "from_reason": s.get("reason"), "action": UNBLOCK}]
