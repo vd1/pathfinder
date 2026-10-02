@@ -17,7 +17,7 @@ previous one is merged, except where noted.
 | 3 | Typed evidence inventory and resolver shared by all stages, context by reference, session economy | D4, S1, S2, F01 to F06, F08, R01, R03, julien-2 read-only readers and hash-bound index | 1 |
 | 4 | Health policy, batch coordinator, reconciliation transitions, atomic repairs, launcher | D6, H3, H5, H6, H7, S3, S5, S6, F07, R02 | 1, 2 |
 | 5 | Contracts over parsers: schema calls, consumer stage; one budgeted context builder for every stage | D5, H8, H9, R4, J01 | 1 |
-| 6 | Composable EVA as an option (N branches, default 3, then a joint thread) | EVA decision, D10 | 3 |
+| 6 | Composable EVA as an option: N direct-EVA branches (EVA-minus renamed: E writes no synthesis, V reads the ledger), default 3, then a joint EVA thread | EVA decision, D10 | 3 |
 | 7 | Deployments: statarb on engine-v1.2, then agQSL; julien-2 cherry-picks | D8, statarb and agQSL migration outlines | 1 to 5 |
 | 8 | Multi-source intake (arXiv categories, NBER, NEP, SSRN metadata) | H11, S9 | 7 |
 
