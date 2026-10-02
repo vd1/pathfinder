@@ -49,6 +49,10 @@ def next_actions(campaign) -> list[dict]:
             out.append({"owner": "apex", "action": f"{pair}: repair or declare its evidence",
                         "why": action.removeprefix("nothing: ") + ". The command lists proposed declarations; one that needs a URL goes to the operator.",
                         "command": _cmd(campaign, "evidence", pair)})
+        elif action.startswith("nothing: frozen bundle changed"):
+            out.append({"owner": "operator", "action": f"{pair}: a frozen branch bundle changed",
+                        "why": action.removeprefix("nothing: ") + ". Restore the bundle or decide to rerun the branches.",
+                        "command": None})
         elif action.startswith("nothing: edit blocked"):
             out.append({"owner": "operator", "action": f"{pair}: decide on the edit",
                         "why": action.removeprefix("nothing: "), "command": None})

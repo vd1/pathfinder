@@ -154,3 +154,52 @@ def test_a_bundle_changed_after_the_freeze_blocks_the_joint_thread(tmp_path, mon
     os.chmod(ledger, 0o644); ledger.write_text(ledger.read_text() + "\n")
     assert research.run_thread(c, "Q1P1") == "BLOCKED"
     assert research.status(c, "Q1P1")["reason"].startswith("frozen bundle changed: branch-2: ledger.jsonl")
+
+
+def _unreadable_branch(monkeypatch, label, times=2):
+    real, left = transport.execute, {"n": times}
+
+    def execute(campaign, request):
+        r = real(campaign, request)
+        if request.stage == "ledger_review" and str(request.cwd).endswith(label) and left["n"]:
+            left["n"] -= 1
+            return {**r, "text": "the ledger reads well"}
+        return r
+    monkeypatch.setattr(transport, "execute", execute)
+
+
+def test_a_blocked_branch_blocks_the_pair_and_reconcile_repairs_that_branch(tmp_path, monkeypatch):
+    from pathfinder import reconcile
+    c = _composable(tmp_path)
+    _unreadable_branch(monkeypatch, "branch-2")
+    assert research.run_thread(c, "Q1P1") == "BLOCKED"
+    s = research.status(c, "Q1P1")
+    assert s["reason"].startswith("branch-2: contract: review:") and s["failure"]["class"] == "contract"
+    action = reconcile.inspect(c, "Q1P1")["action"]
+    assert action == "branch-2: " + reconcile.REISSUE
+    assert reconcile.apply(c, "Q1P1") == "DRAFT"
+    assert set(research.status(c, "Q1P1")["branches_frozen"]) == {"branch-1", "branch-2", "branch-3"}
+
+
+def test_the_state_document_lists_the_branches(tmp_path):
+    from pathfinder import campaign_state
+    c = _composable(tmp_path, branches=2)
+    research.run_thread(c, "Q1P1")
+    unit = campaign_state.build(c)["units"][0]
+    assert [b["label"] for b in unit["branches"]] == ["branch-1", "branch-2"]
+    assert all(b["status"] == "HANDOFF" and b["handoff_reason"] for b in unit["branches"])
+
+
+def test_a_changed_bundle_goes_to_the_operator(tmp_path, monkeypatch):
+    import os
+    from pathfinder import playbook, reconcile
+    c = _composable(tmp_path)
+    d = c.thread_dir("Q1P1")
+    _stop_where(monkeypatch, lambda cwd: cwd == str(d))
+    research.run_thread(c, "Q1P1")
+    ledger = d / "branches" / "branch-1" / "ledger.jsonl"
+    os.chmod(ledger, 0o644); ledger.write_text("changed\n")
+    research.run_thread(c, "Q1P1")
+    assert reconcile.inspect(c, "Q1P1")["action"].startswith("nothing: frozen bundle changed")
+    match = [a for a in playbook.next_actions(c) if a["action"].startswith("Q1P1")]
+    assert match and match[0]["owner"] == "operator"

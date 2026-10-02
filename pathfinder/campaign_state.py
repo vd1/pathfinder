@@ -137,6 +137,16 @@ def _runner(campaign) -> dict:
             "active_pairs": list(meta.get("active_pairs") or [])}
 
 
+def _branches(campaign, unit) -> list[dict]:
+    """A composable pair's branches, each with where its direct-EVA research stands."""
+    from . import composable
+    out = []
+    for label in composable.labels(campaign):
+        b = research.status(composable.branch_view(campaign, unit, label), unit)
+        out.append({"label": label, **{k: b.get(k) for k in ("status", "stage", "round", "reviews", "handoff_reason", "reason")}})
+    return out
+
+
 def build(campaign) -> dict:
     rows, truncated, corrupt = events.scan(campaign)
     runner_info = _runner(campaign)
@@ -193,7 +203,8 @@ def build(campaign) -> dict:
                       "editorial": {"status": e_s.get("status"), "reason": e_s.get("reason")},
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
                       "controller": controller, "lifecycle": lifecycle(r_s, e_s, p_s, controller),
-                      "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit)})
+                      "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit),
+                      **({"branches": _branches(campaign, unit)} if campaign.raw.get("research_scheme") == "composable" else {})})
     counts = Counter(u["lifecycle"] for u in units)
     pipeline = [{"title": title, "count": sum(counts[k] for k, _ in states),
                  "states": [{"key": k, "label": label, "count": counts[k]} for k, label in states]}

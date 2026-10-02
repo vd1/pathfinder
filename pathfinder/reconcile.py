@@ -23,10 +23,43 @@ def _evidence_check(campaign, pair_id) -> str | None:
     return None
 
 
+FROZEN = "nothing: frozen bundle changed"
+
+
 def inspect(campaign, pair_id: str) -> dict:
     """@planks("When the operator inspects pair \"Q1P1\"")
     @planks("When the operator applies the recovery action for pair \"Q1P1\"")
     """
+    if campaign.raw.get("research_scheme") == "composable":
+        return _inspect_composable(campaign, pair_id)
+    return _inspect(campaign, pair_id)
+
+
+def _inspect_composable(campaign, pair_id: str) -> dict:
+    """While the branches run, the first branch that has not handed off names its own action, prefixed by
+    its label; once they are frozen, the joint thread is inspected as an ordinary thread."""
+    from . import composable
+    s = research.status(campaign, pair_id)
+    if s.get("branches_frozen"):
+        if s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("frozen bundle changed"):
+            info = _inspect(composable.joint_view(campaign, pair_id), pair_id)
+            return {**info, "action": f"{FROZEN}: {s['reason'].removeprefix('frozen bundle changed: ')}"}
+        return _inspect(composable.joint_view(campaign, pair_id), pair_id)
+    info = {"pair_id": pair_id, "status": s.get("status"), "stage": s.get("stage"), "round": s.get("round"),
+            "reason": s.get("reason"), "lock": runner.Lock.holder(campaign.thread_dir(pair_id))}
+    if info["lock"]:
+        return {**info, "action": "nothing: in progress"}
+    for label in composable.labels(campaign):
+        view = composable.branch_view(campaign, pair_id, label)
+        if research.status(view, pair_id).get("status") != "HANDOFF":
+            inner = _inspect(view, pair_id)["action"]
+            action = (f"nothing: {label}: {inner.removeprefix('nothing: ')}" if inner.startswith("nothing")
+                      else f"{label}: {inner}")
+            return {**info, "action": action, "branch": label}
+    return {**info, "action": "resume branches"}         # every branch handed off: freeze and start the joint thread
+
+
+def _inspect(campaign, pair_id: str) -> dict:
     d = campaign.thread_dir(pair_id); s = research.status(campaign, pair_id); holder = runner.Lock.holder(d)
     note = (d / f"{pair_id}.tex").exists()
     evidence_block = s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith(EVIDENCE_PREFIXES)
@@ -88,7 +121,31 @@ def apply(campaign, pair_id: str) -> str:
     """@planks("When the operator applies the recovery action for pair \"Q1P1\"")
     @planks("When the operator applies reconciliation to the shortlist")
     """
+    if campaign.raw.get("research_scheme") == "composable":
+        return _apply_composable(campaign, pair_id)
+    return _apply(campaign, pair_id)
+
+
+def _apply_composable(campaign, pair_id: str) -> str:
+    """A branch's action is applied to that branch, then the composition resumes; after the freeze, the joint
+    thread's action is applied as for any thread."""
+    from . import composable
     info = inspect(campaign, pair_id)
+    if info["action"].startswith("nothing"):
+        return info["action"]
+    if research.status(campaign, pair_id).get("branches_frozen"):
+        return _apply(composable.joint_view(campaign, pair_id), pair_id)
+    if info.get("branch"):
+        _apply(composable.branch_view(campaign, pair_id, info["branch"]), pair_id)
+    with runner.Lock(campaign.thread_dir(pair_id)):
+        history = list(research.status(campaign, pair_id).get("history") or []) + [{
+            "at": research._now(), "from_status": info["status"], "from_reason": info["reason"], "action": info["action"]}]
+        research._set(campaign, pair_id, status="running", reason=None, failure=None, history=history)
+        return composable.run(campaign, pair_id, stop=lambda: runner.stopped(campaign))
+
+
+def _apply(campaign, pair_id: str) -> str:
+    info = _inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
     if not runner.guard_ok(campaign, inflight=1):
