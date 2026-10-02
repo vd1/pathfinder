@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def command(root: Path, args: list[str]) -> list[str]:
-    return [sys.executable, "-m", "pathfinder.cli", "--root", str(root), *args]
+    return [sys.executable, "-u", "-m", "pathfinder.cli", "--root", str(root), *args]   # -u: the log fills as it runs
 
 
 def alive(pid: int) -> bool:
@@ -42,4 +42,6 @@ def run(root: Path, args: list[str], settle_seconds: float = 20.0) -> dict:
     pid = launch(argv, log, settle_seconds, root)
     record = {"pid": pid, "argv": argv, "log": str(log), "started_at": stamp}
     (root / "launch.json").write_text(json.dumps(record, indent=1))
+    with (root / "launches.jsonl").open("a") as stream:        # concurrent launches keep every PID on record
+        stream.write(json.dumps(record) + "\n")
     return record

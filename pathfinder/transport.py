@@ -285,16 +285,21 @@ def _receipt(campaign, thread, stage, actor, model, r):
 def _cool_down(campaign, reason):
     """Hold admission for the retry backoff after a rate limit; a later cooldown keeps the later end."""
     from .admission import _cooldown_roots
+    from . import health
     for root in _cooldown_roots(campaign):           # the arms of one parent share the account, so they cool together
+        if not root.is_dir():                        # never create a missing parent
+            print(f"cooldown not recorded at {root}: no such directory")
+            continue
         path = root / "cooldown.json"
         until = time.time() + retry_policy(campaign)[1]
         try:
             until = max(until, float(json.loads(path.read_text()).get("until", 0)))
         except (OSError, ValueError, TypeError, AttributeError):
             pass
-        temporary = path.with_suffix(".tmp")
-        temporary.write_text(json.dumps({"until": until, "reason": reason}))
-        temporary.replace(path)
+        try:
+            health.write(path, {"until": until, "reason": reason})   # unique temporary name: siblings write the parent
+        except OSError as error:                     # a missing or read-only parent must not fail the call's bookkeeping
+            print(f"cooldown not recorded at {root}: {error}")
 
 
 def _failed(campaign, thread, stage, actor, model, started, outcome, error, prompt_chars=None):

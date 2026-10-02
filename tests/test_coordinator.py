@@ -172,3 +172,26 @@ def test_without_batch_the_first_failure_still_fails(tmp_path, monkeypatch):
     _fake_pairs(monkeypatch, [False, True])
     with pytest.raises(RuntimeError):
         coordinator.run(_batch(tmp_path, {}), interval=0.01, heartbeat=0.05)
+
+
+def test_a_tolerated_failure_does_not_leave_the_arm_unhealthy_for_the_next_entry(tmp_path, monkeypatch):
+    from pathfinder import health
+    seen = []
+    def run_pair(c, pair, **kw):
+        seen.append(runner.unhealthy(c))
+        if pair == "Q1P1":
+            health.write(c.path("health.json"), {"pair": pair, "reason": "failed twice"})
+            return {"code": 1, "complete": False, "research": "PAUSE", "edit": "done", "paper": None}
+        return {"code": 0, "complete": True, "research": "PAUSE", "edit": "done", "paper": None}
+    monkeypatch.setattr(runner, "run_pair", run_pair)
+    state = coordinator.run(_batch(tmp_path, {"max_consecutive_failures": 2}), interval=0.01, heartbeat=0.05)
+    assert seen == [False, False] and state["status"] == "complete"
+    assert state["failed_entries"][0]["health"]["pair"] == "Q1P1"
+
+
+def test_a_naive_deadline_is_utc(tmp_path, monkeypatch):
+    import datetime
+    later = (datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1)).replace(tzinfo=None).isoformat()
+    seen = []
+    _fake_pairs(monkeypatch, [True, True], seen)
+    assert coordinator.run(_batch(tmp_path, {"deadline": later}), interval=0.01, heartbeat=0.05)["status"] == "complete"

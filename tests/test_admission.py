@@ -209,3 +209,9 @@ def test_a_cooldown_in_one_arm_holds_its_siblings_and_is_shown(tmp_path):
     assert admission.cooldown(arm2) > 0
     snap = health.snapshot(arm2)
     assert snap["cooldown"]["remaining_seconds"] > 0 and any("cooling down" in w for w in snap["warnings"])
+
+
+def test_a_rate_limit_with_a_missing_parent_still_cools_the_campaign(tmp_path):
+    c = make(tmp_path / "arm", parent="../missing-parent", retry_backoff_seconds=5)
+    transport._receipt(c, "Q1P1", "peer", "ada", "m", {"outcome": "error", "error": "HTTP 429 Too Many Requests"})
+    assert admission.cooldown(c) > 0 and not (tmp_path / "missing-parent").exists()

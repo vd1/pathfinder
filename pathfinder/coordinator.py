@@ -22,7 +22,7 @@ entry in flight; with k set, a failed entry is recorded in failed_entries and th
 entries in a row fail the coordination. Without the block the first failure fails it, as before."""
 from __future__ import annotations
 import json, os, threading, time, uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from . import config, edit, health, paper, research, runner
@@ -116,7 +116,10 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
     """accept_change covers a changed schedule and changed child run records in this coordination."""
     parent, arms, schedule = load(schedule_path)
     batch = schedule.get("batch") or {}
-    deadline = datetime.fromisoformat(batch["deadline"].replace("Z", "+00:00")).timestamp() if batch.get("deadline") else None
+    deadline = None
+    if batch.get("deadline"):
+        moment = datetime.fromisoformat(batch["deadline"].replace("Z", "+00:00"))
+        deadline = (moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)).timestamp()   # naive means UTC
     tolerance = batch.get("max_consecutive_failures")
     state = {"pid": os.getpid(), "run_id": uuid.uuid4().hex, "status": "running", "started_at": time.time(),
              "heartbeat_at": time.time(), "last_progress": None, "censored_arms": [],
@@ -172,7 +175,11 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
                     state["consecutive_failures"] += 1
                     if not tolerance or state["consecutive_failures"] >= tolerance:
                         raise RuntimeError(problem)
-                    state["failed_entries"].append({"entry": entry, "error": problem, "at": time.time()})
+                    # tolerated: the arm's health flag belongs to this entry, so it is recorded here and cleared,
+                    # or the arm's later entries (a paper-only resume) would silently refuse to start
+                    flag = _read(c.path("health.json")) or None
+                    c.path("health.json").unlink(missing_ok=True)
+                    state["failed_entries"].append({"entry": entry, "error": problem, "at": time.time(), "health": flag})
                     health.write(parent.path("progress.json"), state)
                     continue
                 state["consecutive_failures"] = 0

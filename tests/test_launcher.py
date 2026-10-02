@@ -25,3 +25,7 @@ def test_cli_launch_reports_a_short_command_as_exited(tmp_path, capsys):
     assert cli.main(["--root", str(tmp_path), "launch", "--settle", "1", "--", "health"]) == 1
     out = capsys.readouterr().out
     assert "exited" in out and (tmp_path / "logs").is_dir()
+
+
+def test_the_child_writes_its_log_unbuffered():
+    assert "-u" in launch.command(Path("/c"), ["research"])

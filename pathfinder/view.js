@@ -276,6 +276,7 @@ async function chooseArm(name) {
   arm = name;
   const h = new URLSearchParams(location.hash.slice(1)); h.set("arm", name); h.delete("note"); h.delete("doc");
   history.replaceState(null, "", location.pathname + "#" + h.toString());
+  if ($("detail-dialog").open) $("detail-dialog").close();      // its document belongs to the previous arm
   current = null;                                   // a different campaign: render it afresh
   filterKeys = null;
   await refresh();

@@ -54,13 +54,14 @@ def test_first_interrupt_drains(tmp_path, monkeypatch):
     calls = []
 
     def fake_thread(campaign, pair_id, stop=lambda: False):
-        calls.append(pair_id); time.sleep(0.3)
+        calls.append(pair_id)
+        os.kill(os.getpid(), signal.SIGINT)          # from inside the run: the runner's handler is installed by now
+        time.sleep(0.3)
         (campaign.thread_dir(pair_id)).mkdir(parents=True, exist_ok=True)
         (campaign.thread_dir(pair_id) / "status.json").write_text(json.dumps({"status": "PAUSE", "stage": "done", "round": 1}))
         return "PAUSE"
     monkeypatch.setattr(runner.research, "run_thread", fake_thread)
     before = signal.getsignal(signal.SIGINT)
-    threading.Timer(0.1, lambda: os.kill(os.getpid(), signal.SIGINT)).start()
     runner.run(c, interval=0.05)
     assert calls == ["Q1P1"] and json.loads((tmp_path / "stop.json").read_text())["reason"] == "interrupt"
     assert signal.getsignal(signal.SIGINT) is before
