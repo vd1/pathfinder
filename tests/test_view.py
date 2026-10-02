@@ -92,7 +92,8 @@ def _harness():
 
 @pytest.mark.parametrize("scenario", ["hash_opens_document", "dialog_survives_refresh", "close_clears_hash",
                                       "failed_refresh_keeps_snapshot", "pipeline_counts_from_server", "escaped",
-                                      "filter_select_not_rebuilt_on_refresh", "no_arxiv_link_for_local_ids", "no_null_scores", "usage_in_human_units"])
+                                      "filter_select_not_rebuilt_on_refresh", "no_arxiv_link_for_local_ids", "no_null_scores", "usage_in_human_units", "arms_select_shown",
+                                      "arm_switch_requests_that_arm"])
 def test_page_scenarios(scenario):
     assert _harness()[scenario] is True
 
@@ -111,3 +112,24 @@ def test_a_nul_byte_in_a_document_path_is_a_404(tmp_path):
     with pytest.raises(webguard.Refused) as refused:
         webguard.resolve(tmp_path, "threads/Q1P1/x\x00.pdf")
     assert refused.value.code == 404
+
+
+@pytest.fixture
+def arms_server(tmp_path):
+    a1, a2 = make(tmp_path / "a1"), make(tmp_path / "a2", pairs=("Q1P1", "Q1P2"))
+    d = a1.thread_dir("Q1P1") / "edited"; d.mkdir(parents=True); (d / "note.tex").write_text("only in a1")
+    e = a2.thread_dir("Q1P2") / "edited"; e.mkdir(parents=True); (e / "note.tex").write_text("only in a2")
+    srv = view.make_server({"a1": a1, "a2": a2}, 0)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    yield srv.server_address[1]
+    srv.shutdown()
+
+
+def test_the_view_lists_and_selects_arms(arms_server):
+    port = arms_server
+    arms = json.loads(get(port, "/api/arms")[2])
+    assert [a["arm"] for a in arms] == ["a1", "a2"]
+    assert len(json.loads(get(port, "/api/state?arm=a2")[2])["units"]) == 2
+    assert get(port, "/doc?arm=a1&path=threads/Q1P1/edited/note.tex")[2] == b"only in a1"
+    assert get(port, "/doc?arm=a1&path=threads/Q1P2/edited/note.tex")[0] == 404
+    assert get(port, "/api/state?arm=nope")[0] == 404

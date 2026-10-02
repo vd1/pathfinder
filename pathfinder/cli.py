@@ -42,7 +42,9 @@ def main(argv=None):
     sub.add_parser("state", help="the campaign state document: unit states, stage counts, blocks, token budget").add_argument("--json", action="store_true")
     sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
-    sub.add_parser("view", help="serve the operator view: state, pipeline, units and documents").add_argument("--port", type=int, default=8791)
+    vw = sub.add_parser("view", help="serve the operator view: state, pipeline, units and documents")
+    vw.add_argument("--port", type=int, default=8791)
+    vw.add_argument("--schedule", help="a coordination's schedule.json: one view over all its arms")
     w = sub.add_parser("paper", help="after DRAFT: write a paper with references and have it reviewed")
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
@@ -74,6 +76,10 @@ def main(argv=None):
             return 0
         result = freeze.verify(Path(ns.dest), repo); print(json.dumps(result, indent=1))
         return 0 if result["status"] == "verified" else 1
+    if ns.cmd == "view" and ns.schedule:         # a coordination: its parent need not be a campaign
+        from . import coordinator, view
+        _, arms, _ = coordinator.load(Path(ns.schedule))
+        view.serve(arms, ns.port); return 0
     if ns.cmd == "launch":                       # before loading: the launched command loads the campaign itself
         from . import launch
         args = ns.args[1:] if ns.args[:1] == ["--"] else ns.args

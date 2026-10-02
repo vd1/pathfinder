@@ -11,7 +11,11 @@ STATIC = {"/": ("view.html", "text/html; charset=utf-8"), "/view.js": ("view.js"
           "/view.css": ("view.css", "text/css; charset=utf-8")}
 
 
-def make_server(campaign, port: int) -> ThreadingHTTPServer:
+def make_server(campaigns, port: int) -> ThreadingHTTPServer:
+    """One campaign, or the arms of a coordination as {arm: campaign}; requests name the arm with ?arm=."""
+    arms = campaigns if isinstance(campaigns, dict) else {"": campaigns}
+    first = next(iter(arms))
+
     class Handler(BaseHTTPRequestHandler):
         def reply(self, code: int, body: bytes, ctype: str, kind: str = "page", filename: str | None = None):
             self.send_response(code)
@@ -27,6 +31,21 @@ def make_server(campaign, port: int) -> ThreadingHTTPServer:
             if refused:
                 return self.reply(403, refused.encode(), "text/plain; charset=utf-8")
             request = urlsplit(self.path)
+            query = parse_qs(request.query)
+            arm = query.get("arm", [first])[0]
+            if request.path in ("/api/state", "/doc") and arm not in arms:
+                return self.reply(404, b"no such arm", "text/plain; charset=utf-8")
+            campaign = arms.get(arm)
+            if request.path == "/api/arms":
+                listing = []
+                for name, c in arms.items():
+                    try:
+                        doc = campaign_state.build(c)
+                        listing.append({"arm": name, "name": c.root.name, "units": len(doc["units"]),
+                                        "progress": doc["progress"]["status"], "stop": doc["campaign"]["stop"]})
+                    except Exception as error:
+                        listing.append({"arm": name, "name": c.root.name, "error": repr(error)})
+                return self.reply(200, json.dumps(listing, default=str).encode(), "application/json")
             if request.path in STATIC:
                 name, ctype = STATIC[request.path]
                 return self.reply(200, (HERE / name).read_bytes(), ctype)
@@ -38,7 +57,7 @@ def make_server(campaign, port: int) -> ThreadingHTTPServer:
                 return self.reply(200, body, "application/json")
             if request.path == "/doc":
                 try:
-                    target = webguard.resolve(campaign.root, parse_qs(request.query).get("path", [""])[0])
+                    target = webguard.resolve(campaign.root, query.get("path", [""])[0])
                 except webguard.Refused as error:
                     return self.reply(error.code, str(error).encode(), "text/plain; charset=utf-8")
                 try:

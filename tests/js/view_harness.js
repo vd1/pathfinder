@@ -3,7 +3,7 @@ const fs = require("fs"), vm = require("vm"), path = require("path");
 const source = fs.readFileSync(path.join(__dirname, "../../pathfinder/view.js"), "utf8");
 
 // The page fetches its first snapshot as soon as it loads: give the world its first response and hash up front.
-async function world(first, hash = "") {
+async function world(first, hash = "", arms = [{ arm: "", name: "camp" }]) {
   const writes = {}, elements = {}, handlers = {}, docHandlers = {};
   function element(id) {
     let html = "";
@@ -20,6 +20,7 @@ async function world(first, hash = "") {
   }
   const location = { hash, pathname: "/" };
   const responses = [first];
+  const requested = [];
   const context = {
     console, URLSearchParams, setInterval() {}, matchMedia: () => ({ matches: true }),
     document: {
@@ -30,7 +31,9 @@ async function world(first, hash = "") {
     history: { replaceState(_s, _t, url) { location.hash = url.includes("#") ? url.slice(url.indexOf("#")) : ""; } },
     location,
     fetch: async (url) => {
+      requested.push(url);
       if (url.startsWith("/doc")) return { ok: true, text: async () => "source text" };
+      if (url.startsWith("/api/arms")) return { ok: true, json: async () => arms };
       const next = responses.shift();
       if (next instanceof Error) throw next;
       return { ok: true, json: async () => next };
@@ -38,9 +41,9 @@ async function world(first, hash = "") {
   };
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(source + "\n;globalThis.__api = { render, refresh, openFromHash, showUnit };", context);
+  vm.runInContext(source + "\n;globalThis.__api = { render, refresh, openFromHash, showUnit, chooseArm };", context);
   await new Promise((resolve) => setTimeout(resolve, 0));        // let the load-time refresh finish
-  return { api: context.__api, writes, location, responses, el: context.document.getElementById };
+  return { api: context.__api, writes, location, responses, requested, el: context.document.getElementById };
 }
 
 const unit = (u, activity, summary) => ({
@@ -93,6 +96,13 @@ const state = (activity, summary) => ({
   const shown = w.el("usage").innerHTML.replace(/<[^>]*>/g, "");          // visible text; exact counts stay in titles
   out.usage_in_human_units = shown.includes("21.6 M") && shown.includes("182 k") && !shown.includes("21,621,252")
     && w.el("usage").innerHTML.includes('title="21,621,252"');
+  w = await world(state("a"), "", [{ arm: "repeat", name: "repeat" }, { arm: "recursive", name: "recursive" }]);
+  out.arms_select_shown = w.el("arm-select").innerHTML.includes("recursive")
+    && w.requested.some((u) => u === "/api/state?arm=repeat");
+  w.el("arm-select").value = "recursive";
+  w.responses.push(state("a"));
+  await w.api.chooseArm("recursive");
+  out.arm_switch_requests_that_arm = w.requested.at(-1) === "/api/state?arm=recursive";
   w = await world(state("a", "<img src=x onerror=1>"));
   const html = w.el("research-list").innerHTML;
   out.escaped = html.includes("&lt;img") && !html.includes("<img");

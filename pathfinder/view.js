@@ -24,7 +24,10 @@ const duration = (seconds) => seconds == null ? "Unknown"
   : seconds < 60 ? Math.round(seconds) + " s"
   : seconds < 3600 ? Math.round(seconds / 60) + " min"
   : seconds < 86400 ? num(seconds / 3600) + " h" : num(seconds / 86400) + " d";
-const docURL = (path) => "/doc?path=" + encodeURIComponent(path);
+// A coordination serves several arms; the chosen one travels with every request and in the link.
+let arm = new URLSearchParams(location.hash.slice(1)).get("arm") || null;
+const armQuery = (sep) => arm ? sep + "arm=" + encodeURIComponent(arm) : "";
+const docURL = (path) => "/doc?path=" + encodeURIComponent(path) + armQuery("&");
 const arxivURL = (id) => "https://arxiv.org/abs/" + encodeURIComponent(id);
 // Local manuscripts and dossiers are not arXiv papers: link only identifiers arXiv would resolve.
 const isArxiv = (id) => /^\d{4}\.\d{4,5}(v\d+)?$/.test(String(id || "")) || /^[a-z-]+(\.[A-Z]{2})?\/\d{7}(v\d+)?$/.test(String(id || ""));
@@ -233,7 +236,7 @@ async function refresh() {
   refreshing = true;
   $("refresh-button").disabled = true;
   try {
-    const response = await fetch("/api/state", {cache: "no-store"});
+    const response = await fetch("/api/state" + armQuery("?"), {cache: "no-store"});
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Campaign state unavailable");
     const first = current === null;
@@ -253,5 +256,31 @@ async function refresh() {
   }
 }
 
-refresh();
+async function loadArms() {
+  try {
+    const arms = await (await fetch("/api/arms", {cache: "no-store"})).json();
+    if (arms.length > 1) {
+      if (!arm || !arms.some((a) => a.arm === arm)) arm = arms[0].arm;
+      $("arm-select").innerHTML = arms.map((a) => `<option value="${esc(a.arm)}">${esc(a.arm)}${a.units != null ? " (" + a.units + " units)" : ""}</option>`).join("");
+      $("arm-select").value = arm;
+      $("arm-select").hidden = false;
+    } else {
+      arm = null;
+    }
+  } catch (error) {
+    arm = null;
+  }
+}
+
+async function chooseArm(name) {
+  arm = name;
+  const h = new URLSearchParams(location.hash.slice(1)); h.set("arm", name); h.delete("note"); h.delete("doc");
+  history.replaceState(null, "", location.pathname + "#" + h.toString());
+  current = null;                                   // a different campaign: render it afresh
+  filterKeys = null;
+  await refresh();
+}
+
+$("arm-select").addEventListener("change", () => chooseArm($("arm-select").value));
+loadArms().then(refresh);
 setInterval(refresh, 20000);
