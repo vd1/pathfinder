@@ -56,7 +56,7 @@ def build(d: Path, main: str = "paper.tex", restyle: str | None = None) -> tuple
         src = _restyle(src, restyle)
     (scratch / main).write_text(src)
     r = subprocess.run(["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error", main], cwd=scratch,
-                       capture_output=True, text=True, timeout=300, env=tex_env(d))
+                       capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300, env=tex_env(d))
     log = (scratch / f"{stem}.log").read_text(errors="replace") if (scratch / f"{stem}.log").exists() else r.stdout + r.stderr
     ok = r.returncode == 0 and (scratch / f"{stem}.pdf").exists()
     if ok:
