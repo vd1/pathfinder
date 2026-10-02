@@ -568,6 +568,25 @@ go to phase 4 (reconciliation transitions); F09, F10 and R04 go to phase 2 (even
 log, separated states, execution identity). Phase 1's typed failure records are
 the model for the typed evidence errors of R03.
 
+\section{Julien-2 ten-pair run, 2 October}\label{sec:julien-2oct}
+
+Reported from the julien-2 campaign's run of ten pairs. The first is a recurrence: the
+by-reference fix had covered joint research only.
+
+{\footnotesize\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.15}
+\begin{xltabular}{\linewidth}{L{8mm}L{56mm}Y}
+\toprule Item & Failure & Refactor target\\\midrule\endhead
+\bottomrule\endfoot
+J01 & Oversized prompts again, now in PCE editing and Claude assessment & One context builder with a prompt budget for every stage (research, consolidation, verification, editing, authoring, assessment), passing large material by reference; tool-less stages get a budgeted digest, never an unbounded paste. Phase 5.\\
+J02 & A local size rejection consumes an attempt although no model call starts & A call refused before launch (size gate, admission stop) never counts against attempts, allowances or ceilings; canonical receipts already mark it \texttt{refused} and uncharged, the attempt counters must follow. Phase 4c.\\
+J03 & Account recovery changes the prompt under an existing attempt identifier, so the hash check blocks reuse of completed responses & Attempt identity is immutable: a recovery that changes the prompt opens a new attempt linked to the old one, and completed responses are reused by their recorded request, not by position. Phase 4c.\\
+J04 & Monitoring reports activity after the controller exits because \texttt{pgrep} loops match themselves & Liveness comes from the runner record (PID, heartbeat) and active-call records, never from process-name patterns (S items on watching by PID). Already the rule in \texttt{state.json} since phase 2a; to be the rule in every supervisor script.\\
+J05 & A PCE author call timed out and needs explicit reconciliation & Reconcile covers every stage, not only research: a stopped edit, author or review step names its failure class (phase 4a) and its one safe action. Phase 4c.\\
+\end{xltabular}}
+
+The common lesson: prompt budgeting and recovery must be uniform across stages, not
+fixed stage by stage.
+
 \section{Decisions taken}
 
 Settled by the operator on 29 September.

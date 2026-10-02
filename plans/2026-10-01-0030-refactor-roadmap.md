@@ -16,7 +16,7 @@ previous one is merged, except where noted.
 | 2 | Event log, derived campaign state with separated research, evidence, editorial, assessment and controller states, execution identifier, operator web page | D1, H4, H10, S4, S8, F09, F10, R04, operator view decision | 1 |
 | 3 | Typed evidence inventory and resolver shared by all stages, context by reference, session economy | D4, S1, S2, F01 to F06, F08, R01, R03, julien-2 read-only readers and hash-bound index | 1 |
 | 4 | Health policy, batch coordinator, reconciliation transitions, atomic repairs, launcher | D6, H3, H5, H6, H7, S3, S5, S6, F07, R02 | 1, 2 |
-| 5 | Contracts over parsers: schema calls, consumer stage | D5, H8, H9, R4 | 1 |
+| 5 | Contracts over parsers: schema calls, consumer stage; one budgeted context builder for every stage | D5, H8, H9, R4, J01 | 1 |
 | 6 | Composable EVA as an option (N branches, default 3, then a joint thread) | EVA decision, D10 | 3 |
 | 7 | Deployments: statarb on engine-v1.2, then agQSL; julien-2 cherry-picks | D8, statarb and agQSL migration outlines | 1 to 5 |
 | 8 | Multi-source intake (arXiv categories, NBER, NEP, SSRN metadata) | H11, S9 | 7 |
@@ -35,3 +35,4 @@ Plans:
 - Phase 2 is split: 2a events, execution identifier and state document (`plans/2026-10-01-0130-phase2a-events-and-state.md`); 2b operator web page and server hardening on that document (`plans/2026-10-01-0300-phase2b-operator-view.md`); 2a merged ef20a38, 2b merged c669dbe.
 - Phase 3 is split: 3a agent workspace, evidence and papers by reference, read-only verifiers, tool-error receipts (`plans/2026-10-01-1130-phase3a-agent-workspace-and-context.md`); 3b typed evidence inventory and resolver (outline at the end of the 3a plan).
 - Phase 4 is split: 4a health policy and recovery (`plans/2026-10-01-1700-phase4a-health-and-recovery.md`); 4b batch coordinator, launcher and aggregate view; 4c supervisor and atomic repairs. 3a, 3b and 2c merged.
+- Phase 4c scope adds J02 (refused calls never consume attempts), J03 (immutable attempt identity under recovery) and J05 (reconcile every stage), from the julien-2 ten-pair run of 2 October; 4a and 4b merged.
