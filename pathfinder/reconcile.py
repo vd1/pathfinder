@@ -34,6 +34,9 @@ def inspect(campaign, pair_id: str) -> dict:
         action = "nothing: in progress"
     elif s.get("status") == "BLOCKED" and s.get("reason") == STALE:   # a retained answer to an outdated question
         action = REISSUE
+    elif (s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("contract:")
+          and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
+        action = REISSUE                            # the retained reply broke its contract twice: keep it, ask again
     elif evidence_block:                            # repaired evidence is verified before the block is lifted
         problem = _evidence_check(campaign, pair_id)
         action = UNBLOCK if problem is None else f"nothing: evidence still blocked: {problem}"

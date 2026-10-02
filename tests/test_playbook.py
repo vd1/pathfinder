@@ -56,3 +56,12 @@ def test_no_pair_is_reconciled_while_the_campaign_is_stopped(tmp_path):
     assert not any(a["command"] and " reconcile Q1P1" in a["command"] for a in actions)
     pair = [a for a in actions if a["action"].startswith("Q1P1")]
     assert pair and pair[0]["owner"] == "engine" and pair[0]["command"] is None
+
+
+def test_a_contract_block_is_an_apex_reconcile(tmp_path):
+    c = make(tmp_path, research_scheme="eva_minus")
+    research.prepare(c, "Q1P1")
+    research._set(c, "Q1P1", status="BLOCKED", stage="ledger_review", reason="contract: review: no readable JSON object",
+                  failure={"class": "contract", "scope": "call", "retry": False, "reset_at": None})
+    match = [a for a in playbook.next_actions(c) if a["command"] and " reconcile Q1P1 --apply" in a["command"]]
+    assert match and match[0]["owner"] == "apex"

@@ -116,3 +116,19 @@ def test_an_oversize_edit_block_is_not_rerun(tmp_path):
     action = reconcile.inspect(c, "Q1P1")["action"]
     assert action.startswith("nothing: edit blocked: input too large")
     assert reconcile.apply(c, "Q1P1") == action
+
+
+CONTRACT = {"class": "contract", "scope": "call", "retry": False, "reset_at": None}
+
+
+def test_a_composable_contract_block_is_reissued(tmp_path):
+    c = make(tmp_path, research_scheme="eva_minus")
+    research.prepare(c, "Q1P1")
+    research._set(c, "Q1P1", status="BLOCKED", stage="ledger_review", reason="contract: review: no readable JSON object", failure=CONTRACT)
+    assert reconcile.inspect(c, "Q1P1")["action"] == reconcile.REISSUE
+
+
+def test_a_verifier_contract_block_reruns_the_verifier(tmp_path):
+    c = _drafted(tmp_path)
+    research._set(c, "Q1P1", status="BLOCKED", stage="verify", reason="contract: verify: no readable JSON object", failure=CONTRACT)
+    assert reconcile.inspect(c, "Q1P1")["action"] == "run verify"

@@ -47,7 +47,11 @@ def _set(campaign, pair_id, **kw):
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
     """The editor stage; a call the engine refuses (a stop marker or an admission Stop) ends it as stopped."""
     try:
-        return _run(campaign, pair_id, stop)
+        result = _run(campaign, pair_id, stop)
+        if result == "done":
+            from . import consumer
+            consumer.run(campaign, pair_id)
+        return result
     except Refused as refused:
         _set(campaign, pair_id, status="stopped", reason=f"refused: {refused}"); return "stopped"
 

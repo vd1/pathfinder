@@ -7,12 +7,13 @@ Extension code runs in the engine's process and is trusted: the engine validates
 its own records authoritative, but does not police what it does. Supported names: admission,
 snapshot_extra, transport (a deployment's own dispatcher, called as dispatcher(campaign, request) inside
 the engine's admission, active-call record and receipt), failure_rules (a sequence of (failure class,
-regular expression) pairs tried before the built-in classification of failed calls)."""
+regular expression) pairs tried before the built-in classification of failed calls), consumer (called as
+consumer(campaign, pair_id, edited_dir) after a pair is edited; see pathfinder.consumer)."""
 from __future__ import annotations
 import hashlib, importlib, inspect, sys
 from pathlib import Path
 
-SUPPORTED = {"admission", "snapshot_extra", "transport", "failure_rules"}
+SUPPORTED = {"admission", "snapshot_extra", "transport", "failure_rules", "consumer"}
 
 
 def _spec(campaign) -> dict:
