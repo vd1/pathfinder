@@ -41,6 +41,12 @@ class TransportFailed(Exception):
         self.failure = failure
 
 
+def extended(base: float, previous: dict | None) -> int:
+    """A stage's allowance, twice its base once when its previous call timed out while working (julien-2,
+    2 October: an editor at 600 s was still working); the doubling is not compounded."""
+    return int(base * 2) if (previous or {}).get("class") == "timeout" else int(base)
+
+
 def stopped_reason(failure: dict | None) -> str:
     return f"transport failed: {(failure or {}).get('class', 'unknown')}"
 

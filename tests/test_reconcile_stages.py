@@ -132,3 +132,34 @@ def test_a_verifier_contract_block_reruns_the_verifier(tmp_path):
     c = _drafted(tmp_path)
     research._set(c, "Q1P1", status="BLOCKED", stage="verify", reason="contract: verify: no readable JSON object", failure=CONTRACT)
     assert reconcile.inspect(c, "Q1P1")["action"] == "run verify"
+
+
+def _timeouts_seen(monkeypatch, module):
+    seen = {}
+    real = module.transport.call
+
+    def call(prompt, **kw):
+        seen.setdefault(kw["stage"], []).append(kw["timeout"])
+        return real(prompt, **kw)
+    monkeypatch.setattr(module.transport, "call", call)
+    return seen
+
+
+def test_an_edit_that_timed_out_is_rerun_once_with_twice_its_allowance(tmp_path, monkeypatch):
+    c = _drafted(tmp_path)
+    edit._set(c, "Q1P1", status="stopped", reason="transport failed: timeout", failure=TIMEOUT)
+    seen = _timeouts_seen(monkeypatch, edit)
+    assert reconcile.apply(c, "Q1P1") == "done"
+    assert seen["edit"] == [2 * c.allowances["edit_seconds"]]
+    assert edit.status(c, "Q1P1").get("failure") is None
+
+
+def test_a_paper_author_that_timed_out_gets_twice_its_allowance(tmp_path, monkeypatch):
+    c = _drafted(tmp_path)
+    edit._set(c, "Q1P1", status="done")
+    paper._set(c, "Q1P1", status="stopped", round=1, reason="transport failed: timeout", failure=TIMEOUT)
+    monkeypatch.setattr(paper, "_arxiv_titles", lambda ids: {})
+    seen = _timeouts_seen(monkeypatch, paper)
+    reconcile.apply(c, "Q1P1")
+    assert seen["author"][0] == 2 * c.allowances["paper_seconds"]
+    assert seen["review"][0] == c.allowances["review_seconds"]

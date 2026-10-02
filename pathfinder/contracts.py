@@ -48,17 +48,33 @@ class ContractViolation(ValueError):
         super().__init__("; ".join(errors[:5]))
 
 
+FENCE = re.compile(r"```[A-Za-z]*[ \t]*\n(.*?)\n```", re.S)
+
+
+def _first_object(text: str):
+    """The JSON object starting at the first "{" that decodes, ignoring whatever follows it (prose, a second
+    block); TeX in string values, such as \\( x \\), is not valid JSON escaping, so a second attempt doubles
+    every backslash that does not start a JSON escape."""
+    decoder = json.JSONDecoder()
+    for start in [i for i, ch in enumerate(text) if ch == "{"]:
+        for candidate in (text[start:], re.sub(r'\\(?!["\\])', r"\\\\", text[start:])):
+            try:
+                return decoder.raw_decode(candidate)[0]
+            except json.JSONDecodeError:
+                continue
+    raise ValueError("no JSON object in reply")
+
+
 def extract_json(text: str):
-    """The first JSON object in a reply. TeX in string values, such as \\( x \\), is not valid JSON escaping;
-    a second attempt doubles every backslash that does not start a JSON escape."""
-    m = re.search(r"\{.*\}", text or "", re.S)
-    if not m:
-        raise ValueError("no JSON object in reply")
-    try:
-        return json.loads(m.group(0))
-    except json.JSONDecodeError:
-        # treat every backslash as literal TeX except an escaped quote or backslash; \beta must not become a backspace
-        return json.loads(re.sub(r'\\(?!["\\])', r"\\\\", m.group(0)))
+    """The reply's JSON object: the first fenced block that holds one, else the first object in the text, in
+    both cases ignoring prose before and after it (julien-2, 2 October: a fenced reply followed by a sentence)."""
+    text = text or ""
+    for block in FENCE.findall(text):
+        try:
+            return _first_object(block)
+        except ValueError:
+            continue
+    return _first_object(text)
 
 
 _TYPES = {"object": dict, "array": list, "string": str, "null": type(None)}

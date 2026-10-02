@@ -234,3 +234,12 @@ def test_a_deployment_contract_keeps_its_own_case_and_title(tmp_path, monkeypatc
     contracts.ensure(c, _request(), {"transport_failed": False, "text": "prose"}, schema)
     kinds = [json.loads(l) for l in c.path("events.jsonl").read_text().splitlines()]
     assert any(e["kind"] == "contract_repair" and e["contract"] == "drip-review" for e in kinds)
+
+
+def test_a_fenced_reply_followed_by_prose_is_read_from_its_fence():
+    text = 'Here is the assessment:\n```json\n{"decision": "DRAFT", "reason": "fine {mostly}"}\n```\nI hope this helps; see {the notes}.'
+    assert contracts.extract_json(text) == {"decision": "DRAFT", "reason": "fine {mostly}"}
+
+
+def test_an_unfenced_object_followed_by_prose_with_braces_is_read():
+    assert contracts.extract_json('{"decision": "PAUSE"}\nNote: {x} stays open.') == {"decision": "PAUSE"}

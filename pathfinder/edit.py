@@ -62,6 +62,7 @@ def _run(campaign, pair_id: str, stop) -> str:
         raise SystemExit(f"{pair_id} is not terminal ({st})")
     d = campaign.thread_dir(pair_id); ed = d / "edited"; ed.mkdir(exist_ok=True)
     inp = _inputs(d); retry = ""
+    seconds = transport.extended(campaign.allowances.get("edit_seconds", 900), status(campaign, pair_id).get("failure"))
     if (ed / "note.tex").exists() and (ed / "references.bib").exists():   # an earlier attempt: accept it or ask for fixes
         ok, log = build(ed, main="note.tex")
         checks = check_references((ed / "note.tex").read_text(errors="replace"), (ed / "references.bib").read_text(errors="replace"))
@@ -71,13 +72,13 @@ def _run(campaign, pair_id: str, stop) -> str:
     for attempt in range(2):
         if stop():
             _set(campaign, pair_id, status="stopped"); return "stopped"
-        _set(campaign, pair_id, status="editing", attempt=attempt + 1)
+        _set(campaign, pair_id, status="editing", attempt=attempt + 1, failure=None, allowance_seconds=seconds)
         research.write_meta(campaign, pair_id, ed, "readable note")
         p = _prompt(campaign, "editor", STATUS=st, NOTE=f"{pair_id}.tex", NOTE_STEM=pair_id,
                     Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", RETRY=retry)
         try:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=False, cwd=d,
-                               timeout=campaign.allowances.get("edit_seconds", 900), thread=pair_id, stage="edit", actor="editor")
+                               timeout=seconds, thread=pair_id, stage="edit", actor="editor")
         except transport.PromptTooLarge as error:
             _set(campaign, pair_id, status="blocked", reason=str(error), failure=research.OVERSIZE_FAILURE); return "blocked"
         if r["transport_failed"]:

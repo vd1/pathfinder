@@ -158,8 +158,11 @@ def _run(campaign, pair_id: str, stop) -> str:
         unread = s.get("status") == "blocked" and (s.get("failure") or {}).get("class") == "contract"
         resume_review = (s.get("author_done") == rnd and (s.get("status") in ("reviewing", "stopped") or unread)
                          and (pd / "paper.tex").exists())       # resume at the review only once this round's author call has returned
+        previous = s.get("failure") if s.get("status") == "stopped" else None   # a timed-out call gets twice its time
+        author_seconds = transport.extended(A.get("paper_seconds", 1800), None if resume_review else previous)
+        review_seconds = transport.extended(A.get("review_seconds", 900), previous if resume_review else None)
         if not resume_review:
-            _set(campaign, pair_id, status="writing", round=rnd, reason=None)
+            _set(campaign, pair_id, status="writing", round=rnd, reason=None, failure=None)
         findings = ""
         if reviews:
             findings = ("The previous review returned the paper with these findings; address each and say what you did:\n"
@@ -169,20 +172,20 @@ def _run(campaign, pair_id: str, stop) -> str:
                     NOTE_STEM=pair_id, ROUND=rnd, FINDINGS=findings)
         if not resume_review:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=True, cwd=d,
-                               timeout=A.get("paper_seconds", 1800), thread=pair_id, stage="author", actor="author")
+                               timeout=author_seconds, thread=pair_id, stage="author", actor="author")
             if r["transport_failed"]:
                 _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
             (pd / f"author-round-{rnd}.md").write_text(r["text"] or "")
             _set(campaign, pair_id, author_done=rnd)
         if not (pd / "paper.tex").exists() or not (pd / "references.bib").exists():
             _set(campaign, pair_id, status="blocked", reason="author wrote no paper.tex or references.bib"); return "blocked"
-        result = _review_round(campaign, pair_id, rnd, reviews)
+        result = _review_round(campaign, pair_id, rnd, reviews, review_seconds)
         if result in ("ACCEPTED", "blocked"):
             return result
     _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rounds, reason=reviews[-1].get("summary")); return "PAUSE-ON-AMEND"
 
 
-def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
+def _review_round(campaign, pair_id: str, rnd: int, reviews: list, seconds: int | None = None) -> str:
     """Build and check the paper as it stands, then one reviewer call. Appends to reviews.
     Returns ACCEPTED, blocked, or AMEND (the caller decides whether another round follows)."""
     d = campaign.thread_dir(pair_id); pd = d / "paper"
@@ -200,7 +203,7 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list) -> str:
                       Section("paper.tex", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
                       Section("reference checks", text="\n".join(checks) or "no findings", keep=True),
                       Section("your task", text=_prompt(campaign, "review"), keep=True)], tools=False, cwd=d, unit=pair_id)
-    kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=A.get("review_seconds", 900),
+    kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=seconds or A.get("review_seconds", 900),
               thread=pair_id, stage="review", actor="reviewer", schema=contracts.SCHEMAS["paper_review"])
     r = transport.call(q, campaign=campaign, **kw)
     if not r["transport_failed"]:                 # read once under the review contract, repaired at most once
