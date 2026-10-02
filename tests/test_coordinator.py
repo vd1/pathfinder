@@ -195,3 +195,57 @@ def test_a_naive_deadline_is_utc(tmp_path, monkeypatch):
     seen = []
     _fake_pairs(monkeypatch, [True, True], seen)
     assert coordinator.run(_batch(tmp_path, {"deadline": later}), interval=0.01, heartbeat=0.05)["status"] == "complete"
+
+
+def _picker(tmp_path, body):
+    (tmp_path / "deploy").mkdir(exist_ok=True)
+    (tmp_path / "deploy" / f"picker_{tmp_path.name.replace('-', '_')}.py").write_text(body)
+    return f"picker_{tmp_path.name.replace('-', '_')}:next_unit"
+
+
+def _dynamic(tmp_path, body, batch=None):
+    path = staged(tmp_path, schedule=[])
+    data = json.loads(path.read_text())
+    data.update(schedule=[], next_unit=_picker(tmp_path, body), path="deploy", batch=batch or {"max_consecutive_failures": 1})
+    path.write_text(json.dumps(data))
+    return path
+
+
+QUEUE = """
+QUEUE = [{"arm": "repeat", "pair": "Q1P1"}, {"arm": "reinjection", "pair": "Q1P2"}]
+def next_unit(arms, progress):
+    done = {(e["arm"], e["pair"]) for e in progress["done"]}
+    return next((e for e in QUEUE if (e["arm"], e["pair"]) not in done), None)
+"""
+
+
+def test_next_unit_drives_the_coordination_until_it_returns_none(tmp_path, monkeypatch):
+    seen = []
+    _fake_pairs(monkeypatch, [True, True], seen)
+    state = coordinator.run(_dynamic(tmp_path, QUEUE), interval=0.01, heartbeat=0.05)
+    assert state["status"] == "complete" and seen == ["Q1P1", "Q1P2"]
+    assert [(e["arm"], e["pair"]) for e in state["done"]] == [("repeat", "Q1P1"), ("reinjection", "Q1P2")]
+
+
+def test_next_unit_respects_the_unit_limit(tmp_path, monkeypatch):
+    seen = []
+    _fake_pairs(monkeypatch, [True, True], seen)
+    state = coordinator.run(_dynamic(tmp_path, QUEUE, {"max_units": 1}), interval=0.01, heartbeat=0.05)
+    assert state["status"] == "unit limit" and seen == ["Q1P1"]
+
+
+@pytest.mark.parametrize("body, reason", [
+    ("def next_unit(arms, progress):\n    return {'arm': 'repeat', 'pair': 'Q1P1'}\n", "already"),
+    ("def next_unit(arms, progress):\n    return {'arm': 'nowhere', 'pair': 'Q1P1'}\n", "arm"),
+    ("def next_unit(arms, progress):\n    return {'arm': 'repeat', 'pair': 'Q9P9'}\n", "shortlist"),
+])
+def test_a_bad_next_unit_fails_the_coordination(tmp_path, monkeypatch, body, reason):
+    _fake_pairs(monkeypatch, [True, True, True])
+    with pytest.raises(RuntimeError, match=reason):
+        coordinator.run(_dynamic(tmp_path, body), interval=0.01, heartbeat=0.05)
+
+
+def test_the_schedule_digest_covers_the_next_unit_target(tmp_path):
+    path = _dynamic(tmp_path, QUEUE)
+    parent, arms, schedule = coordinator.load(path)
+    assert coordinator.normalized(parent, arms, schedule)["next_unit"] == schedule["next_unit"]

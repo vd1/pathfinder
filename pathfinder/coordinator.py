@@ -53,6 +53,7 @@ def load(schedule_path: Path) -> tuple[SimpleNamespace, dict, dict]:
             raise ValueError(f"arm {name}: campaign.json must set parent to {os.path.relpath(root, c.root)}")
         arms[name] = c
     seen = set()
+    schedule.setdefault("schedule", [])
     for entry in schedule["schedule"]:
         if entry["arm"] not in arms:
             raise ValueError(f"schedule names unknown arm {entry['arm']}")
@@ -63,6 +64,8 @@ def load(schedule_path: Path) -> tuple[SimpleNamespace, dict, dict]:
         shortlist = {p["pair_id"] for p in json.loads(arms[entry["arm"]].path("shortlist.json").read_text())["pairs"]}
         if entry["pair"] not in shortlist:              # checked before any dispatch, not when the entry is reached
             raise ValueError(f"{entry['pair']} is not on the shortlist of arm {entry['arm']}")
+    if schedule.get("next_unit") and ":" not in schedule["next_unit"]:
+        raise ValueError(f"next_unit must be module:callable, got {schedule['next_unit']!r}")
     stages = tuple(schedule.get("stages") or ("research", "edit", "paper"))
     if stages not in runner.STAGE_SETS:
         raise ValueError(f"stages must be one of {sorted(runner.STAGE_SETS)}")
@@ -87,7 +90,8 @@ class ScheduleChanged(RuntimeError):
 def normalized(parent, arms, schedule) -> dict:
     return {"arms": {name: os.path.relpath(c.root, parent.root) for name, c in sorted(arms.items())},
             "stages": list(schedule["stages"]),
-            "schedule": [{"arm": e["arm"], "pair": e["pair"]} for e in schedule["schedule"]]}
+            "schedule": [{"arm": e["arm"], "pair": e["pair"]} for e in schedule["schedule"]],
+            **({"next_unit": schedule["next_unit"], "path": schedule.get("path")} if schedule.get("next_unit") else {})}
 
 
 def start_coordination(parent, arms, schedule, accept_change=None) -> dict:
@@ -123,7 +127,17 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
     tolerance = batch.get("max_consecutive_failures")
     state = {"pid": os.getpid(), "run_id": uuid.uuid4().hex, "status": "running", "started_at": time.time(),
              "heartbeat_at": time.time(), "last_progress": None, "censored_arms": [],
-             "units_started": 0, "failed_entries": [], "consecutive_failures": 0}
+             "units_started": 0, "failed_entries": [], "consecutive_failures": 0, "done": []}
+    pick = _next_unit(parent, schedule)
+
+    def entries():
+        """The fixed schedule, then whatever the deployment's next_unit returns until it returns None."""
+        yield from schedule["schedule"]
+        while pick is not None:
+            entry = pick(arms, {**state, "done": list(state["done"])})
+            if entry is None:
+                return
+            yield _checked(arms, schedule, state, entry)
     ended = None                                  # deadline or unit limit
     stop_beating = threading.Event()
 
@@ -138,8 +152,9 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
         link = {"coordination_id": coordination["coordination_id"], "parent": str(parent.root)}
         thread = threading.Thread(target=beat, daemon=True); thread.start()
         try:
-            for entry in schedule["schedule"]:
+            for entry in entries():
                 c, pair = arms[entry["arm"]], entry["pair"]
+                state["done"].append({"arm": entry["arm"], "pair": pair})
                 finished = bool(batch) and runner.pair_complete(c, pair, schedule["stages"])   # resumed: not a new unit
                 if not finished and deadline is not None and time.time() >= deadline:
                     ended = "deadline"; break
@@ -198,6 +213,35 @@ def run(schedule_path: Path, interval: float = 5.0, heartbeat: float = 5.0, acce
             health.write(parent.path("progress.json"), state)
             health.write(parent.path("outcomes.json"), outcomes(arms, schedule))
     return state
+
+
+def _next_unit(parent, schedule):
+    """The deployment's next_unit callable named in the schedule ("module:callable", with "path" relative to
+    the parent put on sys.path), or None."""
+    target = schedule.get("next_unit")
+    if not target:
+        return None
+    import importlib, sys
+    if schedule.get("path"):
+        path = str((parent.root / schedule["path"]).resolve())
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    module, _, attr = target.partition(":")
+    return getattr(importlib.import_module(module), attr)
+
+
+def _checked(arms, schedule, state, entry) -> dict:
+    """An entry next_unit returned, refused with the reason unless it names a known arm, a shortlisted pair,
+    and a unit this coordination has not run and the arm has not finished."""
+    if not isinstance(entry, dict) or entry.get("arm") not in arms:
+        raise RuntimeError(f"next_unit returned an unknown arm: {entry!r}")
+    c, pair = arms[entry["arm"]], entry.get("pair")
+    shortlist = {p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]}
+    if pair not in shortlist:
+        raise RuntimeError(f"next_unit returned {pair!r}, not on the shortlist of arm {entry['arm']}")
+    if {"arm": entry["arm"], "pair": pair} in state["done"] or runner.pair_complete(c, pair, schedule["stages"]):
+        raise RuntimeError(f"next_unit returned a unit already done: {entry['arm']} {pair}")
+    return {"arm": entry["arm"], "pair": pair}
 
 
 def snapshot(schedule_path: Path) -> dict:
