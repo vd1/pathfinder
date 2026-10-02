@@ -33,7 +33,7 @@ def test_a_stopped_paper_is_rerun_and_an_amend_pause_needs_the_operator(tmp_path
 
 
 def test_a_stale_retained_review_is_superseded_and_reissued(tmp_path, monkeypatch):
-    c = make(tmp_path, research_scheme="eva_minus", imported_research=True)
+    c = make(tmp_path, research_scheme="direct_eva", imported_research=True)
     d = research.prepare(c, "Q1P1")
     real = transport.execute
 
@@ -122,7 +122,7 @@ CONTRACT = {"class": "contract", "scope": "call", "retry": False, "reset_at": No
 
 
 def test_a_composable_contract_block_is_reissued(tmp_path):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     research.prepare(c, "Q1P1")
     research._set(c, "Q1P1", status="BLOCKED", stage="ledger_review", reason="contract: review: no readable JSON object", failure=CONTRACT)
     assert reconcile.inspect(c, "Q1P1")["action"] == reconcile.REISSUE

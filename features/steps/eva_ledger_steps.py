@@ -20,7 +20,7 @@ CORRECTION = 'State the finite second moment premise in the ledger argument.'
 DEFERRED = 'The experimental covariance matrix has not been supplied.'
 
 
-def setup(context, scheme='eva_minus', imported=True, rounds=2, reviews=4):
+def setup(context, scheme='direct_eva', imported=True, rounds=2, reviews=4):
     temporary = tempfile.TemporaryDirectory(prefix='pathfinder-eva-ledger-')
     context.add_cleanup(temporary.cleanup)
     context.root = Path(temporary.name)
@@ -647,7 +647,7 @@ def no_verdict(context):
 
 @given('a campaign configuration with research_scheme "{scheme}"')
 def configured(context, scheme):
-    setup(context, scheme=scheme, imported=scheme == 'eva_minus')
+    setup(context, scheme=scheme, imported=scheme == 'direct_eva')
 
 
 @given('imported_research is true with rounds 2 and ledger_reviews 4')

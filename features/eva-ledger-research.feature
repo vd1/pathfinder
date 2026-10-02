@@ -125,7 +125,7 @@ Feature: Research with EVA and EVA-minus
 
   @contract
   Scenario: Campaign configuration selects the composable research scheme
-    Given a campaign configuration with research_scheme "eva_minus"
+    Given a campaign configuration with research_scheme "direct_eva"
     And imported_research is true with rounds 2 and ledger_reviews 4
     When the standard research entry point opens the investigation
     Then it starts direct ledger review with at most two new peer rounds and four review calls

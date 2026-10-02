@@ -88,7 +88,7 @@ def prepare(campaign, pair_id: str) -> Path:
         (d / "inputs" / f"{side}.json").write_text(json.dumps(row, indent=1))
     for a in campaign.peers:
         (d / a).mkdir(exist_ok=True)
-    imported = campaign.raw.get("research_scheme") == "eva_minus" and campaign.raw.get("imported_research", False)
+    imported = campaign.raw.get("research_scheme") == "direct_eva" and campaign.raw.get("imported_research", False)
     _set(campaign, pair_id, round=0 if imported else 1,
          stage="ledger_review" if imported else "peers", status="running", reason=None, started=_now())
     install_helper(d)
@@ -803,14 +803,14 @@ def retain_response(campaign, pair_id, request, result):
     temporary.replace(path)
 
 
-def _minus_requests(response, existing):
+def _direct_requests(response, existing):
     """@planks("Vera returns no new requests and omits disposition of the active request")
     @planks("a later Vera review defers that request with a missing-input reason")
     @planks("Vera returns PAUSE instead of a request review")
     @planks("the retained Vera response has no valid request list")
     """
     if not isinstance(response, dict) or response.get("decision") not in (None, "REVISE", "ITERATE"):
-        raise ValueError("EVA-minus requires a request review without a scientific verdict")
+        raise ValueError("direct EVA requires a request review without a scientific verdict")
     if not isinstance(response.get("requests"), list) or not isinstance(response.get("dispositions"), list):
         raise ValueError("review requires requests and dispositions lists")
     updated = {key: dict(value) for key, value in existing.items()}
@@ -836,8 +836,8 @@ def _minus_requests(response, existing):
 
 def _review_contract(campaign, s):
     """(contract name, check) for a composable review: a request review under direct EVA, else a verdict."""
-    if campaign.raw.get("research_scheme", "eva") == "eva_minus":
-        return "request_review", (lambda value: _minus_requests(value, s.get("requests", {})))
+    if campaign.raw.get("research_scheme", "eva") == "direct_eva":
+        return "request_review", (lambda value: _direct_requests(value, s.get("requests", {})))
     return "verify", None
 
 
@@ -858,7 +858,7 @@ def _apply_research_review(campaign, pair_id, saved, s):
     if evidence_id != saved["evidence_id"]:
         _set(campaign, pair_id, status="BLOCKED", reason="stale review: research evidence changed")
         return
-    minus = campaign.raw.get("research_scheme", "eva") == "eva_minus"
+    direct = campaign.raw.get("research_scheme", "eva") == "direct_eva"
     verdict = _verdict_under_direct_eva(campaign, saved["result"].get("text"))
     if verdict:
         _set(campaign, pair_id, status="BLOCKED", reason=f"review: {verdict}")
@@ -866,8 +866,8 @@ def _apply_research_review(campaign, pair_id, saved, s):
     try:                                        # the retained reply was read and repaired under its contract when it came
         name, check = _review_contract(campaign, s)
         value = contracts.parse(name, saved["result"]["text"], check)
-        if minus:
-            requests = _minus_requests(value, s.get("requests", {}))
+        if direct:
+            requests = _direct_requests(value, s.get("requests", {}))
     except contracts.ContractViolation as violation:
         failure = failures.Failure("contract", *failures.SCOPES["contract"]).record()
         _set(campaign, pair_id, status="BLOCKED", reason=f"contract: review: {violation}", failure=failure)
@@ -879,7 +879,7 @@ def _apply_research_review(campaign, pair_id, saved, s):
         ledger.add("verifier", "review", encoded)
     update = dict(pending=[], reviews=s.get("reviews", 0) + 1, latest_review=feedback,
                   reviewed_head=saved["ledger_head"], reason=value.get("reason"), status="running")
-    if minus:
+    if direct:
         update["requests"] = requests
         if not any(item["status"] == "active" for item in requests.values()):
             update.update(stage="done", status="HANDOFF", handoff_reason="no_further_requests")
@@ -902,7 +902,7 @@ def _apply_research_review(campaign, pair_id, saved, s):
         else:
             update.update(stage="done", status={"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(decision, decision))
     _set(campaign, pair_id, **update)
-    if not minus:
+    if not direct:
         write_meta(campaign, pair_id, d)
 
 
@@ -929,7 +929,7 @@ def next_requests(campaign, pair_id):
     _stage_attempts(campaign)
     d = prepare(campaign, pair_id)
     ledger = Ledger(d / "ledger.jsonl")
-    minus = campaign.raw.get("research_scheme", "eva") == "eva_minus"
+    direct = campaign.raw.get("research_scheme", "eva") == "direct_eva"
     try:
         while True:
             s = status(campaign, pair_id)
@@ -960,7 +960,7 @@ def next_requests(campaign, pair_id):
                     seconds = s.get("peer_seconds", 0) + sum(item["result"]["seconds"] for item in pending)
                     more = calls < campaign.allowances["peer_calls"] and seconds < campaign.allowances["peer_seconds"] and not ledger.ready(list(campaign.peers))
                     _set(campaign, pair_id, pending=[], peer_call=calls, peer_seconds=seconds,
-                         stage="peers" if more else "ledger_review" if minus else "consolidate")
+                         stage="peers" if more else "ledger_review" if direct else "consolidate")
                 elif s["stage"] == "consolidate":
                     result = pending[0]["result"]["text"]
                     if not result.strip():
@@ -1013,7 +1013,7 @@ def next_requests(campaign, pair_id):
                     write_meta(campaign, pair_id, d)
                 else:
                     seconds = campaign.allowances["verify_seconds"]
-                    if minus:
+                    if direct:
                         prompt = material + ('\n\nReview this research ledger directly. Return JSON with requests and dispositions lists. '
                             'Each new request needs a distinct id, action REVISE or ITERATE, and concrete text. '
                             'REVISE corrects an argument using existing evidence; ITERATE investigates a research gap. '
@@ -1057,22 +1057,22 @@ def export_outcome(campaign, pair_id):
     s = status(campaign, pair_id)
     ledger = Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
     head = ledger.latest_substantive()
-    minus = campaign.raw.get("research_scheme", "eva") == "eva_minus"
-    return {**s, "scientific_verdict": None if minus else {"DRAFT": "ACCEPT"}.get(s["status"], s["status"] if s["status"] in TERMINAL else None),
+    direct = campaign.raw.get("research_scheme", "eva") == "direct_eva"
+    return {**s, "scientific_verdict": None if direct else {"DRAFT": "ACCEPT"}.get(s["status"], s["status"] if s["status"] in TERMINAL else None),
             "ledger_head": head, "unreviewed_head": head > s.get("reviewed_head", -1),
             "provenance": [row for row in ledger.read() if row["kind"] == "review"]}
 
 
 def _verdict_under_direct_eva(campaign, text) -> str | None:
     """Under direct EVA a scientific verdict is not a malformed request review: it is never repaired into one."""
-    if campaign.raw.get("research_scheme") != "eva_minus":
+    if campaign.raw.get("research_scheme") != "direct_eva":
         return None
     try:
         value = contracts.extract_json(text or "")
     except ValueError:
         return None
     if isinstance(value, dict) and isinstance(value.get("decision"), str) and value["decision"].upper() in ("DRAFT", "PAUSE"):
-        return "EVA-minus requires a request review without a scientific verdict"
+        return "direct EVA requires a request review without a scientific verdict"
     return None
 
 

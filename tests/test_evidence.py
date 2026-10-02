@@ -62,7 +62,7 @@ def test_registered_sources_resolve_by_their_own_bytes(tmp_path):
 def test_strict_review_reads_a_namespaced_file_instead_of_blocking(tmp_path):
     from pathfinder import research
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True, research_bundles=["branches/b1"])
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True, research_bundles=["branches/b1"])
     d = research.prepare(c, "Q1P1")
     _tree(d, ["branches/b1/ledger.jsonl", "branches/b1/ada/audit.json"])
     (d / "branches/b1/ledger.jsonl").write_text("")
@@ -76,7 +76,7 @@ def test_all_strict_errors_are_reported_together(tmp_path):
     from pathfinder import research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True)
     d = research.prepare(c, "Q1P1")
     Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/one.json and ada/two.json")
     with pytest.raises(research.EvidenceUnavailable) as raised:
@@ -93,7 +93,7 @@ def test_a_declared_output_that_does_not_exist_is_a_gap(tmp_path):
     from pathfinder import research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True)
     d = research.prepare(c, "Q1P1")
     text = "the script ada/audit.py writes ada/coverage.json"
     (d / "ada" / "audit.py").write_text("print(1)")
@@ -110,7 +110,7 @@ def test_manifest_and_proposals(tmp_path, capsys):
     from pathfinder import cli, research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True)
     d = research.prepare(c, "Q1P1")
     (d / "ada" / "run.py").write_text("print(1)")
     Ledger(d / "ledger.jsonl").add("ada", "finding", "ran ada/run.py, see ada/missing.json")
@@ -136,7 +136,7 @@ def _joint(tmp_path, **raw):
     from pathfinder import research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", research_bundles=["branches/b1"], **raw)
+    c = make(tmp_path, research_scheme="direct_eva", research_bundles=["branches/b1"], **raw)
     d = research.prepare(c, "Q1P1")
     (d / "branches/b1/ada").mkdir(parents=True)
     raw_file = tmp_path / "sources" / "P001" / "raw.json"; raw_file.parent.mkdir(parents=True); raw_file.write_text('{"raw": 1}')
@@ -194,7 +194,7 @@ def test_reconcile_unblocks_only_after_the_evidence_is_repaired(tmp_path):
     from pathfinder import reconcile, research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True, imported_research=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True, imported_research=True)
     d = research.prepare(c, "Q1P1")
     Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/result.json")
     research.run_thread(c, "Q1P1")
@@ -213,7 +213,7 @@ def test_a_read_only_reconcile_inspection_does_not_rewrite_the_manifest(tmp_path
     from pathfinder import reconcile, research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True, imported_research=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True, imported_research=True)
     d = research.prepare(c, "Q1P1")
     Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/result.json")
     research.run_thread(c, "Q1P1")
@@ -228,7 +228,7 @@ def _declarable(tmp_path):
     from pathfinder import research
     from pathfinder.ledger import Ledger
     from stubcampaign import make
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True)
     d = research.prepare(c, "Q1P1")
     text = "the script ada/audit.py writes ada/coverage.json"
     seq = Ledger(d / "ledger.jsonl").add("ada", "finding", text)

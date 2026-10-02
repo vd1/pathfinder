@@ -42,7 +42,7 @@ def test_a_ledger_over_budget_is_referenced_not_pasted(tmp_path, monkeypatch):
 
 
 def test_review_material_is_stable_and_a_check_is_not_recorded(tmp_path):
-    c = make(tmp_path, research_scheme="eva_minus", imported_research=True, prompt_budgets={"default": 6000})
+    c = make(tmp_path, research_scheme="direct_eva", imported_research=True, prompt_budgets={"default": 6000})
     _long_papers(c, 20_000)
     first = research._review_material(c, "Q1P1", record_manifest=False)
     assert first == research._review_material(c, "Q1P1", record_manifest=False)

@@ -24,7 +24,7 @@ def test_a_stopped_edit_gets_an_apex_reconcile_command(tmp_path):
 
 
 def test_an_evidence_block_points_at_the_evidence_command(tmp_path):
-    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True, imported_research=True)
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True, imported_research=True)
     d = research.prepare(c, "Q1P1")
     from pathfinder.ledger import Ledger
     Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/result.json")
@@ -59,7 +59,7 @@ def test_no_pair_is_reconciled_while_the_campaign_is_stopped(tmp_path):
 
 
 def test_a_contract_block_is_an_apex_reconcile(tmp_path):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     research.prepare(c, "Q1P1")
     research._set(c, "Q1P1", status="BLOCKED", stage="ledger_review", reason="contract: review: no readable JSON object",
                   failure={"class": "contract", "scope": "call", "retry": False, "reset_at": None})

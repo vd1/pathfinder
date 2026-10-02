@@ -12,13 +12,13 @@ def test_research_blocks_the_pair_on_an_oversized_prompt(tmp_path):
 
 
 def test_composable_research_blocks_the_pair_on_an_oversized_prompt(tmp_path):
-    c = make(tmp_path, max_prompt_chars=10, research_scheme="eva_minus")
+    c = make(tmp_path, max_prompt_chars=10, research_scheme="direct_eva")
     assert research.run_thread(c, "Q1P1") == "BLOCKED"
     assert "input too large" in research.status(c, "Q1P1")["reason"]
 
 
 def test_composable_research_reissues_a_call_stopped_by_a_campaign_scoped_failure(tmp_path, monkeypatch):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     real, calls = transport.execute, []
 
     def once_quota(campaign, request):
@@ -30,7 +30,7 @@ def test_composable_research_reissues_a_call_stopped_by_a_campaign_scoped_failur
     monkeypatch.setattr(research.transport, "execute", once_quota)
     with pytest.raises(transport.TransportFailed):
         research.run_thread(c, "Q1P1")
-    research.run_thread(c, "Q1P1")      # the stub's eva_minus review later blocks on its own; irrelevant here
+    research.run_thread(c, "Q1P1")      # the stub's direct_eva review later blocks on its own; irrelevant here
     assert calls[1] == calls[0]                           # the same request was issued again
     assert "usage limit" not in (research.status(c, "Q1P1").get("reason") or "")
 

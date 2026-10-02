@@ -43,6 +43,8 @@ class Campaign:
 def load(root: Path) -> Campaign:
     root = Path(root).resolve()
     raw = json.loads((root / "campaign.json").read_text())
+    if raw.get("research_scheme") == "eva_minus":
+        raise ValueError('research_scheme "eva_minus" is now "direct_eva" (E writes no synthesis, V reads the ledger)')
     return Campaign(
         root=root, backend=raw["backend"], model=raw["model"],
         scan_model=raw.get("scan_model") or raw["model"],

@@ -11,7 +11,7 @@ def _patch(monkeypatch, fn):
 
 
 def test_replaying_a_retained_review_under_a_shrunk_ledger_is_not_stale(tmp_path):
-    c = make(tmp_path, research_scheme="eva_minus", prompt_budgets={"default": 4000})
+    c = make(tmp_path, research_scheme="direct_eva", prompt_budgets={"default": 4000})
     d = research.prepare(c, "Q1P1")
     (d / "ledger.jsonl").write_text("".join(json.dumps({"seq": n, "actor": "ada", "kind": "note", "text": "x" * 100, "at": "t"}) + "\n"
                                             for n in range(1, 60)))
@@ -24,7 +24,7 @@ def test_replaying_a_retained_review_under_a_shrunk_ledger_is_not_stale(tmp_path
 
 
 def test_a_stop_during_a_composable_repair_keeps_the_paid_reply(tmp_path, monkeypatch):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     real, calls, stop = transport.execute, [], {"on": True}
 
     def execute(campaign, request):
@@ -80,7 +80,7 @@ def test_a_repair_prompt_over_the_limit_is_a_contract_failure(tmp_path, monkeypa
 
 
 def test_a_verdict_under_direct_eva_is_not_repaired_away(tmp_path, monkeypatch):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     real, calls = transport.execute, []
 
     def execute(campaign, request):
@@ -91,7 +91,7 @@ def test_a_verdict_under_direct_eva_is_not_repaired_away(tmp_path, monkeypatch):
     research.run_thread(c, "Q1P1")
     s = research.status(c, "Q1P1")
     assert not any(i.endswith(":contract-repair") for i in calls)
-    assert s["status"] == "BLOCKED" and "EVA-minus requires a request review without a scientific verdict" in s["reason"]
+    assert s["status"] == "BLOCKED" and "direct EVA requires a request review without a scientific verdict" in s["reason"]
 
 
 def test_a_misconfigured_consumer_is_recorded_not_raised(tmp_path):

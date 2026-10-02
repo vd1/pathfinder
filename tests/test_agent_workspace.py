@@ -45,7 +45,7 @@ import pytest
 
 
 def _composable(tmp_path, **raw):
-    c = make(tmp_path, research_scheme="eva_minus", **raw)
+    c = make(tmp_path, research_scheme="direct_eva", **raw)
     d = research.prepare(c, "Q1P1")
     (d / "ada").mkdir(exist_ok=True)
     (d / "ada" / "derivation.txt").write_text("the derivation " * 1000)

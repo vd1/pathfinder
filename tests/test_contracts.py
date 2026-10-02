@@ -139,7 +139,7 @@ def test_a_verifier_that_never_answers_in_form_blocks_on_its_contract(tmp_path, 
 
 
 def test_a_composable_review_is_repaired_before_it_is_retained(tmp_path, monkeypatch):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     seen = _prose_verifier(monkeypatch, 1)
     research.run_thread(c, "Q1P1")
     assert any(i.endswith(":contract-repair") for i in seen)
@@ -147,7 +147,7 @@ def test_a_composable_review_is_repaired_before_it_is_retained(tmp_path, monkeyp
 
 
 def test_a_composable_review_that_never_answers_in_form_blocks_on_its_contract(tmp_path, monkeypatch):
-    c = make(tmp_path, research_scheme="eva_minus")
+    c = make(tmp_path, research_scheme="direct_eva")
     _prose_verifier(monkeypatch, 2)
     research.run_thread(c, "Q1P1")
     s = research.status(c, "Q1P1")
