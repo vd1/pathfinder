@@ -396,12 +396,12 @@ H1 & Failure classes from structured events: quota, auth, rate, with deployment-
 H2 & Prompt size gate before admission, refusal receipt, lossless JSON compaction, pooling of large sources & SA \path{prompt_context.py}; AQ input hygiene & Only a word count at the edit stage. Take into \path{transport.execute}. (D3, D4) Size gate done in phase 1 (4b1f9b9); compaction and pooling in phase 3.\\
 H3 & Health policy: retry once, flag after two consecutive failures, auto-clear, single-seat probe & AQ runner & Any stage exception drains the run; restart is manual. Adapt. (D6) Done in phase 4a (up to 2dee0d9).\\
 H4 & Per-call last-event time & AQ runner & \path{health.snapshot} has heartbeat and overdue calls but no event age. Stamp it in \path{active-calls/*.json}. (D1) Done in phase 2a as the event stream (call\_started, call\_finished with tokens and tool calls) up to 49ba31f.\\
-H5 & Coordinator batch mode: deadline, maximum units, stop marker, opt-in tolerance of $k$ consecutive failures, recovery first, deployment \texttt{next\_unit()} & SA \path{overnight.py} & \path{coordinator.py} runs a fixed schedule and stops on the first failure. Adapt, opt-in.\\
+H5 & Coordinator batch mode: deadline, maximum units, stop marker, opt-in tolerance of $k$ consecutive failures, recovery first, deployment \texttt{next\_unit()} & SA \path{overnight.py} & \path{coordinator.py} runs a fixed schedule and stops on the first failure. Adapt, opt-in. Done in phase 4b (up to 9323be9) without the deployment's next\_unit callable, which moves to phase 7.\\
 H6 & Recovery: one admission per attempt; reconcile actions to collect retained verify output, retry a stage refused before any turn, and mark terminal failure & SA \path{recovery.py}; AQ \path{reconcile.py} & \path{reconcile.py} has four actions, \path{recovery.py} only repairs verdict JSON. Adapt. Phase 4a: reconcile unblocks a repaired evidence block with a recorded transition (up to 2dee0d9); one-admission recovery receipts remain for 4c.\\
 H7 & Cross-process seat pool keyed by account, reservations bound to PIDs, dead ones reaped & AQ \path{coordination.py} & Admission counts within one process. Needed before statarb and agQSL share one subscription.\\
 H8 & Schema-constrained single calls & SA (\sig{codex exec --output-schema}) & \path{transport.call} has no schema support. Add; statarb's scan, implementation and review then use the engine.\\
 H9 & Post-edit consumer stage, which cannot overturn the verifier & SA implementation stage & No such hook. Adapt as an extension point.\\
-H10 & Monitor: Host and Origin checks, CSP, file allowlist and size cap; aggregate across campaigns; per-stage unit counts & SA watchboard & \path{monitor.state()} already has parameters, scores, blocks, stages and PDF links, and is the base for the operator page; its server serves any file under the root. Done in phase 2b (\texttt{pathfinder view}, hardened \texttt{serve}, up to e78c8db) except the aggregate across campaigns, which moves to phase 4 with the batch coordinator.\\
+H10 & Monitor: Host and Origin checks, CSP, file allowlist and size cap; aggregate across campaigns; per-stage unit counts & SA watchboard & \path{monitor.state()} already has parameters, scores, blocks, stages and PDF links, and is the base for the operator page; its server serves any file under the root. Done in phase 2b (\texttt{pathfinder view}, hardened \texttt{serve}, up to e78c8db) and the view across the arms of a coordination done in phase 4b (up to 9323be9).\\
 H11 & Incremental intake: watermark advanced on success, dated negative cache & SA intake & \path{corpus.fetch} makes one request with no retry.\\
 H12 & Test that a repair survives a transport failure during consolidation & AQ & Behaviour already correct in \path{research.py}; add the contract test.\\
 \end{xltabular}}
@@ -471,6 +471,7 @@ generalise to the canonical engine and belong in the refactor specification.
   process died. No hand-written \texttt{nohup} recipes. This is also the route to
   allow for the apex agent, whose own sandbox otherwise prevents it from launching
   pipelines that need their own sandbox.
+  Done in phase 4b as \texttt{pathfinder launch} (up to 9323be9); the rate-limit cooldown is shared with the coordinator parent and shown.
 \item \textbf{Watch by PID and polling.} Name-based process checks break when a
   shell execs its last command; following a log with \texttt{tail -F} can deliver
   nothing. Supervisors poll line counts and check the PID.
