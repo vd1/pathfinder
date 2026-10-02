@@ -132,12 +132,12 @@ class EvidenceError(EvidenceUnavailable):
         super().__init__(errors[0]["message"] + more)
 
 
-def _external_citations(d):
+def _external_citations(d, path=None):
     """@planks("Vera receives the ledger and its external citation declaration")
     @planks("research blocks before provider dispatch because the citation binding is stale")
     @planks("the joint researcher receives the citation URL and unavailable status")
     """
-    declaration = d / "external-references.json"
+    declaration = Path(path) if path is not None else d / "external-references.json"   # a candidate is checked the same way
     if declaration.is_symlink():
         raise EvidenceUnavailable("Aliased evidence declaration: external-references.json")
     if not declaration.exists():

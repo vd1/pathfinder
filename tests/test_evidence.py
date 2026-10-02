@@ -221,3 +221,40 @@ def test_a_read_only_reconcile_inspection_does_not_rewrite_the_manifest(tmp_path
     before = manifest.read_bytes(); os.utime(manifest, (1, 1))
     reconcile.inspect(c, "Q1P1")
     assert manifest.stat().st_mtime == 1 and manifest.read_bytes() == before
+
+
+def _declarable(tmp_path):
+    import hashlib
+    from pathfinder import research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="eva_minus", strict_evidence=True)
+    d = research.prepare(c, "Q1P1")
+    text = "the script ada/audit.py writes ada/coverage.json"
+    seq = Ledger(d / "ledger.jsonl").add("ada", "finding", text)
+    record = {"document": "ledger.jsonl", "ledger_seq": seq, "path": "ada/coverage.json", "status": "output",
+              "text_sha256": hashlib.sha256(text.encode()).hexdigest()}
+    return c, d, record
+
+
+def test_declarations_are_applied_once_with_digests(tmp_path):
+    import json
+    c, d, record = _declarable(tmp_path)
+    first = evidence.apply_declarations(c, "Q1P1", [record])
+    assert first["changed"] and first["before_sha256"] is None and len(first["after_sha256"]) == 64
+    again = evidence.apply_declarations(c, "Q1P1", [record])
+    assert again["changed"] is False
+    history = (d / "declarations-history.jsonl").read_text().splitlines()
+    assert len(history) == 1 and json.loads(history[0])["after_sha256"] == first["after_sha256"]
+
+
+def test_an_invalid_declaration_set_leaves_the_file_unchanged(tmp_path):
+    import json
+    from pathfinder import research
+    c, d, record = _declarable(tmp_path)
+    evidence.apply_declarations(c, "Q1P1", [record])
+    before = (d / "external-references.json").read_bytes()
+    bad = dict(record, path="ada/other.json", text_sha256="0" * 64)
+    with pytest.raises(research.EvidenceUnavailable):
+        evidence.apply_declarations(c, "Q1P1", [dict(record, path="ada/third.json"), bad])
+    assert (d / "external-references.json").read_bytes() == before

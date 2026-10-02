@@ -142,3 +142,40 @@ def text(m: dict, proposed: list[dict]) -> str:
     for p in proposed:
         lines.append(f"proposal for {p['path']}: " + " | ".join(p["choices"]) + (f" (ledger entry {p['ledger_seq']})" if p.get("ledger_seq") else ""))
     return "\n".join(lines)
+
+
+def apply_declarations(campaign, pair_id: str, records: list[dict]) -> dict:
+    """Merge declarations into external-references.json as one validated change (R02): records replace those
+    with the same (document, ledger_seq, path); the merged file is checked by the same parser on a temporary
+    copy, then swapped in atomically, and the change is appended to declarations-history.jsonl. Applying the
+    same records again changes nothing."""
+    import hashlib, json, os, tempfile, time
+    from . import research
+    d = campaign.thread_dir(pair_id)
+    target = d / "external-references.json"
+    before = target.read_bytes() if target.is_file() else None
+    current = json.loads(before) if before else {"version": 1, "references": []}
+    key = lambda r: (r.get("document"), r.get("ledger_seq"), r.get("path"))
+    merged = {key(r): r for r in current.get("references", [])}
+    for record in records:
+        merged[key(record)] = record
+    content = json.dumps({"version": 1, "references": list(merged.values())}, indent=1).encode()
+    digest = lambda data: hashlib.sha256(data).hexdigest() if data is not None else None
+    if before is not None and digest(before) == digest(content):
+        return {"changed": False, "before_sha256": digest(before), "after_sha256": digest(before)}
+    handle, temporary = tempfile.mkstemp(dir=d, prefix=".external-references.", suffix=".json")
+    try:
+        with os.fdopen(handle, "wb") as stream:
+            stream.write(content)
+        research._external_citations(d, path=temporary)        # raises before anything is replaced
+        if before is not None and json.loads(before) == json.loads(content):
+            return {"changed": False, "before_sha256": digest(before), "after_sha256": digest(before)}
+        os.replace(temporary, target)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+    change = {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "before_sha256": digest(before),
+              "after_sha256": digest(content), "records": records}
+    with (d / "declarations-history.jsonl").open("a") as stream:
+        stream.write(json.dumps(change) + "\n")
+    return {"changed": True, "before_sha256": change["before_sha256"], "after_sha256": change["after_sha256"]}

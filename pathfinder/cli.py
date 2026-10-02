@@ -39,6 +39,7 @@ def main(argv=None):
     sub.add_parser("status", help="print campaign and shortlist state")
     ev = sub.add_parser("evidence", help="a pair's evidence manifest: cited files, resolutions, errors and proposed declarations")
     ev.add_argument("pair"); ev.add_argument("--json", action="store_true")
+    ev.add_argument("--apply", metavar="FILE", help="a JSON list of declarations to validate and commit atomically")
     sub.add_parser("state", help="the campaign state document: unit states, stage counts, blocks, token budget").add_argument("--json", action="store_true")
     sub.add_parser("health", help="read-only operational snapshot for the supervising agent").add_argument("--json", action="store_true")
     sub.add_parser("serve", help="serve the live monitor page").add_argument("--port", type=int, default=8790)
@@ -142,6 +143,9 @@ def _dispatch(ns, c):
         from . import evidence
         if not (c.thread_dir(ns.pair) / "status.json").exists():
             print(f"no thread for {ns.pair}"); return 1
+        if ns.apply:
+            print(json.dumps(evidence.apply_declarations(c, ns.pair, json.loads(Path(ns.apply).read_text())), indent=1))
+            return 0
         m = evidence.manifest(c, ns.pair)
         proposed = evidence.proposals(m, c.thread_dir(ns.pair))
         print(json.dumps({**m, "proposals": proposed}, indent=1) if ns.json else evidence.text(m, proposed))
