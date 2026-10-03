@@ -394,9 +394,12 @@ adjusts it only through:
   `"extensions": {"path": "deploy", "admission": "mypolicies:budget",
   "snapshot_extra": "mymonitor:extra", "transport": "mydispatch:execute"}`.
   A `transport` extension is a deployment's own dispatcher: the engine still
-  admits each call, records it and writes the receipt. Extension code is
-  trusted; the engine validates what it returns. Each deployment's modules
-  need unique names.
+  admits each call, records it and writes the receipt. A `panels` extension,
+  `panels(campaign)`, returns the deployment's own tables for the operator
+  page, `[{"title", "columns", "rows", "note"}]`; cells are text, numbers, or
+  `{"text", "href"}` with an `https` link. `consumer` and `failure_rules` are
+  described above. Extension code is trusted; the engine validates what it
+  returns. Each deployment's modules need unique names.
 
 **Admission.** Every model call is admitted inside an engine-owned
 reservation. Under one lock the engine checks the campaign's stop marker and

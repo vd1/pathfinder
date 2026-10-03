@@ -157,6 +157,26 @@ def _account(campaign) -> dict | None:
     return {"name": spec["name"], "seats": spec["seats"], "in_use": seats.in_use(campaign)} if spec else None
 
 
+def _panels(campaign) -> list[dict]:
+    """A deployment's own tables for the operator page (extension "panels": panels(campaign) returning
+    [{"title", "columns", "rows", "note"?}]); a failing extension is one panel that says so."""
+    from . import extensions
+    try:
+        make = extensions.load(campaign, "panels")
+        if make is None:
+            return []
+        panels = make(campaign)
+        out = []
+        for p in panels:
+            if not isinstance(p, dict) or not isinstance(p.get("columns"), list) or not isinstance(p.get("rows"), list):
+                raise TypeError(f"a panel must have title, columns and rows: {str(p)[:200]}")
+            out.append({"title": str(p.get("title") or "Panel"), "columns": [str(c) for c in p["columns"]],
+                        "rows": [list(r) for r in p["rows"]], **({"note": str(p["note"])} if p.get("note") else {})})
+        return json.loads(json.dumps(out, default=str))
+    except Exception as error:                     # the core state never fails over a deployment's tables
+        return [{"title": "Deployment panels", "columns": [], "rows": [], "note": f"panels failed: {error!r}"}]
+
+
 def build(campaign) -> dict:
     rows, truncated, corrupt = events.scan(campaign)
     runner_info = _runner(campaign)
@@ -231,6 +251,7 @@ def build(campaign) -> dict:
     raw = campaign.raw or {}
     return {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "panels": _panels(campaign),
         "campaign": {"name": campaign.root.name, "backend": campaign.backend, "model": campaign.model,
                      "seats": campaign.seats, "rounds": campaign.rounds, "allowances": campaign.allowances,
                      "research_scheme": raw.get("research_scheme", "eva"),

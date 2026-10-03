@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib, importlib, inspect, sys
 from pathlib import Path
 
-SUPPORTED = {"admission", "snapshot_extra", "transport", "failure_rules", "consumer"}
+SUPPORTED = {"admission", "snapshot_extra", "transport", "failure_rules", "consumer", "panels"}
 
 
 def _spec(campaign) -> dict:

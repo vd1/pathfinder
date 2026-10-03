@@ -130,9 +130,26 @@ function renderBlocks() {
     : '<p class="empty">No blocked unit.</p>';
 }
 
+// A deployment's own tables (extension "panels"): text cells, numbers in human units, https links only.
+const cell = (value) => {
+  if (value && typeof value === "object" && /^https:\/\//.test(String(value.href || "")))
+    return `<a href="${esc(value.href)}" rel="noreferrer" target="_blank">${esc(value.text ?? value.href)}</a>`;
+  if (typeof value === "number") return Math.abs(value) >= 1e4 ? tokens(value) : esc(num(value));
+  return esc(short(value && typeof value === "object" ? JSON.stringify(value) : value, 240));
+};
+
+function renderPanels() {
+  $("panels").innerHTML = (current.panels || []).map((p) => `<section class="panel">
+    <h2>${esc(p.title)}</h2>${p.note ? `<p class="small-copy">${esc(p.note)}</p>` : ""}
+    ${p.columns.length ? `<div class="table-scroll"><table><thead><tr>${p.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
+    <tbody>${p.rows.length ? p.rows.map((r) => `<tr>${r.map((v) => `<td>${cell(v)}</td>`).join("")}</tr>`).join("")
+      : `<tr><td colspan="${p.columns.length}" class="empty">Nothing yet.</td></tr>`}</tbody></table></div>` : ""}
+  </section>`).join("");
+}
+
 function render() {
   if (!current) return;
-  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks();
+  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks(); renderPanels();
   $("snapshot-time").textContent = "Snapshot " + when(current.generated_at);
   const issues = [];
   if (current.campaign.stop) issues.push("Stopped: " + current.campaign.stop.reason);

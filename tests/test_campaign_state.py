@@ -211,3 +211,33 @@ def test_units_carry_titles_scores_summary_and_usage(tmp_path):
 def test_handed_off_research_is_an_outcome_not_a_stop(tmp_path):
     assert campaign_state.lifecycle({"status": "HANDOFF"}, {}, {}, "waiting") == "handoff"
     assert "handoff" in [k for _, states in campaign_state.PIPELINE for k, _ in states]
+
+
+def test_a_deployment_adds_its_own_panels(tmp_path):
+    from pathfinder import campaign_state
+    from stubcampaign import make
+    c = make(tmp_path, extensions={"path": "deploy", "panels": "drip_panels:panels"})
+    (tmp_path / "deploy").mkdir()
+    (tmp_path / "deploy" / "drip_panels.py").write_text(
+        "def panels(campaign):\n"
+        "    return [{'title': 'Paper trading', 'columns': ['paper', 'events'], 'rows': [['2601.06499v3', 12]],"
+        " 'note': 'live strategies'}]\n")
+    panels = campaign_state.build(c)["panels"]
+    assert panels == [{"title": "Paper trading", "columns": ["paper", "events"], "rows": [["2601.06499v3", 12]],
+                       "note": "live strategies"}]
+
+
+def test_a_failing_panel_extension_shows_its_error_not_a_broken_state(tmp_path):
+    from pathfinder import campaign_state
+    from stubcampaign import make
+    c = make(tmp_path, extensions={"path": "deploy", "panels": "bad_panels:panels"})
+    (tmp_path / "deploy").mkdir()
+    (tmp_path / "deploy" / "bad_panels.py").write_text("def panels(campaign):\n    raise RuntimeError('queue locked')\n")
+    [panel] = campaign_state.build(c)["panels"]
+    assert panel["title"] == "Deployment panels" and "queue locked" in panel["note"]
+
+
+def test_no_extension_no_panels(tmp_path):
+    from pathfinder import campaign_state
+    from stubcampaign import make
+    assert campaign_state.build(make(tmp_path))["panels"] == []
