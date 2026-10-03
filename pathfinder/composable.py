@@ -41,7 +41,7 @@ def _view(campaign, overrides: dict, scheme: dict):
 
 
 def branch_view(campaign, pair_id: str, label: str):
-    view = _view(campaign, (campaign.raw or {}).get("branch"), {"research_scheme": "direct_eva"})
+    view = _view(campaign, (campaign.raw or {}).get("branch"), {"research_scheme": "direct_eva", "composable_role": "branch"})
     base = campaign.thread_dir
     view.thread_dir = lambda pid: base(pid) / "branch-runs" / label
     view.branch = label
@@ -50,7 +50,8 @@ def branch_view(campaign, pair_id: str, label: str):
 
 def joint_view(campaign, pair_id: str):
     return _view(campaign, (campaign.raw or {}).get("joint"),
-                 {"research_scheme": "eva", "research_bundles": [f"branches/{label}" for label in labels(campaign)]})
+                 {"research_scheme": "eva", "composable_role": "joint",
+                  "research_bundles": [f"branches/{label}" for label in labels(campaign)]})
 
 
 class BundleError(Exception):
@@ -85,6 +86,11 @@ def _check_handoff(campaign, pair_id: str, label: str) -> dict:
         raise BundleError(f"{label}: a branch hands off without a scientific verdict")
     if s.get("handoff_reason") not in HANDOFF_REASONS:
         raise BundleError(f"{label}: unknown handoff reason {s.get('handoff_reason')!r}")
+    ledger = b.thread_dir(pair_id) / "ledger.jsonl"
+    rows = [json.loads(line) for line in ledger.read_text().splitlines() if line.strip()] if ledger.exists() else []
+    if [r.get("seq") for r in rows] != list(range(1, len(rows) + 1)):      # as julien-2's handoff check does
+        raise BundleError(f"{label}: ledger sequence is not contiguous")
+    outcome["ledger_sha256"] = hashlib.sha256(ledger.read_bytes()).hexdigest() if ledger.exists() else None
     if s.get("handoff_reason") == "no_further_requests" and any(
             r.get("status") == "active" for r in (s.get("requests") or {}).values()):
         raise BundleError(f"{label}: handed off with no further requests while a request is still active")

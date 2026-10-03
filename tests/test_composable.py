@@ -244,3 +244,43 @@ def test_metrics_are_written_when_the_joint_thread_starts(tmp_path):
     research.run_thread(c, "Q1P1")
     m = json.loads((c.thread_dir("Q1P1") / "branches" / "metrics.json").read_text())
     assert set(m["branches"]) == {"branch-1", "branch-2"} and "divergence" in m
+
+
+def test_branches_and_the_joint_thread_get_their_role_briefs(tmp_path, monkeypatch):
+    c = _composable(tmp_path, branches=1)
+    prompts = []
+    real = transport.execute
+    monkeypatch.setattr(transport, "execute", lambda campaign, request: prompts.append(
+        (getattr(campaign, "branch", None), request.stage, request.prompt)) or real(campaign, request))
+    research.run_thread(c, "Q1P1")
+    branch = [p for label, stage, p in prompts if label == "branch-1"]
+    joint = [p for label, stage, p in prompts if label is None and stage in ("peer", "consolidate", "verify")]
+    assert branch and all("direct-EVA branch of a composable investigation" in p for p in branch)
+    assert joint and all("joint thread of a composable investigation" in p for p in joint)
+
+
+def test_an_ordinary_thread_gets_no_role_brief(tmp_path, monkeypatch):
+    c = make(tmp_path)
+    prompts = []
+    real = transport.execute
+    monkeypatch.setattr(transport, "execute", lambda campaign, request: prompts.append(request.prompt) or real(campaign, request))
+    research.run_thread(c, "Q1P1")
+    assert not any("composable investigation" in p for p in prompts)
+
+
+def test_a_branch_ledger_with_a_gap_is_not_frozen(tmp_path):
+    c, b = _handed_off(tmp_path)
+    ledger = b.thread_dir("Q1P1") / "ledger.jsonl"
+    rows = [json.loads(l) for l in ledger.read_text().splitlines()]
+    rows[-1]["seq"] += 5
+    ledger.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    with pytest.raises(composable.BundleError, match="contiguous"):
+        composable.freeze(c, "Q1P1", "branch-1")
+
+
+def test_the_handoff_records_its_ledger_digest(tmp_path):
+    import hashlib
+    c, b = _handed_off(tmp_path)
+    bundle = composable.freeze(c, "Q1P1", "branch-1")
+    handoff = json.loads((bundle / "handoff.json").read_text())
+    assert handoff["ledger_sha256"] == hashlib.sha256((bundle / "ledger.jsonl").read_bytes()).hexdigest()

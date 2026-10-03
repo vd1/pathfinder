@@ -429,10 +429,21 @@ def _inputs(d: Path) -> dict:
     return {s: next(p for p in (d / "inputs").iterdir() if p.stem == s and p.suffix != ".json").name for s in "QP"}
 
 
+ROLE_BRIEFS = {"peer", "consolidate", "verify"}      # the roles a composable branch or joint thread briefs
+
+
 def _prompt(campaign, name, **vars):
     from . import resources
     vars.setdefault("DATE", time.strftime("%Y-%m-%d"))          # every document bears its date of production
-    return resources.prompt(campaign, name, **vars)
+    text = resources.prompt(campaign, name, **vars)
+    return text + "\n\n" + role_brief(campaign) if name in ROLE_BRIEFS and role_brief(campaign) else text
+
+
+def role_brief(campaign) -> str:
+    """A composable view's brief (prompts/branch.md or prompts/joint.md), or "" for an ordinary thread."""
+    from . import resources
+    role = (campaign.raw or {}).get("composable_role")
+    return resources.prompt(campaign, role).strip() if role in ("branch", "joint") else ""
 
 
 def _check(stop):
@@ -999,10 +1010,6 @@ def next_requests(campaign, pair_id):
                         CALLS_LEFT=campaign.allowances["peer_calls"] - s.get("peer_call", 0) - 1,
                         FEASIBILITY=row.get("feasibility", "?"), GAIN=row.get("gain", "?"),
                         CONNEXION=row.get("connexion") or "none recorded.", RATIONALE=row.get("rationale") or "none recorded.")
-                    if campaign.raw.get("research_bundles"):
-                        prompt += ("\nInvestigate disagreements and develop new connections across branches. "
-                                   "Distinguish inherited evidence from new derivations and conjectures. "
-                                   "Keep branch bundles unchanged; write new work to your own directory and the shared ledger.")
                     if s.get("requests"):
                         prompt += "\nReview requests and dispositions:\n" + json.dumps(s["requests"])
                 elif stage == "consolidate":
@@ -1017,7 +1024,7 @@ def next_requests(campaign, pair_id):
                 else:
                     seconds = campaign.allowances["verify_seconds"]
                     if direct:
-                        prompt = material + ('\n\nReview this research ledger directly. Return JSON with requests and dispositions lists. '
+                        prompt = material + "\n\n" + role_brief(campaign) + ('\n\nReview this research ledger directly. Return JSON with requests and dispositions lists. '
                             'Each new request needs a distinct id, action REVISE or ITERATE, and concrete text. '
                             'REVISE corrects an argument using existing evidence; ITERATE investigates a research gap. '
                             'Every active prior request needs a disposition with its id, status resolved or deferred, and reason. '
