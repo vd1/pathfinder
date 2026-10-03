@@ -446,8 +446,12 @@ cooldowns) on the shared \texttt{codex-subscription} seats (H7), and builds repa
 notes on the frozen engine instead of a moving checkout. A live smoke call passed.
 Not done: \path{overnight.py} still selects units itself, because statarb runs
 one campaign per paper while the coordinator's arms are fixed at load
-(\texttt{next\_unit} exists for deployments whose units live in fixed arms); the
-watchboard is not yet retired; the engine compatibility shim stays for archived
+(\texttt{next\_unit} exists for deployments whose units live in fixed arms). Ruling:
+\path{overnight.py} stays, since each statarb investigation freezes its own engine and
+runs in its own worker, which the coordinator does not do. The watchboard's content
+is available as panels of the engine's operator page (engine-v1.2.3 extension
+\texttt{panels}; \texttt{python -m arxiv\_drip view}); the old server is retired once
+the operator has compared the two; the engine compatibility shim stays for archived
 investigations frozen at engine-v1.0 and v1.1, where it is still needed and is
 harmless on later engines.
 
@@ -681,6 +685,14 @@ Settled by the operator on 29 September.
   rejection rate per branch and overall, and thread divergence (mean pairwise
   Jaccard distance of word 3-grams over the branches' substantive ledger text).
   The value \texttt{eva\_minus} is still read, as \texttt{direct\_eva} with a deprecation warning, because proofTree writes it.
+\item \textbf{julien-2 cherry-picks} (phase 7, engine-v1.2.3). Taken: the
+  branch and joint briefs as engine role briefs (\path{prompts/branch.md},
+  \path{prompts/joint.md}, appended for peers, consolidation and verification;
+  any thread over bundles is a joint thread); the handoff checks a frozen bundle
+  lacked (contiguous ledger, ledger digest in \path{handoff.json}). Not taken:
+  \path{local-reference-links.json} (canon resolves bundle citations by
+  namespace and registered sources since phase 3b), and the julien-specific
+  domain brief and final-account format.
 \item \textbf{Other lineages.} \texttt{statarb} and \texttt{agQSL} are first
   explored for variants worth reusing (for example agQSL's quota detection,
   no-start timeout, size preflight and idle watcher, and statarb's recovery
