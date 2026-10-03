@@ -184,6 +184,13 @@ def snapshot(campaign):
         if name:
             by_class[name] = by_class.get(name, 0) + 1
     completed = [row for row in receipts if row.get("outcome") == "completed" and not row.get("error")]
+    for role, budget in ((campaign.raw or {}).get("tool_call_budgets") or {}).items():
+        stage = "edit" if role == "editor" else role
+        rows = [r for r in receipts[-50:] if r.get("stage") == stage and r.get("tool_calls") is not None]
+        over = [r for r in rows if r["tool_calls"] > 1.5 * budget]
+        if over:
+            warnings.append(f"{stage}: {len(over)} of {len(rows)} recent calls used more than 1.5 times their budget of "
+                            f"{budget} tool calls (up to {max(r['tool_calls'] for r in over)}).")
     limits = {}                                    # sources that rate-limited the agents in the last 50 calls
     for row in receipts[-50:]:
         for source, n in (row.get("source_limits") or {}).items():

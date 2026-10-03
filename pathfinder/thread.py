@@ -211,7 +211,14 @@ def _prompt(campaign, name, **vars):
     from . import resources
     vars.setdefault("DATE", time.strftime("%Y-%m-%d"))          # every document bears its date of production
     text = resources.prompt(campaign, name, **vars)
-    return text + "\n\n" + role_brief(campaign) if name in ROLE_BRIEFS and role_brief(campaign) else text
+    if name in ROLE_BRIEFS and role_brief(campaign):
+        text += "\n\n" + role_brief(campaign)
+    budget = ((campaign.raw or {}).get("tool_call_budgets") or {}).get(name)
+    if budget:          # every turn of a session resends its whole context: fewer, better-aimed reads cost far less
+        text += (f"\n\nPlan for about {budget} tool calls in this call. Each turn resends everything read so "
+                 "far, so read in slices (a line range or a search), never a whole file you only need part of, "
+                 "do not reread what you have, and write your entry as soon as you can.")
+    return text
 
 
 def role_brief(campaign) -> str:

@@ -58,6 +58,10 @@ def load(root: Path) -> Campaign:
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
     from . import budget
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
+    tb = raw.get("tool_call_budgets")
+    if tb is not None and (not isinstance(tb, dict) or any(
+            not isinstance(v, int) or isinstance(v, bool) or v < 1 for v in tb.values())):
+        raise ValueError(f"tool_call_budgets must map role names (peer, consolidate, verify, editor, author) to positive integers, got {tb!r}")
     pb = raw.get("prompt_budgets")
     if pb is not None and (not isinstance(pb, dict) or any(
             not isinstance(v, int) or isinstance(v, bool) or v < 1 for v in pb.values())):

@@ -137,6 +137,12 @@ your own campaign directory and edit the models and the budget.
   also shown apart; a call that never reached a model does not. Admission
   projects the calls in flight at the mean usage so far. Receipts carry a
   `call_id` and are read once per call.
+- `tool_call_budgets`: per role (`peer`, `consolidate`, `verify`, `editor`,
+  `author`), the number of tool calls the agent is asked to plan for. An agent
+  session resends everything it has read on every turn, so its input tokens grow
+  with its turns far more than with its prompt; `pathfinder health` names a stage
+  whose recent calls ran past 1.5 times its budget, and `pathfinder economy`
+  shows the effect.
 - `budget_usd` (optional): cap on known cost, plus `call_estimate_usd` for every
   call in flight and every call that opened a session and whose cost is unknown.
 - `call_estimate_usd`: what one in-flight call is assumed to cost by the guard.
