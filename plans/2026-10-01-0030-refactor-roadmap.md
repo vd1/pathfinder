@@ -19,7 +19,7 @@ previous one is merged, except where noted.
 | 5 | Contracts over parsers: schema calls, consumer stage; one budgeted context builder for every stage | D5, H8, H9, R4, J01 | 1 |
 | 6 | Composable EVA as an option: N direct-EVA branches (EVA-minus renamed: E writes no synthesis, V reads the ledger), default 3, then a joint EVA thread | EVA decision, D10 | 3 |
 | 7 | Deployments: statarb on engine-v1.2, then agQSL; julien-2 cherry-picks | D8, statarb and agQSL migration outlines | 1 to 5 |
-| 8 | Multi-source intake (arXiv categories, NBER, NEP, SSRN metadata) | H11, S9 | 7 |
+| 8 | Multi-source intake: engine source adapters (arXiv categories, NBER, NEP, SSRN metadata via Crossref) and shared machinery; each deployment chooses its sources in its own campaign.json (decision of 3 October) | H11, S9 | 7 |
 
 Phases 3 and 5 may run in parallel with phase 2 once phase 1 is merged.
 

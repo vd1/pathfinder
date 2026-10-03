@@ -524,6 +524,11 @@ generalise to the canonical engine and belong in the refactor specification.
   forbid automated access and full-text storage, so research prompts must forbid
   fetching from it. NBER and RePEc NEP feeds and further arXiv categories with a
   keyword filter are straightforward.
+  Decision (3 October): sources are configured per deployment, never engine-wide.
+  The engine provides source adapters and the shared machinery (namespaces,
+  watermarks, deduplication, abstract-only status); each deployment's
+  \path{campaign.json} names the sources it uses and their settings. SSRN suits
+  statarb's quantitative-finance intake and makes no sense for proofTree.
 \item \textbf{The operator view reads documents, not sources.} Learned from the
   statarb watchboard on 1 October. A unit's produced documents open as their
   PDF in a reader inside the page, with the \LaTeX{} source one click away and a
