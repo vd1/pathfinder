@@ -26,7 +26,7 @@ def test_the_probe_builds_sound_and_flawed_copies_and_reports(tmp_path):
     assert set(report["units"]) == {"Q1P1-sound", "Q1P1-flawed"}
     flawed = report["units"]["Q1P1-flawed"]
     assert flawed["planted"]["before"] != flawed["planted"]["after"]
-    assert report["detection_rate"] == 0.0 and report["false_alarm_rate"] == 0.0     # the stub never asks for anything
+    assert report["request_rate_flawed"] == 0.0 and report["correction_rate"] == 0.0 and report["request_rate_sound"] == 0.0
     assert json.loads((tmp_path / "probe" / "probe-report.json").read_text()) == report
     sound = (tmp_path / "probe" / "threads" / report["units"]["Q1P1-sound"]["pair"] / "ledger.jsonl").read_text()
     assert sound.startswith((source.thread_dir("Q1P1") / "ledger.jsonl").read_text())   # then the review row
@@ -49,3 +49,10 @@ def test_locators_are_never_the_planted_flaw(text):
 def test_a_quantity_in_a_relation_is_the_planted_flaw():
     flawed, planted = probe.plant("See entry 12: with B = 16 the bound is 0.125, which needs 32 samples.")
     assert planted["before"] == "16" and "B = 48" in flawed
+
+
+
+def test_a_correction_names_both_values():
+    planted = {"before": "38", "after": "114"}
+    assert probe._corrects({"text": "the script reports 38 checks, not 114"}, planted)
+    assert not probe._corrects({"text": "rerun with 1140 samples and 380 seeds"}, planted)

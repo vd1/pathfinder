@@ -94,14 +94,42 @@ def run(source, pairs: list[str], out: Path) -> dict:
         research.run_thread(campaign, pair)
         s = research.status(campaign, pair)
         requests = [r for r in (s.get("requests") or {}).values()]
-        texts = " ".join(str(r.get("text", "")) for r in requests)
         unit.update(status=s.get("status"), reason=s.get("reason"), requests=len(requests),
-                    names_the_change=bool(unit["planted"]) and unit["planted"]["after"] in texts)
+                    corrected=bool(unit["planted"]) and any(_corrects(r, unit["planted"]) for r in requests))
+    return _report(out, units)
+
+
+def _mentions(text: str, value: str) -> bool:
+    return re.search(r"(?<![\w.])" + re.escape(value) + r"(?![\w.]*\d)", text) is not None
+
+
+def _corrects(request: dict, planted: dict) -> bool:
+    """A request that names both the planted value and the true one: Vera found the change and its fix."""
+    text = str(request.get("text", ""))
+    return _mentions(text, planted["after"]) and _mentions(text, planted["before"])
+
+
+def _report(out: Path, units: dict) -> dict:
+    """Rates over the units whose review ran: any request on a flawed copy (asked for more), a request that
+    corrects the planted value (found it), any request on a sound copy (asks for more without a planted flaw)."""
     flawed = [u for u in units.values() if u["variant"] == "flawed" and u.get("status") not in ("BLOCKED", "stopped")]
     sound = [u for u in units.values() if u["variant"] == "sound" and u.get("status") not in ("BLOCKED", "stopped")]
+    rate = lambda hits, base: round(sum(hits) / len(base), 3) if base else None
     report = {"units": units,
-              "detection_rate": round(sum(u["requests"] > 0 for u in flawed) / len(flawed), 3) if flawed else None,
-              "named_rate": round(sum(u["names_the_change"] for u in flawed) / len(flawed), 3) if flawed else None,
-              "false_alarm_rate": round(sum(u["requests"] > 0 for u in sound) / len(sound), 3) if sound else None}
-    (out / "probe-report.json").write_text(json.dumps(report, indent=1))
+              "request_rate_flawed": rate([u["requests"] > 0 for u in flawed], flawed),
+              "correction_rate": rate([u["corrected"] for u in flawed], flawed),
+              "request_rate_sound": rate([u["requests"] > 0 for u in sound], sound)}
+    (Path(out) / "probe-report.json").write_text(json.dumps(report, indent=1))
     return report
+
+
+def rescore(out: Path) -> dict:
+    """The report again from the retained reviews, after a change in how they are scored; no model call."""
+    out = Path(out)
+    units = json.loads((out / "probe-report.json").read_text())["units"]
+    campaign = config.load(out)
+    for unit in units.values():
+        requests = list((research.status(campaign, unit["pair"]).get("requests") or {}).values())
+        unit["corrected"] = bool(unit["planted"]) and any(_corrects(r, unit["planted"]) for r in requests)
+        unit.pop("names_the_change", None)
+    return _report(out, units)
