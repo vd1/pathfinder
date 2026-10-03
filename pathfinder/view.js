@@ -166,7 +166,8 @@ function decorateBoxes() {
     const name = box.dataset.box || (box.querySelector("h1,h2")?.textContent || box.getAttribute("aria-label") || "").trim();
     if (!name) continue;
     box.dataset.box = name;
-    if (!box.querySelector(":scope > .box-toggle")) box.insertAdjacentHTML("afterbegin", toggle(name));
+    // a box drawn with its own toggle (a deployment panel's heading) gets no second one
+    if (!box.querySelector(".box-toggle")) box.insertAdjacentHTML("afterbegin", toggle(name));
     box.classList.toggle("collapsed", collapsed.has(name));
   }
 }

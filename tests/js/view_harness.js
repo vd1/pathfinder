@@ -3,7 +3,7 @@ const fs = require("fs"), vm = require("vm"), path = require("path");
 const source = fs.readFileSync(path.join(__dirname, "../../pathfinder/view.js"), "utf8");
 
 // The page fetches its first snapshot as soon as it loads: give the world its first response and hash up front.
-async function world(first, hash = "", arms = [{ arm: "", name: "camp" }]) {
+async function world(first, hash = "", arms = [{ arm: "", name: "camp" }], boxes = []) {
   const writes = {}, elements = {}, handlers = {}, docHandlers = {};
   function element(id) {
     let html = "";
@@ -25,6 +25,7 @@ async function world(first, hash = "", arms = [{ arm: "", name: "camp" }]) {
     console, URLSearchParams, setInterval() {}, matchMedia: () => ({ matches: true }),
     document: {
       getElementById: (id) => (elements[id] = elements[id] || element(id)),
+      querySelectorAll: (selector) => selector.startsWith("section") ? boxes : [],
       addEventListener(type, fn) { (docHandlers[type] = docHandlers[type] || []).push(fn); },
     },
     window: { addEventListener(type, fn) { (docHandlers["window:" + type] = docHandlers["window:" + type] || []).push(fn); } },
@@ -130,6 +131,13 @@ const state = (activity, summary) => ({
   out.panel_kinds_use_page_designs = p.includes('class="stage"') && p.includes("usage-grid") && p.includes("strategy-grid")
     && p.includes('class="strategy-card status-active"') && p.includes('data-open-pdf="/x.pdf"') && p.includes("Unscored");
   out.boxes_collapsible = p.includes("data-toggle-box");
+  const fakeBox = (hasToggle) => { const b = { dataset: {}, inserted: 0, classList: { toggle() {} },
+    querySelector: (sel) => sel === ".box-toggle" ? (hasToggle || b.inserted ? {} : null) : { textContent: "Units" },
+    getAttribute: () => null, insertAdjacentHTML() { b.inserted += 1; } }; return b; };
+  const drawn = fakeBox(true), plain = fakeBox(false);
+  w = await world(state("a"), "", undefined, [drawn, plain]);
+  w.api.render();
+  out.one_toggle_per_box = drawn.inserted === 0 && plain.inserted === 1;
   w = await world(state("a"));
   out.unit_pdf_has_open_button = w.el("research-list").innerHTML.includes('data-open-pdf="threads/Q1P1/paper/paper.pdf"');
   out.unit_view_keeps_sections = w.el("pipeline-section").hidden === false && w.el("work-grid").hidden === false;
