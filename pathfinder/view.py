@@ -104,13 +104,24 @@ def _openable(campaign, wanted: str) -> Path | None:
         return webguard.resolve(campaign.root, wanted)
     except webguard.Refused:
         pass
-    listed = {str(Path(cell["pdf"]).resolve()) for panel in campaign_state._panels(campaign) for row in panel["rows"]
-              for cell in row if isinstance(cell, dict) and cell.get("pdf")}
+    listed = {str(Path(pdf).resolve()) for pdf in _pdfs(campaign_state._panels(campaign))}
     try:
         target = Path(wanted).resolve(strict=True)
     except (OSError, RuntimeError, ValueError):
         return None
     return target if str(target) in listed and target.is_file() else None
+
+
+def _pdfs(value):
+    """Every "pdf" a panel lists, wherever its kind puts it (table cells, card actions)."""
+    if isinstance(value, dict):
+        if isinstance(value.get("pdf"), str):
+            yield value["pdf"]
+        for item in value.values():
+            yield from _pdfs(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _pdfs(item)
 
 
 def open_with_system(path: str) -> None:

@@ -142,11 +142,14 @@ def panel_server(tmp_path, monkeypatch):
     outside = tmp_path / "deployment" / "notes"; outside.mkdir(parents=True)
     (outside / "strategy.pdf").write_bytes(b"%PDF-1.4 fake")
     (outside / "secret.pdf").write_bytes(b"%PDF-1.4 other")
-    c = make(tmp_path / "c", extensions={"path": "deploy", "panels": "pdf_panels:panels"})
+    (outside / "card.pdf").write_bytes(b"%PDF-1.4 card")
+    module = "pdf_panels_" + "".join(ch for ch in tmp_path.name if ch.isalnum())   # one module per test: no reuse
+    c = make(tmp_path / "c", extensions={"path": "deploy", "panels": f"{module}:panels"})
     (tmp_path / "c" / "deploy").mkdir()
-    (tmp_path / "c" / "deploy" / "pdf_panels.py").write_text(
+    (tmp_path / "c" / "deploy" / f"{module}.py").write_text(
         "def panels(campaign):\n"
-        f"    return [{{'title': 'Research desk', 'columns': ['note'], 'rows': [[{{'text': 'note', 'pdf': {str(outside / 'strategy.pdf')!r}}}]]}}]\n")
+        f"    return [{{'kind': 'cards', 'title': 'Paper trading', 'cards': [{{'title': 'T', 'actions': [{{'text': 'Read note', 'pdf': {str(outside / 'card.pdf')!r}}}]}}]}},\n"
+        f"            {{'title': 'Research desk', 'columns': ['note'], 'rows': [[{{'text': 'note', 'pdf': {str(outside / 'strategy.pdf')!r}}}]]}}]\n")
     opened = []
     monkeypatch.setattr(view, "open_with_system", lambda path: opened.append(path))
     srv = view.make_server(c, 0)
@@ -171,6 +174,12 @@ def test_a_pdf_a_panel_lists_opens_in_the_system_viewer(panel_server):
     port, outside, opened = panel_server
     assert post(port, "/open", {"path": str(outside / "strategy.pdf")}) == 204
     assert opened == [str((outside / "strategy.pdf").resolve())]
+
+
+def test_a_pdf_a_card_lists_opens_in_the_system_viewer(panel_server):
+    port, outside, opened = panel_server
+    assert post(port, "/open", {"path": str(outside / "card.pdf")}) == 204
+    assert opened == [str((outside / "card.pdf").resolve())]
 
 
 def test_only_listed_pdfs_open_and_only_from_this_page(panel_server):
