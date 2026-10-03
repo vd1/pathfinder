@@ -1,6 +1,6 @@
 """The operator's page: the campaign state document and the units' documents, read-only, on 127.0.0.1."""
 from __future__ import annotations
-import json
+import json, subprocess, sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -69,10 +69,54 @@ def make_server(campaigns, port: int) -> ThreadingHTTPServer:
                 return self.reply(200, data, "text/plain; charset=utf-8", "text")
             return self.reply(404, b"not found", "text/plain; charset=utf-8")
 
+        def do_POST(self):
+            """Open a PDF in the operator's own viewer: a unit's PDF under threads/, or one a panel lists. Only
+            from this page (Host and Origin both name this server), never a file the page did not show."""
+            refused = webguard.refusal(self.headers, self.server.server_address[1])
+            if refused or not self.headers.get("Origin"):
+                return self.reply(403, (refused or "same origin required").encode(), "text/plain; charset=utf-8")
+            request = urlsplit(self.path)
+            arm = parse_qs(request.query).get("arm", [first])[0]
+            if request.path != "/open" or arm not in arms:
+                return self.reply(404, b"not found", "text/plain; charset=utf-8")
+            try:
+                length = min(int(self.headers.get("Content-Length") or 0), 65536)
+                wanted = str(json.loads(self.rfile.read(length) or b"{}").get("path") or "")
+            except (ValueError, AttributeError):
+                return self.reply(400, b"bad request", "text/plain; charset=utf-8")
+            target = _openable(arms[arm], wanted)
+            if target is None:
+                return self.reply(404, b"document not found", "text/plain; charset=utf-8")
+            open_with_system(str(target))
+            return self.reply(204, b"", "text/plain; charset=utf-8")
+
         def log_message(self, *args):
             pass
 
     return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+
+
+def _openable(campaign, wanted: str) -> Path | None:
+    """The PDF `wanted` names, if the page offers it: a unit's PDF under threads/, or a PDF a panel lists."""
+    if not wanted.endswith(".pdf"):
+        return None
+    try:
+        return webguard.resolve(campaign.root, wanted)
+    except webguard.Refused:
+        pass
+    listed = {str(Path(cell["pdf"]).resolve()) for panel in campaign_state._panels(campaign) for row in panel["rows"]
+              for cell in row if isinstance(cell, dict) and cell.get("pdf")}
+    try:
+        target = Path(wanted).resolve(strict=True)
+    except (OSError, RuntimeError, ValueError):
+        return None
+    return target if str(target) in listed and target.is_file() else None
+
+
+def open_with_system(path: str) -> None:
+    """The operator's default PDF viewer (Preview on macOS)."""
+    subprocess.Popen(["open" if sys.platform == "darwin" else "xdg-open", path],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
 
 
 def serve(campaign, port: int = 8791):

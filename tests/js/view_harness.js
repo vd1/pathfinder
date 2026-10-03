@@ -32,6 +32,7 @@ async function world(first, hash = "", arms = [{ arm: "", name: "camp" }]) {
     location,
     fetch: async (url) => {
       requested.push(url);
+      if (url.startsWith("/open")) return { ok: true, text: async () => "" };
       if (url.startsWith("/doc")) return { ok: true, text: async () => "source text" };
       if (url.startsWith("/api/arms")) return { ok: true, json: async () => arms };
       const next = responses.shift();
@@ -41,7 +42,7 @@ async function world(first, hash = "", arms = [{ arm: "", name: "camp" }]) {
   };
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(source + "\n;globalThis.__api = { render, refresh, openFromHash, showUnit, chooseArm };", context);
+  vm.runInContext(source + "\n;globalThis.__api = { render, refresh, openFromHash, showUnit, chooseArm, openPdf };", context);
   await new Promise((resolve) => setTimeout(resolve, 0));        // let the load-time refresh finish
   return { api: context.__api, writes, location, responses, requested, el: context.document.getElementById };
 }
@@ -113,7 +114,13 @@ const state = (activity, summary) => ({
   out.panel_view = w.el("pipeline-section").hidden === true && w.el("work-grid").hidden === true
     && w.el("panels").innerHTML.includes("Paper trading") && w.el("page-title").textContent === "statarb arXiv drip"
     && w.el("lede").textContent === "Intake, research and paper trading.";
+  deployment.panels[0].rows.push([{ text: "note", pdf: "/abs/notes/strategy.pdf" }, 3]);
+  w = await world(deployment);
+  out.panel_pdf_opens_in_viewer = w.el("panels").innerHTML.includes('data-open-pdf="/abs/notes/strategy.pdf"');
+  await w.api.openPdf("/abs/notes/strategy.pdf");
+  out.panel_pdf_opens_in_viewer = out.panel_pdf_opens_in_viewer && w.requested.at(-1) === "/open";
   w = await world(state("a"));
+  out.unit_pdf_has_open_button = w.el("research-list").innerHTML.includes('data-open-pdf="threads/Q1P1/paper/paper.pdf"');
   out.unit_view_keeps_sections = w.el("pipeline-section").hidden === false && w.el("work-grid").hidden === false;
   console.log(JSON.stringify(out));
 })();

@@ -397,7 +397,8 @@ adjusts it only through:
   admits each call, records it and writes the receipt. A `panels` extension,
   `panels(campaign)`, returns the deployment's own tables for the operator
   page, `[{"title", "columns", "rows", "note"}]`; cells are text, numbers, or
-  `{"text", "href"}` with an `https` link. `consumer` and `failure_rules` are
+  `{"text", "href"}` with an `https` link, or `{"text", "pdf"}` with a PDF's path,
+  which the page opens in the operator's own viewer (as it does a unit's PDF). `consumer` and `failure_rules` are
   described above. Extension code is trusted; the engine validates what it
   returns. Each deployment's modules need unique names.
 

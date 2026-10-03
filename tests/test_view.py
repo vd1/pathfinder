@@ -93,7 +93,8 @@ def _harness():
 @pytest.mark.parametrize("scenario", ["hash_opens_document", "dialog_survives_refresh", "close_clears_hash",
                                       "failed_refresh_keeps_snapshot", "pipeline_counts_from_server", "escaped",
                                       "filter_select_not_rebuilt_on_refresh", "no_arxiv_link_for_local_ids", "no_null_scores", "usage_in_human_units", "arms_select_shown",
-                                      "arm_switch_requests_that_arm", "panel_view", "unit_view_keeps_sections"])
+                                      "arm_switch_requests_that_arm", "panel_view", "unit_view_keeps_sections",
+                                      "panel_pdf_opens_in_viewer", "unit_pdf_has_open_button"])
 def test_page_scenarios(scenario):
     assert _harness()[scenario] is True
 
@@ -133,3 +134,54 @@ def test_the_view_lists_and_selects_arms(arms_server):
     assert get(port, "/doc?arm=a1&path=threads/Q1P1/edited/note.tex")[2] == b"only in a1"
     assert get(port, "/doc?arm=a1&path=threads/Q1P2/edited/note.tex")[0] == 404
     assert get(port, "/api/state?arm=nope")[0] == 404
+
+
+@pytest.fixture
+def panel_server(tmp_path, monkeypatch):
+    outside = tmp_path / "deployment" / "notes"; outside.mkdir(parents=True)
+    (outside / "strategy.pdf").write_bytes(b"%PDF-1.4 fake")
+    (outside / "secret.pdf").write_bytes(b"%PDF-1.4 other")
+    c = make(tmp_path / "c", extensions={"path": "deploy", "panels": "pdf_panels:panels"})
+    (tmp_path / "c" / "deploy").mkdir()
+    (tmp_path / "c" / "deploy" / "pdf_panels.py").write_text(
+        "def panels(campaign):\n"
+        f"    return [{{'title': 'Research desk', 'columns': ['note'], 'rows': [[{{'text': 'note', 'pdf': {str(outside / 'strategy.pdf')!r}}}]]}}]\n")
+    opened = []
+    monkeypatch.setattr(view, "open_with_system", lambda path: opened.append(path))
+    srv = view.make_server(c, 0)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    yield srv.server_address[1], outside, opened
+    srv.shutdown()
+
+
+def post(port, path, body, origin=True):
+    headers = {"Content-Type": "application/json"}
+    if origin:
+        headers["Origin"] = f"http://127.0.0.1:{port}"
+    req = urllib.request.Request(f"http://127.0.0.1:{port}{path}", data=json.dumps(body).encode(), headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(req) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+
+
+def test_a_pdf_a_panel_lists_opens_in_the_system_viewer(panel_server):
+    port, outside, opened = panel_server
+    assert post(port, "/open", {"path": str(outside / "strategy.pdf")}) == 204
+    assert opened == [str((outside / "strategy.pdf").resolve())]
+
+
+def test_only_listed_pdfs_open_and_only_from_this_page(panel_server):
+    port, outside, opened = panel_server
+    assert post(port, "/open", {"path": str(outside / "secret.pdf")}) == 404
+    assert post(port, "/open", {"path": str(outside / "strategy.pdf")}, origin=False) == 403
+    assert opened == []
+
+
+def test_a_units_pdf_opens_in_the_system_viewer(server, monkeypatch):
+    srv, port = server
+    opened = []
+    monkeypatch.setattr(view, "open_with_system", lambda path: opened.append(path))
+    assert post(port, "/open", {"path": "threads/Q1P1/edited/note.pdf"}) == 204
+    assert opened and opened[0].endswith("threads/Q1P1/edited/note.pdf")

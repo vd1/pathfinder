@@ -44,7 +44,18 @@ const pairTitle = (u) => `${u.q?.title || "Q"} × ${u.p?.title || "P"}`;
 // The most refined document: paper, then readable note, then research note.
 const bestDocument = (u) => u.documents[u.documents.length - 1];
 const readButton = (u, doc = bestDocument(u), label = "Read note") => doc
-  ? `<button type="button" class="primary-action" data-doc="${esc(doc.kind)}" data-unit-doc="${esc(u.unit)}">${esc(label)}</button>` : "";
+  ? `<button type="button" class="primary-action" data-doc="${esc(doc.kind)}" data-unit-doc="${esc(u.unit)}">${esc(label)}</button>`
+    + (doc.pdf ? ` <button type="button" data-open-pdf="${esc(doc.pdf)}">Open PDF</button>` : "") : "";
+// A PDF opens in the operator's own viewer: the server opens it, only if this page offers it.
+async function openPdf(path) {
+  try {
+    const r = await fetch("/open" + armQuery("?"), {method: "POST", headers: {"Content-Type": "application/json"},
+                                                    body: JSON.stringify({path})});
+    if (!r.ok) throw new Error(await r.text());
+  } catch (error) {
+    $("error-banner").hidden = false; $("error-banner").textContent = "Could not open the PDF: " + error.message;
+  }
+}
 
 function renderParams() {
   const c = current.campaign, r = current.runner || {}, p = current.progress || {};
@@ -134,6 +145,8 @@ function renderBlocks() {
 
 // A deployment's own tables (extension "panels"): text cells, numbers in human units, https links only.
 const cell = (value) => {
+  if (value && typeof value === "object" && value.pdf)
+    return `<button type="button" class="link-button" data-open-pdf="${esc(value.pdf)}">${esc(value.text ?? "PDF")}</button>`;
   if (value && typeof value === "object" && /^https:\/\//.test(String(value.href || "")))
     return `<a href="${esc(value.href)}" rel="noreferrer" target="_blank">${esc(value.text ?? value.href)}</a>`;
   if (typeof value === "number") return Math.abs(value) >= 1e4 ? tokens(value) : esc(num(value));
@@ -235,9 +248,10 @@ function openFromHash() {
 }
 
 document.addEventListener("click", (event) => {
-  const target = event.target.closest("[data-unit],[data-unit-doc],[data-source],[data-filter]");
+  const target = event.target.closest("[data-unit],[data-unit-doc],[data-source],[data-filter],[data-open-pdf]");
   if (!target || !current) return;
-  if (target.dataset.filter) {
+  if (target.dataset.openPdf) openPdf(target.dataset.openPdf);
+  else if (target.dataset.filter) {
     const select = $("status-filter");
     select.value = select.value === target.dataset.filter ? "all" : target.dataset.filter;
     renderQueue(); renderPipeline();
