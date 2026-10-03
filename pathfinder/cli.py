@@ -37,6 +37,9 @@ def main(argv=None):
     la.add_argument("--settle", type=float, default=20.0, help="seconds to wait before checking the process")
     la.add_argument("args", nargs=argparse.REMAINDER, help="the pathfinder subcommand and its arguments, after --")
     sub.add_parser("playbook", help="the next actions for the operator or the supervising agent, with commands").add_argument("--json", action="store_true")
+    sub.add_parser("economy", help="input tokens by stage and by pair, and the cached share").add_argument("--json", action="store_true")
+    pv = sub.add_parser("probe-vera", help="sound and planted-flaw copies of finished pairs, one direct-EVA review each")
+    pv.add_argument("--pairs", nargs="+", required=True); pv.add_argument("--out", required=True)
     sub.add_parser("status", help="print campaign and shortlist state")
     ev = sub.add_parser("evidence", help="a pair's evidence manifest: cited files, resolutions, errors and proposed declarations")
     ev.add_argument("pair"); ev.add_argument("--json", action="store_true")
@@ -155,6 +158,14 @@ def _dispatch(ns, c):
         from . import playbook
         actions = playbook.next_actions(c)
         print(json.dumps(actions, indent=1) if ns.json else playbook.text(actions))
+    elif ns.cmd == "probe-vera":
+        from . import probe
+        report = probe.run(c, ns.pairs, Path(ns.out))
+        print(json.dumps({k: v for k, v in report.items() if k != "units"}, indent=1))
+    elif ns.cmd == "economy":
+        from . import economy, transport
+        summary = economy.summary(transport.receipts(c))
+        print(json.dumps(summary, indent=1) if ns.json else economy.text(summary))
     elif ns.cmd == "status":
         print(monitor.status_text(c))
     elif ns.cmd == "state":
