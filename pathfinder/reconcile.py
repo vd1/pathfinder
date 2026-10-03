@@ -155,9 +155,9 @@ def _apply_composable(campaign, pair_id: str) -> str:
             research._set(campaign, pair_id, status="BLOCKED", reason=f"frozen bundle changed: {error}")
             return "BLOCKED"
         return _apply(composable.joint_view(campaign, pair_id), pair_id)
-    if info.get("branch"):
-        _apply(composable.branch_view(campaign, pair_id, info["branch"]), pair_id)
-    with runner.Lock(campaign.thread_dir(pair_id)):
+    with runner.Lock(campaign.thread_dir(pair_id)):     # the pair is held from the branch repair to the resumption
+        if info.get("branch"):
+            _apply(composable.branch_view(campaign, pair_id, info["branch"]), pair_id)
         history = list(research.status(campaign, pair_id).get("history") or []) + [{
             "at": research._now(), "from_status": info["status"], "from_reason": info["reason"], "action": info["action"]}]
         research._set(campaign, pair_id, status="running", reason=None, failure=None, history=history)

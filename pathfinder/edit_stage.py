@@ -54,8 +54,12 @@ def finish(campaign, pair_id: str) -> bool:
     if admitted:
         from . import context
         d = campaign.thread_dir(pair_id)
-        account = context.build(campaign, "edit", [context.Section("", path=d / f"{pair_id}.tex")],
-                                tools=False, cwd=d, unit=pair_id)   # the editor has no tools: a digest above the budget
+        try:
+            account = context.build(campaign, "edit", [context.Section("", path=d / f"{pair_id}.tex")],
+                                    tools=False, cwd=d, unit=pair_id)   # the editor has no tools: a digest above the budget
+        except transport.PromptTooLarge as error:
+            _set(campaign, pair_id, status="blocked", reason=str(error))
+            return False
         receipt = _dispatch(campaign, pair_id, "editor", account)
         draft = receipt["text"]
         _append_history(campaign, pair_id, 0, draft)

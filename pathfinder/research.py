@@ -1052,7 +1052,7 @@ def next_requests(campaign, pair_id):
         _set(campaign, pair_id, status="BLOCKED", reason=str(error))
         return []
     except transport.PromptTooLarge as error:           # the review material does not fit the verify budget
-        _set(campaign, pair_id, status="BLOCKED", reason=f"verify: {error}", failure=OVERSIZE_FAILURE)
+        _set(campaign, pair_id, status="BLOCKED", reason=f"{status(campaign, pair_id).get('stage')}: {error}", failure=OVERSIZE_FAILURE)
         return []
 
 

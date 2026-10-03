@@ -18,9 +18,19 @@ def run(campaign, pair_id: str) -> str:
         if fn is None:
             return "skipped"
     d = campaign.thread_dir(pair_id)
+    import hashlib
+    note = d / "edited" / "note.tex"
+    note_sha = hashlib.sha256(note.read_bytes()).hexdigest() if note.exists() else None
+    try:
+        previous = json.loads((d / "consumer.json").read_text())
+    except (OSError, ValueError):
+        previous = {}
+    if not problem and previous.get("status") == "done" and previous.get("note_sha256") == note_sha:
+        return "done"                                # this edited note was consumed already: once per note
     guarded = [d / "status.json", d / "edited" / "edit.json"]
     before = {p: p.read_bytes() if p.exists() else None for p in guarded}
     record = {"at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "status": "done", "result": None, "error": None,
+              "note_sha256": note_sha,
               "overturn_refused": False}
     try:
         if problem:

@@ -105,6 +105,11 @@ def start_coordination(parent, arms, schedule, accept_change=None) -> dict:
     previous = _read(parent.path("coordination.json")) or None
     rec = {"coordination_id": uuid.uuid4().hex, "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "schedule_sha256": digest, "schedule": norm}
+    if schedule.get("next_unit"):                    # the code that will choose the units, as it is now
+        from . import extensions
+        pick = extensions.resolve(parent.root, schedule.get("path"), schedule["next_unit"], "next_unit")
+        import inspect
+        rec["next_unit_sha256"] = hashlib.sha256(Path(inspect.getfile(pick)).read_bytes()).hexdigest()
     if previous:
         rec["previous_coordination_id"] = previous.get("coordination_id")
         if previous.get("schedule_sha256") != digest:

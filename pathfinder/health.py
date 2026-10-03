@@ -110,7 +110,7 @@ def _allowances(campaign, receipts, warnings) -> list[dict]:
     """Per stage: the allowance, its timeouts, and the longest completed call, so a too-short allowance is visible."""
     out = []
     for stage, key in ALLOWANCE_KEYS.items():
-        rows = [r for r in receipts if r.get("stage") == stage]
+        rows = [r for r in receipts[-50:] if r.get("stage") == stage]     # recent calls: advice about the present
         if not rows:
             continue
         timeouts = sum(r.get("outcome") == "timeout" for r in rows)

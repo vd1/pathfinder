@@ -58,6 +58,10 @@ def load(root: Path) -> Campaign:
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
     from . import budget
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
+    pb = raw.get("prompt_budgets")
+    if pb is not None and (not isinstance(pb, dict) or any(
+            not isinstance(v, int) or isinstance(v, bool) or v < 1 for v in pb.values())):
+        raise ValueError(f"prompt_budgets must map stage names (or default) to positive integers, got {pb!r}")
     if raw.get("account"):
         from . import seats
         seats.account(SimpleNamespace(raw=raw))      # a malformed account fails here, not inside a call
