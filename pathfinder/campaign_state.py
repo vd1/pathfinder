@@ -252,7 +252,8 @@ def build(campaign) -> dict:
     return {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "panels": _panels(campaign),
-        "campaign": {"name": campaign.root.name, "backend": campaign.backend, "model": campaign.model,
+        "campaign": {"name": campaign.root.name, "title": raw.get("title"), "description": raw.get("description"),
+                     "backend": campaign.backend, "model": campaign.model,
                      "seats": campaign.seats, "rounds": campaign.rounds, "allowances": campaign.allowances,
                      "research_scheme": raw.get("research_scheme", "eva"),
                      "account": _account(campaign),

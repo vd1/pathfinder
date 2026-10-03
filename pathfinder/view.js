@@ -48,10 +48,12 @@ const readButton = (u, doc = bestDocument(u), label = "Read note") => doc
 
 function renderParams() {
   const c = current.campaign, r = current.runner || {}, p = current.progress || {};
-  $("page-title").textContent = c.name;
-  $("lede").textContent = `${c.backend} / ${c.model}, scheme ${c.research_scheme}. Pairs are scored, the strongest researched by peers and an independent verifier, and accepted accounts edited into readable notes and papers.`;
-  const rows = [["Seats", c.seats], ["Rounds", c.rounds],
-    ["Allowances", Object.entries(c.allowances || {}).map(([k, v]) => k.replace("_seconds", " s").replace("_", " ") + " " + v).join(", ")],
+  $("page-title").textContent = c.title || c.name;
+  $("lede").textContent = c.description || `${c.backend} / ${c.model}, scheme ${c.research_scheme}. Pairs are scored, the strongest researched by peers and an independent verifier, and accepted accounts edited into readable notes and papers.`;
+  const allowances = Object.entries(c.allowances || {});
+  const rows = [["Seats", c.account ? `${c.seats}; account ${c.account.name}: ${c.account.in_use ?? "?"} of ${c.account.seats} in use` : c.seats],
+    ...(current.units.length ? [["Rounds", c.rounds]] : []),
+    ...(allowances.length ? [["Allowances", allowances.map(([k, v]) => k.replace("_seconds", " s").replace("_", " ") + " " + v).join(", ")]] : []),
     ["Runner", (r.status || "none") + (r.status ? (r.pid_alive ? ", alive" : ", not alive") : "")],
     ["Progress", p.status], ["Execution", String(c.execution_id || "unknown").slice(0, 12)]];
   if (c.stop) rows.push(["Stopped", c.stop.reason]);
@@ -149,6 +151,9 @@ function renderPanels() {
 
 function render() {
   if (!current) return;
+  // A deployment page with no units of its own (its content is its panels) shows no empty pipeline or desk.
+  const panelOnly = !current.units.length && (current.panels || []).length > 0;
+  $("pipeline-section").hidden = panelOnly; $("work-grid").hidden = panelOnly;
   renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks(); renderPanels();
   $("snapshot-time").textContent = "Snapshot " + when(current.generated_at);
   const issues = [];

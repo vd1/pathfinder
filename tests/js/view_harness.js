@@ -106,5 +106,14 @@ const state = (activity, summary) => ({
   w = await world(state("a", "<img src=x onerror=1>"));
   const html = w.el("research-list").innerHTML;
   out.escaped = html.includes("&lt;img") && !html.includes("<img");
+  const deployment = state("a"); deployment.units = []; deployment.campaign.title = "statarb arXiv drip";
+  deployment.campaign.description = "Intake, research and paper trading.";
+  deployment.panels = [{ title: "Paper trading", columns: ["paper", "events"], rows: [[{ text: "2601.06499v3", href: "https://arxiv.org/abs/2601.06499v3" }, 12]] }];
+  w = await world(deployment);
+  out.panel_view = w.el("pipeline-section").hidden === true && w.el("work-grid").hidden === true
+    && w.el("panels").innerHTML.includes("Paper trading") && w.el("page-title").textContent === "statarb arXiv drip"
+    && w.el("lede").textContent === "Intake, research and paper trading.";
+  w = await world(state("a"));
+  out.unit_view_keeps_sections = w.el("pipeline-section").hidden === false && w.el("work-grid").hidden === false;
   console.log(JSON.stringify(out));
 })();
