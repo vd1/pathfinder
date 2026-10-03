@@ -30,3 +30,22 @@ def test_the_probe_builds_sound_and_flawed_copies_and_reports(tmp_path):
     assert json.loads((tmp_path / "probe" / "probe-report.json").read_text()) == report
     sound = (tmp_path / "probe" / "threads" / report["units"]["Q1P1-sound"]["pair"] / "ledger.jsonl").read_text()
     assert sound.startswith((source.thread_dir("Q1P1") / "ledger.jsonl").read_text())   # then the review row
+
+
+import pytest
+
+
+@pytest.mark.parametrize("text", [
+    "Hidden transfer (01-q-paper.txt q0001:963, 000351-000355) and the 4m+1 count.",
+    "Correction to seq 33 wording, prompted by Ada seq 10 and entries 20-21.",
+    "Re-read Q prefixed lines 733-788 and P lines 193-212.",
+    "I agree with emmy 36, and P p0007:000065,000095 supplies the costs.",
+])
+def test_locators_are_never_the_planted_flaw(text):
+    with pytest.raises(ValueError):
+        probe.plant(text)
+
+
+def test_a_quantity_in_a_relation_is_the_planted_flaw():
+    flawed, planted = probe.plant("See entry 12: with B = 16 the bound is 0.125, which needs 32 samples.")
+    assert planted["before"] == "16" and "B = 48" in flawed

@@ -14,20 +14,33 @@ from pathlib import Path
 from . import config, research
 from .ledger import SUBSTANTIVE
 
-NUMBER = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)(?![\w.]*\d)")
+NUMBER = re.compile(r"(?<![\w.:/-])(\d+(?:\.\d+)?)(?![\w.:/]*\d)(?!-\d)")
+LOCATOR = re.compile(r"(?:\b(?:seq|entry|entries|line|lines|page|pages|p|pp|eq|eqs|section|sec|fig|figure|table|"
+                     r"round|ref|lemma|theorem|definition|correction|corrections|note|notes|request|requests)\.?|#)\s*$", re.I)
+IN_LOCATOR = re.compile(r"(?:\b(?:ada|emmy|vera|verifier)\s*|:\d+(?:[-–,]\s*\d+)*,\s*)$", re.I)   # "emmy 12", "p7:65,95"
+RELATION = re.compile(r"(?:[=<>≈≤≥×]|\bis|\bof|\bat)\s*$")
 
 
 def plant(text: str) -> tuple[str, dict]:
-    """The text with its first number of two or more significant digits changed (multiplied by 3), and the change."""
+    """The text with one quantity changed (multiplied by 3): a number that is not a locator (an entry, a line,
+    a page, a file position) and stands in a relation (after =, <, ≈, "is", "of", "at"), or else one of two or
+    more significant digits. ValueError when the text states no such quantity."""
+    candidates = []
     for m in NUMBER.finditer(text):
         token = m.group(1)
-        digits = token.replace(".", "").lstrip("0")
-        if len(digits) < 2:
+        before = text[:m.start(1)]
+        related = bool(RELATION.search(before))
+        if (len(token.replace(".", "").lstrip("0")) < 2 and not related) or LOCATOR.search(before) or IN_LOCATOR.search(before) \
+                or re.search(r"\d[-–]\s*$", before) or token.strip("0.") == "":
             continue
-        value = float(token) * 3
-        after = (f"{value:.{len(token.split('.')[1])}f}" if "." in token else str(int(value)))
-        return text[:m.start(1)] + after + text[m.end(1):], {"before": token, "after": after}
-    raise ValueError("no number to change")
+        candidates.append((0 if related else 1, m))
+    if not candidates:
+        raise ValueError("no quantity to change")
+    m = min(candidates, key=lambda c: (c[0], c[1].start()))[1]
+    token = m.group(1)
+    value = float(token) * 3
+    after = f"{value:.{len(token.split('.')[1])}f}" if "." in token else str(int(value))
+    return text[:m.start(1)] + after + text[m.end(1):], {"before": token, "after": after}
 
 
 def _flaw(ledger: Path) -> dict:
