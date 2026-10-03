@@ -238,3 +238,64 @@ def test_extension_is_seen_while_runner_remains_alive(tmp_path, monkeypatch):
     assert run(c, [sys.executable, "-c", "import time; time.sleep(.3)"]) == 1
     import os
     os.waitpid(seen[0]["runner_pid"], 0)
+
+
+def test_an_event_that_needs_attention_wakes_the_audit_before_its_tick(tmp_path, monkeypatch):
+    from pathfinder import events
+    c = campaign(tmp_path)
+    times = []
+    def audit(*a):
+        times.append(time.monotonic())
+        return {"status": "needs_operator", "summary": "woken"}
+    monkeypatch.setattr(supervise, "audit", audit)
+    script = (f"import time, json, sys; sys.path.insert(0, {str(Path(__file__).resolve().parents[1])!r}); "
+              "from pathfinder import config, events; time.sleep(0.5); "
+              f"c = config.load({str(tmp_path)!r}); events.emit(c, 'stop_requested', reason='budget'); time.sleep(30)")
+    start = time.monotonic()
+    proc_result = supervise.session(c, Path(__file__).resolve().parents[1], [sys.executable, "-c", script],
+                                    [sys.executable, "-c", script], "event wake test", interval=600, hours=.05)
+    assert proc_result == 1 and times and times[0] - start < 20
+    state = health.read(tmp_path / "supervision/latest-session.json")
+    assert "stop_requested" in (state.get("woken_by") or "")
+    import os, signal as sig
+    try:
+        os.kill(state["runner_pid"], sig.SIGKILL)
+    except ProcessLookupError:
+        pass
+
+
+def test_wake_reasons_are_the_events_that_need_attention(tmp_path):
+    from pathfinder import events
+    c = campaign(tmp_path)
+    events.emit(c, "call_finished", unit="Q1P1", stage="peer", outcome="completed", failure_class=None)
+    reason, offset = supervise.wake_reason(c, 0)
+    assert reason is None and offset > 0
+    events.emit(c, "status_changed", unit="Q1P1", axis="research", to="BLOCKED", reason="x")
+    reason, offset2 = supervise.wake_reason(c, offset)
+    assert "BLOCKED" in reason and offset2 > offset
+    events.emit(c, "call_finished", unit="Q1P1", stage="peer", outcome="timeout", failure_class="timeout")
+    assert "timeout" in supervise.wake_reason(c, offset2)[0]
+
+
+def test_the_audit_runs_on_its_own_credentials(tmp_path, monkeypatch):
+    health.write(tmp_path / "campaign.json", {"backend": "claude", "model": "unused", "allowances": {}, "budget_usd": 9,
+                 "supervisor": {"codex_home": str(tmp_path / "supervisor-codex"), "model": "gpt-sup", "env": {"SUPERVISOR_ROLE": "apex"}}})
+    health.write(tmp_path / "shortlist.json", {"pairs": []})
+    c = config.load(tmp_path)
+    seen = {}
+
+    class Stop(Exception):
+        pass
+    real = supervise.subprocess.Popen
+    def popen(command, **kw):
+        if "exec" not in command:
+            return real(command, **kw)
+        seen.update(command=command, env=kw["env"])
+        raise Stop()
+    monkeypatch.setattr(supervise.subprocess, "Popen", popen)
+    d = tmp_path / "supervision" / "s" / "audit-001"; d.mkdir(parents=True)
+    health.write(d.parent / "session.json", {})
+    with pytest.raises(Stop):
+        supervise.audit(c, Path(__file__).resolve().parents[1], d, ["true"], "scope", 5)
+    assert seen["env"]["CODEX_HOME"] == str(tmp_path / "supervisor-codex") and seen["env"]["SUPERVISOR_ROLE"] == "apex"
+    assert seen["command"][seen["command"].index("--model") + 1] == "gpt-sup"

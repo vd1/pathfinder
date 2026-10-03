@@ -281,6 +281,13 @@ audit ends supervision visibly; it does not kill the campaign runner. Ctrl-C
 requests a campaign stop and ends the timer; active work may still be draining.
 A killed timer or sleeping host does not provide an independent watchdog.
 
+An audit also runs as soon as something needs attention, without waiting for
+its tick: a stop, a failed call, a unit that blocks or stops, the run ending
+(read from `events.jsonl`; the session records what woke it in `woken_by`).
+The audit can run on its own credentials and model, independent of the
+workers': `"supervisor": {"codex_home": "~/.codex-apex", "model": "...",
+"codex": "/path/to/codex", "env": {...}}` in `campaign.json`.
+
 ### Local failure alerts and supervision handoff
 
 Runner failures, blocked research, and supervision ending with `needs_operator`

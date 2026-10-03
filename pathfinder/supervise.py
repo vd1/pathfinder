@@ -47,6 +47,43 @@ def processes(pids):
         return {"at": observed, "available": False, "error": str(error)}
 
 
+WAKE_STATUSES = {"BLOCKED", "blocked", "stopped", "PAUSE-ON-AMEND"}
+
+
+def wake_reason(campaign, offset: int) -> tuple:
+    """(reason, new offset): the first event since `offset` (a byte position in events.jsonl) that needs an
+    audit now rather than at the next tick: a stop, a failed call, a unit that blocks or stops, a run ending."""
+    path = campaign.path("events.jsonl")
+    try:
+        size = path.stat().st_size
+    except OSError:
+        return None, offset
+    if size < offset:                                # the log was replaced: read it again from the start
+        offset = 0
+    reason = None
+    with open(path, "rb") as stream:
+        stream.seek(offset)
+        data = stream.read(size - offset)
+    end = data.rfind(b"\n") + 1                     # a line still being written is read next time
+    for line in data[:end].splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        kind = row.get("kind")
+        if kind == "stop_requested":
+            reason = f"stop_requested: {row.get('reason')}"
+        elif kind == "call_finished" and row.get("failure_class"):
+            reason = f"call_finished: {row.get('unit')}/{row.get('stage')} {row.get('failure_class')}"
+        elif kind == "status_changed" and row.get("to") in WAKE_STATUSES:
+            reason = f"status_changed: {row.get('unit')} {row.get('axis')} to {row.get('to')}"
+        elif kind == "run_finished":
+            reason = "run_finished"
+        if reason:
+            break
+    return reason, offset + end
+
+
 def audit(campaign, checkout, directory, resume, scope, timeout):
     before = health.snapshot(campaign)
     health.write(directory / "before.json", before)
@@ -91,7 +128,8 @@ It makes no model call and cannot change the saved judgment. Do not bypass a
 rejected guard; record the result and resume only through authorized_resume_argv.
 """
     prompt += f"\nPython executable: {sys.executable}\n"
-    command = ["codex", "exec", "--model", "gpt-6-astra", "--ephemeral",
+    own = (campaign.raw or {}).get("supervisor") or {}   # credentials and transport independent of the workers
+    command = [own.get("codex", "codex"), "exec", "--model", own.get("model", "gpt-6-astra"), "--ephemeral",
                "--ignore-user-config", "--sandbox", "workspace-write",
                "-c", 'approval_policy="never"', "-c", 'model_reasoning_effort="medium"',
                "--cd", str(checkout), "--add-dir", str(campaign.root),
@@ -99,6 +137,9 @@ rejected guard; record the result and resume only through authorized_resume_argv
                "--output-last-message", str(directory / "result.json"), "--json", "-"]
     env = {k: v for k, v in os.environ.items()
            if not k.startswith("HERDR_") and k not in {"CODEX_THREAD_ID", "CODEX_SESSION_ID"}}
+    if own.get("codex_home"):
+        env["CODEX_HOME"] = str(Path(own["codex_home"]).expanduser())
+    env.update({str(k): str(v) for k, v in (own.get("env") or {}).items()})
     with (directory / "agent.jsonl").open("w") as out, (directory / "agent.stderr").open("w") as err:
         proc = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=out, stderr=err,
                                 text=True, cwd=checkout, env=env, start_new_session=True)
@@ -238,6 +279,11 @@ def session(campaign, checkout, command, resume, scope, interval=300, hours=6, a
             print(f"supervision {directory}; runner pid {proc.pid}; audit every {interval}s", flush=True)
             index = 0
             next_audit = time.monotonic() + interval
+            try:                                     # wake on what happens from now on, not on the past
+                events_offset = campaign.path("events.jsonl").stat().st_size
+            except OSError:
+                events_offset = 0
+            woken = None
             while True:
                 extension = health.read(supervision / "extension-request.json")
                 if extension and extension.get("session") == str(directory) and extension.get("id") != state.get("extension_id"):
@@ -253,7 +299,8 @@ def session(campaign, checkout, command, resume, scope, interval=300, hours=6, a
                     try:
                         proc.wait(timeout=min(5, remaining))
                     except subprocess.TimeoutExpired:
-                        if time.monotonic() < next_audit and time.monotonic() < deadline:
+                        woken, events_offset = wake_reason(campaign, events_offset)
+                        if not woken and time.monotonic() < next_audit and time.monotonic() < deadline:
                             continue
                 elif index:
                     threading.Event().wait(min(5, remaining))
@@ -264,7 +311,8 @@ def session(campaign, checkout, command, resume, scope, interval=300, hours=6, a
                 index += 1
                 call_dir = directory / f"audit-{index:03d}"
                 call_dir.mkdir()
-                save(status="auditing", audit=index, runner_exit=proc.poll())
+                save(status="auditing", audit=index, runner_exit=proc.poll(), woken_by=woken)
+                woken = None
                 result = audit(campaign, checkout, call_dir, resume, scope,
                                min(audit_timeout, max(.01, deadline - time.monotonic())))
                 print(f"audit {index}: {result['status']}: {result['summary']}", flush=True)
