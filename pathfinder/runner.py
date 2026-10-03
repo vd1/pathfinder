@@ -127,9 +127,9 @@ def guard_ok(campaign, inflight: int) -> bool:
 
 
 def pending(campaign) -> list[str]:
-    """@planks("Pathfinder admits pending investigations")
-    @planks("the operator runs the research command")
-    @planks("it records the branch handoff without invoking account editing")
+    """@planks("When Pathfinder admits pending investigations")
+    @planks("When the operator runs the research command")
+    @planks("Then it records the branch handoff without invoking account editing")
     """
     pairs = [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]]
     selection = getattr(campaign, "selection", None)

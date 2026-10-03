@@ -59,3 +59,13 @@ def test_a_candidate_changed_or_dirty_during_the_run_fails(tmp_path):
 def test_notes_state_actual_results(tmp_path):
     text = rc.notes(DEPLOYMENTS, {"statarb": "skipped", "pilot": "passed", "fork": "not yet supported"})
     assert "statarb (abc): skipped" in text and "pilot (candidate): supported, contract passed" in text
+
+
+def test_a_failing_behaviour_suite_fails_the_release(tmp_path):
+    nodes = junit(tmp_path, [("tests.test_deployments", "test_statarb_contract", ""), ("tests.test_coordinator", "test_a", "")])
+    problems, _ = rc.evaluate(nodes, 0, DEPLOYMENTS, CLEAN, CLEAN, behave_returncode=1)
+    assert any("behave" in p for p in problems)
+
+
+def test_the_behaviour_suite_runs_with_the_rigging_tags():
+    assert rc.broad_tags() == "not @sandbox and not @captain and not @shipwright and not @pce"

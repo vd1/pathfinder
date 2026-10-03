@@ -69,7 +69,7 @@ def install_helper(d: Path) -> str:
 
 
 def prepare(campaign, pair_id: str) -> Path:
-    """@planks("the standard research entry point opens the investigation")"""
+    """@planks("When the standard research entry point opens the investigation")"""
     d = campaign.thread_dir(pair_id)
     if (d / "status.json").exists():
         install_helper(d)

@@ -24,8 +24,8 @@ Procedure lives in the skills. Every role reads this on open.
 
 - discover: `uv run --offline --locked behave --dry-run --tags="not @sandbox and not @captain and not @shipwright"`
 - focused: `ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; uv run --offline --locked behave "$file" --name "^${name}$" --tags="not @sandbox and not @captain and not @shipwright"`
-- broad: `uv run --offline --locked behave --tags="not @sandbox and not @captain and not @shipwright"`
-- broad-sandbox: `: "${ELM_API_KEY:?ELM_API_KEY must be supplied by the operator}"; uv run --offline --locked behave --tags="@sandbox and not @captain and not @shipwright"`
+- broad: `uv run --offline --locked behave --tags="not @sandbox and not @captain and not @shipwright and not @pce"`
+- broad-sandbox: `: "${ELM_API_KEY:?ELM_API_KEY must be supplied by the operator}"; uv run --offline --locked behave --tags="@sandbox and not @captain and not @shipwright and not @pce"`
 - coverage: `uv run --offline --locked coverage run --branch --source=pathfinder -m behave --tags="not @sandbox and not @captain and not @shipwright"`
 - broad-unit: `uv run --offline --locked pytest -q`
 - coverage-unit: `uv run --offline --locked pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`

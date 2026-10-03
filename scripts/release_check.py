@@ -2,7 +2,7 @@
 
     uv run python scripts/release_check.py [--notes RELEASE_NOTES.md]
 
-Records the candidate commit and requires a clean tree, runs the whole suite with PATHFINDER_RELEASE=1 (so a
+Records the candidate commit and requires a clean tree, runs the whole suite with PATHFINDER_RELEASE=1 and the broad behave suite (so a
 missing or mispinned deployment checkout fails instead of skipping), then requires the same commit and a
 clean tree afterwards. It fails if any test failed, errored or was skipped, or if a supported deployment's
 contract did not pass: a contract names a test file (every test in it must pass, and at least one must run)
@@ -51,7 +51,7 @@ def contract_result(contract: str, nodes: dict) -> str:
     return "passed"
 
 
-def evaluate(nodes: dict, returncode: int, deployments: dict, before: tuple, after: tuple) -> tuple[list, dict]:
+def evaluate(nodes: dict, returncode: int, deployments: dict, before: tuple, after: tuple, behave_returncode=0) -> tuple[list, dict]:
     """(problems, per-deployment result). before and after are (commit, clean)."""
     problems = []
     if not before[1]:
@@ -60,6 +60,8 @@ def evaluate(nodes: dict, returncode: int, deployments: dict, before: tuple, aft
         problems.append(f"the candidate changed during the run: {before} -> {after}")
     if returncode:
         problems.append(f"pytest exited {returncode}")
+    if behave_returncode:
+        problems.append(f"the behave broad suite exited {behave_returncode}")
     problems += [f"{state} in a release run: {n}" for n, state in sorted(nodes.items()) if state != "passed"]
     results = {}
     for name, entry in deployments.items():
@@ -80,6 +82,13 @@ def notes(deployments: dict, results: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def broad_tags() -> str:
+    """The behave tags of the broad suite, as RIGGING.md states them."""
+    import re
+    line = next(l for l in (ROOT / "RIGGING.md").read_text().splitlines() if l.startswith("- broad:"))
+    return re.search(r'--tags="([^"]+)"', line).group(1)
+
+
 def _state(root: Path) -> tuple:
     head = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
     clean = not subprocess.run(["git", "-C", str(root), "status", "--porcelain"], capture_output=True, text=True).stdout.strip()
@@ -96,8 +105,9 @@ def main(argv=None) -> int:
         r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rs", f"--junitxml={report}"], cwd=ROOT,
                            env={**os.environ, "PATHFINDER_RELEASE": "1"})
         nodes = node_ids(report) if report.exists() else {}
+    b = subprocess.run([sys.executable, "-m", "behave", f"--tags={broad_tags()}", "--format=progress"], cwd=ROOT)
     after = _state(ROOT)
-    problems, results = evaluate(nodes, r.returncode, deployments, before, after)
+    problems, results = evaluate(nodes, r.returncode, deployments, before, after, behave_returncode=b.returncode)
     text = notes(deployments, results)
     print(text)
     if problems:

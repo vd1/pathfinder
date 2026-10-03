@@ -14,14 +14,14 @@ from .review_evidence import EvidenceUnavailable, _bundle_evidence, _review_mate
 
 
 def _request_file(campaign, pair_id, identity):
-    """@planks("the retained response is applied without another model dispatch")"""
+    """@planks("Then the retained response is applied without another model dispatch")"""
     return campaign.thread_dir(pair_id) / "research-requests" / (hashlib.sha256(identity.encode()).hexdigest() + ".json")
 
 
 def retain_response(campaign, pair_id, request, result):
-    """@planks("Pathfinder resumes the investigation")
-    @planks("the retained Vera response has no valid request list")
-    @planks("the evidence changes before that response is applied")
+    """@planks("When Pathfinder resumes the investigation")
+    @planks("When the retained Vera response has no valid request list")
+    @planks("When the evidence changes before that response is applied")
 
     Store provider output before applying any ledger or research transition.
     """
@@ -34,10 +34,10 @@ def retain_response(campaign, pair_id, request, result):
 
 
 def _direct_requests(response, existing):
-    """@planks("Vera returns no new requests and omits disposition of the active request")
-    @planks("a later Vera review defers that request with a missing-input reason")
-    @planks("Vera returns PAUSE instead of a request review")
-    @planks("the retained Vera response has no valid request list")
+    """@planks("When Vera returns no new requests and omits disposition of the active request")
+    @planks("When a later Vera review defers that request with a missing-input reason")
+    @planks("When Vera returns PAUSE instead of a request review")
+    @planks("When the retained Vera response has no valid request list")
     """
     if not isinstance(response, dict) or response.get("decision") not in (None, "REVISE", "ITERATE"):
         raise ValueError("direct EVA requires a request review without a scientific verdict")
@@ -72,15 +72,15 @@ def _review_contract(campaign, s):
 
 
 def _apply_research_review(campaign, pair_id, saved, s):
-    """@planks("the review is appended to the ledger with its reviewed evidence identity")
-    @planks("the full review is appended to the ledger exactly once")
-    @planks("Pathfinder records an operational review error rather than a handoff")
-    @planks("Pathfinder blocks the stale response before a research transition")
-    @planks("the branch is ready for handoff because no further requests remain")
-    @planks("the branch is ready for handoff because its allowance is exhausted")
-    @planks("Emmy repairs the account before scientific verification")
-    @planks("the existing PAUSE scientific ending is preserved")
-    @planks("the existing PAUSE-ON-ITERATE ending retains the unanswered request")
+    """@planks("Then the review is appended to the ledger with its reviewed evidence identity")
+    @planks("Then the full review is appended to the ledger exactly once")
+    @planks("Then Pathfinder records an operational review error rather than a handoff")
+    @planks("Then Pathfinder blocks the stale response before a research transition")
+    @planks("Then the branch is ready for handoff because no further requests remain")
+    @planks("Then the branch is ready for handoff because its allowance is exhausted")
+    @planks("Then Emmy repairs the account before scientific verification")
+    @planks("Then the existing PAUSE scientific ending is preserved")
+    @planks("Then the existing PAUSE-ON-ITERATE ending retains the unanswered request")
     """
     d = campaign.thread_dir(pair_id)
     identity = saved["request"]["identity"]
@@ -137,22 +137,22 @@ def _apply_research_review(campaign, pair_id, saved, s):
 
 
 def next_requests(campaign, pair_id):
-    """@planks("Pathfinder prepares its first Vera review")
-    @planks("its peer research round finishes")
-    @planks("Vera requests REVISE of a ledger argument from existing evidence")
-    @planks("Vera requests ITERATE with a concrete research gap")
-    @planks("Pathfinder prepares peer research and synthesis and scientific verification")
-    @planks("Pathfinder prepares the peer research instructions")
-    @planks("Pathfinder prepares the research evidence for that investigation")
-    @planks("Pathfinder resumes the investigation")
-    @planks("the next research and review cycle is prepared")
-    @planks("Pathfinder advances the branch")
-    @planks("its calls have identities distinct from the earlier review cycle")
-    @planks("the branch hands off the latest research with an explicit unreviewed-head marker")
-    @planks("the instructions require investigating disagreements and new connections")
-    @planks("the instructions distinguish inherited evidence from new derivations and conjectures")
-    @planks("Vera requests REVISE of the returned account using existing evidence")
-    @planks("the review is blocked before a provider call with the missing path identified")
+    """@planks("When Pathfinder prepares its first Vera review")
+    @planks("When its peer research round finishes")
+    @planks("When Vera requests REVISE of a ledger argument from existing evidence")
+    @planks("When Vera requests ITERATE with a concrete research gap")
+    @planks("When Pathfinder prepares peer research and synthesis and scientific verification")
+    @planks("When Pathfinder prepares the peer research instructions")
+    @planks("When Pathfinder prepares the research evidence for that investigation")
+    @planks("When Pathfinder resumes the investigation")
+    @planks("When the next research and review cycle is prepared")
+    @planks("When Pathfinder advances the branch")
+    @planks("Then its calls have identities distinct from the earlier review cycle")
+    @planks("Then the branch hands off the latest research with an explicit unreviewed-head marker")
+    @planks("Then the instructions require investigating disagreements and new connections")
+    @planks("Then the instructions distinguish inherited evidence from new derivations and conjectures")
+    @planks("When Vera requests REVISE of the returned account using existing evidence")
+    @planks("Then the review is blocked before a provider call with the missing path identified")
 
     Apply retained outputs, then prepare the next real provider requests.
     """
@@ -272,13 +272,13 @@ def next_requests(campaign, pair_id):
 
 
 def export_outcome(campaign, pair_id):
-    """@planks("its composable research outcome is exported")
-    @planks("the handoff preserves deferred objections without a scientific verdict")
-    @planks("the handoff preserves the unanswered request without a scientific verdict")
-    @planks("the public scientific verdict is ACCEPT")
-    @planks("the original verifier decision remains DRAFT in provenance")
-    @planks("the branch hands off the latest research with an explicit unreviewed-head marker")
-    @planks("no scientific verdict is inferred")
+    """@planks("When its composable research outcome is exported")
+    @planks("Then the handoff preserves deferred objections without a scientific verdict")
+    @planks("Then the handoff preserves the unanswered request without a scientific verdict")
+    @planks("Then the public scientific verdict is ACCEPT")
+    @planks("Then the original verifier decision remains DRAFT in provenance")
+    @planks("Then the branch hands off the latest research with an explicit unreviewed-head marker")
+    @planks("Then no scientific verdict is inferred")
     """
     s = status(campaign, pair_id)
     ledger = Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
@@ -326,7 +326,7 @@ def _finish_repairs(campaign, pair_id):
 
 
 def _run_composable(campaign, pair_id, stop):
-    """@planks("the standard research entry point opens the investigation")"""
+    """@planks("When the standard research entry point opens the investigation")"""
     prepare(campaign, pair_id)
     try:
         while True:
@@ -336,7 +336,7 @@ def _run_composable(campaign, pair_id, stop):
             if not requests:
                 return status(campaign, pair_id)["status"]
             def execute(request):
-                """@planks("the standard research entry point opens the investigation")"""
+                """@planks("When the standard research entry point opens the investigation")"""
                 _check(stop)
                 try:
                     result = transport.execute(campaign, request)

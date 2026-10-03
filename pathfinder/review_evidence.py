@@ -24,9 +24,9 @@ class EvidenceError(EvidenceUnavailable):
 
 
 def _external_citations(d, path=None):
-    """@planks("Vera receives the ledger and its external citation declaration")
-    @planks("research blocks before provider dispatch because the citation binding is stale")
-    @planks("the joint researcher receives the citation URL and unavailable status")
+    """@planks("Then Vera receives the ledger and its external citation declaration")
+    @planks("Then research blocks before provider dispatch because the citation binding is stale")
+    @planks("Then the joint researcher receives the citation URL and unavailable status")
     """
     declaration = Path(path) if path is not None else d / "external-references.json"   # a candidate is checked the same way
     if declaration.is_symlink():
@@ -96,18 +96,10 @@ def _evidence_references(text: str) -> list[str]:
 
 
 def _assessment_evidence(campaign, d, references=None, by_reference=False, record=None, pair_id=None) -> str:
-    """@planks("the request contains the complete calculation evidence with its source paths")
-    @planks("the request contains the complete prior account and peer artefact contents")
-    @planks("the request contains the complete current account and peer artefact contents")
-    @planks("the assessment is blocked before a provider call with the unreadable evidence identified")
-    @planks("the assessment is blocked before reading outside evidence or calling a provider")
-    @planks("the assessment is blocked before reading the aliased evidence or calling a provider")
-    @planks("the workflow prepares tool-less consolidation and verification requests")
-    @planks("the scholarly figure locator is not read as a local file")
-    @planks("Vera receives the ledger and its external citation declaration")
-    @planks("research blocks before provider dispatch and identifies \"{path}\"")
-    @planks("research blocks before reading the aliased citation file")
-    @planks("the external citation is resolved only in its originating branch namespace")
+    """            @planks("Then Vera receives the ledger and its external citation declaration")
+    @planks("Then research blocks before provider dispatch and identifies \"{path}\"")
+    @planks("Then research blocks before reading the aliased citation file")
+    @planks("Then the external citation is resolved only in its originating branch namespace")
     
 
     Everything the tool-less consolidator and verifier are told is complete: every file in each peer's
@@ -232,8 +224,8 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
 
 
 def _bundle_evidence(campaign, d, by_reference=False, record=None, errors=None):
-    """@planks("each stage receives all three ledgers and their referenced evidence")
-    @planks("it includes those thread-relative bundle directories with their original reference namespaces")
+    """@planks("Then each stage receives all three ledgers and their referenced evidence")
+    @planks("Then it includes those thread-relative bundle directories with their original reference namespaces")
     """
     parts = []
     for name in campaign.raw.get("research_bundles", []):
@@ -267,10 +259,10 @@ def _bundle_evidence(campaign, d, by_reference=False, record=None, errors=None):
 
 
 def _review_material(campaign, pair_id, review_id=None, record_manifest=True, with_id=False):
-    """@planks("Vera receives both papers and the complete attributed research ledger")
-    @planks("Vera receives all referenced peer evidence without a consolidated account")
-    @planks("Pathfinder blocks the stale response before a research transition")
-    @planks("the review occurs once in the ledger")
+    """@planks("Then Vera receives both papers and the complete attributed research ledger")
+    @planks("Then Vera receives all referenced peer evidence without a consolidated account")
+    @planks("Then Pathfinder blocks the stale response before a research transition")
+    @planks("Then the review occurs once in the ledger")
     """
     d = campaign.thread_dir(pair_id)
     ledger = d / "ledger.jsonl"
