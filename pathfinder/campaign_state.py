@@ -157,24 +157,31 @@ def _account(campaign) -> dict | None:
     return {"name": spec["name"], "seats": spec["seats"], "in_use": seats.in_use(campaign)} if spec else None
 
 
+PANEL_KINDS = {   # kind -> the list field it must carry; rendered in the page's own designs
+    "table": "rows", "cards": "cards", "metrics": "items", "pipeline": "stages"}
+
+
 def _panels(campaign) -> list[dict]:
-    """A deployment's own tables for the operator page (extension "panels": panels(campaign) returning
-    [{"title", "columns", "rows", "note"?}]); a failing extension is one panel that says so."""
+    """A deployment's own content for the operator page (extension "panels": panels(campaign) returning a list).
+    Each panel has a title and a kind, drawn in the page's own designs: "table" (columns, rows), "cards"
+    (cards of status, badge, meta, title, summary, issue, actions; "grid" for a card grid), "metrics" (items
+    of label, value, small) or "pipeline" (stages of title and states of key, label, count). A failing
+    extension is one panel that says so; the core state never fails over it."""
     from . import extensions
     try:
         make = extensions.load(campaign, "panels")
         if make is None:
             return []
-        panels = make(campaign)
         out = []
-        for p in panels:
-            if not isinstance(p, dict) or not isinstance(p.get("columns"), list) or not isinstance(p.get("rows"), list):
-                raise TypeError(f"a panel must have title, columns and rows: {str(p)[:200]}")
-            out.append({"title": str(p.get("title") or "Panel"), "columns": [str(c) for c in p["columns"]],
-                        "rows": [list(r) for r in p["rows"]], **({"note": str(p["note"])} if p.get("note") else {})})
+        for p in make(campaign):
+            kind = p.get("kind", "table") if isinstance(p, dict) else None
+            field = PANEL_KINDS.get(kind)
+            if field is None or not isinstance(p.get(field), list) or (kind == "table" and not isinstance(p.get("columns"), list)):
+                raise TypeError(f"a panel needs a title and a known kind with its list ({', '.join(PANEL_KINDS)}): {str(p)[:200]}")
+            out.append({**p, "kind": kind, "title": str(p.get("title") or "Panel")})
         return json.loads(json.dumps(out, default=str))
-    except Exception as error:                     # the core state never fails over a deployment's tables
-        return [{"title": "Deployment panels", "columns": [], "rows": [], "note": f"panels failed: {error!r}"}]
+    except Exception as error:
+        return [{"kind": "table", "title": "Deployment panels", "columns": [], "rows": [], "note": f"panels failed: {error!r}"}]
 
 
 def build(campaign) -> dict:

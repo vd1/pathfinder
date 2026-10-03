@@ -223,8 +223,8 @@ def test_a_deployment_adds_its_own_panels(tmp_path):
         "    return [{'title': 'Paper trading', 'columns': ['paper', 'events'], 'rows': [['2601.06499v3', 12]],"
         " 'note': 'live strategies'}]\n")
     panels = campaign_state.build(c)["panels"]
-    assert panels == [{"title": "Paper trading", "columns": ["paper", "events"], "rows": [["2601.06499v3", 12]],
-                       "note": "live strategies"}]
+    assert panels == [{"kind": "table", "title": "Paper trading", "columns": ["paper", "events"],
+                       "rows": [["2601.06499v3", 12]], "note": "live strategies"}]
 
 
 def test_a_failing_panel_extension_shows_its_error_not_a_broken_state(tmp_path):
@@ -241,3 +241,32 @@ def test_no_extension_no_panels(tmp_path):
     from pathfinder import campaign_state
     from stubcampaign import make
     assert campaign_state.build(make(tmp_path))["panels"] == []
+
+
+def test_panels_of_every_kind_pass_through(tmp_path):
+    from pathfinder import campaign_state
+    from stubcampaign import make
+    c = make(tmp_path, extensions={"path": "deploy", "panels": "kind_panels:panels"})
+    (tmp_path / "deploy").mkdir()
+    (tmp_path / "deploy" / "kind_panels.py").write_text(
+        "def panels(campaign):\n"
+        "    return [\n"
+        "        {'kind': 'pipeline', 'title': 'Pipeline', 'stages': [{'title': 'Intake', 'states': [{'key': 'new', 'label': 'Unscored', 'count': 3}]}]},\n"
+        "        {'kind': 'metrics', 'title': 'Operations', 'items': [{'label': 'Model', 'value': 'm'}]},\n"
+        "        {'kind': 'cards', 'title': 'Paper trading', 'grid': True, 'cards': [{'status': 'active', 'badge': 'Active',\n"
+        "         'meta': ['2601.06499v3'], 'title': 'T', 'summary': '12 events', 'actions': [{'text': 'Read note', 'pdf': '/x.pdf'}]}]},\n"
+        "        {'kind': 'table', 'title': 'Queue', 'columns': ['paper'], 'rows': [['a']]},\n"
+        "    ]\n")
+    panels = campaign_state.build(c)["panels"]
+    assert [p["kind"] for p in panels] == ["pipeline", "metrics", "cards", "table"]
+    assert panels[2]["cards"][0]["actions"][0]["pdf"] == "/x.pdf" and panels[2]["grid"] is True
+
+
+def test_a_panel_of_an_unknown_kind_is_reported(tmp_path):
+    from pathfinder import campaign_state
+    from stubcampaign import make
+    c = make(tmp_path, extensions={"path": "deploy", "panels": "odd_panels:panels"})
+    (tmp_path / "deploy").mkdir()
+    (tmp_path / "deploy" / "odd_panels.py").write_text("def panels(campaign):\n    return [{'kind': 'radar', 'title': 'x'}]\n")
+    [panel] = campaign_state.build(c)["panels"]
+    assert "radar" in panel["note"]

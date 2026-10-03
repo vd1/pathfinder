@@ -395,10 +395,15 @@ adjusts it only through:
   "snapshot_extra": "mymonitor:extra", "transport": "mydispatch:execute"}`.
   A `transport` extension is a deployment's own dispatcher: the engine still
   admits each call, records it and writes the receipt. A `panels` extension,
-  `panels(campaign)`, returns the deployment's own tables for the operator
-  page, `[{"title", "columns", "rows", "note"}]`; cells are text, numbers, or
-  `{"text", "href"}` with an `https` link, or `{"text", "pdf"}` with a PDF's path,
-  which the page opens in the operator's own viewer (as it does a unit's PDF). `consumer` and `failure_rules` are
+  `panels(campaign)`, returns the deployment's own boxes for the operator
+  page, drawn in the page's designs by `kind`: `"table"` (`columns`, `rows`),
+  `"cards"` (`cards` of `status`, `badge`, `meta`, `title`, `summary`, `issue`,
+  `actions`; `"grid": true` for a card grid), `"metrics"` (`items` of `label`,
+  `value`, `small`) or `"pipeline"` (`stages` of `title` and `states` of `key`,
+  `label`, `count`). Cells and actions are text, numbers, `{"text", "href"}`
+  with an `https` link, or `{"text", "pdf"}` with a PDF's path, which the page
+  opens in the operator's own viewer (as it does a unit's PDF). Every box on
+  the page can be collapsed; the browser remembers which. `consumer` and `failure_rules` are
   described above. Extension code is trusted; the engine validates what it
   returns. Each deployment's modules need unique names.
 

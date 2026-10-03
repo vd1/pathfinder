@@ -94,7 +94,8 @@ def _harness():
                                       "failed_refresh_keeps_snapshot", "pipeline_counts_from_server", "escaped",
                                       "filter_select_not_rebuilt_on_refresh", "no_arxiv_link_for_local_ids", "no_null_scores", "usage_in_human_units", "arms_select_shown",
                                       "arm_switch_requests_that_arm", "panel_view", "unit_view_keeps_sections",
-                                      "panel_pdf_opens_in_viewer", "unit_pdf_has_open_button"])
+                                      "panel_pdf_opens_in_viewer", "unit_pdf_has_open_button",
+                                      "panel_kinds_use_page_designs", "boxes_collapsible"])
 def test_page_scenarios(scenario):
     assert _harness()[scenario] is True
 

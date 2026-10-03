@@ -263,3 +263,12 @@ dialog.reader #detail-content { flex: 1; min-height: 0; display: flex; flex-dire
 .research-card.status-editing, .research-card.status-writing { border-left-color: var(--scored); }
 .research-card.status-orphaned, .research-card.status-stopped { border-left-color: var(--stopped); }
 .deployment-panels { display: grid; gap: 18px; margin-top: 18px; }
+/* Collapsible boxes: a box keeps its heading and toggle; everything else hides. */
+section.panel, section.pipeline, section.intro { position: relative; }
+.box-toggle { position: absolute; top: 14px; right: 16px; font-size: 11px; color: var(--muted); background: none;
+  border: 1px solid var(--rule); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+.section-heading .box-toggle { position: static; margin-left: auto; }
+.box-toggle:hover { color: var(--ink); border-color: var(--scored); }
+.collapsed > :not(.box-toggle):not(.section-heading):not(h1):not(h2):not(div:has(> h1)) { display: none !important; }
+.collapsed.queue-panel, .collapsed.desk-panel { height: auto; }
+.pipeline-panel .stages { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 14px; }

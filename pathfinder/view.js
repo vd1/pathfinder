@@ -153,13 +153,60 @@ const cell = (value) => {
   return esc(short(value && typeof value === "object" ? JSON.stringify(value) : value, 240));
 };
 
-function renderPanels() {
-  $("panels").innerHTML = (current.panels || []).map((p) => `<section class="panel">
-    <h2>${esc(p.title)}</h2>${p.note ? `<p class="small-copy">${esc(p.note)}</p>` : ""}
-    ${p.columns.length ? `<div class="table-scroll"><table><thead><tr>${p.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
+// Collapsed boxes are remembered in this browser, by box name; the page works without storage.
+const collapsed = (() => { try { return new Set(JSON.parse(localStorage.getItem("pathfinder-collapsed") || "[]")); }
+                           catch { return new Set(); } })();
+const saveCollapsed = () => { try { localStorage.setItem("pathfinder-collapsed", JSON.stringify([...collapsed])); } catch {} };
+const toggle = (box) => `<button type="button" class="box-toggle" data-toggle-box="${esc(box)}"
+  aria-expanded="${!collapsed.has(box)}" title="Show or hide">${collapsed.has(box) ? "Show" : "Hide"}</button>`;
+const boxClass = (box) => collapsed.has(box) ? " collapsed" : "";
+// Every box of the page itself gets the same toggle (its name is its heading).
+function decorateBoxes() {
+  for (const box of document.querySelectorAll ? document.querySelectorAll("section.panel, section.pipeline, section.intro") : []) {
+    const name = box.dataset.box || (box.querySelector("h1,h2")?.textContent || box.getAttribute("aria-label") || "").trim();
+    if (!name) continue;
+    box.dataset.box = name;
+    if (!box.querySelector(":scope > .box-toggle")) box.insertAdjacentHTML("afterbegin", toggle(name));
+    box.classList.toggle("collapsed", collapsed.has(name));
+  }
+}
+
+const actionButton = (a) => a && a.pdf ? `<button type="button" data-open-pdf="${esc(a.pdf)}">${esc(a.text ?? "PDF")}</button>`
+  : a && /^https:\/\//.test(String(a.href || "")) ? `<a href="${esc(a.href)}" rel="noreferrer" target="_blank">${esc(a.text ?? a.href)}</a>` : "";
+
+// A deployment's own boxes, drawn in the page's designs: pipeline, metrics, cards, table.
+const PANEL = {
+  pipeline: (p) => `<ol class="stages">${p.stages.map((stage, _i, all) => {
+      const count = stage.states.reduce((n, s) => n + (s.count || 0), 0);
+      const total = all.reduce((n, st) => n + st.states.reduce((m, s) => m + (s.count || 0), 0), 0) || 1;
+      const bar = stage.states.map((s) => s.count ? `<i class="state-${esc(s.key)}" data-grow="${s.count}"></i>` : "").join("");
+      return `<li class="stage"><h3>${esc(stage.title)}</h3><p class="stage-count">${count}</p>
+        <div class="stage-bar" data-width="${Math.max(6, 100 * count / total)}" aria-hidden="true">${bar}</div>
+        <div class="stage-states">${stage.states.map((s) => `<span class="stage-state state-${esc(s.key)}"><b>${s.count || 0}</b> ${esc(s.label)}</span>`).join("")}</div></li>`;
+    }).join("")}</ol>`,
+  metrics: (p) => `<dl class="usage-grid">${p.items.map((i) => `<div><dt>${esc(i.label)}</dt><dd>${typeof i.value === "number" ? tokens(i.value) : esc(i.value ?? "Unknown")}${i.small ? ` <small>${esc(i.small)}</small>` : ""}</dd></div>`).join("")}</dl>`,
+  cards: (p) => p.cards.length ? `<div class="${p.grid ? "strategy-grid" : "research-list"}">${p.cards.map((c) => `
+      <article class="${p.grid ? "strategy-card" : "research-card"} status-${esc(c.status || "")}">
+        <div class="card-meta">${c.badge ? `<span class="badge ${esc(c.status || "")}">${esc(c.badge)}</span>` : ""}${(c.meta || []).map((m) => `<span>${esc(m)}</span>`).join("")}</div>
+        <h3>${esc(c.title)}</h3>${c.summary ? `<p class="card-summary">${esc(c.summary)}</p>` : ""}
+        ${c.issue ? `<p class="card-issue">${esc(c.issue)}</p>` : ""}
+        ${(c.actions || []).length ? `<div class="record-actions">${c.actions.map(actionButton).join("")}</div>` : ""}
+      </article>`).join("")}</div>` : `<p class="empty">${esc(p.empty || "Nothing yet.")}</p>`,
+  table: (p) => p.columns.length ? `<div class="table-scroll"><table><thead><tr>${p.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
     <tbody>${p.rows.length ? p.rows.map((r) => `<tr>${r.map((v) => `<td>${cell(v)}</td>`).join("")}</tr>`).join("")
-      : `<tr><td colspan="${p.columns.length}" class="empty">Nothing yet.</td></tr>`}</tbody></table></div>` : ""}
-  </section>`).join("");
+      : `<tr><td colspan="${p.columns.length}" class="empty">Nothing yet.</td></tr>`}</tbody></table></div>` : "",
+};
+
+function renderPanels() {
+  $("panels").innerHTML = (current.panels || []).map((p) => {
+    const box = "panel:" + p.title, draw = PANEL[p.kind || "table"] || PANEL.table;
+    return `<section class="panel${p.kind === "pipeline" ? " pipeline-panel" : ""}${boxClass(box)}" data-box="${esc(box)}">
+      <div class="section-heading"><h2>${esc(p.title)}</h2>${p.count ? `<span class="count-label">${esc(p.count)}</span>` : ""}${toggle(box)}</div>
+      <div class="box-body">${p.note ? `<p class="small-copy">${esc(p.note)}</p>` : ""}${draw(p)}</div></section>`;
+  }).join("");
+  // Sizes go through the CSSOM: the page's content security policy forbids inline style attributes.
+  for (const bar of $("panels").querySelectorAll("[data-width]")) bar.style.width = bar.dataset.width + "%";
+  for (const part of $("panels").querySelectorAll("[data-grow]")) part.style.flexGrow = part.dataset.grow;
 }
 
 function render() {
@@ -167,7 +214,7 @@ function render() {
   // A deployment page with no units of its own (its content is its panels) shows no empty pipeline or desk.
   const panelOnly = !current.units.length && (current.panels || []).length > 0;
   $("pipeline-section").hidden = panelOnly; $("work-grid").hidden = panelOnly;
-  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks(); renderPanels();
+  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks(); renderPanels(); decorateBoxes();
   $("snapshot-time").textContent = "Snapshot " + when(current.generated_at);
   const issues = [];
   if (current.campaign.stop) issues.push("Stopped: " + current.campaign.stop.reason);
@@ -248,9 +295,16 @@ function openFromHash() {
 }
 
 document.addEventListener("click", (event) => {
-  const target = event.target.closest("[data-unit],[data-unit-doc],[data-source],[data-filter],[data-open-pdf]");
+  const target = event.target.closest("[data-unit],[data-unit-doc],[data-source],[data-filter],[data-open-pdf],[data-toggle-box]");
   if (!target || !current) return;
-  if (target.dataset.openPdf) openPdf(target.dataset.openPdf);
+  if (target.dataset.toggleBox) {
+    const box = target.dataset.toggleBox;
+    collapsed.has(box) ? collapsed.delete(box) : collapsed.add(box);
+    saveCollapsed(); renderPanels(); decorateBoxes();
+    for (const el of document.querySelectorAll(`[data-toggle-box="${CSS.escape(box)}"]`)) {
+      el.textContent = collapsed.has(box) ? "Show" : "Hide"; el.setAttribute("aria-expanded", String(!collapsed.has(box)));
+    }
+  } else if (target.dataset.openPdf) openPdf(target.dataset.openPdf);
   else if (target.dataset.filter) {
     const select = $("status-filter");
     select.value = select.value === target.dataset.filter ? "all" : target.dataset.filter;

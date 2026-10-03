@@ -119,6 +119,17 @@ const state = (activity, summary) => ({
   out.panel_pdf_opens_in_viewer = w.el("panels").innerHTML.includes('data-open-pdf="/abs/notes/strategy.pdf"');
   await w.api.openPdf("/abs/notes/strategy.pdf");
   out.panel_pdf_opens_in_viewer = out.panel_pdf_opens_in_viewer && w.requested.at(-1) === "/open";
+  const kinds = state("a"); kinds.units = [];
+  kinds.panels = [
+    { kind: "pipeline", title: "Pipeline", stages: [{ title: "Intake", states: [{ key: "new", label: "Unscored", count: 3 }] }] },
+    { kind: "metrics", title: "Operations", items: [{ label: "Model", value: "m", small: "medium effort" }] },
+    { kind: "cards", title: "Paper trading", grid: true, cards: [{ status: "active", badge: "Active", meta: ["2601.06499v3"],
+      title: "Basis", summary: "12 events", actions: [{ text: "Read note", pdf: "/x.pdf" }, { text: "arXiv", href: "https://arxiv.org/abs/1" }] }] }];
+  w = await world(kinds);
+  const p = w.el("panels").innerHTML;
+  out.panel_kinds_use_page_designs = p.includes('class="stage"') && p.includes("usage-grid") && p.includes("strategy-grid")
+    && p.includes('class="strategy-card status-active"') && p.includes('data-open-pdf="/x.pdf"') && p.includes("Unscored");
+  out.boxes_collapsible = p.includes("data-toggle-box");
   w = await world(state("a"));
   out.unit_pdf_has_open_button = w.el("research-list").innerHTML.includes('data-open-pdf="threads/Q1P1/paper/paper.pdf"');
   out.unit_view_keeps_sections = w.el("pipeline-section").hidden === false && w.el("work-grid").hidden === false;
