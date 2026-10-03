@@ -131,8 +131,14 @@ your own campaign directory and edit the models and the budget.
 - `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
   (per peer per round), `consolidate_seconds`, `verify_seconds`,
   `paper_seconds`, `review_seconds`, `edit_seconds`.
-- `budget_usd`: cap on known cost, plus `call_estimate_usd` for every call in
-  flight and every call that opened a session and whose cost is unknown.
+- `budget`: the campaign's budget under subscription billing, in calls and
+  tokens, any of `{"calls", "input_tokens", "output_tokens"}`. Every call that
+  reached a model counts, interrupted ones (timed out, cancelled) included and
+  also shown apart; a call that never reached a model does not. Admission
+  projects the calls in flight at the mean usage so far. Receipts carry a
+  `call_id` and are read once per call.
+- `budget_usd` (optional): cap on known cost, plus `call_estimate_usd` for every
+  call in flight and every call that opened a session and whose cost is unknown.
 - `call_estimate_usd`: what one in-flight call is assumed to cost by the guard.
 - `prices`: per-model prices, in USD, used when the CLI reports no cost. A
   model missing from the table has unknown cost, not zero: the guard then

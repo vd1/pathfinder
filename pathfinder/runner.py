@@ -117,10 +117,11 @@ def unhealthy(campaign) -> bool:
 
 
 def guard_ok(campaign, inflight: int) -> bool:
-    projected = transport.spend(campaign) + inflight * campaign.call_estimate_usd
-    if projected > campaign.budget_usd:
+    from . import budget
+    reason = budget.refusal(campaign, inflight)
+    if reason:
         if not stopped(campaign):
-            request_stop(campaign, f"budget: {projected:.2f} projected against cap {campaign.budget_usd:.2f}")
+            request_stop(campaign, reason)
         return False
     return True
 

@@ -56,6 +56,8 @@ def load(root: Path) -> Campaign:
         for block in ("branch", "joint"):
             if not isinstance(raw.get(block, {}), dict):
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
+    from . import budget
+    budget.limits(raw)                               # a malformed budget fails here, not at the first admission
     if raw.get("account"):
         from . import seats
         seats.account(SimpleNamespace(raw=raw))      # a malformed account fails here, not inside a call
@@ -69,7 +71,7 @@ def campaign_from(root: Path, raw: dict) -> Campaign:
         scan_model=raw.get("scan_model") or raw["model"],
         peer_search=raw.get("peer_search", True), seats=raw.get("seats", 4),
         cut=raw.get("cut", 1), rounds=raw.get("rounds", 3), allowances=raw["allowances"],
-        budget_usd=raw["budget_usd"], prices=raw.get("prices", {}),
+        budget_usd=float(raw.get("budget_usd", float("inf"))), prices=raw.get("prices", {}),
         scan_fulltext=(raw.get("scan") or {}).get("fulltext"),
         call_estimate_usd=raw.get("call_estimate_usd", 2.0), raw=raw,
         peers=tuple(p["name"] if isinstance(p, dict) else p for p in (raw.get("peers") or ("ada", "emmy"))),

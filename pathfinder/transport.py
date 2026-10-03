@@ -308,6 +308,9 @@ def _cost(campaign, model, reported, counters):
             + out * rates["output_per_m"]) / 1e6, "priced", rates
 
 
+_call = threading.local()          # the attempt in progress on this thread: its receipt carries the id
+
+
 def _receipt(campaign, thread, stage, actor, model, r):
     """Append one receipt and classify the call; r gains the same "failure" value the receipt records."""
     from . import failures
@@ -317,7 +320,8 @@ def _receipt(campaign, thread, stage, actor, model, r):
         rules, rules_error = (), f"{type(error).__name__}: {error}"
     failure = failures.classify(r.get("outcome"), r.get("error"), rules)
     r["failure"] = failure.record() if failure else None
-    row = {"v": 3, "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
+    row = {"v": 3, "call_id": getattr(_call, "id", None) or uuid.uuid4().hex,
+           "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
            "thread": thread, "branch": getattr(campaign, "branch", None), "stage": stage,
            "actor": actor, "backend": campaign.backend, "model": model,
            **{k: r.get(k) for k in ("outcome", "seconds", "usage", "input_tokens", "output_tokens", "cache_write",
@@ -445,6 +449,7 @@ def execute(campaign, request: ModelRequest):
 def _attempt(campaign, request: ModelRequest):
     from . import health
     attempt = uuid.uuid4().hex
+    _call.id = attempt
     path = campaign.path(f"active-calls/{attempt}.json")
     started = time.time()
     activity = {"attempt_id": attempt, "run_id": getattr(campaign, "run_id", None),
@@ -464,6 +469,8 @@ def _attempt(campaign, request: ModelRequest):
     else:
         path.unlink(missing_ok=True)
         return result
+    finally:
+        _call.id = None                              # a later receipt on this thread is another call
 
 
 def _execute(campaign, request: ModelRequest, activity_path, activity):
@@ -579,8 +586,20 @@ def _kill(proc):
 
 
 def receipts(campaign) -> list[dict]:
+    """Every call once: a receipt appended twice for one call (a replayed write) is read once."""
     p = campaign.path("receipts.jsonl")
-    return [json.loads(l) for l in p.read_text().splitlines() if l.strip()] if p.exists() else []
+    rows, seen = [], set()
+    for line in p.read_text().splitlines() if p.exists() else []:
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        key = row.get("call_id")
+        if key is not None:
+            if key in seen:
+                continue
+            seen.add(key)
+        rows.append(row)
+    return rows
 
 
 def known_cost(rows) -> float:

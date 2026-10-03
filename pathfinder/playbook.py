@@ -34,7 +34,7 @@ def next_actions(campaign) -> list[dict]:
                         "command": _cmd(campaign, "stop", "--clear")})
         else:
             out.append({"owner": "operator", "action": "campaign stopped",
-                        "why": f"{stop.get('reason')}: clear the marker when the cause is settled (raise budget_usd first for a budget stop).",
+                        "why": f"{stop.get('reason')}: clear the marker when the cause is settled (raise the budget first for a budget stop).",
                         "command": _cmd(campaign, "stop", "--clear")})
     if snap.get("failure"):
         out.append({"owner": "apex", "action": "diagnose the recorded operational failure",

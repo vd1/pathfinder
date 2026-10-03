@@ -157,8 +157,6 @@ def admission(campaign, stage: str, role: str, *, thread: str | None = None, mod
 def budget_per_call(campaign, stage, role, reserved_now) -> Decision:
     """A built-in policy: admit a call only if recorded spend plus every reserved call, this one included,
     stays within the campaign budget; otherwise stop the campaign with the budget reason."""
-    from . import transport
-    projected = transport.spend(campaign) + (reserved_now + 1) * campaign.call_estimate_usd
-    if projected > campaign.budget_usd:
-        return stop(f"budget: {projected:.2f} projected against cap {campaign.budget_usd:.2f}")
-    return ADMIT
+    from . import budget
+    reason = budget.refusal(campaign, reserved_now + 1)
+    return stop(reason) if reason else ADMIT
