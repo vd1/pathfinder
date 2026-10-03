@@ -401,7 +401,7 @@ adjusts it only through:
   `actions`; `"grid": true` for a card grid), `"metrics"` (`items` of `label`,
   `value`, `small`) or `"pipeline"` (`stages` of `title` and `states` of `key`,
   `label`, `count`). Cells and actions are text, numbers, `{"text", "href"}`
-  with an `https` link, or `{"text", "pdf"}` with a PDF's path, which the page
+  with an `https` link, or `{"text", "pdf"}` with a PDF's path (`{"text", "open"}` for an HTML page such as a dashboard), which the page
   opens in the operator's own viewer (as it does a unit's PDF). Every box on
   the page can be collapsed; the browser remembers which. `consumer` and `failure_rules` are
   described above. Extension code is trusted; the engine validates what it

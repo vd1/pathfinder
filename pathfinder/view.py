@@ -97,13 +97,15 @@ def make_server(campaigns, port: int) -> ThreadingHTTPServer:
 
 
 def _openable(campaign, wanted: str) -> Path | None:
-    """The PDF `wanted` names, if the page offers it: a unit's PDF under threads/, or a PDF a panel lists."""
-    if not wanted.endswith(".pdf"):
+    """The document `wanted` names, if the page offers it: a unit's PDF under threads/, or a PDF or HTML page a
+    panel lists."""
+    if not wanted.endswith((".pdf", ".html")):
         return None
-    try:
-        return webguard.resolve(campaign.root, wanted)
-    except webguard.Refused:
-        pass
+    if wanted.endswith(".pdf"):
+        try:
+            return webguard.resolve(campaign.root, wanted)
+        except webguard.Refused:
+            pass
     listed = {str(Path(pdf).resolve()) for pdf in _pdfs(campaign_state._panels(campaign))}
     try:
         target = Path(wanted).resolve(strict=True)
@@ -113,10 +115,12 @@ def _openable(campaign, wanted: str) -> Path | None:
 
 
 def _pdfs(value):
-    """Every "pdf" a panel lists, wherever its kind puts it (table cells, card actions)."""
+    """Every file a panel offers ("pdf", or "open" for another document such as a dashboard), wherever its
+    kind puts it (table cells, card actions)."""
     if isinstance(value, dict):
-        if isinstance(value.get("pdf"), str):
-            yield value["pdf"]
+        for key in ("pdf", "open"):
+            if isinstance(value.get(key), str):
+                yield value[key]
         for item in value.values():
             yield from _pdfs(item)
     elif isinstance(value, list):
@@ -125,7 +129,7 @@ def _pdfs(value):
 
 
 def open_with_system(path: str) -> None:
-    """The operator's default PDF viewer (Preview on macOS)."""
+    """The operator's default application for the file (Preview for a PDF, the browser for a page)."""
     subprocess.Popen(["open" if sys.platform == "darwin" else "xdg-open", path],
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
 

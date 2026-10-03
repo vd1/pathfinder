@@ -145,8 +145,8 @@ function renderBlocks() {
 
 // A deployment's own tables (extension "panels"): text cells, numbers in human units, https links only.
 const cell = (value) => {
-  if (value && typeof value === "object" && value.pdf)
-    return `<button type="button" class="link-button" data-open-pdf="${esc(value.pdf)}">${esc(value.text ?? "PDF")}</button>`;
+  if (value && typeof value === "object" && (value.pdf || value.open))
+    return `<button type="button" class="link-button" data-open-pdf="${esc(value.pdf || value.open)}">${esc(value.text ?? "Open")}</button>`;
   if (value && typeof value === "object" && /^https:\/\//.test(String(value.href || "")))
     return `<a href="${esc(value.href)}" rel="noreferrer" target="_blank">${esc(value.text ?? value.href)}</a>`;
   if (typeof value === "number") return Math.abs(value) >= 1e4 ? tokens(value) : esc(num(value));
@@ -172,7 +172,7 @@ function decorateBoxes() {
   }
 }
 
-const actionButton = (a) => a && a.pdf ? `<button type="button" data-open-pdf="${esc(a.pdf)}">${esc(a.text ?? "PDF")}</button>`
+const actionButton = (a) => a && (a.pdf || a.open) ? `<button type="button" data-open-pdf="${esc(a.pdf || a.open)}">${esc(a.text ?? "Open")}</button>`
   : a && /^https:\/\//.test(String(a.href || "")) ? `<a href="${esc(a.href)}" rel="noreferrer" target="_blank">${esc(a.text ?? a.href)}</a>` : "";
 
 // A deployment's own boxes, drawn in the page's designs: pipeline, metrics, cards, table.

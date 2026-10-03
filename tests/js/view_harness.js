@@ -125,11 +125,11 @@ const state = (activity, summary) => ({
     { kind: "pipeline", title: "Pipeline", stages: [{ title: "Intake", states: [{ key: "new", label: "Unscored", count: 3 }] }] },
     { kind: "metrics", title: "Operations", items: [{ label: "Model", value: "m", small: "medium effort" }] },
     { kind: "cards", title: "Paper trading", grid: true, cards: [{ status: "active", badge: "Active", meta: ["2601.06499v3"],
-      title: "Basis", summary: "12 events", actions: [{ text: "Read note", pdf: "/x.pdf" }, { text: "arXiv", href: "https://arxiv.org/abs/1" }] }] }];
+      title: "Basis", summary: "12 events", actions: [{ text: "Read note", pdf: "/x.pdf" }, { text: "Dashboard", open: "/d.html" }, { text: "arXiv", href: "https://arxiv.org/abs/1" }] }] }];
   w = await world(kinds);
   const p = w.el("panels").innerHTML;
   out.panel_kinds_use_page_designs = p.includes('class="stage"') && p.includes("usage-grid") && p.includes("strategy-grid")
-    && p.includes('class="strategy-card status-active"') && p.includes('data-open-pdf="/x.pdf"') && p.includes("Unscored");
+    && p.includes('class="strategy-card status-active"') && p.includes('data-open-pdf="/x.pdf"') && p.includes('data-open-pdf="/d.html"') && p.includes("Unscored");
   out.boxes_collapsible = p.includes("data-toggle-box");
   const fakeBox = (hasToggle) => { const b = { dataset: {}, inserted: 0, classList: { toggle() {} },
     querySelector: (sel) => sel === ".box-toggle" ? (hasToggle || b.inserted ? {} : null) : { textContent: "Units" },
