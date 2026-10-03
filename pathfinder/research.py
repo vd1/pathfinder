@@ -442,7 +442,8 @@ def _prompt(campaign, name, **vars):
 def role_brief(campaign) -> str:
     """A composable view's brief (prompts/branch.md or prompts/joint.md), or "" for an ordinary thread."""
     from . import resources
-    role = (campaign.raw or {}).get("composable_role")
+    raw = campaign.raw or {}
+    role = raw.get("composable_role") or ("joint" if raw.get("research_bundles") else None)   # any joint thread
     return resources.prompt(campaign, role).strip() if role in ("branch", "joint") else ""
 
 
