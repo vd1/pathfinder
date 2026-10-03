@@ -327,7 +327,7 @@ removes per unit of work. Each names the root causes it addresses.
   papers. The two differ on read-only versus writable tools and on keeping
   validation, and account, editor and fidelity stages still inline the whole
   thread.
-  Phase 3a (up to bf8d85e) passes evidence and, above a budget, papers by path, size and sha256, with validation kept and read-only verifiers; session economy is measured on the next live run against the 30 September statarb figures (3.8 to 5.9\,M input tokens per paper).
+  Phase 3a (up to bf8d85e) passes evidence and, above a budget, papers by path, size and sha256, with validation kept and read-only verifiers; session economy is measured on the next live run against the 30 September statarb figures (3.8 to 5.9\,M input tokens per paper). Measured on 3 October (\texttt{pathfinder economy}): statarb's 17 investigations on engine-v1.1 took 5.8\,M input tokens per pair (median), its first on engine-v1.2.2 took 5.5\,M. Context by reference shrank the peers' prompts (8\,k characters) but not their tokens: peer calls still take 1.4 to 1.6\,M input tokens each, 91 to 94\,\% cached, because an agent session resends its context on every turn (35 tool calls per peer call on v1.2.2). Consolidation and verification prompts stay near 280\,k characters: under the 300\,k default budget the papers are still pasted. The levers are a lower \texttt{prompt\_budgets} for those stages and fewer, more focused peer turns, not the prompt size. One sample after the change; to be repeated.
 \item \textbf{Contracts over parsers} (R4). One declared schema per stage,
   validated once, with a single repair turn on violation. Contract failures become
   an operational class, separate from scientific outcomes. Provenance checks
@@ -342,12 +342,20 @@ removes per unit of work. Each names the root causes it addresses.
   deduplicate alerts and confirm delivery; run on credentials and a transport
   independent of the workers.
   Phase 4c (up to a9e0b8a): \texttt{pathfinder playbook} turns the state into ordered actions with an owner (engine, apex, operator) and a command; repeated alerts are counted, not resent. Waking on events and credentials independent of the workers remain open.
+  Done in phase 9: an audit runs as soon as \path{events.jsonl} records a stop, a failed call, a unit that blocks or stops, or the run ending (\texttt{woken\_by} in the session); \texttt{"supervisor": \{"codex\_home", "env", "model", "codex"\}} runs it on its own credentials.
 \item \textbf{Accounting in tokens} (R6). Meter tokens as the primary unit under
   subscription billing, deduplicate receipts by call identifier, and charge
   cancellations separately.
+  Done in phase 9: \texttt{"budget": \{"calls", "input\_tokens", "output\_tokens"\}} guards admission, projecting
+  the calls in flight at the mean usage so far; every receipt carries a \texttt{call\_id} and is read once per call;
+  interrupted calls count and are shown apart; \texttt{budget\_usd} is optional.
 \item \textbf{One upstream, thin deployments} (R7). Transport, classifier, event
   log and state as library modules that julien-2, statarb and future campaigns
   import rather than fork. This is where the tidy and simplify sweep belongs.
+  Phase 9: \path{research.py} (1{,}150 lines) is split into \path{thread.py} (what every thread
+  shares), \path{review\_evidence.py} (the material a composable review reads),
+  \path{composable\_research.py} and the single-engine thread, with every name still
+  importable from \path{research}; no unused function was found in the package.
 \item \textbf{A skill for the operator loop} (R2, R5). Drafted on 29 September as \texttt{repres} (report and resume), shared by Claude Code and Codex from \path{~/.codex/skills/repres}. Codify the
   report, recap, fixes, next steps cycle as a skill with a fixed output template.
   Report and recap are generated from the campaign state of D1 and the failure
@@ -689,7 +697,20 @@ Settled by the operator on 29 September.
   branch. \path{branches/metrics.json} records the D10 measurements: Vera's
   rejection rate per branch and overall, and thread divergence (mean pairwise
   Jaccard distance of word 3-grams over the branches' substantive ledger text).
+  D10, second half, measured on 3 October (\texttt{pathfinder probe-vera} on agQSL's five
+  finished pairs, one direct-EVA review each of a sound and a planted-flaw copy, one quantity
+  multiplied by three in one finding): Vera asked for more on 4 of 5 flawed and 3 of 5 sound
+  copies, and corrected the planted value, naming both numbers, in 2 of 5 (a stated numeric
+  result and a script's reported check count). The three misses were symbolic factors inside
+  formulas. A review that asks for more is therefore no evidence of a flaw found; the
+  correction rate is the measure, and two of five is low for one-review audits of long ledgers.
   The value \texttt{eva\_minus} is still read, as \texttt{direct\_eva} with a deprecation warning, because proofTree writes it.
+\item \textbf{julien-2's driver} (phase 9). \texttt{pathfinder import-eva2 EXPERIMENT --out DIR}
+  turns an eva2 experiment (three direct-EVA branch campaigns and a joint campaign) into one
+  canonical composable pair: the joint thread with eva2's exact branch bundles under canonical
+  inventories, the branch threads kept as \path{branch-runs/}, the settings as branch and joint
+  overrides, the dollar settings dropped. Checked on eva-top-ten-01-q002-p024 (joint DRAFT,
+  bundles verified); the imported pair goes on to edit and paper in the engine.
 \item \textbf{julien-2 cherry-picks} (phase 7, engine-v1.2.3). Taken: the
   branch and joint briefs as engine role briefs (\path{prompts/branch.md},
   \path{prompts/joint.md}, appended for peers, consolidation and verification;
