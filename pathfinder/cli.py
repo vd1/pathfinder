@@ -38,6 +38,8 @@ def main(argv=None):
     la.add_argument("args", nargs=argparse.REMAINDER, help="the pathfinder subcommand and its arguments, after --")
     sub.add_parser("playbook", help="the next actions for the operator or the supervising agent, with commands").add_argument("--json", action="store_true")
     sub.add_parser("economy", help="input tokens by stage and by pair, and the cached share").add_argument("--json", action="store_true")
+    ie = sub.add_parser("import-eva2", help="a julien-2 eva2 experiment as a canonical composable campaign")
+    ie.add_argument("experiment"); ie.add_argument("--out", required=True)
     pv = sub.add_parser("probe-vera", help="sound and planted-flaw copies of finished pairs, one direct-EVA review each")
     pv.add_argument("--pairs", nargs="+", required=True); pv.add_argument("--out", required=True)
     sub.add_parser("status", help="print campaign and shortlist state")
@@ -93,6 +95,9 @@ def main(argv=None):
         except RuntimeError as error:
             print(f"launched command exited: {error}"); return 1
         return 0
+    if ns.cmd == "import-eva2":                  # makes a campaign: none to load first
+        from . import import_eva2
+        print(import_eva2.run(Path(ns.experiment), Path(ns.out))); return 0
     c = config.load(Path(ns.root))
     if ns.cmd in DISPATCHING and ns.cmd != "research":       # research opens its own run inside runner.run
         from . import provenance
