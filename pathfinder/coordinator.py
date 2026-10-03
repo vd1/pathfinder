@@ -109,7 +109,10 @@ def start_coordination(parent, arms, schedule, accept_change=None) -> dict:
         from . import extensions
         pick = extensions.resolve(parent.root, schedule.get("path"), schedule["next_unit"], "next_unit")
         import inspect
-        rec["next_unit_sha256"] = hashlib.sha256(Path(inspect.getfile(pick)).read_bytes()).hexdigest()
+        try:
+            rec["next_unit_sha256"] = hashlib.sha256(Path(inspect.getfile(pick)).read_bytes()).hexdigest()
+        except (TypeError, OSError):                 # a builtin or a partial: no source file to digest
+            rec["next_unit_sha256"] = None
     if previous:
         rec["previous_coordination_id"] = previous.get("coordination_id")
         if previous.get("schedule_sha256") != digest:

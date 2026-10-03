@@ -3,9 +3,11 @@
     pathfinder --root SOURCE probe-vera --pairs Q1P1 Q2P2 --out DIR
 
 For each finished pair of a source campaign, DIR gets two copies of its thread: one as it is, and one where a
-single number in one substantive finding is changed (the flaw is planted in the last finding that has a
-number of two or more significant digits; the rest of the ledger is untouched, so later entries that rely on
-the right value now disagree with it). Each copy then gets one direct-EVA ledger review and nothing else. A
+single quantity in one substantive finding is multiplied by three (the latest finding that states one, never
+a locator such as an entry, a line or a file position; the rest of the ledger is untouched, so the files and
+earlier entries it rests on now disagree with it). A composable source is refused: its joint ledger cites
+bundles a single-thread copy would not have. `pathfinder.probe.rescore(DIR)` scores the retained reviews again
+without a model call. Each copy then gets one direct-EVA ledger review and nothing else. A
 review "detects" when it issues a request; a request on a sound copy is a false alarm. probe-report.json
 records each unit, the planted change, the requests and whether one of them names the changed value."""
 from __future__ import annotations
@@ -58,11 +60,14 @@ def _flaw(ledger: Path) -> dict:
 
 def run(source, pairs: list[str], out: Path) -> dict:
     out = Path(out)
+    if (source.raw or {}).get("research_scheme") == "composable":
+        raise SystemExit("the probe reviews single ledgers: a composable source's joint ledger cites bundles the copy "
+                         "would not have; probe its branches' campaigns or a classic campaign")
     if out.exists():
         raise SystemExit(f"{out} exists: a probe is built once")
     (out / "threads").mkdir(parents=True)
     raw = {**source.raw, "research_scheme": "direct_eva", "imported_research": True, "ledger_reviews": 1, "rounds": 0}
-    for key in ("research_bundles", "branches", "branch", "joint", "parent"):
+    for key in ("research_bundles", "branches", "branch", "joint", "parent", "extensions"):
         raw.pop(key, None)
     (out / "campaign.json").write_text(json.dumps(raw, indent=1))
     Q, P, units, shortlist = [], [], {}, []

@@ -1,5 +1,6 @@
 """Read-only view of a campaign: a state document, a text status, a local server with one live page."""
 from __future__ import annotations
+import math
 import json, re, shutil, subprocess, tempfile, time
 from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -72,10 +73,10 @@ def state(campaign) -> dict:
     waiting = [p["pair_id"] for p in sl["pairs"] if threads[p["pair_id"]]["status"].get("status", "new") == "new"]
     if waiting and _jsonl_one(campaign.path("stop.json")):
         attention.append({"pair": ", ".join(waiting), "kind": "held by the stop marker", "reason": _jsonl_one(campaign.path("stop.json")).get("reason"),
-                          "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "Clear the stop marker and start the runner again; raise budget_usd first if the guard wrote the marker."})
+                          "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "Clear the stop marker and start the runner again; raise the budget first if the guard wrote the marker."})
     phase = ("research" if sl["pairs"] else "select" if scan and len(scan) >= len(Q) * len(P) and Q else "scan" if Q else "fetch")
     return {"generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "campaign": {"name": campaign.root.name, "phase": phase, "spend": transport.known_cost(receipts), "unknown_cost_calls": transport.unknown_cost_calls(receipts), "budget": campaign.budget_usd,
+            "campaign": {"name": campaign.root.name, "phase": phase, "spend": transport.known_cost(receipts), "unknown_cost_calls": transport.unknown_cost_calls(receipts), "budget": campaign.budget_usd if math.isfinite(campaign.budget_usd) else None,
                          "calls": len(receipts), "seconds": round(sum(r.get("seconds") or 0 for r in receipts)),
                          "first_call": receipts[0].get("at") if receipts else None, "last_call": receipts[-1].get("at") if receipts else None,
                          "errors": sum(bool(r.get("error")) for r in receipts),
@@ -92,7 +93,8 @@ def state(campaign) -> dict:
 
 def status_text(campaign) -> str:
     s = state(campaign); c = s["campaign"]
-    lines = [f"phase {c['phase']}  spend {c['spend']:.2f}/{c['budget']:.2f} USD  calls {c['calls']}  "
+    cap = f"/{c['budget']:.2f} USD" if c["budget"] is not None else " USD known, no dollar cap"
+    lines = [f"phase {c['phase']}  spend {c['spend']:.2f}{cap}  calls {c['calls']}  "
              f"stop {'yes' if c['stop'] else 'no'}  health {'flag' if c['health'] else 'ok'}",
              f"scan {s['scan']['done']}/{s['scan']['total']}  shortlist {s['scan']['n_selected']}  threads {c['by_status']}"]
     for p in s["shortlist"]:

@@ -169,9 +169,12 @@ def snapshot(campaign):
             if not line.strip():
                 continue
             try:
-                receipts.append(json.loads(line))
+                row = json.loads(line)
             except json.JSONDecodeError:
                 warnings.append(f"Incomplete or invalid receipt at {receipt_path}:{number}; retry audit before treating it as corruption.")
+                continue
+            if row.get("call_id") is None or row["call_id"] not in {r.get("call_id") for r in receipts[-200:]}:
+                receipts.append(row)                 # a receipt written twice for one call is read once
     fields = ("at", "thread", "stage", "actor", "outcome", "error")
     failures = [{**{k: row.get(k) for k in fields}, "failure": row.get("failure")} for row in receipts
                 if row.get("error") or row.get("outcome") in {"timeout", "error", "launch failed", "no session"}]

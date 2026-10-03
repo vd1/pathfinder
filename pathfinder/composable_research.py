@@ -2,18 +2,15 @@
 under their contracts, and the transitions they make. Split from research.py in the phase 9 sweep;
 research re-exports every name."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, sys, tempfile, threading, time
+import hashlib, json
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
-from urllib.parse import urlsplit
 from dataclasses import asdict
-from . import context, contracts, corpus, failures, transport
+from . import contracts, failures, transport
 from .context import Section
 from .ledger import Ledger
-from .scan import prompts_dir
 from .admission import Refused
-from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row)
-from .review_evidence import (EvidenceUnavailable, EvidenceError, _external_citations, _declared_outputs, EVIDENCE_PATH, EVIDENCE_MAX_BYTES, _evidence_references, _assessment_evidence, _bundle_evidence, _review_material)
+from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row)
+from .review_evidence import EvidenceUnavailable, _bundle_evidence, _review_material
 
 
 def _request_file(campaign, pair_id, identity):

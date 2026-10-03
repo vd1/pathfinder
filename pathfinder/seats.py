@@ -96,10 +96,15 @@ def take(campaign, *, stage, actor, thread) -> Path | None:
             if len(_live(pool)) >= spec["seats"]:
                 return None
             path = pool / f"{os.getpid()}-{uuid.uuid4().hex}.json"
-            path.write_text(json.dumps({"pid": os.getpid(), "root": str(campaign.root), "stage": stage, "actor": actor,
-                                        "thread": thread, "at": time.time()}))
-            handle = open(path, "rb")                  # held, and locked, until the call ends
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            handle = open(path, "w")                   # locked before it says anything; held until the call ends
+            try:
+                fcntl.flock(handle, fcntl.LOCK_EX)     # blocks only while a state poll is testing it, briefly
+                handle.write(json.dumps({"pid": os.getpid(), "root": str(campaign.root), "stage": stage, "actor": actor,
+                                         "thread": thread, "at": time.time()}))
+                handle.flush()
+            except BaseException:
+                handle.close(); path.unlink(missing_ok=True)
+                raise
             _held[str(path)] = handle
             return path
     except OSError as error:

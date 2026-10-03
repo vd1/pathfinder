@@ -10,7 +10,7 @@ from __future__ import annotations
 import math
 
 FIELDS = ("calls", "input_tokens", "output_tokens")
-UNCHARGED = ("no session", "launch failed", "refused")
+from .transport import UNCHARGED
 INTERRUPTED = ("timeout", "cancelled", "killed", "stopped")
 
 

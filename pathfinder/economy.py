@@ -3,7 +3,7 @@ how much of it a prompt cache served. Agent sessions resend their context on eve
 with turns and tool calls, not only with the prompt; the measure is over calls that reached a model."""
 from __future__ import annotations
 
-UNCHARGED = ("no session", "launch failed", "refused")
+from .transport import UNCHARGED
 
 
 def summary(rows: list[dict]) -> dict:

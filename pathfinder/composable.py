@@ -112,7 +112,7 @@ def freeze(campaign, pair_id: str, label: str) -> Path:
                 os.chmod(path, 0o644)
         shutil.rmtree(dst)
     dst.mkdir(parents=True)
-    names = ["ledger.jsonl", "status.json", "external-references.json", *campaign.peers]   # the papers stay in the pair's inputs/
+    names = ["ledger.jsonl", "status.json", "external-references.json", "inputs", *campaign.peers]   # the branch cites its papers
     for name in names:
         source = src / name
         if source.is_symlink():

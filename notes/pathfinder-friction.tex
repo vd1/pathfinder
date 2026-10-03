@@ -710,7 +710,10 @@ Settled by the operator on 29 September.
   canonical composable pair: the joint thread with eva2's exact branch bundles under canonical
   inventories, the branch threads kept as \path{branch-runs/}, the settings as branch and joint
   overrides, the dollar settings dropped. Checked on eva-top-ten-01-q002-p024 (joint DRAFT,
-  bundles verified); the imported pair goes on to edit and paper in the engine.
+  bundles verified); the imported pair goes on to edit and paper in the engine. Its 38 calls,
+  read from eva2's runtime store, took 56\,M input tokens for one pair (18 peer calls at 3\,M
+  each), about ten times a single-thread statarb pair: the cost of three branches and a joint
+  thread, which D10's measurements should be weighed against.
 \item \textbf{julien-2 cherry-picks} (phase 7, engine-v1.2.3). Taken: the
   branch and joint briefs as engine role briefs (\path{prompts/branch.md},
   \path{prompts/joint.md}, appended for peers, consolidation and verification;

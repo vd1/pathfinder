@@ -2,17 +2,12 @@
 bundles, and the evidence errors that block a review before any call. Split from research.py in the
 phase 9 sweep; research re-exports every name."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, sys, tempfile, threading, time
-from concurrent.futures import ThreadPoolExecutor
+import hashlib, json, re
 from pathlib import Path
 from urllib.parse import urlsplit
-from dataclasses import asdict
-from . import context, contracts, corpus, failures, transport
+from . import context
 from .context import Section
-from .ledger import Ledger
-from .scan import prompts_dir
-from .admission import Refused
-from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row)
+from .thread import _now, _atomic_write, thread_sections, READING, evidence_by_reference, _inputs
 
 
 class EvidenceUnavailable(Exception):

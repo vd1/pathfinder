@@ -1,16 +1,10 @@
 """What every research thread shares: its status, inputs, helper, prompts and the sections its calls read.
 Split from research.py in the phase 9 sweep; research re-exports every name."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, sys, tempfile, threading, time
-from concurrent.futures import ThreadPoolExecutor
+import json, os, re, shutil, sys, tempfile, time
 from pathlib import Path
-from urllib.parse import urlsplit
-from dataclasses import asdict
-from . import context, contracts, corpus, failures, transport
+from . import context, corpus
 from .context import Section
-from .ledger import Ledger
-from .scan import prompts_dir
-from .admission import Refused
 
 
 PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json

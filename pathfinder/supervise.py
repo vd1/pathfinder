@@ -48,6 +48,14 @@ def processes(pids):
 
 
 WAKE_STATUSES = {"BLOCKED", "blocked", "stopped", "PAUSE-ON-AMEND"}
+WAKE_FLOOR = 60.0                  # seconds between two audits woken by events: no storm of audits on a flaky backend
+
+
+def _retried(failure_class: str) -> bool:
+    """A failure the engine handles itself (asked again, cooled down): no audit for it."""
+    from . import failures
+    scope, retry = failures.SCOPES.get(failure_class, ("call", False))
+    return retry and scope != "campaign"
 
 
 def wake_reason(campaign, offset: int) -> tuple:
@@ -73,7 +81,7 @@ def wake_reason(campaign, offset: int) -> tuple:
         kind = row.get("kind")
         if kind == "stop_requested":
             reason = f"stop_requested: {row.get('reason')}"
-        elif kind == "call_finished" and row.get("failure_class"):
+        elif kind == "call_finished" and row.get("failure_class") and not _retried(row["failure_class"]):
             reason = f"call_finished: {row.get('unit')}/{row.get('stage')} {row.get('failure_class')}"
         elif kind == "status_changed" and row.get("to") in WAKE_STATUSES:
             reason = f"status_changed: {row.get('unit')} {row.get('axis')} to {row.get('to')}"
@@ -283,7 +291,7 @@ def session(campaign, checkout, command, resume, scope, interval=300, hours=6, a
                 events_offset = campaign.path("events.jsonl").stat().st_size
             except OSError:
                 events_offset = 0
-            woken = None
+            woken, last_audit = None, None
             while True:
                 extension = health.read(supervision / "extension-request.json")
                 if extension and extension.get("session") == str(directory) and extension.get("id") != state.get("extension_id"):
@@ -299,7 +307,9 @@ def session(campaign, checkout, command, resume, scope, interval=300, hours=6, a
                     try:
                         proc.wait(timeout=min(5, remaining))
                     except subprocess.TimeoutExpired:
-                        woken, events_offset = wake_reason(campaign, events_offset)
+                        floor = min(WAKE_FLOOR, interval)
+                        if woken is None and (last_audit is None or time.monotonic() - last_audit >= floor):
+                            woken, events_offset = wake_reason(campaign, events_offset)
                         if not woken and time.monotonic() < next_audit and time.monotonic() < deadline:
                             continue
                 elif index:
@@ -326,9 +336,8 @@ def session(campaign, checkout, command, resume, scope, interval=300, hours=6, a
                 save(status=result["status"], summary=result["summary"])
                 if result["status"] != "continue":
                     return 0 if result["status"] == "complete" else 1
-                next_audit = next_audit + interval
-                if next_audit <= time.monotonic():
-                    next_audit = time.monotonic() + interval  # Skip missed ticks, never overlap audits.
+                last_audit = time.monotonic()
+                next_audit = last_audit + interval            # the next tick counts from this audit, woken or not
             save(status="needs_operator", summary="Supervision time limit reached; runner was not killed")
             print(state["summary"], flush=True)
             return 1

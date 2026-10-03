@@ -273,8 +273,8 @@ def test_wake_reasons_are_the_events_that_need_attention(tmp_path):
     events.emit(c, "status_changed", unit="Q1P1", axis="research", to="BLOCKED", reason="x")
     reason, offset2 = supervise.wake_reason(c, offset)
     assert "BLOCKED" in reason and offset2 > offset
-    events.emit(c, "call_finished", unit="Q1P1", stage="peer", outcome="timeout", failure_class="timeout")
-    assert "timeout" in supervise.wake_reason(c, offset2)[0]
+    events.emit(c, "call_finished", unit="Q1P1", stage="peer", outcome="error", failure_class="refusal")
+    assert "refusal" in supervise.wake_reason(c, offset2)[0]
 
 
 def test_the_audit_runs_on_its_own_credentials(tmp_path, monkeypatch):

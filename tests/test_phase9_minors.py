@@ -32,25 +32,18 @@ def test_bad_prompt_budgets_fail_at_load(tmp_path, bad):
         make(tmp_path, prompt_budgets=bad)
 
 
-def test_the_edit_stage_blocks_on_an_account_too_large_for_its_budget(tmp_path):
-    from pathfinder import edit_stage
-    c = make(tmp_path, prompt_budgets={"default": 10})
+def test_the_edit_stage_blocks_on_an_account_too_large_for_its_budget(tmp_path, monkeypatch):
+    from pathfinder import context, edit_stage, transport
+    c = make(tmp_path)
     d = research.prepare(c, "Q1P1")
-    (d / "Q1P1.tex").write_text("x" * 100)
+    (d / "Q1P1.tex").write_text("account")
     research._set(c, "Q1P1", status="DRAFT", stage="done")
-    (d / "Q1P1.tex").write_text("%" * 5000)
-    import pathfinder.context as context
-    real = context.digest_text
-    assert edit_stage.finish(c, "Q1P1") in (True, False)          # a digest fits; nothing raises
+    def too_large(*a, **k):
+        raise transport.PromptTooLarge("input too large: edit context is 9 characters after shrinking, budget 1")
+    monkeypatch.setattr(context, "build", too_large)
+    assert edit_stage.finish(c, "Q1P1") is False
     s = edit_stage.status(c, "Q1P1")
-    assert s.get("status") in ("staged", "blocked")
-
-
-def test_a_frozen_bundle_leaves_the_papers_out(tmp_path):
-    c = make(tmp_path, research_scheme="composable", branches=1)
-    research.run_thread(c, "Q1P1")
-    files = json.loads((c.thread_dir("Q1P1") / "branches" / "branch-1" / "bundle.json").read_text())["files"]
-    assert not any(name.startswith("inputs/") for name in files)
+    assert s["status"] == "blocked" and "input too large" in s["reason"]
 
 
 def test_a_reused_pid_does_not_keep_a_dead_seat(tmp_path, monkeypatch):

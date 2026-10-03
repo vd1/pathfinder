@@ -12,8 +12,9 @@ campaign with that pair as Q1P1:
   ledger cites them), with eva2's bundle.json kept as eva2-bundle.json and a canonical bundle.json written
   over the same files, made read-only and recorded in the pair's status as branches_frozen;
 - each branch campaign's thread is kept as branch-runs/branch-N, for the record;
-- the joint campaign's prompts become the campaign's prompts; receipts of all four campaigns are merged,
-  each branch's marked with its label; import.json records where everything came from.
+- the joint campaign's prompts become the campaign's prompts; the receipts are merged from the campaigns'
+  own logs, if any, and from eva2's runtime store (runtime/receipts/<call>.json, one file per call), each
+  branch's marked with its label; import.json records where everything came from and how many receipts.
 
 Nothing in the experiment is changed. The imported pair then goes on through the engine: edit and paper."""
 from __future__ import annotations
@@ -34,6 +35,27 @@ def _raw(path: Path) -> dict:
 
 def _differences(raw: dict, base: dict) -> dict:
     return {k: v for k, v in raw.items() if k not in SCHEME and k not in DOLLARS and base.get(k) != v}
+
+
+STAGES = {"peers": "peer"}
+
+
+def _eva2_receipt(path: Path, labels: list[str]) -> dict:
+    """One eva2 runtime receipt as an engine receipt row. Its identity is
+    <experiment>/<run>/.../<pair>:<stage>:<actor>:...; the run names the branch (or the joint thread)."""
+    r = json.loads(path.read_text())
+    identity = str(r.get("identity", ""))
+    parts = identity.split("/")
+    run = parts[1] if len(parts) > 1 else None
+    head = identity.split(":")
+    stage = head[1] if len(head) > 1 else None
+    usage = r.get("usage") or {}
+    return {"v": 3, "call_id": path.stem, "thread": "Q1P1", "branch": run if run in labels else None,
+            "stage": STAGES.get(stage, stage), "actor": head[2] if len(head) > 2 else None,
+            "backend": (r.get("route") or {}).get("runtime"), "model": (r.get("route") or {}).get("model"),
+            "outcome": r.get("outcome"), "seconds": r.get("seconds"), "usage": usage,
+            "input_tokens": usage.get("input_tokens"), "output_tokens": usage.get("output_tokens"),
+            "cache_read": usage.get("cached_input_tokens"), "cost": r.get("cost"), "imported_from": "eva2"}
 
 
 def run(experiment: Path, out: Path) -> Path:
@@ -84,21 +106,23 @@ def run(experiment: Path, out: Path) -> Path:
             if path.is_file():
                 os.chmod(path, 0o444)
         frozen[label] = record["inventory_sha256"]
-    receipts = []
-    for name in ["joint", *labels]:
+    receipts, counts = [], {"campaign_logs": 0, "eva2_runtime": 0}
+    for name in ["joint", *labels]:                  # receipts written by the campaigns themselves, if any
         path = runs / name / "receipts.jsonl"
         for line in path.read_text().splitlines() if path.exists() else []:
             if line.strip():
                 row = json.loads(line)
                 if name != "joint":
                     row["branch"] = name
-                receipts.append(json.dumps(row))
-    (out / "receipts.jsonl").write_text("".join(r + "\n" for r in receipts))
+                receipts.append(row); counts["campaign_logs"] += 1
+    for path in sorted((experiment / "runtime" / "receipts").glob("*.json")):   # eva2 keeps one file per call
+        receipts.append(_eva2_receipt(path, labels)); counts["eva2_runtime"] += 1
+    (out / "receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in receipts))
     c = config.load(out)
     status = research.status(c, "Q1P1")
     research._set(c, "Q1P1", branches_frozen=frozen,
                   history=list(status.get("history") or []) + [{"at": research._now(), "action": "imported from eva2",
                                                                "from_status": status.get("status")}])
     (out / "import.json").write_text(json.dumps({"experiment": str(experiment), "branches": labels, "frozen": frozen,
-                                                 "joint_status": status.get("status")}, indent=1))
+                                                 "joint_status": status.get("status"), "receipts": counts}, indent=1))
     return out

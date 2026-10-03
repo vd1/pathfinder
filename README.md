@@ -453,6 +453,15 @@ the agents met in their own tool calls (`source_limits`, arXiv for now);
 `pathfinder health` warns about the last 50 calls and the playbook gives the
 apex agent an action.
 
+**Measures and imports.** `pathfinder economy [--json]` gives the input tokens
+by stage and by pair and the share a prompt cache served. `pathfinder
+probe-vera --pairs ... --out DIR` builds sound and planted-flaw copies of
+finished pairs (one quantity multiplied by three in one finding), gives each one
+direct-EVA review, and reports how often Vera asks for more on each and how
+often she corrects the planted value; it makes one model call per copy.
+`pathfinder import-eva2 EXPERIMENT --out DIR` turns a julien-2 eva2 experiment
+into a canonical composable campaign (see `pathfinder/import_eva2.py`).
+
 **Run records.** Every command that calls a model takes campaign ownership
 and writes `run.json` (appended to `runs.jsonl`): engine commit and a digest
 of the files it loaded, deployment files and lock, extension code, resolved
