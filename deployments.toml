@@ -6,10 +6,10 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "cc6e19c5963e04af6a69e6e8132ec68bbfb125cf"
+revision = "646db7d1ecbece9c1510d86c4156819113b32349"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
-notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.2.2 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats."
+notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.2.3 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
 
 [deployments.coordinated-pilot]
 status = "supported"
@@ -38,7 +38,7 @@ notes = "Editable dependency on ../pathfinder. Its own suite (31 tests) passes a
 [deployments.agqsl]
 status = "not-yet-supported"
 checkout = "../agQSL"
-revision = "4147931d4e78d129cde202433aa8ec637a61c249"
+revision = "799855a82c5aec525c7d49a5500fdb8b3f1a5d9b"
 clean_paths = []
 contract = ""
-notes = "Campaign repository: canon/ is a canonical campaign of agQSL's five open pairs, imported once by canon/import_open_pairs.py, run on a frozen engine-v1.2.2 (canon/engine-ref). Piloted live on two pairs on 2 October. No contract test yet."
+notes = "Campaign repository: canon/ is a canonical campaign of agQSL's five open pairs, imported once by canon/import_open_pairs.py, run on a frozen engine-v1.2.3 (canon/engine-ref). Piloted live on two pairs on 2 October. No contract test yet."
