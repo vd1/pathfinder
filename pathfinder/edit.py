@@ -1,10 +1,11 @@
 """After a terminal verdict: an editor rewrites the consolidated note as a readable short paper with BibTeX."""
 from __future__ import annotations
 import json
-from . import corpus, research, transport
+from . import corpus, pce, research, transport
 from .paper import build, check_references
 from .research import _inputs, _prompt, _now
 from .admission import Refused
+from .thread import Stopped
 
 
 def status(campaign, pair_id) -> dict:
@@ -45,9 +46,12 @@ def _set(campaign, pair_id, **kw):
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
-    """The editor stage; a call the engine refuses (a stop marker or an admission Stop) ends it as stopped."""
+    """The editor stage; a call the engine refuses (a stop marker or an admission Stop) ends it as stopped.
+    Under "edit_scheme": "pce" the single editor's note is the baseline PCE's roles revise (pathfinder.pce)."""
     try:
         result = _run(campaign, pair_id, stop)
+        if result == "done" and pce.enabled(campaign):
+            result = _pce(campaign, pair_id, stop)
         if result == "done":
             from . import consumer
             consumer.run(campaign, pair_id)
@@ -62,12 +66,13 @@ def _run(campaign, pair_id: str, stop) -> str:
         raise SystemExit(f"{pair_id} is not terminal ({st})")
     d = campaign.thread_dir(pair_id); ed = d / "edited"; ed.mkdir(exist_ok=True)
     inp = _inputs(d); retry = ""
+    done = "editing" if pce.enabled(campaign) else "done"      # under PCE the note is only the round's baseline
     seconds = transport.extended(campaign.allowances.get("edit_seconds", 900), status(campaign, pair_id).get("failure"))
     if (ed / "note.tex").exists() and (ed / "references.bib").exists():   # an earlier attempt: accept it or ask for fixes
         ok, log = build(ed, main="note.tex")
         checks = check_references((ed / "note.tex").read_text(errors="replace"), (ed / "references.bib").read_text(errors="replace"))
         if ok and _clean(checks):
-            _set(campaign, pair_id, status="done", build_ok=True, checks=checks); return "done"
+            _set(campaign, pair_id, status=done, build_ok=True, checks=checks); return "done"
         retry = _retry(checks, ok, log)
     for attempt in range(2):
         if stop():
@@ -90,9 +95,48 @@ def _run(campaign, pair_id: str, stop) -> str:
         checks = check_references((ed / "note.tex").read_text(errors="replace"), (ed / "references.bib").read_text(errors="replace"))
         (ed / f"checks-{attempt + 1}.txt").write_text("\n".join(checks) or "no findings")
         if ok and _clean(checks):
-            _set(campaign, pair_id, status="done", build_ok=True, checks=checks); return "done"
+            _set(campaign, pair_id, status=done, build_ok=True, checks=checks); return "done"
         retry = _retry(checks, ok, log)
     _set(campaign, pair_id, status="blocked", build_ok=ok, checks=checks, reason="build or citations failed twice"); return "blocked"
+
+
+def _pce(campaign, pair_id: str, stop) -> str:
+    """The PCE round over the baseline note; an accepted draft that builds with clean references becomes
+    note.tex. The edit is done either way: a round that ends without acceptance leaves the baseline as the
+    readable note, its outcome recorded as editorial_status (julien-2: reviewed account or baseline)."""
+    seconds = transport.extended(campaign.allowances.get("pce_seconds", campaign.allowances.get("edit_seconds", 900)),
+                                 status(campaign, pair_id).get("failure"))
+    _set(campaign, pair_id, status="editing", scheme="pce", failure=None, allowance_seconds=seconds)
+    try:
+        out = pce.run(campaign, pair_id, stop=stop, seconds=seconds)
+    except Stopped:
+        _set(campaign, pair_id, status="stopped"); return "stopped"
+    except transport.TransportFailed as failed:
+        _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(failed.failure), failure=failed.failure)
+        raise
+    except pce.Changed as changed:
+        _set(campaign, pair_id, status="blocked", reason=f"PCE: {changed}"); return "blocked"
+    problem = _install(campaign, pair_id) if out["status"] == "accepted" else None
+    _set(campaign, pair_id, status="done", scheme="pce", editorial_status=out["status"],
+         editorial_reason=out.get("reason") or None, accepted_note=out["status"] == "accepted" and problem is None,
+         presentation_error=problem, pce="edited/pce")
+    return "done"
+
+
+def _install(campaign, pair_id: str) -> str | None:
+    """The accepted draft as note.tex, built and checked; on failure the baseline is restored and rebuilt."""
+    ed = campaign.thread_dir(pair_id) / "edited"; root = pce.workflow(campaign, pair_id)
+    draft, baseline = (root / pce.DRAFT).read_text(), (root / pce.BASELINE).read_text()
+    if (ed / "note.tex").read_text() == draft and (ed / "note.pdf").exists():
+        return None
+    (ed / "note.tex").write_text(draft)
+    ok, log = build(ed, main="note.tex")
+    checks = check_references(draft, (ed / "references.bib").read_text(errors="replace"))
+    if ok and _clean(checks):
+        return None
+    (ed / "note.tex").write_text(baseline); build(ed, main="note.tex")
+    return "the accepted draft did not build or its citations failed: " + "; ".join(
+        (["build failed: " + log[-300:]] if not ok else []) + [c for c in checks if not _clean([c])])
 
 
 def _clean(checks) -> bool:

@@ -4,10 +4,11 @@ Each stage gets a deterministic reply that satisfies the engine's contracts, so 
 campaigns through research, edit, paper and style builds without a model call. Replies go through the same
 admission, active-call records and receipts as real calls; receipts say backend "stub", cost 0.
 
-Settings under "stub" in campaign.json: "verify" (the verifier's decision, default DRAFT) and "review"
-(the paper reviewer's decision, default ACCEPT)."""
+Settings under "stub" in campaign.json: "verify" (the verifier's decision, default DRAFT), "review"
+(the paper reviewer's decision, default ACCEPT), and for PCE editing "pce_fact" (pass), "pce_critic" (pass)
+and "pce_editor" (accept)."""
 from __future__ import annotations
-import json
+import json, re
 from pathlib import Path
 from .ledger import Ledger, SUBSTANTIVE
 
@@ -61,6 +62,8 @@ def reply(campaign, request) -> str:
         return json.dumps({"requests": [], "dispositions": [{"id": k, "status": "resolved", "reason": "stub"} for k in active]})
     if stage == "verify":
         return json.dumps({"decision": settings.get("verify", "DRAFT"), "reason": "stub verdict", "action": ""})
+    if stage == "edit" and (request.actor or "").startswith("pce-"):
+        return pce_reply(campaign, request.actor[len("pce-"):], request.prompt)
     if stage == "edit" and request.actor == "editor":
         ed = cwd / "edited"; ed.mkdir(exist_ok=True)
         (ed / "note.tex").write_text(READABLE); (ed / "references.bib").write_text(BIB)
@@ -75,6 +78,41 @@ def reply(campaign, request) -> str:
     if stage == "scan":
         return json.dumps({"feasibility": 50, "gain": 50, "connexion": "stub", "rationale": "stub"})
     return "stub reply"
+
+
+def pce_reply(campaign, role: str, prompt: str, verdict: str | None = None) -> str:
+    """A PCE role's reply in its contract's envelope, from the files and outputs its prompt names: the author
+    marks the baseline with its pass, the gates and the editor answer with the configured verdicts."""
+    settings = (getattr(campaign, "raw", None) or {}).get("stub") or {}
+    permitted = json.loads(re.search(r"^Permitted outputs: (.*)$", prompt, re.M).group(1))
+    files = json.loads(prompt.split("Allowed input files:\n", 1)[1])
+    if role == "author":
+        n = 1 + sum(1 for k in files if k.startswith("reviews/history/") and k.endswith("fact-check.json"))
+        draft = files["sources/internal/baseline.tex"].replace(
+            "\\end{document}", f"Revised by the stub PCE author, pass {n}.\n\\end{{document}}")
+        claims = [{"id": "c1", "text": "The stub cites one source.", "kind": "fact", "location": "Introduction",
+                   "status": "needs-review"}]
+        out = {permitted[0]: draft, permitted[1]: json.dumps(claims)}
+    elif role == "archivist":
+        out = {permitted[0]: "Stub provenance note: the author's draft, kept by the host."}
+    elif role == "fact-checker":
+        v = verdict or settings.get("pce_fact", "pass")
+        report = {"verdict": v, "summary": "stub fact check", "claims": [
+            {"id": c["id"], "status": "supported" if v == "pass" else "unsupported",
+             "evidence": ["sources/external/research-supplement.md"], "notes": "stub"}
+            for c in json.loads(files["claims/current.json"])]}
+        out = {p: json.dumps(report) for p in permitted}
+    elif role == "critic":
+        v = verdict or settings.get("pce_critic", "pass")
+        profile = re.search(r"^\s*- Profile: (\S+)", prompt, re.M).group(1)
+        review = (f"# Critic Review\n\n- Profile: {profile}\n- Score: 4\n- Verdict: {v}\n- Strengths: clear\n"
+                  f"- Risks: none\n- Required revisions: {'None' if v == 'pass' else 'Tighten the abstract.'}\n")
+        out = {p: review for p in permitted}
+    else:
+        out = {permitted[0]: json.dumps({"decision": verdict or settings.get("pce_editor", "accept"),
+                                         "findings": ["stub finding"], "feedback": "stub feedback",
+                                         "evidence_change_requested": False})}
+    return json.dumps({"files": out})
 
 
 def execute(campaign, request) -> dict:
