@@ -62,6 +62,8 @@ def load(root: Path) -> Campaign:
     if tb is not None and (not isinstance(tb, dict) or any(
             not isinstance(v, int) or isinstance(v, bool) or v < 1 for v in tb.values())):
         raise ValueError(f"tool_call_budgets must map role names (peer, consolidate, verify, editor, author) to positive integers, got {tb!r}")
+    if "gc" in raw and not isinstance(raw["gc"], bool):
+        raise ValueError(f"gc must be true or false, got {raw['gc']!r}")
     pb = raw.get("prompt_budgets")
     if pb is not None and (not isinstance(pb, dict) or any(
             not isinstance(v, int) or isinstance(v, bool) or v < 1 for v in pb.values())):

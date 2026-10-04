@@ -160,6 +160,9 @@ def _work(campaign, pair_id):
                     if edited != "done" and not stop():
                         message = f"editor {edited}: {edit.status(campaign, pair_id).get('reason')}"
                         raise PairBlocked(message) if edited == "blocked" else RuntimeError(message)
+                from . import gc
+                if gc.enabled(campaign):                 # each finished cycle drops what the record does not need
+                    gc.collect_thread(campaign, pair_id)
         except Exception as error:
             error.stage = stage if stage == "edit" else research.status(campaign, pair_id).get("stage")
             raise

@@ -328,6 +328,9 @@ def _receipt(campaign, thread, stage, actor, model, r):
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
                                      "raw_events", "error", "failure", "prompt_chars", "tool_calls", "tool_errors",
                                      "tool_error_samples", "source_limits")}}
+    if isinstance(row.get("raw_events"), list):   # commands and answers kept, long tool outputs shortened
+        from . import gc
+        row["raw_events"] = gc.compact_events(row["raw_events"])
     if r.get("rates"):
         row["rates"] = r["rates"]
     if rules_error:

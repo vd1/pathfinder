@@ -42,6 +42,7 @@ def main(argv=None):
     ie.add_argument("experiment"); ie.add_argument("--out", required=True)
     pv = sub.add_parser("probe-vera", help="sound and planted-flaw copies of finished pairs, one direct-EVA review each")
     pv.add_argument("--pairs", nargs="+", required=True); pv.add_argument("--out", required=True)
+    sub.add_parser("gc", help="remove what finished threads' records do not need, and compact old receipts").add_argument("--dry-run", action="store_true")
     sub.add_parser("status", help="print campaign and shortlist state")
     ev = sub.add_parser("evidence", help="a pair's evidence manifest: cited files, resolutions, errors and proposed declarations")
     ev.add_argument("pair"); ev.add_argument("--json", action="store_true")
@@ -171,6 +172,12 @@ def _dispatch(ns, c):
         from . import economy, transport
         summary = economy.summary(transport.receipts(c))
         print(json.dumps(summary, indent=1) if ns.json else economy.text(summary))
+    elif ns.cmd == "gc":
+        from . import gc
+        report = gc.collect(c, dry_run=ns.dry_run)
+        print(("would collect" if ns.dry_run else "collected") + f" {report['files']} files and {report['stripped']} prompt copies "
+              f"in {report['threads']} finished threads, {(report['bytes'] + report['receipt_bytes']) / 1e6:.1f} MB "
+              f"(receipts {report['receipt_bytes'] / 1e6:.1f} MB)")
     elif ns.cmd == "status":
         print(monitor.status_text(c))
     elif ns.cmd == "state":
