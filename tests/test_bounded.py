@@ -1,5 +1,6 @@
 """Bounded runs and run_pair: exactly the listed pairs, resuming at the right stage."""
 import shutil
+from pathlib import Path
 import pytest
 from pathfinder import edit, paper, research, runner, transport
 from stubcampaign import make
@@ -106,3 +107,11 @@ def test_run_pair_rechecks_paper_state_under_the_lock(tmp_path, monkeypatch):
     monkeypatch.setattr(paper, "run", lambda *a, **k: pytest.fail("paper rerun after it finished"))
     out = runner.run_pair(c, "Q1P1", interval=0.05)
     assert out["paper"] == "ACCEPTED" and out["complete"]
+
+
+def test_a_lock_released_while_it_is_read_has_no_holder(tmp_path, monkeypatch):
+    (tmp_path / "lock").write_text("1")
+    def vanished(self, *a, **k):
+        raise FileNotFoundError(self)                 # the owner's __exit__ removed it between exists() and the read
+    monkeypatch.setattr(Path, "read_text", vanished)
+    assert runner.Lock.holder(tmp_path) is None

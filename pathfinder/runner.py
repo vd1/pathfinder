@@ -75,7 +75,7 @@ class Lock:
             return None
         try:
             pid = int(p.read_text().strip()); os.kill(pid, 0); return pid
-        except (ValueError, ProcessLookupError, PermissionError):
+        except (ValueError, ProcessLookupError, PermissionError, FileNotFoundError):   # released while read
             return None
 
     def __enter__(self):
