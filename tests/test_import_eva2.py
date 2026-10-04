@@ -146,3 +146,41 @@ def test_eva2_receipts_take_stage_actor_and_time_from_what_eva2_kept(tmp_path):
     assert rows["h"]["error"] == "quota" and rows["h"]["outcome"] == "blocked"
     order = [r["call_id"] for r in transport.receipts(config.load(out)) if r.get("imported_from") == "eva2"]
     assert order == ["f", "e", "d", "c", "b", "a", "g", "h"]            # in the order the calls ended
+
+
+def _eva2_bundle(path, files):
+    """A bundle as eva2.evidence.freeze writes it: a list inventory, digested over its canonical JSON."""
+    import hashlib
+    path.mkdir(parents=True)
+    rows = []
+    for name, data in files.items():
+        (path / name).parent.mkdir(parents=True, exist_ok=True)
+        (path / name).write_bytes(data)
+        rows.append({"path": name, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)})
+    digest = hashlib.sha256((json.dumps(rows, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()).hexdigest()
+    (path / "bundle.json").write_text(json.dumps({"schema_version": 1, "branch": path.name, "files": rows,
+                                                  "inventory_sha256": digest}))
+    return path
+
+
+def test_a_recorded_eva2_bundle_verifies_by_its_inventory_and_any_change_is_refused(tmp_path):
+    import os, pytest
+    files = {"ledger.jsonl": b'{"seq": 1}\n', "ada/note.tex": "π".encode(), "ada/note.log": b"fonts/cm/cmr10.pfb"}
+    bundle = _eva2_bundle(tmp_path / "ok" / "branch-1", files)
+    assert import_eva2.verify_bundle(bundle)["branch"] == "branch-1"         # by-products recorded then still verify
+
+    def refused(change, match):
+        b = _eva2_bundle(tmp_path / match.replace(" ", "-") / "branch-1", files)
+        change(b)
+        with pytest.raises(composable.BundleError, match=match):
+            import_eva2.verify_bundle(b)
+    refused(lambda b: (b / "ada/note.tex").write_text("rewritten"), "changed")
+    refused(lambda b: (b / "ada/late.json").write_text("{}"), "added")
+    refused(lambda b: (b / "ada/note.log").unlink(), "missing")
+    refused(lambda b: (os.unlink(b / "ada/note.tex"), os.symlink(tmp_path / "elsewhere", b / "ada/note.tex")), "symbolic link")
+
+    def forged(b):
+        record = json.loads((b / "bundle.json").read_text())
+        record["files"][0]["path"] = "../outside.jsonl"
+        (b / "bundle.json").write_text(json.dumps(record))
+    refused(forged, "inventory digest")

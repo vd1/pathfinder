@@ -24,7 +24,8 @@ campaign with that pair as Q1P1:
   edit done, and import.json["edit"] records the source and digests. eva2 ran no paper stage; none is made.
 
 Nothing in the experiment is changed. The imported pair then goes on through the engine: what is not done of
-edit and paper."""
+edit and paper. verify_bundle reads a bundle eva2 froze where it lies (a deployment's recorded campaigns), by
+its inventory, without julien-2's code."""
 from __future__ import annotations
 import hashlib, json, os, re, shutil
 from datetime import datetime, timezone
@@ -93,6 +94,41 @@ def _eva2_receipt(path: Path, labels: list[str], experiment: str) -> dict:
 
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def verify_bundle(path: Path) -> dict:
+    """A bundle eva2 froze (bundle.json with a list inventory, digested over its canonical JSON), checked by its
+    inventory alone: every listed file present with its digest and size, nothing added, no symbolic link, no
+    path leaving the bundle. eva2's handoff and reference checks are not repeated: the bundle was accepted when
+    it was frozen, and reading it now asks only that it is unchanged. Returns eva2's record."""
+    from pathlib import PurePosixPath
+    root, name = Path(path), Path(path).name
+    if root.is_symlink():
+        raise composable.BundleError(f"{name}: the bundle is a symbolic link")
+    try:
+        record = json.loads((root / "bundle.json").read_text())
+    except (OSError, ValueError) as error:
+        raise composable.BundleError(f"{name}: unreadable bundle.json ({error})") from None
+    rows = record.get("files")
+    canonical = (json.dumps(rows, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
+    if not isinstance(rows, list) or record.get("inventory_sha256") != hashlib.sha256(canonical).hexdigest():
+        raise composable.BundleError(f"{name}: bundle.json does not match its own inventory digest")
+    listed = {}
+    for row in rows:
+        file = row.get("path") if isinstance(row, dict) else None
+        p = PurePosixPath(file or "")
+        if not file or p.is_absolute() or ".." in p.parts or "\\" in file or str(p) != file or file in listed:
+            raise composable.BundleError(f"{name}: unsafe or repeated inventory path {file!r}")
+        listed[file] = row
+    present = {p.relative_to(root).as_posix(): p for p in composable._files(root, name) if p != root / "bundle.json"}
+    for file in sorted(set(listed) - set(present)):
+        raise composable.BundleError(f"{name}: {file} is missing")
+    for file in sorted(set(present) - set(listed)):
+        raise composable.BundleError(f"{name}: {file} was added after the freeze")
+    for file, row in sorted(listed.items()):
+        if present[file].stat().st_size != row.get("bytes") or _sha(present[file]) != row.get("sha256"):
+            raise composable.BundleError(f"{name}: {file} changed after the freeze")
+    return record
 
 
 def _accepted_pce(experiment: Path) -> Path | None:
