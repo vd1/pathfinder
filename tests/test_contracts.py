@@ -255,3 +255,8 @@ def test_a_deployment_schema_may_ask_for_a_boolean():
     assert contracts.violations({"approved": 1}, schema) == ["reply.approved: expected boolean, got int"]
     reply = contracts.parse(schema, '{"approved": true}')
     assert reply == {"approved": True}
+
+
+def test_a_schema_type_the_checker_does_not_know_is_named():
+    with pytest.raises(ValueError, match="'date'"):
+        contracts.violations({"a": "x"}, {"type": "object", "properties": {"a": {"type": "date"}}})

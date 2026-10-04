@@ -84,6 +84,8 @@ def _is(value, kind: str) -> bool:
     if kind in ("integer", "number"):           # NaN and infinities are valid JSON to Python, never a score
         return (isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
                 and (kind == "number" or float(value).is_integer()))
+    if kind not in _TYPES:                      # a schema the checker cannot read is the deployment's error, named
+        raise ValueError(f"schema type {kind!r} is not supported; use one of {sorted([*_TYPES, 'integer', 'number'])}")
     return isinstance(value, _TYPES[kind])
 
 
