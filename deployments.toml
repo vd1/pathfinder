@@ -39,8 +39,8 @@ notes = "Julien's campaign 2 (eva-top-ten-01, ten pairs, three-branch EVA with P
 status = "not-yet-supported"
 checkout = "../proofTree"
 revision = "c16180d"
-clean_paths = []
-contract = ""
+clean_paths = ["prooftree", "pyproject.toml", "uv.lock", "campaigns/sphere-packing-rounds2/adaptive"]   # what the contract runs and replays
+contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
 notes = "Editable dependency on ../pathfinder. Its own suite (31 tests) passes against the engine-v1.2 candidate, which keeps pathfinder.scan.parse_json and reads research_scheme eva_minus as direct_eva with a deprecation warning; its working tree is under active development, so no contract is pinned yet."
 
 [deployments.agqsl]

@@ -108,6 +108,109 @@ def test_agqsl_canon_replays_on_the_candidate_engine(tmp_path):
     assert _tree(canon) == before
 
 
+PROOFTREE_LINK = r'''
+import contextlib, io, json, sys
+from pathlib import Path
+import pathfinder
+from pathfinder import composable, config, corpus, research, resources, transport
+from prooftree.cli import init, parse_metadata, sha
+from prooftree.state import Store, initialize
+from prooftree import workflow
+
+root = Path(sys.argv[1])
+atom = lambda aid: (f'<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/{aid}</id>'
+                    '<title>A proof</title><summary>A fixture abstract.</summary><published>2016-03-14</published>'
+                    '<author><name>Author</name></author></entry></feed>')
+with contextlib.redirect_stdout(io.StringIO()):
+    init(root, "stub", "stub")
+raw = json.loads((root / "campaign.json").read_text()); raw["budget_usd"] = 400
+(root / "campaign.json").write_text(json.dumps(raw))
+(root / "sources").mkdir()
+for side, aid in (("Q", "1603.04246v2"), ("P", "2303.13427v1")):
+    row = parse_metadata(atom(aid))[0]
+    text = root / "sources" / f"{side}.txt"; text.write_text("A mathematical full-text fixture.\n")
+    row.update(text=f"sources/{side}.txt", source_sha256=sha(text))
+    corpus.write([row], root / f"{side}.jsonl")
+initialize(root)
+with Store(root) as store:
+    link = store.link("B1", "2303.13427", "A fixture connection", "contract")
+with contextlib.redirect_stdout(io.StringIO()):
+    workflow.scan_links(root)
+    result = workflow.research_link(root, link)
+c = config.load(root / "adaptive" / f"S{link}" / "joint")
+d = c.thread_dir("Q1P1")
+composable.check_frozen(c, "Q1P1")
+receipts = transport.receipts(c)
+print(json.dumps({"result": result, "engine": pathfinder.__file__, "scheme": c.raw["research_scheme"],
+    "bundles": {label: sorted(composable.verify(d / "branches" / label)["files"]) for label in composable.labels(c)},
+    "verdict": {k: research.export_outcome(c, "Q1P1")[k] for k in ("status", "scientific_verdict")},
+    "backends": sorted({r["backend"] for r in receipts}), "runs": sorted({r["run_id"] for r in receipts}),
+    "branches": sorted({r["branch"] for r in receipts if r.get("branch")}),
+    "loaded": sorted(m for m in sys.modules if m.split(".")[0] in ("eva2", "julien2")),
+    "overlays": {p.name: resources.prompt_template(c, p.name.removesuffix(".append.md")).rstrip().endswith(p.read_text().strip())
+                 for p in sorted(c.path("prompts").glob("*.append.md"))}}))
+'''
+
+
+def _prooftree(script: str, checkout: Path, *args) -> dict:
+    """proofTree's own code, imported from its checkout, on the candidate engine (first on the path)."""
+    env = {**os.environ, "PYTHONPATH": os.pathsep.join([str(ROOT), str(checkout)])}
+    r = subprocess.run([sys.executable, "-c", script, *map(str, args)], cwd=checkout, env=env, capture_output=True,
+                       text=True, timeout=900)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-3000:]
+    return json.loads(r.stdout.strip().splitlines()[-1])
+
+
+@needs_tex
+def test_prooftree_researches_a_link_on_the_candidate_engine(tmp_path):
+    checkout = deployment_matrix.checkout("prooftree")
+    out = _prooftree(PROOFTREE_LINK, checkout, tmp_path / "campaign")
+    # one composable campaign: three frozen branches that verify, an accepted joint verdict, an edited PDF
+    assert out["scheme"] == "composable" and sorted(out["bundles"]) == ["branch-1", "branch-2", "branch-3"]
+    assert all({"ledger.jsonl", "handoff.json"} <= set(files) for files in out["bundles"].values())
+    assert out["result"]["outcome"] == "ACCEPT" and out["verdict"] == {"status": "DRAFT", "scientific_verdict": "ACCEPT"}
+    assert Path(out["result"]["pdf"]).is_file() and out["result"]["pdf"].endswith("joint/threads/Q1P1/edited/note.pdf")
+    # stub receipts under one run, every branch's calls named; the candidate answered and no julien-2 code loaded
+    assert out["backends"] == ["prooftree-stub"] and len(out["runs"]) == 1
+    assert out["branches"] == ["branch-1", "branch-2", "branch-3"]
+    assert Path(out["engine"]).resolve().is_relative_to(ROOT / "pathfinder") and out["loaded"] == []
+    assert out["overlays"] and all(out["overlays"].values()), out["overlays"]
+
+
+PROOFTREE_REPLAY = r'''
+import contextlib, io, json, sys
+from pathlib import Path
+from prooftree import view, workflow
+
+root = Path(sys.argv[1])
+state = view.snapshot(root)
+read = {}
+for outcome in sorted((root / "adaptive").glob("S*/outcome.json")):
+    with contextlib.redirect_stdout(io.StringIO()):
+        read[outcome.parent.name] = workflow.research_link(root, int(outcome.parent.name[1:]))["outcome"]
+print(json.dumps({"runs": len(state["runs"]), "issues": state["issues"], "read": read,
+                  "legacy": all(workflow.legacy(p.parent) for p in (root / "adaptive").glob("S*/outcome.json")),
+                  "loaded": sorted(m for m in sys.modules if m.split(".")[0] in ("eva2", "julien2"))}))
+'''
+
+
+def test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine(tmp_path):
+    from pathfinder import import_eva2
+    source = deployment_matrix.checkout("prooftree") / "campaigns" / "sphere-packing-rounds2"
+    bundles = sorted(p.parent for p in source.glob("adaptive/S*/**/bundle.json"))
+    if not bundles:                                 # the recorded runs are local records, not tracked files
+        (pytest.fail if deployment_matrix.RELEASE else pytest.skip)(f"no recorded bundles under {source}")
+    before = _tree(source)
+    for bundle in bundles:                          # eva2's bundles, read in place by their inventory
+        import_eva2.verify_bundle(bundle)
+    copy = tmp_path / "campaign"
+    shutil.copytree(source, copy, symlinks=True)
+    out = _prooftree(PROOFTREE_REPLAY, source.parent.parent, copy)
+    assert out["read"] == {"S15": "ACCEPT", "S17": "ACCEPT", "S31": "ACCEPT"} and out["legacy"]
+    assert out["runs"] == 3 and out["issues"] == [] and out["loaded"] == []
+    assert len(bundles) == 18 and _tree(source) == before
+
+
 def test_the_10x10_pilot_replays_on_the_candidate_engine(tmp_path):
     root = deployment_matrix.checkout("pilot-10x10")
     tracked = ("campaign.json", "Q.jsonl", "P.jsonl", "scan.jsonl", "shortlist.json", "threads")
