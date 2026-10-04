@@ -29,7 +29,8 @@ def profile(cwd, engine_root, tools: bool, read=(), deny=(), network: bool = Fal
                    "/Library/Frameworks/Python.framework": "read", "/usr/local": "read"})
     temporary = ["/private/tmp", "/tmp"] + ([str(Path(os.environ["TMPDIR"]).resolve())] if os.environ.get("TMPDIR") else [])
     for path in temporary:
-        if not cwd.is_relative_to(Path(path).resolve()):     # never deny the workspace itself
+        tmp = Path(path).resolve()
+        if not (cwd.is_relative_to(tmp) or tmp.is_relative_to(cwd)):   # neither the workspace nor its own TMPDIR
             fs[path] = "none"
     if tools:
         for name in CONTROL:

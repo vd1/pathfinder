@@ -360,6 +360,9 @@ def test_the_sandbox_profile_writes_only_the_workspace_and_reads_its_control_fil
     reader = sandbox.profile(d, engine, tools=False)[f"permissions.{sandbox.NAME}.filesystem"]
     assert reader[str(d.resolve())] == "read" and str(d.resolve() / "branches") not in reader
     assert sandbox.toml({"a": {"b c": "read"}, "n": False}) == '{"a" = {"b c" = "read"}, "n" = false}'
+    monkeypatch.setenv("TMPDIR", str(branch / ".pathfinder" / "tmp"))      # the agent's own, as transport sets it
+    assert str((branch / ".pathfinder" / "tmp").resolve()) not in sandbox.profile(branch, engine, tools=True)[
+        f"permissions.{sandbox.NAME}.filesystem"]
 
 
 def test_a_campaign_filesystem_profile_replaces_the_sandbox_mode_per_request(tmp_path):
