@@ -20,6 +20,13 @@ from .review_evidence import (EvidenceUnavailable, EvidenceError, _external_cita
 from .composable_research import (_request_file, retain_response, _direct_requests, _review_contract, _apply_research_review, next_requests, export_outcome, _verdict_under_direct_eva, _repair_review, _finish_repairs, _run_composable)
 
 
+def _outline(path) -> str:
+    """A paper's headings by line, for a peer that reads it by reference: it jumps to the lines it needs."""
+    text = path.read_text(errors="replace")
+    found = context.outline(text)
+    return f"\n\nOutline of inputs/{path.name} ({len(text.splitlines())} lines):\n{found}\n" if found else ""
+
+
 def _peers(campaign, pair_id, stop):
     """@planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
     @planks("When Pathfinder executes one stage attempt")
@@ -32,6 +39,8 @@ def _peers(campaign, pair_id, stop):
     used = {"seconds": 0.0}; lock = threading.Lock()
 
     peers = list(campaign.peers)
+    outlines = "".join(_outline(d / "inputs" / inp[side]) for side in "QP")
+
 
     def one(actor):
         others = [a for a in peers if a != actor]
@@ -59,6 +68,8 @@ def _peers(campaign, pair_id, stop):
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")
+            if not in_papers:
+                p += outlines
             if call_no or L.count():
                 p += "\n\nThis call continues an existing thread. Start by reading the ledger, then carry on from where it stands.\n"
             if in_papers or in_ledger:

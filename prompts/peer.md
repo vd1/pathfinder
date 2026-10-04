@@ -32,7 +32,11 @@ Ledger commands, run from this directory:
 Write mathematics in TeX wherever it appears, in ledger entries and in
 your files: inline as \( ... \), displayed as \[ ... \], never with
 dollar signs, so it renders on the monitor and pastes into the note.
-Keep longer derivations in {{ACTOR}}/ and point to them from the ledger.
+Keep longer derivations in {{ACTOR}}/ and point to them from the ledger,
+as plain text, Markdown or code; do not compile documents in a research
+call, the note is written later. Your files and ledger entries are working
+material, not outputs of the pipeline: no style gate applies to them. When
+you have several entries, chain several ledger commands in one shell command.
 Do not edit a partner's directory, the inputs, or the ledger file
 directly.
 

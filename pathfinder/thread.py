@@ -217,7 +217,9 @@ def _prompt(campaign, name, **vars):
     if budget:          # every turn of a session resends its whole context: fewer, better-aimed reads cost far less
         text += (f"\n\nPlan for about {budget} tool calls in this call. Each turn resends everything read so "
                  "far, so read in slices (a line range or a search), never a whole file you only need part of, "
-                 "do not reread what you have, and write your entry as soon as you can.")
+                 "do not reread what you have, and write your entry as soon as you can. Bound what you print: "
+                 "never print a whole file or an unbounded search, and cap output with head, sed -n or cut -c, "
+                 "since one long line of a data file can hold most of the file.")
     return text
 
 

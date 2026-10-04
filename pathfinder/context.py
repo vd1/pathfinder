@@ -11,6 +11,7 @@ Budgets come from "prompt_budgets" in campaign.json, {"default": N, "<stage>": N
 max_prompt_chars."""
 from __future__ import annotations
 import hashlib
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from . import transport
@@ -42,6 +43,31 @@ def digest_text(name: str, text: str, share: int) -> str:
     head = text[: room * 2 // 3]
     tail = text[len(text) - room // 3:] if room // 3 else ""
     return f"{note}\n{head}\n[... {len(text) - len(head) - len(tail)} characters omitted ...]\n{tail}"
+
+
+OUTLINE_ENTRIES = 80
+_TEX_LEVELS = {"part": 0, "chapter": 0, "section": 0, "subsection": 1, "subsubsection": 2}
+_TEX_HEADING = re.compile(r"\\(part|chapter|section|subsection|subsubsection)\*?\s*(?:\[[^\]]*\])?\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}")
+_MD_HEADING = re.compile(r"(#{1,4})\s+(\S.*)")
+
+
+def outline(text: str) -> str:
+    """The headings of a TeX or Markdown text, one per line as "line: title", indented by depth; "" when it
+    has none. An agent reading by reference jumps to the lines it needs instead of printing the file."""
+    rows = []
+    for number, line in enumerate(text.splitlines(), 1):
+        tex = _TEX_HEADING.search(line)
+        md = None if tex else _MD_HEADING.match(line)
+        if tex and not line.lstrip().startswith("%"):
+            depth, title = _TEX_LEVELS[tex.group(1)], tex.group(2)
+        elif md:
+            depth, title = len(md.group(1)) - 1, md.group(2)
+        else:
+            continue
+        rows.append(f"{number}: {'  ' * depth}{' '.join(title.split())}")
+    if len(rows) > OUTLINE_ENTRIES:
+        rows = rows[:OUTLINE_ENTRIES] + [f"... and {len(rows) - OUTLINE_ENTRIES} more headings"]
+    return "\n".join(rows)
 
 
 def _reference(section: Section, cwd) -> str:
