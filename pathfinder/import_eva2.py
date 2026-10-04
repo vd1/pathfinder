@@ -14,13 +14,22 @@ campaign with that pair as Q1P1:
 - each branch campaign's thread is kept as branch-runs/branch-N, for the record;
 - the joint campaign's prompts become the campaign's prompts; the receipts are merged from the campaigns'
   own logs, if any, and from eva2's runtime store (runtime/receipts/<call>.json, one file per call), each
-  branch's marked with its label; import.json records where everything came from and how many receipts.
+  branch's marked with its label; import.json records where everything came from and how many receipts;
+- an eva2 receipt's stage and actor come from its call identity (research calls name them; the account editor
+  and the PCE roles are the edit stage with their own actor; an assessment is its own stage, actor assessor),
+  its model from its route, and its "at" from the file's mtime, marked "at_source": "file mtime", since eva2
+  kept no call time; eva2 rows are in that order and keep their identity as eva2_identity;
+- the PCE round reports/index.md links as the reviewed account, when its delivery record says the editor
+  accepted it, becomes the edited note: edited/note.tex and note.pdf, the round kept as edited/eva2-pce, the
+  edit done, and import.json["edit"] records the source and digests. eva2 ran no paper stage; none is made.
 
-Nothing in the experiment is changed. The imported pair then goes on through the engine: edit and paper."""
+Nothing in the experiment is changed. The imported pair then goes on through the engine: what is not done of
+edit and paper."""
 from __future__ import annotations
-import json, os, shutil
+import hashlib, json, os, re, shutil
+from datetime import datetime, timezone
 from pathlib import Path
-from . import composable, config, research
+from . import composable, config, edit, research
 
 SCHEME = ("research_scheme", "research_bundles", "imported_research")
 DOLLARS = ("budget_usd", "call_estimate_usd", "prices")   # subscription billing: eva2 set budget_usd 0, which would stop every call
@@ -38,24 +47,91 @@ def _differences(raw: dict, base: dict) -> dict:
 
 
 STAGES = {"peers": "peer"}
+ASSESSORS = {"actionability", "fidelity", "reader"}     # eva2's assessor stages, routed to its assessor
 
 
-def _eva2_receipt(path: Path, labels: list[str]) -> dict:
-    """One eva2 runtime receipt as an engine receipt row. Its identity is
-    <experiment>/<run>/.../<pair>:<stage>:<actor>:...; the run names the branch (or the joint thread)."""
+def _stage_actor(identity: str, experiment: str) -> tuple[str | None, str | None, str | None]:
+    """(run, stage, actor) from an eva2 call identity. Research calls are
+    [<experiment>/]<run>/.../<pair>:<stage>:<actor>:...; the later stages have no pair part:
+    <run>/account/<n> (the account editor), <run>/pce*/[pass-NN/]<role> (a PCE role) and
+    <run>/[<recovery>/]<assessment>/<n> (an assessor). The account and PCE are the engine's edit stage."""
+    parts = identity.split("/")
+    if parts and parts[0] == experiment:
+        parts = parts[1:]
+    run = parts[0] if parts else None
+    if ":" in identity:
+        head = identity.split(":")
+        return run, STAGES.get(head[1], head[1]), head[2] if len(head) > 2 else None
+    if len(parts) >= 3 and parts[1] == "account":
+        return run, "edit", "account-editor"
+    if len(parts) >= 3 and parts[1].startswith("pce"):
+        return run, "edit", parts[-1]
+    if len(parts) >= 3 and parts[-2] in ASSESSORS:
+        return run, parts[-2], "assessor"
+    return run, None, None
+
+
+def _eva2_receipt(path: Path, labels: list[str], experiment: str) -> dict:
+    """One eva2 runtime receipt as an engine receipt row. eva2 kept no call time: the receipt file's
+    modification time (written when the call ended) stands in, marked as such in "at_source"."""
     r = json.loads(path.read_text())
     identity = str(r.get("identity", ""))
-    parts = identity.split("/")
-    run = parts[1] if len(parts) > 1 else None
-    head = identity.split(":")
-    stage = head[1] if len(head) > 1 else None
+    run, stage, actor = _stage_actor(identity, experiment)
     usage = r.get("usage") or {}
-    return {"v": 3, "call_id": path.stem, "thread": "Q1P1", "branch": run if run in labels else None,
-            "stage": STAGES.get(stage, stage), "actor": head[2] if len(head) > 2 else None,
-            "backend": (r.get("route") or {}).get("runtime"), "model": (r.get("route") or {}).get("model"),
-            "outcome": r.get("outcome"), "seconds": r.get("seconds"), "usage": usage,
-            "input_tokens": usage.get("input_tokens"), "output_tokens": usage.get("output_tokens"),
-            "cache_read": usage.get("cached_input_tokens"), "cost": r.get("cost"), "imported_from": "eva2"}
+    at = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    row = {"v": 3, "call_id": path.stem, "at": at, "at_source": "file mtime", "thread": "Q1P1",
+           "branch": run if run in labels else None, "stage": stage, "actor": actor,
+           "backend": (r.get("route") or {}).get("runtime"), "model": (r.get("route") or {}).get("model"),
+           "outcome": r.get("outcome"), "seconds": r.get("seconds"), "usage": usage,
+           "input_tokens": usage.get("input_tokens"), "output_tokens": usage.get("output_tokens"),
+           "cache_read": usage.get("cached_input_tokens"), "cost": r.get("cost"),
+           "eva2_identity": identity, "imported_from": "eva2"}
+    if r.get("error"):
+        row["error"] = r["error"]
+    return row
+
+
+def _sha(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _accepted_pce(experiment: Path) -> Path | None:
+    """The PCE round reports/index.md links as the reviewed account, if its delivery record says the editor
+    accepted it and its account.tex and account.pdf are there."""
+    index = experiment / "reports" / "index.md"
+    found = re.search(r"\[Reviewed PCE account\]\(([^)]+)\)", index.read_text()) if index.exists() else None
+    if not found:
+        return None
+    d = (experiment / "reports" / found.group(1)).parent
+    delivery = d / "delivery.json"
+    if not delivery.exists() or not (d / "account.tex").exists() or not (d / "account.pdf").exists():
+        return None
+    record = json.loads(delivery.read_text())
+    if record.get("editorial_status") != "accepted" or (record.get("pce_result") or {}).get("status") != "accepted":
+        return None
+    return d
+
+
+def _import_edit(c, experiment: Path) -> dict | None:
+    """eva2's accepted PCE account as the pair's edited note: note.tex and note.pdf are the accepted account,
+    the whole accepted round is kept as edited/eva2-pce, and the edit is done."""
+    d = _accepted_pce(experiment)
+    if d is None:
+        return None
+    ed = c.thread_dir("Q1P1") / "edited"; ed.mkdir(exist_ok=True)
+    shutil.copytree(d, ed / "eva2-pce")
+    shutil.copy2(d / "account.tex", ed / "note.tex")
+    shutil.copy2(d / "account.pdf", ed / "note.pdf")
+    delivery = json.loads((d / "delivery.json").read_text())
+    render = json.loads((d / "account.render.json").read_text()) if (d / "account.render.json").exists() else {}
+    record = {"source": d.relative_to(experiment).as_posix(), "editorial_status": delivery.get("editorial_status"),
+              "pce_result": (delivery.get("pce_result") or {}).get("status"),
+              "note_sha256": _sha(ed / "note.tex"), "pdf_sha256": _sha(ed / "note.pdf"),
+              "pdf_matches_render": render.get("pdf_sha256") == _sha(ed / "note.pdf") if render else None,
+              "kept_as": "edited/eva2-pce"}
+    edit._set(c, "Q1P1", status="done", imported_from="eva2 PCE", source=record["source"],
+              editorial_status=record["editorial_status"], build_ok=bool(render.get("passed")) if render else None)
+    return record
 
 
 def run(experiment: Path, out: Path) -> Path:
@@ -115,14 +191,20 @@ def run(experiment: Path, out: Path) -> Path:
                 if name != "joint":
                     row["branch"] = name
                 receipts.append(row); counts["campaign_logs"] += 1
-    for path in sorted((experiment / "runtime" / "receipts").glob("*.json")):   # eva2 keeps one file per call
-        receipts.append(_eva2_receipt(path, labels)); counts["eva2_runtime"] += 1
+    eva2 = [_eva2_receipt(path, labels, experiment.name)                        # eva2 keeps one file per call
+            for path in (experiment / "runtime" / "receipts").glob("*.json")]
+    receipts += sorted(eva2, key=lambda r: (r["at"], r["call_id"])); counts["eva2_runtime"] = len(eva2)
     (out / "receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in receipts))
     c = config.load(out)
     status = research.status(c, "Q1P1")
     research._set(c, "Q1P1", branches_frozen=frozen,
                   history=list(status.get("history") or []) + [{"at": research._now(), "action": "imported from eva2",
                                                                "from_status": status.get("status")}])
-    (out / "import.json").write_text(json.dumps({"experiment": str(experiment), "branches": labels, "frozen": frozen,
-                                                 "joint_status": status.get("status"), "receipts": counts}, indent=1))
+    edited = _import_edit(c, experiment)
+    (out / "import.json").write_text(json.dumps({
+        "experiment": str(experiment), "branches": labels, "frozen": frozen, "joint_status": status.get("status"),
+        "receipts": counts, "receipt_times": "eva2 kept no call time: each receipt's \"at\" is its file's mtime",
+        "edit": edited,
+        "paper": "not mapped: eva2's PCE accepted the readable account (the engine's edit); eva2 ran no paper stage",
+        "assessments": "eva2's practical assessments have no engine stage; their calls are receipts only"}, indent=1))
     return out
