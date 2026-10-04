@@ -1,6 +1,6 @@
 """Corpora: JSONL rows from the arXiv API, e-print sources flattened to one file."""
 from __future__ import annotations
-import gzip, io, json, re, shutil, subprocess, tarfile, time, urllib.parse, urllib.request
+import gzip, io, json, re, shutil, subprocess, tarfile, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import net
@@ -27,6 +27,24 @@ def parse_atom(xml: str) -> list[dict]:
                      "authors": [_clean(a.findtext("a:name", "", NS)) for a in e.findall("a:author", NS)],
                      "date": e.findtext("a:published", "", NS)[:10], "text": None})
     return rows
+
+
+USER_AGENT = "pathfinder/0.1"
+BACKOFF = 10                                     # seconds before the second attempt, twice that before the third
+
+
+def query(params: dict, timeout: float = 60, attempts: int = 3) -> str:
+    """The arXiv API's Atom response to `params`. A rate limit (HTTP 429) is asked again after 10 s, then 20 s;
+    any other error, or the last 429, is raised. Requests name their client, as arXiv asks."""
+    request = urllib.request.Request(API + urllib.parse.urlencode(params), headers={"User-Agent": USER_AGENT})
+    for attempt in range(attempts):
+        try:
+            with net.urlopen(request, timeout=timeout) as r:
+                return r.read().decode("utf-8")
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or attempt == attempts - 1:
+                raise
+            time.sleep(BACKOFF * (attempt + 1))
 
 
 def fetch(query: str, n: int, start: int = 0) -> list[dict]:

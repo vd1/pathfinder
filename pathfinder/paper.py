@@ -1,9 +1,9 @@
 """After DRAFT: an author writes a paper with BibTeX references, an independent reviewer accepts or returns it."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, subprocess, time, urllib.error, urllib.parse, urllib.request
+import hashlib, json, os, re, shutil, subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from . import context, contracts, corpus, net, research, transport
+from . import context, contracts, corpus, research, transport
 from .context import Section
 from .research import _inputs, _prompt, _now
 from .admission import Refused
@@ -122,16 +122,8 @@ def check_references(tex: str, bib: str, fetch=None) -> list[str]:
 
 
 def _arxiv_titles(ids: list[str]) -> dict:
-    q = urllib.parse.urlencode({"id_list": ",".join(ids), "max_results": len(ids)})
-    for attempt in range(3):                       # the arXiv API rate-limits; back off and retry
-        try:
-            with net.urlopen(corpus.API + q, timeout=60) as r:
-                rows = corpus.parse_atom(r.read().decode())
-            return {r["id"]: r["title"] for r in rows}
-        except urllib.error.HTTPError as e:
-            if e.code != 429 or attempt == 2:
-                raise
-            time.sleep(10 * (attempt + 1))
+    rows = corpus.parse_atom(corpus.query({"id_list": ",".join(ids), "max_results": len(ids)}))   # backs off on 429
+    return {r["id"]: r["title"] for r in rows}
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
