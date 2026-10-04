@@ -129,6 +129,9 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
                     "--dangerously-skip-permissions"]
         else:
             cmd += ["--tools", ""]
+        effort = ((campaign.raw or {}).get("claude") or {}).get("effort")     # set by a route (pathfinder.routing)
+        if effort:
+            cmd += ["--effort", effort]
         return cmd
     cmd = shlex.split(os.environ.get("PATHFINDER_CODEX", "codex"))
     prov = (campaign.raw or {}).get("codex") or {}
@@ -333,6 +336,8 @@ def _receipt(campaign, thread, stage, actor, model, r):
         row["raw_events"] = gc.compact_events(row["raw_events"])
     if r.get("rates"):
         row["rates"] = r["rates"]
+    if getattr(campaign, "route", None):           # the route this call ran on (pathfinder.routing)
+        row["route"] = campaign.route
     if rules_error:
         row["failure_rules_error"] = rules_error
     with open(campaign.path("receipts.jsonl"), "a") as f:
@@ -423,7 +428,10 @@ def execute_batch(requests: list[ModelRequest], adapter):
 
 def execute(campaign, request: ModelRequest):
     """Refuse an oversized prompt, then admit the call, then record an active attempt before launching it,
-    including abrupt-exit evidence. A refused call raises before any active-call record exists."""
+    including abrupt-exit evidence. A refused call raises before any active-call record exists. A campaign
+    route for the request's stage (pathfinder.routing) applies first, so every stage is routed alike."""
+    from . import routing
+    campaign, request = routing.apply(campaign, request)
     limit, size = max_prompt_chars(campaign), len(request.prompt)
     if size > limit:
         error = f"input too large: {size} characters exceed {limit}; no model call started"

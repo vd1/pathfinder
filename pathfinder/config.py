@@ -56,8 +56,9 @@ def load(root: Path) -> Campaign:
         for block in ("branch", "joint"):
             if not isinstance(raw.get(block, {}), dict):
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
-    from . import budget
+    from . import budget, routing
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
+    routing.validate(raw)                            # a malformed route fails here, not at the first call it routes
     tb = raw.get("tool_call_budgets")
     if tb is not None and (not isinstance(tb, dict) or any(
             not isinstance(v, int) or isinstance(v, bool) or v < 1 for v in tb.values())):
