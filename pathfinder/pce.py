@@ -116,7 +116,11 @@ def result(campaign, pair_id) -> dict:
 
 
 def history(campaign, pair_id) -> list[dict]:
-    """Every pass's draft as the host archived it, oldest first: {"pass": n, "path", "draft"}."""
+    """Every pass's draft as the host archived it, oldest first: {"pass": n, "path", "draft"}.
+
+    @planks("Then the archivist records the draft in its revision history before review")
+    @planks("Then the pass \"{n}\" draft remains recorded in revision history")
+    """
     d = workflow(campaign, pair_id) / "revisions" / "history"
     out = []
     for p in sorted(d.glob("*-pass-*-draft.tex")) if d.is_dir() else []:
@@ -125,7 +129,10 @@ def history(campaign, pair_id) -> list[dict]:
 
 
 def dispatches(campaign, pair_id) -> list[dict]:
-    """Every role call of the round in workflow order: the dispatch record with its receipt."""
+    """Every role call of the round in workflow order: the dispatch record with its receipt.
+
+    @planks("Then each dispatch's receipt records role, backend, model, execution class, prompt digest, provider job identifier, raw response, outcome, latency, token usage, and cost")
+    """
     d = workflow(campaign, pair_id) / "dispatch"
     rows = [json.loads(p.read_text()) for p in d.glob("*.json")] if d.is_dir() else []
     return sorted(rows, key=lambda r: r["order"])
@@ -243,7 +250,10 @@ def _supplement(campaign, pair_id, limit: int) -> str:
 def sources(campaign, pair_id) -> dict:
     """The round's frozen inputs: the brief, the state, the bibliography, the internal sources (the baseline
     note and the research account, editorial context only) and the external sources (the papers as the
-    thread read them and the research supplement), keyed by their workflow names."""
+    thread read them and the research supplement), keyed by their workflow names.
+
+    @planks("When the editor stage begins")
+    """
     from . import research
     s, d = settings(campaign), campaign.thread_dir(pair_id)
     ed = d / "edited"
@@ -294,7 +304,15 @@ def _dispatch(campaign, pair_id, role, prompt, seconds=None) -> dict:
 
 def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) -> dict:
     """The round over the edited note; result.json once it ends. Raises Stopped when stop() turns true before
-    a new call, TransportFailed when a call fails in transport, Changed when retained work no longer matches."""
+    a new call, TransportFailed when a call fails in transport, Changed when retained work no longer matches.
+
+    @planks("When Pathfinder runs one PCE pass through the assigned runtime")
+    @planks("When the author role executes")
+    @planks("When the fact-checker gate runs")
+    @planks("When the critic gate runs")
+    @planks("When each dispatch finishes")
+    @planks("When the edit stage prepares a role dispatch")
+    """
     root = workflow(campaign, pair_id)
     done = root / "result.json"
     if done.exists():

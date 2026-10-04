@@ -636,6 +636,104 @@ O03 & A deployment's evidence scanner mined paths from the researchers' TeX comp
 The common lesson: prompt budgeting and recovery must be uniform across stages, not
 fixed stage by stage.
 
+\section{Per-stage routing and PCE editing in the engine, 5 October}\label{sec:routing-pce}
+
+Two parts of julien-2 still lived in its controller (eva2 and julien2) rather than in the
+engine: the choice of runtime, model and effort per stage, and PCE editing. Both are now
+campaign options of \texttt{pathfinder}, so that julien-2 can later become a plain campaign
+(\path{campaign.json}, prompt overlays and its record) with no engine or controller code of
+its own. Without the new keys every deployment runs exactly as before.
+
+\subsection{Routing}
+
+julien-2 named two routes in each \path{experiment.json} (research on Codex
+\texttt{gpt-6-astra}, effort medium; an assessor on Claude \texttt{claude-opus-5}, effort
+medium) and sent its assessment stages to the assessor through \texttt{stage\_routes}. The
+engine takes the same choice as one key:
+
+\begin{verbatim}
+"routes": {
+  "peer":            {"backend": "codex", "model": "gpt-6-astra",
+                      "effort": "medium"},
+  "edit/pce-critic": {"backend": "claude", "model": "claude-opus-5"}}
+\end{verbatim}
+
+\begin{itemize}[nosep]
+\item A key is a stage (\texttt{scan}, \texttt{peer}, \texttt{consolidate}, \texttt{verify},
+  \texttt{ledger\_review}, \texttt{edit}, \texttt{author}, \texttt{review}) or a stage and
+  actor (\texttt{peer/ada}, \texttt{edit/pce-critic}); the stage-and-actor key wins.
+\item A route names any of \texttt{backend} (\texttt{codex}, \texttt{claude}, \texttt{elm},
+  \texttt{stub}), \texttt{model} and \texttt{effort} (\texttt{minimal} to \texttt{max});
+  what it leaves out stays as the stage chose it. Effort reaches Codex as
+  \texttt{model\_reasoning\_effort} and Claude as \texttt{--effort}.
+\item Routing happens once, in \texttt{transport.execute}, on a copy of the campaign, so
+  every stage that builds a request is routed alike and none can bypass it. The backend
+  switches per call; admission, receipts and pricing see the routed backend and model.
+\item A routed call's receipt carries \texttt{route} (key, backend, model, effort);
+  unrouted receipts are unchanged.
+\item Malformed routes fail at load, the \texttt{branch} and \texttt{joint} overrides of a
+  composable campaign included (\path{pathfinder/routing.py}, \path{tests/test_routing.py}).
+\end{itemize}
+
+\subsection{PCE editing}
+
+\texttt{"edit\_scheme": "pce"} (default \texttt{single}) makes the single editor's note the
+frozen baseline of a PCE round, ported from \path{julien2/pce.py} over the wwaites/pce role
+contracts (\path{pathfinder/pce.py}). Each pass: the author revises the baseline and lists
+its material claims; the host copies the draft into the revision history with a custody
+record and the archivist writes the provenance note; the fact-checker classifies every claim
+against the external sources only (the papers as the thread read them, and a research
+supplement made of the thread's ledger, its branch ledgers and the verifier's reasons, which
+julien-2 also treated as approved generated evidence); the critic reviews as a reader,
+without internal sources or earlier reviews; once both gates pass, the editor accepts or asks
+for a revision. An unsupported claim or a critic's revise sends the next pass back to the
+author with the history. A contaminated gate, an editor's request for new evidence, a reply
+that breaks its contract or an exhausted allowance ends the round as
+\texttt{review\_required}.
+
+\begin{itemize}[nosep]
+\item The contracts are engine prompts, \path{prompts/pce-<role>.md} with the brief in
+  \path{pce-brief.md}, so a campaign extends them with append overlays. Each role sees exactly
+  the files its Read Scope lists.
+\item Calls are tool-free, stage \texttt{edit}, actor \texttt{pce-<role>}: routes, admission
+  and receipts treat them like any call.
+\item The round lives in \path{edited/pce/}: the input manifest with its fingerprint, the
+  frozen sources, every dispatch with its prompt digest, drafts, claims, reviews, revision
+  history and \path{result.json}. A retained dispatch is replayed, never paid for twice, so a
+  stopped round resumes where it stopped; inputs or prompts that changed under a begun round
+  block the edit for the operator.
+\item An accepted draft that builds with clean references becomes \path{edited/note.tex} and
+  \path{note.pdf}; otherwise the baseline stays the readable note. Either way the edit is
+  done, and \path{edit.json} records \texttt{editorial\_status} (\texttt{accepted} or
+  \texttt{review\_required}), the reason, and any presentation error.
+\item Settings under \texttt{pce}: \texttt{passes} (1 to 5, default 2),
+  \texttt{fact\_checks}, \texttt{critic} (profile and remit; julien-2 used
+  \texttt{computational-chemist}) and \texttt{supplement\_chars}; \texttt{pce\_seconds} in
+  the allowances.
+\end{itemize}
+
+The specification \path{features/operational/edit-stage.feature} described delegating to an
+installed PCE runner through Nix; it now specifies this port, and its \texttt{@pce} scenarios
+run in the broad suite on the stub backend.
+
+Not ported, with the reason:
+\begin{itemize}[nosep]
+\item julien-2's recovery grants and imported retained responses: one-off repairs of its own
+  rounds; the engine resumes a round from its own dispatch records.
+\item The reviewers' separate source projection and the length-framed editor packet: size
+  measures for julien-2's bundles. Here the supplement is capped, and a role prompt over
+  \texttt{max\_prompt\_chars} is refused before launch and ends the round for review. PCE
+  prompts do not yet go through the context builder's \texttt{prompt\_budgets}.
+\item The body-only LaTeX allowlist and copyedit: the engine's note is a whole document,
+  checked by its build and reference checks.
+\item Assessor stages (actionability, fidelity, reader). PCE acceptance does not depend on
+  them: eva2 assessed actionability after editing, from the research evidence, and compared
+  accounts for fidelity and reader only once a PCE account was accepted. They remain the open
+  part of julien-2's controller; routes will apply to them as soon as they are engine stages.
+\item julien-2's per-stage dispatch limits: the engine's budget is in calls and tokens for
+  the campaign.
+\end{itemize}
+
 \section{Decisions taken}
 
 Settled by the operator on 29 September.

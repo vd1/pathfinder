@@ -24,8 +24,8 @@ Procedure lives in the skills. Every role reads this on open.
 
 - discover: `uv run --offline --locked behave --dry-run --tags="not @sandbox and not @captain and not @shipwright"`
 - focused: `ref="{scenario}"; file="${ref%%:*}"; name="${ref#*:}"; uv run --offline --locked behave "$file" --name "^${name}$" --tags="not @sandbox and not @captain and not @shipwright"`
-- broad: `uv run --offline --locked behave --tags="not @sandbox and not @captain and not @shipwright and not @pce"`
-- broad-sandbox: `: "${ELM_API_KEY:?ELM_API_KEY must be supplied by the operator}"; uv run --offline --locked behave --tags="@sandbox and not @captain and not @shipwright and not @pce"`
+- broad: `uv run --offline --locked behave --tags="not @sandbox and not @captain and not @shipwright"`
+- broad-sandbox: `: "${ELM_API_KEY:?ELM_API_KEY must be supplied by the operator}"; uv run --offline --locked behave --tags="@sandbox and not @captain and not @shipwright"`
 - coverage: `uv run --offline --locked coverage run --branch --source=pathfinder -m behave --tags="not @sandbox and not @captain and not @shipwright"`
 - broad-unit: `uv run --offline --locked pytest -q`
 - coverage-unit: `uv run --offline --locked pytest --cov=pathfinder --cov-branch --cov-report=term-missing -q`
@@ -55,7 +55,6 @@ Procedure lives in the skills. Every role reads this on open.
 - dependency: behave
 - dependency: pytest
 - dependency: pytest-cov
-- dependency: PCE packaged `pce` executable from `../pce`, invoked through `nix run path:../pce --`
 - dependency: ELM OpenAI-compatible request interface at `https://elm.edina.ac.uk/api/v1` with `Qwen/Qwen3.5-397B-A17B-FP8`; authenticate from operator-provisioned `ELM_API_KEY` in the environment
 
 ## Outbound
@@ -67,5 +66,4 @@ Procedure lives in the skills. Every role reads this on open.
 - mode: plank inventory uses text search and cannot prove docstring attachment to a declaration
 - mode: Behave `--steps-catalog` is plain text and does not report scenario usage as structured data
 - mode: uv `--offline` prevents package downloads only; it does not isolate scenario network access
-- mode: untagged edit-stage scenarios invoke PCE through Nix and live agent runtimes
 - mode: prepared-corpora verification patches `transport.call` while scanning uses `transport.execute`; it can invoke a live agent despite passing

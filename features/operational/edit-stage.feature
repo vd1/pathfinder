@@ -1,35 +1,33 @@
-# Scenarios tagged @pce specify delegating editing to julien-2's installed PCE role loop (author, archivist,
-# fact-checker, critic, editor, through nix). The canonical engine edits with pathfinder/edit.py instead, and
-# the PCE loop is not implemented here; they stay as the specification should PCE be adopted, and the broad
-# suite leaves them out (RIGGING.md).
-Feature: Edit an accepted research account through PCE
+# The edit stage under "edit_scheme": "pce": julien-2's PCE role loop (author, archivist, fact-checker,
+# critic, editor) ported into the engine (pathfinder/pce.py, prompts/pce-*.md). The single editor's note is
+# the round's frozen baseline. Scenarios tagged @pce exercise the role loop; every dispatch here runs on the
+# stub backend or a scripted dispatcher, never a live model, so the broad suite runs them.
+Feature: Edit a readable note through PCE
 
-  Rule: A DRAFT investigation with real source text enters editing automatically
+  Rule: A finished investigation enters PCE editing with the single editor's note as its baseline
 
-    Scenario: A DRAFT pair with real full text starts the edit stage
-      Given pair "Q3P10" finished research with status "DRAFT"
-      And pair "Q3P10" has full text fetched from its original source for "Q" and "P"
+    Scenario: A finished pair starts the PCE round from the editor's note
+      Given pair "Q3P10" finished research on a PCE campaign
       When the campaign processes pair "Q3P10" to completion
       Then the edit stage starts for pair "Q3P10"
-      And the edit stage's first draft is the readable short paper written from the accepted research account
-      And that first draft is the raw response recorded on a real dispatch's receipt, not a copy of the account itself
+      And the round's frozen baseline is the readable note the single editor wrote from the research account
+      And that baseline is the editor's own note, not a copy of the account itself
 
-    Scenario: A non-DRAFT outcome does not enter editing
-      Given pair "Q1P1" finished research with status "PAUSE-ON-ITERATE"
-      When the campaign processes pair "Q1P1" to completion
+    Scenario: An unfinished investigation does not enter editing
+      Given pair "Q1P1" is still in research on a PCE campaign
+      When Pathfinder runs the edit stage for pair "Q1P1"
       Then pair "Q1P1" does not enter the edit stage
       And pair "Q1P1" has no edited artifact recorded
-      And pair "Q1P1" has no readable short paper recorded
 
   Rule: The edit stage runs PCE's role loop against real evidence
 
     @pce
-    Scenario: Pathfinder delegates editing to the installed PCE workflow
+    Scenario: Pathfinder runs PCE's role loop inside the engine
       Given pair "Q3P10" enters the edit stage
-      When Pathfinder runs PCE's installed bounded-pass runner through the assigned runtime
+      When Pathfinder runs one PCE pass through the assigned runtime
       Then the PCE workflow directory contains its current draft, archived draft, gate reviews, and state
-      And PCE accounting records the author, archivist, fact-checker, and critic dispatches in workflow order
-      And Pathfinder contains no local PCE role prompts or editorial dispatch sequence
+      And the campaign receipts record the author, archivist, fact-checker, critic, and editor dispatches in workflow order
+      And each role's prompt is an engine prompt a campaign extends with an append overlay
 
     Scenario: The editor stages a brief separating internal and external evidence
       Given pair "Q3P10" enters the edit stage
@@ -52,22 +50,21 @@ Feature: Edit an accepted research account through PCE
       And it does not read the accepted research account
 
     @pce
-    Scenario: The critic gate reviews the draft without the editor's internal notes
+    Scenario: The critic gate reviews the draft without internal sources or prior reviews
       Given pair "Q3P10" has an archived draft
       When the critic gate runs
-      Then the critic's review has no access to the editor's brief or prior reviews
+      Then the critic's review has no access to the internal sources or prior reviews
 
-    Scenario: Oversized edit-stage evidence is compressed or blocked before dispatch
+    Scenario: Oversized edit-stage evidence is blocked before dispatch
       Given pair "Q3P10"'s staged brief and source set exceeds its assigned context limit
       When the edit stage prepares a role dispatch
-      Then Pathfinder uses a recorded compression result or blocks the dispatch
-      And Pathfinder does not silently truncate the evidence
+      Then Pathfinder blocks the dispatch and the round ends for review
+      And the round keeps the whole evidence rather than truncating it
 
-  Rule: Editing ends by editor acceptance or a fixed round limit
+  Rule: Editing ends by editor acceptance or a fixed pass limit
 
     Scenario: Campaign completion runs the PCE edit stage for a DRAFT pair
-      Given pair "Q3P10" finished research with status "DRAFT"
-      And pair "Q3P10" has full text fetched from its original source for "Q" and "P"
+      Given pair "Q3P10" finished research on a PCE campaign
       When the campaign processes pair "Q3P10" to completion
       Then PCE produces pair "Q3P10"'s edited artifact
       And the campaign records PCE's final edit outcome
@@ -79,24 +76,24 @@ Feature: Edit an accepted research account through PCE
       And every cited reference passes Pathfinder's reference checks
 
     @pce
-    Scenario: The editor accepts the draft within the round limit
+    Scenario: The editor accepts the draft within the pass limit
       Given pair "Q3P10" is in its edit stage
-      When the editor accepts the draft on or before round "3"
+      When the editor accepts the draft on or before pass "3"
       Then the edit stage finishes with outcome "accepted"
       And the accepted draft is recorded as the pair's edited artifact
 
     @pce
-    Scenario: The round limit ends editing without acceptance
-      Given pair "Q3P10" has completed round "3" of editing without acceptance
-      When the editor evaluates round "3"
-      Then the edit stage finishes with outcome "round-limit"
-      And the last produced draft is recorded as the pair's edited artifact
+    Scenario: The pass limit ends editing without acceptance
+      Given pair "Q3P10" is in its edit stage
+      When the editor asks for a revision on every pass up to the limit of "3"
+      Then the edit stage finishes with outcome "review_required"
+      And the last produced draft stays in the round while the editor's note remains the pair's edited artifact
 
   Rule: Every edit-stage dispatch produces a comparable receipt
 
     @pce
     Scenario: Each PCE role dispatch in a round produces its own receipt
-      Given the edit stage dispatches the editor, author, fact-checker, and critic for one round
+      Given the edit stage dispatches the author, archivist, fact-checker, critic, and editor for one pass
       When each dispatch finishes
       Then each dispatch's receipt records role, backend, model, execution class, prompt digest, provider job identifier, raw response, outcome, latency, token usage, and cost
 
@@ -110,7 +107,7 @@ Feature: Edit an accepted research account through PCE
 
     @pce
     Scenario: A later draft does not overwrite earlier draft history
-      Given pair "Q3P10" has an archived round "1" draft
-      When the author produces a round "2" draft
-      Then the round "1" draft remains recorded in revision history
-      And the round "2" draft becomes the current draft
+      Given pair "Q3P10" has an archived pass "1" draft
+      When the author produces a pass "2" draft
+      Then the pass "1" draft remains recorded in revision history
+      And the pass "2" draft becomes the current draft

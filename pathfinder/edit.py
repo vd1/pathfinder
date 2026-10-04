@@ -103,7 +103,12 @@ def _run(campaign, pair_id: str, stop) -> str:
 def _pce(campaign, pair_id: str, stop) -> str:
     """The PCE round over the baseline note; an accepted draft that builds with clean references becomes
     note.tex. The edit is done either way: a round that ends without acceptance leaves the baseline as the
-    readable note, its outcome recorded as editorial_status (julien-2: reviewed account or baseline)."""
+    readable note, its outcome recorded as editorial_status (julien-2: reviewed account or baseline).
+
+    @planks("When the editor accepts the draft on or before pass \"{limit}\"")
+    @planks("When the editor asks for a revision on every pass up to the limit of \"{limit}\"")
+    @planks("Then the campaign records PCE's final edit outcome")
+    """
     seconds = transport.extended(campaign.allowances.get("pce_seconds", campaign.allowances.get("edit_seconds", 900)),
                                  status(campaign, pair_id).get("failure"))
     _set(campaign, pair_id, status="editing", scheme="pce", failure=None, allowance_seconds=seconds)

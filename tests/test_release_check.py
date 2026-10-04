@@ -68,4 +68,4 @@ def test_a_failing_behaviour_suite_fails_the_release(tmp_path):
 
 
 def test_the_behaviour_suite_runs_with_the_rigging_tags():
-    assert rc.broad_tags() == "not @sandbox and not @captain and not @shipwright and not @pce"
+    assert rc.broad_tags() == "not @sandbox and not @captain and not @shipwright"

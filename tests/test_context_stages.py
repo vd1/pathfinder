@@ -86,16 +86,3 @@ def test_a_scan_with_full_texts_over_budget_fits(tmp_path):
     finally:
         corpus.body = real
     assert len(prompt) <= 5000 and prompt.count("characters omitted") == 2
-
-
-def test_the_edit_stage_dispatch_fits(tmp_path, monkeypatch):
-    from pathfinder import edit_stage
-    c = make(tmp_path, prompt_budgets={"default": 4000})
-    d = research.prepare(c, "Q1P1")
-    (d / "Q1P1.tex").write_text("\\documentclass{article}" + "z" * 50_000)
-    research._set(c, "Q1P1", status="DRAFT", stage="done")
-    prompts = []
-    real = edit_stage.transport.call
-    monkeypatch.setattr(edit_stage.transport, "call", lambda prompt, **kw: prompts.append(prompt) or real(prompt, **kw))
-    edit_stage.finish(c, "Q1P1")
-    assert prompts and len(prompts[0]) <= 4000

@@ -191,6 +191,33 @@ your own campaign directory and edit the models and the budget.
   override any campaign key (typically `rounds`, `ledger_reviews`) for the
   branches or the joint thread. `branches/metrics.json` records Vera's
   rejection rate and the divergence between branches.
+- `routes`: optional per-stage model routing, e.g.
+  `{"peer": {"backend": "codex", "model": "gpt-6-astra", "effort": "medium"},
+  "edit/pce-critic": {"backend": "claude", "model": "claude-opus-5"}}`. A key
+  is a stage (`scan`, `peer`, `consolidate`, `verify`, `ledger_review`, `edit`,
+  `author`, `review`) or a stage and actor (`peer/ada`, `edit/pce-critic`);
+  the stage-and-actor key wins. A route names any of `backend` (`codex`,
+  `claude`, `elm`, `stub`), `model` and `effort` (`minimal` to `max`: Codex
+  `model_reasoning_effort`, Claude `--effort`); what it leaves out stays as
+  the stage chose it. Routing happens once, in `transport.execute`, so every
+  stage is routed alike, and a routed call's receipt carries `route`.
+  Checked at load, `branch` and `joint` overrides included.
+- `edit_scheme`: `single` (default) or `pce`. Under `pce` the single editor's
+  note is the baseline of a PCE round (`pathfinder/pce.py`, julien-2's role
+  loop): the author revises it and lists its claims, the host archives the
+  draft and the archivist writes the provenance note, the fact-checker checks
+  every claim against the external sources only (the papers and the research
+  supplement, the ledger and the verifier's reasons), the critic reviews as a
+  reader without internal sources or earlier reviews, and the editor accepts
+  or asks for a revision. The role contracts are engine prompts
+  (`prompts/pce-<role>.md`, the brief in `pce-brief.md`), extended with append
+  overlays; calls are tool-free, stage `edit`, actor `pce-<role>`. The round
+  lives in `edited/pce/`; an accepted draft that builds becomes `note.tex`,
+  otherwise the baseline stays, and `edit.json` records `editorial_status`
+  (`accepted` or `review_required`). `pce`: `passes` (1 to 5, default 2),
+  `fact_checks` (default `passes`), `critic` (`{"profile", "remit"}`, default
+  profile `reader`), `supplement_chars` (default 300000); `pce_seconds` in
+  `allowances` (default `edit_seconds`).
 - `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
   deployments" below.
 
