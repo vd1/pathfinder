@@ -332,3 +332,46 @@ def test_a_rate_limit_after_the_session_started_is_not_retried(tmp_path, monkeyp
     r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,
                                                     timeout=5, thread="T", stage="verify", actor="judge"))
     assert r["transport_failed"] and len(served) == 1
+
+
+def _filesystem(cmd):
+    from pathfinder import sandbox
+    value = next(v for v in cmd if v.startswith(f"permissions.{sandbox.NAME}.filesystem="))
+    return value.split("=", 1)[1]
+
+
+def test_the_sandbox_profile_writes_only_the_workspace_and_reads_its_control_files(tmp_path, monkeypatch):
+    from pathfinder import sandbox
+    monkeypatch.setenv("TMPDIR", str(tmp_path / "parent-tmp"))
+    d = tmp_path / "threads" / "Q1P1"
+    branch = d / "branch-runs" / "branch-1"
+    branch.mkdir(parents=True)
+    engine = Path(transport.__file__).resolve().parent.parent
+    joint = sandbox.profile(d, engine, tools=True, read=["/opt/tex"], deny=[tmp_path / "secret"])
+    fs = joint[f"permissions.{sandbox.NAME}.filesystem"]
+    assert joint["default_permissions"] == sandbox.NAME and joint[f"permissions.{sandbox.NAME}.network.enabled"] is False
+    assert fs[str(d.resolve())] == "write" and fs[str(engine / "pathfinder")] == "read"
+    for name in ("inputs", "branches", "branch-runs", "status.json", "handoff.json", "external-references.json"):
+        assert fs[str(d.resolve() / name)] == "read", name      # joint peers never write into the branches' record
+    assert fs["/tmp"] == fs["/private/tmp"] == fs[str((tmp_path / "parent-tmp").resolve())] == "none"
+    assert fs["/opt/tex"] == "read" and fs[str((tmp_path / "secret").resolve())] == "none"
+    one = sandbox.profile(branch, engine, tools=True)[f"permissions.{sandbox.NAME}.filesystem"]
+    assert str(branch.resolve()) in one and not any("branch-2" in p or p == str(d.resolve()) for p in one)
+    reader = sandbox.profile(d, engine, tools=False)[f"permissions.{sandbox.NAME}.filesystem"]
+    assert reader[str(d.resolve())] == "read" and str(d.resolve() / "branches") not in reader
+    assert sandbox.toml({"a": {"b c": "read"}, "n": False}) == '{"a" = {"b c" = "read"}, "n" = false}'
+
+
+def test_a_campaign_filesystem_profile_replaces_the_sandbox_mode_per_request(tmp_path):
+    from pathfinder import sandbox
+    c = campaign(tmp_path, "codex")
+    plain = transport._command(c, "m", True, True, tmp_path)
+    c.raw = {"codex": {"filesystem_profile": {"read": ["/opt/tex"]}}}
+    work = transport._command(c, "m", True, True, tmp_path / "w")
+    reader = transport._command(c, "m", True, False, tmp_path / "r", reads=True)
+    assert "--sandbox" in plain and "--sandbox" not in work and "--sandbox" not in reader and work[-1] == "-"
+    assert f'default_permissions="{sandbox.NAME}"' in work and "sandbox_workspace_write.network_access=true" not in work
+    assert '"write"' in _filesystem(work) and str(tmp_path / "w") in _filesystem(work)
+    assert '"/opt/tex" = "read"' in _filesystem(work)
+    assert '"write"' not in _filesystem(reader)                  # a reader's workspace is read-only
+    assert f"permissions.{sandbox.NAME}.network.enabled=true" in work      # searching peers keep their network

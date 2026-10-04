@@ -140,11 +140,14 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
     elif search and (tools or prov.get("search") == "always"):   # "always": a tool-less call may still search
         cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
-            "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"',
-            "--sandbox", "workspace-write" if tools and not reads else "read-only"]
-    if tools and search and not reads:                           # the workspace sandbox has no network unless asked
-        cmd += ["-c", "sandbox_workspace_write.network_access=true"]
-    prov = (campaign.raw or {}).get("codex") or {}
+            "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"']
+    if prov.get("filesystem_profile"):             # a per-request permission profile in place of the sandbox mode
+        from . import sandbox
+        cmd += sandbox.args(cwd, tools and not reads, prov["filesystem_profile"], network=bool(tools and search and not reads))
+    else:
+        cmd += ["--sandbox", "workspace-write" if tools and not reads else "read-only"]
+        if tools and search and not reads:                       # the workspace sandbox has no network unless asked
+            cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     if prov.get("persist_sessions"):
         cmd.remove("--ephemeral")
     if prov.get("reasoning_effort"):
