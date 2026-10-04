@@ -280,3 +280,41 @@ def test_tex_installation_paths_quoted_from_a_build_log_are_not_evidence(token):
 def test_a_cited_calculation_is_still_a_file():
     assert evidence.cited_files("see ada/work/out.txt, emmy/fonts.py and ada/fonts/table.csv") == [
         "ada/work/out.txt", "emmy/fonts.py", "ada/fonts/table.csv"]
+
+
+def test_build_byproducts_and_tool_caches_are_not_evidence():
+    from pathfinder import gc
+    names = {"ada/note.tex", "ada/note.log", "ada/note.pdf", "ada/note.out", "ada/note.aux", "ada/run.log",
+             "ada/compile.out", "ada/plot.pdf", "ada/certify.py", "ada/uv-cache/x.msgpack",
+             "ada/scratch/CACHEDIR.TAG", "ada/scratch/blob", "ada/.pytest_cache/v/x"}
+    out = {n for n in names if evidence.byproduct(n, names)}
+    assert out == {"ada/note.log", "ada/note.pdf", "ada/note.out", "ada/note.aux", "ada/uv-cache/x.msgpack",
+                   "ada/scratch/CACHEDIR.TAG", "ada/scratch/blob", "ada/.pytest_cache/v/x"}
+    # a log, outline or PDF is a by-product only beside its .tex; what gc removes is a by-product here too
+    assert all(evidence.byproduct("a/b" + s, {"a/b.tex"}) for s in gc.BYPRODUCTS)
+
+
+def _byproducts(tmp_path, **raw):
+    from pathfinder import research
+    from pathfinder.ledger import Ledger
+    from stubcampaign import make
+    c = make(tmp_path, research_scheme="direct_eva", strict_evidence=True, **raw)
+    d = research.prepare(c, "Q1P1")
+    for name, text in (("note.tex", "\\documentclass{article}"), ("note.log", "fonts/type1/public/cm/cmr10.pfb"),
+                       ("note.aux", "\\relax"), ("compile.out", "a data output"), ("certificate.json", "{}")):
+        (d / "ada" / name).write_text(text)
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "see ada/note.pdf, ada/note.aux and ada/certificate.json")
+    return c, d, research
+
+
+def test_with_byproducts_excluded_a_review_lists_no_byproduct_and_a_cited_pdf_beside_its_source_is_not_missing(tmp_path):
+    import json
+    c, d, research = _byproducts(tmp_path, evidence_byproducts="exclude")
+    material = research._review_material(c, "Q1P1")          # strict, yet no error: note.pdf builds from note.tex
+    listed = {f["path"]: f["kind"] for f in json.loads((d / "evidence-manifest.json").read_text())["files"]}
+    assert {"ada/note.tex", "ada/compile.out", "ada/certificate.json"} <= set(listed)
+    assert "ada/note.log" not in listed and listed["ada/note.pdf"] == listed["ada/note.aux"] == "byproduct"
+    assert "cmr10.pfb" not in material
+    c2, d2, research = _byproducts(tmp_path / "kept")
+    research._review_material(c2, "Q1P1")                    # by default every peer file is still listed
+    assert "ada/note.log" in {f["path"] for f in json.loads((d2 / "evidence-manifest.json").read_text())["files"]}

@@ -25,6 +25,29 @@ TEX_TREE = re.compile(r"(?:^|/)(?:texmf[\w-]*/|fonts/(?:type1|tfm|enc|map|vf|ope
 FONT_SHAPE = re.compile(r"^(?:T1|OT1|TS1|LY1|OML|OMS|OMX|U|T2A|LGR)/[\w-]+/[\w-]+/[\w-]+(?:/[\d.]+)?$")
 
 
+# Build by-products: regenerated from their source, never research (proofTree, 4 October: a font path printed in a
+# TeX log blocked a handoff). TEX_BUILD always; a log, outline or PDF only beside its .tex, since a script's
+# run.log or a plotted figure.pdf is a data output. Everything gc.BYPRODUCTS removes is one or the other.
+TEX_BUILD = (".aux", ".toc", ".lof", ".lot", ".fls", ".fdb_latexmk", ".synctex.gz", ".synctex", ".bbl", ".blg",
+             ".bcf", ".run.xml", ".nav", ".snm", ".vrb", ".xdv", ".dvi")
+TEX_OUTPUT = (".log", ".out", ".pdf")
+CACHES = {".cache", ".uv-cache", "uv-cache", ".pytest_cache", ".ruff_cache", ".mypy_cache", ".ipynb_checkpoints",
+          "__pycache__"}
+
+
+def byproduct(name: str, names) -> bool:
+    """Whether a file, by its relative name among `names` (the tree it is in), is a build by-product: a TeX build
+    file, a log, outline or PDF beside its .tex, or anything in a tool cache (a named one, or a directory that
+    holds a CACHEDIR.TAG)."""
+    from pathlib import PurePosixPath
+    path = PurePosixPath(name)
+    if any(part in CACHES for part in path.parts[:-1]) or name.endswith(TEX_BUILD):
+        return True
+    if any(str(parent / "CACHEDIR.TAG") in names for parent in path.parents if str(parent) != "."):
+        return True
+    return path.suffix in TEX_OUTPUT and str(path.with_suffix(".tex")) in names
+
+
 def classify(token: str) -> str:
     if DOI.match(token):
         return "doi"

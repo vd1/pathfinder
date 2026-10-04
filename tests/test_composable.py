@@ -284,3 +284,16 @@ def test_the_handoff_records_its_ledger_digest(tmp_path):
     bundle = composable.freeze(c, "Q1P1", "branch-1")
     handoff = json.loads((bundle / "handoff.json").read_text())
     assert handoff["ledger_sha256"] == hashlib.sha256((bundle / "ledger.jsonl").read_bytes()).hexdigest()
+
+
+@pytest.mark.parametrize("setting", [None, "exclude"])
+def test_a_campaign_can_leave_build_byproducts_out_of_its_bundles(tmp_path, setting):
+    c, b = _handed_off(tmp_path, **({"evidence_byproducts": setting} if setting else {}))
+    ada = b.thread_dir("Q1P1") / "ada"
+    for name in ("note.tex", "note.log", "note.pdf", "note.aux", "compile.out", "certify.py", "uv-cache/x.msgpack"):
+        (ada / name).parent.mkdir(parents=True, exist_ok=True)
+        (ada / name).write_text(name)
+    files = set(json.loads((composable.freeze(c, "Q1P1", "branch-1") / "bundle.json").read_text())["files"])
+    assert {"ada/note.tex", "ada/compile.out", "ada/certify.py"} <= files
+    dropped = {"ada/note.log", "ada/note.pdf", "ada/note.aux", "ada/uv-cache/x.msgpack"}
+    assert (files & dropped == set()) if setting else dropped <= files

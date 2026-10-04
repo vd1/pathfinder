@@ -110,7 +110,10 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     (EvidenceUnavailable): inlining it could read another investigation. With "strict_evidence": true in
     campaign.json a cited file that is missing, unreadable, not UTF-8 text or larger than
     "evidence_max_bytes" also blocks; otherwise readable binary or oversized files are listed with
-    size and digest, while missing or unreadable files are explicitly named as unavailable."""
+    size and digest, while missing or unreadable files are explicitly named as unavailable.
+
+    A cited build by-product that is absent (a PDF whose .tex is present, an .aux) is not missing evidence; with
+    "evidence_byproducts": "exclude" no by-product is listed or inlined, cited or not (evidence.byproduct)."""
     from . import evidence
     strict = bool(campaign.raw.get("strict_evidence"))
     limit = int(campaign.raw.get("evidence_max_bytes", EVIDENCE_MAX_BYTES))
@@ -118,6 +121,10 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     sources = evidence.registered_sources(campaign, pair_id or d.name)   # a bundle reads its pair's registrations
     resolved, ambiguous = {}, {}            # path -> (cited name, kind); cited name -> candidate paths
     paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
+    exclude = (campaign.raw or {}).get("evidence_byproducts") == "exclude"
+    if exclude:                                     # a symbolic link is always listed, to be refused
+        tree = {p.relative_to(d).as_posix() for p in paths}
+        paths = {p for p in paths if p.is_symlink() or not evidence.byproduct(p.relative_to(d).as_posix(), tree)}
     declaration, citations = _external_citations(d)
     for _, _, name in citations:                    # present declared files keep the ordinary checks
         relative = Path(name)
@@ -186,6 +193,11 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
             continue
         if path.exists() and not path.resolve().is_relative_to(d.resolve()):
             problem("outside", relative, f"evidence outside the investigation: {relative}")
+            continue
+        tex = relative.with_suffix(".tex").as_posix()
+        if (exclude or not path.is_file()) and evidence.byproduct(relative.as_posix(), {tex} if (d / tex).is_file() else ()):
+            keep(cited, relative, "byproduct")           # a cited PDF whose .tex is present is not missing
+            parts.append(f"## {heading}\n\n(cited in the ledger; a build by-product, not evidence)")
             continue
         if not path.is_file():
             if strict:

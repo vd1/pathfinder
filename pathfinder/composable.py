@@ -3,7 +3,9 @@ handoff is frozen as an immutable bundle, and one joint EVA thread then research
 
     "research_scheme": "composable", "branches": 3,
     "branch": {"rounds": 2, "ledger_reviews": 4},     # optional overrides for every branch
-    "joint": {"rounds": 3}                            # optional overrides for the joint thread
+    "joint": {"rounds": 3},                           # optional overrides for the joint thread
+    "evidence_byproducts": "exclude"                  # optional: TeX by-products and tool caches stay out of
+                                                      # the bundles and the reviews' peer listing
 
 Layout of a pair's thread directory: the joint thread lives in the directory itself (its ledger, peers,
 account, edit and paper), each branch runs in branch-runs/<label>/ and is frozen into branches/<label>/.
@@ -100,7 +102,8 @@ def _check_handoff(campaign, pair_id: str, label: str) -> dict:
 def freeze(campaign, pair_id: str, label: str) -> Path:
     """Copy a branch's handoff into branches/<label>/ once, read-only, with bundle.json written last; a bundle
     already complete is verified and returned as it is."""
-    dst = campaign.thread_dir(pair_id) / "branches" / label
+    from . import evidence
+    dst =campaign.thread_dir(pair_id) / "branches" / label
     if (dst / "bundle.json").exists():
         verify(dst)
         return dst
@@ -113,14 +116,19 @@ def freeze(campaign, pair_id: str, label: str) -> Path:
         shutil.rmtree(dst)
     dst.mkdir(parents=True)
     names = ["ledger.jsonl", "status.json", "external-references.json", "inputs", *campaign.peers]   # the branch cites its papers
+    exclude = (campaign.raw or {}).get("evidence_byproducts") == "exclude"     # see evidence.byproduct
     for name in names:
         source = src / name
         if source.is_symlink():
             raise BundleError(f"{label}: {name} is a symbolic link")
         if source.is_dir():
             (dst / name).mkdir(exist_ok=True)       # a peer that wrote no file keeps its (empty) directory
-            for path in _files(source, label, src):
+            files = _files(source, label, src)
+            tree = {path.relative_to(src).as_posix() for path in files}
+            for path in files:
                 if ".pathfinder" in path.relative_to(src).parts:
+                    continue
+                if exclude and evidence.byproduct(path.relative_to(src).as_posix(), tree):
                     continue
                 target = dst / path.relative_to(src)
                 target.parent.mkdir(parents=True, exist_ok=True)
