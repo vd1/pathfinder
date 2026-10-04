@@ -75,3 +75,49 @@ def test_the_matrix_lists_every_live_deployment_with_a_status():
             assert entry["contract"], name
         else:
             assert "inventory" in entry["notes"] or entry["notes"], name
+
+
+def _tree(path: Path) -> dict:
+    """Every file's size and modification time: a read-only replay must leave them all as they were."""
+    return {str(p.relative_to(path)): (p.stat().st_size, p.stat().st_mtime_ns) for p in path.rglob("*") if p.is_file()}
+
+
+def _replay(source: Path, tmp_path: Path, skip=("engine",)):
+    """The candidate engine reads a finished campaign: a copy is loaded, its state document and health built."""
+    from pathfinder import campaign_state, config, health
+    copy = tmp_path / "campaign"
+    shutil.copytree(source, copy, ignore=lambda d, names: [n for n in names if Path(d) == source and n in skip])
+    c = config.load(copy)
+    state = campaign_state.build(c)
+    health.snapshot(c)
+    return c, state
+
+
+def test_agqsl_canon_replays_on_the_candidate_engine(tmp_path):
+    canon = deployment_matrix.checkout("agqsl") / "canon"
+    before = _tree(canon)
+    c, state = _replay(canon, tmp_path)
+    assert c.peers and (canon / "engine-ref").read_text().strip().startswith("engine-v")
+    assert state["stages"] == {"research": {"PAUSE": 3, "DRAFT": 2}, "edit": {"done": 5}, "paper": {"ACCEPTED": 2}}
+    assert sorted(u["unit"] for u in state["units"]) == ["Q1P1", "Q2P2", "Q3P3", "Q4P4", "Q5P5"]
+    # each role's overlay is appended to the candidate's own prompt
+    from pathfinder import resources
+    for role in ("peer", "consolidate", "verify", "editor"):
+        overlay = (canon / "prompts" / f"{role}.append.md").read_text().strip()
+        assert resources.prompt_template(c, role).rstrip().endswith(overlay), role
+    assert _tree(canon) == before
+
+
+def test_the_10x10_pilot_replays_on_the_candidate_engine(tmp_path):
+    root = deployment_matrix.checkout("pilot-10x10")
+    tracked = ("campaign.json", "Q.jsonl", "P.jsonl", "scan.jsonl", "shortlist.json", "threads")
+    before = {name: _tree(root / name) if (root / name).is_dir() else (root / name).stat().st_mtime_ns for name in tracked}
+    (tmp_path / "src").mkdir()
+    for name in tracked:
+        (shutil.copytree if (root / name).is_dir() else shutil.copy2)(root / name, tmp_path / "src" / name)
+    c, state = _replay(tmp_path / "src", tmp_path)
+    assert len(c.path("scan.jsonl").read_text().splitlines()) == 100
+    assert len(json.loads(c.path("shortlist.json").read_text())["pairs"]) == 14
+    assert state["stages"] == {"research": {"PAUSE": 8, "DRAFT": 5, "PAUSE-ON-ITERATE": 1}, "edit": {"done": 14},
+                               "paper": {"ACCEPTED": 5}}
+    assert {name: _tree(root / name) if (root / name).is_dir() else (root / name).stat().st_mtime_ns for name in tracked} == before

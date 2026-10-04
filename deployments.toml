@@ -19,6 +19,14 @@ clean_paths = []
 contract = "tests/test_coordinator.py"
 notes = "The repeat and reinjection pilot's schedule semantics, now pathfinder coordinate; its archived run keeps its own frozen engine."
 
+[deployments.pilot-10x10]
+status = "supported"
+checkout = "."
+revision = "candidate"
+clean_paths = []
+contract = "tests/test_deployments.py::test_the_10x10_pilot_replays_on_the_candidate_engine"
+notes = "The pilot campaign at the repository root (10 mechanism-design by 10 agentic-cooperation papers, 100 scored pairs, 14 threads, September 2026); finished, so its contract is a read-only replay: the candidate engine loads it and builds its state and health with the recorded outcomes. experiments/ holds archived runs with their own frozen engines, outside the gate."
+
 [deployments.pathfinder-julien-2]
 status = "not-yet-supported"
 checkout = "../pathfinder-julien-2"
@@ -36,9 +44,9 @@ contract = ""
 notes = "Editable dependency on ../pathfinder. Its own suite (31 tests) passes against the engine-v1.2 candidate, which keeps pathfinder.scan.parse_json and reads research_scheme eva_minus as direct_eva with a deprecation warning; its working tree is under active development, so no contract is pinned yet."
 
 [deployments.agqsl]
-status = "not-yet-supported"
+status = "supported"
 checkout = "../agQSL"
-revision = "073c51703d6494b76c236642f84b6c595cc8dd84"
-clean_paths = []
-contract = ""
-notes = "Campaign repository: canon/ is a canonical campaign of agQSL's five open pairs, imported once by canon/import_open_pairs.py, run on a frozen engine-v1.3.0 (canon/engine-ref). Piloted live on two pairs on 2 October. No contract test yet."
+revision = "7c129f38174f0fa2d4074374cdab10d6b526280a"
+clean_paths = ["canon"]
+contract = "tests/test_deployments.py::test_agqsl_canon_replays_on_the_candidate_engine"
+notes = "Campaign repository: canon/ is a canonical campaign of agQSL's five open pairs (two papers accepted, three paused for inputs the sources lack), run by hand on a frozen engine-v1.3.5 (canon/engine-ref). The contract replays it read-only on the candidate engine and checks that its prompt overlays compose."
