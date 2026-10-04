@@ -77,7 +77,7 @@ def extract_json(text: str):
     return _first_object(text)
 
 
-_TYPES = {"object": dict, "array": list, "string": str, "null": type(None)}
+_TYPES = {"object": dict, "array": list, "string": str, "boolean": bool, "null": type(None)}
 
 
 def _is(value, kind: str) -> bool:

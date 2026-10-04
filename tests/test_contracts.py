@@ -243,3 +243,15 @@ def test_a_fenced_reply_followed_by_prose_is_read_from_its_fence():
 
 def test_an_unfenced_object_followed_by_prose_with_braces_is_read():
     assert contracts.extract_json('{"decision": "PAUSE"}\nNote: {x} stays open.') == {"decision": "PAUSE"}
+
+
+def test_a_deployment_schema_may_ask_for_a_boolean():
+    """statarb's review reply is {approved: boolean, ...}; the type table lacked "boolean" and every review
+    failed with KeyError: 'boolean' after the model had answered correctly (2610.01115v1, 2609.39261v1)."""
+    schema = {"type": "object", "required": ["approved"], "properties": {"approved": {"type": "boolean"}}}
+    assert contracts.violations({"approved": True}, schema) == []
+    assert contracts.violations({"approved": False}, schema) == []
+    assert contracts.violations({"approved": "yes"}, schema) == ["reply.approved: expected boolean, got str"]
+    assert contracts.violations({"approved": 1}, schema) == ["reply.approved: expected boolean, got int"]
+    reply = contracts.parse(schema, '{"approved": true}')
+    assert reply == {"approved": True}
