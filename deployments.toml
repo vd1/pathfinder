@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "f03e35c692d59d1659f74c871043643c86bd9252"
+revision = "bfc49abafba2153891a78d780834f8b5c8451738"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.3.4 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
@@ -36,12 +36,13 @@ contract = ""
 notes = "Julien's campaign 2 (eva-top-ten-01, ten pairs, three-branch EVA with PCE editing) is finished; its engine record is canon/, made by pathfinder import-eva2 (accepted PCE accounts as edited notes, 435 receipts). Per-stage routing (routes) and PCE editing (edit_scheme pce) are now engine options; its controller's assessor stages (actionability, fidelity, reader) are still julien-2 code, and its move to a plain campaign is open (see notes/pathfinder-friction.tex, section on routing and PCE)."
 
 [deployments.prooftree]
-status = "not-yet-supported"
+status = "supported"
 checkout = "../proofTree"
-revision = "c16180d"
+revision = "9ccd20eac3f7f74725283d8178f765f6f1db1869"
 clean_paths = ["prooftree", "pyproject.toml", "uv.lock", "campaigns/sphere-packing-rounds2/adaptive"]   # what the contract runs and replays
 contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
-notes = "Editable dependency on ../pathfinder. Its own suite (31 tests) passes against the engine-v1.2 candidate, which keeps pathfinder.scan.parse_json and reads research_scheme eva_minus as direct_eva with a deprecation warning; its working tree is under active development, so no contract is pinned yet."
+notes = "Editable dependency on ../pathfinder; imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
+
 
 [deployments.agqsl]
 status = "supported"
