@@ -253,3 +253,82 @@ def test_changed_inputs_block_the_edit_for_the_operator(tmp_path, monkeypatch):
     monkeypatch.setattr(pce, "run", lambda *a, **k: (_ for _ in ()).throw(pce.Changed("inputs changed")))
     assert edit.run(c, "Q1P1") == "blocked"
     assert edit.status(c, "Q1P1")["status"] == "blocked" and "inputs changed" in edit.status(c, "Q1P1")["reason"]
+
+
+# The research supplement: the research record as the fact-checker's evidence, each entry with its standing
+
+def _ledger(path, rows):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("".join(json.dumps({"seq": i, "actor": "ada", "kind": k, "text": t, "supersedes": s, "seen": None}) + "\n"
+                            for i, (k, t, s) in enumerate(rows, 1)))
+
+
+def test_the_supplement_marks_each_entrys_standing(tmp_path):
+    c = ready(tmp_path)
+    d = c.thread_dir("Q1P1")
+    _ledger(d / "ledger.jsonl", [("finding", "The bound is 3.", None),
+                                 ("finding", "The bound is 2.", 1),                       # supersedes #1
+                                 ("objection", "#2 assumes independence.", None),
+                                 ("correction", "#2 holds only for n > 5.", None),
+                                 ("finding", "Answering #3: independence is shown in eq. 4.", None),
+                                 ("objection", "#5 cites the wrong equation.", None),
+                                 ("ready", "ready", None)])
+    _ledger(d / "branches/branch-1/ledger.jsonl", [("finding", "A branch result.", None)])
+    text = pce._supplement(c, "Q1P1", 100_000)
+    joint, branch = text.split("## branches/branch-1/ledger.jsonl")
+    assert "the joint thread: the research the account reports" in joint
+    lines = {l.split(" ", 1)[0]: l for l in joint.splitlines() if l.startswith("#") and not l.startswith("##")}
+    assert "superseded by #2" in lines["#1"]
+    assert "objected to by #3" in lines["#2"] and "corrected by #4" in lines["#2"]
+    assert "answered by #5" in lines["#3"]
+    assert "unanswered" in lines["#6"] and "objected to by #6" in lines["#5"]
+    assert "#7" not in lines                                                             # ready entries carry no evidence
+    assert joint.index("## ledger.jsonl") < text.index("## branches/branch-1/ledger.jsonl")
+    assert "not adopted unless the joint ledger cites it" in branch[:300]
+
+
+def test_the_fact_checker_is_told_how_standing_limits_support(tmp_path, monkeypatch):
+    c = ready(tmp_path)
+    calls = script(monkeypatch, c)
+    pce.run(c, "Q1P1")
+    prompt = next(call["prompt"] for call in calls if call["role"] == "fact-checker")
+    assert "superseded" in prompt and "basis" in prompt and "research record" in prompt
+
+
+def _fact(basis, evidence):
+    def reply(prompt):
+        out = json.loads(stub.pce_reply(None, "fact-checker", prompt))
+        for name, text in out["files"].items():
+            report = json.loads(text)
+            for claim in report["claims"]:
+                claim["basis"], claim["evidence"] = basis, evidence
+            out["files"][name] = json.dumps(report)
+        return json.dumps(out)
+    return reply
+
+
+@pytest.mark.parametrize("basis, evidence", [
+    ("papers", ["sources/external/research-supplement.md"]),            # a papers basis needs a paper
+    ("research record", ["sources/external/Q.txt"]),                    # a record basis needs the supplement
+    ("both", ["sources/external/Q.txt"]),
+])
+def test_a_claims_basis_must_match_its_evidence(tmp_path, monkeypatch, basis, evidence):
+    c = ready(tmp_path)
+    script(monkeypatch, c, fact_checker=[_fact(basis, evidence)])
+    out = pce.run(c, "Q1P1")
+    assert out["status"] == "review_required" and "does not match its evidence" in out["reason"]
+
+
+def test_the_round_counts_the_basis_of_its_supported_claims(tmp_path, monkeypatch):
+    c = ready(tmp_path)
+    script(monkeypatch, c, fact_checker=[_fact("both", ["sources/external/Q.txt", "sources/external/research-supplement.md"])])
+    out = pce.run(c, "Q1P1")
+    assert out["status"] == "accepted" and out["basis"] == {"papers": 0, "research record": 0, "both": 1}
+
+
+def test_the_edit_record_carries_the_claim_basis(tmp_path, monkeypatch):
+    c = ready(tmp_path)
+    script(monkeypatch, c)
+    monkeypatch.setattr(edit, "_install", lambda campaign, pair_id: None)
+    edit._pce(c, "Q1P1", lambda: False)
+    assert edit.status(c, "Q1P1")["claim_basis"] == {"papers": 0, "research record": 1, "both": 0}

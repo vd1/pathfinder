@@ -124,7 +124,7 @@ def _pce(campaign, pair_id: str, stop) -> str:
     problem = _install(campaign, pair_id) if out["status"] == "accepted" else None
     _set(campaign, pair_id, status="done", scheme="pce", editorial_status=out["status"],
          editorial_reason=out.get("reason") or None, accepted_note=out["status"] == "accepted" and problem is None,
-         presentation_error=problem, pce="edited/pce")
+         presentation_error=problem, pce="edited/pce", claim_basis=out.get("basis"))
     return "done"
 
 

@@ -102,7 +102,7 @@ def pce_reply(campaign, role: str, prompt: str, verdict: str | None = None) -> s
     elif role == "fact-checker":
         v = verdict or settings.get("pce_fact", "pass")
         report = {"verdict": v, "summary": "stub fact check", "claims": [
-            {"id": c["id"], "status": "supported" if v == "pass" else "unsupported",
+            {"id": c["id"], "status": "supported" if v == "pass" else "unsupported", "basis": "research record",
              "evidence": ["sources/external/research-supplement.md"], "notes": "stub"}
             for c in json.loads(files["claims/current.json"])]}
         out = {p: json.dumps(report) for p in permitted}

@@ -24,6 +24,15 @@ draft against the approved external sources.
    it: return the verdict contaminated, naming what you saw.
 7. Any unsupported claim fails the pass; weak claims fail it when they
    affect acceptance.
+8. In the research supplement each entry's standing follows it in
+   brackets. A superseded entry never supports a claim. A corrected entry
+   supports a claim only as corrected, and an entry under an unanswered
+   objection only if the claim states the objection; otherwise the claim is
+   weak. A branch entry supports a claim only if the joint ledger adopts it.
+9. Give each claim its basis: "papers" when its evidence is Q or P,
+   "research record" when it is the research supplement alone, "both", or
+   "none" for a claim with no evidence. A claim whose basis is the research
+   record reports this work's finding, not an established fact.
 
 ## This call
 
