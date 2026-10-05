@@ -37,8 +37,12 @@ def node_ids(junit: Path, root: Path = ROOT) -> dict:
     return out
 
 
-def contract_result(contract: str, nodes: dict) -> str:
-    """passed, failed, skipped or missing: the contract's tests, matched by exact file or exact node id."""
+def contract_result(contract, nodes: dict) -> str:
+    """passed, failed, skipped or missing: the contract's tests, matched by exact file or exact node id. A list
+    of contracts is as good as its worst one."""
+    if isinstance(contract, list):
+        states = [contract_result(c, nodes) for c in contract] or ["missing"]
+        return next((s for s in ("failed", "missing", "skipped") if s in states), "passed")
     if "::" in contract:
         hits = [s for n, s in nodes.items() if n == contract or n.startswith(contract + "[")]
     else:

@@ -69,3 +69,11 @@ def test_a_failing_behaviour_suite_fails_the_release(tmp_path):
 
 def test_the_behaviour_suite_runs_with_the_rigging_tags():
     assert rc.broad_tags() == "not @sandbox and not @captain and not @shipwright"
+
+
+def test_a_contract_may_be_several_tests_and_every_one_must_pass():
+    nodes = {"tests/test_deployments.py::test_replay": "passed", "tests/test_deployments.py::test_study": "passed",
+             "tests/test_deployments.py::test_skipped": "skipped"}
+    assert rc.contract_result(["tests/test_deployments.py::test_replay", "tests/test_deployments.py::test_study"], nodes) == "passed"
+    assert rc.contract_result(["tests/test_deployments.py::test_replay", "tests/test_deployments.py::test_skipped"], nodes) == "skipped"
+    assert rc.contract_result(["tests/test_deployments.py::test_replay", "tests/test_deployments.py::test_gone"], nodes) == "missing"

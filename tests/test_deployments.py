@@ -224,3 +224,35 @@ def test_the_10x10_pilot_replays_on_the_candidate_engine(tmp_path):
     assert state["stages"] == {"research": {"PAUSE": 8, "DRAFT": 5, "PAUSE-ON-ITERATE": 1}, "edit": {"done": 14},
                                "paper": {"ACCEPTED": 5}}
     assert {name: _tree(root / name) if (root / name).is_dir() else (root / name).stat().st_mtime_ns for name in tracked} == before
+
+
+@needs_tex
+def test_a_study_under_the_10x10_pilot_runs_on_the_candidate_engine(tmp_path):
+    """The pilot stays open for further studies: a child campaign under it ("parent": ".."), on two of its own
+    papers, coordinated through research, editing and the paper on the stub backend, leaves the pilot as it was."""
+    from pathfinder import coordinator, transport
+    from pathfinder import config as engine_config
+    root = deployment_matrix.checkout("pilot-10x10")
+    tracked = ("campaign.json", "Q.jsonl", "P.jsonl", "scan.jsonl", "shortlist.json", "threads")
+    before = {name: _tree(root / name) if (root / name).is_dir() else (root / name).stat().st_mtime_ns for name in tracked}
+    parent = tmp_path / "pilot"; parent.mkdir()
+    for name in tracked:
+        (shutil.copytree if (root / name).is_dir() else shutil.copy2)(root / name, parent / name)
+    raw = json.loads((root / "campaign.json").read_text())
+    child = parent / "study"; child.mkdir()
+    papers = {side: json.loads((root / f"{side}.jsonl").read_text().splitlines()[0]) for side in "QP"}
+    for side, row in papers.items():                    # abstracts only: the study's research is the stub's
+        (child / f"{side}.jsonl").write_text(json.dumps({k: row[k] for k in ("id", "title", "abstract")}) + "\n")
+    (child / "shortlist.json").write_text(json.dumps({"pairs": [{"pair_id": "Q1P1"}]}))
+    (child / "campaign.json").write_text(json.dumps({
+        **{k: raw[k] for k in ("peers", "rounds", "repairs", "allowances") if k in raw},
+        "backend": "stub", "model": "stub", "seats": 1, "paper_rounds": 1, "budget_usd": 100,
+        "call_estimate_usd": 1, "parent": ".."}))
+    (parent / "schedule.json").write_text(json.dumps({"arms": {"study": "study"}, "stages": ["research", "edit", "paper"],
+                                                      "schedule": [{"arm": "study", "pair": "Q1P1"}]}))
+    state = coordinator.run(parent / "schedule.json", interval=0.05, heartbeat=0.05)
+    assert state["status"] == "complete"
+    outcome = json.loads((parent / "outcomes.json").read_text())["study"]["Q1P1"]
+    assert outcome["paper"]["status"] == "ACCEPTED"
+    assert {r.get("backend") for r in transport.receipts(engine_config.load(child))} == {"stub"}
+    assert {name: _tree(root / name) if (root / name).is_dir() else (root / name).stat().st_mtime_ns for name in tracked} == before

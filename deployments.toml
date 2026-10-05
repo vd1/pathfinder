@@ -24,8 +24,8 @@ status = "supported"
 checkout = "."
 revision = "candidate"
 clean_paths = []
-contract = "tests/test_deployments.py::test_the_10x10_pilot_replays_on_the_candidate_engine"
-notes = "The pilot campaign at the repository root (10 mechanism-design by 10 agentic-cooperation papers, 100 scored pairs, 14 threads, September 2026); finished, so its contract is a read-only replay: the candidate engine loads it and builds its state and health with the recorded outcomes. experiments/ holds archived runs with their own frozen engines, outside the gate."
+contract = ["tests/test_deployments.py::test_the_10x10_pilot_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_study_under_the_10x10_pilot_runs_on_the_candidate_engine"]
+notes = "The pilot campaign at the repository root (10 mechanism-design by 10 agentic-cooperation papers, 100 scored pairs, 14 threads, September 2026); open for further studies (child campaigns under it); its contract replays its record read-only and runs one study under it through research, editing and the paper on the stub backend. experiments/ holds archived runs with their own frozen engines, outside the gate."
 
 [deployments.pathfinder-julien-2]
 status = "not-yet-supported"
