@@ -135,12 +135,12 @@ def pending(campaign) -> list[str]:
     selection = getattr(campaign, "selection", None)
     if selection is not None:                    # a bounded run: unlisted pairs, BLOCKED ones included, are not considered
         pairs = [p for p in pairs if p in selection]
-    from . import edit
+    from . import actionability, edit
     return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
             and research.status(campaign, p).get("status") not in {"BLOCKED", "HANDOFF"}
             and edit.status(campaign, p).get("status") != "blocked"
             and (research.status(campaign, p).get("status") not in research.TERMINAL
-                 or edit.status(campaign, p).get("status") != "done")]
+                 or edit.status(campaign, p).get("status") != "done" or actionability.pending(campaign, p))]
 
 
 def _work(campaign, pair_id):
@@ -160,11 +160,15 @@ def _work(campaign, pair_id):
                     if edited != "done" and not stop():
                         message = f"editor {edited}: {edit.status(campaign, pair_id).get('reason')}"
                         raise PairBlocked(message) if edited == "blocked" else RuntimeError(message)
+                from . import actionability
+                if actionability.pending(campaign, pair_id) and not stop():   # the end of the pipeline
+                    stage = "actionability"
+                    actionability.run(campaign, pair_id)
                 from . import gc
                 if gc.enabled(campaign):                 # each finished cycle drops what the record does not need
                     gc.collect_thread(campaign, pair_id)
         except Exception as error:
-            error.stage = stage if stage == "edit" else research.status(campaign, pair_id).get("stage")
+            error.stage = stage if stage in ("edit", "actionability") else research.status(campaign, pair_id).get("stage")
             raise
         return result
 

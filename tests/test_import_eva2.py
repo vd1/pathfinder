@@ -184,3 +184,24 @@ def test_a_recorded_eva2_bundle_verifies_by_its_inventory_and_any_change_is_refu
         record["files"][0]["path"] = "../outside.jsonl"
         (b / "bundle.json").write_text(json.dumps(record))
     refused(forged, "inventory digest")
+
+
+def test_eva2s_actionability_assessment_is_the_pairs_actionability(tmp_path):
+    from pathfinder import actionability
+    exp = _eva2(tmp_path)
+    d = exp / "reports" / "assessments" / "downstream-recovery-07"; d.mkdir(parents=True)
+    answer = {"decision": "NEEDS_INPUTS", "rationale": "r", "evidence": ["e"], "required_inputs": ["CDK2 set"],
+              "next_experiment": "n", "falsification": "f"}
+    (d / "actionability.json").write_text(json.dumps({"status": "available", "assessment": answer, "input_sha256": "x"}))
+    out = import_eva2.run(exp, tmp_path / "canon")
+    c = config.load(out)
+    s = actionability.status(c, "Q1P1")
+    assert s["status"] == "done" and s["decision"] == "NEEDS_INPUTS" and s["assessment"] == answer
+    assert s["imported_from"] == "reports/assessments/downstream-recovery-07/actionability.json"
+    assert json.loads((out / "import.json").read_text())["actionability"] == s["imported_from"]
+
+
+def test_an_experiment_without_an_assessment_imports_none(tmp_path):
+    from pathfinder import actionability
+    out = import_eva2.run(_eva2(tmp_path), tmp_path / "canon")
+    assert actionability.status(config.load(out), "Q1P1") == {"status": "none"}

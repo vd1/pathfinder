@@ -7,7 +7,7 @@ from __future__ import annotations
 import calendar, json, os, re, time
 from collections import Counter
 from pathlib import Path
-from . import budget, admission, edit, events, paper, research, transport
+from . import actionability, budget, admission, edit, events, paper, research, transport
 
 ACTIVE_SECONDS = 600                       # an event this recent means the campaign is active
 DOCUMENTS = (("research note", "{u}.tex", "{u}.pdf"), ("readable note", "edited/note.tex", "edited/note.pdf"),
@@ -239,6 +239,8 @@ def build(campaign) -> dict:
                       "research": {k: r_s.get(k) for k in ("status", "stage", "round", "reason")},
                       "editorial": {"status": e_s.get("status"), "reason": e_s.get("reason")},
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
+                      **({"actionability": {k: a_s.get(k) for k in ("status", "decision", "reason")}}
+                         if (a_s := actionability.status(campaign, unit)).get("status") != "none" else {}),
                       "controller": controller, "lifecycle": lifecycle(r_s, e_s, p_s, controller),
                       "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit),
                       **({"branches": _branches(campaign, unit)} if campaign.raw.get("research_scheme") == "composable" else {})})

@@ -58,6 +58,8 @@ def load(root: Path) -> Campaign:
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
     from . import budget, pce, routing
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
+    from . import actionability
+    actionability.validate(raw)
     routing.validate(raw)                            # a malformed route fails here, not at the first call it routes
     pce.validate(raw)                                # edit_scheme and the PCE settings
     tb = raw.get("tool_call_budgets")

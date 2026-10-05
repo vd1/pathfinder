@@ -5,7 +5,7 @@ campaigns through research, edit, paper and style builds without a model call. R
 admission, active-call records and receipts as real calls; receipts say backend "stub", cost 0.
 
 Settings under "stub" in campaign.json: "verify" (the verifier's decision, default DRAFT), "review"
-(the paper reviewer's decision, default ACCEPT), and for PCE editing "pce_fact" (pass), "pce_critic" (pass)
+(the paper reviewer's decision, default ACCEPT), "actionability" (default NEEDS_INPUTS), and for PCE editing "pce_fact" (pass), "pce_critic" (pass)
 and "pce_editor" (accept)."""
 from __future__ import annotations
 import json, re
@@ -75,6 +75,10 @@ def reply(campaign, request) -> str:
         return "stub paper written"
     if stage == "review":
         return json.dumps({"decision": settings.get("review", "ACCEPT"), "summary": "stub review", "findings": []})
+    if stage == "actionability":
+        return json.dumps({"decision": settings.get("actionability", "NEEDS_INPUTS"), "rationale": "stub assessment",
+                           "evidence": ["stub"], "required_inputs": ["stub input"], "next_experiment": "stub step",
+                           "falsification": "stub condition"})
     if stage == "scan":
         return json.dumps({"feasibility": 50, "gain": 50, "connexion": "stub", "rationale": "stub"})
     return "stub reply"

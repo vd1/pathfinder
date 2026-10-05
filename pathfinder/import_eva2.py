@@ -22,6 +22,8 @@ campaign with that pair as Q1P1:
 - the PCE round reports/index.md links as the reviewed account, when its delivery record says the editor
   accepted it, becomes the edited note: edited/note.tex and note.pdf, the round kept as edited/eva2-pce, the
   edit done, and import.json["edit"] records the source and digests. eva2 ran no paper stage; none is made.
+- eva2's actionability assessment, the latest available, becomes the pair's actionability answer; its
+  fidelity and reader comparisons have no engine stage and stay receipts.
 
 Nothing in the experiment is changed. The imported pair then goes on through the engine: what is not done of
 edit and paper. verify_bundle reads a bundle eva2 froze where it lies (a deployment's recorded campaigns), by
@@ -170,6 +172,23 @@ def _import_edit(c, experiment: Path) -> dict | None:
     return record
 
 
+def _import_actionability(c, experiment: Path) -> str | None:
+    """eva2's actionability assessment (the latest available under reports/assessments) as the pair's
+    actionability answer, when it fits the engine's contract."""
+    from . import actionability, contracts
+    found = sorted((experiment / "reports" / "assessments").glob("*/actionability.json"))
+    for path in reversed(found):
+        record = json.loads(path.read_text())
+        answer = record.get("assessment")
+        if record.get("status") == "available" and isinstance(answer, dict) \
+                and not contracts.violations(answer, actionability.SCHEMA):
+            source = path.relative_to(experiment).as_posix()
+            actionability._set(c, "Q1P1", status="done", decision=answer["decision"], assessment=answer,
+                               imported_from=source)
+            return source
+    return None
+
+
 def run(experiment: Path, out: Path) -> Path:
     experiment, out = Path(experiment).resolve(), Path(out)
     runs = experiment / "runs"
@@ -237,10 +256,12 @@ def run(experiment: Path, out: Path) -> Path:
                   history=list(status.get("history") or []) + [{"at": research._now(), "action": "imported from eva2",
                                                                "from_status": status.get("status")}])
     edited = _import_edit(c, experiment)
+    assessed = _import_actionability(c, experiment)
     (out / "import.json").write_text(json.dumps({
         "experiment": str(experiment), "branches": labels, "frozen": frozen, "joint_status": status.get("status"),
         "receipts": counts, "receipt_times": "eva2 kept no call time: each receipt's \"at\" is its file's mtime",
         "edit": edited,
         "paper": "not mapped: eva2's PCE accepted the readable account (the engine's edit); eva2 ran no paper stage",
-        "assessments": "eva2's practical assessments have no engine stage; their calls are receipts only"}, indent=1))
+        "actionability": assessed,
+        "assessments": "eva2's fidelity and reader comparisons have no engine stage; their calls are receipts only"}, indent=1))
     return out
