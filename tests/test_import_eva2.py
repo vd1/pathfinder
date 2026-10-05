@@ -193,7 +193,7 @@ def test_eva2s_actionability_assessment_is_the_pairs_actionability(tmp_path):
     answer = {"decision": "NEEDS_INPUTS", "rationale": "r",                   # the shape eva2's assessor gave
               "evidence": [{"observation": "o", "source": "papers/Q.txt p. 3", "role": "why it matters"}],
               "required_inputs": [{"input": "CDK2 set", "why": "w"}],
-              "next_experiment": {"step": "n"}, "falsification": ["f1", "f2"]}
+              "next_experiment": {"step": "n"}, "falsification": {"result": "f"}}
     (d / "actionability.json").write_text(json.dumps({"status": "available", "assessment": answer, "input_sha256": "x"}))
     out = import_eva2.run(exp, tmp_path / "canon")
     c = config.load(out)

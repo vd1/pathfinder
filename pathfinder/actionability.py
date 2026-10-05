@@ -14,8 +14,8 @@ SCHEMA = {"title": "actionability", "type": "object",
           "properties": {"decision": {"enum": ["ACTIONABLE", "NEEDS_INPUTS", "NO_CASE"]},
                          "rationale": {"type": "string"},
                          "evidence": {"type": "array"}, "required_inputs": {"type": "array"},   # items: text or records
-                         "next_experiment": {"type": ["string", "object"]},
-                         "falsification": {"type": ["string", "array"]}}}
+                         "next_experiment": {"type": ["string", "array", "object"]},
+                         "falsification": {"type": ["string", "array", "object"]}}}
 
 
 def enabled(campaign) -> bool:
