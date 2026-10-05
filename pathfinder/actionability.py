@@ -12,9 +12,10 @@ from .context import Section
 SCHEMA = {"title": "actionability", "type": "object",
           "required": ["decision", "rationale", "evidence", "required_inputs", "next_experiment", "falsification"],
           "properties": {"decision": {"enum": ["ACTIONABLE", "NEEDS_INPUTS", "NO_CASE"]},
-                         "rationale": {"type": "string"}, "evidence": {"type": "array", "items": {"type": "string"}},
-                         "required_inputs": {"type": "array", "items": {"type": "string"}},
-                         "next_experiment": {"type": "string"}, "falsification": {"type": "string"}}}
+                         "rationale": {"type": "string"},
+                         "evidence": {"type": "array"}, "required_inputs": {"type": "array"},   # items: text or records
+                         "next_experiment": {"type": ["string", "object"]},
+                         "falsification": {"type": ["string", "array"]}}}
 
 
 def enabled(campaign) -> bool:

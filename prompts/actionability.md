@@ -14,6 +14,7 @@ Judge from the evidence, not from the researchers' or a reviewer's verdict: a mo
 independent support. Missing necessary evidence supports NEEDS_INPUTS, not NO_CASE.
 
 Reply with one JSON object and nothing else:
-{"decision": "ACTIONABLE|NEEDS_INPUTS|NO_CASE", "rationale": "...", "evidence": ["the passages, ledger
-entries or results the decision rests on"], "required_inputs": ["each missing input, or none"],
-"next_experiment": "the first concrete step", "falsification": "what result would show the case does not hold"}
+{"decision": "ACTIONABLE|NEEDS_INPUTS|NO_CASE", "rationale": "...",
+ "evidence": [{"observation": "...", "source": "the paper and page, or the ledger entry", "role": "what it shows for the decision"}],
+ "required_inputs": [{"input": "each missing input, precise enough to obtain it", "why": "..."}],
+ "next_experiment": "the first concrete step", "falsification": "what result would show the case does not hold"}
