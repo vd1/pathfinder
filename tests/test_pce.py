@@ -332,3 +332,15 @@ def test_the_edit_record_carries_the_claim_basis(tmp_path, monkeypatch):
     monkeypatch.setattr(edit, "_install", lambda campaign, pair_id: None)
     edit._pce(c, "Q1P1", lambda: False)
     assert edit.status(c, "Q1P1")["claim_basis"] == {"papers": 0, "research record": 1, "both": 0}
+
+
+def test_large_sources_are_digested_to_fit_the_prompt_limit(tmp_path, monkeypatch):
+    """Three-branch pairs bring long papers and a long research record: a role's packet over the limit has its
+    largest approved sources digested (beginning, end, size and digest) instead of ending the round."""
+    c = ready(tmp_path, max_prompt_chars=120_000)
+    (c.thread_dir("Q1P1") / "inputs" / "Q.txt").write_text("A long paper. " * 20_000)        # 280 k characters
+    calls = script(monkeypatch, c)
+    out = pce.run(c, "Q1P1")
+    assert out["status"] == "accepted", out["reason"]
+    assert all(len(call["prompt"]) <= 120_000 for call in calls)
+    assert any("digest of sources/external/Q.txt" in call["prompt"] for call in calls)

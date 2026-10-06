@@ -108,3 +108,18 @@ def test_the_gc_command_collects_finished_threads_and_compacts_old_receipts(tmp_
     after = c.path("receipts.jsonl").read_text()
     assert len(after) < before - 90_000 and len(transport.receipts(c)) == len(after.splitlines())
     assert "collected" in capsys.readouterr().out
+
+
+def test_peers_environments_clones_metadata_and_scratch_are_collected(tmp_path):
+    import os
+    c, d = _finished(tmp_path)
+    venv = d / "ada" / "review" / "venv"; (venv / "bin").mkdir(parents=True)
+    (venv / "pyvenv.cfg").write_text("home = /usr/bin\n"); os.symlink("/usr/bin/python3", venv / "bin" / "python")
+    (d / "ada" / "upstream" / ".git").mkdir(parents=True); (d / "ada" / "upstream" / ".git" / "HEAD").write_text("ref")
+    (d / "ada" / "upstream" / "README.md").write_text("kept")
+    (d / "branch-runs" / "branch-1" / ".pathfinder" / "tmp").mkdir(parents=True)
+    (d / "branch-runs" / "branch-1" / ".pathfinder" / "tmp" / "data.pkl").write_bytes(b"x" * 1000)
+    gc.collect_thread(c, "Q1P1")
+    assert not venv.exists() and not (d / "ada" / "upstream" / ".git").exists()
+    assert (d / "ada" / "upstream" / "README.md").exists()
+    assert not (d / "branch-runs" / "branch-1" / ".pathfinder" / "tmp").exists()

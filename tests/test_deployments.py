@@ -251,8 +251,12 @@ def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionabili
         return real(campaign, request)
     monkeypatch.setattr(stub, "execute", recorded_call)
     c = config.load(copy)
-    pair = json.loads((copy / "shortlist.json").read_text())["pairs"][0]["pair_id"]
-    assert runner.run(c, interval=0.05, pairs=[pair]) == 0
+    shortlist = [p["pair_id"] for p in json.loads((copy / "shortlist.json").read_text())["pairs"]]
+    pair = next((p for p in shortlist if not (copy / "threads" / p).exists()), shortlist[0])
+    if (copy / "threads" / pair).exists():            # every shortlisted pair researched: start one afresh in the copy
+        shutil.rmtree(copy / "threads" / pair)
+    recorded_calls = {r.get("call_id") for r in transport.receipts(c)}
+    assert runner.run(c, interval=0.05, pairs=[pair], accept_change="deployment contract: candidate engine, stub backend") == 0
     d = c.thread_dir(pair)
     assert research.status(c, pair)["status"] in research.TERMINAL
     for label in composable.labels(c):                      # each branch frozen as a bundle the joint thread reads
@@ -269,7 +273,7 @@ def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionabili
         assert all(overlay(role) in call["prompt"] for call in calls if call["stage"] == stage), stage
     brief = overlay("pce-brief").splitlines()[0]               # the PCE brief travels inside a JSON read scope
     assert any(brief in call["prompt"] for call in calls if (call["actor"] or "").startswith("pce-"))
-    assert {r.get("backend") for r in transport.receipts(c)} == {"stub"}
+    assert {r.get("backend") for r in transport.receipts(c) if r.get("call_id") not in recorded_calls} == {"stub"}
     assert _tree(recorded) == before
 
 

@@ -61,8 +61,14 @@ def finished(campaign, pair_id) -> bool:
             and edit.status(campaign, pair_id).get("status") == "done")
 
 
+def _environment(path: Path) -> bool:
+    """A peer's virtual environment, bytecode cache or cloned repository's .git (see composable.environment)."""
+    from .composable import environment
+    return environment(path)
+
+
 def _size(path: Path) -> int:
-    return sum(p.stat().st_size for p in path.rglob("*") if p.is_file()) if path.is_dir() else path.stat().st_size
+    return sum(p.lstat().st_size for p in path.rglob("*") if p.is_file() or p.is_symlink()) if path.is_dir() else path.stat().st_size
 
 
 def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
@@ -74,7 +80,7 @@ def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
     for p in sorted(d.rglob("*"), key=lambda p: len(p.parts)):
         if not p.exists() or p.is_symlink():
             continue
-        if p.is_dir() and p.name in WORKING_DIRS:
+        if p.is_dir() and (p.name in WORKING_DIRS or _environment(p) or (p.name == "tmp" and p.parent.name == ".pathfinder")):
             files += sum(1 for q in p.rglob("*") if q.is_file()); size += _size(p)
             if not dry_run:
                 shutil.rmtree(p)

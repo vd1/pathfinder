@@ -253,6 +253,29 @@ def rows_by(rows, seq):
     return next((r for r in rows if r["seq"] == seq), {})
 
 
+SHRINKABLE = ("sources/external/research-supplement.md", "sources/external/")   # in this order; never drafts or reviews
+MIN_SHARE = 20_000
+
+
+def fit(files: dict, room: int) -> dict:
+    """A role's files within `room` characters of JSON: while they exceed it, the largest approved external source
+    (the research supplement first, then the papers) is replaced by a digest of its beginning and end with its
+    size and sha256, so the round goes on; drafts, claims and reviews are never shrunk. What still does not fit
+    is refused by the transport, as before."""
+    from . import context
+    out = dict(files)
+    while len(_json(out)) > room:
+        over = len(_json(out)) - room
+        shrinkable = [n for n in out if n.startswith(SHRINKABLE[1])
+                      and len(out[n]) > MIN_SHARE and "(digest of " not in out[n][:80]]
+        if not shrinkable:
+            break
+        first = [n for n in shrinkable if n == SHRINKABLE[0]]
+        name = first[0] if first else max(shrinkable, key=lambda n: len(out[n]))
+        out[name] = context.digest_text(name, out[name], max(MIN_SHARE, len(out[name]) - over - 1000))
+    return out
+
+
 def _supplement(campaign, pair_id, limit: int) -> str:
     """The research record as external evidence: the joint thread's ledger first, then the ledgers of its frozen
     branch bundles, then the verifier's reasons, cut at the limit with the cut stated. Each entry carries its
@@ -398,8 +421,8 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
 
     def call(role, pass_id, permitted, **values):
         contract = resources.prompt(campaign, f"pce-{role}", **values)
-        prompt = (contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n"
-                  + "Allowed input files:\n" + _json(visible(files, contract)))
+        head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
+        prompt = head + _json(fit(visible(files, contract), transport.max_prompt_chars(campaign) - len(head)))
         order[0] += 1
         record = f"dispatch/{pass_id}-{role}.json"
         if (root / record).exists():                  # a retained call is replayed, never paid for twice

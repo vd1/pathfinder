@@ -297,3 +297,30 @@ def test_a_campaign_can_leave_build_byproducts_out_of_its_bundles(tmp_path, sett
     assert {"ada/note.tex", "ada/compile.out", "ada/certify.py"} <= files
     dropped = {"ada/note.log", "ada/note.pdf", "ada/note.aux", "ada/uv-cache/x.msgpack"}
     assert (files & dropped == set()) if setting else dropped <= files
+
+
+def test_a_peers_python_environment_and_cloned_repository_stay_out_of_the_bundle(tmp_path):
+    """Peers create virtual environments (full of interpreter links) and clone repositories in their folders:
+    neither is evidence, so the freeze leaves them out instead of refusing their links."""
+    import os
+    c, b = _handed_off(tmp_path)
+    ada = b.thread_dir("Q1P1") / "ada"
+    venv = ada / "review2" / "venv"; (venv / "bin").mkdir(parents=True)
+    (venv / "pyvenv.cfg").write_text("home = /usr/bin\n")
+    os.symlink("/usr/bin/python3", venv / "bin" / "python")
+    (ada / ".venv" / "lib").mkdir(parents=True); (ada / ".venv" / "lib" / "x.py").write_text("x")
+    (ada / "review2" / "check.py").write_text("print(1)\n")
+    clone = ada / "upstream"; (clone / ".git").mkdir(parents=True); (clone / ".git" / "HEAD").write_text("ref")
+    (clone / "README.md").write_text("cloned")
+    bundle = composable.freeze(c, "Q1P1", "branch-1")
+    files = set(json.loads((bundle / "bundle.json").read_text())["files"])
+    assert "ada/review2/check.py" in files and "ada/upstream/README.md" in files
+    assert not any("venv" in f or "/.git/" in f for f in files)
+
+
+def test_any_other_link_is_still_refused(tmp_path):
+    import os
+    c, b = _handed_off(tmp_path)
+    os.symlink("/etc/hosts", b.thread_dir("Q1P1") / "ada" / "hosts")
+    with pytest.raises(composable.BundleError, match="symbolic link"):
+        composable.freeze(c, "Q1P1", "branch-1")

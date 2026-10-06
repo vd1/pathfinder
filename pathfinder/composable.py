@@ -67,14 +67,28 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+ENVIRONMENTS = {"venv", ".venv", "__pycache__", ".git"}       # interpreters, caches, clones' metadata: never evidence
+
+
+def environment(path: Path) -> bool:
+    """A folder a peer's tools made rather than wrote: a virtual environment (named so, or holding pyvenv.cfg),
+    a bytecode cache, or a cloned repository's .git."""
+    return path.name in ENVIRONMENTS or (path / "pyvenv.cfg").is_file()
+
+
 def _files(root: Path, label: str, base: Path | None = None) -> list[Path]:
+    """Every file under root, environments left out; any other symbolic link is refused (it could point outside)."""
     out = []
-    for path in sorted(root.rglob("*")):
-        if path.is_symlink():
-            raise BundleError(f"{label}: {path.relative_to(base or root).as_posix()} is a symbolic link")
-        if path.is_file():
-            out.append(path)
-    return out
+    for dirpath, dirnames, filenames in os.walk(root):
+        here = Path(dirpath)
+        dirnames[:] = sorted(d for d in dirnames if not environment(here / d))
+        for name in sorted(filenames) + [d for d in dirnames if (here / d).is_symlink()]:
+            path = here / name
+            if path.is_symlink():
+                raise BundleError(f"{label}: {path.relative_to(base or root).as_posix()} is a symbolic link")
+            if path.is_file():
+                out.append(path)
+    return sorted(out)
 
 
 def _check_handoff(campaign, pair_id: str, label: str) -> dict:
