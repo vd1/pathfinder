@@ -150,10 +150,17 @@ def test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine(tmp
     pair = next((p for p in _agqsl_imported(canon)
                  if json.loads((canon / "threads" / p / "status.json").read_text()).get("status") not in research.TERMINAL
                  and not (canon / "threads" / p / "ledger.jsonl").read_text().strip()), None)
-    if pair is None:
-        pytest.skip("agqsl: every imported pair has been researched; import the next batch")
     copy = tmp_path / "canon"
     shutil.copytree(canon, copy, ignore=lambda d, names: [n for n in names if Path(d) == canon and n in AGQSL_SKIP])
+    if pair is None:                              # every imported pair researched: start the first one afresh, in the copy
+        pair = _agqsl_imported(canon)[0]
+        d = copy / "threads" / pair
+        for item in d.iterdir():
+            if item.name != "inputs":
+                shutil.rmtree(item) if item.is_dir() else item.unlink()
+        (d / "ledger.jsonl").write_text("")
+        (d / "status.json").write_text(json.dumps({"pair_id": pair, "round": 1, "stage": "peers", "status": "running",
+                                                   "reason": None}))
     raw = json.loads((copy / "campaign.json").read_text())
     raw.update(backend="stub", model="stub"); raw.pop("account", None)
     (copy / "campaign.json").write_text(json.dumps(raw, indent=1))
@@ -176,7 +183,8 @@ def test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine(tmp
         assert "inputs/question.md" in call["prompt"], call["stage"]
         if call["stage"] == "peer":
             assert call["search"] is False
-    assert {r.get("backend") for r in transport.receipts(c) if r.get("thread") == pair} == {"stub"}
+    recorded = {r.get("call_id") for r in transport.receipts(config.load(canon))}      # the batch's real calls
+    assert {r.get("backend") for r in transport.receipts(c) if r.get("thread") == pair and r.get("call_id") not in recorded} == {"stub"}
     others = [p for p in _agqsl_imported(canon) if p != pair] + AGQSL_OPEN_PAIRS
     assert all(_tree(copy / "threads" / p) == _tree(canon / "threads" / p) for p in others)
     assert _tree(canon) == before
