@@ -124,3 +124,28 @@ def test_meta_file_opens_the_document(tmp_path):
     ok, log = paper.build(d, "doc.tex"); assert ok, log
     txt = subprocess.run(["pdftotext", str(d / "doc.pdf"), "-"], capture_output=True, text=True).stdout
     assert "Alpha & Beta" in txt and "arXiv:2608.29130" in txt and "1 ITERATE, 1 REVISE" in txt
+
+
+def test_a_doi_is_not_read_as_an_arxiv_identifier():
+    """Roll (1984): 10.1111/j.1540-6261.1984.tb03897.x contains 6261.1984; it must not be looked up on arXiv."""
+    bib = ("@article{roll, author={Roll, Richard}, title={A Simple Implicit Measure of the Effective Bid-Ask Spread}, "
+           "year={1984}, journal={The Journal of Finance}, doi={10.1111/j.1540-6261.1984.tb03897.x}}")
+    looked_up = []
+    notes = paper.check_references("\\cite{roll}", bib, fetch=lambda ids: looked_up.append(ids) or {})
+    assert notes == [] and looked_up == []
+
+
+def test_arxiv_identifiers_are_still_found_where_they_are_named():
+    for field in ("eprint={2409.00001}", "url={https://arxiv.org/abs/2409.00001v2}", "note={arXiv:2409.00001}",
+                  "howpublished={arXiv preprint 2409.00001}"):
+        bib = "@misc{x, title={A title}, year={2024}, " + field + "}"
+        seen = []
+        paper.check_references("\\cite{x}", bib, fetch=lambda ids: seen.append(ids) or {"2409.00001": "A title"})
+        assert seen == [["2409.00001"]], field
+
+
+def test_a_local_dossier_with_a_path_or_url_field_has_a_locator():
+    bib = "@misc{p, author={{SigmaLabs}}, title={Strategy dossier}, year={2026}, howpublished={Dated local strategy dossier}, url={../inputs/P.txt}}"
+    assert paper.check_references("\\cite{p}", bib) == []
+    bare = "@misc{p, author={{SigmaLabs}}, title={Strategy dossier}, year={2026}, howpublished={Dated local strategy dossier}}"
+    assert paper.check_references("\\cite{p}", bare) == ["p: no URL, DOI or arXiv identifier"]

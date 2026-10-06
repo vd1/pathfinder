@@ -87,6 +87,23 @@ def _words(s):
     return set(re.findall(r"[a-z0-9]{3,}", (s or "").lower()))
 
 
+def _arxiv_id(entry: dict) -> str | None:
+    """The arXiv identifier an entry names, or None. Only an explicit mention counts: an eprint field, an
+    arxiv.org address or an "arXiv:" tag. A bare four-and-four-digit pattern anywhere in the entry does not,
+    because a DOI such as 10.1111/j.1540-6261.1984.tb03897.x contains 6261.1984 (Roll 1984 was reported as
+    "arXiv 6261.1984 not found" and its note blocked, 6 October)."""
+    number = r"(\d{4}\.\d{4,5})(?:v\d+)?"
+    if re.fullmatch(number, (entry.get("eprint") or "").strip().removeprefix("arXiv:").strip()):
+        return re.fullmatch(number, entry["eprint"].strip().removeprefix("arXiv:").strip()).group(1)
+    for key, value in entry.items():
+        if key == "doi":
+            continue
+        m = re.search(r"arxiv\.org/(?:abs|pdf|html)/" + number, value, re.I) or re.search(r"arxiv(?:\s+(?:preprint|e-?print|identifier|id))?\s*[:/]?\s*" + number, value, re.I)
+        if m:
+            return m.group(1)
+    return None
+
+
 def check_references(tex: str, bib: str, fetch=None) -> list[str]:
     """@planks("Then every cited reference passes Pathfinder's reference checks")
 
@@ -101,10 +118,10 @@ def check_references(tex: str, bib: str, fetch=None) -> list[str]:
     ids = {}
     for k, e in entries.items():
         blob = " ".join(e.values())
-        m = re.search(r"(\d{4}\.\d{4,5})(?:v\d+)?", blob)
-        if m:
-            ids[k] = m.group(1)
-        elif "doi" not in e and not re.search(r"https?://|doi", blob, re.I):
+        aid = _arxiv_id(e)
+        if aid:
+            ids[k] = aid
+        elif not (e.get("doi") or e.get("url") or e.get("eprint") or re.search(r"https?://|\\url\{|doi", blob, re.I)):
             notes.append(f"{k}: no URL, DOI or arXiv identifier")
     if ids:
         fetch = fetch or _arxiv_titles
