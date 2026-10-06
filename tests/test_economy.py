@@ -25,3 +25,20 @@ def test_the_economy_command_prints_the_campaign_summary(tmp_path, capsys):
     c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in ROWS))
     cli.main(["--root", str(tmp_path), "economy", "--json"])
     assert json.loads(capsys.readouterr().out)["pairs"]["Q2P1"] == 3000
+
+
+def test_claude_input_counts_its_cache_reads_and_writes_as_codex_input_does(tmp_path):
+    """Claude reports input apart from cache reads and writes; Codex counts cached tokens inside its input.
+    Read back, a Claude receipt's input_tokens is the whole input, so stages on the two providers compare."""
+    from pathfinder import economy, transport
+    from stubcampaign import make
+    c = make(tmp_path)
+    with c.path("receipts.jsonl").open("a") as f:
+        f.write(json.dumps({"call_id": "v", "backend": "claude", "stage": "verify", "outcome": "completed",
+                            "input_tokens": 12, "cache_read": 455467, "cache_write": 94256, "output_tokens": 8167}) + "\n")
+        f.write(json.dumps({"call_id": "p", "backend": "codex", "stage": "peer", "outcome": "completed",
+                            "input_tokens": 1000, "cache_read": 900, "output_tokens": 10}) + "\n")
+    rows = {r["call_id"]: r for r in transport.receipts(c)}
+    assert rows["v"]["input_tokens"] == 549735 and rows["v"]["input_tokens_uncached"] == 12
+    assert rows["p"]["input_tokens"] == 1000
+    assert economy.summary(transport.receipts(c))["stages"]["verify"]["input_tokens"] == 549735

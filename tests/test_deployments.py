@@ -97,6 +97,20 @@ AGQSL_OPEN_PAIRS = ["Q1P1", "Q2P2", "Q3P3", "Q4P4", "Q5P5"]
 AGQSL_SKIP = ("engine", "sources-cache")        # the frozen engine and the importer's download cache, untracked
 
 
+def _agqsl_canon(tmp_path: Path) -> Path:
+    """canon/ as committed at the pinned revision (HEAD outside a release): a campaign running in the checkout
+    changes its files while the contract reads them, so the contract reads the record, not the live tree."""
+    import tarfile, io
+    checkout = deployment_matrix.checkout("agqsl")
+    rev = deployment_matrix.load()["agqsl"]["revision"] if deployment_matrix.RELEASE else "HEAD"
+    data = subprocess.run(["git", "-C", str(checkout), "archive", "--format=tar", rev, "canon"],
+                          capture_output=True, check=True).stdout
+    target = tmp_path / "recorded"
+    with tarfile.open(fileobj=io.BytesIO(data)) as tar:
+        tar.extractall(target, filter="data")
+    return target / "canon"
+
+
 def _agqsl_imported(canon: Path) -> list[str]:
     """The pairs canon/import_campaign2.py brought in (second-campaign triplets), in import order."""
     mapping = json.loads((canon / "import.json").read_text())
@@ -104,7 +118,7 @@ def _agqsl_imported(canon: Path) -> list[str]:
 
 
 def test_agqsl_canon_replays_on_the_candidate_engine(tmp_path):
-    canon = deployment_matrix.checkout("agqsl") / "canon"
+    canon = _agqsl_canon(tmp_path)
     before = _tree(canon)
     c, state = _replay(canon, tmp_path, skip=AGQSL_SKIP)
     assert c.peers and (canon / "engine-ref").read_text().strip().startswith("engine-v")
@@ -113,7 +127,8 @@ def test_agqsl_canon_replays_on_the_candidate_engine(tmp_path):
     assert sorted(units) == sorted(AGQSL_OPEN_PAIRS + imported)
     from collections import Counter
     assert Counter(units[p]["research"]["status"] for p in AGQSL_OPEN_PAIRS) == {"PAUSE": 3, "DRAFT": 2}
-    assert state["stages"]["edit"] == {"done": 5} and state["stages"]["paper"] == {"ACCEPTED": 2}
+    assert all(units[p]["editorial"]["status"] == "done" for p in AGQSL_OPEN_PAIRS)
+    assert sorted(units[p]["assessment"]["status"] or "" for p in AGQSL_OPEN_PAIRS).count("ACCEPTED") == 2
     for pair in imported:                           # prepared for research, or researched since by hand
         assert units[pair]["q"]["id"] and units[pair]["p"]["id"] and not units[pair]["q"]["id"].startswith("agqsl-")
     # each role's overlay is appended to the candidate's own prompt
@@ -130,7 +145,7 @@ def test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine(tmp
     backend, the runner bounded to it, in a copy of canon/: agQSL's prompt overlays reach the calls (each role
     is sent to inputs/question.md), peer search stays off, and canon/ is left as it was."""
     from pathfinder import config, edit, research, runner, stub, transport
-    canon = deployment_matrix.checkout("agqsl") / "canon"
+    canon = _agqsl_canon(tmp_path)
     before = _tree(canon)
     pair = next((p for p in _agqsl_imported(canon)
                  if json.loads((canon / "threads" / p / "status.json").read_text()).get("status") not in research.TERMINAL

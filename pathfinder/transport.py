@@ -615,8 +615,18 @@ def receipts(campaign) -> list[dict]:
             if key in seen:
                 continue
             seen.add(key)
-        rows.append(row)
+        rows.append(_whole_input(row))
     return rows
+
+
+def _whole_input(row: dict) -> dict:
+    """Claude reports input apart from its cache reads and writes, Codex counts cached tokens inside its input:
+    read back, a Claude receipt's input_tokens is the whole input (the reported part kept as
+    input_tokens_uncached), so budgets, the state and the economy count both providers alike."""
+    if row.get("backend") == "claude" and row.get("input_tokens") is not None and "input_tokens_uncached" not in row:
+        row = {**row, "input_tokens_uncached": row["input_tokens"],
+               "input_tokens": row["input_tokens"] + (row.get("cache_read") or 0) + (row.get("cache_write") or 0)}
+    return row
 
 
 def known_cost(rows) -> float:
