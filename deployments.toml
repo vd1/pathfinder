@@ -49,5 +49,5 @@ status = "supported"
 checkout = "../agQSL"
 revision = "7c129f38174f0fa2d4074374cdab10d6b526280a"
 clean_paths = ["canon"]
-contract = "tests/test_deployments.py::test_agqsl_canon_replays_on_the_candidate_engine"
+contract = ["tests/test_deployments.py::test_agqsl_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine"]
 notes = "Campaign repository: canon/ is a canonical campaign of agQSL's five open pairs (two papers accepted, three paused for inputs the sources lack), run by hand on a frozen engine-v1.3.5 (canon/engine-ref). The contract replays it read-only on the candidate engine and checks that its prompt overlays compose."

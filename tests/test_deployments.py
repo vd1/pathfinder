@@ -93,18 +93,77 @@ def _replay(source: Path, tmp_path: Path, skip=("engine",)):
     return c, state
 
 
+AGQSL_OPEN_PAIRS = ["Q1P1", "Q2P2", "Q3P3", "Q4P4", "Q5P5"]
+AGQSL_SKIP = ("engine", "sources-cache")        # the frozen engine and the importer's download cache, untracked
+
+
+def _agqsl_imported(canon: Path) -> list[str]:
+    """The pairs canon/import_campaign2.py brought in (second-campaign triplets), in import order."""
+    mapping = json.loads((canon / "import.json").read_text())
+    return [pair for pair, origin in mapping.items() if origin.get("art_id")]
+
+
 def test_agqsl_canon_replays_on_the_candidate_engine(tmp_path):
     canon = deployment_matrix.checkout("agqsl") / "canon"
     before = _tree(canon)
-    c, state = _replay(canon, tmp_path)
+    c, state = _replay(canon, tmp_path, skip=AGQSL_SKIP)
     assert c.peers and (canon / "engine-ref").read_text().strip().startswith("engine-v")
-    assert state["stages"] == {"research": {"PAUSE": 3, "DRAFT": 2}, "edit": {"done": 5}, "paper": {"ACCEPTED": 2}}
-    assert sorted(u["unit"] for u in state["units"]) == ["Q1P1", "Q2P2", "Q3P3", "Q4P4", "Q5P5"]
+    units = {u["unit"]: u for u in state["units"]}
+    imported = _agqsl_imported(canon)
+    assert sorted(units) == sorted(AGQSL_OPEN_PAIRS + imported)
+    from collections import Counter
+    assert Counter(units[p]["research"]["status"] for p in AGQSL_OPEN_PAIRS) == {"PAUSE": 3, "DRAFT": 2}
+    assert state["stages"]["edit"] == {"done": 5} and state["stages"]["paper"] == {"ACCEPTED": 2}
+    for pair in imported:                           # prepared for research, or researched since by hand
+        assert units[pair]["q"]["id"] and units[pair]["p"]["id"] and not units[pair]["q"]["id"].startswith("agqsl-")
     # each role's overlay is appended to the candidate's own prompt
     from pathfinder import resources
     for role in ("peer", "consolidate", "verify", "editor"):
         overlay = (canon / "prompts" / f"{role}.append.md").read_text().strip()
         assert resources.prompt_template(c, role).rstrip().endswith(overlay), role
+    assert _tree(canon) == before
+
+
+@needs_tex
+def test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine(tmp_path, monkeypatch):
+    """One imported second-campaign pair not yet researched runs through research and editing on the stub
+    backend, the runner bounded to it, in a copy of canon/: agQSL's prompt overlays reach the calls (each role
+    is sent to inputs/question.md), peer search stays off, and canon/ is left as it was."""
+    from pathfinder import config, edit, research, runner, stub, transport
+    canon = deployment_matrix.checkout("agqsl") / "canon"
+    before = _tree(canon)
+    pair = next((p for p in _agqsl_imported(canon)
+                 if json.loads((canon / "threads" / p / "status.json").read_text()).get("status") not in research.TERMINAL
+                 and not (canon / "threads" / p / "ledger.jsonl").read_text().strip()), None)
+    if pair is None:
+        pytest.skip("agqsl: every imported pair has been researched; import the next batch")
+    copy = tmp_path / "canon"
+    shutil.copytree(canon, copy, ignore=lambda d, names: [n for n in names if Path(d) == canon and n in AGQSL_SKIP])
+    raw = json.loads((copy / "campaign.json").read_text())
+    raw.update(backend="stub", model="stub"); raw.pop("account", None)
+    (copy / "campaign.json").write_text(json.dumps(raw, indent=1))
+    monkeypatch.setenv("PATHFINDER_ACCOUNTS", str(tmp_path / "accounts"))
+    calls = []
+    real = stub.execute
+    def recorded(campaign, request):
+        calls.append({"stage": request.stage, "search": request.search, "prompt": request.prompt})
+        return real(campaign, request)
+    monkeypatch.setattr(stub, "execute", recorded)
+    c = config.load(copy)
+    assert c.peer_search is False
+    # canon/ records its last run on the frozen engine; the candidate on the stub backend is a linked run
+    assert runner.run(c, interval=0.05, pairs=[pair], accept_change="deployment contract: candidate engine, stub backend") == 0
+    assert research.status(c, pair)["status"] in research.TERMINAL
+    assert edit.status(c, pair)["status"] == "done" and (c.thread_dir(pair) / "edited" / "note.tex").is_file()
+    stages = {call["stage"] for call in calls}
+    assert {"peer", "consolidate", "verify", "edit"} <= stages
+    for call in calls:
+        assert "inputs/question.md" in call["prompt"], call["stage"]
+        if call["stage"] == "peer":
+            assert call["search"] is False
+    assert {r.get("backend") for r in transport.receipts(c) if r.get("thread") == pair} == {"stub"}
+    others = [p for p in _agqsl_imported(canon) if p != pair] + AGQSL_OPEN_PAIRS
+    assert all(_tree(copy / "threads" / p) == _tree(canon / "threads" / p) for p in others)
     assert _tree(canon) == before
 
 
