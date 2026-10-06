@@ -20,16 +20,17 @@ def test_guard_writes_stop_when_over_budget(tmp_path):
 
 
 def test_stop_drains_in_flight(tmp_path, monkeypatch):
-    c = make(tmp_path, seats=1)
+    c = make(tmp_path, seats=1)                        # three shortlisted pairs, one seat
     calls = []
 
     def fake_thread(campaign, pair_id, stop=lambda: False):
-        calls.append(pair_id); time.sleep(0.3)
+        calls.append(pair_id)
+        runner.request_stop(c, "test")                 # the stop arrives while this pair is in flight, however slow the start
+        time.sleep(0.3)
         (campaign.thread_dir(pair_id)).mkdir(parents=True, exist_ok=True)
         (campaign.thread_dir(pair_id) / "status.json").write_text(json.dumps({"status": "PAUSE", "stage": "done", "round": 1}))
         return "PAUSE"
     monkeypatch.setattr(runner.research, "run_thread", fake_thread)
-    threading.Timer(0.1, lambda: runner.request_stop(c, "test")).start()
     runner.run(c, interval=0.05)
     assert calls == ["Q1P1"]                           # first admitted, finished; nothing else admitted
 
