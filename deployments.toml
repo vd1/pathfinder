@@ -30,7 +30,7 @@ notes = "The pilot campaign at the repository root (10 mechanism-design by 10 ag
 [deployments.pathfinder-julien-2]
 status = "supported"
 checkout = "../pathfinder-julien-2"
-revision = "c59af4a"
+revision = "9c63c0069d6b1efa4b4a07b02dbefd17d34d107f"
 clean_paths = ["campaign", "canon"]
 contract = ["tests/test_deployments.py::test_julien2_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine"]
 notes = "Julien's campaign 2, a plain deployment since its controller (eva2, julien2), patched engine copy and vendored PCE were removed (tag pre-pathfinder-roof in that repository). canon/ is the record of the finished eva-top-ten-01 (ten one-pair composable campaigns made by import-eva2: seven DRAFT, three PAUSE, PCE edits done, actionability NEEDS_INPUTS); campaign/ is the next campaign on a frozen engine-v1.4.5 (campaign/engine-ref): composable research with three branches, edit_scheme pce, actionability, two paper reviewers, routes to Claude Opus 5.5 for verification, ledger review, actionability and reviewer 1, and the next ten pairs of its saved scan as the shortlist, not yet run. The contract replays canon/ read-only and runs one shortlisted pair of campaign/ through composable research, PCE editing and actionability on the stub backend, checking that its prompt overlays reach the calls."
@@ -38,7 +38,7 @@ notes = "Julien's campaign 2, a plain deployment since its controller (eva2, jul
 [deployments.prooftree]
 status = "supported"
 checkout = "../proofTree"
-revision = "8afc9cbeb50f00685dbecb023bac4a3c043ad4fc"
+revision = "4b601ade8a6ccb6e78d106341f06050efc6fdf87"
 clean_paths = ["prooftree", "pyproject.toml", "uv.lock", "campaigns/sphere-packing-rounds2/adaptive"]   # what the contract runs and replays
 contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
 notes = "Editable dependency on ../pathfinder; imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
