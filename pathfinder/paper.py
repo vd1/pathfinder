@@ -157,6 +157,19 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
         _set(campaign, pair_id, status="blocked", reason=str(error), failure=research.OVERSIZE_FAILURE); return "blocked"
 
 
+def run_many(campaign, pairs: list[str], stop=lambda: False) -> dict:
+    """The paper stage for several pairs, as many at once as the campaign has seats; a pair whose call the
+    transport could not serve is reported as such and the others go on."""
+    from concurrent.futures import ThreadPoolExecutor
+    def one(pid):
+        try:
+            return run(campaign, pid, stop=stop)
+        except transport.TransportFailed:
+            return "transport failure; run again later"
+    with ThreadPoolExecutor(max_workers=max(1, campaign.seats)) as pool:
+        return dict(zip(pairs, pool.map(one, pairs)))
+
+
 def _run(campaign, pair_id: str, stop) -> str:
     d = campaign.thread_dir(pair_id); pd = d / "paper"; pd.mkdir(exist_ok=True)
     A, inp = campaign.allowances, _inputs(d)

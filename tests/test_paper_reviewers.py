@@ -80,3 +80,19 @@ def test_each_reviewer_takes_its_own_route(tmp_path):
 def test_a_bad_reviewer_count_is_refused(tmp_path, bad):
     with pytest.raises(ValueError, match="paper_reviewers"):
         make(tmp_path, paper_reviewers=bad)
+
+
+def test_papers_for_several_pairs_run_side_by_side_up_to_the_seats(tmp_path, monkeypatch):
+    import threading, time
+    c = make(tmp_path, pairs=("Q1P1", "Q2P2", "Q3P3"), seats=2)
+    live, peak, lock = [0], [0], threading.Lock()
+    def fake(campaign, pair_id, stop=lambda: False):
+        with lock:
+            live[0] += 1; peak[0] = max(peak[0], live[0])
+        time.sleep(0.3)
+        with lock:
+            live[0] -= 1
+        return "ACCEPTED"
+    monkeypatch.setattr(paper, "run", fake)
+    assert paper.run_many(c, ["Q1P1", "Q2P2", "Q3P3"]) == {"Q1P1": "ACCEPTED", "Q2P2": "ACCEPTED", "Q3P3": "ACCEPTED"}
+    assert peak[0] == 2

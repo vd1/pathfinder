@@ -210,11 +210,8 @@ def _dispatch(ns, c):
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
                                            and paper.status(c, p["pair_id"]).get("status") != "ACCEPTED"]
-        for pid in pairs:
-            try:
-                print(f"{pid}: {paper.run(c, pid, stop=lambda: runner.stopped(c))}")
-            except transport.TransportFailed:
-                print(f"{pid}: transport failure; run again later")
+        for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
+            print(f"{pid}: {result}")
     elif ns.cmd == "edit":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") in research.TERMINAL
