@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "1ff62b9b62334ab98284e17457b2da2551ed2e17"
+revision = "a8d9535088a6d95bf9bc1514fd14379a85afce93"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.3.4 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
@@ -47,7 +47,7 @@ notes = "Editable dependency on ../pathfinder; imports only from the canonical e
 [deployments.agqsl]
 status = "supported"
 checkout = "../agQSL"
-revision = "8a5c15106a9e9f6aadd0433f7d6f33ac15ab5389"
+revision = "9975c4247568eb3ede3387afd67ea6589309fe78"
 clean_paths = ["canon"]
 contract = ["tests/test_deployments.py::test_agqsl_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine"]
-notes = "Campaign repository: canon/ is a canonical campaign on a frozen engine-v1.4.3 (canon/engine-ref): five pairs continued from phase_e_prime (two papers accepted, three paused) and the second campaign's open triplets imported by canon/import_campaign2.py in Phase D grade order (WIN, HOLD, PARK; DROP never), first batch Q6P6 to Q25P25. The contract replays the record read-only, checks that its prompt overlays compose, and runs one imported pair through research and editing on the stub backend."
+notes = "Campaign repository: canon/ is a canonical campaign on a frozen engine-v1.4.4 (canon/engine-ref): five pairs continued from phase_e_prime (two papers accepted, three paused) and the second campaign's open triplets imported by canon/import_campaign2.py in Phase D grade order (WIN, HOLD, PARK; DROP never), first batch Q6P6 to Q25P25. The contract replays the record read-only, checks that its prompt overlays compose, and runs one imported pair through research and editing on the stub backend."
