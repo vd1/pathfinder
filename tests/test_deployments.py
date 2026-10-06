@@ -190,6 +190,89 @@ def test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine(tmp
     assert _tree(canon) == before
 
 
+def _julien2_recorded(tmp_path: Path, *paths: str) -> Path:
+    """julien-2's tracked paths as committed at the pinned revision (HEAD outside a release), read through git
+    archive like agQSL's canon/: the contract reads the record, never the live tree."""
+    import tarfile, io
+    checkout = deployment_matrix.checkout("pathfinder-julien-2")
+    rev = deployment_matrix.load()["pathfinder-julien-2"]["revision"] if deployment_matrix.RELEASE else "HEAD"
+    data = subprocess.run(["git", "-C", str(checkout), "archive", "--format=tar", rev, *paths],
+                          capture_output=True, check=True).stdout
+    target = tmp_path / "recorded"
+    with tarfile.open(fileobj=io.BytesIO(data)) as tar:
+        tar.extractall(target, filter="data")
+    return target
+
+
+def test_julien2_canon_replays_on_the_candidate_engine(tmp_path):
+    """canon/ holds eva-top-ten-01 as ten one-pair composable campaigns (made by import-eva2): each loads, its
+    research ended DRAFT (seven) or PAUSE (three), its PCE edit is done and its actionability is NEEDS_INPUTS."""
+    from collections import Counter
+    from pathfinder import actionability, edit
+    canon = _julien2_recorded(tmp_path, "canon") / "canon"
+    before = _tree(canon)
+    experiments = sorted(d for d in canon.iterdir() if d.is_dir())
+    assert len(experiments) == 10 and all(d.name.startswith("eva-top-ten-01-") for d in experiments)
+    research = Counter()
+    for d in experiments:
+        (tmp_path / d.name).mkdir()
+        c, state = _replay(d, tmp_path / d.name)
+        assert c.raw["research_scheme"] == "composable" and c.raw["branches"] == 3, d.name
+        assert [u["unit"] for u in state["units"]] == ["Q1P1"], d.name
+        unit = state["units"][0]
+        research[unit["research"]["status"]] += 1
+        assert unit["editorial"]["status"] == "done" and edit.status(c, "Q1P1")["status"] == "done", d.name
+        assert actionability.status(c, "Q1P1")["decision"] == "NEEDS_INPUTS", d.name
+        assert sorted(p.name for p in (c.thread_dir("Q1P1") / "branches").iterdir()) == ["branch-1", "branch-2", "branch-3"]
+    assert research == {"DRAFT": 7, "PAUSE": 3}
+    assert _tree(canon) == before
+
+
+@needs_tex
+def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine(tmp_path, monkeypatch):
+    """One shortlisted pair of julien-2's campaign/ runs on the stub backend in a copy: three direct-EVA branches
+    frozen as bundles, the joint thread over them, PCE editing and the actionability assessment. The routed
+    stages stay on the stub (no real call), julien-2's prompt overlays reach the calls, and the record is unchanged."""
+    from pathfinder import actionability, composable, config, edit, research, runner, stub, transport
+    recorded = _julien2_recorded(tmp_path, "campaign") / "campaign"
+    before = _tree(recorded)
+    copy = tmp_path / "campaign"
+    shutil.copytree(recorded, copy)
+    raw = json.loads((copy / "campaign.json").read_text())
+    assert raw["research_scheme"] == "composable" and raw["edit_scheme"] == "pce" and raw["actionability"] is True
+    assert {"verify", "ledger_review", "actionability"} <= set(raw["routes"])
+    raw.update(backend="stub", model="stub"); raw.pop("account", None)
+    (copy / "campaign.json").write_text(json.dumps(raw, indent=1))
+    monkeypatch.setenv("PATHFINDER_ACCOUNTS", str(tmp_path / "accounts"))
+    calls = []
+    real = stub.execute
+    def recorded_call(campaign, request):
+        calls.append({"stage": request.stage, "actor": request.actor, "prompt": request.prompt})
+        return real(campaign, request)
+    monkeypatch.setattr(stub, "execute", recorded_call)
+    c = config.load(copy)
+    pair = json.loads((copy / "shortlist.json").read_text())["pairs"][0]["pair_id"]
+    assert runner.run(c, interval=0.05, pairs=[pair]) == 0
+    d = c.thread_dir(pair)
+    assert research.status(c, pair)["status"] in research.TERMINAL
+    for label in composable.labels(c):                      # each branch frozen as a bundle the joint thread reads
+        assert (d / "branches" / label / "bundle.json").is_file(), label
+    assert (d / "ledger.jsonl").read_text().strip()         # the joint thread's own ledger
+    record = json.loads((d / "edited" / "edit.json").read_text())
+    assert edit.status(c, pair)["status"] == "done" and record.get("scheme") == "pce" and record.get("editorial_status")
+    assert actionability.status(c, pair)["status"] == "done"
+    stages = {call["stage"] for call in calls}
+    assert {"peer", "ledger_review", "consolidate", "verify", "edit", "actionability"} <= stages
+    assert any((call["actor"] or "").startswith("pce-") for call in calls)
+    overlay = lambda role: (copy / "prompts" / f"{role}.append.md").read_text().strip()[:200]
+    for stage, role in (("peer", "peer"), ("verify", "verify"), ("ledger_review", "branch"), ("actionability", "actionability")):
+        assert all(overlay(role) in call["prompt"] for call in calls if call["stage"] == stage), stage
+    brief = overlay("pce-brief").splitlines()[0]               # the PCE brief travels inside a JSON read scope
+    assert any(brief in call["prompt"] for call in calls if (call["actor"] or "").startswith("pce-"))
+    assert {r.get("backend") for r in transport.receipts(c)} == {"stub"}
+    assert _tree(recorded) == before
+
+
 PROOFTREE_LINK = r'''
 import contextlib, io, json, sys
 from pathlib import Path
