@@ -49,12 +49,12 @@ def test_no_routes_leave_the_request_and_campaign_untouched(tmp_path):
 
 
 def test_a_route_switches_backend_model_and_effort_for_its_request_only(tmp_path):
-    c = make(tmp_path, routes={"verify": {"backend": "claude", "model": "claude-opus-5", "effort": "medium"},
-                               "peer": {"backend": "codex", "model": "gpt-6-astra", "effort": "high"}})
+    c = make(tmp_path, backend="codex", routes={"verify": {"backend": "claude", "model": "claude-opus-5", "effort": "medium"},
+                                                "peer": {"backend": "codex", "model": "gpt-6-astra", "effort": "high"}})
     verify = transport.request("p", model="stub", tools=False, search=False, cwd=tmp_path, timeout=5,
                                thread="Q1P1", stage="verify", actor="verifier")
     routed, request = routing.apply(c, verify)
-    assert routed is not c and c.backend == "stub" and routed.backend == "claude" and request.model == "claude-opus-5"
+    assert routed is not c and c.backend == "codex" and routed.backend == "claude" and request.model == "claude-opus-5"
     cmd = transport._command(routed, request.model, False, False, tmp_path)
     assert cmd[cmd.index("--effort") + 1] == "medium" and cmd[cmd.index("--model") + 1] == "claude-opus-5"
     peer = transport.request("p", model="stub", tools=True, search=True, cwd=tmp_path, timeout=5,
@@ -97,3 +97,13 @@ def test_routes_reach_every_engine_stage_through_execute(tmp_path):
     seen = {row["stage"]: row for row in rows(tmp_path)}
     for s in stages:
         assert seen[s]["model"] == f"stub-{s}" and seen[s]["route"]["key"] == s, s
+
+
+def test_a_stub_campaign_stays_on_the_stub_whatever_its_routes_say(tmp_path):
+    """A deployment's contract switches a copy to the stub backend: a route to Claude must not make a real call."""
+    from pathfinder import routing, transport
+    c = make(tmp_path, routes={"verify": {"backend": "claude", "model": "claude-opus-5-5"}})
+    request = transport.ModelRequest(identity="x", prompt="p", model="stub", tools=False, search=False, cwd=tmp_path,
+                                     timeout=10, thread="Q1P1", stage="verify", actor="verifier")
+    routed, req = routing.apply(c, request)
+    assert routed.backend == "stub" and req.model == "claude-opus-5-5" and routed.route["backend"] == "stub"

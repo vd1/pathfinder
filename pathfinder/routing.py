@@ -68,7 +68,8 @@ def apply(campaign, request):
         return campaign, request
     key, route = found
     routed = copy.copy(campaign)
-    backend = route.get("backend", campaign.backend)
+    # a stub campaign (a deployment's contract on a copy) stays on the stub: a route never makes a real call
+    backend = campaign.backend if campaign.backend == "stub" else route.get("backend", campaign.backend)
     raw = dict(campaign.raw or {})
     if "effort" in route:
         side = "claude" if backend == "claude" else "codex"
