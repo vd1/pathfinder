@@ -148,6 +148,11 @@ def snapshot(campaign):
                 warnings.append("Runner heartbeat is older than five minutes; investigate before restarting.")
     else:
         warnings.append("No runner instrumentation recorded; liveness is unknown for legacy or external launchers.")
+    from . import exhaustion
+    backends = {campaign.backend, *(r.get("backend") for r in ((campaign.raw or {}).get("routes") or {}).values())}
+    for pause in exhaustion.all_active():          # calls to this provider wait for its reset, in every campaign
+        if pause["backend"] in backends:
+            warnings.append(exhaustion.describe(pause) + "; calls to it wait until then")
     active = []
     for path in sorted(campaign.path("active-calls").glob("*.json")):
         call = inspect(path)

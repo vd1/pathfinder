@@ -326,6 +326,9 @@ def _receipt(campaign, thread, stage, actor, model, r):
         rules, rules_error = (), f"{type(error).__name__}: {error}"
     failure = failures.classify(r.get("outcome"), r.get("error"), rules)
     r["failure"] = failure.record() if failure else None
+    if failure is not None and failure.cls == "quota" and r.get("outcome") != "refused":   # the provider's limit: every campaign pauses
+        from . import exhaustion
+        exhaustion.record(campaign.backend, r.get("error") or "", campaign=campaign.root)
     row = {"v": 3, "call_id": getattr(_call, "id", None) or uuid.uuid4().hex,
            "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "run_id": getattr(campaign, "run_id", None),
            "thread": thread, "branch": getattr(campaign, "branch", None), "stage": stage,

@@ -106,16 +106,24 @@ def _refuse(campaign, thread, stage, actor, model, reason):
 
 @contextmanager
 def admission(campaign, stage: str, role: str, *, thread: str | None = None, model: str | None = None):
-    from . import events, extensions, runner, seats
+    from . import events, exhaustion, extensions, runner, seats
     policy = extensions.load(campaign, "admission")
     key = str(Path(campaign.root))
     shared = seats.account(campaign)
-    seat, waited = None, False
+    seat, waited, paused = None, False, False
     with _cond:
         while True:
             reason = _stop_marker(campaign)
             if reason is not None:
                 break
+            pause = exhaustion.active(campaign.backend)
+            if pause:                              # the provider's subscription is exhausted: every campaign waits for the reset
+                if not paused:
+                    paused = True
+                    events.emit(campaign, "admission_deferred", unit=thread, stage=stage, actor=role,
+                                reason=exhaustion.describe(pause))
+                _cond.wait(timeout=min(pause["remaining_seconds"], STOP_POLL))
+                continue
             remaining = cooldown(campaign)
             if remaining > 0:                      # a rate limit holds every call, not only the one that hit it
                 _cond.wait(timeout=min(remaining, STOP_POLL))
