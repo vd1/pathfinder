@@ -120,7 +120,11 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     bundles = list((campaign.raw or {}).get("research_bundles") or [])
     sources = evidence.registered_sources(campaign, pair_id or d.name)   # a bundle reads its pair's registrations
     resolved, ambiguous = {}, {}            # path -> (cited name, kind); cited name -> candidate paths
-    paths = {p for actor in campaign.peers for p in (d / actor).rglob("*") if p.is_file() or p.is_symlink()}
+    from .composable import environment
+    def made_by_tools(p):                           # inside a peer's environment or a clone's .git: not evidence
+        return any(environment(d / parent) for parent in p.relative_to(d).parents if str(parent) != ".")
+    paths = {p for actor in campaign.peers for p in (d / actor).rglob("*")
+             if (p.is_file() or p.is_symlink()) and not made_by_tools(p)}
     exclude = (campaign.raw or {}).get("evidence_byproducts") == "exclude"
     if exclude:                                     # a symbolic link is always listed, to be refused
         tree = {p.relative_to(d).as_posix() for p in paths}

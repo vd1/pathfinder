@@ -129,3 +129,13 @@ def test_paper_digests_are_over_the_file_bytes(tmp_path):
         pass
     head = context._reference(context.Section(inp["Q"], path=d / "inputs" / inp["Q"]), d)
     assert hashlib.sha256(raw).hexdigest() in head and f"{len(raw)} bytes" in head
+
+
+def test_a_peers_virtual_environment_is_not_evidence(tmp_path):
+    """A peer's venv is full of interpreter links: it is left out of the review's evidence, not refused."""
+    c, d = _composable(tmp_path)
+    venv = d / "ada" / "review2" / "venv"; (venv / "bin").mkdir(parents=True)
+    (venv / "pyvenv.cfg").write_text("home = /usr/bin\n")
+    os.symlink("/usr/bin/python3", venv / "bin" / "python")
+    material = research._review_material(c, "Q1P1")
+    assert "venv" not in material and "derivation.txt" in material
