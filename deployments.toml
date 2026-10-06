@@ -31,7 +31,7 @@ notes = "The pilot campaign at the repository root (10 mechanism-design by 10 ag
 status = "supported"
 checkout = "../pathfinder-julien-2"
 revision = "9c63c0069d6b1efa4b4a07b02dbefd17d34d107f"
-clean_paths = ["campaign", "canon"]
+clean_paths = ["campaign/campaign.json", "campaign/prompts", "campaign/engine-ref"]   # the contracts read campaign/ and canon/ as committed
 contract = ["tests/test_deployments.py::test_julien2_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine"]
 notes = "Julien's campaign 2, a plain deployment since its controller (eva2, julien2), patched engine copy and vendored PCE were removed (tag pre-pathfinder-roof in that repository). canon/ is the record of the finished eva-top-ten-01 (ten one-pair composable campaigns made by import-eva2: seven DRAFT, three PAUSE, PCE edits done, actionability NEEDS_INPUTS); campaign/ is the next campaign on a frozen engine-v1.4.5 (campaign/engine-ref): composable research with three branches, edit_scheme pce, actionability, two paper reviewers, routes to Claude Opus 5.5 for verification, ledger review, actionability and reviewer 1, and the next ten pairs of its saved scan as the shortlist, not yet run. The contract replays canon/ read-only and runs one shortlisted pair of campaign/ through composable research, PCE editing and actionability on the stub backend, checking that its prompt overlays reach the calls."
 
@@ -48,6 +48,6 @@ notes = "Editable dependency on ../pathfinder; imports only from the canonical e
 status = "supported"
 checkout = "../agQSL"
 revision = "da74d7aca6f7e7516894b91fd2ca9a6baa19ab85"
-clean_paths = ["canon"]
+clean_paths = ["canon/campaign.json", "canon/prompts", "canon/engine-ref", "canon/import_campaign2.py"]   # the contracts read canon/ as committed; a live run changes the rest
 contract = ["tests/test_deployments.py::test_agqsl_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine"]
 notes = "Campaign repository: canon/ is a canonical campaign on a frozen engine-v1.4.5 (canon/engine-ref): five pairs continued from phase_e_prime (two papers accepted, three paused) and the second campaign's open triplets imported by canon/import_campaign2.py in Phase D grade order (WIN, HOLD, PARK; DROP never), first batch Q6P6 to Q25P25. The contract replays the record read-only, checks that its prompt overlays compose, and runs one imported pair through research and editing on the stub backend."
