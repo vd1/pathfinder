@@ -1,4 +1,6 @@
-"""After DRAFT: an author writes a paper with BibTeX references, an independent reviewer accepts or returns it."""
+"""After DRAFT: an author writes a paper with BibTeX references, an independent reviewer accepts or returns it.
+With "paper_reviewers": 2 or 3, each round has that many independent reviews, as a programme committee: the paper
+is accepted only when every reviewer accepts, and otherwise the author answers all their findings."""
 from __future__ import annotations
 import hashlib, json, os, re, shutil, subprocess
 import xml.etree.ElementTree as ET
@@ -177,6 +179,14 @@ def _run(campaign, pair_id: str, stop) -> str:
     _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rounds, reason=reviews[-1].get("summary")); return "PAUSE-ON-AMEND"
 
 
+def reviewers(campaign) -> int:
+    """"paper_reviewers": 1 (default) to 3 independent reviews per round."""
+    n = (campaign.raw or {}).get("paper_reviewers", 1)
+    if type(n) is not int or not 1 <= n <= 3:
+        raise ValueError(f"paper_reviewers must be an integer from 1 to 3, got {n!r}")
+    return n
+
+
 def _review_round(campaign, pair_id: str, rnd: int, reviews: list, seconds: int | None = None) -> str:
     """Build and check the paper as it stands, then one reviewer call. Appends to reviews.
     Returns ACCEPTED, blocked, or AMEND (the caller decides whether another round follows)."""
@@ -195,17 +205,30 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list, seconds: int 
                       Section("paper.tex", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
                       Section("reference checks", text="\n".join(checks) or "no findings", keep=True),
                       Section("your task", text=_prompt(campaign, "review"), keep=True)], tools=False, cwd=d, unit=pair_id)
-    kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=seconds or A.get("review_seconds", 900),
-              thread=pair_id, stage="review", actor="reviewer", schema=contracts.SCHEMAS["paper_review"])
-    r = transport.call(q, campaign=campaign, **kw)
-    if not r["transport_failed"]:                 # read once under the review contract, repaired at most once
-        v, r = contracts.ensure(campaign, transport.request(q, **kw), r, "paper_review")
-    if r["transport_failed"]:
-        _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
-    if v is None:                                 # an operational failure, not a review outcome
-        _set(campaign, pair_id, status="blocked", reason=f"contract: review: {r['error'].removeprefix('contract: ')}",
-             failure=r["failure"]); return "blocked"
-    dec = v["decision"] = {"REVISE": "AMEND"}.get(v["decision"], v["decision"])
+    count = reviewers(campaign)
+    verdicts = []
+    for k in range(1, count + 1):                 # independent reviews: each call sees the paper, never another review
+        actor = "reviewer" if count == 1 else f"reviewer-{k}"
+        kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=seconds or A.get("review_seconds", 900),
+                  thread=pair_id, stage="review", actor=actor, schema=contracts.SCHEMAS["paper_review"])
+        r = transport.call(q, campaign=campaign, **kw)
+        if not r["transport_failed"]:             # read once under the review contract, repaired at most once
+            v, r = contracts.ensure(campaign, transport.request(q, **kw), r, "paper_review")
+        if r["transport_failed"]:
+            _set(campaign, pair_id, status="stopped", reason=transport.stopped_reason(r.get("failure")), failure=r.get("failure")); raise transport.TransportFailed(pair_id, failure=r.get("failure"))
+        if v is None:                             # an operational failure, not a review outcome
+            _set(campaign, pair_id, status="blocked", reason=f"contract: review: {r['error'].removeprefix('contract: ')}",
+                 failure=r["failure"]); return "blocked"
+        v["decision"] = {"REVISE": "AMEND"}.get(v["decision"], v["decision"])
+        verdicts.append({"reviewer": actor, **v})
+    if count == 1:
+        v = {k: x for k, x in verdicts[0].items() if k != "reviewer"}
+    else:                                         # a programme committee: accepted only when every reviewer accepts
+        v = {"decision": "ACCEPT" if all(x["decision"] == "ACCEPT" for x in verdicts) else "AMEND",
+             "summary": " / ".join(f"{x['reviewer']}: {x.get('summary') or x['decision']}" for x in verdicts),
+             "findings": [{**f, "reviewer": x["reviewer"]} for x in verdicts for f in (x.get("findings") or [])],
+             "reviewers": verdicts}
+    dec = v["decision"]
     reviews.append({"round": rnd, "at": _now(), "build_ok": ok, "checks": checks,
                     "paper_sha256": hashlib.sha256(tex.encode()).hexdigest(), **v})
     (pd / "review.json").write_text(json.dumps(reviews, indent=1))

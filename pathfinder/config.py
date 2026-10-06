@@ -60,6 +60,10 @@ def load(root: Path) -> Campaign:
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
     from . import actionability
     actionability.validate(raw)
+    if "paper_reviewers" in raw:
+        from types import SimpleNamespace as _NS
+        from . import paper
+        paper.reviewers(_NS(raw=raw))
     routing.validate(raw)                            # a malformed route fails here, not at the first call it routes
     pce.validate(raw)                                # edit_scheme and the PCE settings
     tb = raw.get("tool_call_budgets")
