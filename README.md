@@ -119,7 +119,8 @@ with `--root experiments/3peers`; its `sources` is a link to the root's.
 with no path leaving the campaign directory: copy it to `campaign.json` in
 your own campaign directory and edit the models and the budget.
 
-- `backend`: `claude` or `codex`. No fallback between them.
+- `backend`: `claude` or `codex`. Per-stage `routes` can send any stage to the other, and `refusal_fallback` retries a
+  call a provider's safety filter refused (see below).
 - `model`: model for peers, consolidation and verification.
 - `scan_model`: model for the scan; defaults to `model`.
 - `peer_search`: whether peers may use web search.
@@ -218,8 +219,33 @@ your own campaign directory and edit the models and the budget.
   `fact_checks` (default `passes`), `critic` (`{"profile", "remit"}`, default
   profile `reader`), `supplement_chars` (default 300000); `pce_seconds` in
   `allowances` (default `edit_seconds`).
+  `critic` may add `pass_score` (1 to 10): a critic review at that score or above passes the gate even when it
+  asks for revisions, which then go to the editor as findings; without it the critic can ask for polish on every
+  pass and the editor is never reached.
+- `refusal_fallback`: optional route (`{"backend", "model", "effort"}`) for one more attempt when a provider's
+  safety filter refuses a call (OpenAI's biological-risk filter refused julien-2's chemistry pairs), e.g.
+  `{"backend": "claude", "model": "claude-opus-5-5"}`. A refusal on the fallback stands.
+- `actionability`: `true` adds a last stage after editing: one tool-less assessor call reads the papers, the
+  ledger and the edited note and answers `ACTIONABLE`, `NEEDS_INPUTS` or `NO_CASE` with the evidence, the
+  missing inputs, the next experiment and what would falsify the case (`threads/<pair>/actionability.json`, on
+  the operator page). The deployment's rubric is `prompts/actionability.append.md`; route it with the
+  `actionability` stage.
+- `paper_reviewers`: 1 (default) to 3 independent paper reviews per round, as a programme committee: the paper
+  is accepted only when every reviewer accepts, the author answers all their findings, and each reviewer can be
+  routed apart (`review/reviewer-1`, `review/reviewer-2`). `pathfinder paper` runs pairs side by side up to
+  `seats`.
+- `prompt_budgets`: per stage (or `default`) character budgets for the prompt the context builder assembles;
+  above it the largest sections become references (for an agent with tools) or digests.
+- `gc`: `false` turns off the clean-up each finished cycle does (LaTeX by-products, call working directories,
+  peers' virtual environments, prompt copies in retained responses; receipts keep commands with shortened
+  outputs). `pathfinder gc [--dry-run]` applies it to finished threads and older receipts.
 - `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
   deployments" below.
+
+When a call meets a subscription's usage limit, every campaign's calls to that provider (codex or claude) wait
+until the reset time the provider gave (an hour when it gives none), then go on; `pathfinder health` shows the
+pause and `pathfinder pauses [--clear BACKEND]` lists or clears it. A Claude call with a reply contract ends with
+the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
 
 ## Stops, guard, failures, reconcile
 
@@ -626,6 +652,32 @@ notes the same way on demand.
   the one safe action. It renders TeX mathematics in ledger
   entries and verdicts written with `\(...\)`, `\[...\]` or `$$...$$`
   through KaTeX from a CDN when online; plain text otherwise.
+
+## Your own deployment
+
+Clone this repository and, with an agent (the repository's `AGENTS.md` and `RIGGING.md` tell it how to work
+here), build a deployment for your own application without editing the engine:
+
+1. **A campaign directory** outside the engine, with `campaign.json` from `campaign.example.json`: your models
+   and `routes`, `account` for a shared subscription, `seats`, budgets, and the stages you want
+   (`research_scheme`, `edit_scheme`, `actionability`, `paper_reviewers`).
+2. **Your corpora**: `pathfinder fetch` for arXiv queries, or your own `Q.jsonl` and `P.jsonl` (one record per
+   paper: `id`, `title`, `abstract`, optionally `text` pointing at a full text in the campaign). `pathfinder
+   scan` and `select` make the shortlist, or write `shortlist.json` yourself.
+3. **Your domain** in prompt overlays: `prompts/<role>.append.md` adds to an engine role's prompt (peer,
+   consolidate, verify, editor, actionability, pce-*); `prompts/<role>.md` replaces it. Inputs a pair needs
+   beyond its two papers go in `threads/<pair>/inputs/`.
+4. **Your own code**, when settings and overlays are not enough: extensions named in `campaign.json` (admission
+   policy, transport, panels for the operator page, failure rules, a coordinator's `next_unit`), kept in your
+   repository.
+5. **A frozen engine**: `pathfinder freeze engine --ref engine-vX.Y.Z` in your campaign and run with
+   `PYTHONPATH=engine`, so a running campaign never changes engine under it; moving to a new release is a
+   re-freeze and a run started with `--accept-change`.
+6. **A stub run first**: `"backend": "stub"` drives every stage without a model call, to check your setup.
+
+statarb, proofTree, agQSL and julien-2 are such deployments; `deployments.toml` lists them, and each has a
+contract test in `tests/test_deployments.py` that every engine release must pass. A deployment you want kept
+working across releases gets the same: an entry and a contract test.
 
 ## Building your own
 

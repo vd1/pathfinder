@@ -838,6 +838,31 @@ The fact-checker's evidence (decided 5 October). In julien-2's nine fact-checked
 
 Subscription exhaustion (engine-v1.4.3, 6 October): a usage-limit failure records a pause for its provider (codex or claude) under \texttt{\$PATHFINDER\_ACCOUNTS/\_providers/}, with the reset time the provider gave (one hour when it gives none); admission holds every campaign's calls to that provider until then, and goes on by itself; \texttt{pathfinder health} shows it and \texttt{pathfinder pauses} lists or clears it. The campaign whose call met the limit still stops, as before. A stub campaign never leaves the stub, whatever its routes. agQSL now runs GPT-6.1 Sol (medium) for its proposers and Claude Opus 5.5 for verification, paper review and actionability, which is on.
 
-Open: agQSL's \texttt{pathfinder3/}, and retiring julien-2's controller.
+\section{Close-out, 7 October}\label{sec:closeout}
+
+The refactoring campaign is closed with engine-v1.5.0. Phases 1 to 7 and 9 are done; phase 8 (intake from sources
+beyond arXiv, chosen by each deployment) becomes ordinary engine work. What the deployments needed is in the
+engine: per-stage and per-actor routes, PCE editing with a critic score bar, actionability as the last stage,
+independent paper reviewers, clean-up after each cycle, subscription pauses shared by every campaign, a fallback
+route for calls a provider's safety filter refuses, Codex sandbox profiles, arXiv queries with back-off, and the
+token levers (tool-call budgets, outlines, prompt budgets, supporting material as folders).
+
+Every live instance runs the canonical engine and none imports another: statarb (engine-v1.4.4, moving to the
+latest in its own session), proofTree (the live checkout), agQSL (engine-v1.4.7), julien-2 (engine-v1.4.7, its
+controller and engine copy removed), the 10x10 pilot and the coordinated pilot. Each is pinned in
+\texttt{deployments.toml} with a contract test in \texttt{tests/test_deployments.py}; the release check runs the
+engine's tests (about 750), the behaviour suite (103 scenarios) and every contract before a tag.
+
+Follow-ups, as engine work:
+\begin{itemize}
+\item phase 8, multi-source intake;
+\item clean-up after the paper stage and on blocked threads;
+\item the campaign that meets a subscription limit stops while the others pause: make it pause too;
+\item per-stage call limits;
+\item the comparison of two paper reviewers against a PCE fact check on agQSL's accepted papers;
+\item tool-call budgets for agQSL; the future of agQSL's \texttt{pathfinder3/} (its own suite is red on removed
+  material);
+\item proofTree on a frozen release instead of the live checkout.
+\end{itemize}
 
 \end{document}
