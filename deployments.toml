@@ -30,7 +30,7 @@ notes = "The pilot campaign at the repository root (10 mechanism-design by 10 ag
 [deployments.pathfinder-julien-2]
 status = "supported"
 checkout = "../pathfinder-julien-2"
-revision = "753917f84f1b1f8771ac2c24cead9473bdf38cb4"
+revision = "022e13f626fded2c329ffd7c21c98df05287fb33"
 clean_paths = ["campaign/campaign.json", "campaign/prompts", "campaign/engine-ref"]   # the contracts read campaign/ and canon/ as committed
 contract = ["tests/test_deployments.py::test_julien2_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine"]
 notes = "Julien's campaign 2, a plain deployment since its controller (eva2, julien2), patched engine copy and vendored PCE were removed (tag pre-pathfinder-roof in that repository). canon/ is the record of the finished eva-top-ten-01 (ten one-pair composable campaigns made by import-eva2: seven DRAFT, three PAUSE, PCE edits done, actionability NEEDS_INPUTS); campaign/ is the next campaign on a frozen engine-v1.4.5 (campaign/engine-ref): composable research with three branches, edit_scheme pce, actionability, two paper reviewers, routes to Claude Opus 5.5 for verification, ledger review, actionability and reviewer 1, and the next ten pairs of its saved scan as the shortlist, not yet run. The contract replays canon/ read-only and runs one shortlisted pair of campaign/ through composable research, PCE editing and actionability on the stub backend, checking that its prompt overlays reach the calls."
