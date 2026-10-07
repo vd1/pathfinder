@@ -131,5 +131,11 @@
 % the date of production; the prompts pass it explicitly, \today is the fallback at build time
 \date{\today}
 \author{}
+% how a shared document was produced, written by the pipeline (never by an agent), printed at its end
+\newcommand{\pathfinder@protocol}{}
+\newcommand{\pathfinderprotocol}[1]{\renewcommand{\pathfinder@protocol}{#1}}
+\AtEndDocument{\ifx\pathfinder@protocol\@empty\else
+  \par\vspace{1.5em}\noindent{\sffamily\bfseries\small\color{pathfinder@ink}Protocol}\par\vspace{3pt}
+  \noindent{\small\color{pathfinder@muted}\pathfinder@protocol}\par\fi}
 % the pipeline's metadata for this document: pair, papers, date, status
 \InputIfFileExists{pathfinder-meta}{}{}

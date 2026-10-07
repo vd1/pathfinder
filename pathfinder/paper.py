@@ -191,7 +191,7 @@ def _run(campaign, pair_id: str, stop) -> str:
         if reviews:
             findings = ("The previous review returned the paper with these findings; address each and say what you did:\n"
                         + json.dumps(reviews[-1].get("findings", []), indent=1))
-        research.write_meta(campaign, pair_id, pd, f"paper, review round {rnd}")
+        research.write_meta(campaign, pair_id, pd, f"paper, review round {rnd}", protocol=True)
         p = _prompt(campaign, "author", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=f"{pair_id}.tex",
                     NOTE_STEM=pair_id, ROUND=rnd, FINDINGS=findings)
         if not resume_review:
@@ -264,7 +264,7 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list, seconds: int 
     (pd / "review.json").write_text(json.dumps(reviews, indent=1))
     if dec == "ACCEPT" and ok:
         _set(campaign, pair_id, status="ACCEPTED", round=rnd, reason=v.get("summary"))
-        research.write_meta(campaign, pair_id, pd, f"paper accepted at review round {rnd}"); build(pd)   # final build, final state
+        research.write_meta(campaign, pair_id, pd, f"paper accepted at review round {rnd}", protocol=True); build(pd)   # final build, final state
         return "ACCEPTED"
     return "AMEND"
 

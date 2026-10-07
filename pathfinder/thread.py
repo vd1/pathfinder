@@ -185,7 +185,8 @@ def status_line(campaign, pair_id: str) -> str:
     return f"Research phase: {where}, {it} ITERATE, {rv} REVISE"
 
 
-def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str | None = None) -> Path:
+def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str | None = None,
+               protocol: bool = False, produced: str | None = None) -> Path:
     """pathfinder-meta.tex beside a document: the style reads it, so every document opens with the pair,
     the two papers linked to arXiv, the date of production and the thread's state, none of it typed by an agent."""
     m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f". Edit phase: {extra}" if extra else "")
@@ -197,6 +198,9 @@ def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str |
         # in the introduction and bibliography, not a fabricated arXiv link.
         t = "\n".join(line for line in t.splitlines()
                       if not line.startswith("\\pathfinderpapers")) + "\n"
+    from . import protocol as section
+    if protocol and section.enabled(campaign):      # shared documents end with how they were produced
+        t += f"\\pathfinderprotocol{{{_tex_escape(section.describe(campaign, pair_id, produced))}}}\n"
     where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
 
 

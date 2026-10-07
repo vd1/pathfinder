@@ -78,7 +78,7 @@ def _run(campaign, pair_id: str, stop) -> str:
         if stop():
             _set(campaign, pair_id, status="stopped"); return "stopped"
         _set(campaign, pair_id, status="editing", attempt=attempt + 1, failure=None, allowance_seconds=seconds)
-        research.write_meta(campaign, pair_id, ed, "readable note")
+        research.write_meta(campaign, pair_id, ed, "readable note", protocol=True)
         p = _prompt(campaign, "editor", STATUS=st, NOTE=f"{pair_id}.tex", NOTE_STEM=pair_id,
                     Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", RETRY=retry)
         try:

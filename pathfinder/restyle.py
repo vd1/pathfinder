@@ -106,7 +106,10 @@ def regenerate(campaign, log=print) -> dict:
     for p in sl:
         pid = p["pair_id"]
         for where, main, style, line, day in documents(campaign, pid):
-            research.write_meta(campaign, pid, where, line, date=day)
+            shared = where.name in ("edited", "paper")   # shared documents keep their protocol, dated as produced
+            produced = ((edit.status(campaign, pid) if where.name == "edited" else paper.status(campaign, pid)).get("updated")
+                        if shared else None)
+            research.write_meta(campaign, pid, where, line, date=day, protocol=shared, produced=produced)
             ok, tail = paper.build(where, main, restyle=style)
             if ok:
                 done += 1; log(f"{pid} {where.name}/{main}: rebuilt")
