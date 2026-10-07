@@ -171,3 +171,27 @@ def test_a_call_routed_to_claude_with_a_contract_is_told_to_answer_with_json_onl
     (claude_backend, claude_prompt), (codex_backend, codex_prompt) = seen
     assert claude_backend == "claude" and "exactly one JSON object" in claude_prompt and '"approved"' in claude_prompt
     assert codex_backend == "codex" and codex_prompt == "Judge it."
+
+
+def test_a_pair_blocked_by_a_refusal_resumes_on_the_fallback_once_one_is_set(tmp_path, monkeypatch):
+    """julien-2, 7 October: pairs blocked by a refusal before the fallback existed replayed their retained
+    refused call on resume and blocked again at once. A retained refusal is asked again once a fallback is set."""
+    import json as _json
+    from pathfinder import config, reconcile, research, stub
+    c = make(tmp_path, research_scheme="direct_eva", ledger_reviews=2, rounds=2)
+    real, refused = stub.execute, []
+    def execute(campaign, request):
+        if request.stage == "peer" and not refused:
+            refused.append(request.identity)
+            return {"outcome": "failed", "error": "This content was flagged for possible biological risk.", "text": "",
+                    "transport_failed": True, "session": None, "raw_events": [], "seconds": 0.0}
+        return real(campaign, request)
+    monkeypatch.setattr(stub, "execute", execute)
+    from pathfinder import runner
+    runner.run(c, interval=0)
+    assert research.status(c, "Q1P1")["status"] == "BLOCKED"
+    raw = _json.loads((tmp_path / "campaign.json").read_text()); raw["refusal_fallback"] = {"backend": "claude", "model": "fallback"}
+    (tmp_path / "campaign.json").write_text(_json.dumps(raw))
+    c = config.load(tmp_path)
+    reconcile.apply(c, "Q1P1")
+    assert research.status(c, "Q1P1")["status"] == "HANDOFF"

@@ -171,12 +171,19 @@ def next_requests(campaign, pair_id):
                 if waiting:
                     return [transport.ModelRequest(**{**item["request"], "cwd": d}) for item in waiting]
                 failed = next((item for item in pending if item["result"].get("transport_failed") or item["result"].get("error")), None)
-                if failed and ((failed["result"].get("failure") or {}).get("scope") == "campaign"):
-                    # the call hit a campaign-wide wall (quota, auth, launch); after the operator resumes, issue it again
+                def again(item):                    # a retained failure that is asked again on resume
+                    f = item["result"].get("failure") or {}
+                    if f.get("scope") == "campaign":    # a campaign-wide wall (quota, auth, launch), after the resume
+                        return True
+                    return (f.get("class") == "refusal" and bool(campaign.raw.get("refusal_fallback"))
+                            and not item.get("refusal_reissued"))   # once, now that a fallback can serve it
+                if failed and again(failed):
                     for item in pending:
-                        if (item["result"].get("failure") or {}).get("scope") == "campaign":
+                        if again(item):
                             path = _request_file(campaign, pair_id, item["request"]["identity"])
                             saved = json.loads(path.read_text()); saved.pop("result", None)
+                            if (item["result"].get("failure") or {}).get("class") == "refusal":
+                                saved["refusal_reissued"] = True
                             temporary = path.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(path)
                     continue
                 if failed:
