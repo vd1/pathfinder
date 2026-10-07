@@ -155,3 +155,19 @@ def test_a_refusal_on_the_fallback_is_not_retried_again(tmp_path, monkeypatch):
 def test_a_bad_fallback_is_refused_at_load(tmp_path):
     with pytest.raises(ValueError, match="refusal_fallback"):
         make(tmp_path, refusal_fallback={"backend": "openai"})
+
+
+def test_a_call_routed_to_claude_with_a_contract_is_told_to_answer_with_json_only(tmp_path, monkeypatch):
+    """Codex enforces a reply schema; Claude's CLI does not, and Opus reviews often needed the contract's repair
+    turn (statarb and julien-2, October). A Claude call with a schema carries the schema and a JSON-only rule."""
+    c = make(tmp_path, backend="codex", routes={"review": {"backend": "claude", "model": "claude-opus-5-5"}})
+    seen = []
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: seen.append((campaign.backend, request.prompt))
+                        or {"outcome": "completed", "text": "{}", "transport_failed": False, "session": "s", "raw_events": []})
+    schema = {"type": "object", "required": ["approved"], "properties": {"approved": {"type": "boolean"}}}
+    for stage in ("review", "peer"):
+        transport.execute(c, transport.request("Judge it.", model="m", tools=False, search=False, cwd=tmp_path,
+                                               timeout=5, thread="Q1P1", stage=stage, actor="x", schema=schema))
+    (claude_backend, claude_prompt), (codex_backend, codex_prompt) = seen
+    assert claude_backend == "claude" and "exactly one JSON object" in claude_prompt and '"approved"' in claude_prompt
+    assert codex_backend == "codex" and codex_prompt == "Judge it."

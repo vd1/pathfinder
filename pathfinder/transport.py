@@ -3,6 +3,7 @@ session id arrives early; a call with no session within SESSION_GRACE is a trans
 Every attempted call appends one receipt. What the provider did not report stays null: never
 zero, never an estimate."""
 from __future__ import annotations
+import dataclasses
 from dataclasses import dataclass
 import hashlib, json, os, re, shlex, signal, subprocess, threading, time, uuid
 from pathlib import Path
@@ -438,6 +439,7 @@ def execute(campaign, request: ModelRequest):
     route for the request's stage (pathfinder.routing) applies first, so every stage is routed alike."""
     from . import routing
     campaign, request = routing.apply(campaign, request)
+    request = _json_only(campaign, request)
     limit, size = max_prompt_chars(campaign), len(request.prompt)
     if size > limit:
         error = f"input too large: {size} characters exceed {limit}; no model call started"
@@ -470,9 +472,23 @@ def execute(campaign, request: ModelRequest):
     return result
 
 
+def _json_only(campaign, request: ModelRequest) -> ModelRequest:
+    """Codex can enforce a reply schema; Claude's CLI cannot, and Opus reviews often needed the contract's repair
+    turn. A Claude call with a schema ends with the schema and a rule to answer with that JSON object only."""
+    if campaign.backend != "claude" or not request.schema or request.prompt.rstrip().endswith(JSON_ONLY_MARK):
+        return request
+    rule = ("\n\nAnswer with exactly one JSON object that satisfies this schema, and nothing else: no prose before "
+            "or after it, no code fence.\n" + json.dumps(request.schema, sort_keys=True) + "\n" + JSON_ONLY_MARK)
+    return dataclasses.replace(request, prompt=request.prompt + rule)
+
+
+JSON_ONLY_MARK = "(JSON only.)"
+
+
 def execute_routed(campaign, request: ModelRequest):
     """One call on an already routed campaign: admission, then the attempt (the refusal fallback's second try)."""
     from . import admission
+    request = _json_only(campaign, request)
     with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
         return _attempt(campaign, request)
 
