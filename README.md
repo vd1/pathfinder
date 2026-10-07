@@ -182,7 +182,8 @@ your own campaign directory and edit the models and the budget.
   with its size and digest; with `strict_evidence` both block the thread.
 - `research_scheme`: absent for the classic single-engine EVA thread;
   `direct_eva` (formerly `eva_minus`, still read with a warning: the peers research, Vera reviews the
-  ledger directly and issues requests, no synthesis; the thread ends HANDOFF);
+  ledger directly with read-only tools and issues requests, the engine recording her review; only
+  requests the engine accepted can be disposed of; no synthesis; the thread ends HANDOFF);
   `eva` with `research_bundles` for a joint thread over frozen bundles; or
   `composable`: each pair runs as `branches` direct-EVA branches (default 3,
   in `threads/<pair>/branch-runs/<label>/`), each handoff is frozen read-only
@@ -508,7 +509,9 @@ one seat count: a campaign naming it with another count is refused. A call
 waiting for a seat emits `admission_deferred`.
 
 **Sources that throttle agents.** Every receipt counts the rate-limit answers
-the agents met in their own tool calls (`source_limits`, arXiv for now);
+the agents met in their own tool calls (`source_limits`, arXiv for now): a
+call made to the source that came back with its limit answer, never a file the
+agent read that merely quotes one;
 `pathfinder health` warns about the last 50 calls and the playbook gives the
 apex agent an action.
 

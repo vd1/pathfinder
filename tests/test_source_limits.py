@@ -37,3 +37,23 @@ def test_the_peer_prompt_tells_agents_how_to_query_arxiv():
     from pathfinder import resources
     text = resources.prompt(None, "peer")
     assert "export.arxiv.org" in text and "Rate exceeded" in text
+
+
+def test_reading_a_local_file_that_mentions_arxiv_and_429_is_not_a_rate_limit():
+    """proofTree planar S1 (PF-03): a peer read its retained request, whose prompt tells it to wait when
+    https://export.arxiv.org answers "Rate exceeded." or HTTP 429; five such reads were counted as limits."""
+    quoted = "When https://export.arxiv.org returns `Rate exceeded.` or HTTP 429, wait and retry."
+    lines = [_codex(quoted, command="cat research-requests/Q1P1-peer.json"),
+             _codex(quoted, command="sed -n 1,80p research-requests/Q1P1-peer.json | head")]
+    assert transport._source_limits(lines) == {}
+
+
+def test_a_claude_tool_result_counts_only_when_its_call_went_to_arxiv():
+    def call(tool_id, name, value):
+        return json.dumps({"type": "assistant", "message": {"content": [{"type": "tool_use", "id": tool_id, "name": name, "input": value}]}})
+    def result(tool_id, text, error=False):
+        return json.dumps({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": tool_id, "content": text, "is_error": error}]}})
+    quoted = "When arxiv.org answers Rate exceeded. or HTTP 429, wait."
+    lines = [call("a", "Read", {"file_path": "research-requests/x.json"}), result("a", quoted),
+             call("b", "Bash", {"command": "curl -s https://export.arxiv.org/api/query?id_list=2401.00001"}), result("b", "Rate exceeded.")]
+    assert transport._source_limits(lines) == {"arxiv": 1}

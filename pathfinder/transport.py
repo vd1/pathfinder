@@ -274,9 +274,11 @@ SOURCE_LIMITS = {   # a source that rate-limits the agents' own requests: (where
 
 def _source_limits(lines) -> dict:
     """Rate limits the agents met in their own tool calls, by source. arXiv answers "Rate exceeded." with a
-    successful exit code, so every tool output is read, not only failed ones; a hit needs both the source's
-    address (in the command or the output) and its rate-limit answer."""
-    hits = {}
+    successful exit code, so every tool output is read, not only failed ones. A hit needs a call made to the source
+    (its address in the command, the query or the tool's input) and its rate-limit answer in the output: an agent
+    reading a file that quotes both, such as its own request with its instructions, met no limit. A Claude tool
+    result whose call is not on record counts when it is an error naming the source."""
+    hits, calls = {}, {}
     for line in lines:
         try:
             row = json.loads(line)
@@ -284,17 +286,26 @@ def _source_limits(lines) -> dict:
             continue
         if not isinstance(row, dict):
             continue
-        texts = []
+        pairs = []                                   # (what was called, what came back)
         item = row.get("item") or {}
         if row.get("type") == "item.completed" and item.get("type") in ("command_execution", "mcp_tool_call", "web_search"):
-            texts.append(f"{item.get('command') or item.get('query') or ''}\n{item.get('aggregated_output') or item.get('result') or ''}")
+            called = item.get("command") or item.get("query") or json.dumps(item.get("arguments") or "")
+            pairs.append((str(called), str(item.get("aggregated_output") or item.get("result") or "")))
+        if row.get("type") == "assistant":
+            for block in (row.get("message") or {}).get("content") or []:
+                if isinstance(block, dict) and block.get("type") == "tool_use":
+                    calls[block.get("id")] = json.dumps(block.get("input") or {})
         if row.get("type") == "user":
             for block in (row.get("message") or {}).get("content") or []:
                 if isinstance(block, dict) and block.get("type") == "tool_result":
-                    texts.append(str(block.get("content")))
-        for text in texts:
+                    content = str(block.get("content"))
+                    called = calls.get(block.get("tool_use_id"))
+                    if called is None:
+                        called = content if block.get("is_error") else ""
+                    pairs.append((called, content))
+        for called, output in pairs:
             for source, (where, limited) in SOURCE_LIMITS.items():
-                if where.search(text) and limited.search(text):
+                if where.search(called) and limited.search(output):
                     hits[source] = hits.get(source, 0) + 1
     return hits
 

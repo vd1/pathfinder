@@ -177,7 +177,7 @@ def test_a_blocked_branch_blocks_the_pair_and_reconcile_repairs_that_branch(tmp_
     s = research.status(c, "Q1P1")
     assert s["reason"].startswith("branch-2: contract: review:") and s["failure"]["class"] == "contract"
     action = reconcile.inspect(c, "Q1P1")["action"]
-    assert action == "branch-2: " + reconcile.REISSUE
+    assert action == "branch-2: reissue: the reply broke its contract twice"
     assert reconcile.apply(c, "Q1P1") == "DRAFT"
     assert set(research.status(c, "Q1P1")["branches_frozen"]) == {"branch-1", "branch-2", "branch-3"}
 

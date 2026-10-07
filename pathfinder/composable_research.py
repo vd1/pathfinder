@@ -47,7 +47,9 @@ def _direct_requests(response, existing):
     handled = set()
     for item in response["dispositions"]:
         if not isinstance(item, dict) or item.get("id") not in existing or item["id"] in handled:
-            raise ValueError("disposition must identify an existing request exactly once")
+            named = item.get("id") if isinstance(item, dict) else None
+            allowed = (", ".join(sorted(existing)) if existing else "none: dispositions must be an empty list")
+            raise ValueError(f"disposition must identify an existing request exactly once ({named!r}; allowed: {allowed})")
         if item.get("status") not in ("resolved", "deferred") or not isinstance(item.get("reason"), str) or not item["reason"].strip():
             raise ValueError("disposition requires resolved/deferred status and a reason")
         handled.add(item["id"])
@@ -62,6 +64,17 @@ def _direct_requests(response, existing):
             raise ValueError("new request requires a distinct id, REVISE/ITERATE action and concrete text")
         updated[item["id"]] = {**item, "status": "active"}
     return updated
+
+
+def _reviewer_brief(campaign) -> str:
+    """The role brief (with the deployment's overlay, which may address the reviewer too), then the reviewer's own
+    rule: the brief's closing instruction to record findings in the ledger is the peers'. A reviewer that followed it
+    would change the evidence it reviews and so make its own review stale; its tools are read-only as well."""
+    brief = role_brief(campaign)
+    return ((brief + "\n\n" if brief else "") + "You are the reviewer, not a research peer: the instruction to record "
+            "findings in the ledger applies to the peers only. Read the workspace as you need. Do not write any file or "
+            "ledger entry: the engine records your review from the JSON you return, and any change to the workspace "
+            "makes that review stale.")
 
 
 def _review_contract(campaign, s):
@@ -247,12 +260,15 @@ def next_requests(campaign, pair_id):
                 else:
                     seconds = campaign.allowances["verify_seconds"]
                     if direct:
-                        prompt = material + "\n\n" + role_brief(campaign) + ('\n\nReview this research ledger directly. Return JSON with requests and dispositions lists. '
+                        prompt = material + "\n\n" + _reviewer_brief(campaign) + ('\n\nReview this research ledger directly. Return JSON with requests and dispositions lists. '
                             'Each new request needs a distinct id, action REVISE or ITERATE, and concrete text. '
                             'REVISE corrects an argument using existing evidence; ITERATE investigates a research gap. '
                             'Every active prior request needs a disposition with its id, status resolved or deferred, and reason. '
                             'For work that remains actionable, resolve the superseded request and issue a new request. '
                             'An empty requests list means no further actionable requests. Never issue a scientific verdict. '
+                            'The record below is the engine\'s, and only ids in this record may receive a disposition; when it is '
+                            'empty, dispositions is an empty list. A request named in the ledger or in an earlier review but absent '
+                            'here was never accepted: do not dispose of it; issue a new request if its work is still needed. '
                             'Prior requests and dispositions:\n' + json.dumps(s.get("requests", {})))
                     else:
                         prompt = material + "\n\n" + _prompt(campaign, "verify", Q_INPUT=f"inputs/{_inputs(d)['Q']}",
@@ -261,7 +277,7 @@ def next_requests(campaign, pair_id):
                 request = transport.ModelRequest(identity=identity, prompt=prompt, model=campaign.model,
                     tools=True, search=campaign.peer_search if stage == "peers" else False,
                     cwd=d, timeout=int(seconds) + (30 if stage == "peers" else 0), thread=pair_id,
-                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage == "verify",
+                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage in ("verify", "ledger_review"),
                     schema=contracts.SCHEMAS[_review_contract(campaign, s)[0]] if stage in ("verify", "ledger_review") else None)
                 path = _request_file(campaign, pair_id, identity)
                 path.parent.mkdir(exist_ok=True)

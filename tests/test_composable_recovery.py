@@ -112,7 +112,7 @@ def test_a_branch_whose_review_failed_in_transport_is_reissued(tmp_path, monkeyp
     with pytest.raises(transport.TransportFailed):
         research.run_thread(c, "Q1P1")
     research.run_thread(c, "Q1P1")                   # the retained failed reply blocks the branch
-    assert reconcile.inspect(c, "Q1P1")["action"] == "branch-2: " + reconcile.REISSUE
+    assert reconcile.inspect(c, "Q1P1")["action"] == "branch-2: reissue: the reply failed in transport"
     assert reconcile.apply(c, "Q1P1") == "DRAFT"
 
 

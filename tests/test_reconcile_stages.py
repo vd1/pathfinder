@@ -125,7 +125,7 @@ def test_a_composable_contract_block_is_reissued(tmp_path):
     c = make(tmp_path, research_scheme="direct_eva")
     research.prepare(c, "Q1P1")
     research._set(c, "Q1P1", status="BLOCKED", stage="ledger_review", reason="contract: review: no readable JSON object", failure=CONTRACT)
-    assert reconcile.inspect(c, "Q1P1")["action"] == reconcile.REISSUE
+    assert reconcile.inspect(c, "Q1P1")["action"] == "reissue: the reply broke its contract twice"   # not "evidence changed" (PF-04)
 
 
 def test_a_verifier_contract_block_reruns_the_verifier(tmp_path):

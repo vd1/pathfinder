@@ -8,7 +8,9 @@ EVIDENCE_PREFIXES = ("missing evidence:", "aliased evidence path:", "evidence ou
                      "unreadable evidence:", "evidence not inlinable as text:", "Invalid external citation declaration",
                      "Aliased evidence", "Unreadable evidence", "review: missing evidence")
 STALE = "stale review: research evidence changed"
-REISSUE = "reissue: evidence changed since the request"
+REISSUE = "reissue: evidence changed since the request"   # the action is "reissue"; what follows is why
+REISSUE_CONTRACT = "reissue: the reply broke its contract twice"
+REISSUE_TRANSPORT = "reissue: the reply failed in transport"
 UNBLOCK = "unblock: evidence repaired"
 
 
@@ -78,11 +80,11 @@ def _inspect(campaign, pair_id: str) -> dict:
         action = REISSUE
     elif (s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("contract:")
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
-        action = REISSUE                            # the retained reply broke its contract twice: keep it, ask again
+        action = REISSUE_CONTRACT                   # the retained reply broke its contract twice: keep it, ask again
     elif (s.get("status") == "BLOCKED" and s.get("pending") and (s.get("failure") or {}).get("class") in RETRIABLE
           and (s.get("failure") or {}).get("scope") != "campaign"
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
-        action = REISSUE                            # a retained reply that failed in transport: keep it, ask again
+        action = REISSUE_TRANSPORT                  # a retained reply that failed in transport: keep it, ask again
     elif evidence_block:                            # repaired evidence is verified before the block is lifted
         problem = _evidence_check(campaign, pair_id)
         action = UNBLOCK if problem is None else f"nothing: evidence still blocked: {problem}"
@@ -176,7 +178,7 @@ def _apply(campaign, pair_id: str) -> str:
         with runner.Lock(campaign.thread_dir(pair_id)):
             _record(module, campaign, pair_id, info["action"])
             return module.run(campaign, pair_id, stop=lambda: runner.stopped(campaign))
-    if info["action"] == REISSUE:                 # keep the old answer, with its lineage, and ask again
+    if info["action"].startswith("reissue:"):     # keep the old answer, with its lineage, and ask again
         s = research.status(campaign, pair_id)
         d = campaign.thread_dir(pair_id)
         stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
@@ -189,7 +191,7 @@ def _apply(campaign, pair_id: str) -> str:
                 source.replace(target)
                 moved.append(str(target.relative_to(d)))
         history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
-                                                   "from_reason": s.get("reason"), "action": REISSUE, "superseded": moved}]
+                                                   "from_reason": s.get("reason"), "action": info["action"], "superseded": moved}]
         research._set(campaign, pair_id, status="running", reason=None, pending=[], history=history)
     elif info["action"] == UNBLOCK:                 # the transition is recorded; retained responses and the stage stay
         s = research.status(campaign, pair_id)
