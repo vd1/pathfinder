@@ -234,7 +234,8 @@ def test_julien2_canon_replays_on_the_candidate_engine(tmp_path):
 @needs_tex
 def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine(tmp_path, monkeypatch):
     """One shortlisted pair of julien-2's campaign-2-batch-2/ runs on the stub backend in a copy: three direct-EVA
-    branches frozen as bundles, the joint thread over them, PCE editing and the actionability assessment. Its pair
+    branches frozen as bundles, the joint thread over them, editing under the campaign's edit_scheme (PCE or the
+    single editor) and the actionability assessment. Its pair
     ids are julien-2's own (Q010-P030), found through the numbered corpus. The routed stages stay on the stub (no
     real call), julien-2's prompt overlays reach the calls, and the record is unchanged."""
     from pathfinder import actionability, composable, config, edit, research, runner, stub, transport
@@ -243,7 +244,8 @@ def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionabili
     copy = tmp_path / "campaign-2-batch-2"
     shutil.copytree(recorded, copy)
     raw = json.loads((copy / "campaign.json").read_text())
-    assert raw["research_scheme"] == "composable" and raw["edit_scheme"] == "pce" and raw["actionability"] is True
+    assert raw["research_scheme"] == "composable" and raw["actionability"] is True
+    pce = raw.get("edit_scheme") == "pce"                  # julien-2 moved to the single editor on 7 October
     assert {"verify", "ledger_review", "actionability"} <= set(raw["routes"])
     raw.update(backend="stub", model="stub"); raw.pop("account", None)
     (copy / "campaign.json").write_text(json.dumps(raw, indent=1))
@@ -268,16 +270,18 @@ def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionabili
         assert (d / "branches" / label / "bundle.json").is_file(), label
     assert (d / "ledger.jsonl").read_text().strip()         # the joint thread's own ledger
     record = json.loads((d / "edited" / "edit.json").read_text())
-    assert edit.status(c, pair)["status"] == "done" and record.get("scheme") == "pce" and record.get("editorial_status")
+    assert edit.status(c, pair)["status"] == "done" and (record.get("scheme") == "pce") == pce
+    assert (d / "edited" / "note.tex").is_file()
     assert actionability.status(c, pair)["status"] == "done"
     stages = {call["stage"] for call in calls}
     assert {"peer", "ledger_review", "consolidate", "verify", "edit", "actionability"} <= stages
-    assert any((call["actor"] or "").startswith("pce-") for call in calls)
+    assert any((call["actor"] or "").startswith("pce-") for call in calls) == pce
     overlay = lambda role: (copy / "prompts" / f"{role}.append.md").read_text().strip()[:200]
     for stage, role in (("peer", "peer"), ("verify", "verify"), ("ledger_review", "branch"), ("actionability", "actionability")):
         assert all(overlay(role) in call["prompt"] for call in calls if call["stage"] == stage), stage
     brief = overlay("pce-brief").splitlines()[0]               # the PCE brief travels inside a JSON read scope
-    assert any(brief in call["prompt"] for call in calls if (call["actor"] or "").startswith("pce-"))
+    if pce:
+        assert any(brief in call["prompt"] for call in calls if (call["actor"] or "").startswith("pce-"))
     assert {r.get("backend") for r in transport.receipts(c) if r.get("call_id") not in recorded_calls} == {"stub"}
     assert _tree(recorded) == before
 
