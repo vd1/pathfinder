@@ -378,3 +378,35 @@ def test_a_critic_score_below_the_bar_still_revises(tmp_path, monkeypatch):
 def test_a_bad_pass_score_is_refused(tmp_path, bad):
     with pytest.raises(ValueError, match="pce.critic"):
         make(tmp_path, edit_scheme="pce", pce={"critic": {"profile": "reader", "remit": "r", "pass_score": bad}})
+
+
+def test_the_fact_checker_sees_claims_without_the_authors_notes(tmp_path, monkeypatch):
+    """julien-2 Q8P1: the author wrote earlier fact-check results into the claims' notes, the fact-checker saw them
+    and declared itself contaminated. It now receives each claim's id, text, kind and location only."""
+    c = ready(tmp_path)
+    def author(prompt):
+        out = json.loads(stub.pce_reply(None, "author", prompt))
+        claims = json.loads(out["files"][pce.CLAIMS])
+        for claim in claims:
+            claim["notes"] = "pass-01 C09 accepted by the fact-checker"
+        out["files"][pce.CLAIMS] = json.dumps(claims)
+        return json.dumps(out)
+    calls = script(monkeypatch, c, author=[author])
+    pce.run(c, "Q1P1")
+    fact = next(call["prompt"] for call in calls if call["role"] == "fact-checker")
+    assert "pass-01 C09" not in fact
+    editor = next((call["prompt"] for call in calls if call["role"] == "editor"), "")
+    assert "pass-01 C09" in editor or not editor
+
+
+def test_branch_entries_the_joint_ledger_cites_are_marked_adopted(tmp_path):
+    c = ready(tmp_path)
+    d = c.thread_dir("Q1P1")
+    _ledger(d / "ledger.jsonl", [("finding", "We build on branch-2 #3 and branch-2 entry 5.", None)])
+    _ledger(d / "branches/branch-2/ledger.jsonl", [("finding", "a", None), ("finding", "b", None), ("finding", "c", None),
+                                                   ("finding", "d", None), ("finding", "e", None)])
+    text = pce._supplement(c, "Q1P1", 100_000)
+    branch = text.split("## branches/branch-2/ledger.jsonl")[1]
+    lines = {l.split(" ", 1)[0]: l for l in branch.splitlines() if l.startswith("#")}
+    assert "adopted by the joint ledger #1" in lines["#3"] and "adopted by the joint ledger #1" in lines["#5"]
+    assert "not cited by the joint ledger" in lines["#1"]

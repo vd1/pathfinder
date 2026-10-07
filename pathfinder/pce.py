@@ -232,6 +232,7 @@ def _critic_verdict(text: str, profile: str) -> str:
 
 
 REFERENCE = re.compile(r"(?<![\w-])#(\d+)\b")       # "#12" in an entry's text names entry 12 of the same ledger
+BRANCH_REFERENCE = re.compile(r"branch[- ]?(\d+)\s*(?:ledger\s*)?(?:entr(?:y|ies)\s*)?#?\s*(\d+)", re.I)   # "branch-2 #14"
 
 
 def standing(rows: list[dict]) -> dict[int, list[str]]:
@@ -296,9 +297,19 @@ def _supplement(campaign, pair_id, limit: int) -> str:
     ledgers = [(d / "ledger.jsonl", "the joint thread: the research the account reports")]
     ledgers += [(p, "a branch the joint thread reviewed: not adopted unless the joint ledger cites it")
                 for p in sorted(d.glob("branches/*/ledger.jsonl"))]
+    adopted = {}                                        # (branch label, entry) -> the joint entries citing it
+    if (d / "ledger.jsonl").exists():
+        for line in (d / "ledger.jsonl").read_text().splitlines():
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            for label, n in BRANCH_REFERENCE.findall(str(row.get("text") or "")):
+                adopted.setdefault((f"branch-{label}", int(n)), []).append(row.get("seq"))
     for ledger, role in ledgers:
         if not ledger.exists():
             continue
+        label = ledger.parent.name if ledger.parent.parent.name == "branches" else None
         rows = []
         for line in ledger.read_text().splitlines():
             try:
@@ -311,7 +322,12 @@ def _supplement(campaign, pair_id, limit: int) -> str:
         for r in rows:
             if r.get("kind") == "ready":
                 continue
-            mark = f" [{'; '.join(notes[r['seq']])}]" if notes[r["seq"]] else " [current]"
+            marks = list(notes[r["seq"]]) or ["current"]
+            if label:
+                cites = adopted.get((label, r["seq"]))
+                marks.append(f"adopted by the joint ledger {', '.join(f'#{c}' for c in cites)}" if cites
+                                else "not cited by the joint ledger")
+            mark = f" [{'; '.join(marks)}]"
             parts.append(f"#{r['seq']} [{r.get('actor')}, {r.get('kind')}]{mark} {r.get('text')}")
     verdict = d / f"{pair_id}.verdict.json"
     if verdict.exists():
@@ -431,7 +447,14 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     def call(role, pass_id, permitted, **values):
         contract = resources.prompt(campaign, f"pce-{role}", **values)
         head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
-        prompt = head + _json(fit(visible(files, contract), transport.max_prompt_chars(campaign) - len(head)))
+        shown = visible(files, contract)
+        if role == "fact-checker" and CLAIMS in shown:   # the claims only: the author's notes may carry earlier reviews
+            try:
+                shown[CLAIMS] = _json([{k: c[k] for k in ("id", "text", "kind", "location") if k in c}
+                                       for c in json.loads(shown[CLAIMS])])
+            except (ValueError, TypeError, KeyError):
+                pass
+        prompt = head + _json(fit(shown, transport.max_prompt_chars(campaign) - len(head)))
         order[0] += 1
         record = f"dispatch/{pass_id}-{role}.json"
         if (root / record).exists():                  # a retained call is replayed, never paid for twice

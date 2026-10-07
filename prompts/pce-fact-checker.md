@@ -28,7 +28,10 @@ draft against the approved external sources.
    brackets. A superseded entry never supports a claim. A corrected entry
    supports a claim only as corrected, and an entry under an unanswered
    objection only if the claim states the objection; otherwise the claim is
-   weak. A branch entry supports a claim only if the joint ledger adopts it.
+   weak. A branch entry marked adopted by the joint ledger supports a claim
+   like any joint entry. A branch entry the joint ledger does not cite
+   supports a claim only when the draft presents it as that branch's
+   finding, not as the joint conclusion; otherwise the claim is weak.
 9. Give each claim its basis: "papers" when its evidence is Q or P,
    "research record" when it is the research supplement alone, "both", or
    "none" for a claim with no evidence. A claim whose basis is the research
