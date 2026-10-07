@@ -1,5 +1,5 @@
 """Deployment contract tests: each supported deployment, prepared its own way, runs on the candidate engine."""
-import importlib.util, json, os, shutil, subprocess, sys
+import importlib.util, json, os, re, shutil, subprocess, sys
 from pathlib import Path
 import pytest
 import deployment_matrix
@@ -205,38 +205,42 @@ def _julien2_recorded(tmp_path: Path, *paths: str) -> Path:
 
 
 def test_julien2_canon_replays_on_the_candidate_engine(tmp_path):
-    """canon/ holds eva-top-ten-01 as ten one-pair composable campaigns (made by import-eva2): each loads, its
+    """campaign-2-batch-1/ holds eva-top-ten-01 as ten one-pair composable campaigns (made by import-eva2), each
+    named by julien-2's own pair id (Q002-P024), which its numbered corpus gives the pair too: each loads, its
     research ended DRAFT (seven) or PAUSE (three), its PCE edit is done and its actionability is NEEDS_INPUTS."""
     from collections import Counter
-    from pathfinder import actionability, edit
-    canon = _julien2_recorded(tmp_path, "canon") / "canon"
+    from pathfinder import actionability, corpus, edit
+    canon = _julien2_recorded(tmp_path, "campaign-2-batch-1") / "campaign-2-batch-1"
     before = _tree(canon)
     experiments = sorted(d for d in canon.iterdir() if d.is_dir())
-    assert len(experiments) == 10 and all(d.name.startswith("eva-top-ten-01-") for d in experiments)
+    assert len(experiments) == 10 and all(re.fullmatch(r"Q\d{3}-P\d{3}", d.name) for d in experiments)
     research = Counter()
     for d in experiments:
         (tmp_path / d.name).mkdir()
         c, state = _replay(d, tmp_path / d.name)
-        assert c.raw["research_scheme"] == "composable" and c.raw["branches"] == 3, d.name
-        assert [u["unit"] for u in state["units"]] == ["Q1P1"], d.name
+        pair = d.name
+        assert c.raw["research_scheme"] == "composable" and c.raw["branches"] == 3, pair
+        assert [u["unit"] for u in state["units"]] == [pair], pair
+        assert corpus.pair_id_for(c, 0, 0) == pair and all(corpus.pair_rows(c, pair)), pair
         unit = state["units"][0]
         research[unit["research"]["status"]] += 1
-        assert unit["editorial"]["status"] == "done" and edit.status(c, "Q1P1")["status"] == "done", d.name
-        assert actionability.status(c, "Q1P1")["decision"] == "NEEDS_INPUTS", d.name
-        assert sorted(p.name for p in (c.thread_dir("Q1P1") / "branches").iterdir()) == ["branch-1", "branch-2", "branch-3"]
+        assert unit["editorial"]["status"] == "done" and edit.status(c, pair)["status"] == "done", pair
+        assert actionability.status(c, pair)["decision"] == "NEEDS_INPUTS", pair
+        assert sorted(p.name for p in (c.thread_dir(pair) / "branches").iterdir()) == ["branch-1", "branch-2", "branch-3"]
     assert research == {"DRAFT": 7, "PAUSE": 3}
     assert _tree(canon) == before
 
 
 @needs_tex
 def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine(tmp_path, monkeypatch):
-    """One shortlisted pair of julien-2's campaign/ runs on the stub backend in a copy: three direct-EVA branches
-    frozen as bundles, the joint thread over them, PCE editing and the actionability assessment. The routed
-    stages stay on the stub (no real call), julien-2's prompt overlays reach the calls, and the record is unchanged."""
+    """One shortlisted pair of julien-2's campaign-2-batch-2/ runs on the stub backend in a copy: three direct-EVA
+    branches frozen as bundles, the joint thread over them, PCE editing and the actionability assessment. Its pair
+    ids are julien-2's own (Q010-P030), found through the numbered corpus. The routed stages stay on the stub (no
+    real call), julien-2's prompt overlays reach the calls, and the record is unchanged."""
     from pathfinder import actionability, composable, config, edit, research, runner, stub, transport
-    recorded = _julien2_recorded(tmp_path, "campaign") / "campaign"
+    recorded = _julien2_recorded(tmp_path, "campaign-2-batch-2") / "campaign-2-batch-2"
     before = _tree(recorded)
-    copy = tmp_path / "campaign"
+    copy = tmp_path / "campaign-2-batch-2"
     shutil.copytree(recorded, copy)
     raw = json.loads((copy / "campaign.json").read_text())
     assert raw["research_scheme"] == "composable" and raw["edit_scheme"] == "pce" and raw["actionability"] is True
@@ -252,6 +256,7 @@ def test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionabili
     monkeypatch.setattr(stub, "execute", recorded_call)
     c = config.load(copy)
     shortlist = [p["pair_id"] for p in json.loads((copy / "shortlist.json").read_text())["pairs"]]
+    assert len(shortlist) == 10 and all(re.fullmatch(r"Q\d{3}-P\d{3}", p) for p in shortlist), shortlist
     pair = next((p for p in shortlist if not (copy / "threads" / p).exists()), shortlist[0])
     if (copy / "threads" / pair).exists():            # every shortlisted pair researched: start one afresh in the copy
         shutil.rmtree(copy / "threads" / pair)
