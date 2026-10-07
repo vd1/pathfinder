@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "e9d7bf13ea5d6c49482bff215a49d3b502bce1cc"
+revision = "a988c4850181fa4a11aabbedcd80214b12e83ba2"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.4.7 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
@@ -30,7 +30,7 @@ notes = "The pilot campaign at the repository root (10 mechanism-design by 10 ag
 [deployments.pathfinder-julien-2]
 status = "supported"
 checkout = "../pathfinder-julien-2"
-revision = "21298ab75df7b655c5f5a312449131f1eb910626"
+revision = "753917f84f1b1f8771ac2c24cead9473bdf38cb4"
 clean_paths = ["campaign/campaign.json", "campaign/prompts", "campaign/engine-ref"]   # the contracts read campaign/ and canon/ as committed
 contract = ["tests/test_deployments.py::test_julien2_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine"]
 notes = "Julien's campaign 2, a plain deployment since its controller (eva2, julien2), patched engine copy and vendored PCE were removed (tag pre-pathfinder-roof in that repository). canon/ is the record of the finished eva-top-ten-01 (ten one-pair composable campaigns made by import-eva2: seven DRAFT, three PAUSE, PCE edits done, actionability NEEDS_INPUTS); campaign/ is the next campaign on a frozen engine-v1.4.5 (campaign/engine-ref): composable research with three branches, edit_scheme pce, actionability, two paper reviewers, routes to Claude Opus 5.5 for verification, ledger review, actionability and reviewer 1, and the next ten pairs of its saved scan as the shortlist, not yet run. The contract replays canon/ read-only and runs one shortlisted pair of campaign/ through composable research, PCE editing and actionability on the stub backend, checking that its prompt overlays reach the calls."
