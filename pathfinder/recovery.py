@@ -7,7 +7,7 @@ import re
 import time
 import uuid
 
-from . import health, research, runner, transport
+from . import corpus, health, research, runner, transport
 
 
 def decode_verdict(raw):
@@ -48,7 +48,7 @@ def _sha(path):
 
 def repair_verdict(campaign, pair_id):
     """Run only with explicit repair authority, after checking process descendants."""
-    if not re.fullmatch(r"Q[1-9]\d*P[1-9]\d*", pair_id):
+    if not corpus.PAIR.fullmatch(pair_id or ""):
         raise ValueError("Invalid pair identity")
     with health.owner(campaign):
         if runner.stopped(campaign):

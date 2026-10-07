@@ -7,7 +7,7 @@ from __future__ import annotations
 import calendar, json, os, re, time
 from collections import Counter
 from pathlib import Path
-from . import actionability, budget, admission, edit, events, paper, research, transport
+from . import actionability, budget, admission, corpus, edit, events, paper, research, transport
 
 ACTIVE_SECONDS = 600                       # an event this recent means the campaign is active
 DOCUMENTS = (("research note", "{u}.tex", "{u}.pdf"), ("readable note", "edited/note.tex", "edited/note.pdf"),
@@ -47,8 +47,8 @@ def _corpus(campaign, side: str) -> list[dict]:
     return rows
 
 
-def _paper(rows: list[dict], index: int) -> dict:
-    row = rows[index - 1] if 0 < index <= len(rows) else {}
+def _paper(rows: list[dict], number: int) -> dict:
+    row = corpus.row_for(rows, number)
     return {"id": row.get("id"), "title": row.get("title"), "abstract": row.get("abstract")}
 
 
@@ -230,8 +230,11 @@ def build(campaign) -> dict:
         controller = _controller(r_s, e_s, p_s, active, set(runner_info["active_pairs"]), runner_alive, unit)
         row = scan.get(unit, {})
         f, g = row.get("feasibility"), row.get("gain")
-        match = re.fullmatch(r"Q(\d+)P(\d+)", unit)
-        q, p = (_paper(Q, int(match.group(1))), _paper(P, int(match.group(2)))) if match else ({}, {})
+        try:
+            qn, pn = corpus.numbers(unit)
+            q, p = _paper(Q, qn), _paper(P, pn)
+        except ValueError:
+            q, p = {}, {}
         units.append({"unit": unit, "score": f * g if f is not None and g is not None else None,
                       "feasibility": f, "gain": g, "connexion": row.get("connexion"), "q": q, "p": p,
                       "summary": _summary(campaign, unit, r_s),

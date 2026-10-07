@@ -9,8 +9,45 @@ NS = {"a": "http://www.w3.org/2005/Atom"}
 API = "https://export.arxiv.org/api/query?"
 
 
+PAIR = re.compile(r"Q(\d+)-?P(\d+)")
+
+
 def pair_id(i: int, j: int) -> str:
+    """The id of the pair of Q line i and P line j in a corpus without numbers."""
     return f"Q{i}P{j}"
+
+
+def numbers(pair_id: str) -> tuple[int, int]:
+    """The two numbers a pair id names: Q1P15, or Q002-P072 for a corpus whose rows carry their own numbers."""
+    m = PAIR.fullmatch(pair_id or "")
+    if not m:
+        raise ValueError(f"not a pair id: {pair_id!r} (Q<number>P<number>, optionally zero-padded with a hyphen)")
+    return int(m.group(1)), int(m.group(2))
+
+
+def numbered(rows: list[dict]) -> bool:
+    return any("n" in r for r in rows)
+
+
+def row_for(rows: list[dict], number: int) -> dict:
+    """The row a pair id's number names: the row whose "n" it is in a numbered corpus, else that line."""
+    if numbered(rows):
+        return next((r for r in rows if r.get("n") == number), {})
+    return rows[number - 1] if 0 < number <= len(rows) else {}
+
+
+def pair_rows(campaign, pair_id: str) -> tuple[dict, dict]:
+    i, j = numbers(pair_id)
+    return (row_for(read(campaign.path("Q.jsonl")), i), row_for(read(campaign.path("P.jsonl")), j))
+
+
+def pair_id_for(campaign, qi: int, pj: int, Q=None, P=None) -> str:
+    """The id of the pair of Q row qi and P row pj (0-based): by their numbers when the corpus carries them."""
+    Q = read(campaign.path("Q.jsonl")) if Q is None else Q
+    P = read(campaign.path("P.jsonl")) if P is None else P
+    if numbered(Q) or numbered(P):
+        return f"Q{Q[qi].get('n', qi + 1):03d}-P{P[pj].get('n', pj + 1):03d}"
+    return pair_id(qi + 1, pj + 1)
 
 
 def _clean(s):

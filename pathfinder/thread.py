@@ -49,8 +49,7 @@ def _set(campaign, pair_id, **kw):
 
 
 def _pair(campaign, pair_id):
-    i, j = (int(x) for x in pair_id[1:].split("P"))
-    return corpus.read(campaign.path("Q.jsonl"))[i - 1], corpus.read(campaign.path("P.jsonl"))[j - 1]
+    return corpus.pair_rows(campaign, pair_id)
 
 
 HELPER_DIR = ".pathfinder"

@@ -45,7 +45,7 @@ def run(campaign, stop=lambda: False):
     Q, P, seen = corpus.read(campaign.path("Q.jsonl")), corpus.read(campaign.path("P.jsonl")), done(campaign)
     for i, q in enumerate(Q, 1):
         for j, p in enumerate(P, 1):
-            pid = corpus.pair_id(i, j)
+            pid = corpus.pair_id_for(campaign, i - 1, j - 1, Q, P)
             if pid in seen or stop():
                 continue
             row = {"pair_id": pid, "q": q["id"], "p": p["id"], "feasibility": None, "gain": None,

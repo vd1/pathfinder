@@ -16,12 +16,21 @@ def _jsonl_one(p: Path):
     return json.loads(p.read_text()) if p.exists() else None
 
 
+def _titles(Q, P, pid) -> dict:
+    try:
+        q, p = (corpus.row_for(rows, n) for rows, n in zip((Q, P), corpus.numbers(pid)))
+    except ValueError:
+        q, p = {}, {}
+    return {"q_title": q.get("title"), "p_title": p.get("title"), "q_abstract": q.get("abstract"), "p_abstract": p.get("abstract")}
+
+
 def state(campaign) -> dict:
     Q = corpus.read(campaign.path("Q.jsonl")) if campaign.path("Q.jsonl").exists() else []
     P = corpus.read(campaign.path("P.jsonl")) if campaign.path("P.jsonl").exists() else []
     scan = _jsonl(campaign.path("scan.jsonl")); by_id = {r["pair_id"]: r for r in scan}
-    grid = [[(by_id.get(corpus.pair_id(i, j), {}).get("feasibility") or 0) * (by_id.get(corpus.pair_id(i, j), {}).get("gain") or 0)
-             if corpus.pair_id(i, j) in by_id else None for j in range(1, len(P) + 1)] for i in range(1, len(Q) + 1)]
+    ids = [[corpus.pair_id_for(campaign, i, j, Q, P) for j in range(len(P))] for i in range(len(Q))]
+    grid = [[(by_id[pid].get("feasibility") or 0) * (by_id[pid].get("gain") or 0) if pid in by_id else None
+             for pid in row] for row in ids]
     receipts = transport.receipts(campaign); rc, stages = {}, {}
     for r in receipts:
         if r.get("stage") == "scan":
@@ -46,10 +55,7 @@ def state(campaign) -> dict:
                         "by_stage": stages.get(pid, {}), "connexion": by_id.get(pid, {}).get("connexion"),
                         "paper": paper.status(campaign, pid) if (d / "paper").exists() else None,
                         "edited": edit.status(campaign, pid) if (d / "edited").exists() else None,
-                        "q_title": Q[int(pid[1:].split("P")[0]) - 1].get("title") if Q else None,
-                        "p_title": P[int(pid.split("P")[1]) - 1].get("title") if P else None,
-                        "q_abstract": Q[int(pid[1:].split("P")[0]) - 1].get("abstract") if Q else None,
-                        "p_abstract": P[int(pid.split("P")[1]) - 1].get("abstract") if P else None}
+                        **_titles(Q, P, pid)}
         shortlist.append({**p, "status": s.get("status"), "round": s.get("round"), "stage": s.get("stage"),
                           "paper": (threads[pid]["paper"] or {}).get("status"),
                           **rc.get(pid, {"spend": 0.0, "seconds": 0.0, "calls": 0})})
@@ -154,7 +160,7 @@ def make_server(campaign, port: int = 8790):
                 return self._send(PAGE.read_bytes(), "text/html; charset=utf-8", kind="monitor-page")
             if path == "/state":
                 return self._send(json.dumps(state(campaign)).encode(), "application/json")
-            m = re.fullmatch(r"/threads/(Q\d+P\d+)/\1\.pdf", path)
+            m = re.fullmatch(r"/threads/(Q\d+-?P\d+)/\1\.pdf", path)
             if m:
                 tex = campaign.thread_dir(m.group(1)) / f"{m.group(1)}.tex"
                 if not tex.exists():

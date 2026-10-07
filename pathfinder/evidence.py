@@ -7,6 +7,7 @@ citation counts as missing, and an ambiguity is reported, never settled by sort 
 from ledger text and declarations only, never mined from code."""
 from __future__ import annotations
 import re
+from . import corpus
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -98,15 +99,16 @@ def resolve(d: Path, name: str, bundles: list[str], sources: dict) -> Resolution
 def registered_sources(campaign, pair_id: str) -> dict:
     """Campaign files named by the pair's corpus rows (text, raw, any string field), by campaign-relative path."""
     import json
-    m = re.fullmatch(r"Q(\d+)P(\d+)", pair_id)
-    if not m:
+    try:
+        numbers = corpus.numbers(pair_id)
+    except ValueError:
         return {}
     root = Path(campaign.root).resolve()
     out = {}
-    for side, index in (("Q", int(m.group(1))), ("P", int(m.group(2)))):
+    for side, index in zip("QP", numbers):
         path = campaign.path(f"{side}.jsonl")
         rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()] if path.is_file() else []
-        row = rows[index - 1] if 0 < index <= len(rows) else {}
+        row = corpus.row_for(rows, index)
         for key, value in row.items():
             # the pair's own text, or a manifestation kept under sources/; never '..', never another thread
             if not isinstance(value, str) or "/" not in value or Path(value).is_absolute() or ".." in Path(value).parts:

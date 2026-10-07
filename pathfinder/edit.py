@@ -19,11 +19,10 @@ def prepare_for_editing(campaign, pair_id: str) -> str:
     Editing requires real full text for both sides; fetch it where missing, or
     block rather than let editing silently proceed on the abstract alone.
     """
-    i, j = (int(n) for n in pair_id[1:].split("P"))
-    for side, idx in (("Q", i - 1), ("P", j - 1)):
+    for side, number in zip("QP", corpus.numbers(pair_id)):
         path = campaign.path(f"{side}.jsonl")
         rows = corpus.read(path)
-        row = rows[idx]
+        row = corpus.row_for(rows, number)
         if row.get("text") and campaign.path(row["text"]).exists():
             continue
         try:

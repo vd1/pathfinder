@@ -24,17 +24,14 @@ def create_manifest(campaign) -> dict:
 
 def pair_identity(campaign, pair_id: str) -> str:
     """@planks("When both runs enumerate their cross-corpus pairs")"""
-    i, j = (int(n) for n in pair_id[1:].split("P"))
-    q = corpus.read(campaign.path("Q.jsonl"))[i - 1]["id"]
-    p = corpus.read(campaign.path("P.jsonl"))[j - 1]["id"]
+    q, p = (row["id"] for row in corpus.pair_rows(campaign, pair_id))
     return hashlib.sha256(f"{q}\0{p}".encode()).hexdigest()
 
 
 def result_provenance(campaign, pair_id: str) -> dict:
     """@planks("Given a run produces a result for one cross-corpus pair")"""
-    i, j = (int(n) for n in pair_id[1:].split("P"))
     return {
-        "record_ids": [corpus.read(campaign.path("Q.jsonl"))[i - 1]["id"], corpus.read(campaign.path("P.jsonl"))[j - 1]["id"]],
+        "record_ids": [row["id"] for row in corpus.pair_rows(campaign, pair_id)],
         "snapshot_digests": [_digest(campaign.path(f"{side}.jsonl")) for side in ("Q", "P")],
     }
 
