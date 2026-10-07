@@ -21,6 +21,12 @@ KEYS = ("backend", "model", "effort")
 def validate(raw: dict) -> None:
     """A malformed route fails at load, not at the first call it would route; composable overrides too."""
     _check(raw.get("routes"))
+    fallback = raw.get("refusal_fallback")
+    if fallback is not None:
+        try:
+            _check({"peer": fallback})
+        except ValueError as error:
+            raise ValueError(f"refusal_fallback: {error}".replace("routes.peer", "route")) from None
     for block in ("branch", "joint"):
         if isinstance(raw.get(block), dict):
             _check(raw[block].get("routes"))
@@ -78,3 +84,24 @@ def apply(campaign, request):
     request = dataclasses.replace(request, model=route.get("model", request.model))
     routed.route = {"key": key, "backend": backend, "model": request.model, "effort": route.get("effort")}
     return routed, request
+
+
+def fallback(campaign, request):
+    """The campaign and request for one more attempt after a provider's safety filter refused the call:
+    "refusal_fallback" in campaign.json, a route ({backend, model, effort}) applied over the call as it ran.
+    None without one, or when the call already ran there. A stub campaign stays on the stub."""
+    route = (campaign.raw or {}).get("refusal_fallback")
+    if not route:
+        return None
+    backend = campaign.backend if campaign.backend == "stub" else route.get("backend", campaign.backend)
+    model = route.get("model", request.model)
+    if (backend, model) == (campaign.backend, request.model):
+        return None
+    routed = copy.copy(campaign)
+    raw = dict(campaign.raw or {})
+    if "effort" in route:
+        side = "claude" if backend == "claude" else "codex"
+        raw[side] = {**(raw.get(side) or {}), ("effort" if side == "claude" else "reasoning_effort"): route["effort"]}
+    routed.backend, routed.raw = backend, raw
+    routed.route = {"key": "refusal_fallback", "backend": backend, "model": model, "effort": route.get("effort")}
+    return routed, dataclasses.replace(request, model=model)

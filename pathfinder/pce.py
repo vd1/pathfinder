@@ -91,10 +91,12 @@ def validate(raw: dict) -> None:
         if not isinstance(v, int) or isinstance(v, bool) or not 1 <= v <= top:
             raise ValueError(f"pce.{key} must be an integer from 1 to {top}, got {v!r}")
     critic = s.get("critic", DEFAULTS["critic"])
-    if (not isinstance(critic, dict) or set(critic) != {"profile", "remit"}
-            or not all(isinstance(v, str) and v.strip() for v in critic.values())
-            or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", critic["profile"])):
-        raise ValueError(f"pce.critic must be {{\"profile\": a lower-case id, \"remit\": text}}, got {critic!r}")
+    bar = critic.get("pass_score") if isinstance(critic, dict) else None
+    if (not isinstance(critic, dict) or not {"profile", "remit"} <= set(critic) <= {"profile", "remit", "pass_score"}
+            or not all(isinstance(critic[k], str) and critic[k].strip() for k in ("profile", "remit"))
+            or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", critic["profile"])
+            or ("pass_score" in critic and (type(bar) is not int or not 1 <= bar <= 10))):
+        raise ValueError(f"pce.critic must be {{\"profile\": a lower-case id, \"remit\": text, optional \"pass_score\": 1 to 10}}, got {critic!r}")
     v = s.get("supplement_chars", 1)
     if not isinstance(v, int) or isinstance(v, bool) or v < 1:
         raise ValueError(f"pce.supplement_chars must be a positive integer, got {v!r}")
@@ -208,6 +210,11 @@ def _files(text: str, permitted: list[str]) -> dict:
     if set(files) != set(permitted) or any(not isinstance(v, str) for v in files.values()):
         raise InvalidOutput(f"output must hold exactly {permitted}, with string contents; got {sorted(files)}")
     return files
+
+
+def _critic_score(text: str) -> int | None:
+    found = re.search(r"^\s*-\s*Score:\s*(\d+)", text, re.M | re.I)
+    return int(found.group(1)) if found else None
 
 
 def _critic_verdict(text: str, profile: str) -> str:
@@ -333,7 +340,9 @@ def sources(campaign, pair_id) -> dict:
              BASELINE: (ed / "note.tex").read_text(),
              "state.json": _json({"risk": "high", "max_passes": s["passes"], "required_gates": ["fact-checker", "critic"],
                                   "critic_profiles": {critic["profile"]: {"remit": critic["remit"]}},
-                                  "critic_score_policy": "Advisory only; no numeric acceptance threshold.",
+                                  "critic_score_policy": (f"A score of {critic['pass_score']}/10 or more passes the critic gate; "
+                                                          "its required revisions then go to the editor as findings."
+                                                          if critic.get("pass_score") else "Advisory only; no numeric acceptance threshold."),
                                   "acceptance_policy": "Every gate must pass; explicit editor acceptance on concrete "
                                                        "findings; no evidence change."})}
     if (d / f"{pair_id}.tex").exists():
@@ -535,6 +544,9 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
             retain(critic_current, reviewed[critic_current])
             if verdict == "contaminated":
                 return finish("review_required", "the critic's context was contaminated")
+            bar = s["critic"].get("pass_score")
+            if verdict == "revise" and bar and (_critic_score(reviewed[critic_history]) or 0) >= bar:
+                verdict = "pass"                  # at the bar: the editor decides, with the critic's revisions as findings
             if verdict != "pass":
                 continue
 

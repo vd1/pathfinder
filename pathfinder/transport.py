@@ -458,9 +458,23 @@ def execute(campaign, request: ModelRequest):
         if unserved and _campaign_stopped(campaign):  # a launch streak may have just stopped the campaign
             return result
         if not unserved or attempt == retries:
-            return result
+            break
         time.sleep(backoff)                       # the model never served it: ask once more, outside admission
+    if (result.get("failure") or {}).get("class") == "refusal" and getattr(campaign, "route", {}).get("key") != "refusal_fallback":
+        found = routing.fallback(campaign, request)
+        if found is not None:                     # a provider's safety filter: once more, on the fallback route
+            from . import events
+            events.emit(campaign, "admission_deferred", unit=request.thread, stage=request.stage, actor=request.actor,
+                        reason=f"refused by {campaign.backend}'s safety filter; retried on {found[0].backend}/{found[1].model}")
+            return execute_routed(*found)
     return result
+
+
+def execute_routed(campaign, request: ModelRequest):
+    """One call on an already routed campaign: admission, then the attempt (the refusal fallback's second try)."""
+    from . import admission
+    with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+        return _attempt(campaign, request)
 
 
 def _attempt(campaign, request: ModelRequest):

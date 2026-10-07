@@ -344,3 +344,37 @@ def test_large_sources_are_digested_to_fit_the_prompt_limit(tmp_path, monkeypatc
     assert out["status"] == "accepted", out["reason"]
     assert all(len(call["prompt"]) <= 120_000 for call in calls)
     assert any("digest of sources/external/Q.txt" in call["prompt"] for call in calls)
+
+
+def _critic(score, verdict="revise"):
+    def reply(prompt):
+        out = json.loads(stub.pce_reply(None, "critic", prompt, verdict="pass"))
+        for name in out["files"]:
+            out["files"][name] = out["files"][name].replace("- Score: 4", f"- Score: {score}/10").replace(
+                "- Verdict: pass", f"- Verdict: {verdict}").replace("- Required revisions: None",
+                                                                     "- Required revisions: Tighten the abstract.")
+        return json.dumps(out)
+    return reply
+
+
+def test_a_critic_score_at_the_bar_passes_the_gate_and_the_editor_decides(tmp_path, monkeypatch):
+    """Without a numeric bar the critic answers revise at 8/10 every pass and the editor is never reached
+    (julien-2, 7 October): with "pass_score": 8 that review passes the gate and the editor takes its findings."""
+    c = ready(tmp_path, pce={"critic": {"profile": "reader", "remit": "r", "pass_score": 8}})
+    calls = script(monkeypatch, c, critic=[_critic(8)])
+    out = pce.run(c, "Q1P1")
+    assert out["status"] == "accepted" and [call["role"] for call in calls] == ORDER
+    state = json.loads(json.loads(calls[0]["prompt"].split("Allowed input files:\n", 1)[1])["state.json"])
+    assert "8/10" in state["critic_score_policy"]
+
+
+def test_a_critic_score_below_the_bar_still_revises(tmp_path, monkeypatch):
+    c = ready(tmp_path, pce={"passes": 1, "critic": {"profile": "reader", "remit": "r", "pass_score": 8}})
+    script(monkeypatch, c, critic=[_critic(7)])
+    assert pce.run(c, "Q1P1")["status"] == "review_required"
+
+
+@pytest.mark.parametrize("bad", [0, 11, "8", True])
+def test_a_bad_pass_score_is_refused(tmp_path, bad):
+    with pytest.raises(ValueError, match="pce.critic"):
+        make(tmp_path, edit_scheme="pce", pce={"critic": {"profile": "reader", "remit": "r", "pass_score": bad}})

@@ -107,3 +107,51 @@ def test_a_stub_campaign_stays_on_the_stub_whatever_its_routes_say(tmp_path):
                                      timeout=10, thread="Q1P1", stage="verify", actor="verifier")
     routed, req = routing.apply(c, request)
     assert routed.backend == "stub" and req.model == "claude-opus-5-5" and routed.route["backend"] == "stub"
+
+
+def _fake_attempts(monkeypatch, replies):
+    """transport._attempt answered in turn: "refused" (OpenAI's safety filter) or "ok"."""
+    seen = []
+    def attempt(campaign, request):
+        kind = replies[len(seen)]
+        seen.append((campaign.backend, request.model))
+        if kind == "refused":
+            r = {"outcome": "failed", "error": "This content was flagged for possible biological risk.", "text": "",
+                 "transport_failed": True, "session": "s", "raw_events": []}
+        else:
+            r = {"outcome": "completed", "error": None, "text": "fine", "transport_failed": False, "session": "s", "raw_events": []}
+        transport._receipt(campaign, request.thread, request.stage, request.actor, request.model, r)
+        return r
+    monkeypatch.setattr(transport, "_attempt", attempt)
+    return seen
+
+
+def test_a_refused_call_is_retried_once_on_the_fallback_route(tmp_path, monkeypatch):
+    c = make(tmp_path, backend="codex", refusal_fallback={"backend": "claude", "model": "claude-opus-5-5"})
+    seen = _fake_attempts(monkeypatch, ["refused", "ok"])
+    r = transport.execute(c, transport.request("p", model="gpt-6.1-sol", tools=True, search=False, cwd=tmp_path,
+                                               timeout=5, thread="Q1P1", stage="peer", actor="ada"))
+    assert r["outcome"] == "completed" and seen == [("codex", "gpt-6.1-sol"), ("claude", "claude-opus-5-5")]
+    rows = transport.receipts(c)
+    assert rows[-1]["route"]["key"] == "refusal_fallback" and rows[0]["failure"]["class"] == "refusal"
+
+
+def test_without_a_fallback_a_refusal_stands(tmp_path, monkeypatch):
+    c = make(tmp_path, backend="codex")
+    seen = _fake_attempts(monkeypatch, ["refused", "ok"])
+    r = transport.execute(c, transport.request("p", model="m", tools=True, search=False, cwd=tmp_path, timeout=5,
+                                               thread="Q1P1", stage="peer", actor="ada"))
+    assert (r.get("failure") or {}).get("class") == "refusal" and len(seen) == 1
+
+
+def test_a_refusal_on_the_fallback_is_not_retried_again(tmp_path, monkeypatch):
+    c = make(tmp_path, backend="codex", refusal_fallback={"backend": "claude", "model": "claude-opus-5-5"})
+    seen = _fake_attempts(monkeypatch, ["refused", "refused", "ok"])
+    r = transport.execute(c, transport.request("p", model="m", tools=True, search=False, cwd=tmp_path, timeout=5,
+                                               thread="Q1P1", stage="peer", actor="ada"))
+    assert (r.get("failure") or {}).get("class") == "refusal" and len(seen) == 2
+
+
+def test_a_bad_fallback_is_refused_at_load(tmp_path):
+    with pytest.raises(ValueError, match="refusal_fallback"):
+        make(tmp_path, refusal_fallback={"backend": "openai"})
