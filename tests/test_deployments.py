@@ -107,7 +107,7 @@ def _agqsl_canon(tmp_path: Path) -> Path:
                           capture_output=True, check=True).stdout
     target = tmp_path / "recorded"
     with tarfile.open(fileobj=io.BytesIO(data)) as tar:
-        tar.extractall(target, filter="data")
+        tar.extractall(target, filter="tar")   # records keep the editor's style links (absolute)
     return target / "canon"
 
 
@@ -200,7 +200,7 @@ def _julien2_recorded(tmp_path: Path, *paths: str) -> Path:
                           capture_output=True, check=True).stdout
     target = tmp_path / "recorded"
     with tarfile.open(fileobj=io.BytesIO(data)) as tar:
-        tar.extractall(target, filter="data")
+        tar.extractall(target, filter="tar")   # records keep the editor's style links (absolute)
     return target
 
 
