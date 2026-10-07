@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "a988c4850181fa4a11aabbedcd80214b12e83ba2"
+revision = "cd08b0a1f7e781fcfac7f70c6f71faf2bb594b81"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.4.7 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
@@ -30,7 +30,7 @@ notes = "The pilot campaign at the repository root (10 mechanism-design by 10 ag
 [deployments.pathfinder-julien-2]
 status = "supported"
 checkout = "../pathfinder-julien-2"
-revision = "90394b113c0d3c677913c3f70ca3501d8cc3636f"
+revision = "93e5e565d0716074fcf77432c71998290b1f6460"
 clean_paths = ["campaign-2-batch-2/campaign.json", "campaign-2-batch-2/prompts", "campaign-2-batch-2/engine-ref"]   # the contracts read campaign-2-batch-2/ and campaign-2-batch-1/ as committed
 contract = ["tests/test_deployments.py::test_julien2_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine"]
 notes = "Julien's campaign 2, a plain deployment since its controller (eva2, julien2), patched engine copy and vendored PCE were removed (tag pre-pathfinder-roof in that repository). Pair ids are julien-2's own source numbers (Q002-P024): every Q.jsonl/P.jsonl row carries n, so the engine names and finds pairs by it (numbered corpus, from engine-v1.6.0-rc1). campaign-2-batch-1/ is batch 1, ranks 1 to 10: the record of the finished eva-top-ten-01, ten one-pair composable campaigns made by import-eva2 and named by their pair (seven DRAFT, three PAUSE, PCE edits done, actionability NEEDS_INPUTS). campaign-2-batch-2/ is batch 2, ranks 11 to 20, on a frozen engine-v1.6.0-rc1 (campaign-2-batch-2/engine-ref): composable research with three branches, edit_scheme pce, actionability, two paper reviewers, routes to Claude Opus 5.5 for verification, ledger review, actionability and reviewer 1; all ten pairs have run (DRAFT 2, PAUSE 8). Each batch's id-migration.json maps the ids used before 7 October 2026 (Q1P1, Q1P15). The contract replays campaign-2-batch-1/ read-only and runs one shortlisted pair of campaign-2-batch-2/ afresh in a copy through composable research, PCE editing and actionability on the stub backend, checking that its prompt overlays reach the calls."
@@ -38,7 +38,7 @@ notes = "Julien's campaign 2, a plain deployment since its controller (eva2, jul
 [deployments.prooftree]
 status = "supported"
 checkout = "../proofTree"
-revision = "4b601ade8a6ccb6e78d106341f06050efc6fdf87"
+revision = "19ef8c3a9953175621eead21499d6ea4b64570fa"
 clean_paths = ["prooftree", "pyproject.toml", "uv.lock", "campaigns/sphere-packing-rounds2/adaptive"]   # what the contract runs and replays
 contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
 notes = "Editable dependency on ../pathfinder; imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
