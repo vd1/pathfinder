@@ -38,10 +38,10 @@ notes = "Julien's campaign 2, a plain deployment since its controller (eva2, jul
 [deployments.prooftree]
 status = "supported"
 checkout = "../proofTree"
-revision = "a9e26a3138080a96d1e6727085f079e66b0e4ce3"
+revision = "145772a4762a5f951973932b619c4817fd43c203"
 clean_paths = ["prooftree", "pyproject.toml", "uv.lock", "campaigns/sphere-packing-rounds2/adaptive"]   # what the contract runs and replays
 contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
-notes = "Editable dependency on ../pathfinder; imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
+notes = "Pinned to engine-v1.6.1 by git revision (373a849, pyproject.toml and uv.lock; no editable path since 8 October 2026); imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
 
 
 [deployments.agqsl]
