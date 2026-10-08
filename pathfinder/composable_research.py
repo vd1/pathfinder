@@ -250,6 +250,11 @@ def next_requests(campaign, pair_id):
                     _apply_research_review(campaign, pair_id, pending[0], s)
                 continue
             stage = s["stage"]
+            if (stage == "peers" and s.get("peer_call", 0) > 0
+                    and campaign.allowances["peer_seconds"] - s.get("peer_seconds", 0) < _peer_floor(campaign)):
+                _set(campaign, pair_id, peer_seconds_exhausted=True,  # however it got here, a remainder this small is not sent
+                     stage="ledger_review" if direct else "consolidate")
+                continue
             if stage == "ledger_review" and s.get("reviews", 0) >= campaign.raw.get("ledger_reviews", campaign.rounds + 1):
                 _set(campaign, pair_id, status="HANDOFF", stage="done", handoff_reason="review_allowance_exhausted")
                 return []

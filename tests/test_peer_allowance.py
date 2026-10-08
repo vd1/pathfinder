@@ -73,3 +73,29 @@ def test_a_full_length_peer_timeout_is_still_a_failure(tmp_path, monkeypatch):
     monkeypatch.setattr(transport, "execute", execute)
     with pytest.raises(transport.TransportFailed):
         research.run_thread(c, "Q1P1")
+
+
+def test_a_peers_stage_resumed_with_too_little_left_sends_no_call(tmp_path, monkeypatch):
+    """The recurrence guard: however the thread got back to its peers (a reissue, an older engine's state), a
+    remainder below the floor is not dispatched."""
+    c = _branch(tmp_path)
+    view = composable.branch_view(c, "Q1P1", "branch-1")
+    research.prepare(view, "Q1P1")
+    research._set(view, "Q1P1", status="running", stage="peers", round=1, peer_call=1, peer_seconds=865.0, pending=[])
+    seen = _timed(monkeypatch)
+    research.run_thread(view, "Q1P1")
+    assert not [q for q in seen if q.stage == "peer"] and any(q.stage == "ledger_review" for q in seen)
+
+
+def test_reconcile_lets_a_peer_block_at_the_residual_deadline_end_the_peers_turn(tmp_path, monkeypatch):
+    from pathfinder import reconcile
+    c = _branch(tmp_path, peer_min_seconds=0)
+    _timed(monkeypatch, timeout_second_call_of="ada")
+    with pytest.raises(transport.TransportFailed):
+        research.run_thread(c, "Q1P1")
+    view = composable.branch_view(c, "Q1P1", "branch-1")
+    research._set(view, "Q1P1", status="BLOCKED", reason="peers: timeout",
+                  failure={"class": "timeout", "scope": "call", "retry": True, "reset_at": None})
+    assert reconcile.inspect(c, "Q1P1")["action"] == "branch-1: unblock: the peers' allowance ran out"
+    reconcile.apply(c, "Q1P1")
+    assert research.status(view, "Q1P1").get("peer_seconds_exhausted")

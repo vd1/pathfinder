@@ -12,6 +12,7 @@ REISSUE = "reissue: evidence changed since the request"   # the action is "reiss
 REISSUE_CONTRACT = "reissue: the reply broke its contract twice"
 REISSUE_TRANSPORT = "reissue: the reply failed in transport"
 UNBLOCK = "unblock: evidence repaired"
+EXHAUSTED = "unblock: the peers' allowance ran out"   # a peer timed out at the remainder's deadline: the turn is over
 
 
 def _evidence_check(campaign, pair_id) -> str | None:
@@ -85,6 +86,19 @@ def _retained_transport_failure(campaign, pair_id, s) -> bool:
     return False
 
 
+def _peers_ran_out(campaign, pair_id, s) -> bool:
+    import json
+    from .composable_research import _at_residual_deadline
+    for identity in s.get("pending") or []:
+        try:
+            item = json.loads(research._request_file(campaign, pair_id, identity).read_text())
+        except (OSError, ValueError):
+            continue
+        if "result" in item and _at_residual_deadline(campaign, item):
+            return True
+    return False
+
+
 def _inspect(campaign, pair_id: str) -> dict:
     d = campaign.thread_dir(pair_id); s = research.status(campaign, pair_id); holder = runner.Lock.holder(d)
     note = (d / f"{pair_id}.tex").exists()
@@ -96,6 +110,8 @@ def _inspect(campaign, pair_id: str) -> dict:
     elif (s.get("status") == "BLOCKED" and (s.get("reason") or "").startswith("contract:")
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
         action = REISSUE_CONTRACT                   # the retained reply broke its contract twice: keep it, ask again
+    elif s.get("status") == "BLOCKED" and s.get("stage") == "peers" and _peers_ran_out(campaign, pair_id, s):
+        action = EXHAUSTED                          # resuming applies the retained replies and goes to the review
     elif (s.get("status") == "BLOCKED" and s.get("pending") and (s.get("failure") or {}).get("class") in RETRIABLE
           and (s.get("failure") or {}).get("scope") != "campaign"
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
@@ -212,10 +228,10 @@ def _apply(campaign, pair_id: str) -> str:
         history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
                                                    "from_reason": s.get("reason"), "action": info["action"], "superseded": moved}]
         research._set(campaign, pair_id, status="running", reason=None, pending=[], history=history)
-    elif info["action"] == UNBLOCK:                 # the transition is recorded; retained responses and the stage stay
+    elif info["action"] in (UNBLOCK, EXHAUSTED):    # the transition is recorded; retained responses and the stage stay
         s = research.status(campaign, pair_id)
         history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
-                                                   "from_reason": s.get("reason"), "action": UNBLOCK}]
+                                                   "from_reason": s.get("reason"), "action": info["action"]}]
         research._set(campaign, pair_id, status="running", reason=None, history=history)
     elif info["action"] == "run consolidate":
         research._set(campaign, pair_id, stage="consolidate", status="running", reason=None)
