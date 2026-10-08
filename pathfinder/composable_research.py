@@ -215,7 +215,7 @@ def next_requests(campaign, pair_id):
                     continue
                 if failed and s["stage"] == "peers" and _at_residual_deadline(campaign, failed):
                     calls = s.get("peer_call", 0) + 1     # the allowance ran out mid-call: the peers' turn is over
-                    seconds = s.get("peer_seconds", 0) + sum(item["result"].get("seconds") or 0 for item in pending)
+                    seconds = s.get("peer_seconds", 0) + max((item["result"].get("seconds") or 0 for item in pending), default=0)
                     _set(campaign, pair_id, pending=[], peer_call=calls, peer_seconds=seconds, peer_seconds_exhausted=True,
                          stage="ledger_review" if direct else "consolidate")
                     continue
@@ -227,7 +227,7 @@ def next_requests(campaign, pair_id):
                     return []
                 if s["stage"] == "peers":
                     calls = s.get("peer_call", 0) + 1
-                    seconds = s.get("peer_seconds", 0) + sum(item["result"]["seconds"] for item in pending)
+                    seconds = s.get("peer_seconds", 0) + max((item["result"]["seconds"] for item in pending), default=0)   # side by side: clock time
                     more = (calls < campaign.allowances["peer_calls"] and not ledger.ready(list(campaign.peers))
                             and campaign.allowances["peer_seconds"] - seconds >= _peer_floor(campaign))
                     if calls < campaign.allowances["peer_calls"] and campaign.allowances["peer_seconds"] - seconds < _peer_floor(campaign):

@@ -36,7 +36,7 @@ def _peers(campaign, pair_id, stop):
     d, L = campaign.thread_dir(pair_id), Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
     A = campaign.allowances; inp = _inputs(d); row = _scan_row(campaign, pair_id)
     helper = install_helper(d)
-    used = {"seconds": 0.0}; lock = threading.Lock()
+    used = {}; lock = threading.Lock()                    # each peer's own seconds; the round's clock is the largest
 
     peers = list(campaign.peers)
     outlines = "".join(_outline(d / "inputs" / inp[side]) for side in "QP")
@@ -46,7 +46,7 @@ def _peers(campaign, pair_id, stop):
         others = [a for a in peers if a != actor]
         for call_no in range(A["peer_calls"]):
             with lock:
-                left = A["peer_seconds"] - used["seconds"]
+                left = A["peer_seconds"] - max(used.values(), default=0.0)
             if left <= 0 or L.ready(peers):
                 return
             while L.ready([actor]) and not all(done[o] for o in others):   # my word stands; wait for my partners
@@ -81,7 +81,7 @@ def _peers(campaign, pair_id, stop):
                 stage="peer", actor=actor,
             ))
             with lock:
-                used["seconds"] += r["seconds"]
+                used[actor] = used.get(actor, 0.0) + r["seconds"]
             if r["transport_failed"]:
                 raise transport.TransportFailed(pair_id, failure=r.get("failure"))
 

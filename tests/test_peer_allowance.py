@@ -1,4 +1,5 @@
-"""The peers' time allowance runs out without a failure. proofTree planar S20 (PF-09, 8 October 2026): peer_seconds
+"""The peers' time allowance is clock time (the user's decision, 8 October 2026): peers working side by side spend
+the slowest one's seconds, not their sum. And it runs out without a failure. proofTree planar S20 (PF-09, 8 October 2026): peer_seconds
 900, two calls; the first parallel calls used 372.3 + 492.7 = 865 s, the second calls were sent with the 35 s left
 (65 s with grace), Ada timed out, and the branch stopped as a transport failure instead of going to its review."""
 import json
@@ -33,8 +34,23 @@ def _timed(monkeypatch, timeout_second_call_of=None):
     return seen
 
 
+def test_peers_side_by_side_spend_clock_time(tmp_path, monkeypatch):
+    c = _branch(tmp_path)                                # 900 s: 492.7 s of clock time leaves 407.3 s for a second call
+    seen = _timed(monkeypatch)
+    research.run_thread(c, "Q1P1")
+    second = [q for q in seen if str(q.cwd).endswith("branch-1") and q.stage == "peer"][2:]
+    assert sorted(q.actor for q in second) == ["ada", "emmy"] and {q.timeout for q in second} == {407 + 30}
+    view = composable.branch_view(c, "Q1P1", "branch-1")
+    assert research.status(view, "Q1P1")["peer_seconds"] == pytest.approx(492.7 + 0.0, abs=1)
+
+
+def _short(**raw):
+    return {"allowances": {"peer_seconds": 600, "peer_calls": 2, "consolidate_seconds": 60, "verify_seconds": 60,
+                           "edit_seconds": 60}, **raw}
+
+
 def test_a_residual_below_the_floor_is_not_sent_and_the_branch_goes_to_its_review(tmp_path, monkeypatch):
-    c = _branch(tmp_path)
+    c = _branch(tmp_path, **_short())                    # 600 s: 107.3 s left, under the 120 s floor
     seen = _timed(monkeypatch)
     research.run_thread(c, "Q1P1")
     branch = [q for q in seen if str(q.cwd).endswith("branch-1")]
@@ -43,7 +59,7 @@ def test_a_residual_below_the_floor_is_not_sent_and_the_branch_goes_to_its_revie
 
 
 def test_a_peer_timing_out_at_the_residual_deadline_ends_the_peers_turn_not_the_branch(tmp_path, monkeypatch):
-    c = _branch(tmp_path, peer_min_seconds=0)            # the floor off: the 35 s call is sent, as in S20
+    c = _branch(tmp_path, **_short(peer_min_seconds=0))  # the floor off: the 107 s call is sent, as S20's 35 s was
     seen = _timed(monkeypatch, timeout_second_call_of="ada")
     try:
         research.run_thread(c, "Q1P1")
@@ -89,7 +105,7 @@ def test_a_peers_stage_resumed_with_too_little_left_sends_no_call(tmp_path, monk
 
 def test_reconcile_lets_a_peer_block_at_the_residual_deadline_end_the_peers_turn(tmp_path, monkeypatch):
     from pathfinder import reconcile
-    c = _branch(tmp_path, peer_min_seconds=0)
+    c = _branch(tmp_path, **_short(peer_min_seconds=0))
     _timed(monkeypatch, timeout_second_call_of="ada")
     with pytest.raises(transport.TransportFailed):
         research.run_thread(c, "Q1P1")
@@ -137,3 +153,22 @@ def test_the_peer_prompt_asks_for_one_log_per_trial_and_names_the_digit_limit(tm
     from pathfinder import resources
     text = resources.prompt(make(tmp_path), "peer")
     assert "own log file" in text and "sys.set_int_max_str_digits(0)" in text
+
+
+def test_a_classic_thread_also_spends_clock_time(tmp_path, monkeypatch):
+    """Without a scheme the peers run their own call loops side by side; 500 s each is 500 s of clock time, so
+    with 600 s both get a second call (summed, 1000 s, neither would)."""
+    c = make(tmp_path, peers=["ada", "emmy"])
+    real, calls = transport.execute, []
+
+    def execute(campaign, request):
+        r = real(campaign, request)
+        if request.stage == "peer":
+            calls.append(request.actor)
+            return {**r, "seconds": 500.0 if calls.count(request.actor) == 1 else r["seconds"]}
+        return r
+    monkeypatch.setattr(transport, "execute", execute)
+    from pathfinder import ledger as ledger_module
+    monkeypatch.setattr(ledger_module.Ledger, "ready", lambda self, actors: False)
+    research.run_thread(c, "Q1P1")
+    assert sorted(calls) == ["ada", "ada", "emmy", "emmy"]
