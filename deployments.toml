@@ -38,11 +38,11 @@ notes = "Julien's campaign 2, a plain deployment since its controller (eva2, jul
 [deployments.prooftree]
 status = "supported"
 checkout = "../proofTree"
-revision = "850955a9ebfd179408e77b0355499767a3409361"
+revision = "3d0f2a494f448f4c16c3cecde41cc63d4c220740"
 reads = "recorded"   # the contract reads proofTree's code at this commit (git archive); its checkout may move on
 clean_paths = ["campaigns/sphere-packing-rounds2/adaptive"]   # the replay's run data, untracked, read in place
 contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
-notes = "Pinned to engine-v1.6.4 by tag (984de6d, pyproject.toml and uv.lock; no editable path since 8 October 2026); imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
+notes = "Pinned to engine-v1.6.6 by tag (b1487cb, pyproject.toml and uv.lock; no editable path since 8 October 2026); imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
 
 
 [deployments.agqsl]
