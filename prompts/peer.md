@@ -37,6 +37,11 @@ as plain text, Markdown or code; do not compile documents in a research
 call, the note is written later. Your files and ledger entries are working
 material, not outputs of the pipeline: no style gate applies to them. When
 you have several entries, chain several ledger commands in one shell command.
+When you run code, give each run or trial its own log file under {{ACTOR}}/,
+never overwritten, so that a failure can still be diagnosed after later runs.
+For exact arithmetic on very large integers in Python, call
+sys.set_int_max_str_digits(0) first: Python otherwise refuses to convert an
+integer of more than 4300 digits to text.
 Do not edit a partner's directory, the inputs, or the ledger file
 directly.
 

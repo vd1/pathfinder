@@ -129,3 +129,11 @@ def test_a_peer_timing_out_at_the_full_deadline_is_asked_again_alone(tmp_path, m
     assert identities.count(emmy) == 1 and identities.count(ada) == 2
     joint = composable.joint_view(c, "Q1P1")
     assert list((joint.thread_dir("Q1P1") / "research-requests" / "superseded").glob("*.json"))   # the failure is kept
+
+
+def test_the_peer_prompt_asks_for_one_log_per_trial_and_names_the_digit_limit(tmp_path):
+    """proofTree S20 (OBS-10, OBS-11): a peer's repeated trials overwrote the first failure's stderr, and a large
+    Fraction hit Python's 4300-digit limit on converting an integer to text."""
+    from pathfinder import resources
+    text = resources.prompt(make(tmp_path), "peer")
+    assert "own log file" in text and "sys.set_int_max_str_digits(0)" in text
