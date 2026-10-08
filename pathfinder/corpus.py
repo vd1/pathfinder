@@ -134,7 +134,7 @@ def body(campaign, row: dict, fulltext: bool) -> str:
 
 
 def _main_tex(d: Path) -> Path | None:
-    cands = [p for p in d.rglob("*.tex") if "\\documentclass" in p.read_text(errors="replace")]
+    cands = [p for p in d.rglob("*.tex") if re.search(r"\\document(class|style)\b", p.read_text(errors="replace"))]   # LaTeX 2.09 too
     return min(cands, key=lambda p: len(p.parts)) if cands else None
 
 
@@ -144,7 +144,7 @@ def flatten(aid: str, out_dir: Path) -> str:
     req = urllib.request.Request(f"https://arxiv.org/e-print/{aid}", headers={"User-Agent": "pathfinder/0.1"})
     with net.urlopen(req, timeout=120) as r:
         blob, ctype = r.read(), r.headers.get("Content-Type", "")
-    work = out_dir / aid; shutil.rmtree(work, ignore_errors=True); work.mkdir()
+    work = out_dir / aid; shutil.rmtree(work, ignore_errors=True); work.mkdir(parents=True)   # math/0110009v3
     if blob[:4] == b"%PDF" or "pdf" in ctype:
         return _pdf_text(aid, out_dir, blob)
     try:
@@ -154,7 +154,7 @@ def flatten(aid: str, out_dir: Path) -> str:
         (work / "main.tex").write_bytes(gzip.decompress(blob))
     main = _main_tex(work)
     if main is None:
-        raise RuntimeError(f"{aid}: no .tex with \\documentclass in e-print")
+        raise RuntimeError(f"{aid}: no .tex with \\documentclass or \\documentstyle in e-print")
     try:
         with open(out_dir / f"{aid}.tex", "w") as f:
             subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, stdout=f, check=True, timeout=120)

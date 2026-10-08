@@ -1,3 +1,4 @@
+import pytest
 from pathfinder import corpus
 from pathfinder.config import Campaign
 
@@ -74,3 +75,39 @@ def test_paper_title_checks_use_the_same_query(monkeypatch):
     calls, _ = _arxiv(monkeypatch, [429, ATOM])
     assert paper._arxiv_titles(["2409.00001"]) == {"2409.00001": "A title wrapped"}
     assert len(calls) == 2 and calls[0][0].get_header("User-agent")
+
+
+class _EPrint:
+    def __init__(self, blob):
+        self.blob, self.headers = blob, {"Content-Type": "application/x-eprint-tar"}
+
+    def read(self):
+        return self.blob
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def _tarball(files: dict) -> bytes:
+    import io, tarfile
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tf:
+        for name, text in files.items():
+            data = text.encode()
+            info = tarfile.TarInfo(name); info.size = len(data)
+            tf.addfile(info, io.BytesIO(data))
+    return buf.getvalue()
+
+
+@pytest.mark.skipif(not __import__("shutil").which("latexpand"), reason="latexpand not installed")
+def test_an_old_style_arxiv_id_and_a_latex209_source_flatten(tmp_path, monkeypatch):
+    """proofTree planar (PF-07, PF-08): math/0110009v3 has a slash in its id, and Cohn and Elkies's source opens
+    with \\documentstyle (LaTeX 2.09); flatten failed on the first and found no main file in the second."""
+    blob = _tarball({"CohnElkies.tex": "\\documentstyle[12pt]{article}\n\\begin{document}\n\\input{body}\n\\end{document}\n",
+                     "body.tex": "Sphere packings.\n"})
+    monkeypatch.setattr(corpus.net, "urlopen", lambda request, timeout=None: _EPrint(blob))
+    assert corpus.flatten("math/0110009v3", tmp_path / "sources") == "sources/math/0110009v3.tex"
+    assert "Sphere packings." in (tmp_path / "sources" / "math" / "0110009v3.tex").read_text()
