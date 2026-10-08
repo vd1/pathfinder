@@ -65,3 +65,11 @@ def test_a_contract_block_is_an_apex_reconcile(tmp_path):
                   failure={"class": "contract", "scope": "call", "retry": False, "reset_at": None})
     match = [a for a in playbook.next_actions(c) if a["command"] and " reconcile Q1P1 --apply" in a["command"]]
     assert match and match[0]["owner"] == "apex"
+
+
+def test_a_recorded_failure_asks_the_apex_agent_for_a_failure_report(tmp_path):
+    """A diagnosed failure is also written up for the engine's maintainer (proofTree's packet, 7 October 2026)."""
+    c = make(tmp_path)
+    (tmp_path / "health.json").write_text(json.dumps({"status": "failed", "reason": "transport failed: timeout"}))
+    action = next(a for a in playbook.next_actions(c) if a["action"] == "diagnose the recorded operational failure")
+    assert "pathfinder-failures/" in action["why"]

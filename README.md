@@ -270,6 +270,26 @@ the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
   one safe action for a thread (start, resume peers, run consolidate, run
   verify, or nothing) and `--apply` performs it.
 
+### Failure reports for the maintainer
+
+Every deployment's apex agent keeps a failure packet for the engine's maintainer in
+`operator-log/<campaign>/pathfinder-failures/`, written as failures are diagnosed, without waiting to be asked:
+
+- `README.md`: an index table, one row per report, with its classification, impact and current handling.
+- One file per distinct failure, `PF-NN-<slug>.md` for a confirmed engine defect and `OBS-NN-<slug>.md` for
+  everything else (an agent's command mistake, a benign exit, a provider timeout, an external tool's warning).
+  Repeated identical errors are one report with a count.
+- Each report gives: what happened, when (UTC) and where (campaign, pair, branch, stage, actor); the
+  classification and whether it is confirmed or suspected; the exact error text; the evidence (receipt and call
+  ids, retained request paths, event indices); the engine code involved, when known; the local workaround, if
+  any; the recommended correction; and a regression that would pin it.
+- `evidence.json` holds the machine-readable evidence the reports cite.
+
+Keep engine defects, agent mistakes and benign events apart, so that one bad night does not read as one
+undifferentiated engine bug. Never edit the engine to work around a failure: a workaround lives in the
+deployment and is recorded in its report. The maintainer reads the packet, fixes in a release, and the
+deployment removes its workaround after upgrading. proofTree's planar packet (October 2026) is the model.
+
 ### Five-minute supervising-agent audit
 
 Run `uv run pathfinder --root CAMPAIGN health --json` at each audit, or omit
@@ -677,6 +697,8 @@ here), build a deployment for your own application without editing the engine:
    `PYTHONPATH=engine`, so a running campaign never changes engine under it; moving to a new release is a
    re-freeze and a run started with `--accept-change`.
 6. **A stub run first**: `"backend": "stub"` drives every stage without a model call, to check your setup.
+7. **A failure packet**: your agent keeps `operator-log/<campaign>/pathfinder-failures/` (see "Failure reports
+   for the maintainer"), so engine defects reach the maintainer with their evidence.
 
 statarb, proofTree, agQSL and julien-2 are such deployments; `deployments.toml` lists them, and each has a
 contract test in `tests/test_deployments.py` that every engine release must pass. A deployment you want kept

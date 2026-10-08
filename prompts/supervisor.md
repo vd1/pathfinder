@@ -63,6 +63,10 @@ time, evidence paths, observed facts, suspected or confirmed diagnosis, action,
 and follow-up verification. Preserve earlier entries. Record the attempted
 action before performing it, then append its outcome.
 
+When the diagnosis is established, add it to the deployment's failure packet for the engine's maintainer,
+`operator-log/<campaign>/pathfinder-failures/`, in the shape the engine README gives under "Failure reports
+for the maintainer": one report per distinct failure, engine defects (PF) kept apart from everything else (OBS).
+
 After recovery, verify the intended stage advances, completed research remains
 unchanged, and no duplicate runner exists. Process existence alone is not a
 successful recovery. If verification requires another audit, leave the incident

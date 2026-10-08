@@ -38,7 +38,9 @@ def next_actions(campaign) -> list[dict]:
                         "command": _cmd(campaign, "stop", "--clear")})
     if snap.get("failure"):
         out.append({"owner": "apex", "action": "diagnose the recorded operational failure",
-                    "why": "A pair failed twice, or a campaign-wide failure occurred; read the failure and each pair's safe action.",
+                    "why": ("A pair failed twice, or a campaign-wide failure occurred; read the failure and each pair's safe action. "
+                            "Then write it up for the engine's maintainer in operator-log/<campaign>/pathfinder-failures/ "
+                            "(README: Failure reports for the maintainer)."),
                     "command": _cmd(campaign, "health")})
     if snap.get("cooldown"):
         out.append({"owner": "engine", "action": "wait for the rate-limit cooldown",
