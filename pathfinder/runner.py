@@ -225,11 +225,39 @@ def _write_state(campaign):
         print(f"{_now()} state.json not written: {error!r}")
 
 
+AGENT_TOOLS = ("codex", "claude")
+
+
+def launch_record() -> dict:
+    """How this runner was started: its parent, process group and session. A runner in its launcher's process
+    group ends when that group is torn down, as an agent's tool session is when it ends (proofTree S21)."""
+    import subprocess
+    ppid = os.getppid()
+    try:
+        parent = subprocess.run(["ps", "-o", "command=", "-p", str(ppid)], capture_output=True, text=True,
+                                timeout=5).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        parent = ""
+    return {"ppid": ppid, "pgid": os.getpgid(0), "sid": os.getsid(0), "own_group": os.getpgid(0) == os.getpid(),
+            "parent": parent[:300]}
+
+
+def warn_if_attached(launch: dict) -> None:
+    """A warning, not a refusal: a runner sharing an agent tool session's process group dies with that session."""
+    import sys
+    parent = (launch.get("parent") or "").lower()
+    if not launch.get("own_group") and any(tool in parent for tool in AGENT_TOOLS):
+        print(f"warning: this runner shares the process group of an agent tool session ({launch['parent'][:80]}); it and "
+              "its calls end when that session ends. Start long runs detached (setsid or nohup, output to a log): "
+              "README, Launching long runs.", file=sys.stderr)
+
+
 def _recorded_run(campaign, interval):
     old = health.read(campaign.path("health.json"))
     metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
                 "started_at": time.time(), "heartbeat_at": time.time(),
-                "last_progress": None, "previous_failure": old}
+                "last_progress": None, "previous_failure": old, "launch": launch_record()}
+    warn_if_attached(metadata["launch"])
     campaign.path("health.json").unlink(missing_ok=True)
     health.write(campaign.path("runner.json"), metadata); _write_state(campaign)
     try:

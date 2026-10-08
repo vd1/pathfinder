@@ -295,6 +295,22 @@ undifferentiated engine bug. Never edit the engine to work around a failure: a w
 deployment and is recorded in its report. The maintainer reads the packet, fixes in a release, and the
 deployment removes its workaround after upgrading. proofTree's planar packet (October 2026) is the model.
 
+### Launching long runs
+
+Start a run that must outlive the shell or agent session launching it detached, in its own session and
+process group, with its output in a log:
+
+```sh
+uv run python -m pathfinder.detach CAMPAIGN/logs/research.log -- uv run pathfinder --root CAMPAIGN research
+```
+
+It prints the run's pid. An agent's tool session (Codex, Claude Code) tears down its process group when it
+ends, and a runner started inside it goes with it, calls and all, without recording a failure (proofTree S21).
+The runner records how it was launched (`launch` in `runner.json`: parent, process group, session) and warns
+when it shares an agent tool session's group. When a runner vanishes, `pathfinder health` says it ended
+without recording a failure and, when it was launched in its parent's group, names the parent; the playbook
+asks the apex agent to check for live children and reconcile.
+
 ### Five-minute supervising-agent audit
 
 Run `uv run pathfinder --root CAMPAIGN health --json` at each audit, or omit

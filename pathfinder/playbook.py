@@ -36,6 +36,12 @@ def next_actions(campaign) -> list[dict]:
             out.append({"owner": "operator", "action": "campaign stopped",
                         "why": f"{stop.get('reason')}: clear the marker when the cause is settled (raise the budget first for a budget stop).",
                         "command": _cmd(campaign, "stop", "--clear")})
+    runner_state = snap.get("runner") or {}
+    if runner_state.get("status") in ("running", "draining") and runner_state.get("pid_alive") is False:
+        out.append({"owner": "apex", "action": "runner gone without a recorded failure",
+                    "why": "Its process vanished mid-run (see health for how it was launched). Check that no call's child "
+                           "is still alive, then reconcile each pair; start the new run detached.",
+                    "command": _cmd(campaign, "health")})
     if snap.get("failure"):
         out.append({"owner": "apex", "action": "diagnose the recorded operational failure",
                     "why": ("A pair failed twice, or a campaign-wide failure occurred; read the failure and each pair's safe action. "

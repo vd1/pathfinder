@@ -147,7 +147,12 @@ def snapshot(campaign):
                     "heartbeat_age_seconds": round(max(0, now - metadata["heartbeat_at"]), 1)}
         if metadata["status"] in {"running", "draining"}:
             if metadata["pid_alive"] is False:
-                warnings.append("Runner PID is absent; recorded run did not finish normally.")
+                launch = metadata.get("launch") or {}
+                warnings.append("Runner PID is absent: the run ended without recording a failure or a stop (killed from "
+                                "outside, or ended with the session that launched it)."
+                                + (f" It was launched under {launch.get('parent') or 'pid ' + str(launch.get('ppid'))} in "
+                                   f"that process's group, so it ended when the group did; start long runs detached "
+                                   "(README, Launching long runs)." if launch and not launch.get("own_group") else ""))
             elif metadata["heartbeat_age_seconds"] > 300:
                 warnings.append("Runner heartbeat is older than five minutes; investigate before restarting.")
     else:
