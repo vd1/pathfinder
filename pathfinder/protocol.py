@@ -27,14 +27,31 @@ def _models(campaign, pair_id, stages) -> list[str]:
     return seen
 
 
-def _engine() -> str:
+def _freeze_record() -> dict | None:
+    """The engine-freeze.json a deployment's frozen copy carries beside the package, if any."""
     from . import __file__ as package
-    record = Path(package).resolve().parent.parent / "engine-freeze.json"
     try:
-        data = json.loads(record.read_text())
-        return f"{data.get('ref') or 'frozen'} ({str(data.get('commit', ''))[:7]})"
+        return json.loads((Path(package).resolve().parent.parent / "engine-freeze.json").read_text())
     except (OSError, ValueError):
-        return "the development checkout"
+        return None
+
+
+def _engine() -> str:
+    """The engine release: a frozen copy's record; else an installed package's revision (a git dependency pinned
+    to a tag or a commit, which carries no engine-freeze.json); else the development checkout."""
+    data = _freeze_record()
+    if data is not None:
+        return f"{data.get('ref') or 'frozen'} ({str(data.get('commit', ''))[:7]})"
+    import importlib.metadata
+    try:
+        record = json.loads(importlib.metadata.distribution("pathfinder").read_text("direct_url.json") or "{}")
+    except (importlib.metadata.PackageNotFoundError, ValueError):
+        record = {}
+    vcs = record.get("vcs_info") or {}
+    commit, asked = str(vcs.get("commit_id") or ""), str(vcs.get("requested_revision") or "")
+    if commit:
+        return f"{asked} ({commit[:7]})" if asked and not commit.startswith(asked) else f"installed at commit {commit[:7]}"
+    return "the development checkout"
 
 
 def describe(campaign, pair_id: str, produced: str | None = None) -> str:

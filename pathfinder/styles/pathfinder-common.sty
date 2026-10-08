@@ -51,11 +51,26 @@
 \newcommand{\pathfinder@papers}{}
 \newcommand{\pathfinderpapers}[4]{\renewcommand{\pathfinder@papers}{%
   \pathfinder@paper{Q}{#1}{#2}\par\vspace{3pt}\pathfinder@paper{P}{#3}{#4}\par}}
+% \pathfindersources{Q link}{Q label}{P link}{P label}: for papers that are not arXiv records (a GitHub
+% manuscript, a local file); an empty link leaves the title unlinked. Without it both papers are arXiv's.
+\newcommand{\pathfindersources}[4]{%
+  \@namedef{pathfinder@url@Q}{#1}\@namedef{pathfinder@label@Q}{#2}%
+  \@namedef{pathfinder@url@P}{#3}\@namedef{pathfinder@label@P}{#4}}
 \newcommand{\pathfinder@paper}[3]{%
   \noindent\hangindent=1.6em\hangafter=1
   \makebox[1.6em][l]{\sffamily\bfseries\small\color{pathfinder@ink}#1}%
-  {\small\href{https://arxiv.org/abs/#2}{\color{pathfinder@text}#3}\quad
-   {\ttfamily\footnotesize\color{pathfinder@muted}arXiv:#2}}}
+  \expandafter\ifx\csname pathfinder@label@#1\endcsname\relax
+    {\small\href{https://arxiv.org/abs/#2}{\color{pathfinder@text}#3}\quad
+     {\ttfamily\footnotesize\color{pathfinder@muted}arXiv:#2}}%
+  \else
+    {\small\expandafter\ifx\csname pathfinder@url@#1\endcsname\@empty
+       {\color{pathfinder@text}#3}%
+     \else
+       \expandafter\expandafter\expandafter\href\expandafter\expandafter\expandafter
+         {\csname pathfinder@url@#1\endcsname}{\color{pathfinder@text}#3}%
+     \fi\quad
+     {\ttfamily\footnotesize\color{pathfinder@muted}\@nameuse{pathfinder@label@#1}}}%
+  \fi}
 \newcommand{\pathfinder@status}{}
 \newcommand{\pathfinderstatus}[1]{\renewcommand{\pathfinder@status}{#1}}
 % Freeze the PDF build's local clock once, including zero-padded seconds.

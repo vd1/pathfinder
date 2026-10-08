@@ -55,3 +55,29 @@ def test_a_rebuilt_note_is_dated_when_it_was_produced(tmp_path):
     c = _edited(tmp_path)
     text = protocol.describe(c, "Q1P1", produced="2026-10-06T09:41:00Z")
     assert "Produced 06-10-2026-09-41 UTC" in text
+
+
+class _Installed:
+    def __init__(self, record):
+        self.record = record
+
+    def read_text(self, name):
+        return json.dumps(self.record) if name == "direct_url.json" else None
+
+
+@pytest.mark.parametrize("record, expected", [
+    ({"url": "ssh://git@github.com/vd1/pathfinder.git",
+      "vcs_info": {"vcs": "git", "commit_id": "373a8492a04976e813c0d96622e036b17c42dd28",
+                   "requested_revision": "373a8492a04976e813c0d96622e036b17c42dd28"}}, "installed at commit 373a849"),
+    ({"url": "ssh://git@github.com/vd1/pathfinder.git",
+      "vcs_info": {"vcs": "git", "commit_id": "373a8492a04976e813c0d96622e036b17c42dd28",
+                   "requested_revision": "engine-v1.6.1"}}, "engine-v1.6.1 (373a849)"),
+    ({"url": "file:///Users/v/Code_2026/pathfinder", "dir_info": {"editable": True}}, "the development checkout"),
+])
+def test_an_installed_engine_is_named_by_its_installed_revision(monkeypatch, record, expected):
+    """proofTree installs the engine from git at a pinned commit, with no engine-freeze.json; its protocol said
+    "the development checkout" (PF-06, 8 October 2026)."""
+    import importlib.metadata
+    monkeypatch.setattr(protocol, "_freeze_record", lambda: None)
+    monkeypatch.setattr(importlib.metadata, "distribution", lambda name: _Installed(record))
+    assert protocol._engine() == expected

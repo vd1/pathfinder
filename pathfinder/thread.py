@@ -163,13 +163,32 @@ def _tex_escape(t: str) -> str:
     return "".join({"&": "\\&", "%": "\\%", "$": "\\$", "#": "\\#", "_": "\\_", "{": "\\{", "}": "\\}", "~": "\\textasciitilde{}", "^": "\\textasciicircum{}"}.get(c, c) for c in t)
 
 
+ARXIV_ID = re.compile(r"(\d{4}\.\d{4,5}|[a-z-]+(\.[A-Z]{2})?/\d{7})(v\d+)?")
+SOURCE_KINDS = {"github": "GitHub", "gitlab": "GitLab", "zenodo": "Zenodo", "doi": "DOI", "local": "local"}
+
+
+def paper_source(row: dict) -> tuple[str, str]:
+    """(link, label) for a paper in a document's header: an arXiv record links to its abstract; any other source
+    to its own url (none when it has none), labelled by its kind. No arXiv identifier is ever invented."""
+    pid = str(row.get("id", ""))
+    if ARXIV_ID.fullmatch(pid) and row.get("source_type") in (None, "arxiv"):
+        return f"https://arxiv.org/abs/{pid}", f"arXiv:{pid}"
+    kind = row.get("source_type")
+    label = f"{SOURCE_KINDS.get(kind, kind)}: {pid}" if kind else pid
+    return str(row.get("url") or ""), label
+
+
 def paper_meta(d: Path) -> dict:
     """Q_ID, Q_TITLE, P_ID, P_TITLE from the thread's inputs, TeX-escaped, for the document prompts:
-    every document opens with the two titles linked to their arXiv abstracts."""
+    every document opens with the two titles linked to their sources (paper_source)."""
     out = {}
     for side in "QP":
         m = json.loads((d / "inputs" / f"{side}.json").read_text())
         out[f"{side}_ID"] = m.get("id", ""); out[f"{side}_TITLE"] = _tex_escape(m.get("title", ""))
+        url, label = paper_source(m)
+        out[f"{side}_URL"] = url.replace("\\", "/").replace("%", "\\%").replace("#", "\\#")
+        out[f"{side}_LABEL"] = _tex_escape(label)
+        out[f"{side}_ARXIV"] = label.startswith("arXiv:")
     return out
 
 
@@ -187,11 +206,13 @@ def status_line(campaign, pair_id: str) -> str:
 def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str | None = None,
                protocol: bool = False, produced: str | None = None) -> Path:
     """pathfinder-meta.tex beside a document: the style reads it, so every document opens with the pair,
-    the two papers linked to arXiv, the date of production and the thread's state, none of it typed by an agent."""
+    the two papers linked to their sources, the date of production and the thread's state, none of it typed by an agent."""
     m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f". Edit phase: {extra}" if extra else "")
     t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{date or time.strftime('%Y-%m-%d')}}}\n"
          f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}{{{m['P_ID']}}}{{{m['P_TITLE']}}}\n"
          f"\\pathfinderstatus{{{_tex_escape(line)}}}\n")
+    if not (m["Q_ARXIV"] and m["P_ARXIV"]):          # a source that is not arXiv names its own link and kind
+        t += f"\\pathfindersources{{{m['Q_URL']}}}{{{m['Q_LABEL']}}}{{{m['P_URL']}}}{{{m['P_LABEL']}}}\n"
     if campaign.raw.get("pair_kind") == "paper-strategy":
         # The strategy dossier is not an arXiv paper. Its provenance belongs
         # in the introduction and bibliography, not a fabricated arXiv link.
