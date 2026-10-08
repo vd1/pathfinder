@@ -149,7 +149,7 @@ def snapshot(campaign):
             if metadata["pid_alive"] is False:
                 launch = metadata.get("launch") or {}
                 warnings.append("Runner PID is absent: the run ended without recording a failure or a stop (killed from "
-                                "outside, or ended with the session that launched it)."
+                                "outside, or ended with the session that launched it, as when an agent's daemon restarts)."
                                 + (f" It was launched under {launch.get('parent') or 'pid ' + str(launch.get('ppid'))} in "
                                    f"that process's group, so it ended when the group did; start long runs detached "
                                    "(README, Launching long runs)." if launch and not launch.get("own_group") else ""))

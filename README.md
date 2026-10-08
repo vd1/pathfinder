@@ -304,8 +304,10 @@ process group, with its output in a log:
 uv run python -m pathfinder.detach CAMPAIGN/logs/research.log -- uv run pathfinder --root CAMPAIGN research
 ```
 
-It prints the run's pid. An agent's tool session (Codex, Claude Code) tears down its process group when it
-ends, and a runner started inside it goes with it, calls and all, without recording a failure (proofTree S21).
+It prints the run's pid. A runner started inside an agent's tool session (Codex, Claude Code) belongs to that
+session's process group and goes with it, calls and all, without recording a failure: when the session ends or
+times out, and also when the agent's daemon restarts, which a well-behaved agent turn does not control
+(proofTree S21, 8 October 2026: a Codex daemon's graceful restart took the controller and its watcher).
 The runner records how it was launched (`launch` in `runner.json`: parent, process group, session) and warns
 when it shares an agent tool session's group. When a runner vanishes, `pathfinder health` says it ended
 without recording a failure and, when it was launched in its parent's group, names the parent; the playbook

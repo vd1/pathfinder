@@ -4,7 +4,8 @@
 
 The command runs in a new session and process group, with stdin closed and stdout and stderr appended to LOG,
 so it outlives its launcher; the pid is printed. An agent's tool session tears down its process group when it
-ends, and a runner started inside it goes with it (proofTree planar S21, 8 October 2026)."""
+ends, and when the agent's daemon restarts: a runner started inside it goes with it (proofTree planar S21,
+8 October 2026: a Codex daemon's graceful restart)."""
 from __future__ import annotations
 import os, sys
 

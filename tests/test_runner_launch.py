@@ -1,7 +1,8 @@
 """A runner records how it was launched, and a runner that vanished without recording a failure is named as
 such. proofTree planar S21 (8 October 2026): the controller, six peers and the drain watcher vanished together
 with no receipt and no failure; health showed only six orphaned call records and the playbook was empty. The
-suspected cause is a controller started inside an agent's tool session and torn down with its process group."""
+cause, confirmed from Codex's logs: a Codex daemon's graceful restart tore down the tool sessions that owned
+the controller and its watcher."""
 import json, os, time
 from pathfinder import health, playbook, runner
 from stubcampaign import make
