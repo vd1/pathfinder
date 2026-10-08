@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "b46b787649c1eba0a1ab3bee2280c145cb3c470a"
+revision = "0e748d3a8a89d03c5be75239bf62aa1246b8ff29"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.6.1 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
@@ -38,7 +38,7 @@ notes = "Julien's campaign 2, a plain deployment since its controller (eva2, jul
 [deployments.prooftree]
 status = "supported"
 checkout = "../proofTree"
-revision = "145772a4762a5f951973932b619c4817fd43c203"
+revision = "55900e99f416678d0976788ab322003ba7bf1241"
 clean_paths = ["prooftree", "pyproject.toml", "uv.lock", "campaigns/sphere-packing-rounds2/adaptive"]   # what the contract runs and replays
 contract = "tests/test_deployments.py::test_prooftree_researches_a_link_on_the_candidate_engine"   # and ::test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine
 notes = "Pinned to engine-v1.6.1 by git revision (373a849, pyproject.toml and uv.lock; no editable path since 8 October 2026); imports only from the canonical engine (no julien-2 code). Each link is one composable campaign (three direct-EVA branches, a joint thread, editing) run by research.run_thread and edit.run; links recorded in eva2's layout are read through import_eva2.verify_bundle, never resumed. arXiv queries go through corpus.query (429 back-off), Codex isolation through pathfinder.sandbox. 41 tests. The contract researches one link on the stub backend; a read-only replay of sphere-packing-rounds2 (tests/test_deployments.py) needs its untracked run data and is outside the gate."
