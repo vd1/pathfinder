@@ -239,3 +239,17 @@ def test_a_timeout_at_a_shortened_deadline_is_reported_with_that_deadline(tmp_pa
     c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
     s = health.snapshot(c)
     assert any("deadline of 65 s" in w for w in s["warnings"])
+
+
+def test_a_receipt_keeps_the_deadline_the_call_had(tmp_path):
+    """proofTree S20 (PF-10): transport results carried deadline_seconds but the receipt dropped it, so health
+    could never name a shortened deadline on live receipts."""
+    import json
+    from pathfinder import health, transport
+    from stubcampaign import make
+    c = make(tmp_path)
+    transport._receipt(c, "Q1P1", "peer", "ada", "m", {"outcome": "timeout", "error": "timeout", "seconds": 65.0,
+                                                      "deadline_seconds": 65})
+    row = json.loads(c.path("receipts.jsonl").read_text().splitlines()[-1])
+    assert row["deadline_seconds"] == 65
+    assert any("deadline of 65 s" in w for w in health.snapshot(c)["warnings"])
