@@ -77,6 +77,20 @@ def _reviewer_brief(campaign) -> str:
             "makes that review stale.")
 
 
+def _peer_floor(campaign) -> float:
+    """The least time worth a peer call (peer_min_seconds, default 120 s): a remainder below it ends the peers'
+    turn instead of sending a call that can only time out (proofTree S20: 35 s left of 900)."""
+    return float(campaign.raw.get("peer_min_seconds", 120))
+
+
+def _at_residual_deadline(campaign, item) -> bool:
+    """A peer call that timed out at a deadline cut short by the allowance's remainder: the allowance is spent,
+    which is the end of the peers' turn, not a transport failure. A timeout at the full deadline still is one."""
+    failure = item["result"].get("failure") or {}
+    full = min(float(campaign.allowances["peer_seconds"]), 1200.0)
+    return failure.get("class") == "timeout" and float(item["request"].get("timeout") or 0) - 30 < full
+
+
 def _review_contract(campaign, s):
     """(contract name, check) for a composable review: a request review under direct EVA, else a verdict."""
     if campaign.raw.get("research_scheme", "eva") == "direct_eva":
@@ -199,6 +213,12 @@ def next_requests(campaign, pair_id):
                                 saved["refusal_reissued"] = True
                             temporary = path.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(path)
                     continue
+                if failed and s["stage"] == "peers" and _at_residual_deadline(campaign, failed):
+                    calls = s.get("peer_call", 0) + 1     # the allowance ran out mid-call: the peers' turn is over
+                    seconds = s.get("peer_seconds", 0) + sum(item["result"].get("seconds") or 0 for item in pending)
+                    _set(campaign, pair_id, pending=[], peer_call=calls, peer_seconds=seconds, peer_seconds_exhausted=True,
+                         stage="ledger_review" if direct else "consolidate")
+                    continue
                 if failed:
                     error = failed["result"].get("error") or "transport failed"
                     reason = (f"contract: review: {error.removeprefix('contract: ')}"
@@ -208,7 +228,10 @@ def next_requests(campaign, pair_id):
                 if s["stage"] == "peers":
                     calls = s.get("peer_call", 0) + 1
                     seconds = s.get("peer_seconds", 0) + sum(item["result"]["seconds"] for item in pending)
-                    more = calls < campaign.allowances["peer_calls"] and seconds < campaign.allowances["peer_seconds"] and not ledger.ready(list(campaign.peers))
+                    more = (calls < campaign.allowances["peer_calls"] and not ledger.ready(list(campaign.peers))
+                            and campaign.allowances["peer_seconds"] - seconds >= _peer_floor(campaign))
+                    if calls < campaign.allowances["peer_calls"] and campaign.allowances["peer_seconds"] - seconds < _peer_floor(campaign):
+                        _set(campaign, pair_id, peer_seconds_exhausted=True)   # too little left for a useful call
                     _set(campaign, pair_id, pending=[], peer_call=calls, peer_seconds=seconds,
                          stage="peers" if more else "ledger_review" if direct else "consolidate")
                 elif s["stage"] == "consolidate":

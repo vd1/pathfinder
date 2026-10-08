@@ -225,3 +225,17 @@ def test_snapshot_warns_when_an_allowance_is_below_observed_durations(tmp_path):
     row = next(a for a in s["allowances"] if a["stage"] == "edit")
     assert (row["timeouts"], row["longest_completed_seconds"], row["allowance"]) == (1, 410.0, 60)
     assert any("edit_seconds" in w and "410" in w for w in s["warnings"])
+
+
+def test_a_timeout_at_a_shortened_deadline_is_reported_with_that_deadline(tmp_path):
+    """proofTree S20 (PF-09): a peer call sent with 35 s left timed out at 65 s; health named only the 900 s
+    allowance, which read as if the call had had 900 s."""
+    import json
+    from pathfinder import health
+    from stubcampaign import make
+    c = make(tmp_path)
+    rows = [{"stage": "peer", "outcome": "timeout", "seconds": 65.0, "error": "timeout", "deadline_seconds": 65},
+            {"stage": "peer", "outcome": "completed", "seconds": 492.7, "deadline_seconds": 630}]
+    c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    s = health.snapshot(c)
+    assert any("deadline of 65 s" in w for w in s["warnings"])

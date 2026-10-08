@@ -131,7 +131,11 @@ your own campaign directory and edit the models and the budget.
 - `paper_rounds`: cap on author and review rounds in the paper stage.
 - `allowances`: `peer_seconds` (shared by both peers per round), `peer_calls`
   (per peer per round), `consolidate_seconds`, `verify_seconds`,
-  `paper_seconds`, `review_seconds`, `edit_seconds`.
+  `paper_seconds`, `review_seconds`, `edit_seconds`. Peer calls in parallel each
+  count their own seconds against `peer_seconds`. A call gets what is left, at most
+  1200 s; when less than `peer_min_seconds` (default 120) is left, no further call
+  is sent and the thread goes to its review, and a peer call that times out at such
+  a shortened deadline ends the peers' turn the same way instead of failing.
 - `budget`: the campaign's budget under subscription billing, in calls and
   tokens, any of `{"calls", "input_tokens", "output_tokens"}`. Every call that
   reached a model counts, interrupted ones (timed out, cancelled) included and

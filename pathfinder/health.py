@@ -121,7 +121,11 @@ def _allowances(campaign, receipts, warnings) -> list[dict]:
         if timeouts:
             warnings.append(f"{timeouts} {stage} call(s) timed out; the current {key} is "
                             + (f"{allowance} s" if allowance is not None else "unset")
-                            + (f"; completed {stage} calls took up to {longest:.0f} s." if longest is not None else "."))
+                            + (f"; completed {stage} calls took up to {longest:.0f} s." if longest is not None else ".")
+                            + "".join(f" One timed out at a deadline of {d:.0f} s, cut short by what was left of the allowance."
+                                      for d in sorted({r["deadline_seconds"] for r in rows if r.get("outcome") == "timeout"
+                                                       and r.get("deadline_seconds") is not None and allowance is not None
+                                                       and r["deadline_seconds"] < min(allowance, 1200)})))
     return out
 
 

@@ -610,7 +610,8 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
     counters = _counters(campaign.backend, usage)
     cost, basis, rates = _cost(campaign, model, reported, counters)
-    r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "usage": usage, **counters,
+    r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "deadline_seconds": timeout,
+         "usage": usage, **counters,
           "prefix_read": prefix_read, "cost": cost, "cost_basis": basis, "rates": rates,
           "outcome": "timeout" if error else "error" if err else "completed", "error": error or err,
           "transport_failed": bool(error or err), "exit_status": proc.returncode,
