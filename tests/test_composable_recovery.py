@@ -173,3 +173,23 @@ def test_a_frozen_bundle_is_read_only_even_when_complete(tmp_path):
     research.run_thread(c, "Q1P1")
     bundle = c.thread_dir("Q1P1") / "branches" / "branch-1"
     assert all(not os.stat(p).st_mode & stat.S_IWUSR for p in bundle.rglob("*") if p.is_file())
+
+
+def test_a_review_stopped_by_its_own_transport_failure_is_reissued_in_one_step(tmp_path, monkeypatch):
+    """proofTree planar S11 (OBS-04): a review timed out and the run stopped with the failed reply retained but not yet
+    applied. Reconcile named "run review", which only applied the failure; the reissue came on a second inspection."""
+    c = _c(tmp_path)
+    real, armed = transport.execute, {"on": True}
+
+    def execute(campaign, request):
+        r = real(campaign, request)
+        if armed["on"] and request.stage == "ledger_review" and str(request.cwd).endswith("branch-3"):
+            armed["on"] = False
+            return {**r, "text": "", "transport_failed": True, "error": "timeout", "outcome": "timeout",
+                    "failure": {"class": "timeout", "scope": "call", "retry": True, "reset_at": None}}
+        return r
+    monkeypatch.setattr(transport, "execute", execute)
+    with pytest.raises(transport.TransportFailed):
+        research.run_thread(c, "Q1P1")
+    assert reconcile.inspect(c, "Q1P1")["action"] == "branch-3: reissue: the reply failed in transport"
+    assert reconcile.apply(c, "Q1P1") == "DRAFT"

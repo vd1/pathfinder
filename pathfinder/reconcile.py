@@ -70,6 +70,21 @@ def _inspect_composable(campaign, pair_id: str) -> dict:
     return {**info, "action": "resume branches"}         # every branch handed off: freeze and start the joint thread
 
 
+def _retained_transport_failure(campaign, pair_id, s) -> bool:
+    """A pending call whose retained reply failed in transport, retriable and not campaign-wide, not yet applied: the
+    run stopped on it (a review timing out). Reissuing at once spares a resume that would only record the failure."""
+    import json
+    for identity in s.get("pending") or []:
+        try:
+            result = json.loads(research._request_file(campaign, pair_id, identity).read_text()).get("result") or {}
+        except (OSError, ValueError):
+            continue
+        failure = result.get("failure") or {}
+        if result.get("transport_failed") and failure.get("class") in RETRIABLE and failure.get("scope") != "campaign":
+            return True
+    return False
+
+
 def _inspect(campaign, pair_id: str) -> dict:
     d = campaign.thread_dir(pair_id); s = research.status(campaign, pair_id); holder = runner.Lock.holder(d)
     note = (d / f"{pair_id}.tex").exists()
@@ -85,6 +100,10 @@ def _inspect(campaign, pair_id: str) -> dict:
           and (s.get("failure") or {}).get("scope") != "campaign"
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
         action = REISSUE_TRANSPORT                  # a retained reply that failed in transport: keep it, ask again
+    elif (s.get("status") not in research.TERMINAL and s.get("stage") in ("verify", "ledger_review")
+          and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))
+          and _retained_transport_failure(campaign, pair_id, s)):
+        action = REISSUE_TRANSPORT                  # the same, before a resume has recorded it as a block
     elif evidence_block:                            # repaired evidence is verified before the block is lifted
         problem = _evidence_check(campaign, pair_id)
         action = UNBLOCK if problem is None else f"nothing: evidence still blocked: {problem}"
