@@ -1,6 +1,6 @@
 """Inspect one thread and name the one safe action; apply it on request."""
 from __future__ import annotations
-import time
+import json, time
 from . import research, runner
 
 
@@ -116,9 +116,10 @@ def _inspect(campaign, pair_id: str) -> dict:
           and (s.get("failure") or {}).get("scope") != "campaign"
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))):
         action = REISSUE_TRANSPORT                  # a retained reply that failed in transport: keep it, ask again
-    elif (s.get("status") not in research.TERMINAL and s.get("stage") in ("verify", "ledger_review")
+    elif (s.get("status") not in research.TERMINAL and s.get("stage") in ("verify", "ledger_review", "peers")
           and (campaign.raw.get("research_scheme") or campaign.raw.get("research_bundles"))
-          and _retained_transport_failure(campaign, pair_id, s)):
+          and _retained_transport_failure(campaign, pair_id, s)
+          and not (s.get("stage") == "peers" and _peers_ran_out(campaign, pair_id, s))):
         action = REISSUE_TRANSPORT                  # the same, before a resume has recorded it as a block
     elif evidence_block:                            # repaired evidence is verified before the block is lifted
         problem = _evidence_check(campaign, pair_id)
@@ -217,17 +218,28 @@ def _apply(campaign, pair_id: str) -> str:
         s = research.status(campaign, pair_id)
         d = campaign.thread_dir(pair_id)
         stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-        moved = []
+        moved, kept = [], []
         for identity in s.get("pending", []):
             source = research._request_file(campaign, pair_id, identity)
-            if source.exists():
-                target = d / "research-requests" / "superseded" / f"{stamp}-{source.name}"
-                target.parent.mkdir(parents=True, exist_ok=True)
+            if not source.exists():
+                continue
+            target = d / "research-requests" / "superseded" / f"{stamp}-{source.name}"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if s.get("stage") == "peers":           # peers run side by side: a paid reply stays, a failed one is asked again
+                saved = json.loads(source.read_text())
+                result = saved.get("result") or {}
+                kept.append(identity)
+                if not (result.get("transport_failed") or result.get("error")):
+                    continue
+                target.write_text(source.read_text())
+                saved.pop("result", None)
+                temporary = source.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(source)
+            else:
                 source.replace(target)
-                moved.append(str(target.relative_to(d)))
+            moved.append(str(target.relative_to(d)))
         history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),
                                                    "from_reason": s.get("reason"), "action": info["action"], "superseded": moved}]
-        research._set(campaign, pair_id, status="running", reason=None, pending=[], history=history)
+        research._set(campaign, pair_id, status="running", reason=None, pending=kept, history=history)
     elif info["action"] in (UNBLOCK, EXHAUSTED):    # the transition is recorded; retained responses and the stage stay
         s = research.status(campaign, pair_id)
         history = list(s.get("history") or []) + [{"at": research._now(), "from_status": s.get("status"),

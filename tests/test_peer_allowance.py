@@ -99,3 +99,33 @@ def test_reconcile_lets_a_peer_block_at_the_residual_deadline_end_the_peers_turn
     assert reconcile.inspect(c, "Q1P1")["action"] == "branch-1: unblock: the peers' allowance ran out"
     reconcile.apply(c, "Q1P1")
     assert research.status(view, "Q1P1").get("peer_seconds_exhausted")
+
+
+def test_a_peer_timing_out_at_the_full_deadline_is_asked_again_alone(tmp_path, monkeypatch):
+    """proofTree planar S20 joint thread: Emmy completed in 772 s, Ada timed out at the full 930 s deadline. The
+    reissue moved both pending requests, so Emmy's paid reply would have been asked again. Only Ada's is."""
+    from pathfinder import reconcile
+    c = _branch(tmp_path, allowances={"peer_seconds": 3600, "peer_calls": 2, "consolidate_seconds": 60,
+                                      "verify_seconds": 60, "edit_seconds": 60})
+    real, armed, identities = transport.execute, {"on": True}, []
+
+    def execute(campaign, request):
+        r = real(campaign, request)
+        joint = not str(request.cwd).rstrip("/").split("/")[-1].startswith("branch-")
+        if joint:                                       # a branch's calls carry the same identities in their own threads
+            identities.append(request.identity)
+        if armed["on"] and joint and request.stage == "peer" and request.actor == "ada":
+            armed["on"] = False
+            return {**r, "text": "", "seconds": float(request.timeout), "transport_failed": True, "error": "timeout",
+                    "outcome": "timeout", "failure": {"class": "timeout", "scope": "call", "retry": True, "reset_at": None}}
+        return r
+    monkeypatch.setattr(transport, "execute", execute)
+    with pytest.raises(transport.TransportFailed):
+        research.run_thread(c, "Q1P1")
+    ada = next(i for i in reversed(identities) if ":peers:ada:" in i or ":peer:ada:" in i)
+    emmy = next(i for i in reversed(identities) if (":peers:emmy:" in i or ":peer:emmy:" in i) and i.split(":")[-1] == ada.split(":")[-1])
+    assert reconcile.inspect(c, "Q1P1")["action"] == "reissue: the reply failed in transport"
+    reconcile.apply(c, "Q1P1")
+    assert identities.count(emmy) == 1 and identities.count(ada) == 2
+    joint = composable.joint_view(c, "Q1P1")
+    assert list((joint.thread_dir("Q1P1") / "research-requests" / "superseded").glob("*.json"))   # the failure is kept
