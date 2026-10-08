@@ -331,7 +331,7 @@ print(json.dumps({"result": result, "engine": pathfinder.__file__, "scheme": c.r
 
 
 def _prooftree(script: str, checkout: Path, *args) -> dict:
-    """proofTree's own code, imported from its checkout, on the candidate engine (first on the path)."""
+    """proofTree's own code, imported from its recorded commit, on the candidate engine (first on the path)."""
     env = {**os.environ, "PYTHONPATH": os.pathsep.join([str(ROOT), str(checkout)])}
     r = subprocess.run([sys.executable, "-c", script, *map(str, args)], cwd=checkout, env=env, capture_output=True,
                        text=True, timeout=900)
@@ -341,8 +341,8 @@ def _prooftree(script: str, checkout: Path, *args) -> dict:
 
 @needs_tex
 def test_prooftree_researches_a_link_on_the_candidate_engine(tmp_path):
-    checkout = deployment_matrix.checkout("prooftree")
-    out = _prooftree(PROOFTREE_LINK, checkout, tmp_path / "campaign")
+    code = deployment_matrix.recorded("prooftree", tmp_path / "prooftree")   # its pinned commit, not the live tree
+    out = _prooftree(PROOFTREE_LINK, code, tmp_path / "campaign")
     # one composable campaign: three frozen branches that verify, an accepted joint verdict, an edited PDF
     assert out["scheme"] == "composable" and sorted(out["bundles"]) == ["branch-1", "branch-2", "branch-3"]
     assert all({"ledger.jsonl", "handoff.json"} <= set(files) for files in out["bundles"].values())
@@ -383,7 +383,7 @@ def test_prooftree_recorded_campaign_replays_read_only_on_the_candidate_engine(t
         import_eva2.verify_bundle(bundle)
     copy = tmp_path / "campaign"
     shutil.copytree(source, copy, symlinks=True)
-    out = _prooftree(PROOFTREE_REPLAY, source.parent.parent, copy)
+    out = _prooftree(PROOFTREE_REPLAY, deployment_matrix.recorded("prooftree", tmp_path / "prooftree"), copy)
     assert out["read"] == {"S15": "ACCEPT", "S17": "ACCEPT", "S31": "ACCEPT"} and out["legacy"]
     assert out["runs"] == 3 and out["issues"] == [] and out["loaded"] == []
     assert len(bundles) == 18 and _tree(source) == before
