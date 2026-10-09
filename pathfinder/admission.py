@@ -166,5 +166,5 @@ def budget_per_call(campaign, stage, role, reserved_now) -> Decision:
     """A built-in policy: admit a call only if recorded spend plus every reserved call, this one included,
     stays within the campaign budget; otherwise stop the campaign with the budget reason."""
     from . import budget
-    reason = budget.refusal(campaign, reserved_now + 1, stage)   # this call at its stage's weight (call_weights)
+    reason = budget.refusal(campaign, reserved_now + 1)
     return stop(reason) if reason else ADMIT

@@ -686,7 +686,6 @@ def spend(campaign) -> float:
     """What the budget guard counts: known cost, plus the per-call estimate for every call that opened a
     session and whose cost is unknown. A call that never reached a session is not charged, as before, or
     the probes of a long outage would exhaust the budget. The caution lives here, not in the receipts."""
-    from . import budget
     rows = receipts(campaign)
-    charged = sum(budget.weight(campaign, r.get("stage")) for r in rows if r.get("cost") is None and r.get("outcome") not in UNCHARGED)
+    charged = sum(1 for r in rows if r.get("cost") is None and r.get("outcome") not in UNCHARGED)
     return round(known_cost(rows) + charged * campaign.call_estimate_usd, 4)

@@ -143,13 +143,6 @@ your own campaign directory and edit the models and the budget.
   also shown apart; a call that never reached a model does not. Admission
   projects the calls in flight at the mean usage so far. Receipts carry a
   `call_id` and are read once per call.
-- `call_weights`: what one call of a stage counts, against `budget.calls` and
-  against the dollar guard's `call_estimate_usd`; a stage not named counts 1.
-  For example `{"scan": 0.25, "ledger_review": 0.25, "verify": 0.5}`, so cheap
-  stages do not spend a call budget at a peer call's rate (proofTree planar:
-  scans had a median of 72k input tokens against 1.3M for a peer call). Calls
-  already in flight count at the heaviest weight, and failed attempts count as
-  before. A deployment's own call cap can count with `budget.weight(campaign, stage)`.
 - `tool_call_budgets`: per role (`peer`, `consolidate`, `verify`, `editor`,
   `author`), the number of tool calls the agent is asked to plan for. An agent
   session resends everything it has read on every turn, so its input tokens grow
