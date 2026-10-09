@@ -273,7 +273,8 @@ the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
   The previous failure remains in `failures.jsonl` and the new run's metadata.
 - Threads are locked by a pid file. `pathfinder reconcile [pair]` names the
   one safe action for a thread (start, resume peers, run consolidate, run
-  verify, or nothing) and `--apply` performs it.
+  verify, or nothing) and `--apply` performs it. `--repair-only` makes only its state repair and calls
+  no model, for a deployment that resumes through its own command.
 
 ### Cycles, recovery and failure reports
 
@@ -284,8 +285,10 @@ than writing its own scripts or controllers:
   plain deployment, `pathfinder research` on its next pairs), launched detached (see "Launching long runs").
 - **The recovery instruction**: how to bring a stopped or blocked run back, for this deployment: which
   `--root` `pathfinder reconcile` and `playbook` read to name the safe action, and the command that applies it.
-  A deployment that wraps the engine's transport (proofTree's sandbox) applies the action through its own
-  command, not `reconcile --apply`, which would call models outside the wrapper.
+  A deployment that wraps the engine's transport (proofTree's sandbox) runs `pathfinder reconcile <pair>
+  --repair-only`, which makes the action's state repair (supersedes a request, strips a failed reply, lifts a
+  block) and calls no model, then resumes through its own command; `reconcile --apply` would call models
+  outside the wrapper.
 
 When the recovery instruction brings the run back, the agent logs it locally (the deployment's operator log)
 and goes on. When it does not, the agent writes the failure up for the engine's maintainer, as below, and waits

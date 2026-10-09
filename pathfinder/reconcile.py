@@ -170,16 +170,19 @@ def _record(module, campaign, pair_id, action):
     module._set(campaign, pair_id, history=history)
 
 
-def apply(campaign, pair_id: str) -> str:
+def apply(campaign, pair_id: str, resume: bool = True) -> str:
     """@planks("When the operator applies the recovery action for pair \"Q1P1\"")
     @planks("When the operator applies reconciliation to the shortlist")
-    """
+
+    resume=False (reconcile --repair-only) makes the state repair the action needs (superseding a request,
+    stripping a failed reply, lifting a block) and calls no model: the deployment's own command resumes the run,
+    inside its own transport (proofTree's sandbox)."""
     if campaign.raw.get("research_scheme") == "composable":
-        return _apply_composable(campaign, pair_id)
-    return _apply(campaign, pair_id)
+        return _apply_composable(campaign, pair_id, resume)
+    return _apply(campaign, pair_id, resume)
 
 
-def _apply_composable(campaign, pair_id: str) -> str:
+def _apply_composable(campaign, pair_id: str, resume: bool = True) -> str:
     """A branch's action is applied to that branch, then the composition resumes; after the freeze, the joint
     thread's action is applied as for any thread."""
     from . import composable
@@ -192,22 +195,26 @@ def _apply_composable(campaign, pair_id: str) -> str:
         except composable.BundleError as error:
             research._set(campaign, pair_id, status="BLOCKED", reason=f"frozen bundle changed: {error}")
             return "BLOCKED"
-        return _apply(composable.joint_view(campaign, pair_id), pair_id)
+        return _apply(composable.joint_view(campaign, pair_id), pair_id, resume)
     with runner.Lock(campaign.thread_dir(pair_id)):     # the pair is held from the branch repair to the resumption
         if info.get("branch"):
-            _apply(composable.branch_view(campaign, pair_id, info["branch"]), pair_id)
+            _apply(composable.branch_view(campaign, pair_id, info["branch"]), pair_id, resume)
         history = list(research.status(campaign, pair_id).get("history") or []) + [{
             "at": research._now(), "from_status": info["status"], "from_reason": info["reason"], "action": info["action"]}]
         research._set(campaign, pair_id, status="running", reason=None, failure=None, history=history)
+        if not resume:
+            return f"repaired: {info['action']}; resume through the deployment's command"
         return composable.run(campaign, pair_id, stop=lambda: runner.stopped(campaign))
 
 
-def _apply(campaign, pair_id: str) -> str:
+def _apply(campaign, pair_id: str, resume: bool = True) -> str:
     info = _inspect(campaign, pair_id)
     if info["action"].startswith("nothing"):
         return info["action"]
-    if not runner.guard_ok(campaign, inflight=1):
+    if resume and not runner.guard_ok(campaign, inflight=1):
         return "nothing: budget guard refused (stop marker written)"
+    if info["action"] in ("run edit", "run paper") and not resume:
+        return f"repaired: {info['action']} needs no repair; resume through the deployment's command"
     if info["action"] in ("run edit", "run paper"):
         from . import edit, paper
         module = edit if info["action"] == "run edit" else paper
@@ -249,5 +256,7 @@ def _apply(campaign, pair_id: str) -> str:
         research._set(campaign, pair_id, stage="consolidate", status="running", reason=None)
     elif info["status"] == "BLOCKED":
         research._set(campaign, pair_id, status="running", reason=None)
+    if not resume:
+        return f"repaired: {info['action']}; resume through the deployment's command"
     with runner.Lock(campaign.thread_dir(pair_id)):
         return research.run_thread(campaign, pair_id, stop=lambda: runner.stopped(campaign))

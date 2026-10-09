@@ -66,6 +66,8 @@ def main(argv=None):
     sub.add_parser("restyle", help="rebuild every note, readable note and paper PDF with the current styles; sources untouched")
     r = sub.add_parser("reconcile", help="inspect a thread and name or apply the one safe action")
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
+    r.add_argument("--repair-only", action="store_true",
+                   help="make the action's state repair and call no model; the deployment's own command resumes")
     sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
     ns = ap.parse_args(argv)
     if ns.cmd == "coordinate":
@@ -233,8 +235,8 @@ def _dispatch(ns, c):
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for pid in pairs:
             info = reconcile.inspect(c, pid); print(f"{pid}: {info['status']} at {info['stage']} round {info['round']}: {info['action']}")
-            if ns.apply and not info["action"].startswith("nothing"):
-                print(f"  -> {reconcile.apply(c, pid)}")
+            if (ns.apply or ns.repair_only) and not info["action"].startswith("nothing"):
+                print(f"  -> {reconcile.apply(c, pid, resume=not ns.repair_only)}")
 
 
 def explore(c, min_score: float, page: int, passes: int):
