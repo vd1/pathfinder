@@ -30,7 +30,7 @@ notes = "The pilot campaign at the repository root (10 mechanism-design by 10 ag
 [deployments.pathfinder-julien-2]
 status = "supported"
 checkout = "../pathfinder-julien-2"
-revision = "93e5e565d0716074fcf77432c71998290b1f6460"
+revision = "f548083f447359b6d0a20e6997f9ea00e020cb11"
 clean_paths = ["campaign-2-batch-2/campaign.json", "campaign-2-batch-2/prompts", "campaign-2-batch-2/engine-ref"]   # the contracts read campaign-2-batch-2/ and campaign-2-batch-1/ as committed
 contract = ["tests/test_deployments.py::test_julien2_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_a_julien2_shortlisted_pair_runs_composable_research_pce_and_actionability_on_the_candidate_engine"]
 notes = "Julien's campaign 2, a plain deployment since its controller (eva2, julien2), patched engine copy and vendored PCE were removed (tag pre-pathfinder-roof in that repository). Pair ids are julien-2's own source numbers (Q002-P024): every Q.jsonl/P.jsonl row carries n, so the engine names and finds pairs by it (numbered corpus, from engine-v1.6.0-rc1). campaign-2-batch-1/ is batch 1, ranks 1 to 10: the record of the finished eva-top-ten-01, ten one-pair composable campaigns made by import-eva2 and named by their pair (seven DRAFT, three PAUSE, PCE edits done, actionability NEEDS_INPUTS). campaign-2-batch-2/ is batch 2, ranks 11 to 20, on a frozen engine-v1.6.0-rc1 (campaign-2-batch-2/engine-ref): composable research with three branches, edit_scheme pce, actionability, two paper reviewers, routes to Claude Opus 5.5 for verification, ledger review, actionability and reviewer 1; all ten pairs have run (DRAFT 2, PAUSE 8). Each batch's id-migration.json maps the ids used before 7 October 2026 (Q1P1, Q1P15). The contract replays campaign-2-batch-1/ read-only and runs one shortlisted pair of campaign-2-batch-2/ afresh in a copy through composable research, PCE editing and actionability on the stub backend, checking that its prompt overlays reach the calls."
@@ -48,7 +48,7 @@ notes = "Pinned to engine-v1.6.7 by tag (e429845, pyproject.toml and uv.lock; no
 [deployments.agqsl]
 status = "supported"
 checkout = "../agQSL"
-revision = "3a62692f6554c1f30d0443a77e9e80005d96e4a2"
+revision = "32c8d99583c9ff08357d63a0e76bd89f3a544588"
 clean_paths = ["canon/campaign.json", "canon/prompts", "canon/engine-ref", "canon/import_campaign2.py"]   # the contracts read canon/ as committed; a live run changes the rest
 contract = ["tests/test_deployments.py::test_agqsl_canon_replays_on_the_candidate_engine", "tests/test_deployments.py::test_an_imported_agqsl_pair_researches_and_edits_on_the_candidate_engine"]
 notes = "Campaign repository: canon/ is a canonical campaign on a frozen engine-v1.4.7 (canon/engine-ref): five pairs continued from phase_e_prime (two papers accepted, three paused) and the second campaign's open triplets imported by canon/import_campaign2.py in Phase D grade order (WIN, HOLD, PARK; DROP never), first batch Q6P6 to Q25P25. The contract replays the record read-only, checks that its prompt overlays compose, and runs one imported pair through research and editing on the stub backend."
