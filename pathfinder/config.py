@@ -58,6 +58,7 @@ def load(root: Path) -> Campaign:
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
     from . import budget, pce, routing
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
+    budget.weights(raw)
     from . import actionability
     actionability.validate(raw)
     if "paper_reviewers" in raw:
