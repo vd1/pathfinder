@@ -33,7 +33,7 @@ def test_a_vanished_runner_gets_an_apex_action(tmp_path):
     c = make(tmp_path)
     _vanished(c, own_group=True)
     action = next(a for a in playbook.next_actions(c) if a["action"].startswith("runner gone"))
-    assert action["owner"] == "apex" and "reconcile" in action["why"]
+    assert action["owner"] == "apex" and "recovery instruction" in action["why"]
 
 
 def test_launch_warns_when_the_runner_shares_an_agent_tool_sessions_group(capsys):

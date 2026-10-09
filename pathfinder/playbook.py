@@ -40,13 +40,14 @@ def next_actions(campaign) -> list[dict]:
     if runner_state.get("status") in ("running", "draining") and runner_state.get("pid_alive") is False:
         out.append({"owner": "apex", "action": "runner gone without a recorded failure",
                     "why": "Its process vanished mid-run (see health for how it was launched). Check that no call's child "
-                           "is still alive, then reconcile each pair; start the new run detached.",
+                           "is still alive, then recover through the deployment's recovery instruction; start the new run detached.",
                     "command": _cmd(campaign, "health")})
     if snap.get("failure"):
         out.append({"owner": "apex", "action": "diagnose the recorded operational failure",
                     "why": ("A pair failed twice, or a campaign-wide failure occurred; read the failure and each pair's safe action. "
-                            "Then write it up for the engine's maintainer in operator-log/<campaign>/pathfinder-failures/ "
-                            "(README: Failure reports for the maintainer)."),
+                            "Recover through the deployment's recovery instruction and log it locally; if that instruction cannot "
+                            "resolve it, write it up in operator-log/<campaign>/pathfinder-failures/ and wait for the engine fix "
+                            "(README: Cycles, recovery and failure reports)."),
                     "command": _cmd(campaign, "health")})
     if snap.get("cooldown"):
         out.append({"owner": "engine", "action": "wait for the rate-limit cooldown",

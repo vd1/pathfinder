@@ -73,3 +73,12 @@ def test_a_recorded_failure_asks_the_apex_agent_for_a_failure_report(tmp_path):
     (tmp_path / "health.json").write_text(json.dumps({"status": "failed", "reason": "transport failed: timeout"}))
     action = next(a for a in playbook.next_actions(c) if a["action"] == "diagnose the recorded operational failure")
     assert "pathfinder-failures/" in action["why"]
+
+
+def test_a_recorded_failure_points_at_the_local_recovery_before_the_maintainer(tmp_path):
+    """Recovery goes through the deployment's own instruction and is logged locally; only what it cannot resolve
+    is written up for the maintainer (the user's rule, 9 October 2026)."""
+    c = make(tmp_path)
+    (tmp_path / "health.json").write_text(json.dumps({"status": "failed", "reason": "transport failed: timeout"}))
+    why = next(a for a in playbook.next_actions(c) if a["action"] == "diagnose the recorded operational failure")["why"]
+    assert why.index("recovery instruction") < why.index("pathfinder-failures/") and "wait for the engine fix" in why

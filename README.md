@@ -275,10 +275,27 @@ the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
   one safe action for a thread (start, resume peers, run consolidate, run
   verify, or nothing) and `--apply` performs it.
 
+### Cycles, recovery and failure reports
+
+Every deployment's `AGENTS.md` gives its apex agent two local instructions, and the agent follows them rather
+than writing its own scripts or controllers:
+
+- **The cycle instruction**: the one command that runs a cycle (for proofTree, `prooftree run --cycles 1`; for a
+  plain deployment, `pathfinder research` on its next pairs), launched detached (see "Launching long runs").
+- **The recovery instruction**: how to bring a stopped or blocked run back, for this deployment: which
+  `--root` `pathfinder reconcile` and `playbook` read to name the safe action, and the command that applies it.
+  A deployment that wraps the engine's transport (proofTree's sandbox) applies the action through its own
+  command, not `reconcile --apply`, which would call models outside the wrapper.
+
+When the recovery instruction brings the run back, the agent logs it locally (the deployment's operator log)
+and goes on. When it does not, the agent writes the failure up for the engine's maintainer, as below, and waits
+for the engine fix: it does not script around the failure. A run outside these two instructions is a steered run,
+made only when the user names it, and recorded as steered.
+
 ### Failure reports for the maintainer
 
-Every deployment's apex agent keeps a failure packet for the engine's maintainer in
-`operator-log/<campaign>/pathfinder-failures/`, written as failures are diagnosed, without waiting to be asked:
+A failure the local recovery instruction cannot resolve goes into the deployment's failure packet for the
+engine's maintainer, `operator-log/<campaign>/pathfinder-failures/`, written when it is diagnosed:
 
 - `README.md`: an index table, one row per report, with its classification, impact and current handling.
 - One file per distinct failure, `PF-NN-<slug>.md` for a confirmed engine defect and `OBS-NN-<slug>.md` for
@@ -291,9 +308,9 @@ Every deployment's apex agent keeps a failure packet for the engine's maintainer
 - `evidence.json` holds the machine-readable evidence the reports cite.
 
 Keep engine defects, agent mistakes and benign events apart, so that one bad night does not read as one
-undifferentiated engine bug. Never edit the engine to work around a failure: a workaround lives in the
-deployment and is recorded in its report. The maintainer reads the packet, fixes in a release, and the
-deployment removes its workaround after upgrading. proofTree's planar packet (October 2026) is the model.
+undifferentiated engine bug. Never edit the engine to work around a failure. The maintainer reads the packet,
+fixes in a release, and the deployment resumes through its recovery instruction after upgrading. proofTree's
+planar packet (October 2026) is the model.
 
 ### Launching long runs
 
@@ -720,8 +737,9 @@ here), build a deployment for your own application without editing the engine:
    `PYTHONPATH=engine`, so a running campaign never changes engine under it; moving to a new release is a
    re-freeze and a run started with `--accept-change`.
 6. **A stub run first**: `"backend": "stub"` drives every stage without a model call, to check your setup.
-7. **A failure packet**: your agent keeps `operator-log/<campaign>/pathfinder-failures/` (see "Failure reports
-   for the maintainer"), so engine defects reach the maintainer with their evidence.
+7. **A cycle instruction and a recovery instruction** in your `AGENTS.md` (see "Cycles, recovery and failure
+   reports"): your agent runs cycles and recovers through them, logs a recovery locally, and reports what the
+   recovery instruction cannot resolve in `operator-log/<campaign>/pathfinder-failures/`, then waits for the fix.
 
 statarb, proofTree, agQSL and julien-2 are such deployments; `deployments.toml` lists them, and each has a
 contract test in `tests/test_deployments.py` that every engine release must pass. A deployment you want kept
