@@ -126,6 +126,10 @@ your own campaign directory and edit the models and the budget.
 - `peer_search`: whether peers may use web search.
 - `seats`: how many threads run at once.
 - `cut`: percentage of scored pairs that make the shortlist.
+- `same_corpus`: `true` when Q and P are the same papers in the same order
+  (a Zoo x Zoo campaign). The scan then takes each unordered pair once, the
+  lower number (or earlier row) on the Q side, and never a paper with itself:
+  N(N-1)/2 calls instead of N². Sides that differ are refused.
 - `rounds`: cap on verifier ITERATE loops per thread.
 - `repairs`: cap on REVISE repair passes per thread (default 1).
 - `paper_rounds`: cap on author and review rounds in the paper stage.

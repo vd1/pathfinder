@@ -43,8 +43,13 @@ def run(campaign, stop=lambda: False):
     @planks("When Pathfinder verifies execution routing")
     """
     Q, P, seen = corpus.read(campaign.path("Q.jsonl")), corpus.read(campaign.path("P.jsonl")), done(campaign)
+    same = (campaign.raw or {}).get("same_corpus") is True
+    if same and [r["id"] for r in Q] != [r["id"] for r in P]:
+        raise ValueError("same_corpus: Q.jsonl and P.jsonl must list the same papers in the same order")
     for i, q in enumerate(Q, 1):
         for j, p in enumerate(P, 1):
+            if same and not q.get("n", i) < p.get("n", j):   # each unordered pair once, never a paper with itself
+                continue
             pid = corpus.pair_id_for(campaign, i - 1, j - 1, Q, P)
             if pid in seen or stop():
                 continue
