@@ -27,7 +27,8 @@ def run(campaign, cut: float | None = None, force: bool = False, min_score: floa
         cut = None
     else:
         cut = campaign.cut if cut is None else cut
-        expected = len(corpus.read(campaign.path("Q.jsonl"))) * len(corpus.read(campaign.path("P.jsonl")))
+        from . import scan
+        expected = scan.expected(campaign)                # N(N-1)/2 under same_corpus
         if len(rows) < expected and not force:
             raise SystemExit(f"scan incomplete: {len(rows)} of {expected} pairs; use --force to select anyway")
         chosen = ranked[:math.ceil(len(ranked) * cut / 100)]

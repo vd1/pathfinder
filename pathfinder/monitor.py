@@ -80,7 +80,9 @@ def state(campaign) -> dict:
     if waiting and _jsonl_one(campaign.path("stop.json")):
         attention.append({"pair": ", ".join(waiting), "kind": "held by the stop marker", "reason": _jsonl_one(campaign.path("stop.json")).get("reason"),
                           "since": _jsonl_one(campaign.path("stop.json")).get("at"), "action": "Clear the stop marker and start the runner again; raise the budget first if the guard wrote the marker."})
-    phase = ("research" if sl["pairs"] else "select" if scan and len(scan) >= len(Q) * len(P) and Q else "scan" if Q else "fetch")
+    from . import scan as scan_stage
+    total = scan_stage.expected(campaign) if Q else 0      # N(N-1)/2 under same_corpus
+    phase = ("research" if sl["pairs"] else "select" if scan and len(scan) >= total and Q else "scan" if Q else "fetch")
     return {"generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "campaign": {"name": campaign.root.name, "phase": phase, "spend": transport.known_cost(receipts), "unknown_cost_calls": transport.unknown_cost_calls(receipts), "budget": campaign.budget_usd if math.isfinite(campaign.budget_usd) else None,
                          "calls": len(receipts), "seconds": round(sum(r.get("seconds") or 0 for r in receipts)),
@@ -89,7 +91,7 @@ def state(campaign) -> dict:
                          "seats": campaign.seats, "stop": _jsonl_one(campaign.path("stop.json")),
                          "health": _jsonl_one(campaign.path("health.json")), "by_status": dict(statuses), "backend": campaign.backend,
                          "model": campaign.model},
-            "scan": {"done": len(scan), "total": len(Q) * len(P), "grid": grid, "q": [q.get("title") for q in Q],
+            "scan": {"done": len(scan), "total": total, "grid": grid, "q": [q.get("title") for q in Q],
                      "p": [p.get("title") for p in P], "q_ids": [q.get("id") for q in Q], "p_ids": [p.get("id") for p in P], "cost": round(sum(r.get("cost") or 0 for r in scan), 4),
                      "scores": sorted((r["feasibility"] * r["gain"] for r in scan if r.get("feasibility") is not None), reverse=True),
                      "cut": sl.get("cut"), "min_score": sl.get("min_score"), "n_selected": len(sl["pairs"])},

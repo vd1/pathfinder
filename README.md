@@ -129,7 +129,10 @@ your own campaign directory and edit the models and the budget.
 - `same_corpus`: `true` when Q and P are the same papers in the same order
   (a Zoo x Zoo campaign). The scan then takes each unordered pair once, the
   lower number (or earlier row) on the Q side, and never a paper with itself:
-  N(N-1)/2 calls instead of N². Sides that differ are refused.
+  N(N-1)/2 calls instead of N². Sides that differ are refused. `select` and the
+  monitor count a complete scan as N(N-1)/2.
+- The scan runs up to `seats` calls side by side (each still admitted and
+  holding a seat of the `account`), so raise `seats` for a large scan.
 - `rounds`: cap on verifier ITERATE loops per thread.
 - `repairs`: cap on REVISE repair passes per thread (default 1).
 - `paper_rounds`: cap on author and review rounds in the paper stage.

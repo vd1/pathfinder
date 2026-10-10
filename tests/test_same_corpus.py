@@ -44,3 +44,35 @@ def test_a_same_corpus_campaign_whose_sides_differ_is_refused(tmp_path):
 def test_a_malformed_setting_is_refused_at_load(tmp_path, bad):
     with pytest.raises(ValueError, match="same_corpus"):
         make(tmp_path, same_corpus=bad)
+
+
+def test_select_counts_a_complete_same_corpus_scan_as_complete(tmp_path):
+    """nobel's stub run (10 October 2026): select said 'scan incomplete: 4950 of 10000 pairs' for N = 100."""
+    from pathfinder import monitor, select
+    c = _same(tmp_path, numbers=[433, 265, 294], same_corpus=True)
+    scan.run(c)
+    assert scan.expected(c) == 3
+    assert select.run(c, cut=50)["n_scored"] == 3          # no "scan incomplete"
+    assert monitor.state(c)["scan"]["total"] == 3
+
+
+def test_the_scan_runs_up_to_seats_calls_at_once(tmp_path, monkeypatch):
+    """4950 serial scan calls took one to two days; the scan now runs `seats` calls side by side."""
+    import threading, time
+    from pathfinder import transport
+    c = _same(tmp_path, numbers=[433, 265, 294], same_corpus=True, seats=3)
+    real, lock, live = transport.execute, threading.Lock(), {"now": 0, "most": 0}
+
+    def execute(campaign, request):
+        with lock:
+            live["now"] += 1; live["most"] = max(live["most"], live["now"])
+        time.sleep(0.2)
+        try:
+            return real(campaign, request)
+        finally:
+            with lock:
+                live["now"] -= 1
+    monkeypatch.setattr(transport, "execute", execute)
+    assert _scanned(c) == ["Q265-P294", "Q265-P433", "Q294-P433"] and live["most"] > 1
+    lines = c.path("scan.jsonl").read_text().splitlines()
+    assert len(lines) == 3 and all(json.loads(line)["feasibility"] is not None for line in lines)
