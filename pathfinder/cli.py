@@ -21,7 +21,8 @@ def main(argv=None):
     x.add_argument("--page", type=int, default=5, help="papers to add per side per pass")
     x.add_argument("--passes", type=int, default=1, help="how many passes; 0 means until stopped")
     sub.add_parser("sources", help="download and flatten e-print sources for both sides").add_argument("--side", choices=["Q", "P", "both"], default="both")
-    sub.add_parser("scan", help="phase A: score every pair")
+    sub.add_parser("scan", help="phase A: score every pair").add_argument(
+        "--rescan", nargs="+", metavar="PAIR", help="score these pairs again against scan-context.json, appending their rows")
     s = sub.add_parser("select", help="freeze the top cut, or every pair at or above --min-score, as shortlist.json")
     s.add_argument("--cut", type=float); s.add_argument("--min-score", type=float); s.add_argument("--force", action="store_true")
     s.add_argument("--per-paper", type=int, help="at most this many pairs per paper; the next best pairs take the places")
@@ -138,7 +139,10 @@ def _dispatch(ns, c):
         for side in (["Q", "P"] if ns.side == "both" else [ns.side]):
             corpus.sources(c, side)
     elif ns.cmd == "scan":
-        scan.run(c, stop=lambda: runner.stopped(c))
+        if ns.rescan:
+            scan.rescan(c, ns.rescan, stop=lambda: runner.stopped(c))
+        else:
+            scan.run(c, stop=lambda: runner.stopped(c))
     elif ns.cmd == "select":
         out = select.run(c, ns.cut, ns.force, ns.min_score, ns.per_paper)
         print(f"selected {out['n_selected']} of {out['n_scored']} " + (f"at {out['cut']}%" if out["cut"] is not None else f"at score >= {out['min_score']}")

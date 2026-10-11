@@ -261,9 +261,5 @@ def _check(stop):
 
 
 def _scan_row(campaign, pair_id) -> dict:
-    p = campaign.path("scan.jsonl")
-    if p.exists():
-        for line in p.read_text().splitlines():
-            if line.strip() and json.loads(line).get("pair_id") == pair_id:
-                return json.loads(line)
-    return {}
+    from . import scan
+    return next((r for r in scan.current(campaign) if r["pair_id"] == pair_id), {})   # a rescanned pair's latest score

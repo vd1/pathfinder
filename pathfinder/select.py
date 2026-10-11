@@ -37,8 +37,9 @@ def run(campaign, cut: float | None = None, force: bool = False, min_score: floa
     Freeze the top `cut` percent of a complete scan, or every pair at or above `min_score` of any scan; with
     `per_paper`, no paper appears in more pairs than that, the next best pairs taking the places.
     """
+    from . import scan
     raw = campaign.path("scan.jsonl").read_bytes()
-    rows = [json.loads(l) for l in raw.decode().splitlines() if l.strip()]
+    rows = scan.current(campaign, [json.loads(l) for l in raw.decode().splitlines() if l.strip()])   # a rescanned pair once
     ranked = rank(rows)
     pool = capped(campaign, ranked, per_paper)
     if min_score is not None:
@@ -46,7 +47,6 @@ def run(campaign, cut: float | None = None, force: bool = False, min_score: floa
         cut = None
     else:
         cut = campaign.cut if cut is None else cut
-        from . import scan
         expected = scan.expected(campaign)                # N(N-1)/2 under same_corpus
         if len(rows) < expected and not force:
             raise SystemExit(f"scan incomplete: {len(rows)} of {expected} pairs; use --force to select anyway")

@@ -27,7 +27,8 @@ def _titles(Q, P, pid) -> dict:
 def state(campaign) -> dict:
     Q = corpus.read(campaign.path("Q.jsonl")) if campaign.path("Q.jsonl").exists() else []
     P = corpus.read(campaign.path("P.jsonl")) if campaign.path("P.jsonl").exists() else []
-    scan = _jsonl(campaign.path("scan.jsonl")); by_id = {r["pair_id"]: r for r in scan}
+    from . import scan as scan_stage
+    scan = scan_stage.current(campaign, _jsonl(campaign.path("scan.jsonl"))); by_id = {r["pair_id"]: r for r in scan}
     ids = [[corpus.pair_id_for(campaign, i, j, Q, P) for j in range(len(P))] for i in range(len(Q))]
     grid = [[(by_id[pid].get("feasibility") or 0) * (by_id[pid].get("gain") or 0) if pid in by_id else None
              for pid in row] for row in ids]

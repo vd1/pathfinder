@@ -229,11 +229,29 @@ function paperLink(side, n) {
     title="Every pair with this paper">${scanDoc.same_corpus ? "" : side}${n}</button></span>`;
 }
 
+// A conditional scan (scan-context.json): each score names the state of play it was judged against.
+function stateMark(r) {
+  const ctx = scanDoc.context;
+  if (!ctx) return r.revision ? `<span class="mark revision">revision ${esc(r.revision)}</span>` : "";
+  if (r.unconditioned) return `<span class="mark stale" title="scored before the campaign had a state of play">unconditioned</span>`;
+  if (r.stale) return `<span class="mark stale" title="the state of play is now at revision ${esc(ctx.revision)}">stale: revision ${esc(r.revision)}</span>`;
+  return `<span class="mark revision">revision ${esc(r.revision)}</span>`;
+}
+
+function historyHTML(r) {
+  const h = (scanDoc.history || {})[r.pair_id];
+  if (!h) return "";
+  const items = h.map((e) => `<li><span class="history-rev">${e.revision ? "revision " + esc(e.revision) : "unconditioned"}</span>
+    ${e.error ? `<span class="scan-error">${esc(e.error)}</span>` : `<span class="score-sub">${e.feasibility} × ${e.gain}</span> ${esc(e.connexion || "")}`}</li>`).join("");
+  return `<details class="history"><summary>Score history (${h.length})</summary><ol>${items}</ol></details>`;
+}
+
 function rowHTML(r, pv, sub) {
   const selected = (scanDoc.selected || []).includes(r.pair_id), unit = current.units.find((u) => u.unit === r.pair_id);
   const marks = [selected ? `<span class="mark selected">in the shortlist</span>` : "",
     pv.set.has(r.pair_id) ? `<span class="mark cut">in the previewed cut</span>` : "",
-    pv.held.has(r.pair_id) ? `<span class="mark held">held back by the cap</span>` : ""].join("");
+    pv.held.has(r.pair_id) ? `<span class="mark held">held back by the cap</span>` : "",
+    stateMark(r)].join("");
   const topics = r.topics.map((t) => `<button type="button" class="topic-chip" data-topic="t:${esc(t)}">${esc(t)}</button>`).join("");
   const open = openRationales.has(r.pair_id) ? " open" : "";
   return `<article class="scan-row${pv.set.has(r.pair_id) ? " in-cut" : ""}${selected ? " selected" : ""}">
@@ -243,6 +261,7 @@ function rowHTML(r, pv, sub) {
       ${r.error ? `<p class="scan-error">${esc(r.error)}</p>` : `<p class="connexion">${esc(r.connexion || "")}</p>`}
       <div class="scan-meta"><span class="pair-id">${esc(r.pair_id)}</span>${marks}${topics}
         ${unit ? `<button type="button" class="link-button" data-unit="${esc(r.pair_id)}">Research record</button>` : ""}</div>
+      ${historyHTML(r)}
       ${r.rationale ? `<details class="rationale" data-pair="${esc(r.pair_id)}"${open}><summary>Why these scores</summary><p>${esc(r.rationale)}</p></details>` : ""}
     </div>
     ${r.score != null ? `<div class="scan-score"><span class="score-num">${num(r.score)}</span>

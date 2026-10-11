@@ -106,6 +106,34 @@ the research desk and can be hidden.
 `select --per-paper K` keeps any paper out of more than K pairs; the next best pairs take the places, so a
 diversified shortlist is frozen exactly as previewed.
 
+## Conditional scans
+
+By default each pair is scored once, against the two papers only. A campaign that learns as it goes (proofTree's
+repl, where a link repeated a route the campaign already held) can give the judge its state of play, ask for
+fields of its own, and score pairs again when that state moves. With none of the keys below, the scan is
+unchanged.
+
+- **State of play.** `scan-context.json` is `{"revision": "...", "text": "..."}`, written by the deployment.
+  Its text fills `{{SCAN_CONTEXT}}` in the scan prompt, or follows the prompt when a replacement `scan.md`
+  has no such slot. Every row records the `revision` and the `context_sha256` it was scored against, and
+  each context used is kept unchanged in `scan-contexts/<sha256>.json`. The context is never shortened:
+  if it does not fit the scan budget with the papers' digests, the call is refused as input too large.
+- **Scan contract.** `"scan_contract": {"name": "repl/1", "fields": {...}, "check": "module:function"}`
+  adds the deployment's own fields, each a JSON Schema, to the reply in one required `extra` object; the
+  engine's fields stay as they are. Rows keep `extra` and `contract` (the name and the schema's digest). The
+  optional check is loaded like an extension (from `extensions.path`), called as
+  `check(campaign, value, context)` with the current context, and rejects a reply by raising `ValueError`:
+  one repair turn, then the row is a contract failure. The engine does not interpret `extra`.
+- **Rescans.** `pathfinder scan --rescan PAIR ...` (`scan.rescan`) scores named pairs again against the
+  current context and appends their rows; earlier rows are never rewritten. A pair already scored at this
+  context is skipped, so a resumed rescan repeats no call, and a failed one is tried again. `scan.current`
+  gives each pair's latest scored row (a failed rescan leaves the earlier score current), marked `stale`
+  (scored against another context) or `unconditioned` (scored before there was one); `scan.history` gives
+  every row of a pair. `select`, the monitor and the view use the current score; the view marks stale and
+  unconditioned scores and shows a pair's score history.
+
+Which pairs to rescan, and when, is the deployment's policy: the engine's `select` keeps its plain cut.
+
 ## Campaign directory
 
 ```
@@ -113,7 +141,9 @@ campaign.json      configuration (see below)
 fetch.json         the two queries and how far each side has been paged
 Q.jsonl  P.jsonl   one paper per line: id, title, abstract, authors, date, text
 sources/           flattened e-prints, <id>.tex or <id>.txt (ignored by git)
-scan.jsonl         one row per scored pair, appended as the scan runs
+scan.jsonl         one row per scored pair, appended as the scan runs; a rescan appends another
+scan-context.json  optional: the state of play a conditional scan is judged against
+scan-contexts/     every scan context used, by digest, never rewritten
 shortlist.json     the frozen cut, with a digest of scan.jsonl
 topics.json        optional: topic families per paper number, for the operator view
 receipts.jsonl     one line per attempted model call, failures included; the only

@@ -21,9 +21,8 @@ def _json(path: Path):
         return None
 
 
-def _scan(campaign) -> dict:
-    """The scan row per pair (feasibility, gain, connexion, rationale)."""
-    out = {}
+def _scan_rows(campaign) -> list[dict]:
+    out = []
     path = campaign.path("scan.jsonl")
     for line in (path.read_text().splitlines() if path.is_file() else []):
         try:
@@ -31,8 +30,23 @@ def _scan(campaign) -> dict:
         except ValueError:
             continue
         if isinstance(row, dict) and row.get("pair_id"):
-            out[row["pair_id"]] = row
+            out.append(row)
     return out
+
+
+def _context(campaign) -> dict | None:
+    from . import scan
+    try:
+        return scan.context_of(campaign)
+    except (ValueError, OSError):
+        return None
+
+
+def _scan(campaign, all_rows=None) -> dict:
+    """The current scan row per pair (feasibility, gain, connexion, rationale): a rescanned pair's latest score,
+    marked stale or unconditioned against the campaign's state of play."""
+    from . import scan
+    return {r["pair_id"]: r for r in scan.current(campaign, _scan_rows(campaign) if all_rows is None else all_rows)}
 
 
 def _corpus(campaign, side: str) -> list[dict]:
@@ -69,7 +83,7 @@ def topics(campaign) -> dict:
 def _version(campaign) -> str:
     """Changes whenever the scan, the shortlist or the topics change: the page refetches the ranking only then."""
     parts = []
-    for name in ("scan.jsonl", "shortlist.json", "topics.json", "Q.jsonl", "P.jsonl"):
+    for name in ("scan.jsonl", "shortlist.json", "topics.json", "Q.jsonl", "P.jsonl", "scan-context.json"):
         try:
             st = campaign.path(name).stat(); parts.append(f"{st.st_size}.{st.st_mtime_ns}")
         except OSError:
@@ -115,7 +129,8 @@ def scan_document(campaign) -> dict:
     """The whole ranked scan for the operator page: one row per scored or failed pair, best first, with the
     papers' numbers, titles and topic families given once."""
     from . import select
-    rows = list(_scan(campaign).values())
+    every = _scan_rows(campaign)
+    rows = list(_scan(campaign, every).values())
     ranked = select.rank([dict(r) for r in rows])
     failed = [r for r in rows if r.get("feasibility") is None or r.get("gain") is None]
     Q, P = _corpus(campaign, "Q"), _corpus(campaign, "P")
@@ -123,7 +138,8 @@ def scan_document(campaign) -> dict:
     def papers(side, corpus_rows):
         return {str(r.get("n", i)): {"id": r.get("id"), "title": r.get("title"), "topics": fam[side].get(str(r.get("n", i)), [])}
                 for i, r in enumerate(corpus_rows, 1)}
-    columns = ["pair_id", "q", "p", "feasibility", "gain", "score", "connexion", "rationale", "error"]
+    columns = ["pair_id", "q", "p", "feasibility", "gain", "score", "connexion", "rationale", "error",
+               "revision", "stale", "unconditioned", "extra"]
     out = []
     for r in ranked + failed:
         try:
@@ -131,9 +147,17 @@ def scan_document(campaign) -> dict:
         except ValueError:
             continue
         out.append([r["pair_id"], qn, pn, r.get("feasibility"), r.get("gain"), r.get("score"),
-                    r.get("connexion"), r.get("rationale"), r.get("error")])
+                    r.get("connexion"), r.get("rationale"), r.get("error"), r.get("revision"), r.get("stale"),
+                    r.get("unconditioned"), r.get("extra")])
+    history = {}
+    for r in every:                               # earlier scores of a rescanned pair, oldest first
+        history.setdefault(r["pair_id"], []).append({k: r.get(k) for k in (
+            "revision", "feasibility", "gain", "connexion", "rationale", "error")})
+    history = {pid: h for pid, h in history.items() if len(h) > 1}
+    ctx = _context(campaign)
     sl = _json(campaign.path("shortlist.json")) or {}
-    return {"version": _version(campaign), "columns": columns, "rows": out,
+    return {"version": _version(campaign), "columns": columns, "rows": out, "history": history,
+            "context": ctx and {"revision": ctx["revision"], "sha256": ctx["sha256"]},
             "papers": {"Q": papers("Q", Q), "P": papers("P", P)},
             "same_corpus": (campaign.raw or {}).get("same_corpus") is True,
             "selected": [p["pair_id"] for p in sl.get("pairs", [])],

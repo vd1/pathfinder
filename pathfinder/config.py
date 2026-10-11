@@ -58,6 +58,8 @@ def load(root: Path) -> Campaign:
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
     from . import budget, pce, routing
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
+    from . import scan
+    scan.validate_contract(raw)                      # a malformed scan_contract fails here, not at the first scan
     if "same_corpus" in raw and not isinstance(raw["same_corpus"], bool):
         raise ValueError(f"same_corpus must be true or false, got {raw['same_corpus']!r}")
     from . import actionability
