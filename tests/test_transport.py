@@ -334,6 +334,18 @@ def test_a_rate_limit_after_the_session_started_is_not_retried(tmp_path, monkeyp
     assert r["transport_failed"] and len(served) == 1
 
 
+def test_a_server_error_is_asked_again_although_the_session_started(tmp_path, monkeypatch):
+    """nobel, 12 October 2026: a Codex peer ran 425 s, then 'stream disconnected before completion ... You can retry
+    your request'. The provider dropped the reply and asks for it again; stopping the pair idled it until an operator
+    reissued the call, which then completed."""
+    c = campaign(tmp_path, "codex"); c.raw.update(retry_backoff_seconds=0, unserved_retries=1)
+    served = _results("server", None); served[0]["session"] = "thread-1"
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: served.pop(0))
+    r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,
+                                                    timeout=5, thread="T", stage="peer", actor="emmy"))
+    assert r["outcome"] == "completed" and served == []
+
+
 def _filesystem(cmd):
     from pathfinder import sandbox
     value = next(v for v in cmd if v.startswith(f"permissions.{sandbox.NAME}.filesystem="))

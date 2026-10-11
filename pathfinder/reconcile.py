@@ -28,7 +28,7 @@ def _evidence_check(campaign, pair_id) -> str | None:
 
 FROZEN = "nothing: frozen bundle changed"
 VERIFIED = "unblock: bundles verified"
-RETRIABLE = {"timeout", "rate", "no_session", "launch", "undiagnosed"}   # a failed reply worth asking for again
+RETRIABLE = {"timeout", "rate", "no_session", "launch", "server", "undiagnosed"}   # a failed reply worth asking for again
 
 
 def inspect(campaign, pair_id: str) -> dict:

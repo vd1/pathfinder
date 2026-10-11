@@ -56,6 +56,7 @@ DEFAULT_MAX_PROMPT_CHARS = 1_000_000          # the Codex CLI rejects prompts ov
 
 
 UNSERVED = {"rate", "no_session", "launch"}          # the model never served the call: safe to ask again
+DROPPED = {"server"}                                 # served, then dropped by the provider, which asks for it again
 
 
 def _campaign_stopped(campaign) -> bool:
@@ -465,9 +466,11 @@ def execute(campaign, request: ModelRequest):
         with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
             result = _attempt(campaign, request)
         failure = result.get("failure") or {}
-        # only a call the model never served: no session opened, so nothing was read, written or spent
-        unserved = (failure.get("class") in UNSERVED and failure.get("scope") != "campaign" and failure.get("retry")
-                    and result.get("session") is None)
+        # a call the model never served (no session opened, so nothing was read, written or spent), or one the
+        # provider dropped and asks to be sent again (nobel, 12 October 2026: reissued by hand, it completed)
+        unserved = (failure.get("scope") != "campaign" and failure.get("retry")
+                    and (failure.get("class") in DROPPED
+                         or (failure.get("class") in UNSERVED and result.get("session") is None)))
         if unserved and _campaign_stopped(campaign):  # a launch streak may have just stopped the campaign
             return result
         if not unserved or attempt == retries:

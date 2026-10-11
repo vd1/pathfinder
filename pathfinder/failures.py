@@ -14,6 +14,7 @@ SCOPES = {
     "quota": ("campaign", False), "auth": ("campaign", False), "launch": ("call", True),
     "refusal": ("pair", False), "input_too_large": ("call", False),
     "rate": ("call", True), "no_session": ("call", True), "timeout": ("call", True),
+    "server": ("call", True),          # the provider dropped the reply on its side and asks for the request again
     "undiagnosed": ("call", False),
     "contract": ("call", False),       # a readable reply that still breaks its declared schema after one repair turn
 }
@@ -26,6 +27,8 @@ RULES = (
     ("input_too_large", re.compile(r"input_too_large|input too large|exceeds the maximum length|context length|prompt is too long", re.I)),
     ("rate", re.compile(r"\b429\b|rate limit|too many requests|at capacity|overloaded|\b503\b|service unavailable", re.I)),
     ("refusal", re.compile(r"flagged for possible|safeguards flagged|content filter|usage polic", re.I)),
+    ("server", re.compile(r"stream disconnected before completion|error occurred while processing your request|"
+                          r"internal server error|bad gateway|gateway timeout", re.I)),
 )
 OVERSIZE = RULES[2][1]
 LAUNCH_REPEAT = 3                 # consecutive launch failures that make a launch problem campaign-wide

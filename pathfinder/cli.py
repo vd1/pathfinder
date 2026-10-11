@@ -9,6 +9,8 @@ def main(argv=None):
     """@planks("When the operator runs the research command")
     @planks("When the operator applies reconciliation to the shortlist")
     """
+    if hasattr(sys.stdout, "reconfigure"):         # a detached run's log fills as it runs, not in 8 KB blocks
+        sys.stdout.reconfigure(line_buffering=True)
     ap = argparse.ArgumentParser(prog="pathfinder"); ap.add_argument("--root", default=".")
     ap.add_argument("--accept-change", metavar="REASON",
                     help="dispatch although the run record changed since the previous run; the reason is recorded")

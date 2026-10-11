@@ -16,6 +16,9 @@ from pathfinder import failures
     ("no session", "no session", "no_session", "call"),
     ("timeout", "timeout", "timeout", "call"),
     ("error", "CLI exited without a completed turn", "undiagnosed", "call"),
+    ("error", "stream disconnected before completion: An error occurred while processing your request. You can retry "
+              "your request, or contact us through our help center", "server", "call"),     # nobel, 12 October 2026
+    ("error", "unexpected status 500 Internal Server Error", "server", "call"),
 ])
 def test_catalogue_signatures(outcome, error, cls, scope):
     f = failures.classify(outcome, error)
@@ -94,3 +97,9 @@ def test_repeated_launch_failures_escalate_to_a_campaign_stop(tmp_path):
 
 def test_rate_limit_wording_about_policy_is_still_a_rate_limit():
     assert failures.classify("error", "Rate limit reached; see our usage policy").cls == "rate"
+
+
+def test_a_provider_server_error_is_retryable_and_reissued_by_reconcile():
+    from pathfinder import reconcile
+    f = failures.classify("error", "stream disconnected before completion: An error occurred while processing your request.")
+    assert f.retry and "server" in reconcile.RETRIABLE
