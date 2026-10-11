@@ -157,7 +157,7 @@ def scan_document(campaign) -> dict:
     ctx = _context(campaign)
     sl = _json(campaign.path("shortlist.json")) or {}
     return {"version": _version(campaign), "columns": columns, "rows": out, "history": history,
-            "context": ctx and {"revision": ctx["revision"], "sha256": ctx["sha256"]},
+            "context": ctx and {"revision": ctx["revision"], "pair_entries": len(ctx["pairs"])},
             "papers": {"Q": papers("Q", Q), "P": papers("P", P)},
             "same_corpus": (campaign.raw or {}).get("same_corpus") is True,
             "selected": [p["pair_id"] for p in sl.get("pairs", [])],

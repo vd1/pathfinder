@@ -81,6 +81,12 @@ def prepare(campaign, pair_id: str) -> Path:
         else:
             (d / "inputs" / f"{side}.txt").write_text(f"Title: {row['title']}\n\nAbstract: {row['abstract']}\n")
         (d / "inputs" / f"{side}.json").write_text(json.dumps(row, indent=1))
+    from . import scan
+    row = _scan_row(campaign, pair_id)
+    known = scan.archived(campaign, row.get("context_sha256"))
+    if known and known.get("entry"):                  # what the scan's context said of this pair, frozen here
+        (d / "inputs" / PAIR_CONTEXT).write_text(
+            f"# What is known about this pair ({pair_id}, revision {known['revision']})\n\n{known['entry'].rstrip()}\n")
     for a in campaign.peers:
         (d / a).mkdir(exist_ok=True)
     imported = campaign.raw.get("research_scheme") == "direct_eva" and campaign.raw.get("imported_research", False)
@@ -222,6 +228,19 @@ def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str |
     if protocol and section.enabled(campaign):      # shared documents end with how they were produced
         t += f"\\pathfinderprotocol{{{_tex_escape(section.describe(campaign, pair_id, produced))}}}\n"
     where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
+
+
+PAIR_CONTEXT = "pair-context.md"
+
+
+def pair_context(d: Path) -> str:
+    """For a peer's prompt: the pair's frozen entry from the scan context (prior work, the open part), or ""."""
+    path = Path(d) / "inputs" / PAIR_CONTEXT
+    if not path.is_file():
+        return ""
+    return ("\n\n" + path.read_text().rstrip() + "\n\nThe scan judged this pair with that in view. Start from what "
+            "it leaves open and build on the prior work it names rather than redoing it; cite that work where you use "
+            f"it. The text is in inputs/{PAIR_CONTEXT}.\n")
 
 
 def _inputs(d: Path) -> dict:

@@ -5,9 +5,12 @@ Optional, for conditional scans (repl, 11 October 2026):
   adds the deployment's own fields to the reply, in one "extra" object; each row keeps it with the contract's
   name and schema digest. The check, loaded like an extension, is called as check(campaign, value, context)
   and rejects a reply by raising ValueError (one repair turn, then a contract failure).
-- scan-context.json {"revision": ..., "text": ...} is the campaign's state of play. It fills {{SCAN_CONTEXT}}
-  in the scan prompt (or follows the prompt when the prompt has no such slot), and every row records its
-  revision and digest; each context used is kept in scan-contexts/<digest>.json.
+- scan-context.json {"revision": ..., "text": ..., "pairs": {pair id: text}} is the campaign's state of play,
+  with an optional entry per pair (nobel's literature verdicts). It fills {{SCAN_CONTEXT}} in the scan prompt
+  (or follows the prompt when the prompt has no such slot): the shared text, then the pair's own entry. Every
+  row records the revision and the digest of exactly what its pair saw, so a new entry for one pair leaves
+  the others current; each context used is kept in scan-contexts/<digest>.json, and research starts from a
+  pair's entry (thread.prepare freezes it into inputs/pair-context.md).
 - rescan() scores named pairs again against the current context. Rows are only ever appended: current() is
   the latest scored row per pair, history() every row."""
 from __future__ import annotations
@@ -27,25 +30,62 @@ def prompts_dir(campaign) -> Path:
 
 
 def context_of(campaign) -> dict | None:
-    """The current state of play, {"revision", "text", "sha256"}, or None when the campaign has none."""
+    """The current state of play, {"revision", "text", "pairs"}, or None when the campaign has none."""
     path = campaign.path("scan-context.json")
     if not path.is_file():
         return None
     doc = json.loads(path.read_text())
     if not (isinstance(doc, dict) and isinstance(doc.get("revision"), str) and doc["revision"]
-            and isinstance(doc.get("text"), str)):
-        raise ValueError("scan-context.json must be {\"revision\": non-empty string, \"text\": string}")
-    body = {"revision": doc["revision"], "text": doc["text"]}
+            and isinstance(doc.get("text"), str) and set(doc) <= {"revision", "text", "pairs"}):
+        raise ValueError("scan-context.json must be {\"revision\": non-empty string, \"text\": string, "
+                         "\"pairs\": optional {pair id: string}}")
+    pairs = doc.get("pairs") or {}
+    if not (isinstance(pairs, dict) and all(isinstance(v, str) and v.strip() for v in pairs.values())):
+        raise ValueError("scan-context.json: \"pairs\" must map pair ids to non-empty strings")
+    return {"revision": doc["revision"], "text": doc["text"], "pairs": pairs}
+
+
+def for_pair(ctx: dict | None, pair_id: str) -> dict | None:
+    """What one pair is judged against: the shared text and the pair's own entry, if it has one, with the
+    digest of exactly that. A pair without an entry has the shared digest."""
+    if ctx is None:
+        return None
+    body = {"revision": ctx["revision"], "text": ctx["text"]}
+    if pair_id in ctx["pairs"]:
+        body.update(pair_id=pair_id, entry=ctx["pairs"][pair_id])
     return {**body, "sha256": hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()}
 
 
-def _archive(campaign, ctx: dict) -> None:
-    path = campaign.path(f"scan-contexts/{ctx['sha256']}.json")
+def _archive(campaign, pctx: dict) -> None:
+    path = campaign.path(f"scan-contexts/{pctx['sha256']}.json")
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_suffix(".tmp")
-        tmp.write_text(json.dumps({"revision": ctx["revision"], "text": ctx["text"]}, indent=1))
+        tmp = path.with_name(f"{path.name}.{threading.get_ident()}.tmp")
+        tmp.write_text(json.dumps({k: v for k, v in pctx.items() if k != "sha256"}, indent=1))
         tmp.replace(path)
+
+
+def archived(campaign, sha256: str | None) -> dict | None:
+    """The context a row was scored against, by its digest, or None."""
+    path = campaign.path(f"scan-contexts/{sha256}.json") if sha256 else None
+    try:
+        return json.loads(path.read_text()) if path else None
+    except (OSError, ValueError):
+        return None
+
+
+ENTRY_RULE = ("Take this as given: it reports what was found on this pair after both papers appeared, which the "
+              "papers themselves cannot show. Judge the connexion and both scores against it. Where the state of "
+              "play says how to state the connexion, that comes before the earlier instructions of this prompt: "
+              "follow it, at whatever length it takes, rather than constructing a connexion from the papers alone.")
+
+
+def state_text(pctx: dict) -> str:
+    """The state of play as the judge reads it: the shared text, then the pair's own entry."""
+    out = f"# State of play (revision {pctx['revision']})\n\n{pctx['text']}".rstrip()
+    if pctx.get("entry"):
+        out += f"\n\n## What is known about this pair ({pctx['pair_id']})\n\n{pctx['entry'].rstrip()}\n\n{ENTRY_RULE}"
+    return out
 
 
 def validate_contract(raw: dict) -> None:
@@ -80,7 +120,7 @@ def _check(campaign, ctx):
     from . import extensions
     hook = extensions.resolve(campaign.root, ((campaign.raw or {}).get("extensions") or {}).get("path"),
                               spec["check"], "scan_contract check")
-    return lambda value: hook(campaign, value, ctx and {k: ctx[k] for k in ("revision", "text", "sha256")})
+    return lambda value: hook(campaign, value, ctx)
 
 
 def render(campaign, q: dict, p: dict, ctx: dict | None = None) -> str:
@@ -89,7 +129,7 @@ def render(campaign, q: dict, p: dict, ctx: dict | None = None) -> str:
     ft = campaign.scan_fulltext
     bodies = {"Q": corpus.body(campaign, q, ft in ("q", "both")), "P": corpus.body(campaign, p, ft in ("p", "both"))}
     template = resources.prompt_template(campaign, "scan")
-    state = (f"# State of play (revision {ctx['revision']})\n\n{ctx['text']}" if ctx else "")
+    state = state_text(ctx) if ctx else ""
     def fill(b):
         text = resources.prompt(campaign, "scan", Q_TITLE=q["title"], Q_BODY=b["Q"], P_TITLE=p["title"],
                                 P_BODY=b["P"], SCAN_CONTEXT=state)
@@ -134,7 +174,8 @@ def current(campaign, all_rows=None) -> list[dict]:
     out = []
     for r in latest.values():
         sha = r.get("context_sha256")
-        out.append({**r, "unconditioned": sha is None, "stale": sha is not None and (ctx is None or sha != ctx["sha256"])})
+        out.append({**r, "unconditioned": sha is None,
+                    "stale": sha is not None and (ctx is None or sha != for_pair(ctx, r["pair_id"])["sha256"])})
     return out
 
 
@@ -171,7 +212,8 @@ def rescan(campaign, pair_ids, stop=lambda: False):
     unknown = [pid for pid in pair_ids if pid not in known]
     if unknown:
         raise ValueError(f"not pairs of this campaign: {', '.join(unknown)}")
-    fresh = {r["pair_id"] for r in rows(campaign) if _scored(r) and r.get("context_sha256") == ctx["sha256"]}
+    fresh = {r["pair_id"] for r in rows(campaign)
+             if _scored(r) and r.get("context_sha256") == for_pair(ctx, r["pair_id"])["sha256"]}
     _score(campaign, [(pid, *known[pid]) for pid in dict.fromkeys(pair_ids) if pid not in fresh], ctx, stop)
 
 
@@ -195,20 +237,20 @@ def _score(campaign, todo, ctx, stop):
     if spec:
         stamp["contract"] = {"name": spec["name"], "schema_sha256": hashlib.sha256(
             json.dumps(contract, sort_keys=True).encode()).hexdigest()}
-    if ctx:
-        _archive(campaign, ctx)
-        stamp.update(revision=ctx["revision"], context_sha256=ctx["sha256"])
-    check = _check(campaign, ctx)
 
     def one(pid, q, p):
         if halted.is_set() or stop():
             return
+        pctx = for_pair(ctx, pid)
+        if pctx:
+            _archive(campaign, pctx)
+        check = _check(campaign, pctx)
         row = {"pair_id": pid, "q": q["id"], "p": p["id"], "feasibility": None, "gain": None,
                "connexion": None, "rationale": None, "model": campaign.scan_model, "seconds": 0, "cost": 0, "error": None}
         for attempt in range(2):
             request = transport.ModelRequest(
-                identity=f"{pid}:scan:{attempt}" + (f":{ctx['sha256'][:12]}" if ctx else ""),
-                prompt=render(campaign, q, p, ctx), model=campaign.scan_model,
+                identity=f"{pid}:scan:{attempt}" + (f":{pctx['sha256'][:12]}" if pctx else ""),
+                prompt=render(campaign, q, p, pctx), model=campaign.scan_model,
                 tools=False, search=False, cwd=campaign.path("scan-work"), timeout=600, thread=pid,
                 stage="scan", actor="judge", schema=contract)
             try:
@@ -229,6 +271,8 @@ def _score(campaign, todo, ctx, stop):
                 row["extra"] = v["extra"]
             break
         row.update(stamp)
+        if pctx:
+            row.update(revision=pctx["revision"], context_sha256=pctx["sha256"])
         with write:                               # one line per pair, whole, whatever runs beside it
             with open(campaign.path("scan.jsonl"), "a") as f:
                 f.write(json.dumps(row) + "\n")

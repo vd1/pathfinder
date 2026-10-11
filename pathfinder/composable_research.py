@@ -9,7 +9,7 @@ from . import contracts, failures, transport
 from .context import Section
 from .ledger import Ledger
 from .admission import Refused
-from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row)
+from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row, pair_context)
 from .review_evidence import EvidenceUnavailable, _bundle_evidence, _review_material
 
 
@@ -274,6 +274,7 @@ def next_requests(campaign, pair_id):
                         CALLS_LEFT=campaign.allowances["peer_calls"] - s.get("peer_call", 0) - 1,
                         FEASIBILITY=row.get("feasibility", "?"), GAIN=row.get("gain", "?"),
                         CONNEXION=row.get("connexion") or "none recorded.", RATIONALE=row.get("rationale") or "none recorded.")
+                    prompt += pair_context(d)
                     if s.get("requests"):
                         prompt += "\nReview requests and dispositions:\n" + json.dumps(s["requests"])
                 elif stage == "consolidate":

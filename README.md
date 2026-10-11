@@ -118,6 +118,19 @@ unchanged.
   has no such slot. Every row records the `revision` and the `context_sha256` it was scored against, and
   each context used is kept unchanged in `scan-contexts/<sha256>.json`. The context is never shortened:
   if it does not fit the scan budget with the papers' digests, the call is refused as input too large.
+- **Entries per pair.** `scan-context.json` may also hold `"pairs": {"Q080-P422": "..."}`, for what is known
+  of one pair (nobel's literature check: a verdict, the prior work with arXiv ids, the part still open). A
+  pair's scan sees the shared text, then its own entry, last in the prompt, after the papers. How to use an entry is the deployment's policy, best written in the shared
+  `text`, which only scans made with the context see (an overlay, `prompts/scan.append.md`, would change every
+  scan). The engine adds one instruction after the entry: take it as given, judge the connexion and both scores
+  against it, and where the state of play says how to state the connexion, follow that before the scan prompt's
+  own instructions (one sentence, the strongest connexion you can construct), at whatever length it takes,
+  rather than constructing a connexion from the papers alone. Each row's digest covers the shared text and its own entry only, so
+  adding or changing one pair's entry makes only that pair stale. Research starts from the entry: when a pair's
+  thread is first prepared, the entry its current score was judged against is frozen into
+  `inputs/pair-context.md` (into every branch's inputs under the composable scheme), and every peer prompt
+  shows it with the instruction to start from what it leaves open and build on the prior work it names. A
+  thread already started keeps what it froze.
 - **Scan contract.** `"scan_contract": {"name": "repl/1", "fields": {...}, "check": "module:function"}`
   adds the deployment's own fields, each a JSON Schema, to the reply in one required `extra` object; the
   engine's fields stay as they are. Rows keep `extra` and `contract` (the name and the schema's digest). The
