@@ -120,9 +120,9 @@ function render(s) {
   const short = new Map(s.shortlist.map(p => [p.pair_id, p])), max = Math.max(1, ...sc.scores);
   let h = "";
   if (sc.q.length && sc.p.length) {
-    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${j+1}</a></th>`).join("")}</tr>`;
-    sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${i+1}</a></th>` + row.map((v, j) => {
-      const id = `Q${i+1}P${j+1}`, p = short.get(id); return `<td class="cell ${p ? "short term" : ""}${p && p.paper === "ACCEPTED" ? " accepted" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + (p.paper === "ACCEPTED" ? ", paper accepted" : "") + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
+    h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${sc.p_n[j]}</a></th>`).join("")}</tr>`;
+    sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${sc.q_n[i]}</a></th>` + row.map((v, j) => {
+      const id = sc.ids[i][j], p = short.get(id); return `<td class="cell ${p ? "short term" : ""}${p && p.paper === "ACCEPTED" ? " accepted" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + (p.paper === "ACCEPTED" ? ", paper accepted" : "") + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
     h += `</table></div><div class="legend"><span>score = feasibility x gain, 0 to 10,000</span><span>outlined: shortlisted, click to open</span><span>dotted: paper accepted</span><span>row and column labels open the arXiv abstract</span></div>`;
   } else h = `<div class="empty">no corpora yet</div>`;
   document.getElementById("scan").innerHTML = h;

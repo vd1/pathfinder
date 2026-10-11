@@ -47,6 +47,99 @@ def _corpus(campaign, side: str) -> list[dict]:
     return rows
 
 
+def topics(campaign) -> dict:
+    """The campaign's own topic families per paper, from the optional sidecar topics.json: {number: [family,
+    ...]} or {number: {"topics": [...]}}, keyed by a paper's n (or its line number), the same map for both
+    sides unless it has "Q" and "P" keys of its own. Returns {"Q": {number: [...]}, "P": {...}}."""
+    doc = _json(campaign.path("topics.json"))
+    if not isinstance(doc, dict):
+        return {"Q": {}, "P": {}}
+    def side(m):
+        out = {}
+        for k, v in (m or {}).items() if isinstance(m, dict) else ():
+            families = v.get("topics") if isinstance(v, dict) else v
+            if str(k).isdigit() and isinstance(families, list):
+                out[str(int(k))] = [str(f) for f in families if isinstance(f, str) and f]
+        return out
+    if "Q" in doc or "P" in doc:
+        return {"Q": side(doc.get("Q")), "P": side(doc.get("P"))}
+    return {"Q": side(doc), "P": side(doc)}
+
+
+def _version(campaign) -> str:
+    """Changes whenever the scan, the shortlist or the topics change: the page refetches the ranking only then."""
+    parts = []
+    for name in ("scan.jsonl", "shortlist.json", "topics.json", "Q.jsonl", "P.jsonl"):
+        try:
+            st = campaign.path(name).stat(); parts.append(f"{st.st_size}.{st.st_mtime_ns}")
+        except OSError:
+            parts.append("-")
+    return "/".join(parts)
+
+
+def _stamp(at) -> float | None:
+    try:
+        return calendar.timegm(time.strptime(at, "%Y-%m-%dT%H:%M:%SZ"))
+    except (TypeError, ValueError):
+        return None
+
+
+def scan_summary(campaign, rows: dict, receipts: list[dict], shortlist_doc: dict, runner_alive: bool) -> dict:
+    """Where the scan stands: done of total, errors, the pace over its last quarter hour of calls, a time to
+    finish while a runner works, and the scan's tokens."""
+    from . import scan as scan_stage
+    try:
+        total = scan_stage.expected(campaign) if campaign.path("Q.jsonl").exists() and campaign.path("P.jsonl").exists() else 0
+    except (ValueError, KeyError, OSError):
+        total = 0
+    calls = [r for r in receipts if r.get("stage") == "scan"]
+    times = [t for t in (_stamp(r.get("at")) for r in calls) if t is not None]
+    rate = None
+    if times:
+        window = [t for t in times if t >= times[-1] - 900]
+        span = max(60.0, window[-1] - window[0])
+        rate = round(len(window) * 60 / span, 2) if len(window) > 1 else None
+    remaining = max(0, total - len(rows))
+    return {"done": len(rows), "total": total, "errors": sum(bool(r.get("error")) for r in rows.values()),
+            "same_corpus": (campaign.raw or {}).get("same_corpus") is True,
+            "rate_per_minute": rate, "eta_seconds": round(remaining * 60 / rate) if rate and remaining and runner_alive else None,
+            "first_call": calls[0].get("at") if calls else None, "last_call": calls[-1].get("at") if calls else None,
+            "input_tokens": sum(r.get("input_tokens") or 0 for r in calls),
+            "output_tokens": sum(r.get("output_tokens") or 0 for r in calls),
+            "selected": len(shortlist_doc.get("pairs", [])), "cut": shortlist_doc.get("cut"),
+            "min_score": shortlist_doc.get("min_score"), "per_paper": shortlist_doc.get("per_paper"),
+            "default_cut": getattr(campaign, "cut", None), "version": _version(campaign)}
+
+
+def scan_document(campaign) -> dict:
+    """The whole ranked scan for the operator page: one row per scored or failed pair, best first, with the
+    papers' numbers, titles and topic families given once."""
+    from . import select
+    rows = list(_scan(campaign).values())
+    ranked = select.rank([dict(r) for r in rows])
+    failed = [r for r in rows if r.get("feasibility") is None or r.get("gain") is None]
+    Q, P = _corpus(campaign, "Q"), _corpus(campaign, "P")
+    fam = topics(campaign)
+    def papers(side, corpus_rows):
+        return {str(r.get("n", i)): {"id": r.get("id"), "title": r.get("title"), "topics": fam[side].get(str(r.get("n", i)), [])}
+                for i, r in enumerate(corpus_rows, 1)}
+    columns = ["pair_id", "q", "p", "feasibility", "gain", "score", "connexion", "rationale", "error"]
+    out = []
+    for r in ranked + failed:
+        try:
+            qn, pn = corpus.numbers(r["pair_id"])
+        except ValueError:
+            continue
+        out.append([r["pair_id"], qn, pn, r.get("feasibility"), r.get("gain"), r.get("score"),
+                    r.get("connexion"), r.get("rationale"), r.get("error")])
+    sl = _json(campaign.path("shortlist.json")) or {}
+    return {"version": _version(campaign), "columns": columns, "rows": out,
+            "papers": {"Q": papers("Q", Q), "P": papers("P", P)},
+            "same_corpus": (campaign.raw or {}).get("same_corpus") is True,
+            "selected": [p["pair_id"] for p in sl.get("pairs", [])],
+            "cut": sl.get("cut"), "min_score": sl.get("min_score"), "per_paper": sl.get("per_paper")}
+
+
 def _paper(rows: list[dict], number: int) -> dict:
     row = corpus.row_for(rows, number)
     return {"id": row.get("id"), "title": row.get("title"), "abstract": row.get("abstract")}
@@ -189,7 +282,8 @@ def build(campaign) -> dict:
     runner_info = _runner(campaign)
     runner_alive = bool(runner_info["pid_alive"]) and runner_info["status"] in ("running", "draining")
     receipts = transport.receipts(campaign)
-    shortlist = (_json(campaign.path("shortlist.json")) or {}).get("pairs", [])
+    shortlist_doc = _json(campaign.path("shortlist.json")) or {}
+    shortlist = shortlist_doc.get("pairs", [])
     scan = _scan(campaign)
     Q, P = _corpus(campaign, "Q"), _corpus(campaign, "P")
     per_unit = {}
@@ -264,6 +358,7 @@ def build(campaign) -> dict:
     return {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "panels": _panels(campaign),
+        "scan": scan_summary(campaign, scan, receipts, shortlist_doc, runner_alive),
         "campaign": {"name": campaign.root.name, "title": raw.get("title"), "description": raw.get("description"),
                      "backend": campaign.backend, "model": campaign.model,
                      "seats": campaign.seats, "rounds": campaign.rounds, "allowances": campaign.allowances,

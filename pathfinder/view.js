@@ -213,9 +213,12 @@ function renderPanels() {
 function render() {
   if (!current) return;
   // A deployment page with no units of its own (its content is its panels) shows no empty pipeline or desk.
+  // Before research (scanning, or choosing the cut) the scan is the page.
   const panelOnly = !current.units.length && (current.panels || []).length > 0;
-  $("pipeline-section").hidden = panelOnly; $("work-grid").hidden = panelOnly;
-  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks(); renderPanels(); decorateBoxes();
+  const scanOnly = !current.units.length && (current.scan?.done || 0) > 0;
+  $("pipeline-section").hidden = panelOnly || scanOnly; $("work-grid").hidden = panelOnly || scanOnly;
+  renderParams(); renderPipeline(); renderQueue(); renderDesk(); renderUsage(); renderBlocks(); renderPanels();
+  window.renderScan?.(); decorateBoxes();
   $("snapshot-time").textContent = "Snapshot " + when(current.generated_at);
   const issues = [];
   if (current.campaign.stop) issues.push("Stopped: " + current.campaign.stop.reason);
@@ -369,6 +372,7 @@ async function chooseArm(name) {
   history.replaceState(null, "", location.pathname + "#" + h.toString());
   if ($("detail-dialog").open) $("detail-dialog").close();      // its document belongs to the previous arm
   current = null;                                   // a different campaign: render it afresh
+  window.resetScan?.();
   filterKeys = null;
   await refresh();
 }

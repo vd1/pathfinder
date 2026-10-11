@@ -8,6 +8,7 @@ from . import campaign_state, webguard
 
 HERE = Path(__file__).parent
 STATIC = {"/": ("view.html", "text/html; charset=utf-8"), "/view.js": ("view.js", "text/javascript; charset=utf-8"),
+          "/view-scan.js": ("view-scan.js", "text/javascript; charset=utf-8"),
           "/view.css": ("view.css", "text/css; charset=utf-8")}
 
 
@@ -33,7 +34,7 @@ def make_server(campaigns, port: int) -> ThreadingHTTPServer:
             request = urlsplit(self.path)
             query = parse_qs(request.query)
             arm = query.get("arm", [first])[0]
-            if request.path in ("/api/state", "/doc") and arm not in arms:
+            if request.path in ("/api/state", "/api/scan", "/doc") and arm not in arms:
                 return self.reply(404, b"no such arm", "text/plain; charset=utf-8")
             campaign = arms.get(arm)
             if request.path == "/api/arms":
@@ -53,6 +54,12 @@ def make_server(campaigns, port: int) -> ThreadingHTTPServer:
                 try:
                     body = json.dumps(campaign_state.build(campaign), default=str).encode()
                 except Exception as error:               # the page shows the error instead of a blank screen
+                    return self.reply(503, json.dumps({"error": repr(error)}).encode(), "application/json")
+                return self.reply(200, body, "application/json")
+            if request.path == "/api/scan":
+                try:
+                    body = json.dumps(campaign_state.scan_document(campaign), default=str).encode()
+                except Exception as error:
                     return self.reply(503, json.dumps({"error": repr(error)}).encode(), "application/json")
                 return self.reply(200, body, "application/json")
             if request.path == "/doc":

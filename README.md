@@ -83,6 +83,29 @@ and rewrites `shortlist.json` with every pair at or above `--min-score`.
 of 1925 and above gave the threads that ran and 600 was the next; the scan
 costs about three cents a pair.
 
+## Choosing the cut on the operator view
+
+`pathfinder view` (http://127.0.0.1:8791/) shows the scan from its first call. While it runs: pairs done of
+total, the pace over the last quarter hour, the time to finish while a runner works, failed calls, and the
+scan's tokens against the budget. Before research starts the scan is the whole page; afterwards it sits above
+the research desk and can be hidden.
+
+- **Ranked pairs**, best first: both titles (linked to arXiv) with their numbers, the scan's connexion in full,
+  feasibility, gain and score, and the rationale on expanding the row. Search covers titles, connexions and
+  ids; a paper's number lists every pair it is in.
+- **Preview a cut**: the top k pairs, the top percent, or every pair at or above a score, with an optional cap
+  per paper. The score histogram marks where the cut falls (and where the shortlist's lowest score is, once
+  `select` has run), and the page writes the `pathfinder select` command that freezes the same cut.
+- **Topics**, when the campaign supplies them: `topics.json` maps a paper's number (its `n`, or its line
+  number) to a list of families, `{"17": ["Search"], "265": {"topics": ["Hamiltonian simulation"]}}`, the
+  same map for both sides unless it has its own `"Q"` and `"P"` keys. A pair's topic is the unordered pair of
+  its papers' families (`A × B`, or `A (within)`); a pair whose papers have several families counts under each.
+  The page shows pairs per topic in the previewed cut against all pairs, filters by a topic or a family, and
+  has a grouped layout with the best pairs of each topic.
+
+`select --per-paper K` keeps any paper out of more than K pairs; the next best pairs take the places, so a
+diversified shortlist is frozen exactly as previewed.
+
 ## Campaign directory
 
 ```
@@ -92,6 +115,7 @@ Q.jsonl  P.jsonl   one paper per line: id, title, abstract, authors, date, text
 sources/           flattened e-prints, <id>.tex or <id>.txt (ignored by git)
 scan.jsonl         one row per scored pair, appended as the scan runs
 shortlist.json     the frozen cut, with a digest of scan.jsonl
+topics.json        optional: topic families per paper number, for the operator view
 receipts.jsonl     one line per attempted model call, failures included; the only
                    source of spend figures (see Receipts below)
 stop.json          present while a stop is requested

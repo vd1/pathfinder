@@ -6,6 +6,7 @@
   <title>Pathfinder operator view</title>
   <link rel="stylesheet" href="view.css">
   <script src="view.js" defer></script>
+  <script src="view-scan.js" defer></script>
 </head>
 <body>
   <div class="page">
@@ -29,6 +30,62 @@
       </section>
 
       <div id="error-banner" class="error-banner" role="alert" hidden></div>
+
+      <section class="panel scan-panel" id="scan-section" aria-labelledby="scan-heading" hidden>
+        <div class="section-heading">
+          <h2 id="scan-heading">Scan</h2>
+          <span id="scan-count" class="count-label"></span>
+        </div>
+        <p class="section-copy">Each pair of papers is read once by a model, which proposes a connexion and scores
+          its feasibility and its gain. Pairs rank by feasibility × gain; the shortlist is a cut of this ranking.</p>
+        <div id="scan-progress" class="scan-progress"></div>
+
+        <div class="scan-overview">
+          <figure class="histogram">
+            <figcaption>Scores <span class="small-copy" id="hist-note"></span></figcaption>
+            <svg id="score-hist" viewBox="0 0 640 170" role="img" aria-label="Distribution of scores"></svg>
+          </figure>
+          <form class="cut-controls" id="cut-form" aria-labelledby="cut-heading">
+            <h3 id="cut-heading">Preview a cut</h3>
+            <div class="cut-row">
+              <label><span>Keep</span>
+                <select id="cut-mode"><option value="top">the top pairs</option><option value="percent">the top percent</option>
+                  <option value="score">every pair scoring at least</option></select></label>
+              <label><span class="sr-only">Value</span><input id="cut-value" type="number" min="0" step="any" inputmode="decimal"></label>
+            </div>
+            <label class="cut-row"><span>At most</span><input id="cut-cap" type="number" min="0" step="1" placeholder="any">
+              <span>pairs per paper</span></label>
+            <p class="cut-result" id="cut-result" aria-live="polite"></p>
+            <p class="cut-command"><code id="cut-command"></code>
+              <button type="button" class="quiet-button" id="copy-command">Copy</button></p>
+          </form>
+        </div>
+
+        <div class="topics" id="topics-block" hidden>
+          <div class="section-heading"><h3>Topics</h3>
+            <span class="count-label" id="topics-note"></span></div>
+          <div class="topic-bars" id="topic-bars"></div>
+        </div>
+
+        <div class="filters scan-filters">
+          <label class="search-label"><span class="sr-only">Search the scan</span>
+            <input id="scan-search" type="search" placeholder="Search titles, connexions, pair or arXiv ID"></label>
+          <label><span class="sr-only">Paper</span><select id="scan-paper"><option value="">Every paper</option></select></label>
+          <label id="scan-topic-label" hidden><span class="sr-only">Topic or family</span>
+            <select id="scan-topic"><option value="">Every topic</option></select></label>
+          <label><span class="sr-only">Which pairs</span><select id="scan-show">
+            <option value="all">All scored pairs</option><option value="cut">In the previewed cut</option>
+            <option value="selected">In the shortlist</option><option value="errors">Failed calls</option></select></label>
+          <label class="narrow"><span class="sr-only">Minimum gain</span><input id="scan-gain" type="number" min="0" max="100" placeholder="Gain at least"></label>
+          <div class="segmented" role="group" aria-label="Layout">
+            <button type="button" id="layout-ranked" aria-pressed="true">Ranked</button>
+            <button type="button" id="layout-grouped" aria-pressed="false" hidden>By topic</button>
+          </div>
+        </div>
+        <p class="scan-list-note" id="scan-list-note"></p>
+        <div id="scan-list"></div>
+        <p class="scan-more"><button type="button" class="quiet-button" id="scan-more" hidden>Show more</button></p>
+      </section>
 
       <section class="pipeline" id="pipeline-section" aria-label="Where every unit stands">
         <ol id="pipeline" class="stages"></ol>

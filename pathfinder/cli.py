@@ -24,6 +24,7 @@ def main(argv=None):
     sub.add_parser("scan", help="phase A: score every pair")
     s = sub.add_parser("select", help="freeze the top cut, or every pair at or above --min-score, as shortlist.json")
     s.add_argument("--cut", type=float); s.add_argument("--min-score", type=float); s.add_argument("--force", action="store_true")
+    s.add_argument("--per-paper", type=int, help="at most this many pairs per paper; the next best pairs take the places")
     rs = sub.add_parser("research", help="run the shortlisted threads")
     rs.add_argument("--pairs", nargs="+", help="a bounded run over exactly these shortlisted pairs")
     co = sub.add_parser("coordinate", help="run a schedule of (arm, pair) entries across child campaigns, one pair at a time")
@@ -139,8 +140,9 @@ def _dispatch(ns, c):
     elif ns.cmd == "scan":
         scan.run(c, stop=lambda: runner.stopped(c))
     elif ns.cmd == "select":
-        out = select.run(c, ns.cut, ns.force, ns.min_score)
-        print(f"selected {out['n_selected']} of {out['n_scored']} " + (f"at {out['cut']}%" if out["cut"] is not None else f"at score >= {out['min_score']}"))
+        out = select.run(c, ns.cut, ns.force, ns.min_score, ns.per_paper)
+        print(f"selected {out['n_selected']} of {out['n_scored']} " + (f"at {out['cut']}%" if out["cut"] is not None else f"at score >= {out['min_score']}")
+              + (f", at most {out['per_paper']} per paper" if out["per_paper"] else ""))
         for p in out["pairs"]:
             print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']})")
     elif ns.cmd == "research":
