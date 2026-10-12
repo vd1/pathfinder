@@ -190,3 +190,54 @@ def test_the_plain_scheme_also_ends_the_peers_turn_at_the_residual_deadline(tmp_
     monkeypatch.setattr(transport, "execute", execute)
     research.run_thread(c, "Q1P1")
     assert research.status(c, "Q1P1")["status"] not in ("stopped", "BLOCKED")
+
+
+def _mixed(monkeypatch):
+    """nobel Q104-P481 branch-3, 12 October 2026: in the second peer calls, ada's came back 'at capacity' (rate, its
+    retries spent) while emmy's timed out at the allowance's remainder."""
+    real, seen = transport.execute, []
+
+    def execute(campaign, request):
+        r = real(campaign, request)
+        seen.append(request)
+        if request.stage == "peer" and str(request.cwd).endswith("branch-1"):
+            first = sum(1 for q in seen if q.stage == "peer" and q.actor == request.actor and q.cwd == request.cwd) == 1
+            if first:
+                return {**r, "seconds": FIRST[request.actor]}
+            if request.actor == "ada":
+                return {**r, "text": "", "seconds": 5.3, "transport_failed": True, "outcome": "error",
+                        "error": "Selected model is at capacity. Please try a different model.",
+                        "failure": {"class": "rate", "scope": "call", "retry": True, "reset_at": None}}
+            return {**r, "text": "", "seconds": float(request.timeout), "transport_failed": True, "error": "timeout",
+                    "outcome": "timeout", "failure": {"class": "timeout", "scope": "call", "retry": True, "reset_at": None}}
+        return r
+    monkeypatch.setattr(transport, "execute", execute)
+    return seen
+
+
+def test_a_turn_spent_by_one_peer_ends_for_both_whatever_the_other_peer_failed_with(tmp_path, monkeypatch):
+    c = _branch(tmp_path, **_short(peer_min_seconds=0))
+    seen = _mixed(monkeypatch)
+    research.run_thread(c, "Q1P1")                       # no TransportFailed: the turn's clock ran out
+    view = composable.branch_view(c, "Q1P1", "branch-1")
+    s = research.status(view, "Q1P1")
+    assert s["status"] not in ("BLOCKED", "stopped") and s.get("peer_seconds_exhausted")
+    assert any(q.stage == "ledger_review" for q in seen if str(q.cwd).endswith("branch-1"))
+
+
+def test_a_mixed_turn_blocked_by_an_older_engine_resumes_to_its_review(tmp_path, monkeypatch):
+    from pathfinder import composable_research, reconcile
+    c = _branch(tmp_path, **_short(peer_min_seconds=0))
+    seen = _mixed(monkeypatch)
+    monkeypatch.setattr(composable_research, "_ends_peers_turn", lambda campaign, request, result: False)
+    with pytest.raises(transport.TransportFailed):     # as v1.9.2 left it: stopped on ada's rate failure
+        research.run_thread(c, "Q1P1")
+    monkeypatch.undo(); seen = _mixed(monkeypatch)
+    view = composable.branch_view(c, "Q1P1", "branch-1")
+    research._set(view, "Q1P1", status="BLOCKED", reason="peers: Selected model is at capacity",
+                  failure={"class": "rate", "scope": "call", "retry": True, "reset_at": None})
+    assert reconcile.inspect(c, "Q1P1")["action"] == "branch-1: unblock: the peers' allowance ran out"
+    reconcile.apply(c, "Q1P1")
+    s = research.status(view, "Q1P1")
+    assert s["status"] != "BLOCKED" and s.get("peer_seconds_exhausted")
+    assert not [q for q in seen if q.stage == "peer" and str(q.cwd).endswith("branch-1")]   # no call asked again

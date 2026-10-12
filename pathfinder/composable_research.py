@@ -219,7 +219,9 @@ def next_requests(campaign, pair_id):
                                 saved["refusal_reissued"] = True
                             temporary = path.with_suffix(".tmp"); temporary.write_text(json.dumps(saved)); temporary.replace(path)
                     continue
-                if failed and s["stage"] == "peers" and _at_residual_deadline(campaign, failed):
+                spent = s["stage"] == "peers" and any(_at_residual_deadline(campaign, item) for item in pending
+                                                      if item["result"].get("transport_failed") or item["result"].get("error"))
+                if failed and spent:                      # one peer's deadline was the turn's: the other's failure is moot
                     calls = s.get("peer_call", 0) + 1     # the allowance ran out mid-call: the peers' turn is over
                     seconds = s.get("peer_seconds", 0) + max((item["result"].get("seconds") or 0 for item in pending), default=0)
                     _set(campaign, pair_id, pending=[], peer_call=calls, peer_seconds=seconds, peer_seconds_exhausted=True,
@@ -407,11 +409,13 @@ def _run_composable(campaign, pair_id, stop):
                     _repair_review(campaign, pair_id, request, result)     # kept first, so a stop never loses a paid reply
                     return
                 retain_response(campaign, pair_id, request, result)
-                if result.get("transport_failed") and not _ends_peers_turn(campaign, request, result):
-                    raise transport.TransportFailed(pair_id, failure=result.get("failure"))
+                return result
             with ThreadPoolExecutor(len(requests)) as pool:
-                for future in [pool.submit(execute, request) for request in requests]:
-                    future.result()
+                results = [future.result() for future in [pool.submit(execute, request) for request in requests]]
+            failed = [(q, r) for q, r in zip(requests, results) if r and r.get("transport_failed")]
+            # a peer at its residual deadline spent the turn's clock: the batch ends the turn, whatever else failed in it
+            if failed and not any(_ends_peers_turn(campaign, q, r) for q, r in failed):
+                raise transport.TransportFailed(pair_id, failure=failed[0][1].get("failure"))
     except (Stopped, Refused):                     # a refused call used no attempt: the same request is issued on resume
         _set(campaign, pair_id, status="stopped")
         return "stopped"
