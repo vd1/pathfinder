@@ -211,6 +211,11 @@ your own campaign directory and edit the models and the budget.
   1200 s; when less than `peer_min_seconds` (default 120) is left, no further call
   is sent and the thread goes to its review, and a peer call that times out at such
   a shortened deadline ends the peers' turn the same way instead of failing.
+- Calls are asked again in place before a pair stops. A call that never reached a model session
+  (launch, no session, a rate limit before the session) is retried `unserved_retries` times (default 1) after
+  `retry_backoff_seconds` (default 30). A call the provider failed after it started (a dropped stream or server
+  error, a model at capacity) is retried after each wait in `transient_backoff_seconds` (default `[60, 300]`); a
+  timeout at the full deadline is retried once, after the first wait. An operator's stop ends the wait.
 - `budget`: the campaign's budget under subscription billing, in calls and
   tokens, any of `{"calls", "input_tokens", "output_tokens"}`. Every call that
   reached a model counts, interrupted ones (timed out, cancelled) included and

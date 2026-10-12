@@ -10,7 +10,7 @@ FAKE = str(Path(__file__).parent / "fake_cli.py")
 def campaign(tmp_path, backend="claude"):
     return Campaign(root=tmp_path, backend=backend, model="m", scan_model="m", peer_search=True, seats=1,
                     cut=1, rounds=1, allowances={}, budget_usd=9, prices={"m": {"input_per_m": 1.0, "output_per_m": 1.0}},
-                    scan_fulltext=None, raw={"unserved_retries": 0})   # retries are tested on their own
+                    scan_fulltext=None, raw={"unserved_retries": 0, "transient_backoff_seconds": []})   # retries are tested on their own
 
 
 @pytest.fixture(autouse=True)
@@ -302,7 +302,7 @@ def _results(*classes):
             out.append({"text": "ok", "transport_failed": False, "error": None, "outcome": "completed", "failure": None})
         else:
             out.append({"text": "", "transport_failed": True, "error": cls, "outcome": "error",
-                        "failure": {"class": cls, "scope": "call", "retry": cls != "timeout", "reset_at": None}})
+                        "failure": {"class": cls, "scope": "call", "retry": True, "reset_at": None}})
     return out
 
 
@@ -315,30 +315,74 @@ def test_an_unserved_call_is_retried_once(tmp_path, monkeypatch):
     assert r["outcome"] == "completed" and queue == []
 
 
-def test_timeouts_and_second_failures_are_not_retried(tmp_path, monkeypatch):
+def test_second_unserved_failures_are_not_retried(tmp_path, monkeypatch):
     c = campaign(tmp_path, "codex"); c.raw.update(retry_backoff_seconds=0, unserved_retries=1)
-    for classes, calls in ((("timeout", None), 1), (("no_session", "no_session", None), 2)):
-        queue = _results(*classes)
-        monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
-        r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,
-                                                        timeout=5, thread="T", stage="verify", actor="judge"))
-        assert r["transport_failed"] and len(classes) - len(queue) == calls
-
-
-def test_a_rate_limit_after_the_session_started_is_not_retried(tmp_path, monkeypatch):
-    c = campaign(tmp_path, "codex"); c.raw.update(retry_backoff_seconds=0, unserved_retries=1)
-    served = _results("rate", None); served[0]["session"] = "thread-1"
-    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: served.pop(0))
+    queue = _results("no_session", "no_session", None)
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
     r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,
                                                     timeout=5, thread="T", stage="verify", actor="judge"))
-    assert r["transport_failed"] and len(served) == 1
+    assert r["transport_failed"] and len(queue) == 1
+
+
+def _sleeps(monkeypatch):
+    slept = []
+    monkeypatch.setattr(transport.time, "sleep", lambda seconds: slept.append(seconds))
+    return slept
+
+
+def _peer(timeout=1230):
+    return transport.ModelRequest(identity="i", prompt="p", model="m", tools=True, search=False, timeout=timeout,
+                                  thread="T", stage="peer", actor="emmy")
+
+
+def test_a_capacity_reply_after_the_session_started_is_asked_again_with_backoff(tmp_path, monkeypatch):
+    """nobel, 12 October 2026: 'Selected model is at capacity' after 3.7 s, during a provider slowdown, stopped three
+    branches and the runner within an hour. It is asked again after 60 s, then after 300 s."""
+    c = campaign(tmp_path, "codex"); c.raw.update(transient_backoff_seconds=[60, 300], retry_backoff_seconds=0)
+    served = _results("rate", "rate", None)
+    for r in served:
+        r["session"] = "thread-1"
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: served.pop(0))
+    slept = _sleeps(monkeypatch)
+    r = transport.execute(c, _peer())
+    assert r["outcome"] == "completed" and served == [] and sum(slept) == 360
+
+
+def test_a_full_deadline_timeout_is_asked_again_once(tmp_path, monkeypatch):
+    c = campaign(tmp_path, "codex"); c.raw.update(transient_backoff_seconds=[60, 300])
+    c.allowances["peer_seconds"] = 1200
+    queue = _results("timeout", "timeout", None)
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
+    slept = _sleeps(monkeypatch)
+    r = transport.execute(c, _peer(1230))
+    assert r["transport_failed"] and len(queue) == 1 and sum(slept) == 60   # a second full deadline is not spent again
+
+
+def test_a_residual_deadline_timeout_is_not_asked_again(tmp_path, monkeypatch):
+    c = campaign(tmp_path, "codex"); c.raw.update(transient_backoff_seconds=[60, 300])
+    c.allowances["peer_seconds"] = 1200
+    queue = _results("timeout", None)
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
+    _sleeps(monkeypatch)
+    r = transport.execute(c, _peer(274))                     # the allowance is spent: the turn ends, as in v1.9.2
+    assert r["transport_failed"] and len(queue) == 1
+
+
+def test_a_stop_during_the_backoff_returns_the_failure(tmp_path, monkeypatch):
+    c = campaign(tmp_path, "codex"); c.raw.update(transient_backoff_seconds=[60, 300])
+    queue = _results("rate", None)
+    monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
+    monkeypatch.setattr(transport, "_campaign_stopped", lambda campaign: True)
+    _sleeps(monkeypatch)
+    r = transport.execute(c, _peer())
+    assert r["transport_failed"] and len(queue) == 1
 
 
 def test_a_server_error_is_asked_again_although_the_session_started(tmp_path, monkeypatch):
     """nobel, 12 October 2026: a Codex peer ran 425 s, then 'stream disconnected before completion ... You can retry
     your request'. The provider dropped the reply and asks for it again; stopping the pair idled it until an operator
     reissued the call, which then completed."""
-    c = campaign(tmp_path, "codex"); c.raw.update(retry_backoff_seconds=0, unserved_retries=1)
+    c = campaign(tmp_path, "codex"); c.raw.update(transient_backoff_seconds=[0])
     served = _results("server", None); served[0]["session"] = "thread-1"
     monkeypatch.setattr(transport, "_attempt", lambda campaign, request: served.pop(0))
     r = transport.execute(c, transport.ModelRequest(identity="i", prompt="p", model="m", tools=False, search=False,

@@ -56,7 +56,7 @@ DEFAULT_MAX_PROMPT_CHARS = 1_000_000          # the Codex CLI rejects prompts ov
 
 
 UNSERVED = {"rate", "no_session", "launch"}          # the model never served the call: safe to ask again
-DROPPED = {"server"}                                 # served, then dropped by the provider, which asks for it again
+TRANSIENT = {"server", "rate", "timeout"}           # the provider failed the call (dropped, at capacity, too slow): ask again
 
 
 def _campaign_stopped(campaign) -> bool:
@@ -67,6 +67,23 @@ def _campaign_stopped(campaign) -> bool:
 def retry_policy(campaign) -> tuple[int, float]:
     raw = campaign.raw or {}
     return int(raw.get("unserved_retries", 1)), float(raw.get("retry_backoff_seconds", 30))
+
+
+def transient_backoffs(campaign, request, failure: dict) -> list[float]:
+    """The waits before asking again a call the provider failed after it started: dropped (server), at capacity
+    (rate) or past its full deadline (timeout), from transient_backoff_seconds (default 60 then 300 s; nobel,
+    12 October 2026: a provider slowdown stopped three branches and the runner within an hour). A timeout is asked
+    again once, since each attempt spends a whole deadline, and a peer's timeout at the allowance's remainder never:
+    the turn is over (thread.residual_timeout)."""
+    waits = [float(w) for w in (campaign.raw or {}).get("transient_backoff_seconds", [60, 300])]
+    if failure.get("class") != "timeout":
+        return waits
+    allowances = getattr(campaign, "allowances", None) or {}
+    if request.stage == "peer" and "peer_seconds" in allowances:
+        from .thread import residual_timeout
+        if residual_timeout(campaign, request.timeout, failure):
+            return []
+    return waits[:1]
 
 
 class PromptTooLarge(Exception):
@@ -462,20 +479,23 @@ def execute(campaign, request: ModelRequest):
         raise PromptTooLarge(error)
     from . import admission
     retries, backoff = retry_policy(campaign)
-    for attempt in range(retries + 1):
+    unserved_asked = transient_asked = 0
+    while True:
         with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
             result = _attempt(campaign, request)
         failure = result.get("failure") or {}
-        # a call the model never served (no session opened, so nothing was read, written or spent), or one the
-        # provider dropped and asks to be sent again (nobel, 12 October 2026: reissued by hand, it completed)
-        unserved = (failure.get("scope") != "campaign" and failure.get("retry")
-                    and (failure.get("class") in DROPPED
-                         or (failure.get("class") in UNSERVED and result.get("session") is None)))
-        if unserved and _campaign_stopped(campaign):  # a launch streak may have just stopped the campaign
-            return result
-        if not unserved or attempt == retries:
+        wait = None
+        if failure.get("scope") != "campaign" and failure.get("retry"):
+            if (failure.get("class") in UNSERVED and result.get("session") is None and unserved_asked < retries):
+                wait, unserved_asked = backoff, unserved_asked + 1    # never served: nothing was read, written or spent
+            elif failure.get("class") in TRANSIENT:
+                waits = transient_backoffs(campaign, request, failure)
+                if transient_asked < len(waits):
+                    wait, transient_asked = waits[transient_asked], transient_asked + 1
+        if wait is None or _campaign_stopped(campaign):  # a launch streak may have just stopped the campaign
             break
-        time.sleep(backoff)                       # the model never served it: ask once more, outside admission
+        if not _wait(campaign, wait):                  # outside admission; an operator's stop ends the wait
+            break
     if (result.get("failure") or {}).get("class") == "refusal" and getattr(campaign, "route", {}).get("key") != "refusal_fallback":
         found = routing.fallback(campaign, request)
         if found is not None:                     # a provider's safety filter: once more, on the fallback route
@@ -484,6 +504,18 @@ def execute(campaign, request: ModelRequest):
                         reason=f"refused by {campaign.backend}'s safety filter; retried on {found[0].backend}/{found[1].model}")
             return execute_routed(*found)
     return result
+
+
+def _wait(campaign, seconds: float) -> bool:
+    """Sleep before asking again, in steps, so a stop is honoured within 5 s; False when the campaign stopped."""
+    left = float(seconds)
+    while left > 0:
+        if _campaign_stopped(campaign):
+            return False
+        step = min(left, 5.0)
+        time.sleep(step)
+        left -= step
+    return not _campaign_stopped(campaign)
 
 
 def _json_only(campaign, request: ModelRequest) -> ModelRequest:
