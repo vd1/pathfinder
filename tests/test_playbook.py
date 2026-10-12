@@ -82,3 +82,18 @@ def test_a_recorded_failure_points_at_the_local_recovery_before_the_maintainer(t
     (tmp_path / "health.json").write_text(json.dumps({"status": "failed", "reason": "transport failed: timeout"}))
     why = next(a for a in playbook.next_actions(c) if a["action"] == "diagnose the recorded operational failure")["why"]
     assert why.index("recovery instruction") < why.index("pathfinder-failures/") and "wait for the engine fix" in why
+
+
+def test_peer_timeouts_at_the_allowance_remainder_are_not_reported_as_a_short_allowance(tmp_path):
+    """nobel, 12 October 2026: six second peer calls timed out at 224 to 295 s, what was left of peer_seconds 1200.
+    The playbook said "raise the peer allowance (6 timeouts at 1200 s)", as if calls had had 1200 s."""
+    c = make(tmp_path, allowances={"peer_seconds": 1200, "peer_calls": 2})
+    rows = [{"stage": "peer", "outcome": "timeout", "seconds": 274.0, "deadline_seconds": 274},
+            {"stage": "peer", "outcome": "completed", "seconds": 1013.7, "deadline_seconds": 1230}]
+    c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    row = next(a for a in playbook.next_actions(c) if "peer" in a["action"])
+    assert "ran out" in row["action"] and "1 of them" not in row["why"] and "remainder" in row["why"]
+    rows.append({"stage": "peer", "outcome": "timeout", "seconds": 1230.0, "deadline_seconds": 1230})
+    c.path("receipts.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+    row = next(a for a in playbook.next_actions(c) if "peer" in a["action"])
+    assert row["action"] == "raise the peer allowance" and "1 of them at the allowance's remainder" in row["why"]

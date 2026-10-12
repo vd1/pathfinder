@@ -230,6 +230,16 @@ def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str |
     where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
 
 
+PEER_CALL_CAP = 1200.0           # one peer call's longest deadline, whatever the allowance (plus 30 s of grace)
+
+
+def residual_timeout(campaign, timeout, failure) -> bool:
+    """A peer call that timed out at a deadline cut short by the allowance's remainder: the allowance is spent,
+    which is the end of the peers' turn, not a transport failure. A timeout at the full deadline still is one."""
+    full = min(float(campaign.allowances["peer_seconds"]), PEER_CALL_CAP)
+    return (failure or {}).get("class") == "timeout" and float(timeout or 0) - 30 < full
+
+
 PAIR_CONTEXT = "pair-context.md"
 
 

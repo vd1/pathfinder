@@ -9,7 +9,8 @@ from . import contracts, failures, transport
 from .context import Section
 from .ledger import Ledger
 from .admission import Refused
-from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row, pair_context)
+from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row, pair_context,
+                     residual_timeout)
 from .review_evidence import EvidenceUnavailable, _bundle_evidence, _review_material
 
 
@@ -84,11 +85,16 @@ def _peer_floor(campaign) -> float:
 
 
 def _at_residual_deadline(campaign, item) -> bool:
-    """A peer call that timed out at a deadline cut short by the allowance's remainder: the allowance is spent,
-    which is the end of the peers' turn, not a transport failure. A timeout at the full deadline still is one."""
-    failure = item["result"].get("failure") or {}
-    full = min(float(campaign.allowances["peer_seconds"]), 1200.0)
-    return failure.get("class") == "timeout" and float(item["request"].get("timeout") or 0) - 30 < full
+    """A retained peer call that timed out at its residual deadline (thread.residual_timeout)."""
+    return residual_timeout(campaign, item["request"].get("timeout"), item["result"].get("failure"))
+
+
+def _ends_peers_turn(campaign, request, result) -> bool:
+    """A peer call that failed at its residual deadline, seen as it returns: retained, it ends the peers' turn when
+    the requests are next prepared, so the live run neither stops the pair nor counts a runner failure (nobel,
+    12 October 2026: six such timeouts in an hour, at 4 seats, stopped the runner)."""
+    return request.stage == "peer" and _at_residual_deadline(campaign, {"request": {"timeout": request.timeout},
+                                                                         "result": result})
 
 
 def _review_contract(campaign, s):
@@ -401,7 +407,7 @@ def _run_composable(campaign, pair_id, stop):
                     _repair_review(campaign, pair_id, request, result)     # kept first, so a stop never loses a paid reply
                     return
                 retain_response(campaign, pair_id, request, result)
-                if result.get("transport_failed"):
+                if result.get("transport_failed") and not _ends_peers_turn(campaign, request, result):
                     raise transport.TransportFailed(pair_id, failure=result.get("failure"))
             with ThreadPoolExecutor(len(requests)) as pool:
                 for future in [pool.submit(execute, request) for request in requests]:

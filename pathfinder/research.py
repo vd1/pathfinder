@@ -15,7 +15,7 @@ from .context import Section
 from .ledger import Ledger
 from .scan import prompts_dir
 from .admission import Refused
-from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row, pair_context)
+from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row, pair_context, residual_timeout)
 from .review_evidence import (EvidenceUnavailable, EvidenceError, _external_citations, _declared_outputs, EVIDENCE_PATH, EVIDENCE_MAX_BYTES, _evidence_references, _assessment_evidence, _bundle_evidence, _review_material)
 from .composable_research import (_request_file, retain_response, _direct_requests, _review_contract, _apply_research_review, next_requests, export_outcome, _verdict_under_direct_eva, _repair_review, _finish_repairs, _run_composable)
 
@@ -83,6 +83,8 @@ def _peers(campaign, pair_id, stop):
             ))
             with lock:
                 used[actor] = used.get(actor, 0.0) + r["seconds"]
+            if r["transport_failed"] and residual_timeout(campaign, int(min(left, 1200)) + 30, r.get("failure")):
+                return                                    # the allowance ran out mid-call: this peer's turn is over
             if r["transport_failed"]:
                 raise transport.TransportFailed(pair_id, failure=r.get("failure"))
 

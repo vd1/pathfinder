@@ -117,7 +117,10 @@ def _allowances(campaign, receipts, warnings) -> list[dict]:
         completed = [r.get("seconds") or 0 for r in rows if r.get("outcome") == "completed"]
         longest = max(completed) if completed else None
         allowance = (campaign.allowances or {}).get(key)
-        out.append({"stage": stage, "allowance": allowance, "timeouts": timeouts, "longest_completed_seconds": longest})
+        residual = sum(r.get("outcome") == "timeout" and r.get("deadline_seconds") is not None and allowance is not None
+                       and r["deadline_seconds"] < min(allowance, 1200) for r in rows)   # cut short by the remainder
+        out.append({"stage": stage, "allowance": allowance, "timeouts": timeouts, "residual_timeouts": residual,
+                    "longest_completed_seconds": longest})
         if timeouts:
             warnings.append(f"{timeouts} {stage} call(s) timed out; the current {key} is "
                             + (f"{allowance} s" if allowance is not None else "unset")

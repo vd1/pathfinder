@@ -61,10 +61,7 @@ def test_a_residual_below_the_floor_is_not_sent_and_the_branch_goes_to_its_revie
 def test_a_peer_timing_out_at_the_residual_deadline_ends_the_peers_turn_not_the_branch(tmp_path, monkeypatch):
     c = _branch(tmp_path, **_short(peer_min_seconds=0))  # the floor off: the 107 s call is sent, as S20's 35 s was
     seen = _timed(monkeypatch, timeout_second_call_of="ada")
-    try:
-        research.run_thread(c, "Q1P1")
-    except transport.TransportFailed:
-        research.run_thread(c, "Q1P1")                   # S20's recovery: resume, nothing is reissued
+    research.run_thread(c, "Q1P1")                       # in the live run, not only on resume (nobel, 12 October 2026)
     view = composable.branch_view(c, "Q1P1", "branch-1")
     s = research.status(view, "Q1P1")
     assert s["status"] != "BLOCKED" and s.get("peer_seconds_exhausted")
@@ -105,9 +102,11 @@ def test_a_peers_stage_resumed_with_too_little_left_sends_no_call(tmp_path, monk
 
 def test_reconcile_lets_a_peer_block_at_the_residual_deadline_end_the_peers_turn(tmp_path, monkeypatch):
     from pathfinder import reconcile
+    from pathfinder import composable_research
     c = _branch(tmp_path, **_short(peer_min_seconds=0))
     _timed(monkeypatch, timeout_second_call_of="ada")
-    with pytest.raises(transport.TransportFailed):
+    monkeypatch.setattr(composable_research, "_ends_peers_turn", lambda campaign, request, result: False)
+    with pytest.raises(transport.TransportFailed):     # the block an engine before 1.9.2 left in the live run
         research.run_thread(c, "Q1P1")
     view = composable.branch_view(c, "Q1P1", "branch-1")
     research._set(view, "Q1P1", status="BLOCKED", reason="peers: timeout",
@@ -172,3 +171,22 @@ def test_a_classic_thread_also_spends_clock_time(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger_module.Ledger, "ready", lambda self, actors: False)
     research.run_thread(c, "Q1P1")
     assert sorted(calls) == ["ada", "ada", "emmy", "emmy"]
+
+
+def test_the_plain_scheme_also_ends_the_peers_turn_at_the_residual_deadline(tmp_path, monkeypatch):
+    c = make(tmp_path, peers=["ada", "emmy"], allowances={"peer_seconds": 600, "peer_calls": 2, "consolidate_seconds": 60,
+                                                           "verify_seconds": 60, "edit_seconds": 60})
+    real, calls = transport.execute, {}
+
+    def execute(campaign, request):
+        r = real(campaign, request)
+        if request.stage == "peer":
+            calls[request.actor] = calls.get(request.actor, 0) + 1
+            if calls[request.actor] == 1:
+                return {**r, "seconds": FIRST[request.actor]}
+            return {**r, "text": "", "seconds": float(request.timeout), "transport_failed": True, "error": "timeout",
+                    "outcome": "timeout", "failure": {"class": "timeout", "scope": "call", "retry": True, "reset_at": None}}
+        return r
+    monkeypatch.setattr(transport, "execute", execute)
+    research.run_thread(c, "Q1P1")
+    assert research.status(c, "Q1P1")["status"] not in ("stopped", "BLOCKED")

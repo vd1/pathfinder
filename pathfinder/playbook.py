@@ -84,9 +84,17 @@ def next_actions(campaign) -> list[dict]:
                            "or peer_calls, or add a prompts/peer.append.md with stricter spacing; check the ledgers for "
                            "claims of no prior work made while throttled.", "command": _cmd(campaign, "health")})
     for row in snap.get("allowances", []):
-        if row["timeouts"]:
+        residual = row.get("residual_timeouts", 0)
+        if row["timeouts"] and residual == row["timeouts"]:     # the allowance was spent, not too short for one call
+            out.append({"owner": "operator", "action": f"the {row['stage']} allowance ran out mid-call",
+                        "why": f"{residual} call(s) timed out at the allowance's remainder, which ends the turn; the allowance "
+                               f"is {row['allowance']} s and completed calls took up to {row['longest_completed_seconds']} s. "
+                               "Raise it only if later calls should have more time.",
+                        "command": None})
+        elif row["timeouts"]:
             out.append({"owner": "operator", "action": f"raise the {row['stage']} allowance",
-                        "why": f"{row['timeouts']} timeout(s) at {row['allowance']} s; completed calls took up to {row['longest_completed_seconds']} s.",
+                        "why": f"{row['timeouts']} timeout(s)" + (f", {residual} of them at the allowance's remainder" if residual else "")
+                               + f"; the allowance is {row['allowance']} s; completed calls took up to {row['longest_completed_seconds']} s.",
                         "command": None})
     return out
 
