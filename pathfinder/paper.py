@@ -174,7 +174,7 @@ def _run(campaign, pair_id: str, stop) -> str:
     d = campaign.thread_dir(pair_id); pd = d / "paper"; pd.mkdir(exist_ok=True)
     A, inp = campaign.allowances, _inputs(d)
     reviews = json.loads((pd / "review.json").read_text()) if (pd / "review.json").exists() else []
-    rounds = campaign.raw.get("paper_rounds", 2)
+    rounds = max(campaign.raw.get("paper_rounds", 2), status(campaign, pair_id).get("amend_until") or 0)
     for rnd in range(len(reviews) + 1, rounds + 1):
         if stop():
             _set(campaign, pair_id, status="stopped", round=rnd); return "stopped"
@@ -188,7 +188,11 @@ def _run(campaign, pair_id: str, stop) -> str:
         if not resume_review:
             _set(campaign, pair_id, status="writing", round=rnd, reason=None, failure=None)
         findings = ""
-        if reviews:
+        if reviews and reviews[-1].get("source") == "outside":
+            findings = ("A check made outside this stage returned the paper with these findings; address each, reading "
+                        "with web search any work a finding names, and say what you did:\n"
+                        + json.dumps(reviews[-1].get("findings", []), indent=1))
+        elif reviews:
             findings = ("The previous review returned the paper with these findings; address each and say what you did:\n"
                         + json.dumps(reviews[-1].get("findings", []), indent=1))
         research.write_meta(campaign, pair_id, pd, f"paper, review round {rnd}", protocol=True)
@@ -217,6 +221,14 @@ def reviewers(campaign) -> int:
     return n
 
 
+def review_search(campaign) -> bool:
+    """"paper_review_search": true gives the first reviewer web search and a duty to look for closest prior work."""
+    v = (campaign.raw or {}).get("paper_review_search", False)
+    if type(v) is not bool:
+        raise ValueError(f"paper_review_search must be true or false, got {v!r}")
+    return v
+
+
 def _review_round(campaign, pair_id: str, rnd: int, reviews: list, seconds: int | None = None) -> str:
     """Build and check the paper as it stands, then one reviewer call. Appends to reviews.
     Returns ACCEPTED, blocked, or AMEND (the caller decides whether another round follows)."""
@@ -231,15 +243,24 @@ def _review_round(campaign, pair_id: str, rnd: int, reviews: list, seconds: int 
     # the reviewer has no tools: what does not fit its budget is digested, never the paper under review
     search = (Section("paper/search.md", path=pd / "search.md") if (pd / "search.md").exists()
               else Section("paper/search.md", text="no search record was written"))
-    q = context.build(campaign, "review", research.judge_sections(d, inp, f"{pair_id}.tex") + [search,
-                      Section("paper.tex", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
-                      Section("reference checks", text="\n".join(checks) or "no findings", keep=True),
-                      Section("your task", text=_prompt(campaign, "review"), keep=True)], tools=False, cwd=d, unit=pair_id)
-    count = reviewers(campaign)
+    outside = reviews[-1] if reviews and reviews[-1].get("source") == "outside" else None
+    sections = research.judge_sections(d, inp, f"{pair_id}.tex") + [search,
+                Section("paper.tex", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
+                Section("reference checks", text="\n".join(checks) or "no findings", keep=True)] + (
+               [Section("outside findings", keep=True, text="The author revised the paper to answer these findings from "
+                        "a check made outside this stage; as part of your review, check that each is answered:\n"
+                        + json.dumps(outside.get("findings", []), indent=1))] if outside else [])
+    def prompt(searching):
+        task = _prompt(campaign, "review") + ("\n\n" + _prompt(campaign, "review-search") if searching else "")
+        return context.build(campaign, "review", sections + [Section("your task", text=task, keep=True)],
+                             tools=False, cwd=d, unit=pair_id)
+    count, searching = reviewers(campaign), review_search(campaign)
     verdicts = []
     for k in range(1, count + 1):                 # independent reviews: each call sees the paper, never another review
         actor = "reviewer" if count == 1 else f"reviewer-{k}"
-        kw = dict(model=campaign.model, tools=False, search=False, cwd=d, timeout=seconds or A.get("review_seconds", 900),
+        web = searching and k == 1                # the first reviewer looks for prior work the author missed
+        q = prompt(web)
+        kw = dict(model=campaign.model, tools=web, reads=web, search=web, cwd=d, timeout=seconds or A.get("review_seconds", 900),
                   thread=pair_id, stage="review", actor=actor, schema=contracts.SCHEMAS["paper_review"])
         r = transport.call(q, campaign=campaign, **kw)
         if not r["transport_failed"]:             # read once under the review contract, repaired at most once
@@ -283,3 +304,39 @@ def review(campaign, pair_id: str) -> str:
     if result == "AMEND":
         _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rnd, reason=reviews[-1].get("summary")); return "PAUSE-ON-AMEND"
     return result
+
+
+def amend(campaign, pair_id: str, path) -> str:
+    """An author round answering findings made outside the stage (a prior-art check, a reader), then a reviewer
+    round, on an ACCEPTED or PAUSE-ON-AMEND paper. The findings, in review.json's findings schema (a list, or an
+    object with "findings" and an optional "summary"), are recorded as a review round of source "outside"; the
+    amend ends ACCEPTED or PAUSE-ON-AMEND regardless of paper_rounds, and `paper PAIR` resumes one interrupted."""
+    if research.status(campaign, pair_id).get("status") != "DRAFT":
+        raise SystemExit(f"{pair_id} is not DRAFT")
+    pd = campaign.thread_dir(pair_id) / "paper"
+    reviews = json.loads((pd / "review.json").read_text()) if (pd / "review.json").exists() else []
+    s = status(campaign, pair_id)
+    if (s.get("amend_until") or 0) > len(reviews):
+        raise SystemExit(f"{pair_id}: an amend is in progress; run `pathfinder paper {pair_id}` to resume it")
+    if s.get("status") not in ("ACCEPTED", "PAUSE-ON-AMEND") or not (pd / "paper.tex").exists():
+        raise SystemExit(f"{pair_id}: the paper is {s.get('status')}; --amend needs an ACCEPTED or PAUSE-ON-AMEND paper")
+    try:
+        given = json.loads(Path(path).read_text())
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"{path}: {error}")
+    findings = given.get("findings") if isinstance(given, dict) else given
+    errors = contracts.violations(findings, {"type": "array", "items": contracts.SCHEMAS["paper_review"]["properties"]["findings"]["items"]}, "findings")
+    errors += [f"findings[{i}].issue: no issue stated" for i, f in enumerate(findings if not errors else [])
+               if not (isinstance(f.get("issue"), str) and f["issue"].strip())]
+    if errors:
+        raise SystemExit(f"{path}: " + "; ".join(errors))
+    if not findings:
+        raise SystemExit(f"{path}: no findings")
+    rnd = len(reviews) + 1
+    summary = (given.get("summary") if isinstance(given, dict) else None) or f"outside findings from {Path(path).name}"
+    tex = (pd / "paper.tex").read_text(errors="replace")
+    reviews.append({"round": rnd, "at": _now(), "source": "outside", "from": str(path), "decision": "AMEND",
+                    "summary": summary, "findings": findings, "paper_sha256": hashlib.sha256(tex.encode()).hexdigest()})
+    (pd / "review.json").write_text(json.dumps(reviews, indent=1))
+    _set(campaign, pair_id, status="PAUSE-ON-AMEND", round=rnd, reason=summary, amend_until=rnd + 1)
+    return run(campaign, pair_id)

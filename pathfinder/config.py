@@ -68,6 +68,10 @@ def load(root: Path) -> Campaign:
         from types import SimpleNamespace as _NS
         from . import paper
         paper.reviewers(_NS(raw=raw))
+    if "paper_review_search" in raw:
+        from types import SimpleNamespace as _NS
+        from . import paper
+        paper.review_search(_NS(raw=raw))
     routing.validate(raw)                            # a malformed route fails here, not at the first call it routes
     pce.validate(raw)                                # edit_scheme and the PCE settings
     tb = raw.get("tool_call_budgets")

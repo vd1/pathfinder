@@ -30,7 +30,11 @@ in `notes/pathfinder-engine.pdf`.
    asked for, the same shape as the thread's PAUSE-ON-ITERATE. A paper the
    owner has edited by hand gets one reviewer round without an author call
    through `pathfinder paper PAIR --review`; it counts as the next round and
-   is not budgeted.
+   is not budgeted. Findings made outside the stage, such as a prior-art
+   check run after acceptance, reopen an ACCEPTED or PAUSE-ON-AMEND paper
+   through `pathfinder paper PAIR --amend FINDINGS.json`: they go to the
+   author as the previous round's review, then a reviewer round follows,
+   whatever `paper_rounds` says.
 
 On every terminal thread an editor also rewrites the consolidated note as
 a short readable paper with references, for a reader without the ledger
@@ -56,6 +60,7 @@ uv run pathfinder research
 uv run pathfinder status
 uv run pathfinder paper         # for every DRAFT thread
 uv run pathfinder paper Q1P6 --review   # one reviewer round on a paper you edited by hand
+uv run pathfinder paper Q1P6 --amend findings.json   # an author round on outside findings, then a reviewer round
 uv run pathfinder export report --zip   # a self-contained snapshot of the page and every document
 ```
 
@@ -319,6 +324,14 @@ your own campaign directory and edit the models and the budget.
   is accepted only when every reviewer accepts, the author answers all their findings, and each reviewer can be
   routed apart (`review/reviewer-1`, `review/reviewer-2`). `pathfinder paper` runs pairs side by side up to
   `seats`.
+- `paper_review_search`: `true` gives the first paper reviewer web search (read-only tools, WebSearch and
+  WebFetch) and the duty in `prompts/review-search.md`: look for closest prior work under neighbouring
+  terminology and among the papers citing both Q and P, and decide AMEND on a missed closest work or an
+  overclaim. Default `false`: reviewers then judge the related work from the author's `paper/search.md` alone.
+- `paper PAIR --amend FINDINGS.json` takes a JSON list of findings in `review.json`'s schema (`id`, `severity`,
+  `where`, `issue`, `fix`; `issue` required), or an object with `findings` and an optional `summary`. They are
+  recorded in `review.json` as a round with `"source": "outside"`, the author answers them (with web search),
+  and the reviewers check each was answered. An interrupted amend resumes with `pathfinder paper PAIR`.
 - `prompt_budgets`: per stage (or `default`) character budgets for the prompt the context builder assembles;
   above it the largest sections become references (for an agent with tools) or digests.
 - `gc`: `false` turns off the clean-up each finished cycle does (LaTeX by-products, call working directories,
@@ -805,7 +818,7 @@ here), build a deployment for your own application without editing the engine:
 
 1. **A campaign directory** outside the engine, with `campaign.json` from `campaign.example.json`: your models
    and `routes`, `account` for a shared subscription, `seats`, budgets, and the stages you want
-   (`research_scheme`, `edit_scheme`, `actionability`, `paper_reviewers`).
+   (`research_scheme`, `edit_scheme`, `actionability`, `paper_reviewers`, `paper_review_search`).
 2. **Your corpora**: `pathfinder fetch` for arXiv queries, or your own `Q.jsonl` and `P.jsonl` (one record per
    paper: `id`, `title`, `abstract`, optionally `text` pointing at a full text in the campaign). `pathfinder
    scan` and `select` make the shortlist, or write `shortlist.json` yourself.
