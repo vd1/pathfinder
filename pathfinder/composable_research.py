@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib, json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict
-from . import contracts, failures, transport
+from . import contracts, failures, novelty, transport
 from .context import Section
 from .ledger import Ledger
 from .admission import Refused
@@ -203,6 +203,10 @@ def next_requests(campaign, pair_id):
                 waiting = [item for item in pending if "result" not in item]
                 if waiting:
                     return [transport.ModelRequest(**{**item["request"], "cwd": d}) for item in waiting]
+                if s["stage"] == "novelty":             # read or not, failed or not, the thread goes on to verify
+                    _set(campaign, pair_id, stage="verify", pending=[],
+                         novelty=novelty.apply(campaign, pair_id, d, pending[0], s["round"]))
+                    continue
                 failed = next((item for item in pending if item["result"].get("transport_failed") or item["result"].get("error")), None)
                 def again(item):                    # a retained failure that is asked again on resume
                     f = item["result"].get("failure") or {}
@@ -253,7 +257,8 @@ def next_requests(campaign, pair_id):
                         versions.mkdir(exist_ok=True)
                         (versions / (hashlib.sha256(note.read_bytes()).hexdigest() + ".tex")).write_bytes(note.read_bytes())
                     note.write_text(result)
-                    _set(campaign, pair_id, stage="verify", pending=[], repair=None)
+                    checked = not novelty.enabled(campaign) or novelty.current(d, pair_id) is not None
+                    _set(campaign, pair_id, stage="verify" if checked else "novelty", pending=[], repair=None)
                 else:
                     _apply_research_review(campaign, pair_id, pending[0], s)
                 continue
@@ -266,8 +271,9 @@ def next_requests(campaign, pair_id):
             if stage == "ledger_review" and s.get("reviews", 0) >= campaign.raw.get("ledger_reviews", campaign.rounds + 1):
                 _set(campaign, pair_id, status="HANDOFF", stage="done", handoff_reason="review_allowance_exhausted")
                 return []
-            material, evidence_id = _review_material(campaign, pair_id, with_id=True)
-            actors = campaign.peers if stage == "peers" else (campaign.peers[0],) if stage == "consolidate" else ("verifier",)
+            material, evidence_id = (None, None) if stage == "novelty" else _review_material(campaign, pair_id, with_id=True)
+            actors = (campaign.peers if stage == "peers" else (campaign.peers[0],) if stage == "consolidate"
+                      else ("novelty",) if stage == "novelty" else ("verifier",))
             batch = []
             for actor in actors:
                 if stage == "peers":
@@ -294,6 +300,9 @@ def next_requests(campaign, pair_id):
                     prompt = _consolidate_prompt(campaign, d, _inputs(d), pair_id, "", f"{pair_id}.tex", prior,
                                                  extra=[Section("", text=bundles)] if bundles.strip() else [])
                     write_meta(campaign, pair_id, d)
+                elif stage == "novelty":
+                    seconds = campaign.allowances.get("novelty_seconds", novelty.SECONDS)
+                    prompt = novelty.prompt(campaign, pair_id, d)
                 else:
                     seconds = campaign.allowances["verify_seconds"]
                     if direct:
@@ -308,14 +317,15 @@ def next_requests(campaign, pair_id):
                             'here was never accepted: do not dispose of it; issue a new request if its work is still needed. '
                             'Prior requests and dispositions:\n' + json.dumps(s.get("requests", {})))
                     else:
-                        prompt = material + "\n\n" + _prompt(campaign, "verify", Q_INPUT=f"inputs/{_inputs(d)['Q']}",
+                        prompt = material + novelty.verify_section(campaign, d, pair_id) + "\n\n" + _prompt(campaign, "verify", Q_INPUT=f"inputs/{_inputs(d)['Q']}",
                                                             P_INPUT=f"inputs/{_inputs(d)['P']}", NOTE=f"{pair_id}.tex")
                 identity = f"{pair_id}:{stage}:{actor}:round-{s['round']}:review-{s.get('reviews', 0)}:repair-{s.get('repairs', 0)}:call-{s.get('peer_call', 0)}"
                 request = transport.ModelRequest(identity=identity, prompt=prompt, model=campaign.model,
-                    tools=True, search=campaign.peer_search if stage == "peers" else False,
+                    tools=True, search=campaign.peer_search if stage == "peers" else stage == "novelty",
                     cwd=d, timeout=int(seconds) + (30 if stage == "peers" else 0), thread=pair_id,
-                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage in ("verify", "ledger_review"),
-                    schema=contracts.SCHEMAS[_review_contract(campaign, s)[0]] if stage in ("verify", "ledger_review") else None)
+                    stage="peer" if stage == "peers" else stage, actor=actor, reads=stage in ("verify", "ledger_review", "novelty"),
+                    schema=(contracts.SCHEMAS[_review_contract(campaign, s)[0]] if stage in ("verify", "ledger_review")
+                            else contracts.SCHEMAS["novelty"] if stage == "novelty" else None))
                 path = _request_file(campaign, pair_id, identity)
                 path.parent.mkdir(exist_ok=True)
                 path.write_text(json.dumps({"request": {**asdict(request), "cwd": str(d)},
@@ -412,7 +422,8 @@ def _run_composable(campaign, pair_id, stop):
                 return result
             with ThreadPoolExecutor(len(requests)) as pool:
                 results = [future.result() for future in [pool.submit(execute, request) for request in requests]]
-            failed = [(q, r) for q, r in zip(requests, results) if r and r.get("transport_failed")]
+            failed = [(q, r) for q, r in zip(requests, results)    # a failed novelty check goes on to verify without it
+                      if r and r.get("transport_failed") and q.stage != "novelty"]
             # a peer at its residual deadline spent the turn's clock: the batch ends the turn, whatever else failed in it
             if failed and not any(_ends_peers_turn(campaign, q, r) for q, r in failed):
                 raise transport.TransportFailed(pair_id, failure=failed[0][1].get("failure"))

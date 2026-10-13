@@ -65,6 +65,7 @@ def main(argv=None):
     w.add_argument("--amend", metavar="FINDINGS.json", help="an author round answering outside findings (review.json's findings schema), then a reviewer round")
     e = sub.add_parser("edit", help="after a terminal verdict: rewrite the note as a readable short paper with references")
     e.add_argument("pair", nargs="?", help="default: every terminal thread without an edited note")
+    e.add_argument("--recheck", action="store_true", help="run the edited note's reference checks again, no model call")
     xp = sub.add_parser("export", help="write a self-contained snapshot of the monitor page and every thread's documents")
     xp.add_argument("dir"); xp.add_argument("--with-sources", action="store_true", help="include the copied arXiv sources under inputs/")
     xp.add_argument("--zip", action="store_true", help="also zip the directory")
@@ -230,6 +231,11 @@ def _dispatch(ns, c):
                                            and paper.status(c, p["pair_id"]).get("status") != "ACCEPTED"]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "edit" and ns.recheck:
+        if not ns.pair:
+            raise SystemExit("--recheck needs a pair")
+        checks = edit.recheck(c, ns.pair)
+        print(f"{ns.pair}: references rechecked: " + ("; ".join(checks) or "no findings"))
     elif ns.cmd == "edit":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") in research.TERMINAL

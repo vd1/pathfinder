@@ -143,6 +143,18 @@ def _install(campaign, pair_id: str) -> str | None:
         (["build failed: " + log[-300:]] if not ok else []) + [c for c in checks if not _clean([c])])
 
 
+def recheck(campaign, pair_id: str) -> list[str]:
+    """The reference checks of an edited note run again, without a model call: a transient note (an arXiv
+    lookup that failed on a 429) does not stay attached to a done edit. Status and build are left as they are."""
+    ed = campaign.thread_dir(pair_id) / "edited"
+    if not (ed / "note.tex").exists() or not (ed / "references.bib").exists():
+        raise SystemExit(f"{pair_id}: no edited note and references.bib to recheck")
+    from . import paper                         # looked up at call time, as check_references looks up arXiv
+    checks = paper.check_references((ed / "note.tex").read_text(errors="replace"), (ed / "references.bib").read_text(errors="replace"))
+    _set(campaign, pair_id, checks=checks, rechecked=_now())
+    return checks
+
+
 def _clean(checks) -> bool:
     """Uncited entries are tolerable; a missing key, a wrong title or an unknown arXiv id is not."""
     return not any(c.startswith("cited key not in") or "does not match" in c or "not found" in c for c in checks)

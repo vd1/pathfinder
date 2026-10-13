@@ -36,6 +36,13 @@ SCHEMAS = {
         "decision": {"enum": [None, "REVISE", "ITERATE"]},
         "requests": {"type": "array", "items": _REQUEST},
         "dispositions": {"type": "array", "items": _DISPOSITION}}},
+    "novelty": {"type": "object", "required": ["results"], "properties": {
+        "results": {"type": "array", "items": {"type": "object", "required": ["status"], "properties": {
+            "result": {"type": ["string", "null"]}, "status": {"enum": ["known", "partly_known", "new"]},
+            "closest": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]}}}},
+        "missing": {"type": "array", "items": {"type": "string"}},
+        "overclaims": {"type": "array", "items": {"type": "string"}},
+        "queries": {"type": "array", "items": {"type": "string"}}}},
     "paper_review": {"type": "object", "required": ["decision"], "properties": {
         "decision": {"enum": ["ACCEPT", "AMEND", "REVISE"]}, "summary": {"type": ["string", "null"]},
         "findings": {"type": "array", "items": _FINDING}}},

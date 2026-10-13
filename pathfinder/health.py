@@ -102,7 +102,7 @@ def owner(campaign, nested: bool = False):
             fcntl.flock(handle, fcntl.LOCK_UN)
 
 
-ALLOWANCE_KEYS = {"peer": "peer_seconds", "consolidate": "consolidate_seconds", "verify": "verify_seconds",
+ALLOWANCE_KEYS = {"peer": "peer_seconds", "consolidate": "consolidate_seconds", "verify": "verify_seconds", "novelty": "novelty_seconds",
                   "edit": "edit_seconds", "author": "paper_seconds", "review": "review_seconds"}
 
 

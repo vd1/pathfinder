@@ -67,7 +67,8 @@ def state(campaign) -> dict:
         if st not in research.TERMINAL and st not in ("running",) and st != "new":
             info = reconcile.inspect(campaign, pid)
             words = {"start": "Start the thread.", "resume peers": "Resume the peers where they stopped.", "run consolidate": "Run the consolidation again.",
-                     "run verify": "Run the verification again."}
+                     "run verify": "Run the verification again.",
+                     "run novelty": "Run the novelty check again."}
             attention.append({"pair": pid, "kind": st, "reason": s.get("reason"), "since": s.get("updated"),
                               "action": words.get(info["action"], info["action"]) + " Reconcile does this."})
         pp = threads[pid].get("paper")

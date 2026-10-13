@@ -61,6 +61,7 @@ uv run pathfinder status
 uv run pathfinder paper         # for every DRAFT thread
 uv run pathfinder paper Q1P6 --review   # one reviewer round on a paper you edited by hand
 uv run pathfinder paper Q1P6 --amend findings.json   # an author round on outside findings, then a reviewer round
+uv run pathfinder edit Q1P6 --recheck   # the edited note's reference checks again, no model call
 uv run pathfinder export report --zip   # a self-contained snapshot of the page and every document
 ```
 
@@ -328,6 +329,15 @@ your own campaign directory and edit the models and the budget.
   WebFetch) and the duty in `prompts/review-search.md`: look for closest prior work under neighbouring
   terminology and among the papers citing both Q and P, and decide AMEND on a missed closest work or an
   overclaim. Default `false`: reviewers then judge the related work from the author's `paper/search.md` alone.
+- `novelty_stage`: `true` adds a novelty check between consolidate and verify in an EVA thread (the joint
+  thread of a composable campaign; branches are unchanged). One fresh call with web search and read-only tools
+  reads the note, the titles and abstracts of Q and P and, with `novelty_citers` (a path relative to the
+  campaign with `{pair}`, such as `../data/citers/{pair}.md`), a list of papers citing both; never the ledger or
+  the full papers. It returns a JSON report (per result `known`, `partly_known` or `new` with the closest work,
+  `missing`, `overclaims`, `queries`), kept in `threads/<pair>/<pair>.novelty.json`, and verify reads it as
+  evidence (`prompts/novelty-evidence.md`). The check runs again only when the note has changed. A check that
+  fails or cannot be read never blocks verify: the record and verify's prompt say there is no report. Allowance
+  `novelty_seconds` (default 900), route `novelty`, overlay `prompts/novelty.append.md`.
 - `paper PAIR --amend FINDINGS.json` takes a JSON list of findings in `review.json`'s schema (`id`, `severity`,
   `where`, `issue`, `fix`; `issue` required), or an object with `findings` and an optional `summary`. They are
   recorded in `review.json` as a round with `"source": "outside"`, the author answers them (with web search),
@@ -818,7 +828,7 @@ here), build a deployment for your own application without editing the engine:
 
 1. **A campaign directory** outside the engine, with `campaign.json` from `campaign.example.json`: your models
    and `routes`, `account` for a shared subscription, `seats`, budgets, and the stages you want
-   (`research_scheme`, `edit_scheme`, `actionability`, `paper_reviewers`, `paper_review_search`).
+   (`research_scheme`, `edit_scheme`, `actionability`, `paper_reviewers`, `paper_review_search`, `novelty_stage`).
 2. **Your corpora**: `pathfinder fetch` for arXiv queries, or your own `Q.jsonl` and `P.jsonl` (one record per
    paper: `id`, `title`, `abstract`, optionally `text` pointing at a full text in the campaign). `pathfinder
    scan` and `select` make the shortlist, or write `shortlist.json` yourself.

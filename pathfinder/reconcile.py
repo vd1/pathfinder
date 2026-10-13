@@ -134,6 +134,8 @@ def _inspect(campaign, pair_id: str) -> dict:
         action = "run consolidate"
     elif s.get("stage") == "verify":
         action = "run verify"
+    elif s.get("stage") == "novelty":
+        action = "run novelty"
     elif s.get("stage") == "ledger_review":
         action = "run review"
     else:

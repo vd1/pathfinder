@@ -79,6 +79,9 @@ def reply(campaign, request) -> str:
         return json.dumps({"decision": settings.get("actionability", "NEEDS_INPUTS"), "rationale": "stub assessment",
                            "evidence": ["stub"], "required_inputs": ["stub input"], "next_experiment": "stub step",
                            "falsification": "stub condition"})
+    if stage == "novelty":
+        return json.dumps({"results": [{"result": "stub result", "status": "new", "closest": None, "note": "stub"}],
+                           "missing": [], "overclaims": [], "queries": ["stub query"]})
     if stage == "scan":
         return json.dumps({"feasibility": 50, "gain": 50, "connexion": "stub", "rationale": "stub"})
     return "stub reply"
