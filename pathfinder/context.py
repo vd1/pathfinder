@@ -1,8 +1,10 @@
 """One budgeted context builder for every stage (J01).
 
 A prompt is a list of sections in a fixed order: the static material first, so that a prompt cache serves
-it, the task last. Within the stage's budget every section is pasted. Above it, the largest sections that
-are not kept are shrunk first, without moving anything: a file becomes a reference (path, size, sha256)
+it, the task last. Within the stage's budget every section is pasted. Above it, a section with a projection
+(pathfinder.projection: the ledger keeps its findings and shortens its history) is projected first, largest
+first, recorded with the full text's size and sha256. Then the largest sections that
+are not kept are shrunk, without moving anything: a file becomes a reference (path, size, sha256)
 for an agent with tools to read; anything else, or any section of a tool-less stage, becomes a digest of
 its beginning and end with its full size and digest. A prompt that still does not fit is refused with
 transport.PromptTooLarge, which every stage records as an input_too_large block.
@@ -14,6 +16,7 @@ import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 from . import transport
 
 DEFAULT_BUDGET = 300_000
@@ -25,6 +28,7 @@ class Section:
     text: str | None = None        # material held in memory
     path: Path | None = None       # material in a file an agent with tools can read
     keep: bool = False             # never shrunk: the task, the object under review
+    project: Callable[[str], str] | None = None   # a smaller view tried before a reference or a digest
 
     def body(self) -> str:
         return self.text if self.text is not None else Path(self.path).read_text(errors="replace")
@@ -89,6 +93,14 @@ def build(campaign, stage: str, sections: list[Section], *, tools: bool, cwd: Pa
     rendered = [_render(s, b) for s, b in zip(sections, bodies)]
     modes = ["inline"] * len(sections)
     total = lambda: sum(len(r) for r in rendered) + 2 * max(len(rendered) - 1, 0)
+    full = {}                                              # index -> (size, sha256) of a projected section's text
+    for i in sorted((i for i, s in enumerate(sections) if s.project and not s.keep), key=lambda i: (-len(rendered[i]), i)):
+        if total() <= limit:
+            break
+        view = sections[i].project(bodies[i])
+        if len(view) < len(bodies[i]):
+            full[i] = (len(bodies[i]), hashlib.sha256(bodies[i].encode()).hexdigest())
+            bodies[i], rendered[i], modes[i] = view, _render(sections[i], view), "projection"
     for i in sorted((i for i, s in enumerate(sections) if not s.keep), key=lambda i: (-len(rendered[i]), i)):
         if total() <= limit:
             break
@@ -105,5 +117,8 @@ def build(campaign, stage: str, sections: list[Section], *, tools: bool, cwd: Pa
     if record:
         from . import events
         events.emit(campaign, "context_built", unit=unit, stage=stage, budget=limit, chars=len(prompt),
-                    sections=[{"name": s.name, "mode": m, "chars": len(r)} for s, m, r in zip(sections, modes, rendered)])
+                    sections=[{"name": s.name, "mode": m, "chars": len(r),
+                               **({"projection": s.project.__name__, "full_chars": full[i][0], "sha256": full[i][1]}
+                                  if i in full else {})}
+                              for i, (s, m, r) in enumerate(zip(sections, modes, rendered))])
     return prompt

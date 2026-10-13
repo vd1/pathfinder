@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib, json, re
 from pathlib import Path
 from urllib.parse import urlsplit
-from . import context
+from . import context, projection
 from .context import Section
 from .thread import _now, _atomic_write, thread_sections, READING, evidence_by_reference, _inputs
 
@@ -293,7 +293,8 @@ def _review_material(campaign, pair_id, review_id=None, record_manifest=True, wi
     ledger_text = "".join(lines)
     unfiltered = ledger.exists() and ledger_text == ledger.read_text()
     sections = thread_sections(d, _inputs(d), ledger=False) + [
-        Section("ledger.jsonl", path=ledger) if unfiltered else Section("ledger.jsonl", text=ledger_text)]
+        Section("ledger.jsonl", path=ledger, project=projection.ledger) if unfiltered
+        else Section("ledger.jsonl", text=ledger_text, project=projection.ledger)]
     material = ""
     by_reference = evidence_by_reference(campaign)
     record, failure, collected = [], None, []
@@ -316,7 +317,7 @@ def _review_material(campaign, pair_id, review_id=None, record_manifest=True, wi
                 "errors": getattr(failure, "errors", [{"code": "declaration", "path": None, "detail": None,
                                                        "message": str(failure)}] if failure else [])}, indent=1).encode())
     if material.strip():
-        sections.append(Section("", text=material.lstrip("\n")))
+        sections.append(Section("", text=material.lstrip("\n"), project=projection.ledger))   # bundle ledgers inline
     if by_reference:
         sections.append(Section("", text=READING, keep=True))
     if campaign.raw.get("research_scheme", "eva") == "eva":

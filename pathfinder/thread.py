@@ -103,7 +103,8 @@ def thread_sections(d, inp, papers: bool = True, ledger: bool = True) -> list[Se
     but what the ledger gained since. Whatever differs between callers goes after them."""
     out = [Section(name, path=d / "inputs" / name) for name in (inp["Q"], inp["P"])] if papers else []
     if ledger:
-        out.append(Section("ledger.jsonl", path=d / "ledger.jsonl") if (d / "ledger.jsonl").exists()
+        from .projection import ledger as project
+        out.append(Section("ledger.jsonl", path=d / "ledger.jsonl", project=project) if (d / "ledger.jsonl").exists()
                    else Section("ledger.jsonl", text=""))
     return out
 

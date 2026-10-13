@@ -345,7 +345,11 @@ your own campaign directory and edit the models and the budget.
   recorded in `review.json` as a round with `"source": "outside"`, the author answers them (with web search),
   and the reviewers check each was answered. An interrupted amend resumes with `pathfinder paper PAIR`.
 - `prompt_budgets`: per stage (or `default`) character budgets for the prompt the context builder assembles;
-  above it the largest sections become references (for an agent with tools) or digests.
+  above it, ledgers are projected first (findings, corrections, objections and ideas in full; superseded rows
+  point to the row that replaced them; ready markers, intentions and reviews shortened, each cut marked; about a
+  quarter smaller on nobel's ledgers), then the largest sections become references (for an agent with tools) or
+  digests. The `context_built` event records each projected section with its full size and sha256, and a
+  review stays bound to the full ledger.
 - `gc`: `false` turns off the clean-up each finished cycle does (LaTeX by-products, call working directories,
   peers' virtual environments, prompt copies in retained responses; receipts keep commands with shortened
   outputs). `pathfinder gc [--dry-run]` applies it to finished threads and older receipts.
