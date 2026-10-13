@@ -265,9 +265,10 @@ your own campaign directory and edit the models and the budget.
   a value that is not a positive integer fails before any call.
 - `strict_evidence`: `false` by default; only for composable schemes
   (`research_scheme`, `research_bundles`), whose review stages inline every
-  file in the peers' directories and every file the ledger cites. A cited
-  path that leaves the thread, uses `..` or goes through a symlink always
-  blocks the thread. Otherwise a missing file is named as missing and a
+  file in the peers' directories and every file the ledger cites; a
+  reviewer's own entries (kind `review`) name what to read or write and cite
+  nothing. A cited path that leaves the thread, uses `..` or goes through a
+  symlink always blocks the thread. Otherwise a missing file is named as missing and a
   binary or oversized file (`evidence_max_bytes`, default 300000) is listed
   with its size and digest; with `strict_evidence` both block the thread.
 - `research_scheme`: absent for the classic single-engine EVA thread;
@@ -331,8 +332,9 @@ your own campaign directory and edit the models and the budget.
   overclaim. Default `false`: reviewers then judge the related work from the author's `paper/search.md` alone.
 - `novelty_stage`: `true` adds a novelty check between consolidate and verify in an EVA thread (the joint
   thread of a composable campaign; branches are unchanged). One fresh call with web search and read-only tools
-  reads the note, the titles and abstracts of Q and P and, with `novelty_citers` (a path relative to the
-  campaign with `{pair}`, such as `../data/citers/{pair}.md`), a list of papers citing both; never the ledger or
+  reads the note, the titles and abstracts of Q and P and, with `novelty_citers` (a path inside the
+  campaign with `{pair}`, such as `sources/citers/{pair}.md`), a list of papers citing both, registered as a
+  source of its pair so a ledger entry citing it by that path resolves; never the ledger or
   the full papers. It returns a JSON report (per result `known`, `partly_known` or `new` with the closest work,
   `missing`, `overclaims`, `queries`), kept in `threads/<pair>/<pair>.novelty.json`, and verify reads it as
   evidence (`prompts/novelty-evidence.md`). The check runs again only when the note has changed. A check that

@@ -1,12 +1,13 @@
 """The novelty check (NEVA, nobel): with "novelty_stage": true, an EVA thread (the joint thread of a composable
 campaign) has one more stage between consolidate and verify. A fresh call with web search and read-only tools
-reads the note, the two abstracts and, if the deployment supplies one, a list of papers citing both, never the
+reads the note, the two abstracts and, if the deployment supplies one, a list of papers citing both (a file
+inside the campaign, registered as a source of its pair, so a ledger entry citing it resolves), never the
 ledger or the full papers, and returns a short JSON report: per result known, partly_known or new with the
 closest work, the closest works the note does not cite, overclaims, and the queries run. The report goes into
 verify's prompt as evidence. It is asked again only when the note has changed since the last check, and a check
 that fails or cannot be read never blocks verify: the record and verify's prompt say there is no report.
 
-    "novelty_stage": true, "novelty_citers": "../data/citers/{pair}.md",   # optional, relative to the campaign
+    "novelty_stage": true, "novelty_citers": "sources/citers/{pair}.md",   # optional, inside the campaign
     "allowances": {"novelty_seconds": 900}, "routes": {"novelty": {...}}     # prompts/novelty.append.md overlays"""
 from __future__ import annotations
 import hashlib, json
@@ -24,7 +25,10 @@ def validate(raw: dict) -> None:
         raise ValueError("novelty_stage needs research_scheme composable or eva: it runs between consolidate and verify")
     citers = raw.get("novelty_citers")
     if citers is not None and not isinstance(citers, str):
-        raise ValueError(f"novelty_citers must be a path template such as 'citers/{{pair}}.md', got {citers!r}")
+        raise ValueError(f"novelty_citers must be a path template such as 'sources/citers/{{pair}}.md', got {citers!r}")
+    if isinstance(citers, str) and (citers.startswith("/") or ".." in citers.split("/")):
+        raise ValueError(f"novelty_citers must name a file inside the campaign, such as 'sources/citers/{{pair}}.md', "
+                         f"got {citers!r}: a path outside it cannot be cited as evidence")
 
 
 def enabled(campaign) -> bool:

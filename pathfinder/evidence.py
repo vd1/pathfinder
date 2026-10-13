@@ -118,6 +118,12 @@ def registered_sources(campaign, pair_id: str) -> dict:
             target = (root / value).resolve()
             if target.is_relative_to(root) and target.is_file():
                 out[value] = target
+    citers = (campaign.raw or {}).get("novelty_citers")
+    if citers:                                  # the list of citers the novelty check reads (pathfinder.novelty)
+        value = citers.replace("{pair}", pair_id)
+        target = (root / value).resolve()
+        if ".." not in Path(value).parts and target.is_relative_to(root) and target.is_file():
+            out[value] = target
     return out
 
 

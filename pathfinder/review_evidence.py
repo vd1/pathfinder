@@ -140,6 +140,8 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     for line in references.splitlines():            # exempt only the declared entry; another may need the file
         if line.strip():
             row = json.loads(line)
+            if row.get("kind") == "review":         # a reviewer's request names what to read or write, it cites nothing
+                continue
             for name in _evidence_references(row["text"]):
                 if ("ledger.jsonl", row["seq"], name) in citations:
                     continue
@@ -297,7 +299,8 @@ def _review_material(campaign, pair_id, review_id=None, record_manifest=True, wi
     record, failure, collected = [], None, []
     try:
         try:
-            material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference, record=record)
+            material += "\n\n" + _assessment_evidence(campaign, d, references=ledger_text, by_reference=by_reference, record=record,
+                                                    pair_id=pair_id)
         except EvidenceError as joint:              # report the bundles' problems too, all together
             collected.extend(joint.errors)
         material += "\n\n" + _bundle_evidence(campaign, d, by_reference=by_reference, record=record, errors=collected)
