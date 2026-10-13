@@ -80,10 +80,21 @@ def topics(campaign) -> dict:
     return {"Q": side(doc), "P": side(doc)}
 
 
+def _weights(campaign) -> dict | None:
+    """The ranking weights, or None without them or when the file cannot be read (select says why)."""
+    from . import select
+    try:
+        return select.weights(campaign)
+    except ValueError:
+        return None
+
+
 def _version(campaign) -> str:
-    """Changes whenever the scan, the shortlist or the topics change: the page refetches the ranking only then."""
+    """Changes whenever the scan, the shortlist, the topics or the weights change: the page refetches the ranking
+    only then."""
     parts = []
-    for name in ("scan.jsonl", "shortlist.json", "topics.json", "Q.jsonl", "P.jsonl", "scan-context.json"):
+    for name in ("scan.jsonl", "shortlist.json", "topics.json", "Q.jsonl", "P.jsonl", "scan-context.json",
+                 (campaign.raw or {}).get("rank_weights") or "rank-weights.json"):
         try:
             st = campaign.path(name).stat(); parts.append(f"{st.st_size}.{st.st_mtime_ns}")
         except OSError:
@@ -131,7 +142,8 @@ def scan_document(campaign) -> dict:
     from . import select
     every = _scan_rows(campaign)
     rows = list(_scan(campaign, every).values())
-    ranked = select.rank([dict(r) for r in rows])
+    weighed = _weights(campaign)
+    ranked = select.rank([dict(r) for r in rows], weighed)
     failed = [r for r in rows if r.get("feasibility") is None or r.get("gain") is None]
     Q, P = _corpus(campaign, "Q"), _corpus(campaign, "P")
     fam = topics(campaign)
@@ -139,7 +151,7 @@ def scan_document(campaign) -> dict:
         return {str(r.get("n", i)): {"id": r.get("id"), "title": r.get("title"), "topics": fam[side].get(str(r.get("n", i)), [])}
                 for i, r in enumerate(corpus_rows, 1)}
     columns = ["pair_id", "q", "p", "feasibility", "gain", "score", "connexion", "rationale", "error",
-               "revision", "stale", "unconditioned", "extra"]
+               "revision", "stale", "unconditioned", "extra", "weight", "weighted"]
     out = []
     for r in ranked + failed:
         try:
@@ -148,7 +160,7 @@ def scan_document(campaign) -> dict:
             continue
         out.append([r["pair_id"], qn, pn, r.get("feasibility"), r.get("gain"), r.get("score"),
                     r.get("connexion"), r.get("rationale"), r.get("error"), r.get("revision"), r.get("stale"),
-                    r.get("unconditioned"), r.get("extra")])
+                    r.get("unconditioned"), r.get("extra"), r.get("weight"), r.get("weighted")])
     history = {}
     for r in every:                               # earlier scores of a rescanned pair, oldest first
         history.setdefault(r["pair_id"], []).append({k: r.get(k) for k in (
@@ -158,6 +170,7 @@ def scan_document(campaign) -> dict:
     sl = _json(campaign.path("shortlist.json")) or {}
     return {"version": _version(campaign), "columns": columns, "rows": out, "history": history,
             "context": ctx and {"revision": ctx["revision"], "pair_entries": len(ctx["pairs"])},
+            "weights": weighed and {k: weighed[k] for k in ("path", "revision", "sha256")},
             "papers": {"Q": papers("Q", Q), "P": papers("P", P)},
             "same_corpus": (campaign.raw or {}).get("same_corpus") is True,
             "selected": [p["pair_id"] for p in sl.get("pairs", [])],
@@ -309,6 +322,7 @@ def build(campaign) -> dict:
     shortlist_doc = _json(campaign.path("shortlist.json")) or {}
     shortlist = shortlist_doc.get("pairs", [])
     scan = _scan(campaign)
+    weighed = _weights(campaign)
     Q, P = _corpus(campaign, "Q"), _corpus(campaign, "P")
     per_unit = {}
     for r in receipts:
@@ -353,7 +367,11 @@ def build(campaign) -> dict:
             q, p = _paper(Q, qn), _paper(P, pn)
         except ValueError:
             q, p = {}, {}
-        units.append({"unit": unit, "score": f * g if f is not None and g is not None else None,
+        score = f * g if f is not None and g is not None else None
+        weight = weighed["weights"].get(unit, 1) if weighed is not None else None
+        units.append({"unit": unit, "score": score,
+                      **({"weight": weight, "weighted": round(score * weight, 6) if score is not None else None}
+                         if weighed is not None else {}),
                       "feasibility": f, "gain": g, "connexion": row.get("connexion"), "q": q, "p": p,
                       "summary": _summary(campaign, unit, r_s),
                       "usage": per_unit.get(unit, {"calls": 0, "input_tokens": 0, "output_tokens": 0, "seconds": 0.0}),
@@ -429,6 +447,7 @@ def text(state: dict) -> str:
     for block in state["blocks"]:
         lines.append(f"block {block['class']}: {block['cause']} x{block['count']} ({', '.join(block['units'])})")
     for u in state["units"]:
-        lines.append(f"{u['unit']:>8} score {u['score'] if u['score'] is not None else '-':>4}  {u['controller']:<8} "
+        weighted = f" weighted {u['weighted']:g}" if u.get("weighted") is not None else ""
+        lines.append(f"{u['unit']:>8} score {u['score'] if u['score'] is not None else '-':>4}{weighted}  {u['controller']:<8} "
                      f"research {u['research']['status']}  edit {u['editorial']['status']}  paper {u['assessment']['status']}")
     return "\n".join(lines)

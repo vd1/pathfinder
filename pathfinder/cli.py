@@ -151,8 +151,11 @@ def _dispatch(ns, c):
         out = select.run(c, ns.cut, ns.force, ns.min_score, ns.per_paper)
         print(f"selected {out['n_selected']} of {out['n_scored']} " + (f"at {out['cut']}%" if out["cut"] is not None else f"at score >= {out['min_score']}")
               + (f", at most {out['per_paper']} per paper" if out["per_paper"] else ""))
+        if out.get("weights"):
+            print(f"weighted by {out['weights']['path']} (revision {out['weights']['revision']})")
         for p in out["pairs"]:
-            print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']})")
+            weighted = f"  weighted {p['weighted']:g} (x {p['weight']:g})" if "weighted" in p else ""
+            print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']}){weighted}")
     elif ns.cmd == "research":
         return runner.run(c, pairs=ns.pairs, accept_change=ns.accept_change)
     elif ns.cmd == "repair-verdict":

@@ -68,8 +68,8 @@ def load(root: Path) -> Campaign:
         from types import SimpleNamespace as _NS
         from . import paper
         paper.reviewers(_NS(raw=raw))
-    from . import novelty
-    novelty.validate(raw)
+    from . import novelty, select
+    novelty.validate(raw); select.validate(raw)
     if "paper_review_search" in raw:
         from types import SimpleNamespace as _NS
         from . import paper

@@ -112,6 +112,16 @@ the research desk and can be hidden.
 `select --per-paper K` keeps any paper out of more than K pairs; the next best pairs take the places, so a
 diversified shortlist is frozen exactly as previewed.
 
+A campaign can weigh its pairs before the cut. `"rank_weights": "rank-weights.json"` in `campaign.json` names
+a file inside the campaign, `{"revision": "...", "weights": {"Q080-P422": 0.6}}`, with every weight a number
+from 0 to 1; a pair the file does not list weighs 1. The ranking then orders pairs by scan score times weight,
+and `--min-score` applies to that weighted score. `shortlist.json` gives each pair its `score`, `weight` and
+`weighted` score and names the file's revision and sha256; `select`, `status` and the operator view show both
+scores. The digest is part of the run record, so new weights are a change the next run refuses until
+`--accept-change`. How the weights were made (nobel derives them from co-citation counts) is the deployment's
+business. A named file that is missing or malformed is refused, never read as no weights; without the setting
+the ranking is the scan score alone.
+
 ## Conditional scans
 
 By default each pair is scored once, against the two papers only. A campaign that learns as it goes (proofTree's
@@ -164,6 +174,7 @@ scan.jsonl         one row per scored pair, appended as the scan runs; a rescan 
 scan-context.json  optional: the state of play a conditional scan is judged against
 scan-contexts/     every scan context used, by digest, never rewritten
 shortlist.json     the frozen cut, with a digest of scan.jsonl
+rank-weights.json  optional, when campaign.json names it: per-pair weights in [0, 1] for the ranking
 topics.json        optional: topic families per paper number, for the operator view
 receipts.jsonl     one line per attempted model call, failures included; the only
                    source of spend figures (see Receipts below)
@@ -698,7 +709,7 @@ into a canonical composable campaign (see `pathfinder/import_eva2.py`).
 **Run records.** Every command that calls a model takes campaign ownership
 and writes `run.json` (appended to `runs.jsonl`): engine commit and a digest
 of the files it loaded, deployment files and lock, extension code, resolved
-settings, composed prompts, styles, TeX and corpus. Receipts name the run.
+settings, composed prompts, styles, TeX, corpus and ranking weights. Receipts name the run.
 When any of these changed since the previous run the command refuses until
 rerun with `pathfinder --accept-change REASON ...`; code edited on disk after
 the process loaded it requires a restart.

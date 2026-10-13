@@ -1,15 +1,61 @@
-"""Freeze the top cut of the scan as the shortlist."""
+"""Freeze the top cut of the scan as the shortlist.
+
+A campaign may weigh its pairs: "rank_weights": "rank-weights.json" in campaign.json names a file
+{"revision": string, "weights": {pair id: number in [0, 1]}}, and the ranking orders pairs by scan score times
+weight, a pair absent from the file weighing 1. The engine applies the numbers; how they were made is the
+deployment's. Without the setting the ranking is the scan score alone."""
 from __future__ import annotations
 import hashlib, json, math
 from . import corpus
 
 
-def rank(rows: list[dict]) -> list[dict]:
-    """@planks("When Pathfinder ranks the assessed connections")"""
+def validate(raw: dict) -> None:
+    path = raw.get("rank_weights")
+    if path is None:
+        return
+    if not (isinstance(path, str) and path.strip()) or path.startswith("/") or ".." in path.split("/"):
+        raise ValueError(f"rank_weights must name a file inside the campaign, such as 'rank-weights.json', got {path!r}")
+
+
+def weights(campaign) -> dict | None:
+    """{"path", "revision", "sha256", "weights"} from the file campaign.json names, or None without the setting.
+    A named file that is missing or malformed is refused, never read as no weights."""
+    name = (campaign.raw or {}).get("rank_weights")
+    if name is None:
+        return None
+    path = campaign.path(name)
+    try:
+        data = path.read_bytes()
+    except OSError:
+        raise ValueError(f"rank_weights names {name}, which cannot be read") from None
+    try:
+        doc = json.loads(data)
+    except ValueError:
+        doc = None
+    if not (isinstance(doc, dict) and set(doc) == {"revision", "weights"} and isinstance(doc["revision"], str)
+            and doc["revision"] and isinstance(doc["weights"], dict)):
+        raise ValueError(f"{name} must be {{\"revision\": non-empty string, \"weights\": {{pair id: number}}}}")
+    bad = [k for k, w in doc["weights"].items()
+           if isinstance(w, bool) or not isinstance(w, (int, float)) or not 0 <= w <= 1]
+    if bad:
+        raise ValueError(f"{name}: weights must be numbers between 0 and 1 ({', '.join(bad[:5])})")
+    return {"path": name, "revision": doc["revision"], "sha256": hashlib.sha256(data).hexdigest(),
+            "weights": doc["weights"]}
+
+
+def rank(rows: list[dict], weighed: dict | None = None) -> list[dict]:
+    """@planks("When Pathfinder ranks the assessed connections")
+
+    With weights (weights() of the campaign) each row also gets its weight and its weighted score, which
+    orders the ranking; the scan score breaks ties."""
     scored = [r for r in rows if r.get("feasibility") is not None and r.get("gain") is not None]
     for r in scored:
         r["score"] = r["feasibility"] * r["gain"]
-    return sorted(scored, key=lambda r: (-r["score"], -min(r["feasibility"], r["gain"]), r["pair_id"]))
+        if weighed is not None:
+            r["weight"] = weighed["weights"].get(r["pair_id"], 1)
+            r["weighted"] = round(r["score"] * r["weight"], 6)
+    return sorted(scored, key=lambda r: (-r.get("weighted", r["score"]), -r["score"],
+                                         -min(r["feasibility"], r["gain"]), r["pair_id"]))
 
 
 def capped(campaign, ranked: list[dict], per_paper: int | None) -> list[dict]:
@@ -35,15 +81,17 @@ def run(campaign, cut: float | None = None, force: bool = False, min_score: floa
     @planks("When Pathfinder rebuilds the shortlist")
 
     Freeze the top `cut` percent of a complete scan, or every pair at or above `min_score` of any scan; with
-    `per_paper`, no paper appears in more pairs than that, the next best pairs taking the places.
+    `per_paper`, no paper appears in more pairs than that, the next best pairs taking the places. Under weights
+    the ranking and `min_score` use the weighted score.
     """
     from . import scan
+    weighed = weights(campaign)
     raw = campaign.path("scan.jsonl").read_bytes()
     rows = scan.current(campaign, [json.loads(l) for l in raw.decode().splitlines() if l.strip()])   # a rescanned pair once
-    ranked = rank(rows)
+    ranked = rank(rows, weighed)
     pool = capped(campaign, ranked, per_paper)
     if min_score is not None:
-        chosen = [r for r in pool if r["score"] >= min_score]
+        chosen = [r for r in pool if r.get("weighted", r["score"]) >= min_score]
         cut = None
     else:
         cut = campaign.cut if cut is None else cut
@@ -55,6 +103,9 @@ def run(campaign, cut: float | None = None, force: bool = False, min_score: floa
     chosen += [r for r in ranked if r["pair_id"] in started and r not in chosen]   # a thread once started stays listed
     out = {"cut": cut, "min_score": min_score, "per_paper": per_paper, "n_scored": len(ranked), "n_selected": len(chosen),
            "digest": hashlib.sha256(raw).hexdigest(),
-           "pairs": [{k2: r[k2] for k2 in ("pair_id", "q", "p", "score", "feasibility", "gain")} for r in chosen]}
+           "pairs": [{k2: r[k2] for k2 in ("pair_id", "q", "p", "score", "feasibility", "gain", "weight", "weighted") if k2 in r}
+                     for r in chosen]}
+    if weighed is not None:
+        out["weights"] = {k: weighed[k] for k in ("path", "revision", "sha256")}
     campaign.path("shortlist.json").write_text(json.dumps(out, indent=1))
     return out

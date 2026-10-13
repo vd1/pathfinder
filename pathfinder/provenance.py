@@ -4,7 +4,8 @@ runner.run writes run.json (the current record) and appends it to runs.jsonl. Ev
 run_id. A record holds the engine (kind, commit, whether the working files differ from it, and a digest of
 the runtime files actually loaded), the deployment (its repository commit and lock file, when campaign.json
 names them under "deployment"), the extensions with their source digests, the resolved configuration, the
-composed prompt and style digests, the TeX version and the corpus snapshot digests.
+composed prompt and style digests, the TeX version, the corpus snapshot digests and the ranking weights'
+revision and digest (None without weights).
 
 On resume the runner compares the new record's components with the previous run's. A difference refuses the
 run unless the operator accepts it explicitly (accept_change), which is recorded with the reason and the
@@ -14,10 +15,10 @@ import hashlib, json, subprocess, time
 from contextlib import contextmanager
 from importlib import metadata
 from pathlib import Path
-from . import extensions, freeze, resources
+from . import extensions, freeze, resources, select
 
 PACKAGE = resources.PACKAGE
-COMPONENTS = ("engine", "deployment", "extensions", "config", "prompts", "styles", "tex", "corpus")
+COMPONENTS = ("engine", "deployment", "extensions", "config", "prompts", "styles", "tex", "corpus", "weights")
 
 
 def _sha(data: bytes) -> str:
@@ -116,11 +117,13 @@ def record(campaign, run_id: str) -> dict:
     config_bytes = json.dumps({"resolved": resolved, "raw": raw}, sort_keys=True).encode()
     corpus = {side: _sha(campaign.path(f"{side}.jsonl").read_bytes())
               for side in ("Q", "P") if campaign.path(f"{side}.jsonl").exists()}
+    weighed = select.weights(campaign)
     return {"run_id": run_id, "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "engine": engine(), "deployment": deployment(campaign), "extensions": extensions.digests(campaign),
             "config": {"sha256": _sha(config_bytes), "resolved": resolved, "raw": raw},
             "prompts": resources.prompt_digests(campaign), "styles": resources.style_digests(campaign),
-            "tex": _tex_version(), "corpus": corpus}
+            "tex": _tex_version(), "corpus": corpus,
+            "weights": weighed and {k: weighed[k] for k in ("path", "revision", "sha256")}}
 
 
 def components(rec: dict) -> dict:
@@ -132,7 +135,8 @@ def components(rec: dict) -> dict:
     return {"engine": {k: e.get(k) for k in ("kind", "runtime_sha256")},
             "deployment": {k: d.get(k) for k in ("name", "lock_sha256", "files")}, "extensions": rec.get("extensions"),
             "config": (rec.get("config") or {}).get("sha256"), "prompts": rec.get("prompts"),
-            "styles": rec.get("styles"), "tex": rec.get("tex"), "corpus": rec.get("corpus")}
+            "styles": rec.get("styles"), "tex": rec.get("tex"), "corpus": rec.get("corpus"),
+            "weights": (rec.get("weights") or {}).get("sha256")}
 
 
 def execution_id(rec: dict) -> str:

@@ -25,6 +25,7 @@ function derive() {
   const cols = scanDoc.columns;
   rows = scanDoc.rows.map((values) => Object.fromEntries(cols.map((c, i) => [c, values[i]])));
   scored = rows.filter((r) => r.score != null);
+  for (const r of scored) r.rankScore = r.weighted ?? r.score;   // the ranking's score: weighted when the campaign has weights
   scored.forEach((r, i) => { r.rank = i + 1; });
   for (const r of rows) r.topics = pairTopics(r);
   byId = new Map(rows.map((r) => [r.pair_id, r]));
@@ -63,15 +64,15 @@ function preview() {
   const pool = capped(cap), n = scored.length;
   let chosen = [], args = "";
   if (mode === "score") {
-    chosen = pool.filter((r) => r.score >= value); args = `--min-score ${value}`;
+    chosen = pool.filter((r) => r.rankScore >= value); args = `--min-score ${value}`;
   } else {
     const k = mode === "percent" ? Math.ceil(n * value / 100) : Math.max(0, Math.round(value));
     chosen = pool.slice(0, k); args = `--cut ${mode === "percent" ? value : cutFor(n || 1, k)}`;
   }
   const set = new Set(chosen.map((r) => r.pair_id));
-  const threshold = chosen.length ? chosen[chosen.length - 1].score : null;
+  const threshold = chosen.length ? chosen[chosen.length - 1].rankScore : null;
   previewCount = chosen.length; previewThreshold = threshold;
-  const held = cap ? new Set(scored.filter((r) => threshold != null && r.score >= threshold && !set.has(r.pair_id)).map((r) => r.pair_id)) : new Set();
+  const held = cap ? new Set(scored.filter((r) => threshold != null && r.rankScore >= threshold && !set.has(r.pair_id)).map((r) => r.pair_id)) : new Set();
   const incomplete = current.scan.done < current.scan.total && mode !== "score";
   return {set, chosen, threshold, held, cap,
           command: `pathfinder select ${args}${cap ? ` --per-paper ${cap}` : ""}${incomplete ? " --force" : ""}`};
@@ -118,9 +119,9 @@ function niceStep(raw) {
 function renderHistogram(pv) {
   const svg = $("score-hist"), W = 640, H = 170, top = 14, bottom = 26, left = 6, right = 6;
   if (!scored.length) { svg.innerHTML = ""; $("hist-note").textContent = "No score yet."; return; }
-  const max = Math.max(...scored.map((r) => r.score), 1), step = niceStep(max / 40), nb = Math.ceil((max + 1) / step);
+  const max = Math.max(...scored.map((r) => r.rankScore), 1), step = niceStep(max / 40), nb = Math.ceil((max + 1) / step);
   const bins = new Array(nb).fill(0);
-  for (const r of scored) bins[Math.min(nb - 1, Math.floor(r.score / step))]++;
+  for (const r of scored) bins[Math.min(nb - 1, Math.floor(r.rankScore / step))]++;
   const peak = Math.max(...bins), bw = (W - left - right) / nb, x = (score) => left + (score / (nb * step)) * (W - left - right);
   const y = (count) => H - bottom - (count / peak) * (H - top - bottom);
   let out = bins.map((c, i) => {
@@ -137,14 +138,14 @@ function renderHistogram(pv) {
     out += `<line class="cut-line" x1="${cx}" x2="${cx}" y1="${top - 4}" y2="${H - bottom}"/>
       <text class="cut-label" x="${cx - 4}" y="${top + 6}" text-anchor="end">cut: ${num(pv.chosen.length)} pairs</text>`;
   }
-  const sel = (scanDoc.selected || []).map((id) => byId.get(id)?.score).filter((v) => v != null);
+  const sel = (scanDoc.selected || []).map((id) => byId.get(id)?.rankScore).filter((v) => v != null);
   if (sel.length) {
     const sx = x(Math.min(...sel));
     out += `<line class="shortlist-line" x1="${sx}" x2="${sx}" y1="${top + 14}" y2="${H - bottom}"/>
       <text class="shortlist-label" x="${sx + 4}" y="${top + 24}">shortlist</text>`;
   }
   svg.innerHTML = out;
-  $("hist-note").textContent = `${num(scored.length)} scored pairs, median ${num(scored[Math.floor(scored.length / 2)].score)}, best ${num(max)}`;
+  $("hist-note").textContent = `${num(scored.length)} scored pairs, median ${num(scored[Math.floor(scored.length / 2)].rankScore)}, best ${num(max)}`;
 }
 
 function renderCutSummary(pv) {
@@ -265,7 +266,8 @@ function rowHTML(r, pv, sub) {
       ${r.rationale ? `<details class="rationale" data-pair="${esc(r.pair_id)}"${open}><summary>Why these scores</summary><p>${esc(r.rationale)}</p></details>` : ""}
     </div>
     ${r.score != null ? `<div class="scan-score"><span class="score-num">${num(r.score)}</span>
-      <span class="score-sub" title="feasibility × gain">${r.feasibility} × ${r.gain}</span></div>` : ""}
+      <span class="score-sub" title="feasibility × gain">${r.feasibility} × ${r.gain}</span>${r.weighted != null
+        ? `<span class="score-sub" title="scan score × weight">weighted ${num(r.weighted)} (× ${r.weight})</span>` : ""}</div>` : ""}
   </article>`;
 }
 

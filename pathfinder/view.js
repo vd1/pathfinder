@@ -100,7 +100,7 @@ function renderQueue() {
   const query = $("search").value.toLowerCase().trim(), filter = $("status-filter").value;
   const units = current.units.filter((u) => (filter === "all" || u.lifecycle === filter) && (!query ||
     [u.unit, u.q?.id, u.q?.title, u.p?.id, u.p?.title].join(" ").toLowerCase().includes(query)))
-    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
+    .sort((a, b) => (b.weighted ?? b.score ?? -1) - (a.weighted ?? a.score ?? -1));
   $("queue-count").textContent = units.length + " / " + current.units.length + " units";
   $("queue-body").innerHTML = units.length ? units.map((u) => `<tr>
       <td><button type="button" class="paper-title" data-unit="${esc(u.unit)}">${esc(pairTitle(u))}</button>
@@ -284,7 +284,7 @@ function showUnit(id) {
   showDialog("Unit " + u.unit, `<h2>${esc(pairTitle(u))}</h2><p>${badge(u.lifecycle)}</p>
     <div class="record-actions">${u.documents.map((d) => readButton(u, d, d.kind + (d.stale ? " (stale)" : ""))).join("")}</div>
     ${side("Q", u.q)}${side("P", u.p)}
-    <section class="detail-section"><h3>Scan</h3><p>Feasibility ${esc(u.feasibility ?? "--")}; gain ${esc(u.gain ?? "--")}; score ${esc(u.score ?? "--")}.</p>
+    <section class="detail-section"><h3>Scan</h3><p>Feasibility ${esc(u.feasibility ?? "--")}; gain ${esc(u.gain ?? "--")}; score ${esc(u.score ?? "--")}${u.weighted != null ? `; weighted ${esc(u.weighted)} (weight ${esc(u.weight)})` : ""}.</p>
       <p>${esc(u.connexion || "")}</p></section>
     <section class="detail-section"><h3>States</h3>${axis("Research", u.research)}${axis("Readable note", u.editorial)}${axis("Paper", u.assessment)}
       <p class="small-copy">Now ${esc(u.controller)}; last activity ${esc(when(u.last_activity))}.</p></section>
