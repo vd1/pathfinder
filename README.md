@@ -370,7 +370,9 @@ your own campaign directory and edit the models and the budget.
   review stays bound to the full ledger.
 - `gc`: `false` turns off the clean-up each finished cycle does (LaTeX by-products, call working directories,
   peers' virtual environments, prompt copies in retained responses; receipts keep commands with shortened
-  outputs). `pathfinder gc [--dry-run]` applies it to finished threads and older receipts.
+  outputs). A `.log` or `.out` is a by-product only beside its `.tex`, so a script's run log stays, and a file
+  a ledger or note in the thread cites is never removed. Each `garbage_collected` event names the paths it
+  removed. `pathfinder gc [--dry-run]` applies it to finished threads and older receipts.
 - `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
   deployments" below.
 

@@ -50,6 +50,7 @@ def _finished(tmp_path):
                  "ada/build.log", ".transport-input/x/prompt.txt"):
         (d / name).parent.mkdir(parents=True, exist_ok=True)
         (d / name).write_text("by-product")
+    (d / "ada/build.tex").write_text("\\documentclass{article}")      # the log beside its .tex is LaTeX's
     (d / "research-requests").mkdir(exist_ok=True)
     (d / "research-requests/a.json").write_text(json.dumps({"request": {"prompt": LONG}, "result": {"ok": 1}}))
     (d / "research-requests/open.json").write_text(json.dumps({"request": {"prompt": LONG}}))
@@ -123,3 +124,30 @@ def test_peers_environments_clones_metadata_and_scratch_are_collected(tmp_path):
     assert not venv.exists() and not (d / "ada" / "upstream" / ".git").exists()
     assert (d / "ada" / "upstream" / "README.md").exists()
     assert not (d / "branch-runs" / "branch-1" / ".pathfinder" / "tmp").exists()
+
+
+def test_a_run_log_is_kept_and_only_a_log_beside_its_tex_is_a_by_product(tmp_path):
+    """nobel, 14 October 2026: the joint peers' *_trial_NNN.log run logs went as LaTeX by-products, and a
+    reopened review read the note's citations of them as unsupported."""
+    c, d = _finished(tmp_path)
+    (d / "emmy").mkdir(exist_ok=True)
+    (d / "emmy/check_psd_trial_002.log").write_text("run output")
+    (d / "emmy/scan.out").write_text("run output")
+    gc.collect_thread(c, "Q1P1")
+    assert (d / "emmy/check_psd_trial_002.log").exists() and (d / "emmy/scan.out").exists()
+    assert not (d / "ada/build.log").exists() and (d / "ada/build.tex").exists()
+
+
+def test_a_file_the_note_or_ledger_cites_is_never_collected(tmp_path):
+    from pathfinder.ledger import Ledger
+    c, d = _finished(tmp_path)
+    (d / "ada/proof.tex").write_text("x"); (d / "ada/proof.log").write_text("compile log the note cites")
+    (d / "ada/other.tex").write_text("x"); (d / "ada/other.log").write_text("cited in the ledger")
+    note = d / "Q1P1.tex"
+    note.write_text(note.read_text().replace("\\end{document}", "See \\url{ada/proof.log}.\n\\end{document}"))
+    Ledger(d / "ledger.jsonl").add("ada", "finding", "the compile warnings are in ada/other.log")
+    report = gc.collect_thread(c, "Q1P1")
+    assert (d / "ada/proof.log").exists() and (d / "ada/other.log").exists()
+    event = [e for e in events.read(c)[0] if e.get("kind") == "garbage_collected"][-1]
+    assert "ada/build.log" in event["paths"] and "ada/proof.log" not in event["paths"]
+    assert report["files"] == len(event["paths"])

@@ -1,11 +1,12 @@
 """Garbage collection: what a finished cycle leaves that the record does not need.
 
 A thread whose research is terminal and whose editing is done keeps its record (ledger, notes, PDFs, the
-peers' derivations, verdicts, status). Removed: LaTeX by-products (the PDF and its sources stay), working
+peers' derivations, run logs, verdicts, status). Removed: LaTeX by-products (build files, and a log or outline
+only beside its .tex; the PDF and its sources stay), never a file a ledger or note cites; working
 directories of model calls, and the prompt copied into every retained research response once that response
 holds its result. Receipts keep the commands an agent ran, its answer and the usage, but not the full output
 of each tool call: the first and last characters and the output's length, enough to see what was read and
-how much. The runner collects each thread when it finishes; `pathfinder gc` collects every finished thread and
+how much. Each garbage_collected event names the paths it removed. The runner collects each thread when it finishes; `pathfinder gc` collects every finished thread and
 compacts receipts written before compaction existed. "gc": false in campaign.json turns collection off."""
 from __future__ import annotations
 import json, os, shutil, tempfile
@@ -14,6 +15,7 @@ from pathlib import Path
 OUTPUT_KEEP = 400                         # characters of a tool output kept in a receipt, head and tail
 BYPRODUCTS = (".aux", ".fls", ".fdb_latexmk", ".out", ".toc", ".blg", ".log", ".synctex.gz", ".xdv", ".nav", ".snm")
 WORKING_DIRS = (".transport-input", ".tmp")
+PATHS_KEPT = 500                          # removed paths named in the garbage_collected event
 
 
 def _shorten(text, holder) -> bool:
@@ -67,6 +69,31 @@ def _environment(path: Path) -> bool:
     return environment(path)
 
 
+def _byproduct(name: str, names) -> bool:
+    """A LaTeX by-product: a build file, or a log or outline beside its .tex (evidence.byproduct). A script's
+    run log is a data output, and a PDF is kept (the record's PDFs stay)."""
+    from .evidence import byproduct
+    return name.endswith(BYPRODUCTS) and byproduct(name, names)
+
+
+def _cited(d: Path) -> set:
+    """Every file a ledger or a note in the thread cites, relative to the thread, read as the citing file's
+    directory or the thread sees it: collection never removes evidence."""
+    from .evidence import cited_files
+    out = set()
+    for f in [*d.rglob("ledger.jsonl"), *d.rglob("*.tex")]:
+        if not f.is_file() or any(part in WORKING_DIRS for part in f.relative_to(d).parts):
+            continue
+        for name in cited_files(f.read_text(errors="replace")):
+            for base in {d, f.parent}:
+                path = (base / name)
+                try:
+                    out.add(path.resolve().relative_to(d.resolve()))
+                except ValueError:
+                    continue
+    return out
+
+
 def _size(path: Path) -> int:
     return sum(p.lstat().st_size for p in path.rglob("*") if p.is_file() or p.is_symlink()) if path.is_dir() else path.stat().st_size
 
@@ -77,15 +104,20 @@ def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
         return None
     d = campaign.thread_dir(pair_id)
     files = size = stripped = 0
+    keep, removed = _cited(d), []
+    names = {p.relative_to(d).as_posix() for p in d.rglob("*")}
     for p in sorted(d.rglob("*"), key=lambda p: len(p.parts)):
         if not p.exists() or p.is_symlink():
             continue
+        rel = p.relative_to(d)
         if p.is_dir() and (p.name in WORKING_DIRS or _environment(p) or (p.name == "tmp" and p.parent.name == ".pathfinder")):
-            files += sum(1 for q in p.rglob("*") if q.is_file()); size += _size(p)
+            if any(k == rel or rel in k.parents for k in keep):
+                continue
+            files += sum(1 for q in p.rglob("*") if q.is_file()); size += _size(p); removed.append(rel.as_posix())
             if not dry_run:
                 shutil.rmtree(p)
-        elif p.is_file() and any(p.name.endswith(s) for s in BYPRODUCTS) and "branches" not in p.relative_to(d).parts:
-            files += 1; size += p.stat().st_size
+        elif (p.is_file() and _byproduct(rel.as_posix(), names) and "branches" not in rel.parts and rel not in keep):
+            files += 1; size += p.stat().st_size; removed.append(rel.as_posix())
             if not dry_run:
                 p.unlink()
         elif p.is_file() and p.parent.name == "research-requests" and p.suffix == ".json":
@@ -107,7 +139,7 @@ def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
     report = {"files": files, "bytes": size, "stripped": stripped}
     if not dry_run:
         from . import events
-        events.emit(campaign, "garbage_collected", unit=pair_id, **report)
+        events.emit(campaign, "garbage_collected", unit=pair_id, paths=removed[:PATHS_KEPT], **report)
     return report
 
 
