@@ -403,6 +403,13 @@ the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
   one safe action for a thread (start, resume peers, run consolidate, run
   verify, or nothing) and `--apply` performs it. `--repair-only` makes only its state repair and calls
   no model, for a deployment that resumes through its own command.
+  `pathfinder reconcile [pair] --retire-orphans` retires orphaned call records: a record in `active-calls/`
+  whose runner and child are dead, as a runner that ends with its agent session leaves them (only a returning
+  call removes its record). Each is removed and kept as a `call_abandoned` event with its attempt, run, child
+  and whether a receipt counts its usage. Without a pair every such record is retired, with one only that
+  pair's. It touches no thread, so it is safe while another runner holds the campaign; `--apply` and
+  `--repair-only` retire them too before acting. A record with a live runner or child, or with no recorded pid,
+  stays, and `pathfinder health` keeps warning about it.
 - `pathfinder reopen PAIR --grant repair|round --reason TEXT [--note TEXT]` gives a finished EVA thread (the
   joint thread under the composable scheme) one more step. PAUSE-ON-REVISE takes `repair`: consolidate with the
   verifier's last corrections, then the novelty check, then verify. PAUSE-ON-ITERATE takes `round`: one more peer

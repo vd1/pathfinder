@@ -79,6 +79,8 @@ def main(argv=None):
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     r.add_argument("--repair-only", action="store_true",
                    help="make the action's state repair and call no model; the deployment's own command resumes")
+    r.add_argument("--retire-orphans", action="store_true",
+                   help="only retire call records whose runner and child are dead; no thread is touched")
     sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
     ns = ap.parse_args(argv)
     if ns.cmd == "coordinate":
@@ -272,7 +274,14 @@ def _dispatch(ns, c):
             print(f"--- {name}\n{tail[-800:]}")
     elif ns.cmd == "reconcile":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
-        for pid in pairs:
+        for path, call in health.orphans(c, None if not ns.pair else set(pairs)):
+            print(f"orphaned call record {call.get('attempt_id')} ({call.get('thread')}/{call.get('stage')}/{call.get('actor')}): "
+                  "its runner and child are dead" + ("" if ns.apply or ns.repair_only or ns.retire_orphans
+                                                        else "; --retire-orphans retires it"))
+        if ns.apply or ns.repair_only or ns.retire_orphans:
+            for call in health.retire_orphans(c, None if not ns.pair else set(pairs)):
+                print(f"  -> retired orphaned call record {call.get('attempt_id')} (event call_abandoned)")
+        for pid in [] if ns.retire_orphans else pairs:
             info = reconcile.inspect(c, pid); print(f"{pid}: {info['status']} at {info['stage']} round {info['round']}: {info['action']}")
             if (ns.apply or ns.repair_only) and not info["action"].startswith("nothing"):
                 print(f"  -> {reconcile.apply(c, pid, resume=not ns.repair_only)}")

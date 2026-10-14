@@ -102,6 +102,37 @@ def owner(campaign, nested: bool = False):
             fcntl.flock(handle, fcntl.LOCK_UN)
 
 
+def orphans(campaign, pairs=None) -> list[tuple[Path, dict]]:
+    """Call records whose runner is dead and whose child is dead or was never launched: only a returning call
+    removes its record, so these stay after a runner dies. A live process, or a pid not recorded, keeps one."""
+    found = []
+    for path in sorted(campaign.path("active-calls").glob("*.json")) if campaign.path("active-calls").is_dir() else []:
+        call = read(path)
+        if not isinstance(call, dict) or (pairs is not None and call.get("thread") not in pairs):
+            continue
+        if alive(call.get("pid")) is False and alive(call.get("child_pid")) is not True:
+            found.append((path, call))
+    return found
+
+
+def retire_orphans(campaign, pairs=None) -> list[dict]:
+    """Remove each orphaned record (reconcile --retire-orphans, --apply or --repair-only), keeping what it held in a call_abandoned
+    event: the attempt, its run, its child and whether a receipt counts its usage (none when it died in flight)."""
+    from . import events
+    path_r = campaign.path("receipts.jsonl")
+    ids = {json.loads(line).get("call_id") for line in path_r.read_text().splitlines() if line.strip().startswith("{")} \
+        if path_r.exists() else set()
+    retired = []
+    for path, call in orphans(campaign, pairs):
+        events.emit(campaign, "call_abandoned", attempt_id=call.get("attempt_id"), unit=call.get("thread"),
+                    stage=call.get("stage"), actor=call.get("actor"), call_run_id=call.get("run_id"),
+                    pid=call.get("pid"), child_pid=call.get("child_pid"), started_at=call.get("started_at"),
+                    exception=call.get("exception"), receipt=call.get("attempt_id") if call.get("attempt_id") in ids else None)
+        path.unlink(missing_ok=True)
+        retired.append(call)
+    return retired
+
+
 ALLOWANCE_KEYS = {"peer": "peer_seconds", "consolidate": "consolidate_seconds", "verify": "verify_seconds", "novelty": "novelty_seconds",
                   "edit": "edit_seconds", "author": "paper_seconds", "review": "review_seconds"}
 
@@ -178,7 +209,9 @@ def snapshot(campaign):
         if call["overdue_seconds"]:
             warnings.append(f"Overdue call {call['thread']}/{call['stage']}/{call['actor']}; inspect its process and logs.")
         if call["pid_alive"] is False:
-            warnings.append(f"Orphaned call record {call['attempt_id']}; outcome unknown, inspect child before restart.")
+            warnings.append(f"Orphaned call record {call['attempt_id']}; outcome unknown, inspect child before restart."
+                            if call["child_alive"] else f"Orphaned call record {call['attempt_id']}: its runner and child "
+                            "are dead; `pathfinder reconcile --retire-orphans` retires it.")
     receipts = []
     receipt_path = campaign.path("receipts.jsonl")
     if receipt_path.exists():
