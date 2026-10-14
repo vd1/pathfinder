@@ -140,7 +140,7 @@ def _assessment_evidence(campaign, d, references=None, by_reference=False, recor
     for line in references.splitlines():            # exempt only the declared entry; another may need the file
         if line.strip():
             row = json.loads(line)
-            if row.get("kind") == "review":         # a reviewer's request names what to read or write, it cites nothing
+            if row.get("kind") in ("review", "operator"):   # a reviewer's request or an operator's note names what to read, it cites nothing
                 continue
             for name in _evidence_references(row["text"]):
                 if ("ledger.jsonl", row["seq"], name) in citations:

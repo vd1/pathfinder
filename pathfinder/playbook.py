@@ -54,6 +54,14 @@ def next_actions(campaign) -> list[dict]:
                     "why": f"{snap['cooldown']['remaining_seconds']:.0f} s left: {snap['cooldown']['reason']}", "command": None})
     for unit in state["units"]:
         pair = unit["unit"]
+        if unit.get("grant") and unit["controller"] != "running" and unit["research"]["status"] == "running":
+            g = unit["reopened"][-1]
+            out.append({"owner": "engine" if (snap.get("runner") or {}).get("pid_alive") else "operator",
+                        "action": f"{pair}: reopened with a {g['grant']} grant, to run",
+                        "why": f"reopen {g['n']} ({g['at']}): {g['reason']}. The runner reaches it on its next pass; "
+                               "without a runner, run the pair on its own.",
+                        "command": _cmd(campaign, "research", "--pairs", pair)})
+            continue
         action = reconcile.inspect(campaign, pair)["action"]
         family = re.sub(r"^(nothing: )?branch-\d+: ", r"\1", action)    # a composable branch's own action
         if family.startswith("nothing: evidence still blocked"):

@@ -3,7 +3,10 @@ campaign) has one more stage between consolidate and verify. A fresh call with w
 reads the note, the two abstracts and, if the deployment supplies one, a list of papers citing both (a file
 inside the campaign, registered as a source of its pair, so a ledger entry citing it resolves), never the
 ledger or the full papers, and returns a short JSON report: per result known, partly_known or new with the
-closest work, the closest works the note does not cite, overclaims, and the queries run. The report goes into
+closest work, the closest works the note does not cite and its overclaims, each graded essential (it changes or
+limits the novelty or scope of a result the note presents as new) or background, and the queries run. A check
+of a repaired note receives the previous report and says which of its items the repair addressed, adding a new
+item only when it is essential. The report goes into
 verify's prompt as evidence. It is asked again only when the note has changed since the last check, and a check
 that fails or cannot be read never blocks verify: the record and verify's prompt say there is no report.
 
@@ -49,6 +52,12 @@ def note_sha(d, pair_id) -> str | None:
     return hashlib.sha256(note.read_bytes()).hexdigest() if note.exists() else None
 
 
+def previous(d, pair_id) -> dict | None:
+    """The latest report on an earlier version of the note, which a check of the repaired note starts from."""
+    sha = note_sha(d, pair_id)
+    return next((r for r in reversed(records(d, pair_id)) if r.get("report") is not None and r.get("note_sha256") != sha), None)
+
+
 def current(d, pair_id) -> dict | None:
     """The latest check of the note as it stands, or None when the note has changed since."""
     rec = records(d, pair_id)
@@ -73,7 +82,12 @@ def prompt(campaign, pair_id, d) -> str:
     sections = [Section("Q: title and abstract", text=_abstract(campaign, pair_id, "Q")),
                 Section("P: title and abstract", text=_abstract(campaign, pair_id, "P")),
                 Section("papers citing both Q and P", text=citers),
-                Section(f"{pair_id}.tex (the note to check)", path=d / f"{pair_id}.tex", keep=True),
+                Section(f"{pair_id}.tex (the note to check)", path=d / f"{pair_id}.tex", keep=True)]
+    earlier = previous(d, pair_id)
+    if earlier:
+        sections.append(Section("your previous report, on the version of the note before its repair",
+                                text=json.dumps(earlier["report"], indent=1), keep=True))
+    sections += [
                 Section("your task", text=_prompt(campaign, "novelty"), keep=True)]
     return context.build(campaign, "novelty", sections, tools=True, cwd=d, unit=pair_id)
 
@@ -89,11 +103,25 @@ def apply(campaign, pair_id, d, item, round_) -> dict:
         except contracts.ContractViolation as violation:
             error = f"contract: {violation}"
     entry = {"at": item.get("at") or _now(), "round": round_, "request_id": item["request"]["identity"],
-             "note_sha256": note_sha(d, pair_id), "report": report, "error": error}
+             "note_sha256": note_sha(d, pair_id), "report": report, "counts": counts(report), "error": error}
     rec = records(d, pair_id)
     if not any(r.get("request_id") == entry["request_id"] for r in rec):
         _path(d, pair_id).write_text(json.dumps(rec + [entry], indent=1))
     return {"status": "failed" if error else "ok", "note_sha256": entry["note_sha256"], "reason": error}
+
+
+def counts(report) -> dict | None:
+    """Essential and background items per list, kept in each record and beside the verdict that read it."""
+    if not isinstance(report, dict):
+        return None
+    return {key: {grade: sum(1 for i in report.get(key) or [] if isinstance(i, dict) and i.get("grade") == grade)
+                  for grade in ("essential", "background")} for key in ("missing", "overclaims")}
+
+
+def verdict_counts(campaign, d, pair_id) -> dict:
+    """{"novelty_counts": ...} for a verdict entry when the note as it stands has a report, else {}."""
+    entry = current(d, pair_id) if enabled(campaign) else None
+    return {"novelty_counts": counts(entry.get("report"))} if entry and entry.get("report") is not None else {}
 
 
 def verify_section(campaign, d, pair_id) -> str:

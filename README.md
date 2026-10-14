@@ -348,7 +348,14 @@ your own campaign directory and edit the models and the budget.
   source of its pair so a ledger entry citing it by that path resolves; never the ledger or
   the full papers. It returns a JSON report (per result `known`, `partly_known` or `new` with the closest work,
   `missing`, `overclaims`, `queries`), kept in `threads/<pair>/<pair>.novelty.json`, and verify reads it as
-  evidence (`prompts/novelty-evidence.md`). The check runs again only when the note has changed. A check that
+  evidence (`prompts/novelty-evidence.md`). Each missing work and overclaim is graded `essential` (it changes or
+  limits the novelty or scope of a result the note presents as new) or `background`, conceded overclaims are left
+  out and empty lists are a valid outcome; verify decides REVISE on essential items only, and background items
+  go with a DRAFT to the paper stage, which checks the literature again. A check of a repaired note receives
+  the previous report and returns `previous` (each earlier item, addressed or not), adding a new item only when
+  it is essential. Each record keeps its `counts` (essential and background, for `missing` and `overclaims`),
+  and the verdict that read the report carries the same `novelty_counts` beside its decision and action in
+  `<pair>.verdict.json`. The check runs again only when the note has changed. A check that
   fails or cannot be read never blocks verify: the record and verify's prompt say there is no report. Allowance
   `novelty_seconds` (default 900), route `novelty`, overlay `prompts/novelty.append.md`.
 - `paper PAIR --amend FINDINGS.json` takes a JSON list of findings in `review.json`'s schema (`id`, `severity`,
@@ -394,6 +401,18 @@ the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
   one safe action for a thread (start, resume peers, run consolidate, run
   verify, or nothing) and `--apply` performs it. `--repair-only` makes only its state repair and calls
   no model, for a deployment that resumes through its own command.
+- `pathfinder reopen PAIR --grant repair|round --reason TEXT [--note TEXT]` gives a finished EVA thread (the
+  joint thread under the composable scheme) one more step. PAUSE-ON-REVISE takes `repair`: consolidate with the
+  verifier's last corrections, then the novelty check, then verify. PAUSE-ON-ITERATE takes `round`: one more peer
+  round from the verifier's last action. PAUSE takes `round` with a required `--note`, added to the ledger as an
+  `operator` entry (any grant may carry one). DRAFT is refused, since its edit and paper would describe other
+  research, and so is a grant that does not fit the ending. The verdict that follows ends the thread whatever
+  it decides: one grant is one verdict. The reopen is appended to `threads/<pair>/<pair>.reopen.json` (time,
+  grant, reason, note, the ending it left, the engine at that moment); verdicts, ledger and novelty reports are
+  appended to; the earlier edit and actionability answer move to `reopened/<n>/`, so the new outcome is edited
+  afresh. A pair missing from `shortlist.json` is listed again, marked `reopened`. The runner reaches the pair
+  on its next pass (`research --pairs PAIR` runs it alone), under that run's own record of its engine.
+  `status`, `state` and `playbook` show reopened threads and an open grant.
 
 ### Cycles, recovery and failure reports
 

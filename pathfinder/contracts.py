@@ -21,6 +21,7 @@ _FINDING = {"type": "object", "properties": {
     "issue": {"type": ["string", "null"]}, "fix": {"type": ["string", "null"]}}}
 _REQUEST = {"type": "object", "properties": {
     "id": {"type": "string"}, "action": {"enum": ["REVISE", "ITERATE"]}, "text": {"type": "string"}}}
+_GRADE = {"enum": ["essential", "background"]}   # a novelty item changes a result's novelty or scope, or does not
 _DISPOSITION = {"type": "object", "properties": {
     "id": {"type": "string"}, "status": {"enum": ["resolved", "deferred"]}, "reason": {"type": "string"}}}
 
@@ -40,8 +41,12 @@ SCHEMAS = {
         "results": {"type": "array", "items": {"type": "object", "required": ["status"], "properties": {
             "result": {"type": ["string", "null"]}, "status": {"enum": ["known", "partly_known", "new"]},
             "closest": {"type": ["string", "null"]}, "note": {"type": ["string", "null"]}}}},
-        "missing": {"type": "array", "items": {"type": "string"}},
-        "overclaims": {"type": "array", "items": {"type": "string"}},
+        "missing": {"type": "array", "items": {"type": "object", "required": ["work", "grade"], "properties": {
+            "work": {"type": "string"}, "why": {"type": ["string", "null"]}, "grade": _GRADE}}},
+        "overclaims": {"type": "array", "items": {"type": "object", "required": ["claim", "grade"], "properties": {
+            "claim": {"type": "string"}, "support": {"type": ["string", "null"]}, "grade": _GRADE}}},
+        "previous": {"type": "array", "items": {"type": "object", "required": ["item", "addressed"], "properties": {
+            "item": {"type": "string"}, "addressed": {"type": "boolean"}, "note": {"type": ["string", "null"]}}}},
         "queries": {"type": "array", "items": {"type": "string"}}}},
     "paper_review": {"type": "object", "required": ["decision"], "properties": {
         "decision": {"enum": ["ACCEPT", "AMEND", "REVISE"]}, "summary": {"type": ["string", "null"]},

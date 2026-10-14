@@ -63,6 +63,11 @@ def main(argv=None):
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
     w.add_argument("--amend", metavar="FINDINGS.json", help="an author round answering outside findings (review.json's findings schema), then a reviewer round")
+    ro = sub.add_parser("reopen", help="give a finished thread one more step: a repair (PAUSE-ON-REVISE) or a peer round "
+                        "(PAUSE-ON-ITERATE, PAUSE); the next verdict ends it")
+    ro.add_argument("pair"); ro.add_argument("--grant", choices=("repair", "round"), required=True)
+    ro.add_argument("--reason", required=True, help="why the operator grants it, kept in the thread's record")
+    ro.add_argument("--note", help="added to the ledger as an operator entry (required to reopen a PAUSE)")
     e = sub.add_parser("edit", help="after a terminal verdict: rewrite the note as a readable short paper with references")
     e.add_argument("pair", nargs="?", help="default: every terminal thread without an edited note")
     e.add_argument("--recheck", action="store_true", help="run the edited note's reference checks again, no model call")
@@ -234,6 +239,15 @@ def _dispatch(ns, c):
                                            and paper.status(c, p["pair_id"]).get("status") != "ACCEPTED"]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "reopen":
+        from . import reopen
+        try:
+            entry = reopen.reopen(c, ns.pair, ns.grant, ns.reason, ns.note)
+        except (ValueError, RuntimeError) as error:
+            raise SystemExit(f"reopen refused: {error}")
+        print(f"{ns.pair}: reopen {entry['n']} from {entry['from']['status']} with a {ns.grant} grant"
+              + (f"; archived {', '.join(entry['archived'])}" if entry["archived"] else "")
+              + f"\nthe runner reaches it on its next pass; on its own: pathfinder research --pairs {ns.pair}")
     elif ns.cmd == "edit" and ns.recheck:
         if not ns.pair:
             raise SystemExit("--recheck needs a pair")

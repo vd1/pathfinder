@@ -81,7 +81,7 @@ def reply(campaign, request) -> str:
                            "falsification": "stub condition"})
     if stage == "novelty":
         return json.dumps({"results": [{"result": "stub result", "status": "new", "closest": None, "note": "stub"}],
-                           "missing": [], "overclaims": [], "queries": ["stub query"]})
+                           "missing": [], "overclaims": [], "previous": [], "queries": ["stub query"]})
     if stage == "scan":
         return json.dumps({"feasibility": 50, "gain": 50, "connexion": "stub", "rationale": "stub"})
     return "stub reply"

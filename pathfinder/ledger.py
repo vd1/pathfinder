@@ -4,7 +4,7 @@ import argparse, fcntl, json, time
 from pathlib import Path
 
 SUBSTANTIVE = {"idea", "finding", "objection", "correction", "intention"}
-KINDS = SUBSTANTIVE | {"ready", "review"}
+KINDS = SUBSTANTIVE | {"ready", "review", "operator"}   # operator: a note added by `pathfinder reopen`
 
 
 class Ledger:

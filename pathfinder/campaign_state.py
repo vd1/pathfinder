@@ -7,7 +7,7 @@ from __future__ import annotations
 import calendar, json, os, re, time
 from collections import Counter
 from pathlib import Path
-from . import actionability, budget, admission, corpus, edit, events, paper, research, transport
+from . import actionability, budget, admission, corpus, edit, events, paper, reopen, research, transport
 
 ACTIVE_SECONDS = 600                       # an event this recent means the campaign is active
 DOCUMENTS = (("research note", "{u}.tex", "{u}.pdf"), ("readable note", "edited/note.tex", "edited/note.pdf"),
@@ -380,6 +380,8 @@ def build(campaign) -> dict:
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
                       **({"actionability": {k: a_s.get(k) for k in ("status", "decision", "reason")}}
                          if (a_s := actionability.status(campaign, unit)).get("status") != "none" else {}),
+                      **({"reopened": [{k: r.get(k) for k in ("n", "at", "grant", "reason")} for r in rec],
+                          "grant": r_s.get("grant")} if (rec := reopen.records(campaign, unit)) else {}),
                       "controller": controller, "lifecycle": lifecycle(r_s, e_s, p_s, controller),
                       "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit),
                       **({"branches": _branches(campaign, unit)} if campaign.raw.get("research_scheme") == "composable" else {})})
@@ -448,6 +450,8 @@ def text(state: dict) -> str:
         lines.append(f"block {block['class']}: {block['cause']} x{block['count']} ({', '.join(block['units'])})")
     for u in state["units"]:
         weighted = f" weighted {u['weighted']:g}" if u.get("weighted") is not None else ""
+        if u.get("reopened"):
+            weighted += f" reopened {len(u['reopened'])} ({u['reopened'][-1]['grant']}){', grant open' if u.get('grant') else ''}"
         lines.append(f"{u['unit']:>8} score {u['score'] if u['score'] is not None else '-':>4}{weighted}  {u['controller']:<8} "
                      f"research {u['research']['status']}  edit {u['editorial']['status']}  paper {u['assessment']['status']}")
     return "\n".join(lines)

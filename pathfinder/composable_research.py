@@ -155,10 +155,14 @@ def _apply_research_review(campaign, pair_id, saved, s):
         history = json.loads(verdicts.read_text()) if verdicts.exists() else []
         if not any(item.get("review_id") == identity for item in history):
             history.append({"review_id": identity, "round": s["round"], "at": _now(),
-                            "note_sha256": hashlib.sha256((d / f"{pair_id}.tex").read_bytes()).hexdigest(), **value})
+                            "note_sha256": hashlib.sha256((d / f"{pair_id}.tex").read_bytes()).hexdigest(), **value,
+                            **novelty.verdict_counts(campaign, d, pair_id)})
             verdicts.write_text(json.dumps(history, indent=1))
         decision = value["decision"]
-        if decision == "REVISE" and s.get("repairs", 0) < campaign.raw.get("repairs", 1):
+        if s.get("grant"):                      # a reopen's grant is one verdict: whatever it decides ends the thread
+            update.update(stage="done", grant=None,
+                          status={"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(decision, decision))
+        elif decision == "REVISE" and s.get("repairs", 0) < campaign.raw.get("repairs", 1):
             update.update(stage="consolidate", repairs=s.get("repairs", 0) + 1, repair=value)
         elif decision == "ITERATE" and s["round"] < campaign.rounds:
             update.update(stage="peers", round=s["round"] + 1, peer_call=0, peer_seconds=0)

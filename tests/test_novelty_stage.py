@@ -8,7 +8,8 @@ from stubcampaign import make
 
 REPORT = {"results": [{"result": "the main bound", "status": "partly_known", "closest": "arXiv:2404.03644",
                        "note": "same bound under another name"}],
-          "missing": ["arXiv:2404.03644"], "overclaims": [], "queries": ["block encoding rounding bound"]}
+          "missing": [{"work": "arXiv:2404.03644", "why": "same bound", "grade": "essential"}], "overclaims": [],
+          "queries": ["block encoding rounding bound"]}
 
 
 def _seen(monkeypatch, novelty=None, notes=None):

@@ -15,13 +15,29 @@ For each result the note presents as new:
   case, a close variant or the main step is), or new (you found nothing
   close), and name the closest work with an arXiv identifier, DOI or URL.
 
-Also list the closest works the note does not cite, and any claim the
+Then list the closest works the note does not cite, and the claims the
 note presents as new or as derived that the literature already has or
-that the note does not establish. Do not write files.
+that the note does not establish. Grade each one:
 
-Output exactly one JSON object and nothing else:
+- essential: it changes or limits the novelty or the scope of a result
+  the note presents as new, so the note is wrong without it;
+- background: related work a paper would cite, which changes no result.
+
+Leave out an overclaim the note already concedes, and a work the note
+already cites. Report only what you found; do not pad either list.
+Empty lists are a valid outcome.
+
+When your previous report, on the version of the note before its repair,
+is above, start from it: for each of its missing works and overclaims,
+say whether the repaired note addresses it (cites the work or narrows the
+claim as needed). Carry an item that is not addressed into the lists
+again with its grade. Add a new item only when it is essential.
+
+Do not write files. Output exactly one JSON object and nothing else:
 {"results": [{"result": "the claim in a few words", "status": "known|partly_known|new",
               "closest": "identifier or URL, or null", "note": "one or two sentences"}],
- "missing": ["identifier or URL: why it is close"],
- "overclaims": ["the claim and what the literature or the note supports"],
+ "missing": [{"work": "identifier or URL", "why": "why it is close", "grade": "essential|background"}],
+ "overclaims": [{"claim": "the claim", "support": "what the literature or the note supports", "grade": "essential|background"}],
+ "previous": [{"item": "an item of your previous report", "addressed": true, "note": "how, or what is still missing"}],
  "queries": ["each search you ran"]}
+"previous" is an empty list when there is no previous report.
