@@ -57,11 +57,17 @@ def next_actions(campaign) -> list[dict]:
         if unit.get("grant") and unit["controller"] != "running" and unit["research"]["status"] == "running":
             g = unit["reopened"][-1]
             out.append({"owner": "engine" if (snap.get("runner") or {}).get("pid_alive") else "operator",
-                        "action": f"{pair}: reopened with a {g['grant']} grant, to run",
+                        "action": f"{pair}: reopened with {'an' if g['grant'] == 'extend' else 'a'} {g['grant']} grant, to run",
                         "why": f"reopen {g['n']} ({g['at']}): {g['reason']}. The runner reaches it on its next pass; "
                                "without a runner, run the pair on its own.",
                         "command": _cmd(campaign, "research", "--pairs", pair)})
             continue
+        prior = unit.get("prior_result")
+        if prior and not unit.get("grant") and unit["research"]["status"] not in ("running", prior["status"]):
+            out.append({"owner": "operator", "action": f"{pair}: the extension ended {unit['research']['status']}",
+                        "why": f"the earlier {prior['status']} stays the thread's result: its edit in {prior['edit'] or '-'}, "
+                               f"its paper ({prior['paper_status'] or 'none'}) in {prior['paper'] or '-'}.",
+                        "command": None})
         action = reconcile.inspect(campaign, pair)["action"]
         family = re.sub(r"^(nothing: )?branch-\d+: ", r"\1", action)    # a composable branch's own action
         if family.startswith("nothing: evidence still blocked"):

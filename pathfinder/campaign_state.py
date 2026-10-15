@@ -382,6 +382,7 @@ def build(campaign) -> dict:
                          if (a_s := actionability.status(campaign, unit)).get("status") != "none" else {}),
                       **({"reopened": [{k: r.get(k) for k in ("n", "at", "grant", "reason")} for r in rec],
                           "grant": r_s.get("grant")} if (rec := reopen.records(campaign, unit)) else {}),
+                      **({"prior_result": r_s["prior_result"]} if r_s.get("prior_result") else {}),
                       "controller": controller, "lifecycle": lifecycle(r_s, e_s, p_s, controller),
                       "last_activity": last_by_unit.get(unit), "documents": _documents(campaign, unit),
                       **({"branches": _branches(campaign, unit)} if campaign.raw.get("research_scheme") == "composable" else {})})
@@ -452,6 +453,9 @@ def text(state: dict) -> str:
         weighted = f" weighted {u['weighted']:g}" if u.get("weighted") is not None else ""
         if u.get("reopened"):
             weighted += f" reopened {len(u['reopened'])} ({u['reopened'][-1]['grant']}){', grant open' if u.get('grant') else ''}"
+        prior = u.get("prior_result")
+        kept = (f"  (earlier {prior['status']} kept, paper {prior['paper_status'] or 'none'} in {prior['paper'] or '-'})"
+                if prior else "")
         lines.append(f"{u['unit']:>8} score {u['score'] if u['score'] is not None else '-':>4}{weighted}  {u['controller']:<8} "
-                     f"research {u['research']['status']}  edit {u['editorial']['status']}  paper {u['assessment']['status']}")
+                     f"research {u['research']['status']}  edit {u['editorial']['status']}  paper {u['assessment']['status']}{kept}")
     return "\n".join(lines)

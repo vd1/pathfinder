@@ -293,6 +293,10 @@ def next_requests(campaign, pair_id):
                         FEASIBILITY=row.get("feasibility", "?"), GAIN=row.get("gain", "?"),
                         CONNEXION=row.get("connexion") or "none recorded.", RATIONALE=row.get("rationale") or "none recorded.")
                     prompt += pair_context(d)
+                    if (s.get("grant") or {}).get("grant") == "extend":     # pathfinder.reopen: a DRAFT given one more round
+                        prompt += ("\n\nThis thread ended DRAFT and the operator has granted one extend round: work toward the"
+                                   f" target in the operator's ledger entry (seq {s['grant'].get('ledger_seq')}). Keep the"
+                                   " established results; the verifier's next verdict ends the thread.\n")
                     if s.get("requests"):
                         prompt += "\nReview requests and dispositions:\n" + json.dumps(s["requests"])
                 elif stage == "consolidate":

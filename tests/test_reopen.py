@@ -2,7 +2,9 @@
 repair|round --reason TEXT [--note TEXT]` gives a PAUSE-ON-REVISE thread one more repair, or a PAUSE-ON-ITERATE or
 PAUSE thread one more peer round; the next verdict ends the thread whatever it decides. The reopen is recorded
 in the thread with the engine of that moment; verdicts, ledger and novelty reports are appended to, and the
-earlier edit is kept under reopened/<n>/ so the new outcome is edited afresh. A DRAFT is never reopened."""
+earlier edit is kept under reopened/<n>/ so the new outcome is edited afresh. A DRAFT reopens only with an extend
+grant (nobel, 15 October 2026): one round toward the operator's target, its edit and paper archived and kept as the
+thread's result unless the extension ends DRAFT again."""
 import json
 import pytest
 from pathfinder import config, edit, reopen, research, runner, stub, transport
@@ -153,3 +155,102 @@ def test_a_composable_joint_thread_reopens_after_collection_and_runs(tmp_path, m
     seen = _seen(monkeypatch, notes=[stub.NOTE + "\nfixed\n"])
     assert research.run_thread(c, "Q1P1") == "DRAFT"
     assert [r.stage for r in seen] == ["consolidate", "verify"]
+
+
+def _drafted(tmp_path, scheme="composable"):
+    raw = {"branches": 1} if scheme == "composable" else {}
+    c = make(tmp_path, research_scheme=scheme, repairs=0, stub={"verify": "DRAFT"}, **raw)
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    assert edit.run(c, "Q1P1") == "done"
+    d = c.thread_dir("Q1P1")
+    (d / "actionability.json").write_text(json.dumps({"status": "done"}))
+    (d / "paper").mkdir(exist_ok=True)
+    (d / "paper/paper.json").write_text(json.dumps({"status": "ACCEPTED", "round": 1}))
+    (d / "paper/paper.tex").write_text("the accepted paper"); (d / "paper/paper.pdf").write_bytes(b"%PDF")
+    return c
+
+
+TARGET = "Target: a matching lower bound, turning the upper bound into a near-tight characterisation."
+
+
+def test_extend_archives_the_draft_and_its_paper_and_runs_one_round_toward_the_target(tmp_path, monkeypatch):
+    from pathfinder import gc, paper
+    c = _drafted(tmp_path)
+    assert gc.collect_thread(c, "Q1P1") is not None
+    before = research.status(c, "Q1P1")["round"]
+    out = reopen.reopen(c, "Q1P1", "extend", reason="raise significance", note=TARGET)
+    d = c.thread_dir("Q1P1")
+    assert out["from"]["status"] == "DRAFT"
+    assert sorted(out["archived"]) == ["reopened/1/actionability.json", "reopened/1/edited", "reopened/1/paper"]
+    assert (d / "reopened/1/paper/paper.tex").read_text() == "the accepted paper"
+    assert paper.status(c, "Q1P1")["status"] == "none" and edit.status(c, "Q1P1")["status"] == "none"
+    prior = {"n": 1, "status": "DRAFT", "edit": "reopened/1/edited", "paper": "reopened/1/paper", "paper_status": "ACCEPTED"}
+    assert out["prior_result"] == prior
+    s = research.status(c, "Q1P1")
+    assert (s["stage"], s["round"], s["grant"]["grant"], s["prior_result"]) == ("peers", before + 1, "extend", prior)
+    rows = Ledger(d / "ledger.jsonl").read()
+    assert (rows[-1]["kind"], rows[-1]["text"]) == ("operator", TARGET) and s["grant"]["ledger_seq"] == rows[-1]["seq"]
+    c = _verdict(c, "ITERATE")
+    seen = _seen(monkeypatch, notes=[stub.NOTE + "\nthe lower bound, attempted\n"])
+    assert research.run_thread(c, "Q1P1") == "PAUSE-ON-ITERATE"
+    stages = [r.stage for r in seen]
+    assert stages[0] == "peer" and stages[-2:] == ["consolidate", "verify"]
+    peer = next(r for r in seen if r.stage == "peer").prompt
+    assert TARGET in peer and "extend" in peer and f"seq {rows[-1]['seq']}" in peer
+    assert research.status(c, "Q1P1")["prior_result"] == prior
+
+
+def test_a_failed_extension_keeps_the_earlier_paper_in_status_state_and_playbook(tmp_path, monkeypatch):
+    from pathfinder import campaign_state, playbook
+    c = _drafted(tmp_path)
+    reopen.reopen(c, "Q1P1", "extend", reason="raise significance", note=TARGET)
+    c = _verdict(c, "ITERATE")
+    _seen(monkeypatch, notes=[stub.NOTE + "\nno lower bound\n"])
+    research.run_thread(c, "Q1P1")
+    state = campaign_state.build(c)
+    assert state["units"][0]["prior_result"]["paper_status"] == "ACCEPTED"
+    assert "earlier DRAFT kept, paper ACCEPTED in reopened/1/paper" in campaign_state.text(state)
+    assert any("Q1P1: the extension ended PAUSE-ON-ITERATE" in a["action"] and "reopened/1/paper" in a["why"]
+               for a in playbook.next_actions(c))
+
+
+def test_an_extension_that_ends_draft_is_edited_and_has_no_paper_yet(tmp_path, monkeypatch):
+    from pathfinder import paper, playbook
+    c = _drafted(tmp_path, scheme="eva")
+    reopen.reopen(c, "Q1P1", "extend", reason="raise significance", note=TARGET)
+    c = _verdict(c, "DRAFT")
+    _seen(monkeypatch, notes=[stub.NOTE + "\nwith the lower bound\n"])
+    assert research.run_thread(c, "Q1P1") == "DRAFT"
+    assert edit.run(c, "Q1P1") == "done" and paper.status(c, "Q1P1")["status"] == "none"
+    assert not any("extension ended" in a["action"] for a in playbook.next_actions(c))
+
+
+@pytest.mark.parametrize("setup, kwargs, message", [
+    ("draft", {"note": None}, "--note"),
+    ("draft-writing", {"note": TARGET}, "writing"),
+    ("revise", {"note": TARGET}, "repair"),
+])
+def test_extend_is_refused_without_a_target_off_draft_or_while_the_paper_runs(tmp_path, setup, kwargs, message):
+    if setup == "revise":
+        c = _finished(tmp_path, "REVISE", repairs=0)
+    else:
+        c = _drafted(tmp_path, scheme="eva")
+        if setup == "draft-writing":
+            (c.thread_dir("Q1P1") / "paper/paper.json").write_text(json.dumps({"status": "writing", "round": 1}))
+    with pytest.raises(ValueError, match=message):
+        reopen.reopen(c, "Q1P1", "extend", reason="r", **kwargs)
+    assert not (c.thread_dir("Q1P1") / "Q1P1.reopen.json").exists()
+
+
+@pytest.mark.parametrize("grant", ["repair", "round"])
+def test_a_draft_still_refuses_repair_and_round(tmp_path, grant):
+    c = _drafted(tmp_path, scheme="eva")
+    with pytest.raises(ValueError, match="extend"):
+        reopen.reopen(c, "Q1P1", grant, reason="r", note="n")
+
+
+def test_the_command_line_takes_the_extend_grant(tmp_path, capsys):
+    from pathfinder import cli
+    c = _drafted(tmp_path, scheme="eva")
+    cli.main(["--root", str(c.root), "reopen", "Q1P1", "--grant", "extend", "--reason", "r", "--note", TARGET])
+    assert "reopen 1 from DRAFT with an extend grant" in capsys.readouterr().out

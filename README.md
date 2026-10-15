@@ -410,18 +410,23 @@ the schema and a JSON-only rule, since Claude's CLI does not enforce a schema.
   pair's. It touches no thread, so it is safe while another runner holds the campaign; `--apply` and
   `--repair-only` retire them too before acting. A record with a live runner or child, or with no recorded pid,
   stays, and `pathfinder health` keeps warning about it.
-- `pathfinder reopen PAIR --grant repair|round --reason TEXT [--note TEXT]` gives a finished EVA thread (the
-  joint thread under the composable scheme) one more step. PAUSE-ON-REVISE takes `repair`: consolidate with the
-  verifier's last corrections, then the novelty check, then verify. PAUSE-ON-ITERATE takes `round`: one more peer
-  round from the verifier's last action. PAUSE takes `round` with a required `--note`, added to the ledger as an
-  `operator` entry (any grant may carry one). DRAFT is refused, since its edit and paper would describe other
-  research, and so is a grant that does not fit the ending. The verdict that follows ends the thread whatever
-  it decides: one grant is one verdict. The reopen is appended to `threads/<pair>/<pair>.reopen.json` (time,
-  grant, reason, note, the ending it left, the engine at that moment); verdicts, ledger and novelty reports are
-  appended to; the earlier edit and actionability answer move to `reopened/<n>/`, so the new outcome is edited
-  afresh. A pair missing from `shortlist.json` is listed again, marked `reopened`. The runner reaches the pair
-  on its next pass (`research --pairs PAIR` runs it alone), under that run's own record of its engine.
-  `status`, `state` and `playbook` show reopened threads and an open grant.
+- `pathfinder reopen PAIR --grant repair|round|extend --reason TEXT [--note TEXT]` gives a finished EVA thread
+  (the joint thread under the composable scheme) one more step. PAUSE-ON-REVISE takes `repair`: consolidate with
+  the verifier's last corrections, then the novelty check, then verify. PAUSE-ON-ITERATE takes `round`: one more
+  peer round from the verifier's last action. PAUSE takes `round` with a required `--note`, added to the ledger
+  as an `operator` entry (any grant may carry one). DRAFT takes `extend`: one more peer round aimed at the target
+  the required `--note` states, then consolidation, the novelty check and verify; its edit, actionability answer
+  and paper (accepted or not) move to `reopened/<n>/` first and the thread keeps them as `prior_result`. A grant
+  that does not fit the ending is refused, and so is a repair or round on a thread with a paper, or an extension
+  while the paper is being written or reviewed. The verdict that follows ends the thread whatever it decides:
+  one grant is one verdict. After an extension a DRAFT is edited afresh and may get a new paper; any other
+  ending leaves the earlier DRAFT and its paper as the thread's result. The reopen is appended to
+  `threads/<pair>/<pair>.reopen.json` (time, grant, reason, note, the ending it left, what it archived, the
+  engine at that moment); verdicts, ledger and novelty reports are appended to; the earlier edit and
+  actionability answer move to `reopened/<n>/`, so the new outcome is edited afresh. A pair missing from
+  `shortlist.json` is listed again, marked `reopened`. The runner reaches the pair on its next pass (`research
+  --pairs PAIR` runs it alone), under that run's own record of its engine. `status`, `state` and `playbook`
+  show reopened threads, an open grant and, after an extension that did not end DRAFT, the earlier result kept.
 
 ### Cycles, recovery and failure reports
 
