@@ -73,7 +73,7 @@ def test_an_arxiv_query_backs_off_on_rate_limits_and_names_its_client(monkeypatc
 def test_paper_title_checks_use_the_same_query(monkeypatch):
     from pathfinder import paper
     calls, _ = _arxiv(monkeypatch, [429, ATOM])
-    assert paper._arxiv_titles(["2409.00001"]) == {"2409.00001": "A title wrapped"}
+    assert paper._arxiv_titles(["2409.00001"]) == {"2409.00001": {"title": "A title wrapped", "authors": ["Ann", "Bob"]}}
     assert len(calls) == 2 and calls[0][0].get_header("User-agent")
 
 

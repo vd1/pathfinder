@@ -622,6 +622,15 @@ Inspect descendants before repair. If interrupted between checkpoint writes,
 use the preserved before-state for explicit reconciliation rather than bypassing
 the duplicate-round guard.
 
+The reference checks look up every arXiv identifier an entry names (an eprint field, an arxiv.org address or
+an `arXiv:` tag, old-style ones included; a journal version merging two preprints may name both) and compare
+titles. A title matches when most of its words are shared, or when all the words of one title, at least three,
+are in the other (a shortened, subtitled or journal title); TeX macros are not words. A title that differs while
+at least half the entry's authors are the arXiv record's authors is reported as a renamed paper and does not
+fail an edit or a paper; a different title by other authors does, as a wrong identifier would. An edit blocked
+by a check that now passes finishes with `pathfinder edit PAIR`, which accepts the existing note without an
+editor call when it builds and its checks pass.
+
 Accepted papers and completed edits may still carry unresolved reference checks.
 These remain visible in `health --json` and its text warnings; acceptance does
 not silently certify a failed external lookup.

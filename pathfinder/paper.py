@@ -76,32 +76,76 @@ def bib_entries(text: str) -> dict:
         while i < len(text) and depth:
             depth += {"{": 1, "}": -1}.get(text[i], 0); i += 1
         body = text[start:i - 1]
-        fields = {}
-        for f in re.finditer(r"(\w+)\s*=\s*(\{(?:[^{}]|\{[^{}]*\})*\}|\"[^\"]*\"|[^,\n]+)", body):
-            fields[f.group(1).lower()] = f.group(2).strip().strip("{}\"").strip()
+        fields, j = {}, 0
+        while (f := re.compile(r"(\w+)\s*=\s*").search(body, j)):
+            j = f.end()
+            if body[j:j + 1] == "{":                 # a braced value, to its matching brace at any depth
+                depth, k = 0, j
+                while k < len(body):
+                    depth += {"{": 1, "}": -1}.get(body[k], 0); k += 1
+                    if not depth:
+                        break
+                value, j = body[j:k], k
+            else:
+                v = re.compile(r'"[^"]*"|[^,\n]+').match(body, j)
+                value, j = (v.group(0), v.end()) if v else ("", j)
+            fields[f.group(1).lower()] = value.strip().strip("{}\"").strip()
         out[m.group(2)] = {"type": m.group(1).lower(), **fields}
     return out
 
 
 def _words(s):
-    return set(re.findall(r"[a-z0-9]{3,}", (s or "").lower()))
+    """A title's words: TeX macros (\\mathbb, \\R) are not words, so math written two ways compares equal."""
+    return set(re.findall(r"[a-z0-9]{3,}", re.sub(r"\\[a-zA-Z]+", " ", s or "").lower()))
 
 
-def _arxiv_id(entry: dict) -> str | None:
-    """The arXiv identifier an entry names, or None. Only an explicit mention counts: an eprint field, an
-    arxiv.org address or an "arXiv:" tag. A bare four-and-four-digit pattern anywhere in the entry does not,
-    because a DOI such as 10.1111/j.1540-6261.1984.tb03897.x contains 6261.1984 (Roll 1984 was reported as
-    "arXiv 6261.1984 not found" and its note blocked, 6 October)."""
-    number = r"(\d{4}\.\d{4,5})(?:v\d+)?"
-    if re.fullmatch(number, (entry.get("eprint") or "").strip().removeprefix("arXiv:").strip()):
-        return re.fullmatch(number, entry["eprint"].strip().removeprefix("arXiv:").strip()).group(1)
+CONTAINED = 3                                    # a title of fewer words is too generic to match by containment
+
+
+def _same_title(a: set, b: set) -> bool:
+    """Most words shared, or one title's words all in the other's: a shortened, subtitled or journal title."""
+    small, large = (a, b) if len(a) <= len(b) else (b, a)
+    return len(a & b) / len(a | b) >= 0.5 or (len(small) >= CONTAINED and small <= large)
+
+
+def _surname_words(s: str) -> set:
+    """Lower-case ASCII letters of a name, accents and TeX accent macros removed."""
+    import unicodedata
+    s = re.sub(r"\\[a-zA-Z]+|\\.|[{}]", "", s)
+    s = "".join(ch for ch in unicodedata.normalize("NFKD", s) if not unicodedata.combining(ch))
+    return set(re.findall(r"[a-z]{2,}", s.lower()))
+
+
+def _same_authors(bib_authors: str | None, arxiv_authors) -> bool:
+    """At least half of the entry's authors (by surname) are among the arXiv record's authors."""
+    if not bib_authors or not arxiv_authors:
+        return False
+    names = [n.strip() for n in re.split(r"\s+and\s+", bib_authors) if n.strip() and n.strip().lower() != "others"]
+    surnames = [(n.split(",")[0] if "," in n else n.split()[-1]) for n in names]
+    known = set().union(*(_surname_words(a) for a in arxiv_authors))
+    found = sum(1 for s in surnames if _surname_words(s) and _surname_words(s) <= known)
+    return bool(surnames) and found * 2 >= len(surnames)
+
+
+def _arxiv_ids(entry: dict) -> list[str]:
+    """The arXiv identifiers an entry names, in order: one, or several for a journal version merging preprints
+    (nobel, Q080-P422). Only an explicit mention counts: an eprint field, an arxiv.org address or an "arXiv:"
+    tag. A bare four-and-four-digit pattern anywhere in the entry does not, because a DOI such as
+    10.1111/j.1540-6261.1984.tb03897.x contains 6261.1984 (Roll 1984 was reported as "arXiv 6261.1984 not found"
+    and its note blocked, 6 October). Old-style identifiers (quant-ph/0703015) count too."""
+    number = r"(\d{4}\.\d{4,5}|[a-z][a-z\-]*(?:\.[A-Z]{2})?/\d{7})(?:v\d+)?"
+    found = []
+    eprint = (entry.get("eprint") or "").strip().removeprefix("arXiv:").strip()
+    if re.fullmatch(number, eprint):
+        found.append(re.fullmatch(number, eprint).group(1))
     for key, value in entry.items():
-        if key == "doi":
+        if key in ("doi", "eprint"):
             continue
-        m = re.search(r"arxiv\.org/(?:abs|pdf|html)/" + number, value, re.I) or re.search(r"arxiv(?:\s+(?:preprint|e-?print|identifier|id))?\s*[:/]?\s*" + number, value, re.I)
-        if m:
-            return m.group(1)
-    return None
+        for m in [*re.finditer(r"arxiv\.org/(?:abs|pdf|html)/" + number, value, re.I),
+                  *re.finditer(r"arxiv(?:\s+(?:preprint|e-?print|identifier|id))?\s*[:/]?\s*" + number, value, re.I)]:
+            if m.group(1) not in found:
+                found.append(m.group(1))
+    return found
 
 
 def check_references(tex: str, bib: str, fetch=None) -> list[str]:
@@ -118,31 +162,42 @@ def check_references(tex: str, bib: str, fetch=None) -> list[str]:
     ids = {}
     for k, e in entries.items():
         blob = " ".join(e.values())
-        aid = _arxiv_id(e)
-        if aid:
-            ids[k] = aid
+        named = _arxiv_ids(e)
+        if named:
+            ids[k] = named
         elif not (e.get("doi") or e.get("url") or e.get("eprint") or re.search(r"https?://|\\url\{|doi", blob, re.I)):
             notes.append(f"{k}: no URL, DOI or arXiv identifier")
     if ids:
         fetch = fetch or _arxiv_titles
         try:
-            titles = fetch(sorted(set(ids.values())))
+            titles = fetch(sorted({i for named in ids.values() for i in named}))
         except Exception as e:                       # network trouble is a note, not a failure
             titles, notes = {}, notes + [f"arXiv lookup failed: {e}"]
-        for k, aid in ids.items():
-            if aid not in titles:
-                if titles:
+        for k, named in ids.items():
+            records = []
+            for aid in named:
+                if aid in titles:
+                    records.append(titles[aid] if isinstance(titles[aid], dict) else {"title": titles[aid], "authors": None})
+                elif titles:
                     notes.append(f"{k}: arXiv {aid} not found")
+            a = _words(entries[k].get("title"))
+            if not records or not a or any(_same_title(a, _words(r["title"])) for r in records):
                 continue
-            a, b = _words(entries[k].get("title")), _words(titles[aid])
-            if a and len(a & b) / len(a | b) < 0.5:
-                notes.append(f"{k}: title does not match arXiv {aid}: bib says '{entries[k].get('title')}', arXiv says '{titles[aid]}'")
+            aid = " and ".join(named)
+            said = f"bib says '{entries[k].get('title')}', arXiv says " + " / ".join(f"'{r['title']}'" for r in records)
+            authors = None if any(r.get("authors") is None for r in records) else [x for r in records for x in r["authors"]]
+            if _same_authors(entries[k].get("author"), authors):    # renamed, e.g. its journal version
+                notes.append(f"{k}: title differs from arXiv {aid}, authors match (a renamed paper?): {said}")
+            else:
+                notes.append(f"{k}: title does not match arXiv {aid}: {said}")
     return notes
 
 
 def _arxiv_titles(ids: list[str]) -> dict:
     rows = corpus.parse_atom(corpus.query({"id_list": ",".join(ids), "max_results": len(ids)}))   # backs off on 429
-    return {r["id"]: r["title"] for r in rows}
+    found = {r["id"]: {"title": r["title"], "authors": r["authors"]} for r in rows}
+    # the API names an old-style record by its number alone (quant-ph/0703015 comes back as 0703015)
+    return {i: found.get(i) or found.get(i.rsplit("/", 1)[-1]) for i in ids if found.get(i) or found.get(i.rsplit("/", 1)[-1])}
 
 
 def run(campaign, pair_id: str, stop=lambda: False) -> str:
