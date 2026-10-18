@@ -51,8 +51,8 @@ def paper_text(campaign, row: dict) -> Path | None:
     if row.get("text") and campaign.path(row["text"]).is_file():
         return campaign.path(row["text"])
     aid = paper_source.parse(row.get("id", ""))
-    if aid is None:
-        return None
+    if aid is None:                              # not an arXiv paper: a text placed in the cache under its id, or none
+        return paper_source.lookup(str(row.get("id", "")), [cache(campaign), *_also(campaign)]) if row.get("id") else None
     try:
         return get(campaign, aid)
     except Exception as error:                   # no e-print, a network failure: the abstract is used
