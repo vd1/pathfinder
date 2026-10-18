@@ -6,7 +6,7 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "92072a1e14193f9423cab4ebd4efd3466331b4dc"
+revision = "a464977e3a75c78ff482bb458bc9e50576f3f674"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
 notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.6.1 and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
