@@ -82,7 +82,8 @@ def wanted(campaign, pair_id, rows) -> list[dict]:
         out.setdefault(aid, {"id": aid, "title": title, "why": []})["why"].append("cites both papers")
     for side, row in zip("QP", rows):
         text = paper_text(campaign, row)
-        for ref in paper_source.references(text) if text else []:
+        aid = paper_source.parse(row.get("id", ""))
+        for ref in paper_source.references(text, aid, cache(campaign), lambda r, timeout: net.urlopen(r, timeout)) if text else []:
             out.setdefault(ref, {"id": ref, "title": None, "why": []})["why"].append(f"cited by {side}")
     ranked = sorted((w for w in out.values() if w["id"] not in own),
                     key=lambda w: ("cites both papers" not in w["why"], -len(w["why"])))

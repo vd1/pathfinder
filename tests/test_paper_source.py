@@ -315,3 +315,21 @@ def test_collection_prunes_a_frozen_bundle_and_the_bundle_still_verifies(tmp_pat
 def test_bad_source_settings_are_refused(tmp_path, key, value):
     with pytest.raises(ValueError, match=key):
         make(tmp_path, **{key: value})
+
+
+def test_a_text_fetched_before_references_were_kept_gets_them_from_its_eprint_once(tmp_path, online):
+    """nobel's corpus texts were flattened before the bibliography was kept: the flattened text lacks the .bbl."""
+    legacy = tmp_path / "sources"; legacy.mkdir()
+    (legacy / "2401.00001.tex").write_text("\\documentclass{article} flattened, no bibliography")
+    n = online({EPRINT + "2401.00001": Q_SOURCE})
+    cache = tmp_path / "cache"
+    assert paper_source.references(legacy / "2401.00001.tex", "2401.00001", cache, net.urlopen) == ["2301.00007", "doi:10.1103/PhysRev.1.1"]
+    calls = len(n.calls)
+    assert paper_source.references(legacy / "2401.00001.tex", "2401.00001", cache, net.urlopen) == ["2301.00007", "doi:10.1103/PhysRev.1.1"]
+    assert len(n.calls) == calls and not (cache / "2401.00001.tex").exists()
+
+
+def test_offline_the_references_are_read_from_the_text_itself(tmp_path):
+    text = tmp_path / "2401.00001.tex"
+    text.write_text("\\begin{thebibliography}{9}\\bibitem{a} A, arXiv:2301.00007.\\bibitem{b} B, doi 10.1000/xyz1.\\end{thebibliography}")
+    assert paper_source.references(text, "2401.00001", tmp_path / "cache") == ["2301.00007", "doi:10.1000/xyz1"]

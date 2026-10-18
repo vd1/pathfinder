@@ -56,10 +56,27 @@ def lookup(aid: str, dirs) -> Path | None:
     return None
 
 
-def references(path: Path) -> list[str]:
-    """The arXiv identifiers the paper's bibliography names, kept by fetch beside the paper."""
-    refs = Path(str(path).rsplit(".", 1)[0] + ".refs.json")
-    return json.loads(refs.read_text()) if refs.is_file() else []
+def references(path: Path, aid: str | None = None, cache=None, urlopen=None) -> list[str]:
+    """The arXiv ids and DOIs the paper's bibliography names: kept by the fetch beside the paper (or in the
+    cache); for a text fetched before that was kept, read again from the e-print once (its .bbl and .bib are
+    not in the flattened text) and kept, or offline read from the text itself."""
+    for refs in [Path(str(path).rsplit(".", 1)[0] + ".refs.json"),
+                 *([Path(cache) / f"{name(aid)}.refs.json"] if aid and cache else [])]:
+        if refs.is_file():
+            return json.loads(refs.read_text())
+    if aid and cache and not os.environ.get("PATHFINDER_OFFLINE"):
+        try:
+            Path(cache).mkdir(parents=True, exist_ok=True)
+            _wait_turn(Path(cache))                   # the shared arXiv spacing, though the fetch lands in a scratch directory
+            with tempfile.TemporaryDirectory(prefix="paper-source-refs-") as tmp:
+                _fetch(aid, Path(tmp), urlopen)
+                found = json.loads((Path(tmp) / f"{name(aid)}.refs.json").read_text())
+            Path(cache).mkdir(parents=True, exist_ok=True)
+            (Path(cache) / f"{name(aid)}.refs.json").write_text(json.dumps(found))
+            return found
+        except Exception:
+            pass
+    return _refs_in([Path(path).read_text(errors="replace")], aid or "")
 
 
 def get(aid: str, cache, also=(), urlopen=None) -> Path:
@@ -137,9 +154,13 @@ def inline(path: Path, base: Path, depth: int = 0) -> str:
 
 def _refs(work: Path, own: str) -> list[str]:
     """The arXiv ids, and as "doi:..." the DOIs of entries with no arXiv id, that the bibliography names."""
+    return _refs_in([p.read_text(errors="replace") for p in [*work.rglob("*.bbl"), *work.rglob("*.bib"),
+                                                               *work.rglob("*.tex")]], own)
+
+
+def _refs_in(texts, own: str) -> list[str]:
     found = []
-    for p in [*work.rglob("*.bbl"), *work.rglob("*.bib"), *work.rglob("*.tex")]:
-        text = p.read_text(errors="replace")
+    for text in texts:
         for entry in re.split(r"\\bibitem|\n@", text):
             ids = [m.group(1) for m in (*_IN_TEXT.finditer(entry), *_EPRINT_FIELD.finditer(entry))]
             refs = ids or [f"doi:{m.group(1).rstrip('.')}" for m in _DOI_IN_TEXT.finditer(entry)][:1]
