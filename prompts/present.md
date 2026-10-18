@@ -45,6 +45,9 @@ established, and never claim scope beyond the theorems.
 
 Job 5. Close the open review findings. Apply each open minor finding, or
 dismiss it with a one-line reason; none is left silently open. A finding
+that asks to change a file of the pipeline rather than the paper (the
+author's search record search.md, the ledger, a review record) is "out of
+scope", with that reason. A finding
 that asks for a short computation or a missing line of argument is applied
 here, when the paper's own material settles it. A finding that needs an
 external lookup you cannot do here (citation metadata, a DOI, a cited
@@ -68,6 +71,7 @@ the complete BibTeX file, only if you changed it (otherwise leave this block out
 ===REPORT===
 one JSON object: {"changelog": ["location, job number, what changed", ...],
  "title": "a new title, or null",
- "findings": [{"id": "F1", "status": "applied|dismissed|already applied|needs lookup", "reason": "one line"}],
+ "findings": [{"id": "F1", "status": "applied|dismissed|already applied|out of scope|needs lookup", "reason": "one line"}],
  "escalations": [{"where": "location", "issue": "the choice you could not make"}]}
-"findings" has one entry for every open review finding, by its id.
+"findings" has one entry for every open review finding, by its id. Each
+escalation is an object as shown, never a plain string.

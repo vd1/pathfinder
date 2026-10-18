@@ -378,29 +378,34 @@ The pass works in `paper/presentation/` and never changes the accepted
    pipeline labels, calibrates background on the source papers, states the
    question and the result first, frames the paper faithfully, may propose a
    title, and applies or dismisses every open finding with a reason, marking
-   "needs lookup" what needs a search. What needs a choice of meaning it
+   "needs lookup" what needs a search and "out of scope", with its reason,
+   what asks to change a pipeline file (search.md, the ledger). What needs a choice of meaning it
    escalates instead of guessing.
 2. A lookup (stage `present_lookup`, web search) closes the "needs lookup"
    findings from the records it reads.
 3. A fresh check (stage `present_check`, actors `checker`, or `checker-1`
    and `checker-2` with two) reads the manuscript, the change log and the
-   open findings only. In the pilot a second model family alone was too
+   open findings only; it tells an unclear sentence (kind `unclear`, a reword
+   fixes it) from one whose meaning is wrong. In the pilot a second model family alone was too
    lenient on meaning and claims: route at least one checker to a strong
    model.
 4. Meaning and claim findings and the escalations go to one targeted review
    call (stage `review`, actor `claims`) that reads the accepted paper too:
    confirmed (the accepted paper has the problem), introduced (only the edit
-   has it) or dismissed. A confirmed problem is amended automatically, once
+   has it), presentation (right but unclearly worded) or dismissed. A confirmed problem is amended automatically, once
    per paper: the findings go to `paper.amend` (an author round and a review
    round, logged in `paper.json` as `presentation_amends`), and the pass
    starts again on the new accepted paper. A second confirmed problem stops
    at RETURNED with `paper/presentation/amend-findings.json` ready for
    `pathfinder paper PAIR --amend`.
-5. The remaining findings get up to `presentation_cycles` corrections
+5. The remaining findings, with the unclear sentences and the introduced
+   and presentation items, get up to `presentation_cycles` corrections
    (actor `corrector`): definitions and rewording only. A guard compares the
    corrected manuscript with the one before it sentence by sentence and
    discards the correction when an accepted sentence loses or changes words
-   (unless it is restored to its accepted wording) or when inserted text
+   (unless it is restored to its accepted wording, or an unclear finding
+   quotes it; the recheck then reads each such sentence before and after)
+   or when inserted text
    cites, names an author of the bibliography, brings a new number, refers
    to a numbered theorem or section, or displays a formula.
 
@@ -808,7 +813,10 @@ of the account, across every process, from admission to its end; the pool
 lives in `$PATHFINDER_ACCOUNTS` (default `~/.pathfinder/accounts`), one
 reservation file per call, reaped when its process is gone. One account has
 one seat count: a campaign naming it with another count is refused. A call
-waiting for a seat emits `admission_deferred`.
+waiting for a seat emits `admission_deferred`. The account is the campaign's
+own backend's: a call routed to another backend takes a seat of
+`"accounts": {"claude": {"name": ..., "seats": n}}` when that names one for
+its backend, and otherwise of no account (only `seats` limits it).
 
 **Sources that throttle agents.** Every receipt counts the rate-limit answers
 the agents met in their own tool calls (`source_limits`, arXiv for now): a

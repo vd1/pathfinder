@@ -6,7 +6,7 @@ to the operator. Owners: engine (it resolves itself), apex (the supervising agen
 decides). The order is the order to act in: campaign-wide stops, the health flag, cooldown, then each pair."""
 from __future__ import annotations
 import re, shlex
-from . import campaign_state, health, reconcile
+from . import campaign_state, health, presentation, reconcile
 
 SOURCE_NAMES = {"arxiv": "arXiv"}
 ESCALATE = {
@@ -79,6 +79,13 @@ def next_actions(campaign) -> list[dict]:
             out.append({"owner": "operator", "action": f"{pair}: presentation pass {pres['state']}",
                         "why": f"{pres.get('reason')}. Fix what it names (a lookup, an open finding), then run the pass afresh.",
                         "command": _cmd(campaign, "present", pair, "--restart")})
+        elif (unit["assessment"]["status"] == "ACCEPTED" and presentation.enabled(campaign)
+              and pres.get("state") in (None, "none", "stopped") and unit["controller"] != "running"):
+            out.append({"owner": "engine" if (snap.get("runner") or {}).get("pid_alive") else "operator",
+                        "action": f"{pair}: run the presentation pass",
+                        "why": "the paper is ACCEPTED and the campaign clears papers for release; the runner reaches it on "
+                               "its next pass, or run it on its own.",
+                        "command": _cmd(campaign, "present", pair)})
         elif unit["assessment"]["status"] == "CLEARED" and (campaign.raw or {}).get("release"):
             out.append({"owner": "operator", "action": f"{pair}: paper cleared for release",
                         "why": "the presentation pass cleared it; the export writes the public copy and runs the leak check.",

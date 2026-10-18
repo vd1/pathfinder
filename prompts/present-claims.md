@@ -10,9 +10,12 @@ and the edited one, and decide each item:
   confirmed item sends the paper back to its author for one more round.
 - "introduced": the accepted paper is fine there, and the problem comes
   from the presentation edit. Say what the edit changed.
+- "presentation": the claim is right, only its wording is unclear; a
+  reword without changing what is claimed fixes it. It goes to the editor,
+  not to the author.
 - "dismissed": there is no problem. Say why in one line.
 
 Do not ask for new research. Output exactly one JSON object and nothing
 else:
-{"items": [{"id": "C1", "decision": "confirmed|introduced|dismissed",
+{"items": [{"id": "C1", "decision": "confirmed|introduced|presentation|dismissed",
   "reason": "one or two sentences", "fix": "for a confirmed item, what would resolve it"}]}

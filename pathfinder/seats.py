@@ -19,13 +19,30 @@ def accounts_dir() -> Path:
     return Path(os.environ.get("PATHFINDER_ACCOUNTS") or Path.home() / ".pathfinder" / "accounts")
 
 
-def account(campaign) -> dict | None:
-    spec = (campaign.raw or {}).get("account")
-    if not spec:
-        return None
+def _spec(spec, where):
     if not isinstance(spec, dict) or not spec.get("name") or not isinstance(spec.get("seats"), int) or spec["seats"] < 1:
-        raise ValueError(f"account must be {{\"name\": ..., \"seats\": n >= 1}}, got {spec!r}")
+        raise ValueError(f"{where} must be {{\"name\": ..., \"seats\": n >= 1}}, got {spec!r}")
     return spec
+
+
+def account(campaign) -> dict | None:
+    """The account a call draws its seat from. "account" is the campaign's own backend's; a call routed to
+    another backend (pathfinder.routing) takes a seat of "accounts": {backend: {...}} when that names one, and
+    otherwise of none, so a Claude stage does not queue behind Codex research on a Codex subscription (nobel's
+    presentation trial, 18 October 2026)."""
+    raw = campaign.raw or {}
+    accounts = raw.get("accounts") or {}
+    if not isinstance(accounts, dict):
+        raise ValueError(f"accounts must map a backend to {{\"name\": ..., \"seats\": n}}, got {accounts!r}")
+    for backend, spec in accounts.items():
+        _spec(spec, f"accounts.{backend}")
+    backend = getattr(campaign, "backend", None)
+    if backend is not None and backend in accounts:
+        return accounts[backend]
+    spec = raw.get("account")
+    if not spec or (backend is not None and raw.get("backend") not in (None, backend)):
+        return None
+    return _spec(spec, "account")
 
 
 def _pool(spec) -> Path:

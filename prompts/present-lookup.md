@@ -16,6 +16,11 @@ the complete BibTeX file, only if you changed it (otherwise leave this block out
 ===REPORT===
 one JSON object: {"changelog": ["location: what changed, and the source read"],
  "title": null,
- "findings": [{"id": "F1", "status": "applied|dismissed|needs lookup", "reason": "the source you read, or what you searched"}],
- "escalations": []}
-"findings" lists the findings that needed a lookup, by id.
+ "findings": [{"id": "F1", "status": "applied|dismissed|out of scope|needs lookup", "reason": "the source you read, or what you searched"}],
+ "escalations": [{"where": "location", "issue": "what you could not settle"}]}
+"findings" lists the findings that needed a lookup, by id. A finding, or a part
+of one, that asks to change a file of the pipeline rather than the paper (the
+author's search record search.md, the ledger, a review record) is "out of
+scope": say so in its reason; your change log already names the sources you
+read. Each escalation is an object as shown, never a plain string; leave the
+list empty when there is none.

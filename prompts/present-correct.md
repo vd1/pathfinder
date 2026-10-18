@@ -9,10 +9,12 @@ Resolve the findings by adding definitions and rewording only:
 - restore the accepted manuscript's wording, or delete text the earlier edit
   added, where a finding says that text changed the meaning or claims too
   much.
+- reword a sentence a finding of kind "unclear" quotes, so that it says the
+  same thing clearly.
 Never add a statement about cited work, a citation, an author's name, a
 constant or number, a reference to a numbered theorem or section, a
-displayed formula, or a new claim. Do not change the wording of a sentence
-the accepted manuscript has, except to restore it. A check compares your
+displayed formula, or a new claim. Do not change the wording of any other
+sentence the accepted manuscript has, except to restore it. A check compares your
 manuscript with the current one sentence by sentence and discards the whole
 correction if it does any of these.
 

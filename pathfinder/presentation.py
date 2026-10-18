@@ -30,7 +30,7 @@ from .context import Section
 from .research import _now, _prompt
 
 SUBSTANTIVE = ("meaning", "claim")
-DISPOSED = ("applied", "dismissed", "already applied")
+DISPOSED = ("applied", "dismissed", "already applied", "out of scope")   # out of scope: a pipeline file, with a reason
 TERMINAL = ("CLEARED", "RETURNED", "PAUSE-ON-PRESENT", "blocked")
 AUTO_AMENDS = 1                                   # automatic amends per paper; the next confirmed problem waits
 KEEP = (".sty", ".bst", ".png", ".pdf")           # beside paper.tex in each stage, so it builds as the paper does
@@ -177,7 +177,7 @@ def _run(campaign, pair_id, restart) -> str:
             answers = _claims(campaign, pair_id, stage, items, accepted)
             _save(campaign, pair_id, reviewed=s.get("reviewed", []) + [_key(e) for e in fresh])
             confirmed = [{**i, **a} for i, a in zip(items, answers) if a["decision"] == "confirmed"]
-            introduced = [{**i, **a} for i, a in zip(items, answers) if a["decision"] == "introduced"]
+            introduced = [{**i, **a} for i, a in zip(items, answers) if a["decision"] in ("introduced", "presentation")]
             if confirmed:
                 return _return(campaign, pair_id, confirmed)
         remaining = [f for f in found if f.get("kind") not in SUBSTANTIVE] + introduced
@@ -189,8 +189,13 @@ def _run(campaign, pair_id, restart) -> str:
         name = f"correct-{n}"
         _edit(campaign, pair_id, name, "corrector", "present-correct", base=stage, findings=remaining,
               accepted=accepted)
+        rewordable = [q for f in remaining if f.get("kind") == "unclear" or f.get("decision") == "presentation"
+                      for q in quoted(f.get("where"))]
         refused = guard((d / stage / "paper.tex").read_text(), (d / name / "paper.tex").read_text(), accepted,
-                        (d / name / "references.bib").read_text())
+                        (d / name / "references.bib").read_text(), rewordable)
+        pairs = reworded((d / stage / "paper.tex").read_text(), (d / name / "paper.tex").read_text(), accepted)
+        if pairs:
+            (d / name / "reworded.json").write_text(json.dumps(pairs, indent=1))
         if refused:
             (d / name / "guard.json").write_text(json.dumps(refused, indent=1))
             shutil.move(str(d / name), str(d / f"{name}-refused"))
@@ -345,6 +350,8 @@ def _blocks(text: str):
         report = contracts.extract_json(out.get("REPORT", ""))
     except ValueError:
         raise contracts.ContractViolation(["no ===REPORT=== block holding a JSON object"])
+    if isinstance(report.get("escalations"), list):  # an escalation written as a plain string is still an issue
+        report["escalations"] = [{"where": None, "issue": e} if isinstance(e, str) else e for e in report["escalations"]]
     errors = contracts.violations(report, REPORT, "report")
     if errors:
         raise contracts.ContractViolation(errors)
@@ -366,8 +373,10 @@ def retitle(tex: str, title: str) -> str:
 
 
 def _dispositions(d: Path, name: str) -> dict:
+    """Each open finding's status; "out of scope" without a reason does not close it."""
     report = json.loads((d / name / "report.json").read_text())
-    return {f["id"]: {"status": f["status"], "reason": f.get("reason")} for f in report.get("findings") or []}
+    return {f["id"]: {"status": f["status"] if f["status"] != "out of scope" or (f.get("reason") or "").strip()
+                      else "out of scope without a reason", "reason": f.get("reason")} for f in report.get("findings") or []}
 
 
 def _changelog(d: Path) -> str:
@@ -389,8 +398,11 @@ def _check(campaign, pair_id, stage, opened, disposition) -> dict:
                 Section("change log", text=_changelog(d), keep=True),
                 Section("open review findings and what the editor did with each", keep=True,
                         text=json.dumps([{**f, **disposition.get(f["id"], {"status": "not addressed"})} for f in opened], indent=1)),
-                Section("questions the editor escalated", text=json.dumps(s.get("escalations", []), indent=1), keep=True),
-                Section("your task", text=_prompt(campaign, "present-check"), keep=True)]
+                Section("questions the editor escalated", text=json.dumps(s.get("escalations", []), indent=1), keep=True)]
+    if (d / stage / "reworded.json").exists():
+        sections.append(Section("sentences the last correction reworded (before, after)", keep=True,
+                                text=(d / stage / "reworded.json").read_text()))
+    sections.append(Section("your task", text=_prompt(campaign, "present-check"), keep=True))
     prompt = context.build(campaign, "present_check", sections, tools=False, cwd=d / stage, unit=pair_id)
     n, found = checkers(campaign), []
     for k in range(1, n + 1):
@@ -487,12 +499,32 @@ def _inserted(text: str, numbers: set, surnames: set) -> list[str]:
     return out
 
 
-def guard(before: str, after: str, accepted: str, bib: str) -> list[str]:
-    """What a correction did beyond adding definitions and rewording, comparing `after` with `before` sentence by
-    sentence: an accepted sentence lost or changed (unless the change restores the accepted wording), or
-    inserted text that cites, names an author of the bibliography, brings a number `before` did not have, refers
-    to a numbered theorem or section, or displays a formula. Empty when the correction may stand."""
+def quoted(where) -> list[str]:
+    """The phrases a finding quotes in its "where" (in straight or curly quotes), else the whole of it."""
+    text = " ".join(str(where or "").split())
+    found = re.findall(r'"([^"]{8,})"|“([^”]{8,})”', text)
+    return [a or b for a, b in found] or ([text] if len(text) >= 8 else [])
+
+
+def reworded(before: str, after: str, accepted: str) -> list[dict]:
+    """Accepted sentences a correction changed, each with its wording before and after, for the recheck."""
     acc, b, a = set(_sentences(accepted)), _sentences(before), _sentences(after)
+    out = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, b, a, autojunk=False).get_opcodes():
+        if tag == "replace" and any(s in acc for s in b[i1:i2]) and not all(s in acc for s in a[j1:j2]):
+            out.append({"before": " ".join(b[i1:i2]), "after": " ".join(a[j1:j2])})
+    return out
+
+
+def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> list[str]:
+    """What a correction did beyond adding definitions and rewording, comparing `after` with `before` sentence by
+    sentence: an accepted sentence lost or changed (unless the change restores the accepted wording, or the
+    sentence holds a phrase an "unclear" finding quotes, `rewordable`), or inserted text that cites, names an
+    author of the bibliography, brings a number `before` did not have, refers to a numbered theorem or section,
+    or displays a formula. Empty when the correction may stand."""
+    acc, b, a = set(_sentences(accepted)), _sentences(before), _sentences(after)
+    phrases = [" ".join(p.split()) for p in rewordable if p.strip()]
+    may_reword = lambda sentences: any(p in s for s in sentences for p in phrases)
     numbers, surnames = set(_NUMBER.findall(_body(before))), _surnames(bib)
     out = []
     for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, b, a, autojunk=False).get_opcodes():
@@ -510,7 +542,7 @@ def guard(before: str, after: str, accepted: str, bib: str) -> list[str]:
         ot, nt = _TOKEN.findall(" ".join(old)), _TOKEN.findall(" ".join(new))
         added = []
         for t, k1, k2, l1, l2 in difflib.SequenceMatcher(None, ot, nt, autojunk=False).get_opcodes():
-            if t in ("replace", "delete") and any(s in acc for s in old):
+            if t in ("replace", "delete") and any(s in acc for s in old) and not may_reword(old):
                 out.append(f"changes accepted wording: {' '.join(old)[:160]}")
                 break
             if t in ("replace", "insert"):

@@ -30,15 +30,21 @@ Flag:
    preamble). Kind "notation".
 2. Concepts a reader at the level of the cited source papers would need
    explained and cannot find. Kind "background".
-3. Edits in the change log that may have changed mathematical meaning, and
-   statements whose meaning is unclear or wrong as written. Kind "meaning".
-4. Claims of novelty or scope that the body does not support, including
+3. Sentences that are ambiguous or hard to follow while what they claim is
+   fine (an unclear referent, a computation whose purpose is not said, a
+   phrase only the authors could decode): a reword fixes them. Kind
+   "unclear"; quote the sentence in "where".
+4. Edits in the change log, or sentences the last correction reworded
+   (listed above with their wording before and after, when there are any),
+   that may have changed mathematical meaning, and statements that are
+   wrong as written. Kind "meaning".
+5. Claims of novelty or scope that the body does not support, including
    "new" for what the body presents as established. Kind "claim".
-5. Open findings the change log says were applied but that the manuscript
+6. Open findings the change log says were applied but that the manuscript
    does not show. Kind "open-finding".
 
 Output exactly one JSON object and nothing else:
-{"findings": [{"kind": "notation|background|meaning|claim|open-finding",
+{"findings": [{"kind": "notation|background|unclear|meaning|claim|open-finding",
   "where": "section or quoted phrase", "issue": "...", "fix": "..."}],
  "clear": true}
 "clear" is true only if there are no findings.
