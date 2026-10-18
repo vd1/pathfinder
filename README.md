@@ -227,7 +227,8 @@ your own campaign directory and edit the models and the budget.
   `paper_seconds`, `review_seconds`, `edit_seconds`. Peers work side by side, so
   a round spends clock time: the slowest call of each batch (or, without a scheme, the
   peer that has used the most), not the sum. A call gets what is left, at most
-  1200 s; when less than `peer_min_seconds` (default 120) is left, no further call
+  `peer_call_seconds` (default 1200 s, raise it for long single calls; the
+  verifier's deadline is `verify_seconds` as it stands); when less than `peer_min_seconds` (default 120) is left, no further call
   is sent and the thread goes to its review, and a peer call that times out at such
   a shortened deadline ends the peers' turn the same way instead of failing.
 - Calls are asked again in place before a pair stops. A call that never reached a model session

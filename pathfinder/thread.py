@@ -233,13 +233,22 @@ def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str |
     where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
 
 
-PEER_CALL_CAP = 1200.0           # one peer call's longest deadline, whatever the allowance (plus 30 s of grace)
+PEER_CALL_CAP = 1200             # one peer call's longest deadline by default, plus 30 s of grace
+
+
+def peer_call_cap(campaign) -> int:
+    """allowances.peer_call_seconds: one peer call's longest deadline (default 1200 s), whatever peer_seconds
+    leaves; nobel's single EV loop runs long single calls."""
+    v = (campaign.allowances or {}).get("peer_call_seconds", PEER_CALL_CAP)
+    if type(v) is not int or v < 1:
+        raise ValueError(f"allowances.peer_call_seconds must be a positive integer of seconds, got {v!r}")
+    return v
 
 
 def residual_timeout(campaign, timeout, failure) -> bool:
     """A peer call that timed out at a deadline cut short by the allowance's remainder: the allowance is spent,
     which is the end of the peers' turn, not a transport failure. A timeout at the full deadline still is one."""
-    full = min(float(campaign.allowances["peer_seconds"]), PEER_CALL_CAP)
+    full = min(float(campaign.allowances["peer_seconds"]), peer_call_cap(campaign))
     return (failure or {}).get("class") == "timeout" and float(timeout or 0) - 30 < full
 
 

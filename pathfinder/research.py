@@ -15,7 +15,7 @@ from .context import Section
 from .ledger import Ledger
 from .scan import prompts_dir
 from .admission import Refused
-from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row, pair_context, residual_timeout)
+from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row, pair_context, residual_timeout, peer_call_cap)
 from .review_evidence import (EvidenceUnavailable, EvidenceError, _external_citations, _declared_outputs, EVIDENCE_PATH, EVIDENCE_MAX_BYTES, _evidence_references, _assessment_evidence, _bundle_evidence, _review_material)
 from .composable_research import (_request_file, retain_response, _direct_requests, _review_contract, _apply_research_review, next_requests, export_outcome, _verdict_under_direct_eva, _repair_review, _finish_repairs, _run_composable)
 
@@ -36,6 +36,7 @@ def _peers(campaign, pair_id, stop):
     d, L = campaign.thread_dir(pair_id), Ledger(campaign.thread_dir(pair_id) / "ledger.jsonl")
     A = campaign.allowances; inp = _inputs(d); row = _scan_row(campaign, pair_id)
     helper = install_helper(d)
+    cap = peer_call_cap(campaign)
     used = {}; lock = threading.Lock()                    # each peer's own seconds; the round's clock is the largest
 
     peers = list(campaign.peers)
@@ -64,7 +65,7 @@ def _peers(campaign, pair_id, stop):
                            if in_ledger else ", then the ledger with the read command below.")
                         + (f" The files are inputs/{inp['Q']}, inputs/{inp['P']} and ledger.jsonl if you need to quote by line." if in_papers or in_ledger else ""))
             p = _prompt(campaign, "peer", ACTOR=actor, PEERS=" and ".join(others), Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}",
-                        MATERIAL=material, LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, 1200)),
+                        MATERIAL=material, LEDGER=f"{helper} --actor {actor}", LAST_SEQ=last, SECONDS=int(min(left, cap)),
                         CALLS_LEFT=A["peer_calls"] - call_no - 1, FEASIBILITY=row.get("feasibility", "?"),
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")
@@ -78,12 +79,12 @@ def _peers(campaign, pair_id, stop):
                                   + [Section("", text="## your task\n\n" + p, keep=True)], tools=True, cwd=d, unit=pair_id)
             r = transport.execute(campaign, transport.ModelRequest(
                 identity=f"{pair_id}:peer:{actor}:{call_no}", prompt=p, model=campaign.peer_model(actor), tools=True,
-                search=campaign.peer_search, cwd=d, timeout=int(min(left, 1200)) + 30, thread=pair_id,
+                search=campaign.peer_search, cwd=d, timeout=int(min(left, cap)) + 30, thread=pair_id,
                 stage="peer", actor=actor,
             ))
             with lock:
                 used[actor] = used.get(actor, 0.0) + r["seconds"]
-            if r["transport_failed"] and residual_timeout(campaign, int(min(left, 1200)) + 30, r.get("failure")):
+            if r["transport_failed"] and residual_timeout(campaign, int(min(left, cap)) + 30, r.get("failure")):
                 return                                    # the allowance ran out mid-call: this peer's turn is over
             if r["transport_failed"]:
                 raise transport.TransportFailed(pair_id, failure=r.get("failure"))

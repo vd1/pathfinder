@@ -139,7 +139,8 @@ ALLOWANCE_KEYS = {"peer": "peer_seconds", "consolidate": "consolidate_seconds", 
 
 def _allowances(campaign, receipts, warnings) -> list[dict]:
     """Per stage: the allowance, its timeouts, and the longest completed call, so a too-short allowance is visible."""
-    out = []
+    from .thread import peer_call_cap
+    out, cap = [], peer_call_cap(campaign)
     for stage, key in ALLOWANCE_KEYS.items():
         rows = [r for r in receipts[-50:] if r.get("stage") == stage]     # recent calls: advice about the present
         if not rows:
@@ -149,7 +150,7 @@ def _allowances(campaign, receipts, warnings) -> list[dict]:
         longest = max(completed) if completed else None
         allowance = (campaign.allowances or {}).get(key)
         residual = sum(r.get("outcome") == "timeout" and r.get("deadline_seconds") is not None and allowance is not None
-                       and r["deadline_seconds"] < min(allowance, 1200) for r in rows)   # cut short by the remainder
+                       and r["deadline_seconds"] < min(allowance, cap if stage == "peer" else allowance) for r in rows)   # cut short by the remainder
         out.append({"stage": stage, "allowance": allowance, "timeouts": timeouts, "residual_timeouts": residual,
                     "longest_completed_seconds": longest})
         if timeouts:
@@ -159,7 +160,7 @@ def _allowances(campaign, receipts, warnings) -> list[dict]:
                             + "".join(f" One timed out at a deadline of {d:.0f} s, cut short by what was left of the allowance."
                                       for d in sorted({r["deadline_seconds"] for r in rows if r.get("outcome") == "timeout"
                                                        and r.get("deadline_seconds") is not None and allowance is not None
-                                                       and r["deadline_seconds"] < min(allowance, 1200)})))
+                                                       and r["deadline_seconds"] < min(allowance, cap if stage == "peer" else allowance)})))
     return out
 
 

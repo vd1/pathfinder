@@ -9,7 +9,7 @@ from . import contracts, failures, novelty, transport
 from .context import Section
 from .ledger import Ledger
 from .admission import Refused
-from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row, pair_context,
+from .thread import (TERMINAL, Stopped, _now, status, OVERSIZE_FAILURE, _set, install_helper, prepare, _stage_attempts, _consolidate_prompt, evidence_by_reference, write_meta, _inputs, _prompt, role_brief, _check, _scan_row, pair_context, peer_call_cap,
                      residual_timeout)
 from .review_evidence import EvidenceUnavailable, _bundle_evidence, _review_material
 
@@ -281,7 +281,7 @@ def next_requests(campaign, pair_id):
             batch = []
             for actor in actors:
                 if stage == "peers":
-                    seconds = min(campaign.allowances["peer_seconds"] - s.get("peer_seconds", 0), 1200)
+                    seconds = min(campaign.allowances["peer_seconds"] - s.get("peer_seconds", 0), peer_call_cap(campaign))
                     row = _scan_row(campaign, pair_id)
                     prompt = material + "\n\n" + _prompt(campaign, "peer", ACTOR=actor,
                         PEERS=" and ".join(a for a in campaign.peers if a != actor),
