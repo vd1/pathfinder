@@ -22,9 +22,12 @@ def main(argv=None):
     x.add_argument("--min-score", type=float, required=True, help="a pair joins the shortlist at or above this score")
     x.add_argument("--page", type=int, default=5, help="papers to add per side per pass")
     x.add_argument("--passes", type=int, default=1, help="how many passes; 0 means until stopped")
-    so = sub.add_parser("sources", help="download and flatten e-print sources for both sides, or for one open thread's two papers")
-    so.add_argument("pair", nargs="?", help="fetch the full text of this thread's papers into sources/; its inputs/ stay as they are")
+    so = sub.add_parser("sources", help="the full text of every corpus paper through the source cache, or, with a pair, of one thread's papers")
+    so.add_argument("pair", nargs="?", help="an existing thread: fetch its papers and library into the cache")
+    so.add_argument("--into-inputs", action="store_true", help="also add them to the thread's inputs/, beside its files (recorded in inputs/added.json)")
     so.add_argument("--side", choices=["Q", "P", "both"], default="both")
+    pf = sub.add_parser("prefetch", help="before research: the sources of each shortlisted pair's papers, their references and the papers citing both, into the cache")
+    pf.add_argument("pairs", nargs="*", help="default: every shortlisted pair")
     sub.add_parser("scan", help="phase A: score every pair").add_argument(
         "--rescan", nargs="+", metavar="PAIR", help="score these pairs again against scan-context.json, appending their rows")
     s = sub.add_parser("select", help="freeze the top cut, or every pair at or above --min-score, as shortlist.json")
@@ -154,9 +157,17 @@ def _dispatch(ns, c):
     elif ns.cmd == "explore":
         explore(c, ns.min_score, ns.page, ns.passes)
     elif ns.cmd == "sources" and ns.pair:
-        for side, path in corpus.pair_sources(c, ns.pair).items():
-            row = json.loads((c.thread_dir(ns.pair) / "inputs" / f"{side}.json").read_text())
-            print(f"{ns.pair} {side} {row['id']}: " + (path.relative_to(c.root).as_posix() if path else "no full text; the abstract is used"))
+        from . import library
+        if ns.into_inputs:
+            out = library.add_to_inputs(c, ns.pair)
+            print(f"{ns.pair}: added {', '.join(out['added']) or 'nothing'}; read from {out['inputs'] or 'the files it had'}")
+        else:
+            library.prefetch(c, [ns.pair])
+    elif ns.cmd == "prefetch":
+        from . import library
+        pairs = ns.pairs or [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
+        t = library.prefetch(c, pairs)
+        print(f"{t['pairs']} pairs, {t['papers']} papers in the cache {library.cache(c)}, {t['failed']} without a source")
     elif ns.cmd == "sources":
         for side in (["Q", "P"] if ns.side == "both" else [ns.side]):
             corpus.sources(c, side)

@@ -24,7 +24,7 @@ paper/paper.tex, is never changed by the pass."""
 from __future__ import annotations
 import difflib, hashlib, json, re, shutil, unicodedata
 from pathlib import Path
-from . import context, contracts, corpus, paper, research, transport
+from . import context, contracts, library, paper, research, transport
 from .admission import Refused
 from .context import Section
 from .research import _now, _prompt
@@ -258,13 +258,13 @@ def _return(campaign, pair_id, confirmed) -> str:
 # ---- calls
 
 def _sources(campaign, pair_id) -> list[Section]:
-    """The two source papers in full text when there is one: the corpus row's text, a text in sources/, or, with
-    "fetch_sources": true, a download; otherwise the thread's own input (the abstract)."""
+    """The two source papers in full text when there is one (the corpus row's text, or the source cache, fetched
+    once), otherwise the thread's own input (the abstract)."""
     d = campaign.thread_dir(pair_id); inp = research._inputs(d)
     out = []
     for side in "QP":
         row = json.loads((d / "inputs" / f"{side}.json").read_text())
-        path = corpus.source_text(campaign, row, fetch=campaign.raw.get("fetch_sources", False)) or d / "inputs" / inp[side]
+        path = library.paper_text(campaign, row) or d / "inputs" / inp[side]
         who = ", ".join(row.get("authors") or []) or row.get("title", "")
         out.append(Section(f"source paper: {who} ({row['id']})", path=path))
     return out

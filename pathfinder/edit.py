@@ -25,10 +25,11 @@ def prepare_for_editing(campaign, pair_id: str) -> str:
         row = corpus.row_for(rows, number)
         if row.get("text") and campaign.path(row["text"]).exists():
             continue
-        try:
-            row["text"] = corpus.flatten(row["id"], campaign.path("sources"))
-        except Exception as e:
-            return _set(campaign, pair_id, status="blocked", reason=f"{side}: fetching full text failed ({e})")["status"]
+        from . import library
+        text = library.paper_text(campaign, row)
+        if text is None:
+            return _set(campaign, pair_id, status="blocked", reason=f"{side}: fetching full text failed")["status"]
+        row["text"] = corpus.stored(campaign, text)
         corpus.write(rows, path)
     return _set(campaign, pair_id, status="ready")["status"]
 

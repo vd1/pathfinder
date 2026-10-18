@@ -13,3 +13,9 @@ def no_real_desktop_notifications(monkeypatch):
 def private_accounts(tmp_path_factory, monkeypatch):
     """Seat pools and subscription pauses live under $PATHFINDER_ACCOUNTS: never the user's own."""
     monkeypatch.setenv("PATHFINDER_ACCOUNTS", str(tmp_path_factory.mktemp("accounts")))
+
+
+@pytest.fixture(autouse=True)
+def offline(monkeypatch):
+    """No test downloads a paper: the source service answers from its cache only (pathfinder.paper_source)."""
+    monkeypatch.setenv("PATHFINDER_OFFLINE", "1")

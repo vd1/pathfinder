@@ -74,15 +74,17 @@ def prepare(campaign, pair_id: str) -> Path:
         install_helper(d)
         return d
     (d / "inputs").mkdir(parents=True, exist_ok=True)
-    fetch = campaign.raw.get("fetch_sources", False)
-    for side, row in zip("QP", _pair(campaign, pair_id)):
-        src = corpus.source_text(campaign, row) if fetch else (campaign.path(row["text"]) if row.get("text") else None)
+    from . import library
+    rows = _pair(campaign, pair_id)
+    for side, row in zip("QP", rows):
+        src = library.paper_text(campaign, row)     # fetched before any agent starts, outside every allowance
         if src and src.exists():
             shutil.copy(src, d / "inputs" / f"{side}{src.suffix}")
-            row = {**row, "text": src.relative_to(campaign.root).as_posix()}   # this thread's copy; the corpus file is not rewritten
+            row = {**row, "text": corpus.stored(campaign, src)}   # this thread's copy; the corpus file is not rewritten
         else:
             (d / "inputs" / f"{side}.txt").write_text(f"Title: {row['title']}\n\nAbstract: {row['abstract']}\n")
         (d / "inputs" / f"{side}.json").write_text(json.dumps(row, indent=1))
+    library.write(d, library.build(campaign, pair_id, rows))
     from . import scan
     row = _scan_row(campaign, pair_id)
     known = scan.archived(campaign, row.get("context_sha256"))
@@ -266,7 +268,13 @@ def pair_context(d: Path) -> str:
 
 
 def _inputs(d: Path) -> dict:
-    return {s: next(p for p in (d / "inputs").iterdir() if p.stem == s and p.suffix != ".json").name for s in "QP"}
+    """The file each side is read from: the full text added later (inputs/added.json) when there is one, else
+    the side's own file, a source before a text."""
+    added = d / "inputs" / "added.json"
+    chosen = json.loads(added.read_text()).get("inputs", {}) if added.is_file() else {}
+    rank = {".tex": 0, ".txt": 2}
+    return {s: chosen.get(s) or min((p for p in (d / "inputs").iterdir() if p.stem == s and p.suffix != ".json"),
+                                    key=lambda p: rank.get(p.suffix, 1)).name for s in "QP"}
 
 
 ROLE_BRIEFS = {"peer", "consolidate", "verify"}      # the roles a composable branch or joint thread briefs

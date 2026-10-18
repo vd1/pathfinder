@@ -114,6 +114,13 @@ def next_actions(campaign) -> list[dict]:
             out.append({"owner": "apex", "action": f"{pair}: {action}",
                         "why": f"research {unit['research']['status']}, edit {unit['editorial']['status']}, paper {unit['assessment']['status']}",
                         "command": _cmd(campaign, "reconcile", pair, "--apply")})
+    missing = sorted(set((snap.get("sources") or {}).get("abstract_only", []) + (snap.get("sources") or {}).get("no_library", [])))
+    if missing:
+        out.append({"owner": "operator", "action": f"{len(missing)} thread(s) without their fetched sources",
+                    "why": "they were opened before the engine fetched papers ahead of research, so their agents read "
+                           "abstracts and fetch papers in their own calls: " + ", ".join(missing[:10])
+                           + (" ..." if len(missing) > 10 else "") + ". Add them to each thread (the command shows the first).",
+                    "command": _cmd(campaign, "sources", missing[0], "--into-inputs")})
     for source, n in (snap.get("source_limits") or {}).items():
         out.append({"owner": "apex", "action": f"agents hit {SOURCE_NAMES.get(source, source)} rate limits ({n} in the last 50 calls)",
                     "why": "Their searches were throttled, so findings may rest on fewer sources than intended. Lower seats "

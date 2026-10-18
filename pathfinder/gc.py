@@ -2,7 +2,9 @@
 
 A thread whose research is terminal and whose editing is done keeps its record (ledger, notes, PDFs, the
 peers' derivations, run logs, verdicts, status). Removed: LaTeX by-products (build files, and a log or outline
-only beside its .tex; the PDF and its sources stay), never a file a ledger or note cites; working
+only beside its .tex; the PDF and its sources stay), papers agents downloaded into their folders (a PDF they did
+not build, the pdftotext text of one; in a frozen bundle recorded in branches-pruned.json), never a file a ledger
+or note cites; working
 directories of model calls, and the prompt copied into every retained research response once that response
 holds its result. Receipts keep the commands an agent ran, its answer and the usage, but not the full output
 of each tool call: the first and last characters and the output's length, enough to see what was read and
@@ -94,6 +96,35 @@ def _cited(d: Path) -> set:
     return out
 
 
+RECORD_DIRS = ("inputs", "paper", "edited", "reopened")   # the thread's own documents, never downloads
+PRUNED = "branches-pruned.json"                  # files collection removed from frozen bundles, by label
+
+
+def downloaded(path: Path, rel: Path, peers) -> bool:
+    """A paper an agent downloaded into its folder: a PDF with no .tex of its name beside it (the agent did not
+    build it), or the text pdftotext made of one (form feeds between pages). The engine now gives agents the
+    LaTeX sources (pathfinder.library); these are what agents fetched before it did."""
+    if not set(rel.parts[:-1]) & set(peers) or rel.parts[0] in RECORD_DIRS:
+        return False
+    if path.suffix.lower() == ".pdf":
+        return not path.with_suffix(".tex").exists()
+    if path.suffix.lower() == ".txt":
+        with open(path, "rb") as f:
+            return f.read(400_000).count(b"\f") >= 2
+    return False
+
+
+def _prune(d: Path, rel: Path) -> None:
+    """Record a file removed from a frozen bundle, so that the bundle still verifies (composable.verify)."""
+    label, name = rel.parts[1], Path(*rel.parts[2:]).as_posix()
+    path = d / PRUNED
+    pruned = json.loads(path.read_text()) if path.exists() else {}
+    pruned.setdefault(label, [])
+    if name not in pruned[label]:
+        pruned[label].append(name)
+    path.write_text(json.dumps(pruned, indent=1))
+
+
 def _size(path: Path) -> int:
     return sum(p.lstat().st_size for p in path.rglob("*") if p.is_file() or p.is_symlink()) if path.is_dir() else path.stat().st_size
 
@@ -116,6 +147,12 @@ def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
             files += sum(1 for q in p.rglob("*") if q.is_file()); size += _size(p); removed.append(rel.as_posix())
             if not dry_run:
                 shutil.rmtree(p)
+        elif p.is_file() and rel not in keep and downloaded(p, rel, campaign.peers):
+            files += 1; size += p.stat().st_size; removed.append(rel.as_posix())
+            if not dry_run:
+                if rel.parts[0] == "branches":
+                    _prune(d, rel)
+                p.unlink()
         elif (p.is_file() and _byproduct(rel.as_posix(), names) and "branches" not in rel.parts and rel not in keep):
             files += 1; size += p.stat().st_size; removed.append(rel.as_posix())
             if not dry_run:

@@ -175,11 +175,15 @@ def verify(bundle: Path) -> dict:
     if record.get("label") != bundle.name or record.get("inventory_sha256") != _inventory_sha(record.get("files") or {}):
         raise BundleError(f"{bundle.name}: bundle.json does not match its own inventory digest")
     present = {path.relative_to(bundle).as_posix(): path for path in _files(bundle, bundle.name) if path != bundle / "bundle.json"}
-    for name in sorted(set(record["files"]) - set(present)):
+    pruned_path = bundle.parent.parent / "branches-pruned.json"   # downloads collection removed (pathfinder.gc)
+    pruned = set((json.loads(pruned_path.read_text()) if pruned_path.is_file() else {}).get(bundle.name, []))
+    for name in sorted(set(record["files"]) - set(present) - pruned):
         raise BundleError(f"{bundle.name}: {name} is missing")
     for name in sorted(set(present) - set(record["files"])):
         raise BundleError(f"{bundle.name}: {name} was added after the freeze")
     for name, entry in sorted(record["files"].items()):
+        if name in pruned and name not in present:
+            continue
         if present[name].stat().st_size != entry["bytes"] or _sha(present[name]) != entry["sha256"]:
             raise BundleError(f"{bundle.name}: {name} changed after the freeze")
     return record

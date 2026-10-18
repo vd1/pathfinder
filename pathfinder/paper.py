@@ -260,6 +260,8 @@ def _run(campaign, pair_id: str, stop) -> str:
         research.write_meta(campaign, pair_id, pd, f"paper, review round {rnd}", protocol=True)
         p = _prompt(campaign, "author", Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", NOTE=f"{pair_id}.tex",
                     NOTE_STEM=pair_id, ROUND=rnd, FINDINGS=findings)
+        from . import library
+        p += library.reading(campaign, d)
         if not resume_review:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=True, cwd=d,
                                timeout=author_seconds, thread=pair_id, stage="author", actor="author")

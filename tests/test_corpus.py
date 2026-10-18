@@ -28,13 +28,11 @@ def test_body_falls_back_to_abstract(tmp_path):
 def test_sources_survive_a_bad_eprint(tmp_path, monkeypatch, capsys):
     c = Campaign(root=tmp_path, backend="claude", model="m", scan_model="m", peer_search=True, seats=1, cut=1,
                  rounds=1, allowances={}, budget_usd=1, prices={}, scan_fulltext=None)
-    (tmp_path / "Q.jsonl").write_text('{"id":"bad","title":"t","abstract":"a","text":null}\n{"id":"good","title":"t","abstract":"a","text":null}\n')
-    (tmp_path / "sources").mkdir(); (tmp_path / "sources" / "good.tex").write_text("x")
-    monkeypatch.setattr(corpus.time, "sleep", lambda s: None)
-    monkeypatch.setattr(corpus, "flatten", lambda aid, out: (_ for _ in ()).throw(RuntimeError("boom")) if aid == "bad" else f"sources/{aid}.tex")
-    corpus.sources(c, "Q")
+    (tmp_path / "Q.jsonl").write_text('{"id":"2401.00001","title":"t","abstract":"a","text":null}\n{"id":"2401.00002","title":"t","abstract":"a","text":null}\n')
+    (tmp_path / "sources").mkdir(); (tmp_path / "sources" / "2401.00002.tex").write_text("x")   # cached: no download
+    corpus.sources(c, "Q")                                         # offline (conftest): the first is a miss
     rows = corpus.read(tmp_path / "Q.jsonl")
-    assert rows[0]["text"] is None and rows[1]["text"] == "sources/good.tex" and "no source" in capsys.readouterr().out
+    assert rows[0]["text"] is None and rows[1]["text"] == "sources/2401.00002.tex" and "no source" in capsys.readouterr().out
 
 
 def _arxiv(monkeypatch, replies):
@@ -109,5 +107,7 @@ def test_an_old_style_arxiv_id_and_a_latex209_source_flatten(tmp_path, monkeypat
     blob = _tarball({"CohnElkies.tex": "\\documentstyle[12pt]{article}\n\\begin{document}\n\\input{body}\n\\end{document}\n",
                      "body.tex": "Sphere packings.\n"})
     monkeypatch.setattr(corpus.net, "urlopen", lambda request, timeout=None: _EPrint(blob))
-    assert corpus.flatten("math/0110009v3", tmp_path / "sources") == "sources/math/0110009v3.tex"
-    assert "Sphere packings." in (tmp_path / "sources" / "math" / "0110009v3.tex").read_text()
+    monkeypatch.delenv("PATHFINDER_OFFLINE")
+    monkeypatch.setattr("pathfinder.paper_source.SPACING", 0)
+    assert corpus.flatten("math/0110009v3", tmp_path / "sources") == "sources/math_0110009v3.tex"
+    assert "Sphere packings." in (tmp_path / "sources" / "math_0110009v3.tex").read_text()

@@ -262,6 +262,11 @@ def snapshot(campaign):
         work.append({"pair": pid, "research": research_state, "editor": editor, "paper": paper,
                      "checks": checks,
                      "needs_edit": research_state.get("status") in research.TERMINAL and editor.get("status") != "done"})
+    sources = _sources(campaign, [w["pair"] for w in work])
+    if sources["abstract_only"] or sources["no_library"]:
+        warnings.append(f"{len(sources['abstract_only'])} thread(s) read an arXiv paper from its abstract only and "
+                        f"{len(sources['no_library'])} have no library of fetched sources: their agents would fetch "
+                        "papers in their own calls; `pathfinder sources PAIR --into-inputs` adds them.")
     failure = inspect(campaign.path("health.json"))
     if failure:
         warnings.append("Recorded operational failure requires diagnosis and an explicit restart.")
@@ -278,12 +283,36 @@ def snapshot(campaign):
     out = {"generated_at": now, "campaign": str(campaign.root.resolve()), "runner": metadata,
             "active_calls": active, "last_completed_call": ({k: completed[-1].get(k) for k in fields} if completed else None),
             "failure_count": len(failures), "recent_failures": failures[-10:], "failure": failure,
-            "stop": stop, "failures_by_class": by_class, "cooldown": cooling, "source_limits": limits, "allowances": _allowances(campaign, receipts, warnings), "work": work, "warnings": warnings,
+            "stop": stop, "failures_by_class": by_class, "cooldown": cooling, "source_limits": limits, "allowances": _allowances(campaign, receipts, warnings), "work": work, "sources": sources, "warnings": warnings,
             "evidence": {"receipts": str(campaign.path("receipts.jsonl")),
                          "runner": str(campaign.path("runner.json")),
                          "failures": str(campaign.path("failures.jsonl"))},
             "interpretation": "Compare with the previous audit. Heartbeat and call activity are not scientific progress. PID existence alone does not prove process identity or health."}
     return _with_extension(campaign, out)
+
+
+def _sources(campaign, pairs) -> dict:
+    """Open threads that read an arXiv paper from its abstract only, and threads without a library
+    (pathfinder.library): opened before the engine fetched sources ahead of research."""
+    from . import paper_source, library
+    from .thread import _inputs
+    out = {"abstract_only": [], "no_library": []}
+    for pid in pairs:
+        d = campaign.thread_dir(pid)
+        if not (d / "status.json").exists() or not (d / "inputs").is_dir():
+            continue
+        try:
+            inp = _inputs(d)
+        except (StopIteration, ValueError, OSError):
+            continue
+        for side in "QP":
+            row = d / "inputs" / f"{side}.json"
+            aid = paper_source.parse(json.loads(row.read_text()).get("id", "")) if row.is_file() else None
+            if aid and library.abstract_only(d / "inputs" / inp[side]):
+                out["abstract_only"].append(pid); break
+        if not (d / "inputs" / "library.jsonl").exists():
+            out["no_library"].append(pid)
+    return out
 
 
 def _with_extension(campaign, out):

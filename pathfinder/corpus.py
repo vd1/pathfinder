@@ -133,83 +133,30 @@ def body(campaign, row: dict, fulltext: bool) -> str:
     return row["abstract"]
 
 
-def _main_tex(d: Path) -> Path | None:
-    cands = [p for p in d.rglob("*.tex") if re.search(r"\\document(class|style)\b", p.read_text(errors="replace"))]   # LaTeX 2.09 too
-    return min(cands, key=lambda p: len(p.parts)) if cands else None
-
-
 def flatten(aid: str, out_dir: Path) -> str:
-    """Download the e-print for aid, flatten to out_dir/aid.tex or .txt; return the relative name."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    req = urllib.request.Request(f"https://arxiv.org/e-print/{aid}", headers={"User-Agent": "pathfinder/0.1"})
-    with net.urlopen(req, timeout=120) as r:
-        blob, ctype = r.read(), r.headers.get("Content-Type", "")
-    work = out_dir / aid; shutil.rmtree(work, ignore_errors=True); work.mkdir(parents=True)   # math/0110009v3
-    if blob[:4] == b"%PDF" or "pdf" in ctype:
-        return _pdf_text(aid, out_dir, blob)
-    try:
-        with tarfile.open(fileobj=io.BytesIO(blob), mode="r:*") as tf:
-            tf.extractall(work, filter="data")
-    except tarfile.ReadError:
-        (work / "main.tex").write_bytes(gzip.decompress(blob))
-    main = _main_tex(work)
-    if main is None:
-        raise RuntimeError(f"{aid}: no .tex with \\documentclass or \\documentstyle in e-print")
-    try:
-        with open(out_dir / f"{aid}.tex", "w") as f:
-            subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, stdout=f, check=True, timeout=120)
-        return f"sources/{aid}.tex"
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:   # latexpand can crash on odd templates
-        (out_dir / f"{aid}.tex").unlink(missing_ok=True)
-        print(f"{aid}: latexpand failed ({e.__class__.__name__}); using the PDF text instead")
-        req = urllib.request.Request(f"https://arxiv.org/pdf/{aid}", headers={"User-Agent": "pathfinder/0.1"})
-        with net.urlopen(req, timeout=120) as r:
-            return _pdf_text(aid, out_dir, r.read())
+    """The e-print for aid as one LaTeX file in out_dir (pathfinder.paper_source: latexpand, else a plain
+    inlining; text from a PDF only for a PDF-only submission), fetched only if out_dir does not hold it yet;
+    returns its name relative to out_dir's parent (sources/<id>.tex)."""
+    from . import paper_source
+    path = paper_source.get(paper_source.parse(aid) or aid, out_dir, urlopen=lambda r, timeout: net.urlopen(r, timeout))
+    return path.relative_to(Path(out_dir).parent).as_posix()
 
 
-def _pdf_text(aid: str, out_dir: Path, blob: bytes) -> str:
-    work = out_dir / aid; work.mkdir(parents=True, exist_ok=True)
-    (work / "paper.pdf").write_bytes(blob)
-    subprocess.run(["pdftotext", "-layout", str(work / "paper.pdf"), str(out_dir / f"{aid}.txt")], check=True)
-    return f"sources/{aid}.txt"
-
-
-def source_text(campaign, row: dict, fetch: bool = True) -> Path | None:
-    """The full text of a paper: the corpus row's stored text, else a text already in the campaign's sources/,
-    else, with fetch, a download of the e-print into sources/; None when there is none (the abstract is used)."""
-    if row.get("text") and campaign.path(row["text"]).exists():
-        return campaign.path(row["text"])
-    for suffix in (".tex", ".txt"):
-        cached = campaign.path("sources") / f"{row['id']}{suffix}"
-        if cached.is_file():
-            return cached
-    if not fetch:
-        return None
-    try:
-        return campaign.path(flatten(row["id"], campaign.path("sources")))
-    except Exception as e:                           # no e-print, a network failure: the abstract is used
-        print(f"{row['id']}: no source ({e}); the abstract will be used")
-        return None
-
-
-def pair_sources(campaign, pair_id: str) -> dict:
-    """`pathfinder sources PAIR`: the full text of both papers of an open thread, fetched into the campaign's
-    sources/ when missing; the thread's inputs/, the record its research read, are left as they are."""
-    d = campaign.thread_dir(pair_id)
-    rows = [json.loads((d / "inputs" / f"{s}.json").read_text()) if (d / "inputs" / f"{s}.json").exists() else r
-            for s, r in zip("QP", pair_rows(campaign, pair_id))]
-    return {side: source_text(campaign, row) for side, row in zip("QP", rows)}
+def stored(campaign, path: Path) -> str:
+    """A text's path as a corpus row keeps it: relative to the campaign when inside it, else absolute."""
+    path = Path(path).resolve()
+    return path.relative_to(campaign.root.resolve()).as_posix() if path.is_relative_to(campaign.root.resolve()) else str(path)
 
 
 def sources(campaign, side: str):
+    """Every row of a side given its full text through the source cache (pathfinder.library)."""
+    from . import library
     path = campaign.path(f"{side}.jsonl"); rows = read(path)
     for row in rows:
         if row.get("text") and campaign.path(row["text"]).exists():
             continue
-        try:
-            row["text"] = flatten(row["id"], campaign.path("sources"))
+        text = library.paper_text(campaign, row)   # one bad e-print must not stop the side; the abstract is used
+        if text is not None:
+            row["text"] = stored(campaign, text)
             print(f"{side} {row['id']}: {row['text']}")
-        except Exception as e:                       # one bad e-print must not stop the side; the abstract is used
-            print(f"{side} {row['id']}: no source ({e}); the abstract will be used")
         write(rows, path)
-        time.sleep(3)

@@ -267,13 +267,10 @@ your own campaign directory and edit the models and the budget.
   keeps a single request below it.
 - `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
   sources instead of abstracts on that side.
-- `fetch_sources`: `true` gives a thread the full text of both papers when it
-  opens: the corpus row's text, a text already in `sources/`, or else a
-  download of the e-print into `sources/`; the abstract only when there is no
-  e-print. Default `false`, a thread then reads what the corpus row holds.
-  `pathfinder sources PAIR` fetches the full text of an open thread's papers
-  into `sources/` for later stages, leaving the thread's `inputs/`, the record
-  its research read, as they are.
+- `source_cache`: the directory of the shared paper cache (default the
+  campaign's `sources/`; a path outside the campaign is shared by every
+  campaign naming it). `prefetch_limit`: papers fetched per thread beyond its
+  two (default 60). See "Papers before research" below.
 - `codex`: optional, for the Codex backend through a custom OpenAI-compatible
   provider such as a university proxy: `name`, `base_url`, `env_key` (the
   variable Codex reads the key from), `key_file` (a dotenv file holding
@@ -358,6 +355,43 @@ your own campaign directory and edit the models and the budget.
   acknowledgement, in plain language (a line starting with `#` is a note and dropped; `\cite{Q,P}` cites the
   two source papers). The export refuses while the file holds the placeholder `TO BE CHOSEN`.
 
+### Papers before research
+
+Agents read papers as LaTeX, from one shared cache, and never fetch them in
+their own calls (nobel, October 2026: peers had downloaded some 6000 PDFs
+and read garbled pdftotext, spending their allowances on retrieval).
+
+- When a thread opens, before any agent starts and outside every allowance,
+  the engine fetches its two papers, the papers their bibliographies name (by
+  arXiv id or DOI), and the papers citing both (`novelty_citers`), up to
+  `prefetch_limit`, into the cache, copies the two into `inputs/` and lists
+  the rest in `inputs/library.jsonl` (id, title, path, why). `pathfinder
+  prefetch [PAIR ...]` does the same for the whole shortlist at once, before
+  research, without opening threads.
+- A paper on arXiv is always its flattened LaTeX source (latexpand, else a
+  plain inlining of `\input` and `\include`); text from a PDF only for an
+  e-print that holds no LaTeX. A DOI, a URL or a title is resolved to the
+  paper's arXiv version first (Semantic Scholar; `SEMANTIC_SCHOLAR_API_KEY`
+  when set); a paper not on arXiv is the text of one open PDF. Every paper is
+  fetched once and every resolution kept (`aliases.jsonl`, a reference not
+  found asked again after a week).
+- Agents with tools get the reading rule, the library and the thread's copy
+  of the service, `.pathfinder/paper_source.py REF`, which answers a hit at
+  once and fetches a miss once for everyone; such calls may write the cache
+  directory (`--add-dir` for both CLIs, a write entry in a filesystem
+  profile), and nothing else outside their workspace.
+- `health` and `playbook` name threads opened before this, which read
+  abstracts or have no library; `pathfinder sources PAIR --into-inputs` adds
+  the full texts and the library beside their files (recorded in
+  `inputs/added.json`; the full text is then read first), refused while the
+  thread is held.
+- Collection removes the papers agents downloaded into their folders in
+  finished threads (a PDF they did not build, the pdftotext text of one),
+  never a file a ledger or note cites; from a frozen bundle the removal is
+  recorded in `branches-pruned.json`, so the bundle still verifies.
+- Tests run with `PATHFINDER_OFFLINE=1`: the cache answers, nothing is
+  downloaded.
+
 ### The presentation pass and the release
 
 Reviewers accept a paper for its science; whether a reader can use it is a
@@ -372,8 +406,8 @@ The pass works in `paper/presentation/` and never changes the accepted
 `paper/paper.tex`:
 
 1. The editor (stage `present`, actor `editor`) reads the full text of both
-   source papers (`fetch_sources`, or `pathfinder sources PAIR` beforehand;
-   else the abstract), the minor findings the ACCEPT left open, the
+   source papers (from the source cache; the abstract only when a paper has
+   none), the minor findings the ACCEPT left open, the
    manuscript and its BibTeX, never the ledger. It binds notation, removes
    pipeline labels, calibrates background on the source papers, states the
    question and the result first, frames the paper faithfully, may propose a

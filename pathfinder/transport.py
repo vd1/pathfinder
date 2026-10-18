@@ -137,6 +137,14 @@ def schema_file(campaign, request) -> Path | None:
     return path
 
 
+def _source_cache(campaign) -> Path:
+    """The one directory outside its workspace an agent with tools may write: the shared arXiv source cache."""
+    from . import library
+    path = library.cache(campaign).resolve()
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None):
     if campaign.backend == "claude":
         cmd = shlex.split(os.environ.get("PATHFINDER_CLAUDE", "claude"))
@@ -145,7 +153,7 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
             cmd += ["--tools", "Read,Glob,Grep" + (",WebSearch,WebFetch" if search else ""), "--dangerously-skip-permissions"]
         elif tools:
             cmd += ["--tools", CLAUDE_TOOLS + (",WebSearch,WebFetch" if search else ""),
-                    "--dangerously-skip-permissions"]
+                    "--dangerously-skip-permissions", "--add-dir", str(_source_cache(campaign))]
         else:
             cmd += ["--tools", ""]
         effort = ((campaign.raw or {}).get("claude") or {}).get("effort")     # set by a route (pathfinder.routing)
@@ -162,9 +170,12 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"']
     if prov.get("filesystem_profile"):             # a per-request permission profile in place of the sandbox mode
         from . import sandbox
-        cmd += sandbox.args(cwd, tools and not reads, prov["filesystem_profile"], network=bool(tools and search and not reads))
+        cmd += sandbox.args(cwd, tools and not reads, prov["filesystem_profile"], network=bool(tools and search and not reads),
+                            cache=_source_cache(campaign))
     else:
         cmd += ["--sandbox", "workspace-write" if tools and not reads else "read-only"]
+        if tools and not reads:                                  # the shared source cache (pathfinder.library)
+            cmd += ["--add-dir", str(_source_cache(campaign))]
         if tools and search and not reads:                       # the workspace sandbox has no network unless asked
             cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     if prov.get("persist_sessions"):

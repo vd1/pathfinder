@@ -87,8 +87,9 @@ def prompt(campaign, pair_id, d) -> str:
     if earlier:
         sections.append(Section("your previous report, on the version of the note before its repair",
                                 text=json.dumps(earlier["report"], indent=1), keep=True))
+    from . import library
     sections += [
-                Section("your task", text=_prompt(campaign, "novelty"), keep=True)]
+                Section("your task", text=_prompt(campaign, "novelty") + library.reading(campaign, d), keep=True)]
     return context.build(campaign, "novelty", sections, tools=True, cwd=d, unit=pair_id)
 
 

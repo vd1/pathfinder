@@ -70,6 +70,8 @@ def _peers(campaign, pair_id, stop):
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")
             p += pair_context(d)
+            from . import library
+            p += library.reading(campaign, d)
             if not in_papers:
                 p += outlines
             if call_no or L.count():

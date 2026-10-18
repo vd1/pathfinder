@@ -82,11 +82,11 @@ def load(root: Path) -> Campaign:
         raise ValueError(f"tool_call_budgets must map role names (peer, consolidate, verify, editor, author) to positive integers, got {tb!r}")
     from . import presentation
     presentation.validate(raw)
-    if "fetch_sources" in raw and not isinstance(raw["fetch_sources"], bool):
-        raise ValueError(f"fetch_sources must be true or false, got {raw['fetch_sources']!r}")
     from types import SimpleNamespace as _NS
     from .thread import peer_call_cap
     peer_call_cap(_NS(allowances=raw.get("allowances") or {}))   # a bad cap fails here, not at the first peer call
+    from . import library
+    library.validate(raw)
     if "gc" in raw and not isinstance(raw["gc"], bool):
         raise ValueError(f"gc must be true or false, got {raw['gc']!r}")
     pb = raw.get("prompt_budgets")
