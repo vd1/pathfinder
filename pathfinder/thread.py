@@ -74,10 +74,12 @@ def prepare(campaign, pair_id: str) -> Path:
         install_helper(d)
         return d
     (d / "inputs").mkdir(parents=True, exist_ok=True)
+    fetch = campaign.raw.get("fetch_sources", False)
     for side, row in zip("QP", _pair(campaign, pair_id)):
-        src = campaign.path(row["text"]) if row.get("text") else None
+        src = corpus.source_text(campaign, row) if fetch else (campaign.path(row["text"]) if row.get("text") else None)
         if src and src.exists():
             shutil.copy(src, d / "inputs" / f"{side}{src.suffix}")
+            row = {**row, "text": src.relative_to(campaign.root).as_posix()}   # this thread's copy; the corpus file is not rewritten
         else:
             (d / "inputs" / f"{side}.txt").write_text(f"Title: {row['title']}\n\nAbstract: {row['abstract']}\n")
         (d / "inputs" / f"{side}.json").write_text(json.dumps(row, indent=1))

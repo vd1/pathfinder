@@ -1,11 +1,12 @@
-You are the author of a short paper on the pair of papers Q and P. The
-research phase on this pair has ended with the verdict DRAFT: the note
+You are the author of a short paper that builds on two source papers. The
+research phase on them has ended with the verdict DRAFT: the note
 {{NOTE}} contains a supported, non-obvious result about the pair. Your job
 is to turn that note, the ledger and the peers' notes into a paper that
 could be submitted, without adding results that are not in them.
 
 Inputs, all in this directory: {{Q_INPUT}} and {{P_INPUT}} (the two
-papers), ledger.jsonl (the peers' record), {{NOTE}} (the consolidated note),
+source papers; their authors, titles and identifiers are in inputs/Q.json and
+inputs/P.json), ledger.jsonl (the peers' record), {{NOTE}} (the consolidated note),
 {{NOTE_STEM}}.verdict.json (the verifier's reasons), ada/ and emmy/ (the
 peers' derivations and checks).
 
@@ -18,8 +19,8 @@ Content rules:
   numbers in a comment next to each claim so a reviewer can trace it. Do
   not extend, strengthen or generalise a result. If a claim in the note is
   weaker than its wording suggests, say so.
-- Keep four things apart, and let the reader see which is which: what Q
-  and P themselves establish; what is new here; interpretation; open
+- Keep four things apart, and let the reader see which is which: what the
+  two source papers themselves establish; what is new here; interpretation; open
   questions. A limitations section is required.
 - Related work: search for prior work on the specific result, not the
   general area. Read what you find. If the result or its main step is
@@ -29,8 +30,14 @@ Content rules:
 - References: BibTeX only. Every entry must carry a URL, and for arXiv
   papers the arXiv identifier; verify title, authors and year against the
   arXiv abstract page or the DOI landing page before adding an entry. Do
-  not add an entry you could not verify. Q and P are cited. Every entry is
-  cited at least once.
+  not add an entry you could not verify. Both source papers are cited.
+  Every entry is cited at least once. Make keys from the first author's
+  surname and the year (luongo2020), never Q or P.
+- The reader knows nothing of how the paper was produced. Refer to each
+  source paper by their authors and a citation ("Luongo and Shao
+  \cite{luongo2020}"), never as Q or P, and do not use other words that
+  mean something only inside this pipeline in the prose: pair, ledger, peer
+  names, branch, verdict, round. The ledger pointers belong in comments.
 
 Form: article class with the pipeline's style, and nothing else:
 

@@ -174,6 +174,33 @@ def _pdf_text(aid: str, out_dir: Path, blob: bytes) -> str:
     return f"sources/{aid}.txt"
 
 
+def source_text(campaign, row: dict, fetch: bool = True) -> Path | None:
+    """The full text of a paper: the corpus row's stored text, else a text already in the campaign's sources/,
+    else, with fetch, a download of the e-print into sources/; None when there is none (the abstract is used)."""
+    if row.get("text") and campaign.path(row["text"]).exists():
+        return campaign.path(row["text"])
+    for suffix in (".tex", ".txt"):
+        cached = campaign.path("sources") / f"{row['id']}{suffix}"
+        if cached.is_file():
+            return cached
+    if not fetch:
+        return None
+    try:
+        return campaign.path(flatten(row["id"], campaign.path("sources")))
+    except Exception as e:                           # no e-print, a network failure: the abstract is used
+        print(f"{row['id']}: no source ({e}); the abstract will be used")
+        return None
+
+
+def pair_sources(campaign, pair_id: str) -> dict:
+    """`pathfinder sources PAIR`: the full text of both papers of an open thread, fetched into the campaign's
+    sources/ when missing; the thread's inputs/, the record its research read, are left as they are."""
+    d = campaign.thread_dir(pair_id)
+    rows = [json.loads((d / "inputs" / f"{s}.json").read_text()) if (d / "inputs" / f"{s}.json").exists() else r
+            for s, r in zip("QP", pair_rows(campaign, pair_id))]
+    return {side: source_text(campaign, row) for side, row in zip("QP", rows)}
+
+
 def sources(campaign, side: str):
     path = campaign.path(f"{side}.jsonl"); rows = read(path)
     for row in rows:

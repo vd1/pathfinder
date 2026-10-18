@@ -22,7 +22,9 @@ def main(argv=None):
     x.add_argument("--min-score", type=float, required=True, help="a pair joins the shortlist at or above this score")
     x.add_argument("--page", type=int, default=5, help="papers to add per side per pass")
     x.add_argument("--passes", type=int, default=1, help="how many passes; 0 means until stopped")
-    sub.add_parser("sources", help="download and flatten e-print sources for both sides").add_argument("--side", choices=["Q", "P", "both"], default="both")
+    so = sub.add_parser("sources", help="download and flatten e-print sources for both sides, or for one open thread's two papers")
+    so.add_argument("pair", nargs="?", help="fetch the full text of this thread's papers into sources/; its inputs/ stay as they are")
+    so.add_argument("--side", choices=["Q", "P", "both"], default="both")
     sub.add_parser("scan", help="phase A: score every pair").add_argument(
         "--rescan", nargs="+", metavar="PAIR", help="score these pairs again against scan-context.json, appending their rows")
     s = sub.add_parser("select", help="freeze the top cut, or every pair at or above --min-score, as shortlist.json")
@@ -146,6 +148,10 @@ def _dispatch(ns, c):
                 print(f"  {row['id']}  {row['date']}  {row['title']}")
     elif ns.cmd == "explore":
         explore(c, ns.min_score, ns.page, ns.passes)
+    elif ns.cmd == "sources" and ns.pair:
+        for side, path in corpus.pair_sources(c, ns.pair).items():
+            row = json.loads((c.thread_dir(ns.pair) / "inputs" / f"{side}.json").read_text())
+            print(f"{ns.pair} {side} {row['id']}: " + (path.relative_to(c.root).as_posix() if path else "no full text; the abstract is used"))
     elif ns.cmd == "sources":
         for side in (["Q", "P"] if ns.side == "both" else [ns.side]):
             corpus.sources(c, side)

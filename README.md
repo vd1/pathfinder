@@ -264,6 +264,13 @@ your own campaign directory and edit the models and the budget.
   keeps a single request below it.
 - `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
   sources instead of abstracts on that side.
+- `fetch_sources`: `true` gives a thread the full text of both papers when it
+  opens: the corpus row's text, a text already in `sources/`, or else a
+  download of the e-print into `sources/`; the abstract only when there is no
+  e-print. Default `false`, a thread then reads what the corpus row holds.
+  `pathfinder sources PAIR` fetches the full text of an open thread's papers
+  into `sources/` for later stages, leaving the thread's `inputs/`, the record
+  its research read, as they are.
 - `codex`: optional, for the Codex backend through a custom OpenAI-compatible
   provider such as a university proxy: `name`, `base_url`, `env_key` (the
   variable Codex reads the key from), `key_file` (a dotenv file holding
@@ -806,6 +813,12 @@ one file at a time: for role R, the campaign's `prompts/R.md` replaces the
 engine's prompt, `prompts/R.append.md` is appended to whichever prompt
 applies, and placeholders such as `{{ACTOR}}` are filled in last. Roles
 without a campaign file use the engine's prompt.
+
+The paper's reader knows nothing of how it was produced: `author.md` has the
+author refer to each source paper by its authors and a citation, never as Q
+or P, with bibliography keys from the first author's surname and the year,
+and keep pipeline words (pair, ledger, peer names, branch, verdict, round)
+out of the prose; `review.md` makes such a label a minor finding.
 
 ## The thread's context
 
