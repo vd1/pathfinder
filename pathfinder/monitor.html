@@ -42,7 +42,7 @@ td { padding:7px 7px; border-bottom:1px solid var(--line); vertical-align:middle
 .pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; font-weight:650; letter-spacing:.02em; white-space:nowrap; }
 .s-DRAFT { background:var(--ok-soft); color:var(--ok); } .s-PAUSE { background:var(--grey-soft); color:var(--muted); } .s-PAUSE-ON-ITERATE, .s-PAUSE-ON-REVISE { background:var(--warn-soft); color:var(--warn); }
 .s-running { background:var(--accent-soft); color:var(--accent); } .s-stopped, .s-new { border:1px solid var(--line); color:var(--muted); } .s-BLOCKED { background:var(--bad-soft); color:var(--bad); }
-.s-ACCEPTED { background:var(--ok-soft); color:var(--ok); } .s-PAUSE-ON-AMEND, .s-writing, .s-reviewing { background:var(--warn-soft); color:var(--warn); }
+.s-ACCEPTED, .s-CLEARED, .s-RELEASED { background:var(--ok-soft); color:var(--ok); } .s-PAUSE-ON-AMEND, .s-writing, .s-reviewing { background:var(--warn-soft); color:var(--warn); }
 tr.pair { cursor:pointer; } tr.pair:hover td { background:var(--accent-soft); } tr.sel td { background:var(--accent-soft); }
 .score { display:flex; align-items:center; gap:6px; } .score i { display:inline-block; height:6px; background:var(--accent); border-radius:3px; opacity:.7; }
 .btn { display:inline-block; padding:2px 7px; border:1px solid var(--line); border-radius:6px; font-size:11px; color:var(--fg); background:var(--card); margin-right:4px; white-space:nowrap; } .btn:hover { border-color:var(--accent); text-decoration:none; color:var(--accent); }
@@ -88,6 +88,7 @@ code { font:12px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(
 <script>
 let selected = null, last = null; const open = new Set(), expanded = new Set(); let actorFilter = "all";
 const ROOT = window.STATIC ? "" : "/";
+const ACCEPTED = ["ACCEPTED", "CLEARED", "RELEASED"];   // accepted for its science, then cleared, then released
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt = (n, d=2) => (Number(n) || 0).toFixed(d);
 const mins = s => { s = Math.round(s || 0); return s >= 3600 ? `${Math.floor(s/3600)} h ${Math.round((s%3600)/60)} min` : `${Math.round(s/60)} min`; };
@@ -105,7 +106,7 @@ function render(s) {
   document.getElementById("gen").textContent = "updated " + s.generated.replace("T", " ").replace("Z", " UTC");
   document.getElementById("flags").innerHTML = (c.stop ? `<span class="alert stop">stop: ${esc(c.stop.reason)}</span> ` : "") + (c.health ? `<span class="alert health">health: ${esc(c.health.reason)}</span>` : "");
   const terminal = s.shortlist.filter(p => TERMINAL.has(p.status)).length, drafts = s.shortlist.filter(p => p.status === "DRAFT").length;
-  const papers = Object.values(th).filter(t => t.paper && t.paper.status === "ACCEPTED").length, readable = Object.values(th).filter(t => t.edited && t.edited.status === "done").length;
+  const papers = Object.values(th).filter(t => t.paper && ACCEPTED.includes(t.paper.status)).length, readable = Object.values(th).filter(t => t.edited && t.edited.status === "done").length;
   const step = (n, label, sub) => `<div class="card step"><b>${n}</b><span>${label}</span><small>${sub || ""}</small></div>`;
   document.getElementById("pipeline").innerHTML = step(`${sc.done}<span class="muted" style="font-size:16px"> / ${sc.total}</span>`, "pairs scanned", `${fmt(sc.cost)} USD`)
     + step(s.shortlist.length, "shortlisted", sc.cut != null ? `top ${sc.cut}%` : sc.min_score != null ? `score at or above ${sc.min_score}` : "")
@@ -122,7 +123,7 @@ function render(s) {
   if (sc.q.length && sc.p.length) {
     h += `<div style="overflow:auto"><table class="heat"><tr><th></th>${sc.p.map((t, j) => `<th><a href="${abs(sc.p_ids[j])}" target="_blank" title="${esc(t)}">P${sc.p_n[j]}</a></th>`).join("")}</tr>`;
     sc.grid.forEach((row, i) => { h += `<tr><th><a href="${abs(sc.q_ids[i])}" target="_blank" title="${esc(sc.q[i])}">Q${sc.q_n[i]}</a></th>` + row.map((v, j) => {
-      const id = sc.ids[i][j], p = short.get(id); return `<td class="cell ${p ? "short term" : ""}${p && p.paper === "ACCEPTED" ? " accepted" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + (p.paper === "ACCEPTED" ? ", paper accepted" : "") + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
+      const id = sc.ids[i][j], p = short.get(id); return `<td class="cell ${p ? "short term" : ""}${p && ACCEPTED.includes(p.paper) ? " accepted" : ""}" data-id="${p ? id : ""}" style="${heat(v, max)}" title="${id}${p ? " (" + p.status + (ACCEPTED.includes(p.paper) ? ", paper accepted" : "") + ")" : ""}: ${esc(sc.q[i])}  x  ${esc(sc.p[j])}">${v ?? ""}</td>`; }).join("") + "</tr>"; });
     h += `</table></div><div class="legend"><span>score = feasibility x gain, 0 to 10,000</span><span>outlined: shortlisted, click to open</span><span>dotted: paper accepted</span><span>row and column labels open the arXiv abstract</span></div>`;
   } else h = `<div class="empty">no corpora yet</div>`;
   document.getElementById("scan").innerHTML = h;
@@ -131,7 +132,7 @@ function render(s) {
     const x = th[p.pair_id] || {}, base = `${ROOT}threads/${p.pair_id}/`, st = x.status || {}, isOpen = expanded.has(p.pair_id);
     const links = [x.note ? `<a class="btn b-note" href="${base}${p.pair_id}.pdf" target="_blank">note</a>` : "",
       x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "",
-      x.paper ? `<a class="btn b-paper ${x.paper.status === "ACCEPTED" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
+      x.paper ? `<a class="btn b-paper ${ACCEPTED.includes(x.paper.status) ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper</a>` : ""].join("");
     t += `<tr class="pair ${selected === p.pair_id ? "sel" : ""}" data-id="${p.pair_id}"><td class="caret">${isOpen ? "&#9660;" : "&#9654;"}</td><td><b>${p.pair_id}</b></td><td><span class="score"><i style="width:${Math.round(28 * (p.score || 0) / max)}px"></i>${p.score ?? ""}</span></td><td class="nw">${pill(p.status)}${x.paper ? ` <span class="muted small">paper</span> ${pill(x.paper.status)}` : ""}</td><td class="nw" title="stage ${esc(p.stage ?? "")}">${p.round ?? 0}${st.repairs ? `<span class="muted"> +${st.repairs}r</span>` : ""}${!TERMINAL.has(p.status) && p.stage ? `<span class="muted"> ${esc(p.stage)}</span>` : ""}</td><td>${p.calls}</td><td class="nw">${mins(p.seconds)}</td><td>${fmt(p.spend)}</td><td class="nw">${links}</td></tr>`;
     if (isOpen) t += `<tr class="sub"><td colspan="9"><div class="titles"><b>Q</b> <a href="${abs(p.q)}" target="_blank">${esc(x.q_title)}</a><br><b>P</b> <a href="${abs(p.p)}" target="_blank">${esc(x.p_title)}</a></div>`
       + (st.reason ? `<div class="why"><b>verdict, round ${p.round ?? 0}:</b> ${esc(st.reason)}</div>` : "") + (x.paper && x.paper.reason ? `<div class="why"><b>paper review, ${esc(x.paper.status)}:</b> ${esc(x.paper.reason)}</div>` : "")
@@ -155,11 +156,11 @@ function renderThread() {
   if (x.connexion) h += `<div class="muted small" style="margin-top:8px"><b>the scan saw:</b> ${esc(x.connexion)}</div>`;
   h += `<div style="margin-top:10px"><a class="btn" href="${base}ledger.jsonl" target="_blank">raw ledger</a>`
     + (x.note ? `<a class="btn b-note" href="${base}${selected}.pdf" target="_blank">note</a><a class="btn" href="${base}${selected}.tex" target="_blank">tex</a>` : `<span class="muted small">no note yet</span>`)
-    + (x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper ? `<a class="btn b-paper ${x.paper.status === "ACCEPTED" ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper (${esc(x.paper.status)})</a>` : "") + `</div>`;
+    + (x.edited && x.edited.status === "done" ? `<a class="btn b-readable" href="${base}edited/note.pdf" target="_blank">readable</a>` : "") + (x.paper ? `<a class="btn b-paper ${ACCEPTED.includes(x.paper.status) ? "" : "pending"}" href="${base}paper/paper.pdf" target="_blank">paper (${esc(x.paper.status)})</a>` : "") + `</div>`;
   const stg = Object.entries(x.by_stage || {});
   if (stg.length) h += `<h3>Calls by stage</h3><table><tr><th>stage</th><th>calls</th><th>time</th><th>usd</th><th>errors</th></tr>` + stg.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.calls}</td><td>${mins(v.seconds)}</td><td>${fmt(v.spend)}</td><td>${v.errors || ""}</td></tr>`).join("") + "</table>";
   h += `<h3>Verdicts</h3>` + (x.verdicts.length ? x.verdicts.map(v => `<div class="verdict ${esc(v.decision)}"><b>round ${v.round}: ${esc(v.decision)}</b> <span class="muted small">${esc((v.at || "").slice(11, 16))} UTC</span><div class="small" style="margin-top:3px">${esc(v.reason)}</div>${v.action ? `<div class="next"><b>next:</b> ${esc(v.action)}</div>` : ""}</div>`).join("") : `<div class="muted small">none yet</div>`);
-  if (x.paper && x.paper.reason) h += `<h3>Paper review</h3><div class="verdict ${x.paper.status === "ACCEPTED" ? "DRAFT" : "REVISE"}"><b>${esc(x.paper.status)}, round ${x.paper.round}</b><div class="small" style="margin-top:3px">${esc(x.paper.reason)}</div><div style="margin-top:6px"><a class="btn" href="${base}paper/paper.tex" target="_blank">tex</a><a class="btn" href="${base}paper/references.bib" target="_blank">bib</a><a class="btn" href="${base}paper/search.md" target="_blank">searches</a><a class="btn" href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
+  if (x.paper && x.paper.reason) h += `<h3>Paper review</h3><div class="verdict ${ACCEPTED.includes(x.paper.status) ? "DRAFT" : "REVISE"}"><b>${esc(x.paper.status)}, round ${x.paper.round}</b><div class="small" style="margin-top:3px">${esc(x.paper.reason)}</div><div style="margin-top:6px"><a class="btn" href="${base}paper/paper.tex" target="_blank">tex</a><a class="btn" href="${base}paper/references.bib" target="_blank">bib</a><a class="btn" href="${base}paper/search.md" target="_blank">searches</a><a class="btn" href="${base}paper/review.json" target="_blank">reviews</a></div></div>`;
   const actors = ["all", ...Object.keys(x.by_actor)];
   h += `<h3>Ledger, ${x.entries} entries</h3><div class="chips">${actors.map(a => `<span class="chip ${actorFilter === a ? "on" : ""}" data-actor="${esc(a)}">${esc(a)}${a !== "all" ? ` ${x.by_actor[a]}` : ""}</span>`).join("")}<span class="muted small" style="align-self:center">${Object.entries(x.by_kind).map(([k, v]) => `${k} ${v}`).join(", ")}</span></div>`;
   h += x.ledger.filter(e => actorFilter === "all" || e.actor === actorFilter).map(e => { const long = (e.text || "").length > 500, id = `${selected}#${e.seq}`, isOpen = open.has(id);

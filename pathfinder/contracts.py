@@ -51,6 +51,15 @@ SCHEMAS = {
     "paper_review": {"type": "object", "required": ["decision"], "properties": {
         "decision": {"enum": ["ACCEPT", "AMEND", "REVISE"]}, "summary": {"type": ["string", "null"]},
         "findings": {"type": "array", "items": _FINDING}}},
+    "presentation_check": {"type": "object", "required": ["findings"], "properties": {
+        "findings": {"type": "array", "items": {"type": "object", "required": ["kind", "issue"], "properties": {
+            "kind": {"enum": ["notation", "background", "meaning", "claim", "open-finding"]},
+            "where": {"type": ["string", "null"]}, "issue": {"type": "string"}, "fix": {"type": ["string", "null"]}}}},
+        "clear": {"type": "boolean"}}},
+    "presentation_claims": {"type": "object", "required": ["items"], "properties": {
+        "items": {"type": "array", "items": {"type": "object", "required": ["id", "decision"], "properties": {
+            "id": {"type": "string"}, "decision": {"enum": ["confirmed", "introduced", "dismissed"]},
+            "reason": {"type": ["string", "null"]}, "fix": {"type": ["string", "null"]}}}}}},
 }
 
 

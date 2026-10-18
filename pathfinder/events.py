@@ -10,7 +10,7 @@ import json, sys, threading, time
 
 KINDS = frozenset({"run_started", "run_finished", "call_started", "call_finished", "status_changed", "stop_requested",
                    "context_built", "contract_repair", "contract_failed", "admission_deferred", "garbage_collected",
-                   "call_abandoned"})
+                   "call_abandoned", "presentation"})
 _lock = threading.Lock()
 
 

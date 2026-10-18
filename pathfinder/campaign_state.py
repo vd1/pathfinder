@@ -7,7 +7,7 @@ from __future__ import annotations
 import calendar, json, os, re, time
 from collections import Counter
 from pathlib import Path
-from . import actionability, budget, admission, corpus, edit, events, paper, reopen, research, transport
+from . import actionability, budget, admission, corpus, edit, events, paper, presentation, reopen, research, transport
 
 ACTIVE_SECONDS = 600                       # an event this recent means the campaign is active
 DOCUMENTS = (("research note", "{u}.tex", "{u}.pdf"), ("readable note", "edited/note.tex", "edited/note.pdf"),
@@ -206,7 +206,8 @@ PIPELINE = [
     ("Research", [("researching", "In progress"), ("stopped", "Stopped"), ("orphaned", "Orphaned")]),
     ("Outcome", [("draft", "DRAFT"), ("pause", "Paused"), ("handoff", "Handed off"), ("blocked", "Blocked")]),
     ("Readable note", [("editing", "Editing"), ("noted", "Note ready"), ("note-blocked", "Note blocked")]),
-    ("Paper", [("writing", "Writing"), ("accepted", "Accepted"), ("amend", "Amendments asked"), ("paper-blocked", "Paper blocked")]),
+    ("Paper", [("writing", "Writing"), ("accepted", "Accepted"), ("amend", "Amendments asked"), ("paper-blocked", "Paper blocked"),
+               ("cleared", "Cleared"), ("released", "Released")]),
 ]
 
 
@@ -214,7 +215,7 @@ def lifecycle(research_s: dict, edit_s: dict, paper_s: dict, controller: str) ->
     """The unit's single pipeline position: the furthest stage it has reached, then that stage's state."""
     p, e, r = paper_s.get("status"), edit_s.get("status"), research_s.get("status", "new")
     if p:
-        return {"ACCEPTED": "accepted", "PAUSE-ON-AMEND": "amend", "blocked": "paper-blocked",
+        return {"ACCEPTED": "accepted", "CLEARED": "cleared", "RELEASED": "released", "PAUSE-ON-AMEND": "amend", "blocked": "paper-blocked",
                 "stopped": "paper-blocked"}.get(p, "writing")
     if e and e != "none":
         return {"done": "noted", "blocked": "note-blocked", "stopped": "note-blocked"}.get(e, "editing")
@@ -378,6 +379,8 @@ def build(campaign) -> dict:
                       "research": {k: r_s.get(k) for k in ("status", "stage", "round", "reason")},
                       "editorial": {"status": e_s.get("status"), "reason": e_s.get("reason")},
                       "assessment": {"status": p_s.get("status"), "reason": p_s.get("reason")},
+                      **({"presentation": {k: pr_s.get(k) for k in ("state", "stage", "cycles", "reason", "findings")}}
+                         if (pr_s := presentation.state(campaign, unit)).get("state") != "none" else {}),
                       **({"actionability": {k: a_s.get(k) for k in ("status", "decision", "reason")}}
                          if (a_s := actionability.status(campaign, unit)).get("status") != "none" else {}),
                       **({"reopened": [{k: r.get(k) for k in ("n", "at", "grant", "reason")} for r in rec],
@@ -456,6 +459,8 @@ def text(state: dict) -> str:
         prior = u.get("prior_result")
         kept = (f"  (earlier {prior['status']} kept, paper {prior['paper_status'] or 'none'} in {prior['paper'] or '-'})"
                 if prior else "")
+        if u.get("presentation") and u["assessment"]["status"] == "ACCEPTED":
+            kept += f"  presentation {u['presentation']['state']}"
         lines.append(f"{u['unit']:>8} score {u['score'] if u['score'] is not None else '-':>4}{weighted}  {u['controller']:<8} "
                      f"research {u['research']['status']}  edit {u['editorial']['status']}  paper {u['assessment']['status']}{kept}")
     return "\n".join(lines)

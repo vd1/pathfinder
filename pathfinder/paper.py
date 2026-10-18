@@ -12,7 +12,8 @@ from .admission import Refused
 
 
 LEGACY = {"accepted": "ACCEPTED", "returned": "PAUSE-ON-AMEND"}
-TERMINAL = {"ACCEPTED", "PAUSE-ON-AMEND", "blocked"}
+TERMINAL = {"ACCEPTED", "CLEARED", "RELEASED", "PAUSE-ON-AMEND", "blocked"}
+ACCEPTED_STATES = ("ACCEPTED", "CLEARED", "RELEASED")   # accepted for its science; then cleared, then released
 
 
 def status(campaign, pair_id) -> dict:
@@ -214,11 +215,17 @@ def run(campaign, pair_id: str, stop=lambda: False) -> str:
 
 def run_many(campaign, pairs: list[str], stop=lambda: False) -> dict:
     """The paper stage for several pairs, as many at once as the campaign has seats; a pair whose call the
-    transport could not serve is reported as such and the others go on."""
+    transport could not serve is reported as such and the others go on. With "presentation": true an accepted
+    paper goes on through the presentation pass."""
     from concurrent.futures import ThreadPoolExecutor
+    from . import presentation
     def one(pid):
         try:
-            return run(campaign, pid, stop=stop)
+            s = status(campaign, pid).get("status")
+            result = s if s in ACCEPTED_STATES else run(campaign, pid, stop=stop)
+            if result == "ACCEPTED" and presentation.enabled(campaign) and not stop():
+                result = presentation.run(campaign, pid)
+            return result
         except transport.TransportFailed:
             return "transport failure; run again later"
     with ThreadPoolExecutor(max_workers=max(1, campaign.seats)) as pool:
@@ -373,7 +380,7 @@ def amend(campaign, pair_id: str, path) -> str:
     s = status(campaign, pair_id)
     if (s.get("amend_until") or 0) > len(reviews):
         raise SystemExit(f"{pair_id}: an amend is in progress; run `pathfinder paper {pair_id}` to resume it")
-    if s.get("status") not in ("ACCEPTED", "PAUSE-ON-AMEND") or not (pd / "paper.tex").exists():
+    if s.get("status") not in (*ACCEPTED_STATES, "PAUSE-ON-AMEND") or not (pd / "paper.tex").exists():
         raise SystemExit(f"{pair_id}: the paper is {s.get('status')}; --amend needs an ACCEPTED or PAUSE-ON-AMEND paper")
     try:
         given = json.loads(Path(path).read_text())

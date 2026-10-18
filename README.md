@@ -61,6 +61,8 @@ uv run pathfinder status
 uv run pathfinder paper         # for every DRAFT thread
 uv run pathfinder paper Q1P6 --review   # one reviewer round on a paper you edited by hand
 uv run pathfinder paper Q1P6 --amend findings.json   # an author round on outside findings, then a reviewer round
+uv run pathfinder present Q1P6          # the presentation pass on an accepted paper; ends CLEARED
+uv run pathfinder release Q1P6          # a CLEARED paper as a clean article in paper/release/; ends RELEASED
 uv run pathfinder edit Q1P6 --recheck   # the edited note's reference checks again, no model call
 uv run pathfinder export report --zip   # a self-contained snapshot of the page and every document
 ```
@@ -348,6 +350,74 @@ your own campaign directory and edit the models and the budget.
   WebFetch) and the duty in `prompts/review-search.md`: look for closest prior work under neighbouring
   terminology and among the papers citing both Q and P, and decide AMEND on a missed closest work or an
   overclaim. Default `false`: reviewers then judge the related work from the author's `paper/search.md` alone.
+- `presentation`: `true` sends every accepted paper through the presentation pass (below), in the runner and
+  in `pathfinder paper`; `pathfinder present [PAIR] [--restart]` runs it by hand. `presentation_checkers`: 1
+  (default) or 2 checkers, their findings united; `presentation_cycles`: 0 to 2 (default 2) correction cycles.
+- `release`: `{"disclosure": "path", "author": "optional"}` for `pathfinder release`: the operator's AI-use
+  acknowledgement, in plain language (a line starting with `#` is a note and dropped; `\cite{Q,P}` cites the
+  two source papers). The export refuses while the file holds the placeholder `TO BE CHOSEN`.
+
+### The presentation pass and the release
+
+Reviewers accept a paper for its science; whether a reader can use it is a
+separate state. Accepted papers reached release with unbound notation,
+pipeline labels in the prose (Q, P, ledger), ledger comments in the source
+and minor findings left open (nobel's pilot on two accepted papers, 18
+October 2026). The paper's states are ACCEPTED (science), CLEARED
+(presentation, tied to the sha256 of the manuscript cleared) and RELEASED
+(export passed); an amend afterwards starts again from ACCEPTED.
+
+The pass works in `paper/presentation/` and never changes the accepted
+`paper/paper.tex`:
+
+1. The editor (stage `present`, actor `editor`) reads the full text of both
+   source papers (`fetch_sources`, or `pathfinder sources PAIR` beforehand;
+   else the abstract), the minor findings the ACCEPT left open, the
+   manuscript and its BibTeX, never the ledger. It binds notation, removes
+   pipeline labels, calibrates background on the source papers, states the
+   question and the result first, frames the paper faithfully, may propose a
+   title, and applies or dismisses every open finding with a reason, marking
+   "needs lookup" what needs a search. What needs a choice of meaning it
+   escalates instead of guessing.
+2. A lookup (stage `present_lookup`, web search) closes the "needs lookup"
+   findings from the records it reads.
+3. A fresh check (stage `present_check`, actors `checker`, or `checker-1`
+   and `checker-2` with two) reads the manuscript, the change log and the
+   open findings only. In the pilot a second model family alone was too
+   lenient on meaning and claims: route at least one checker to a strong
+   model.
+4. Meaning and claim findings and the escalations go to one targeted review
+   call (stage `review`, actor `claims`) that reads the accepted paper too:
+   confirmed (the accepted paper has the problem), introduced (only the edit
+   has it) or dismissed. A confirmed problem is amended automatically, once
+   per paper: the findings go to `paper.amend` (an author round and a review
+   round, logged in `paper.json` as `presentation_amends`), and the pass
+   starts again on the new accepted paper. A second confirmed problem stops
+   at RETURNED with `paper/presentation/amend-findings.json` ready for
+   `pathfinder paper PAIR --amend`.
+5. The remaining findings get up to `presentation_cycles` corrections
+   (actor `corrector`): definitions and rewording only. A guard compares the
+   corrected manuscript with the one before it sentence by sentence and
+   discards the correction when an accepted sentence loses or changes words
+   (unless it is restored to its accepted wording) or when inserted text
+   cites, names an author of the bibliography, brings a new number, refers
+   to a numbered theorem or section, or displays a formula.
+
+The pass ends CLEARED, RETURNED, or PAUSE-ON-PRESENT (findings left at the
+cycle limit, a refused correction, a problem the edit introduced, an open
+finding not closed); `status`, `state` and `playbook` show it.
+
+`pathfinder release PAIR` exports the cleared manuscript, while its sha256
+is the one cleared, to `paper/release/` (paper.tex, references.bib,
+paper.pdf): the standard article class without the pipeline's banner,
+headers and status block; every comment removed without leaving a "%"; the
+ledger pointers moved to `paper/provenance.json`, which is never published;
+keys renamed to author initials and year; the acknowledgement as a section
+of its own. A leak check reads the source and the PDF text for `pathfinder`,
+ledger, verdict, pair ids, peer names, process words (DRAFT, ITERATE, round
+n), "branch" in process phrases and Q or P used as a paper's name; the
+acknowledgement is exempt so that it can name Pathfinder. A hit or an
+undefined citation refuses the release and the paper stays CLEARED.
 - `novelty_stage`: `true` adds a novelty check between consolidate and verify in an EVA thread (the joint
   thread of a composable campaign; branches are unchanged). One fresh call with web search and read-only tools
   reads the note, the titles and abstracts of Q and P and, with `novelty_citers` (a path inside the
@@ -807,7 +877,9 @@ format; in them a zero may mean unknown.
 
 The prompts in `prompts/` are the place to tune behaviour: `scan.md`
 (the two-axis judge), `peer.md` (the creative brief), `consolidate.md`,
-`verify.md`, `author.md`, `review.md`, `editor.md` and `supervisor.md`. An
+`verify.md`, `author.md`, `review.md`, `editor.md`, `supervisor.md`, and for
+the presentation pass `present.md`, `present-lookup.md`, `present-check.md`,
+`present-correct.md` and `present-claims.md`. An
 installed engine carries them inside the package. A campaign adjusts them
 one file at a time: for role R, the campaign's `prompts/R.md` replaces the
 engine's prompt, `prompts/R.append.md` is appended to whichever prompt

@@ -374,20 +374,24 @@ def _loop(campaign, ex, interval, futures, metadata):
                     alerts.emit(campaign, "runner stage failed twice in a row", campaign.path("health.json"))
 
 
-PAPER_DONE = {"ACCEPTED", "PAUSE-ON-AMEND"}
+PAPER_DONE = {"ACCEPTED", "CLEARED", "RELEASED", "PAUSE-ON-AMEND"}
 STAGE_SETS = {("research", "edit"), ("research", "edit", "paper")}
 
 
 def pair_complete(campaign, pair_id, stages=("research", "edit", "paper")) -> bool:
     """Complete over the requested stages: research terminal and edit done; with paper, also either research
-    is not DRAFT or the paper is ACCEPTED or PAUSE-ON-AMEND."""
-    from . import edit, paper
+    is not DRAFT or the paper is ACCEPTED or PAUSE-ON-AMEND; with "presentation": true, an ACCEPTED paper also
+    needs its presentation pass ended (CLEARED, or stopped for the operator)."""
+    from . import edit, paper, presentation
     if research.status(campaign, pair_id).get("status") not in research.TERMINAL:
         return False
     if edit.status(campaign, pair_id).get("status") != "done":
         return False
     if "paper" in stages and research.status(campaign, pair_id).get("status") == "DRAFT":
-        return paper.status(campaign, pair_id).get("status") in PAPER_DONE
+        p = paper.status(campaign, pair_id).get("status")
+        if p == "ACCEPTED" and presentation.enabled(campaign):
+            return presentation.state(campaign, pair_id).get("state") in presentation.TERMINAL
+        return p in PAPER_DONE
     return True
 
 
@@ -424,5 +428,16 @@ def _run_pair(campaign, pair_id, stages, interval) -> dict:
                 out["paper"] = paper.run(campaign, pair_id, stop=lambda: stopped(campaign) or unhealthy(campaign))
             else:
                 out["paper"] = paper.status(campaign, pair_id).get("status")
+    from . import presentation
+    def present_due():
+        return (presentation.enabled(campaign) and research.status(campaign, pair_id).get("status") == "DRAFT"
+                and paper.status(campaign, pair_id).get("status") == "ACCEPTED"
+                and presentation.state(campaign, pair_id).get("state") not in presentation.TERMINAL
+                and not stopped(campaign) and not unhealthy(campaign))
+    if "paper" in stages and code == 0 and present_due():
+        with health.owner(campaign, nested=True), Lock(campaign.thread_dir(pair_id)):
+            if present_due():
+                presentation.run(campaign, pair_id)
+            out["paper"] = paper.status(campaign, pair_id).get("status")
     out["complete"] = pair_complete(campaign, pair_id, stages)
     return out

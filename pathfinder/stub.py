@@ -5,7 +5,8 @@ campaigns through research, edit, paper and style builds without a model call. R
 admission, active-call records and receipts as real calls; receipts say backend "stub", cost 0.
 
 Settings under "stub" in campaign.json: "verify" (the verifier's decision, default DRAFT), "review"
-(the paper reviewer's decision, default ACCEPT), "actionability" (default NEEDS_INPUTS), and for PCE editing "pce_fact" (pass), "pce_critic" (pass)
+(the paper reviewer's decision, default ACCEPT), "actionability" (default NEEDS_INPUTS); the presentation pass
+returns the manuscript unchanged, a clear check and dismissed claims; and for PCE editing "pce_fact" (pass), "pce_critic" (pass)
 and "pce_editor" (accept)."""
 from __future__ import annotations
 import json, re
@@ -73,6 +74,14 @@ def reply(campaign, request) -> str:
         (pd / "paper.tex").write_text(PAPER); (pd / "references.bib").write_text(BIB)
         (pd / "search.md").write_text("Stub search record: no search was run.\n")
         return "stub paper written"
+    if stage in ("present", "present_lookup"):       # the manuscript back unchanged, nothing left open
+        tex = request.prompt.split("## manuscript\n\n", 1)[1].split("\n\n## ", 1)[0]
+        return "===PAPER===\n" + tex + "\n===REPORT===\n" + json.dumps({"changelog": [], "title": None, "findings": [], "escalations": []})
+    if stage == "present_check":
+        return json.dumps({"findings": [], "clear": True})
+    if stage == "review" and request.actor == "claims":
+        items = json.loads(request.prompt.split("## items to decide\n\n", 1)[1].split("\n\n## ", 1)[0])
+        return json.dumps({"items": [{"id": i["id"], "decision": "dismissed", "reason": "stub"} for i in items]})
     if stage == "review":
         return json.dumps({"decision": settings.get("review", "ACCEPT"), "summary": "stub review", "findings": []})
     if stage == "actionability":

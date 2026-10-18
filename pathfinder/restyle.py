@@ -93,7 +93,7 @@ def documents(campaign, pair_id: str) -> list[tuple[Path, str, str, str | None]]
         docs.append((d / "edited", "note.tex", "pathfinder-readable", "readable note", _day(edit.status(campaign, pair_id).get("updated"))))
     if (d / "paper" / "paper.tex").exists():
         s = paper.status(campaign, pair_id); rnd = s.get("round")
-        line = (f"paper accepted at review round {rnd}" if s.get("status") == "ACCEPTED"
+        line = (f"paper accepted at review round {rnd}" if s.get("status") in paper.ACCEPTED_STATES
                 else f"paper {s.get('status')} after {rnd} review rounds")
         docs.append((d / "paper", "paper.tex", "pathfinder-paper", line, _day(s.get("updated"))))
     return docs

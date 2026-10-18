@@ -65,6 +65,11 @@ def main(argv=None):
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
     w.add_argument("--amend", metavar="FINDINGS.json", help="an author round answering outside findings (review.json's findings schema), then a reviewer round")
+    pr = sub.add_parser("present", help="the presentation pass on an accepted paper: editor, lookup, fresh check, corrections; ends CLEARED")
+    pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
+    pr.add_argument("--restart", action="store_true", help="start the pass afresh, discarding an earlier one")
+    rl = sub.add_parser("release", help="export a CLEARED paper as a clean article in paper/release/ with a leak check; ends RELEASED")
+    rl.add_argument("pair")
     ro = sub.add_parser("reopen", help="give a finished thread one more step: a repair (PAUSE-ON-REVISE), a peer round "
                         "(PAUSE-ON-ITERATE, PAUSE) or an extend round toward a target (DRAFT); the next verdict ends it")
     ro.add_argument("pair"); ro.add_argument("--grant", choices=("repair", "round", "extend"), required=True)
@@ -129,7 +134,7 @@ def main(argv=None):
     return _dispatch(ns, c)
 
 
-DISPATCHING = {"scan", "explore", "research", "paper", "edit"}
+DISPATCHING = {"scan", "explore", "research", "paper", "edit", "present"}
 
 
 def _dispatch(ns, c):
@@ -244,9 +249,27 @@ def _dispatch(ns, c):
     elif ns.cmd == "paper":
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
-                                           and paper.status(c, p["pair_id"]).get("status") != "ACCEPTED"]
+                                           and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "present":
+        from . import presentation
+        pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
+                                           if research.status(c, p["pair_id"]).get("status") == "DRAFT"
+                                           and paper.status(c, p["pair_id"]).get("status") == "ACCEPTED"
+                                           and presentation.state(c, p["pair_id"]).get("state") not in presentation.TERMINAL]
+        for pid in pairs:
+            try:
+                print(f"{pid}: {presentation.run(c, pid, restart=ns.restart)}")
+            except transport.TransportFailed:
+                print(f"{pid}: transport failure; run again later to resume")
+            reason = presentation.state(c, pid).get("reason")
+            if reason:
+                print(f"  {reason}")
+    elif ns.cmd == "release":
+        from . import release
+        out = release.run(c, ns.pair)
+        print(f"{ns.pair}: {out['status']}: {out['path']} ({out['keys']} keys renamed, {out['pointers']} ledger pointers kept in paper/provenance.json)")
     elif ns.cmd == "reopen":
         from . import reopen
         try:
@@ -311,5 +334,17 @@ def explore(c, min_score: float, page: int, passes: int):
         done += 1
 
 
+def paper_due(c, pair_id) -> bool:
+    """`pathfinder paper` with no pair: a paper not yet accepted, or, with "presentation": true, an accepted one
+    whose presentation pass has not ended."""
+    from . import paper, presentation
+    s = paper.status(c, pair_id).get("status")
+    if s not in paper.ACCEPTED_STATES:
+        return True
+    return (s == "ACCEPTED" and presentation.enabled(c)
+            and presentation.state(c, pair_id).get("state") not in presentation.TERMINAL)
+
+
 if __name__ == "__main__":
     sys.exit(main())
+

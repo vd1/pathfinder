@@ -68,6 +68,21 @@ def next_actions(campaign) -> list[dict]:
                         "why": f"the earlier {prior['status']} stays the thread's result: its edit in {prior['edit'] or '-'}, "
                                f"its paper ({prior['paper_status'] or 'none'}) in {prior['paper'] or '-'}.",
                         "command": None})
+        pres = unit.get("presentation") or {}
+        if unit["assessment"]["status"] == "ACCEPTED" and pres.get("state") == "RETURNED":
+            out.append({"owner": "operator", "action": f"{pair}: the presentation pass returned the paper to its author",
+                        "why": f"{pres.get('reason')}. Its one automatic amend is spent; amend when you choose, and the pass "
+                               "starts again on the newly accepted paper.",
+                        "command": _cmd(campaign, "paper", pair, "--amend",
+                                        str(campaign.thread_dir(pair) / "paper/presentation/amend-findings.json"))})
+        elif unit["assessment"]["status"] == "ACCEPTED" and pres.get("state") in ("PAUSE-ON-PRESENT", "blocked"):
+            out.append({"owner": "operator", "action": f"{pair}: presentation pass {pres['state']}",
+                        "why": f"{pres.get('reason')}. Fix what it names (a lookup, an open finding), then run the pass afresh.",
+                        "command": _cmd(campaign, "present", pair, "--restart")})
+        elif unit["assessment"]["status"] == "CLEARED" and (campaign.raw or {}).get("release"):
+            out.append({"owner": "operator", "action": f"{pair}: paper cleared for release",
+                        "why": "the presentation pass cleared it; the export writes the public copy and runs the leak check.",
+                        "command": _cmd(campaign, "release", pair)})
         action = reconcile.inspect(campaign, pair)["action"]
         family = re.sub(r"^(nothing: )?branch-\d+: ", r"\1", action)    # a composable branch's own action
         if family.startswith("nothing: evidence still blocked"):

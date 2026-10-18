@@ -12,7 +12,8 @@ stage_routes in each experiment.json)."""
 from __future__ import annotations
 import copy, dataclasses
 
-STAGES = ("scan", "peer", "consolidate", "verify", "ledger_review", "edit", "author", "review", "actionability", "novelty")
+STAGES = ("scan", "peer", "consolidate", "verify", "ledger_review", "edit", "author", "review", "actionability", "novelty",
+          "present", "present_check", "present_lookup")
 BACKENDS = ("codex", "claude", "elm", "stub")
 EFFORTS = ("minimal", "low", "medium", "high", "xhigh", "max")
 KEYS = ("backend", "model", "effort")
