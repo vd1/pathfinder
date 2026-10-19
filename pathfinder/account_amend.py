@@ -3,7 +3,7 @@ import copy
 import json
 import re
 from pathlib import Path
-from . import account_release, paper, pce, pce_recovery, presentation, provenance, research, runner, health
+from . import account_release, pce_evidence, transport, paper, pce, pce_recovery, presentation, provenance, research, runner, health
 
 
 def _read(path):
@@ -46,6 +46,9 @@ def prepare(campaign, pair_id, *, identity, packet, evidence_root, reason):
     changes = _read(packet / 'changes.json')
     evidence = _read(packet / 'evidence.json')
     candidate = (packet / 'account-candidate.tex').read_bytes().decode('utf-8')
+    projection_path = packet / 'evidence-projection.json'
+    projection = pce_evidence.read(projection_path) if projection_path.exists() else None
+    excluded, additions = pce_evidence.validate(campaign, pair_id, projection)
     if changes['baseline_sha256'] != pce._sha(note) or changes['candidate_sha256'] != pce._sha(candidate):
         raise pce.Changed('candidate or baseline does not match packet hashes')
     revised = note
@@ -73,15 +76,18 @@ def prepare(campaign, pair_id, *, identity, packet, evidence_root, reason):
         snapshots[str(path.relative_to(thread))] = text
         if path.is_relative_to(thread / 'branches'):
             approved[f'sources/external/amendment-{i:02d}-{path.name}'] = text
-    if not approved:
+    if not approved and not additions:
         raise pce.Changed('amendment needs retained scientific branch evidence')
     request = dict(id=identity, reason=reason.strip(), changes=changes, evidence=evidence,
                    original_acceptance=acceptance, candidate_sha256=pce._sha(candidate),
                    bibliography_sha256=pce._sha(bib), evidence_sha256=pce._sha(pce._json(snapshots)))
+    if projection is not None:
+        request['evidence_projection'] = projection
     ed = thread / 'edited'
     pointer = ed / 'account-amendment.json'
     if pointer.exists() and _read(pointer)['id'] != identity:
         raise pce.Changed('another amendment is selected; do not replace its review implicitly')
+    findings = None
     if (root / 'request.json').exists():
         if _read(root / 'request.json') != request:
             raise pce.Changed('amendment ID already binds different inputs or authority')
@@ -93,15 +99,13 @@ def prepare(campaign, pair_id, *, identity, packet, evidence_root, reason):
         finding_ids = {f['id'] for f in findings['findings']}
         if {x['finding'] for x in replacements} != finding_ids:
             raise pce.Changed('packet replacements must address exactly the returned findings')
-        pce._write(root, 'returned-findings.json', pce._json(findings), immutable=True)
-    pce._write(root, 'request.json', pce._json(request), immutable=True)
-    pce._write(root, 'candidate.tex', candidate, immutable=True)
-    pce._write(root, 'evidence-snapshots.json', pce._json(snapshots), immutable=True)
     # sources() expects references.bib; imported accounts may use prose references.
     # Build its read-only source context with the normal corpus and clean supplement directly.
     files = {'brief.md': pce.BOUNDARY + '\nReview this fixed candidate as a complete account. '
              'Require explicit definitions, supported numbers and unchanged scientific limitations. '
              'No new research, source fetching or text revision is authorized. '
+             'Extract only manuscript claims and mandatory replacements, never administrative hashes, '
+             'custody assertions or review instructions. '
              'sources/external/amendment-* are retained campaign derivations and checks, '
              'research record evidence, not independent literature or prior editorial verdicts.\n',
              pce.BASELINE: candidate, 'references.bib': bib,
@@ -109,15 +113,28 @@ def prepare(campaign, pair_id, *, identity, packet, evidence_root, reason):
              'sources/internal/original.tex': note,
              'state.json': pce._json({'risk': 'high', 'max_passes': 1,
                  'acceptance_policy': 'Every claim supported, both gates pass, explicit editor acceptance. No evidence change.'}),
-             pce.SUPPLEMENT: pce._supplement(campaign, pair_id, pce.settings(campaign)['supplement_chars'], reviewers=True),
+             pce.SUPPLEMENT: pce._supplement(campaign, pair_id, pce.settings(campaign)['supplement_chars'], reviewers=True, excluded=excluded),
              **approved}
     for path in sorted((thread / 'inputs').glob('*')):
         if path.stem in ('Q', 'P') and path.suffix != '.json' and path.is_file():
             files['sources/external/' + path.name] = path.read_text(errors='replace')
+    if projection is not None:
+        if 'characters omitted at the supplement limit' in files[pce.SUPPLEMENT]:
+            raise pce.Changed('amendment evidence exceeds supplement allowance; no truncation')
+        files[pce.SUPPLEMENT] += '\n## Approved retained scientific files\n' + pce._json(additions)
+        if len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
+            raise pce.Changed('complete amendment context exceeds prompt allowance; no truncation')
     settings = {**pce.settings(campaign), 'passes': 1, 'fact_checks': 1}
     settings['critic'] = {k: v for k, v in settings['critic'].items() if k != 'pass_score'}
     grant = {'fixed_candidate': True, 'routes': {k: v for k, v in routes.items() if k.startswith('edit/')},
              'settings': settings, 'inputs_sha256': pce._sha(pce._json(files))}
+    if projection is not None:
+        grant['strict_evidence'] = True
+    if findings is not None:
+        pce._write(root, 'returned-findings.json', pce._json(findings), immutable=True)
+    pce._write(root, 'request.json', pce._json(request), immutable=True)
+    pce._write(root, 'candidate.tex', candidate, immutable=True)
+    pce._write(root, 'evidence-snapshots.json', pce._json(snapshots), immutable=True)
     pce._write(root / 'review', 'frozen-inputs.json', pce._json(files), immutable=True)
     pce._write(root / 'review', 'grant.json', pce._json(grant), immutable=True)
     pce._write(ed, 'account-amendment.json', pce._json({'id': identity}))

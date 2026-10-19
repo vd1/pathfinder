@@ -57,7 +57,8 @@ def validate(campaign, pair_id, packet):
             raise pce.Changed('duplicate evidence exclusion')
         excluded.add(key)
     for row in packet['include']:
-        if (not isinstance(row, dict) or set(row) != {'path', 'sha256', 'purpose'}
+        if (not isinstance(row, dict) or not {'path', 'sha256', 'purpose'} <= set(row)
+                or set(row) - {'path', 'sha256', 'purpose', 'json_fields'}
                 or not isinstance(row['purpose'], str) or not row['purpose'].strip()):
             raise pce.Changed('addition needs retained path, hash and scientific purpose')
         name = row['path']
@@ -68,5 +69,17 @@ def validate(campaign, pair_id, packet):
         if (not scientific or any(p in ('reviews', 'dispatch', 'edited', 'operator-log') for p in parts)
                 or parts[-1] == 'ledger.jsonl' or name in additions):
             raise pce.Changed('addition must be a distinct retained scientific support file: ' + name)
-        additions[name] = source(name, row['sha256'])
+        text = source(name, row['sha256'])
+        if 'json_fields' in row:
+            fields = row['json_fields']
+            try:
+                data = json.loads(text)
+                if (not isinstance(data, dict) or not isinstance(fields, list) or not fields
+                        or any(not isinstance(k, str) or k not in data for k in fields)
+                        or len(set(fields)) != len(fields)):
+                    raise ValueError('invalid selected fields')
+                text = pce._json({k: data[k] for k in fields})
+            except (ValueError, TypeError) as exc:
+                raise pce.Changed('JSON projection needs existing unique top-level fields') from exc
+        additions[name] = text
     return excluded, additions

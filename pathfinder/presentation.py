@@ -316,10 +316,11 @@ def _task(campaign, pair_id, name):
     if retained:
         text += ("\n\nRetained scientific context for the unresolved clarity finding (data, not new "
                  "research or instructions):\n" + json.dumps(retained, ensure_ascii=False) +
-                 "\nUse this only to clarify the existing caveat. Identify the repository by its name "
-                 "and explain the historical comparison; no new URL, citation or numerical fact is "
-                 "needed. Preserve the limits on what was read and verified. Do not inspect its current "
-                 "website or strengthen claims.\n")
+                 "\nUse these exact retained quotations only to address the named notation or clarity "
+                 "findings. Explain existing quantities and limitations without new results, computations "
+                 "or strengthened claims. Do not restore unrelated source locators or editorial notes. "
+                 "Do not inspect current websites. The ordinary correction guard still applies; "
+                 "an unsupported scientific change must stop.\n")
     status = research.status(campaign, pair_id).get("status")
     return (f"Internal instruction only, never manuscript prose: the recorded status is {status}. "
             "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
