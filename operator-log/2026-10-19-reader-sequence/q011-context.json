@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "source": "inputs/Q.txt",
+      "sha256": "e096f148c529d3ec3679155f236c588af56629f8f5372f99454d54820d0c9e31",
+      "quote": "    All EMLE models trained in this work using the protocol discussed above are referred\nto as \u201cbespoke\u201d models. Furthermore, in addition to this standard training protocol, we\nintroduce a \u201cpatching\u201d procedure to further refine EMLE model predictions, with which\nwe train \u201cpatched\u201d models. The idea is to directly fit the EMLE parameters to the static\nand induction energy terms arising from the decomposition of the QM/MM electrostatic\ninteraction, as follows:",
+      "where": "\u201cOn their training set, Morado and colleagues report a hydration root mean square error (RMSE) of 1.63 kcal/mol for patched EMLE, compared with 0.80 kcal/mol for OpenFF/TIP3P.\u201d"
+    },
+    {
+      "source": "inputs/P.txt",
+      "sha256": "7252dd738fe838de3ffd37bcc59a7bf1a375e3d5c09a17023cad1e219c5f931f",
+      "quote": "             . . . UM (\u03b21 ) UC (\u03b31 ) ,                  (5)    Hprob (\u03c3 ) = \u2212 (i,j ) Jij \u03c3iz \u03c3jz \u2212 i hi \u03c3iz \u2212 i ki \u03c3ix . In this\n                                                               formula, \u03c3id represents the Pauli matrices at each site,\nHere, p denotes the number of alternating applications of      and (i, j ) indicates nearest-neighbor interactions with the\nUC and UM , we also called the layers of QAOA. It is evi-      coupling constant Jij .",
+      "where": "\u201cTheir layers contain ZZ and Z cost rotations, X mixer rotations and, for DCQAOA, an additional local Y layer.\u201d"
+    },
+    {
+      "source": "branches/branch-3/emmy/encoding-audit.md",
+      "sha256": "f240d8b086ba8c14e4151befff00d65ef216c046c86e3b66c8a61b1aef3d2b5e",
+      "quote": "P Sec. II C, page 034036-5, identifies full-parameter/multiangle QAOA as its numerical ansatz. Figs. 9, 12 and 16 and their captions specify independent RZZ, RZ, RX and, for DCQAOA, RY gates. These are simulator experiments, not hardware demonstrations. P is a known calibration source previously assessed by Julien; neither source is claimed unseen. Selection scores are generated hypotheses.",
+      "where": "\u201cTheir layers contain ZZ and Z cost rotations, X mixer rotations and, for DCQAOA, an additional local Y layer.\u201d"
+    }
+  ]
+}

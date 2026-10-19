@@ -1,0 +1,28 @@
+{
+  "parent_candidate_sha256": "2efb55157c27211d2f5d316078b622cfcbd61af264cc3c71e7362d49ef732c22",
+  "changes": [
+    {
+      "finding": "reader-response-and-sequence",
+      "before": "For symmetric positive-definite response matrix $A$ and unscaled field $F$, the supplement's effective reciprocal functional",
+      "after": "Let $\\mu$ denote the induced-dipole vector, $A$ the symmetric positive-definite response matrix, and $F$ the undamped external field. The undamped induced dipoles solve $A\\mu=F$. With these definitions, the supplement's effective reciprocal functional"
+    },
+    {
+      "finding": "reader-response-and-sequence",
+      "before": "Branch-2's fixed-state, independent equal-variance example gives standard error 0.062690 kcal/mol, compared with the incorrect 0.021660 obtained by treating vacuum-subtracted differences as independent.",
+      "after": "Branch-2's illustrative fixed-state example uses a 16-interval trapezoidal grid and independent node estimates, each with standard error 0.0001 Hartree, with the vacuum estimate reused in every difference. Under these assumptions, the standard error is 0.062690 kcal/mol, compared with the incorrect 0.021660 obtained by treating vacuum-subtracted differences as independent. These are illustrative measurement assumptions, not measured molecular uncertainties or optimisation-noise estimates."
+    },
+    {
+      "finding": "reader-response-and-sequence",
+      "before": "\\subsection{The experiment that could change the decision}",
+      "after": "\\subsection{The experiment that could change the decision}\n\nThe decision sequence is conditional throughout. First acquire the matched molecular job and pinned runtime. Then validate static and endpoint response bookkeeping before comparing UCC and exact solutions in the same electronic space. Use closure when testing the consistency of an integrated response estimator, not as a certificate of response completeness. Add field nodes when a field-shape or quadrature question requires them, and use directional probes when testing scalar attenuation on a specified span; neither is a substitute for the initial matched-space comparison. Next test response-space and basis convergence against controlled classical references. Proceed to fitting only if label changes exceed reference and fit uncertainty, and to held-out hydration assessment only with adequate sampling, overlap and propagated uncertainty. The steps below specify these conditions; none has produced molecular validation in this investigation."
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-response-and-sequence",
+      "path": "reviews/current/critic-reader.md",
+      "sha256": "195a981778314f067223573990577b1b8ab17000f8d103fca5606f4cc4c73287",
+      "quote": "- Required revisions: Define the induced-dipole vector, response matrix and undamped field together before the reciprocal functional, including A mu = F. State that the 0.062690 versus 0.021660 kcal/mol comparison uses a 16-interval trapezoidal grid and independent node estimates with standard error 0.0001 Hartree, with the vacuum estimate reused; identify these as illustrative assumptions. Add a compact reader-facing decision sequence using existing evidence: acquire the matched job and runtime, validate static and endpoint response bookkeeping, compare UCC and exact solutions in the same space, assess response-space and basis convergence, and proceed to fitting and hydration only under the stated uncertainty conditions; place closure, extra field nodes and directional probes at their appropriate conditional steps. Preserve PAUSE and all scientific limitations; no new evidence is required."
+    }
+  ]
+}
