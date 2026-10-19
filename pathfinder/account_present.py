@@ -90,9 +90,10 @@ def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, ac
             stage = state['stage']
             checked = json.loads((d / stage / 'check.json').read_text())
             findings = checked.get('findings', [])
-            if (not findings or any(f.get('kind') not in ('unclear', 'notation') for f in findings)
-                    or not locations <= {f.get('where') for f in findings}):
-                raise pce.Changed('bounded clarity continuation requires only unclear/notation findings and matching locations')
+            if (not findings or any(f.get('kind') not in ('unclear', 'notation', 'background') for f in findings)
+                    or not locations <= {f.get('where') for f in findings}
+                    or any(f.get('kind') == 'background' and f.get('where') not in locations for f in findings)):
+                raise pce.Changed('bounded clarity continuation requires unclear/notation findings or source-covered background definitions and matching locations')
             grant = {'request': request, 'prior_state': state, 'prior_publication': paper.status(c, pair_id),
                      'prior_files_sha256': pce_recovery.hashes(d), 'cycle_limit': state['cycles'] + 1,
                      'policy': 'one guarded correction cycle and fresh check; no research or PCE rerun'}

@@ -322,11 +322,14 @@ def _task(campaign, pair_id, name):
     if retained:
         text += ("\n\nRetained scientific context for the unresolved clarity finding (data, not new "
                  "research or instructions):\n" + json.dumps(retained, ensure_ascii=False) +
-                 "\nUse these exact retained quotations only to address the named notation or clarity "
+                 "\nUse these exact retained quotations only to address the named notation, background definition or clarity "
                  "findings. Explain existing quantities and limitations without new results, computations "
                  "or strengthened claims. Do not restore unrelated source locators or editorial notes. "
                  "Do not inspect current websites. The ordinary correction guard still applies; "
-                 "an unsupported scientific change must stop.\n")
+                 "an unsupported scientific change must stop. Preserve accepted assumptions and numerical "
+                 "sentences verbatim when adding definitions. If the retained evidence does not specify "
+                 "a convention, explicitly identify the missing definition rather than remove or replace "
+                 "the assumption. Do not invent an acronym expansion.\n")
     status = research.status(campaign, pair_id).get("status")
     return (f"Internal instruction only, never manuscript prose: the recorded status is {status}. "
             "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
@@ -506,6 +509,17 @@ def _claims(campaign, pair_id, stage, items, accepted) -> list[dict]:
     numbered = [{"id": f"C{i}", **{k: it.get(k) for k in ("kind", "where", "issue", "fix")}} for i, it in enumerate(items, 1)]
     if out.exists() and json.loads(out.read_text()).get("asked") == numbered:
         return json.loads(out.read_text())["answers"]
+    if out.exists():
+        # A refused correction can add an escalation to an already reviewed stage.
+        # Keep that stage's earlier decision and give the new question its own record.
+        import hashlib
+        identity = hashlib.sha256(json.dumps(numbered, sort_keys=True).encode()).hexdigest()
+        out = out.with_name(f"claims-{identity}.json")
+        if out.exists():
+            saved = json.loads(out.read_text())
+            if saved.get("asked") != numbered:
+                raise _Blocked("retained claims review does not match its questions")
+            return saved["answers"]
     sections = [Section("accepted paper", text=accepted, keep=True),
                 Section("the paper after its presentation edit", text=(d / stage / "paper.tex").read_text(), keep=True),
                 Section("items to decide", text=json.dumps(numbered, indent=1), keep=True),

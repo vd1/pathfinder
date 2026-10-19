@@ -92,3 +92,40 @@ def test_retained_corrector_reply_survives_host_interruption(tmp_path,monkeypatc
     with pytest.raises(RuntimeError,match='before build'):account_present.apply(c,'Q1P1',**args,resume=True)
     assert account_present.apply(c,'Q1P1',**args,resume=True)=='CLEARED'
     assert sum(r.actor=='corrector' for r in calls)==1
+
+
+@pytest.mark.parametrize('kind,covered,allowed', [
+    ('background', True, True), ('background', False, False),
+    ('claim', True, False), ('meaning', True, False),
+])
+def test_background_requires_own_retained_context(tmp_path, monkeypatch, kind, covered, allowed):
+    c, args = paused(tmp_path, monkeypatch)
+    v = account_release.view(c, 'Q1P1')
+    d = presentation.folder(v, 'Q1P1')
+    stage = presentation.state(v, 'Q1P1')['stage']
+    f = dict(FINDING, kind=kind, where=FINDING['where'] if covered else 'Other definition')
+    (d/stage/'check.json').write_text(check(FINDING, f))
+    calls = _script(monkeypatch, {})
+    if allowed:
+        assert 'no calls' in account_present.apply(c, 'Q1P1', **args)
+    else:
+        with pytest.raises(pce.Changed, match='source-covered background'):
+            account_present.apply(c, 'Q1P1', **args)
+    assert not calls
+
+
+def test_new_escalation_keeps_prior_claims_and_reuses_answer(tmp_path, monkeypatch):
+    c, args = paused(tmp_path, monkeypatch)
+    v = account_release.view(c, 'Q1P1')
+    d = presentation.folder(v, 'Q1P1')
+    stage = presentation.state(v, 'Q1P1')['stage']
+    old = d/stage/'claims.json'
+    old.write_text(json.dumps({'asked': [], 'answers': []}))
+    original = old.read_bytes()
+    calls = _script(monkeypatch, {})
+    accepted = (paper.folder(v, 'Q1P1')/'paper.tex').read_text()
+    result = presentation._claims(v, 'Q1P1', stage, [FINDING], accepted)
+    assert presentation._claims(v, 'Q1P1', stage, [FINDING], accepted) == result
+    assert old.read_bytes() == original
+    assert len(list((d/stage).glob('claims-*.json'))) == 1
+    assert len(calls) == 1
