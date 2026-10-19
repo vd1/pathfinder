@@ -1,0 +1,23 @@
+{
+  "parent_candidate_sha256": "7756bf88637258820f9587f32d5d27b9adedf05765496bbb9723f6a4964eb7de",
+  "changes": [
+    {
+      "finding": "reader-thole-scope",
+      "before": "The undamped induced dipoles solve $A\\mu=F$. With these definitions, the supplement's effective reciprocal functional",
+      "after": "The undamped induced dipoles solve $A\\mu=F$. Define the Thole induction energy separately as $I_T=-F^{\\mathrm T}A^{-1}F/2$. This model energy is distinct from the electronic induction $I(1)$ defined above; their agreement remains an experimental question. With these definitions, the supplement's effective reciprocal functional"
+    },
+    {
+      "finding": "reader-thole-scope",
+      "before": "has minimiser $\\mu=sA^{-1}F$ and minimum $sI$.",
+      "after": "has minimiser $\\mu=sA^{-1}F$ and minimum $sI_T$."
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-thole-scope",
+      "path": "reviews/current/critic-reader.md",
+      "sha256": "2d4920db4375a7d33c6f4ad879e01cb5cb98b659c68ac648714c7e2ad6c40e9a",
+      "quote": "- Required revisions: Define a distinct Thole induction quantity, for example I_T = \u2212(F\u1d40A\u207b\u00b9F)/2, before the effective reciprocal functional, and state that its minimum is sI_T. Explicitly distinguish this model energy from electronic I(1), whose agreement with the Thole description remains an experimental question. Preserve the conditional mapping to Q and the limitation that historical implementation is unverified."
+    }
+  ]
+}
