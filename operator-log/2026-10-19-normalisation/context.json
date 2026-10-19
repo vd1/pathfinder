@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "source": "ada/field-null-diagnostic.json",
+      "sha256": "e3f30e91173bcc62893082012353453c7b80e4ba78254b0e804e70b47ee04a5f",
+      "quote": "    \"A separate exactly soluble oscillator has \\\\(H_s=(p_x^2+p_y^2+p_z^2+x^2+y^2+z^2)/2+s\\\\kappa(x^2-y^2)/2\\\\), with \\\\(|s\\\\kappa|<1\\\\). Its energy is \\\\(E(s)=[\\\\sqrt{1+s\\\\kappa}+\\\\sqrt{1-s\\\\kappa}+1]/2\\\\), and the static derivative at zero vanishes. The potential gradient at the induction centre is zero, yet \\\\(I(1)=[\\\\sqrt{1+\\\\kappa}+\\\\sqrt{1-\\\\kappa}-2]/2<0\\\\). The ideal quadrupole approximates the spatial symmetry of the Coulomb example; its solved Hamiltonian is not that four-charge Coulomb Hamiltonian.\",",
+      "where": "Synthetic quadrupolar oscillator"
+    },
+    {
+      "source": "ada/field-null-diagnostic.json",
+      "sha256": "e3f30e91173bcc62893082012353453c7b80e4ba78254b0e804e70b47ee04a5f",
+      "quote": "      \"finding\": \"Huang et al. PAD uses atomic external fields and reproduces the reference QM/MM hydration free energies with RMSD 0.12 kcal/mol for twelve small molecules. This challenges practical significance of an adversarial field-null construction. It is not a comparison with Q experimental accuracy or its different electronic reference.\"",
+      "where": "\u201ca classical PAD hydration root mean square deviation\u201d"
+    },
+    {
+      "source": "branches/branch-1/emmy/response-audit.md",
+      "sha256": "5c0e1f240cdf73a4e17ff7140e6b642cc016e311aa784c499d51bfc3e8245618",
+      "quote": "Expanding P equation 5 gives four amplitudes with coefficient magnitude \\(1/(4\\lambda^2)\\). Suppose each amplitude quadrature is measured independently through bounded binary outcomes, and a total of \\(S\\) shots is equally allocated. Then\n\n\\[\n\\operatorname{Var}(\\widehat C)\\leq\\frac{1}{\\lambda^4 S}.\n\\]\n\nFor dimensionless normalised operators, \\(\\lambda=0.1\\) and a quadrature standard error target of 0.01, \\(S=10^8\\) is a sufficient worst-case count for a single TCF time/geometry. This is not a lower bound, a measured cost, or an estimate of total P runtime. Actual variances, correlated estimators and alternative Pauli measurements can change it. The factors also depend on operator normalisation. Reducing the scalar suppresses its truncation bias but worsens this naive worst-case shot bound. The script tabulates the bounds.",
+      "where": "\u201cFor dimensionless normalised operators\u201d"
+    }
+  ]
+}
