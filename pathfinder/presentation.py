@@ -600,10 +600,30 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> li
     may_reword = lambda sentences: any(p in s for s in sentences for p in phrases)
     numbers, surnames = set(_NUMBER.findall(_body(before))), _surnames(bib)
     out = []
-    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, b, a, autojunk=False).get_opcodes():
-        old, new = b[i1:i2], a[j1:j2]
+    from collections import Counter
+    ops = difflib.SequenceMatcher(None, b, a, autojunk=False).get_opcodes()
+    old_counts = Counter(s for tag, i1, i2, _, _ in ops if tag != "equal" for s in b[i1:i2])
+    new_counts = Counter(s for tag, _, _, j1, j2 in ops if tag != "equal" for s in a[j1:j2])
+    # Pair exact sentences across changed blocks. A relocation preserves occurrence
+    # count, even when wrapping changes; a genuine deletion or duplicate still differs.
+    moved_old = old_counts & new_counts
+    moved_new = moved_old.copy()
+    def unmoved(sentences, counts):
+        remaining = []
+        for sentence in sentences:
+            if counts[sentence]:
+                counts[sentence] -= 1
+            else:
+                remaining.append(sentence)
+        return remaining
+    for tag, i1, i2, j1, j2 in ops:
         if tag == "equal":
             continue
+        old = unmoved(b[i1:i2], moved_old)
+        new = unmoved(a[j1:j2], moved_new)
+        if not old and not new:
+            continue
+        tag = "insert" if not old else "delete" if not new else "replace"
         if tag == "delete":
             out += [f"deletes accepted text: {s[:160]}" for s in old if s in acc]
             continue

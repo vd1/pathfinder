@@ -101,6 +101,11 @@ def main(argv=None):
     rl.add_argument("pair")
     rl.add_argument("--timestamp", help="fixed release UTC timestamp, YYYYMMDDTHHMMSSZ; retries reuse it")
     rl.add_argument("--edited", action="store_true", help="release the cleared PCE account")
+    vr = sub.add_parser("verify-replay", help="reassess a classic verifier on an exact follow-up copy, preserving the original")
+    vr.add_argument("pair")
+    vr.add_argument("--origin", type=Path, help="original campaign root; preparation requires an exact copied thread")
+    vr.add_argument("--reason", help="owner authority and purpose of the replay")
+    vr.add_argument("--apply", action="store_true", help="run only the new verifier, then stop before subsequent research/editorial work")
     ro = sub.add_parser("reopen", help="give a finished thread one more step: a repair (PAUSE-ON-REVISE), a peer round "
                         "(PAUSE-ON-ITERATE, PAUSE) or an extend round toward a target (DRAFT); the next verdict ends it")
     ro.add_argument("pair"); ro.add_argument("--grant", choices=("repair", "round", "extend"), required=True)
@@ -345,6 +350,10 @@ def _dispatch(ns, c):
         from . import release
         out = release.run(c, ns.pair, timestamp=ns.timestamp)
         print(f"{ns.pair}: {out['status']}: {out['path']} ({out['keys']} keys renamed, {out['pointers']} ledger pointers kept in paper/provenance.json)")
+    elif ns.cmd == "verify-replay":
+        from . import verify_replay
+        print(json.dumps(verify_replay.run(c, ns.pair, origin=ns.origin, reason=ns.reason,
+                                          apply=ns.apply, accept_change=ns.accept_change), indent=2))
     elif ns.cmd == "reopen":
         from . import reopen
         try:
