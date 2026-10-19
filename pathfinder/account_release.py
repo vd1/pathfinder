@@ -61,8 +61,13 @@ def present(campaign, pair_id, *, restart=False):
         if restart and d.exists():
             archive = d.parent / "presentation-history"
             archive.mkdir(exist_ok=True)
-            d.rename(archive / f"attempt-{len(list(archive.iterdir())) + 1:04d}")
-        return presentation.run(c, pair_id)
+            saved = archive / f"attempt-{len(list(archive.iterdir())) + 1:04d}"
+            d.rename(saved)
+            pce._write(saved, "publication-state.json", pce._json(paper.status(c, pair_id)), immutable=True)
+        if restart:
+            paper._set(c, pair_id, status="ACCEPTED", cleared_sha256=None, presentation_stage=None,
+                       reason="explicit account presentation restart; previous clearance archived")
+        return presentation.run(c, pair_id, restart=restart)
 
 
 def release(campaign, pair_id, timestamp=None):

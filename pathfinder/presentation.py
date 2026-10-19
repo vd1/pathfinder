@@ -170,7 +170,11 @@ def _run(campaign, pair_id, restart) -> str:
     _save(campaign, pair_id, stage=stage)
     n = state(campaign, pair_id).get("cycles", 0)
     while True:
-        found = _check(campaign, pair_id, stage, opened, disposition)["findings"]
+        found = list(_check(campaign, pair_id, stage, opened, disposition)["findings"])
+        if getattr(campaign, "_edited_publication", False):
+            source_findings = _release_language(campaign, (d / stage / "paper.tex").read_text())
+            (d / stage / "release-language.json").write_text(json.dumps(source_findings, indent=1))
+            found += source_findings
         s = state(campaign, pair_id)
         fresh = [e for e in s.get("escalations", []) if _key(e) not in s.get("reviewed", [])]
         items = [f for f in found if f.get("kind") in SUBSTANTIVE] + [{**e, "kind": "escalation"} for e in fresh]
@@ -214,6 +218,23 @@ def _run(campaign, pair_id, restart) -> str:
     paper._set(campaign, pair_id, status="CLEARED", cleared_sha256=sha(text), presentation_stage=stage,
                reason=f"presentation cleared at {stage}")
     return "CLEARED"
+
+
+def _release_language(campaign, tex):
+    """Feed release-blocking source language into the guarded presentation correction loop."""
+    from . import release
+    clean, _ = release.strip_comments(tex)
+    findings = []
+    for sentence in _sentences(clean):
+        hits = release.leak_check(campaign, "\\begin{document}" + sentence, "")
+        if hits:
+            findings.append({"kind": "unclear", "where": '"' + sentence.replace('"', "'") + '"',
+                             "issue": "Reader-facing workflow language fails the release check: " + "; ".join(hits),
+                             "fix": "Reword this sentence in scientific terms, preserving every limitation and "
+                                    "qualification. Do not replace internal status with a claim of validation "
+                                    "or remove a caveat. Editing provides no additional scientific validation.",
+                             "checker": "host-release-language"})
+    return findings
 
 
 def _pause(campaign, pair_id, reason) -> str:
@@ -286,9 +307,14 @@ def _task(campaign, pair_id, name):
     text = text.replace("the referees left open with their acceptance", "the editorial review left open")
     text = text.replace("the referees left with their acceptance", "the editorial review left open")
     status = research.status(campaign, pair_id).get("status")
-    return (f"Account publication boundary: the recorded scientific status is {status}. "
+    return (f"Internal instruction only, never manuscript prose: the recorded status is {status}. "
             "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
-            "Preserve the account's negative findings, qualifications and unresolved limitations. "
+            "Do not copy status labels or editorial-process descriptions into the article. "
+            "Express the limitation scientifically: editing does not provide additional scientific validation; "
+            "generated supporting material is not independent evidence. Preserve the account's negative "
+            "findings, qualifications and unresolved limitations without strengthening its claims. "
+            "For example, where applicable: The results remain subject to the stated assumptions and "
+            "evidence limitations; editing provides no additional scientific validation. "
             "A confirmed scientific problem stops publication for the operator; no research or automatic "
             "author amendment is authorised.\n\n" + text)
 
