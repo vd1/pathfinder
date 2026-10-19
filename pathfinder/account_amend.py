@@ -192,5 +192,7 @@ def finish(campaign, pair_id, root, review, request, bib, result):
               'baseline_sha256': request['changes']['baseline_sha256'],
               'candidate_sha256': pce._sha(candidate), 'bibliography_sha256': pce._sha(bib),
               'files_sha256': _hashes(root)}
+    if 'predecessor' in request:
+        record['predecessor'] = request['predecessor']
     pce._write(root, 'acceptance.json', pce._json(record), immutable=True)
     return 'accepted; run present PAIR --edited for fresh presentation before release'

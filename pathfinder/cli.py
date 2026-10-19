@@ -82,6 +82,12 @@ def main(argv=None):
     av.add_argument("--packet", type=Path, required=True)
     av.add_argument("--reason", required=True)
     av.add_argument("--apply", action="store_true")
+    successor = sub.add_parser("account-amend-successor", help="review an explicit successor to an accepted account returned by presentation")
+    successor.add_argument("pair")
+    successor.add_argument("--id", required=True)
+    successor.add_argument("--packet", type=Path, required=True)
+    successor.add_argument("--reason", required=True)
+    successor.add_argument("--apply", action="store_true")
     ar = sub.add_parser("account-amend-review", help="grant one evidence-repaired review of an unchanged account amendment")
     ar.add_argument("pair")
     ar.add_argument("--id", required=True, help="existing amendment identity")
@@ -313,6 +319,10 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "account-amend-successor":
+        from . import account_successor
+        print(account_successor.run(c, ns.pair, identity=ns.id, packet=ns.packet,
+                                    reason=ns.reason, apply=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-amend-revise":
         from . import account_revision
         print(account_revision.run(c, ns.pair, identity=ns.id, revision=ns.revision, packet=ns.packet,
