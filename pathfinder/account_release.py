@@ -6,14 +6,21 @@ from . import edit, paper, pce, pce_recovery, presentation, research, runner
 def view(campaign, pair_id, *, create=False):
     pce_recovery.preflight(campaign, presentation=True)
     e = edit.status(campaign, pair_id)
-    if (research.status(campaign, pair_id).get("status") not in research.TERMINAL
-            or pce.result(campaign, pair_id).get("status") != "accepted"
-            or not e.get("accepted_note") or e.get("presentation_error")):
-        raise pce.Changed("account presentation requires completed PCE gates and an installed accepted note")
+    if research.status(campaign, pair_id).get("status") not in research.TERMINAL:
+        raise pce.Changed("account presentation requires terminal research")
     ed = campaign.thread_dir(pair_id) / "edited"
-    note, bib = (ed / "note.tex").read_text(), (ed / "references.bib").read_text()
-    if note != (pce.workflow(campaign, pair_id) / pce.DRAFT).read_text():
-        raise pce.Changed("the account changed after PCE acceptance")
+    if e.get("imported_from") == "eva2 PCE":
+        from . import imported_account
+        note, bib, acceptance = imported_account.source(campaign, pair_id, e)
+    else:
+        if (pce.result(campaign, pair_id).get("status") != "accepted"
+                or not e.get("accepted_note") or e.get("presentation_error")):
+            raise pce.Changed("account presentation requires completed PCE gates and an installed accepted note")
+        note, bib = (ed / "note.tex").read_text(), (ed / "references.bib").read_text()
+        if note != (pce.workflow(campaign, pair_id) / pce.DRAFT).read_text():
+            raise pce.Changed("the account changed after PCE acceptance")
+        acceptance = {"kind": "PCE editorial acceptance",
+                      "workflow": str(pce.workflow(campaign, pair_id).relative_to(campaign.thread_dir(pair_id)))}
     identity = pce._sha(note + '\0' + bib)
     root = ed / "publication" / identity
     c = copy.copy(campaign)
@@ -22,12 +29,13 @@ def view(campaign, pair_id, *, create=False):
     if not root.exists() and not create:
         raise pce.Changed("run present PAIR --edited before release")
     if create:
+        pce._write(root, "acceptance.json", pce._json(acceptance), immutable=True)
         pce._write(root, "paper.tex", note, immutable=True)
         pce._write(root, "references.bib", bib, immutable=True)
         if not (root / "paper.json").exists():
-            paper._set(c, pair_id, status="ACCEPTED", acceptance_kind="PCE editorial acceptance",
+            paper._set(c, pair_id, status="ACCEPTED", acceptance_kind=acceptance["kind"],
                        research_status=research.status(campaign, pair_id).get("status"),
-                       pce=str(pce.workflow(campaign, pair_id).relative_to(ed)),
+                       pce=acceptance["workflow"],
                        accepted_sha256=pce._sha(note), original_edit=e)
     return c
 

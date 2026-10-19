@@ -1119,3 +1119,22 @@ but a locally rebuilt PDF is not covered by the published PDF hash; request
 a new timestamp to publish another build. Historical dated releases are
 never silently replaced. Internal provenance remains outside the exported
 artifact directory.
+
+Imported EVA2 accounts also use `present PAIR --edited` and
+`release PAIR --edited`. The engine verifies their existing `import.json`,
+accepted delivery and render hashes, then copies the exact retained
+`edited/eva2-pce/account.build.tex` into the publication workspace. The
+original body, PDF, edit record and imported PCE history stay untouched.
+`acceptance.json` identifies the imported acceptance and its evidence;
+no native PCE acceptance or `accepted_note` flag is manufactured. Accounts
+without citation commands can retain their prose references and use an
+empty publication bibliography. Missing bibliography dependencies block
+publication. Wrappers without `maketitle` receive a visible UTC release line
+in the exported copy.
+
+After an active reconciliation process exits, `reconcile --apply` without a
+pair processes the shortlist sequentially, including prepared PCE grants.
+Inspect the shortlist first: this general command can also apply other
+recovery actions. It does not create grants or bypass ownership, stop,
+provider or budget controls. A failure can interrupt the loop; rerunning
+resumes eligible pending work without repeating completed PCE calls.

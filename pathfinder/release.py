@@ -117,6 +117,8 @@ def _preamble(tex: str, author: str, date: str | None = None) -> str:
     if date is not None:
         keep.append("\\date{" + date + "}")
     body = re.sub(r"\\input\{pathfinder-meta(\.tex)?\}\s*", "", body)
+    if date is not None and not re.search(r"\\maketitle\b", body):
+        body = "\n\\noindent " + date + "\\par\n" + body
     return PREAMBLE + "\n".join(keep) + "\n" + sep + body
 
 
