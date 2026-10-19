@@ -93,6 +93,10 @@ def main(argv=None):
     pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
     pr.add_argument("--edited", action="store_true", help="finish a PCE-accepted account without commissioning a paper")
     pr.add_argument("--restart", action="store_true", help="start the pass afresh, discarding an earlier one")
+    rt = sub.add_parser("rate-release", help="prepare or resume one Sol and one Astra significance rating of a dated release")
+    rt.add_argument("pair")
+    rt.add_argument("--edited", action="store_true", help="rate the final released account")
+    rt.add_argument("--apply", action="store_true", help="dispatch missing ratings once each; otherwise prepare only")
     rl = sub.add_parser("release", help="export a CLEARED paper as a clean article in paper/release/ with a leak check; ends RELEASED")
     rl.add_argument("pair")
     rl.add_argument("--timestamp", help="fixed release UTC timestamp, YYYYMMDDTHHMMSSZ; retries reuse it")
@@ -329,6 +333,10 @@ def _dispatch(ns, c):
             reason = presentation.state(c, pid).get("reason")
             if reason:
                 print(f"  {reason}")
+    elif ns.cmd == "rate-release":
+        from . import significance
+        print(json.dumps(significance.run(c, ns.pair, edited=ns.edited, apply=ns.apply,
+                                         accept_change=ns.accept_change), indent=2))
     elif ns.cmd == "release":
         if ns.edited:
             from . import account_release
