@@ -1,0 +1,11 @@
+{
+  "baseline_sha256": "895956bcda6943f629da7302eb7cd05931ee285e4cdc8726349f384a3b451aa7",
+  "candidate_sha256": "38ff5224ea58ac29a6a1128faffd794a24b04b45af810b2150b0117c529af1f7",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "In the joint continuation, with unit mixer strengths, the squared pair contribution to the normalised Hilbert--Schmidt norm is 12 within components and at most 0.0048 between components.",
+      "after": "For an operator $O$ on $L$ qubits, the normalised Hilbert--Schmidt norm is $\\|O\\|_{\\rm HS}^2=2^{-L}\\operatorname{Tr}(O^\\dagger O)$. Here the pair part of the first-commutator operator is partitioned into Pauli terms whose two bits encode the same dipole component and terms whose bits encode different components. These orthogonal Pauli terms contribute their squared coefficients to the norm. With unit mixer strengths, each unordered bit pair contributes $8J_{ij}^2$. In the joint continuation, summing separately over these two classes gives squared norms 12 within components and at most 0.0048 between components."
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\date{}
+\begin{document}
+\section{Correlated electronic response for EMLE: a conditional benchmark}
+
+For Julien, the useful connection is an offline reference-data experiment: do correlated electronic labels improve EMLE hydration predictions after controlling errors in separately damped components and restoring omitted electronic response? TenCirChem supplies quantum-algorithm simulation tools; EMLE supplies the physical target and the test of usefulness. The approved research supplement establishes diagnostic limitations and a proposed experiment, but no molecular response result, hydration improvement or quantum advantage. The scientific status remains \textbf{PAUSE}: a complete, provenance-pinned molecular input and a runnable reference workflow are still needed to distinguish the remaining explanations. Recorded retrieval failures do not establish that the remote data are absent.
+
+The account separates findings reported in the papers, inherited synthetic branch results, and complementary deductions recorded in the joint investigation. The latter are mathematical controls, not molecular discoveries. This editorial revision adds no calculations or scientific evidence. References to branch and joint files below identify entries within \url{sources/external/research-supplement.md}, an approved generated research artefact with bounded coverage, rather than independent literature.
+
+\subsection{The physical problem and quantum method}
+
+Q, Morado and colleagues' \emph{Enhancing Electrostatic Embedding for ML/MM Free Energy Calculations}, fits static and induced EMLE components to B3LYP/cc-pVTZ references. The static component describes interaction with the vacuum density; induction includes electronic relaxation and its polarisation cost. Better agreement with the references improves hydration predictions but leaves excessive hydrophilicity. On the training molecules, Q reports hydration RMSEs of 1.63 kcal/mol for patched EMLE and 0.80 kcal/mol for OpenFF/TIP3P. An inverse dielectric of 0.6, selected using those training molecules, reduces the patched-model RMSE to 0.74 kcal/mol. The resulting predictions are statistically indistinguishable from OpenFF/TIP3P and mechanical-embedding ML/MM at the reported 95\% confidence level. Q also reports transfer to chemically related test molecules and to other ML potentials, while warning against assuming generalisation to chemically very different molecules. These are paper-reported results, not reproduced calculations. See Q, pp. 16--17, 19 and 24--32, \url{https://doi.org/10.1021/acs.jctc.5c01464}.
+
+Q reports static fitting RMSEs three to four times larger than induction RMSEs, with induction fitting improving accuracy only marginally. Static accuracy must therefore remain part of the experiment. Q's proposed explanation of residual hydration bias, induction already represented in Lennard--Jones parameters, remains a hypothesis. The paper also discusses solvent fields, point-charge representation and electronic-reference choices. A better electronic label need not resolve compensation among these contributions.
+
+P, Li and colleagues' TenCirChem paper, describes a variational quantum eigensolver: prepare a parametrised unitary coupled-cluster state, evaluate its Hamiltonian expectation and minimise the energy by classical parameter optimisation. Its custom spatial-orbital integrals, nuclear/core scalar and reduced density matrices provide ingredients for the proposed response calculation. Initially, simulate UCC classically and compare it with exact diagonalisation or full configuration interaction in precisely the same electronic space. P does not demonstrate a completed EMLE response adapter. See P, Sections 1.1 and 3.1.2--3.2.2, \url{https://doi.org/10.1021/acs.jctc.3c00319}.
+
+P's water example classically simulates a 34-qubit circuit for eight electrons in seventeen orbitals, with 6-31G(d) and a frozen oxygen 1s core. Its approximately fifteen-minute optimisation per geometry excludes integral generation and Hartree--Fock preparation. This differs from Q's cc-pVTZ reference basis. P's hydrogen hardware demonstration is a separate experiment. These results establish neither hardware feasibility for the proposed solvent-response calculation nor a resource advantage.
+
+\subsection{Specify the observable and the representation}
+
+For the UCC/exact comparison, fix the solute and MM coordinates, selected MM sites, atomic-orbital basis, orthonormal orbital representation, electron sector, active-space projector and frozen core. Holding the representation fixed does not freeze the active electronic state: optimise its coefficients or circuit parameters at every field strength. It prevents changes in the projected Hamiltonian from being confused with solver response.
+
+The earlier DFT pilot has a different constraint. Keep nuclei, atomic-orbital basis and MM-site selection fixed, but relax the occupied orbitals and density self-consistently at each coupling. Freezing the vacuum density throughout that sweep would remove the response being tested. The vacuum density is reused only to define the static reference. Applying a response-integral identity to DFT requires the corresponding stationary, converged electronic solution; incompletely optimised moving orbitals require additional derivative terms.
+
+For a fixed projected electronic problem, define
+\begin{equation*}
+H(t)=H_0+tV,\qquad S=\langle\psi_0|V|\psi_0\rangle,\qquad I(t)=E(t)-E(0)-tS.
+\end{equation*}
+Here $t$ scales the physical external charges, $E(t)$ is the electronic ground energy including the chosen scalar contributions, and $\psi_0$ is the vacuum state. MM self energy is excluded. The perturbation contains the electronic MM potential and the external nuclear and frozen-core scalars. For a fixed doubly occupied spatial core $C$, its scalar part is
+\begin{equation*}
+c_V=V_{\mathrm{nuc,MM}}+2\sum_{i\in C}v_{ii},
+\end{equation*}
+where $v$ is the external electronic potential matrix. This scalar belongs in the static label and cancels from induction when included consistently. For a differentiable exact ground state, or a stationary branch on a fixed variational manifold, $S=E'(0)$. With approximate states, evaluate the vacuum expectation directly using the same conventions as the endpoints. These definitions follow the supplement's response analysis and restart specification.
+
+The primary outputs are $(S,I(1),S+I(1),S+sI(1))$, where $s$ is a separately specified empirical induction multiplier. Write $I=I(1)$ and define approximate endpoint errors $\delta_j=E_A(j)-E(j)$ and static error $\Delta S=S_A-S$. The inherited bookkeeping gives
+\begin{align*}
+\Delta I&=\delta_1-\delta_0-\Delta S,\\
+\Delta(S+I)&=\delta_1-\delta_0,\\
+\Delta(S+sI)&=(1-s)\Delta S+s(\delta_1-\delta_0).
+\end{align*}
+The damped comparison uses the same $s$ on both sides. It is not an error against the undamped interaction or experimental hydration. For estimates ordered as $(E_1,E_0,S)$, use weights $w=(s,-s,1-s)$ and variance $w^{\mathrm T}\Sigma w$, retaining the full covariance matrix $\Sigma$. Numerical and systematic biases need separate budgets.
+
+The branch-1 synthetic example has physical-total error $-0.0156876$ kcal/mol but damped-total error $+0.1160872$ kcal/mol at $s=0.6$. Its deliberately imperfect vacuum state is nonstationary. It shows that the specified endpoint error tolerances do not ensure the desired component or damped-total tolerance, not that a practical UCC optimiser failed. Branch-2 separately supplies globally minimised fixed-subspace examples with induction errors of either sign. These results concern different assumptions and are compatible.
+
+Conditional on Q's extracted equations 9, 11 and 13, damping only the driving field by $s=\epsilon^{-1}$ and retaining unscaled energy-contraction charges gives $S+sI$. Scaling all physical charges by $t$ instead gives $tS+t^2I$ for a stable linear Thole model. Thus charge scaling by 0.6 retains induction fraction 0.36, whereas solve-only damping by 0.6 retains fraction 0.6. General electronic induction need not remain quadratic at finite field. For symmetric positive-definite response matrix $A$ and unscaled field $F$, the supplement's effective reciprocal functional
+\begin{equation*}
+\Phi_s(\mu)=\frac{\mu^{\mathrm T}A\mu}{2s}-\mu^{\mathrm T}F,\qquad s>0,
+\end{equation*}
+has minimiser $\mu=sA^{-1}F$ and minimum $sI$. This equation-level interpretation does not verify Q's historical implementation or repair its defective equation-10 extraction.
+
+\subsection{Estimator consistency and its limits}
+
+For stationary differentiable states in the fixed electronic space, the inherited alternative to endpoint subtraction is
+\begin{equation*}
+I(1)=\int_0^1\bigl(\langle V\rangle_t-\langle V\rangle_0\bigr)dt.
+\end{equation*}
+Define \emph{closure} before using it as a diagnostic: it is the endpoint energy difference minus the integrated potential expectation. For a smooth parameter path $\theta(t)$ on a fixed ansatz,
+\begin{align*}
+C&=E_\theta(1)-E_\theta(0)-\int_0^1\langle V\rangle_{\theta(t)}dt,\\
+C&=\int_0^1\nabla_\theta E_\theta(t)\cdot\frac{d\theta}{dt}dt.
+\end{align*}
+Measured closure also contains quadrature and measurement errors. Moving incompletely optimised orbitals or projectors require their derivative contributions, and branch discontinuities require separate checks. Small closure is a consistency check, not a response-accuracy certificate. In the supplied frozen-state control, closure and induction both vanish while the exact induction is $-0.4142135624$ in arbitrary units.
+
+Potential readout can use a one-body density-matrix contraction. On hardware, diagonalising the potential matrix permits weighted-occupation readout after an orbital rotation, without full density-matrix tomography for this scalar. State preparation, orbital rotation and optimisation remain costs; optimisation still involves the interacting Hamiltonian. Integration also requires intermediate field states.
+
+Shared vacuum estimates must retain their covariance. With quadrature weights $w_k$ that sum to unity and a reused zero-field estimate, the induction coefficients are $c_k=w_k-\delta_{k0}$. Its variance is $c^{\mathrm T}\Sigma c$. Branch-2's fixed-state, independent equal-variance example gives standard error 0.062690 kcal/mol, compared with the incorrect 0.021660 obtained by treating vacuum-subtracted differences as independent. The branch-3 readout analysis is conditional on its ideal measurement protocol and excludes optimisation and circuit costs. Its underlying cost-result file was omitted from the original editorial transport. No total-cost saving is established.
+
+\subsection{Field shape and response completeness}
+
+At fixed geometry, a stable field-independent linear Thole model has $I(t)=ct^2$, even after refitting geometry-dependent parameters. Branch-1 defines
+\begin{equation*}
+D=I(1)-4I(1/2),\qquad
+\max(|r_1|,|r_{1/2}|)\geq |D|/5,
+\end{equation*}
+where $r_t=I(t)-ct^2$. Its exact synthetic curve $E(t)=-\sqrt{100+100t^2}$ gives $D=0.5792239263$ and an attained minimum maximum residual of 0.1158447853 in arbitrary units. This obstructs fitting the tested field interval; a quadratic can still match a single full-field endpoint.
+
+Because $D$ contains the separately estimated static term, an inaccurate static estimate can mimic a shape signal. Joint entries 4--5 introduce
+\begin{equation*}
+J=E(1)-6E(1/2)+8E(1/4)-3E(0).
+\end{equation*}
+Its coefficients cancel constant, linear and quadratic energy terms, including the separate static estimate. For induction residuals at the nonzero nodes,
+\begin{equation*}
+J=r_1-6r_{1/2}+8r_{1/4},\qquad \max_t|r_t|\geq |J|/15.
+\end{equation*}
+Raw energy-error bounds instead use absolute coefficient sum 18; statistical uncertainty uses covariance with weights $(-3,8,-6,1)$ in zero, quarter, half and full-field order. The inherited curve gives $J=0.4777911889$ in arbitrary units. In a quadratic control, static readout error 0.01 changes $D$ by 0.01 while $J$ remains zero to roundoff. The extra node adds work. Passing these nulls proves neither quadraticity between sampled nodes nor response completeness.
+
+Branch-2's corrections distinguish nonquadratic response, differences between electronic methods, failure of scalar proportionality between methods, and useful physical-field label changes. A changed shape contrast does not reject proportionality between two already nonquadratic curves. Test that proportionality directly across nodes with uncertainty. Static-only or amplitude-only changes may matter even when shape nulls pass. Reproducing a resolved nonquadratic curve requires extending a linear Thole response model; its relevance to hydration still needs testing.
+
+Response-space loss is a separate confound. Branch-3 constructs exactly solved full and restricted spaces sharing the exact vacuum state, with a weak-field retained induction fraction of 0.6 and unit-field fraction approximately 0.599051. The ratio is constructed, not predicted for any molecule.
+
+The joint directional control makes the perturbations explicit. Let $\mathbf{x}=(x_1,\ldots,x_d)$ be real coupling amplitudes for fixed independent potential operators $V_a$, each including its nuclear/core scalar. Define
+\begin{equation*}
+H(\mathbf{x})=H_0+\sum_{a=1}^d x_aV_a,\qquad S_a=\langle0|V_a|0\rangle.
+\end{equation*}
+Let $E_F(\mathbf{x})$ be the full ground-state energy and $E_A(\mathbf{x})$ the energy with restricted response. Their response matrices are explicitly
+\begin{equation*}
+(K_F)_{ab}=-\partial_a\partial_bE_F(\mathbf{0}),\qquad
+(K_A)_{ab}=-\partial_a\partial_bE_A(\mathbf{0}).
+\end{equation*}
+The matrices describe quadratic response to combinations of the selected potentials. Under the supplement's shared exact-vacuum assumption, positive excitation gap, fixed response space and exact response minimisation,
+\begin{equation*}
+0\leq u^{\mathrm T}K_Au\leq u^{\mathrm T}K_Fu
+\end{equation*}
+for every real direction $u$. This guarantee does not apply to arbitrary active spaces with separately optimised approximate vacua. The supplied variational-sign example overresponds despite upper-bound endpoint energies.
+
+On a tested span where $K_F$ is positive definite, set $M=K_F^{-1/2}K_AK_F^{-1/2}$. Uniform attenuation requires $M=s\mathbf{1}$, and the recorded minimax identity is
+\begin{equation*}
+\min_s\Vert M-s\mathbf{1}\Vert_2
+=\frac{\lambda_{\max}-\lambda_{\min}}{2},\qquad
+s_*=\frac{\lambda_{\max}+\lambda_{\min}}{2}.
+\end{equation*}
+The existing synthetic model yields $K_F=\operatorname{diag}(0.012,0.008)$ and $K_A=\operatorname{diag}(0.012,0)$. Equal amplitudes retain fraction 0.6, but generalised eigenvalues zero and one give best scalar 0.5 with relative residual 0.5. This dimensionless residual is not an energy error. Prespecify an uncertainty threshold for weak full-response modes and report discarded directions. A significant spread rejects scalar equivalence only on the measured span; a zero spread does not validate unmeasured directions. Inhomogeneous solvent potentials are the proposed probes, and artificial linear combinations are electronic diagnostics, not equilibrium solvent samples.
+
+\subsection{The experiment that could change the decision}
+
+The smallest acquisition is an archived aqueous water or methanol QM job with its matched point-charge file. Require an immutable revision and hashes, ordered solute atoms and MM sites, coordinate and charge units, molecular charge and spin, frame provenance, and selected periodic images or reproducible image/selection rules. Q's 12 angstrom cutoff includes sites within that distance of any solute atom; it does not specify the unavailable frame's site list, boundary handling or whole-water selection. Supply a pinned electronic-structure runtime and verify it with an actual small calculation. The detailed missing-input contract is \url{branches/branch-3/ada/feasibility_restart.json}.
+
+Once those inputs exist, start with Q-level DFT at $t=0,1/2,1$. Keep geometry, atomic-orbital basis and MM sites unchanged, scale charge amplitudes, and converge the electronic density separately at each node. Compute the static expectation from the vacuum density with the nuclear scalar. Match the actual B3LYP convention, grid and SCF settings, then tighten numerical settings and report changes in static energy, induction and shape. No molecular labels or convergence results are currently supplied.
+
+Next compare simulated UCC with exact solutions in an identical tractable projected space, using the fixed orbital representation described above. Record scalar contributions, optimiser gradients, restarts, eigensolver residuals and branch continuity. Add quarter-field and independent-direction probes only when they answer a resolved question; mixed response coefficients require combined-direction information. Then enlarge active space and basis and compare with converged classical correlated references. Agreement within a restricted space does not establish response completeness, and disagreement with DFT alone does not establish superior reference accuracy. Control charge spill-out and reference uncertainty. The proposed 0.1 kcal/mol response tolerance is a pilot choice, not a hydration guarantee. A single frame tests bookkeeping and local response only.
+
+Proceed to fitting only for label changes exceeding controlled reference and fit uncertainty. Keep the MLP, water, Lennard--Jones parameters and empirical attenuation fixed in the first comparison, with all field nodes and directions from one geometry in the same validation group.
+
+\paragraph{Make component interventions explicit.}
+The proposed static-only, induction-only and combined comparisons are initially changes to energy contributions, not claims that EMLE parameter fits are independent. For the static-only control, replace or correct the static energy evaluator while retaining the complete baseline induction evaluator, including its original geometry-dependent charges, widths, atomic volumes, polarisabilities, Thole parameters and attenuation. Evaluate that baseline induction at each configuration; do not feed the altered static charges into it. For the induction-only control, change the induction contribution while retaining the original static evaluator. The combined control changes both specified contributions. These are proposed diagnostic model combinations, not implemented results or a claim that an unmodified EMLE interface already supports them. Any sampling implementation must differentiate the selected energy contributions consistently.
+
+This separation matters because Q, pp. 13--14 and 22, makes atomic polarisabilities depend on volumes derived from valence charges and widths. A static parameter refit can consequently change induction even if its fitting target is static energy. If a subsequent implementation uses shared refitted parameters, report both resulting component changes on identical held-out configurations and call it a coupled refit. Compare it with the energy-component control; do not interpret it as an isolated static intervention. Likewise, report any static change accompanying an induction refit. The precise adapter remains an implementation requirement for the future experiment, not completed work.
+
+The final observable is held-out absolute hydration free energy. If the fitted correction $\delta U$ vanishes in vacuum and other terms remain fixed, the supplied conditional bridge is
+\begin{equation*}
+\Delta\Delta G_{\mathrm{hyd}}=-\beta^{-1}\log\left\langle\exp(-\beta\delta U)\right\rangle_{\mathrm{base,solution}},
+\end{equation*}
+where $\beta$ is inverse thermal energy. It requires baseline equilibrium samples, adequate overlap and correlation-aware uncertainty. Q's pooled label-validation configurations and deliberately selected strong-field frames are not automatically such an ensemble. Use independent blocks or replicates, propagate reference, fitting and experimental uncertainty, and add sampling or intermediate alchemical states when overlap fails. Changes in vacuum energetics require a separate vacuum correction.
+
+Count integrals, orbital preparation, active-space selection, classical references, every field-state optimisation, repetitions, fitting, sampling, peak memory and wall time. Hardware extensions must additionally count compilation, preparation, depth, shots, actual covariance and mitigation bias. Stop quantum work if classical correlated labels meet the same observable budget more cheaply. Stop retraining if corrections are below controlled uncertainty or have no resolved held-out hydration effect. Disappearance of an apparent gain after restoring omitted response would falsify the usefulness of the restricted labels under that comparison.
+
+A surviving gain would still not identify Lennard--Jones double counting uniquely: fixed-geometry field scans remove field-independent Lennard--Jones contributions. Independent non-electrostatic evidence or a separately validated Lennard--Jones intervention is needed for that attribution. Classical labels being sufficient, negligible corrections, and force-field compensation remain viable outcomes. Existing response and embedded-VQE literature is recorded in the supplement, including \url{https://arxiv.org/abs/2312.01926v2} and \url{https://doi.org/10.1021/acs.jctc.2c01176}; these are attributed prior inspections, not newly retrieved texts. No novelty is claimed for the identities or embedding construction. The possible contribution remains an empirical boundary for response completeness, usefulness and comparative cost.
+
+\appendix
+\section{Evidence, corrections and custody handoff}
+
+\paragraph{Source boundary.}
+The scientific authorities supplied for this revision are \url{sources/external/Q.txt}, \url{sources/external/P.txt} and the explicitly approved \url{sources/external/research-supplement.md}. Internal baseline material is editorial context only. Q is the Edinburgh peer-reviewed manuscript text, with cover download date 5 September 2026. P's provenance identifies an author-supplied publisher PDF with unspecified manifestation date; its text reports publication on 15 June 2023 and download on 7 September 2026. Original PDF bytes are not available in this transport. Q's prior scan exposure and P's prior abstract exposure remain recorded. Neither is presumed unseen.
+
+Exact Q equation glyphs, P code images, the missing P abstract-correction record and the historical attenuation implementation remain unresolved. The supplement's additional online Q manifestation and moving-code inspections do not replace the supplied source or establish historical execution. Duplicate source copies are not independent corroboration.
+
+\paragraph{Stable branch references.}
+Within the supplement, \url{branches/branch-1/ledger.jsonl}, entries 10--11, 14, 20--21 and 27--28, records component cancellation, the field-shape bound, the nonstationary-vacuum correction and scaling conventions. Supporting records are \url{branches/branch-1/emmy/response-analysis.json}, \url{branches/branch-1/emmy/response_counterexample.json}, \url{branches/branch-1/emmy/qualification-check.json} and \url{branches/branch-1/ada/field_shape_results.json}.
+
+\url{branches/branch-2/ledger.jsonl}, entries 15--17, 23--24, 26--28 and 34, records stationary-subspace counterexamples, covariance, measurement assumptions, corrected shape/proportionality interpretation and the proposed DFT pilot. Numerical outputs are in \url{branches/branch-2/ada/response_controls_results.json}; the input/runtime limits are in \url{branches/branch-2/ada/molecular_feasibility.json}.
+
+\url{branches/branch-3/ledger.jsonl}, entries 7--10, 15--18, 24, 27--28 and 31--32, records response truncation, closure, sign ambiguity, scaling and restart requirements. Supporting files include \url{branches/branch-3/ada/response_space_control.py}, its corresponding JSON, \url{branches/branch-3/emmy/response-estimators.md}, \url{branches/branch-3/emmy/response-check-results.json}, \url{branches/branch-3/emmy/variational-sign-counterexample.json}, \url{branches/branch-3/emmy/scaling-clarification.md} and \url{branches/branch-3/ada/feasibility_restart.json}.
+
+\paragraph{Joint contributions and reproducibility limits.}
+Joint \url{ledger.jsonl}, entries 5, 7--11 and 13, connects the controls and records historical cross-checks. The paired contrast has supplied source and outputs in \url{emmy/paired_contrast.py}, \url{emmy/paired-contrast-results.json} and \url{emmy/paired-contrast.md}. The directional argument and numerical records are \url{ada/directional-response.md}, \url{ada/directional-check.json} and \url{emmy/directional-crosscheck.json}. These are the joint additions to inherited branch findings, not results produced during this revision.
+
+The supplement records historical execution of synthetic scripts and independent numerical checking, including \url{ada/audit.py}. Its supplied script bodies expose inputs, formulas and assertions where present; the audit also depends on omitted files. The original branch-1 field-shape and component-counterexample scripts and branch-2 response-control script are not supplied here, although results, ledger execution records and audit formulas are. No complete rerun is certified by this editorial account.
+
+The bounded pack explicitly omits 43 scientific files totalling 923426 bytes and records five unresolved references. Only selected ledger entries are transported. Full archive inspection, omitted objections and dependency completeness cannot be certified. The visible joint closing entries report agreement on the corrected premises; uncertainties about molecular relevance, historical implementation and causal explanation remain. No missing transport evidence is treated as proof that the research has no viable case.
+
+\paragraph{Revision summary and Archivist handoff.}
+This bounded formatting pass replaces the unsupported minimax subscript command with the literal-star notation $s_*$ and removes unlisted spacing commands from the integration equations. It preserves the scientific content, component-intervention controls, self-consistent DFT relaxation, fixed UCC/exact representations and prior qualifications concerning nonstationarity, scaling, proportionality and response completeness. No new research, derivation or evidence is introduced.
+
+Hand this complete draft, \url{claims/current.json} and this revision summary to Archivist for append-only custody before further review or acceptance, then return the preserved correction to the editor for disposition under the applicable pass limit. Custody and acceptance are not certified as completed. In this tool-free author context, no calculations, file-system checks, prescribed style-gate execution or PDF compilation were performed. These are author process declarations, not independently verified scientific evidence.
+
+\end{document}

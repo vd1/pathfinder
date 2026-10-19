@@ -1,0 +1,1856 @@
+{
+  "Q010-P011": {
+    "state": {
+      "generated_at": "2026-10-19T20:25:55Z",
+      "panels": [],
+      "scan": {
+        "done": 1,
+        "total": 1,
+        "errors": 0,
+        "same_corpus": false,
+        "rate_per_minute": null,
+        "eta_seconds": null,
+        "first_call": null,
+        "last_call": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "selected": 1,
+        "cut": null,
+        "min_score": null,
+        "per_paper": null,
+        "default_cut": 1,
+        "version": "5172.1791407747559269355/37.1791407747559425355/-/3815.1791407747557708689/3739.1791407747557536730/-/-"
+      },
+      "campaign": {
+        "name": "Q010-P011",
+        "title": null,
+        "description": null,
+        "backend": "codex",
+        "model": "gpt-6-astra",
+        "seats": 1,
+        "rounds": 3,
+        "allowances": {
+          "peer_calls": 2,
+          "peer_seconds": 2400,
+          "consolidate_seconds": 1800,
+          "verify_seconds": 1200,
+          "edit_seconds": 900
+        },
+        "research_scheme": "composable",
+        "account": {
+          "name": "codex-subscription",
+          "seats": 6,
+          "in_use": 0
+        },
+        "budget": {
+          "calls": 53,
+          "input_tokens": 60993467,
+          "output_tokens": 355434,
+          "cache_read": 54909184,
+          "interrupted": {
+            "calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "limits": {}
+        },
+        "execution_id": "0a47c8388431774c0b7183e7b800ef0af359374309c9db7d8f840aa1dcb2a500",
+        "stop": null
+      },
+      "progress": {
+        "cooldown_seconds": 0.0,
+        "status": "idle",
+        "last_event_at": "2026-10-19T18:40:29Z",
+        "events_truncated": false,
+        "events_corrupt": 0
+      },
+      "runner": {
+        "status": null,
+        "pid_alive": null,
+        "heartbeat_age_seconds": null,
+        "active_pairs": []
+      },
+      "stages": {
+        "research": {
+          "DRAFT": 1
+        },
+        "edit": {
+          "done": 1
+        },
+        "paper": {
+          "queued": 1
+        }
+      },
+      "pipeline": [
+        {
+          "title": "Selected",
+          "count": 0,
+          "states": [
+            {
+              "key": "waiting",
+              "label": "Waiting",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Research",
+          "count": 0,
+          "states": [
+            {
+              "key": "researching",
+              "label": "In progress",
+              "count": 0
+            },
+            {
+              "key": "stopped",
+              "label": "Stopped",
+              "count": 0
+            },
+            {
+              "key": "orphaned",
+              "label": "Orphaned",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Outcome",
+          "count": 0,
+          "states": [
+            {
+              "key": "draft",
+              "label": "DRAFT",
+              "count": 0
+            },
+            {
+              "key": "pause",
+              "label": "Paused",
+              "count": 0
+            },
+            {
+              "key": "handoff",
+              "label": "Handed off",
+              "count": 0
+            },
+            {
+              "key": "blocked",
+              "label": "Blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Readable note",
+          "count": 1,
+          "states": [
+            {
+              "key": "editing",
+              "label": "Editing",
+              "count": 0
+            },
+            {
+              "key": "noted",
+              "label": "Note ready",
+              "count": 1
+            },
+            {
+              "key": "note-blocked",
+              "label": "Note blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Paper",
+          "count": 0,
+          "states": [
+            {
+              "key": "writing",
+              "label": "Writing",
+              "count": 0
+            },
+            {
+              "key": "accepted",
+              "label": "Accepted",
+              "count": 0
+            },
+            {
+              "key": "amend",
+              "label": "Amendments asked",
+              "count": 0
+            },
+            {
+              "key": "paper-blocked",
+              "label": "Paper blocked",
+              "count": 0
+            },
+            {
+              "key": "cleared",
+              "label": "Cleared",
+              "count": 0
+            },
+            {
+              "key": "released",
+              "label": "Released",
+              "count": 0
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "calls": 53,
+        "completed": 51,
+        "calls_with_usage": 51,
+        "input_tokens": 60993467,
+        "cache_read": 54909184,
+        "output_tokens": 355434,
+        "seconds": 13540.3
+      },
+      "blocks": [],
+      "units": [
+        {
+          "unit": "Q010-P011",
+          "score": 952,
+          "feasibility": 68,
+          "gain": 14,
+          "connexion": "The physical target is the polarization contribution to absolute hydration free energies. A possible transfer is to use P's digitized-counterdiabatic QAOA to minimize a discretized EMLE induced-dipole energy. This would replace a small classical linear solve inside an existing free-energy workflow. The presently supported decision is to stop short of production integration and test whether the discretization and quantum optimization offer any practical benefit.",
+          "q": {
+            "id": "doi:10.1021/acs.jctc.5c01464",
+            "title": "Enhancing Electrostatic Embedding for ML/MM Free Energy Calculations",
+            "abstract": "Hybrid ML/MM approaches that combine machine learning (ML) potentials with molecular mechanics (MM) potentials offer a promising balance between computational cost and accuracy. Most ML/MM simulations reported to date employ mechanical embedding schemes, and rely on Lennard-Jones and Coulomb potentials to model intermolecular interactions between the ML and MM regions. A promising approach to improving ML/MM schemes is to use electrostatic embedding, where polarization effects on the ML region by the MM region are explicitly incorporated. The electrostatic machine learning embedding (EMLE) method has been developed for this purpose. Here, we compute absolute hydration free energies for a set of small organic molecules to derive robust methodologies for training EMLE models using quantum mechanical data. We establish protocols for fine-tuning the static and induced components of electrostatic interactions and evaluate the accuracy limits of fitting these components to first-principles calculations. We also introduce an empirical adjustment to enhance agreement with experimental results, strengthening the competitiveness of ML/MM simulations relative to state-of-the-art methods. Overall, our findings provide valuable insights into the challenges and opportunities of electrostatic embedding ML/MM simulations, and offer strategies for achieving robust modeling of classes of drug-like molecules where the accuracy of conventional MM force fields fall short."
+          },
+          "p": {
+            "id": "doi:10.1103/PhysRevApplied.21.034036",
+            "title": "Molecular docking via quantum approximate optimization algorithm",
+            "abstract": "Molecular docking plays a pivotal role in drug discovery and precision medicine, furnishing insights into protein functionalities and fostering the development of therapeutics. Here, we introduce a poten- tial alternative solution to this problem using a quantum approximate optimization algorithm (QAOA) based algorithm. Our method was applied to analyze diverse biological systems, including the SARS- CoV-2 Mpro complex with PM-2-020B, the DPP-4 complex with piperidine fused imidazopyridine 34, and the HIV-1 gp120 complex with JP-III-048. We found that the digitized-counterdiabatic QAOA (DCQAOA), which integrates the concept of counterdiabatic driving, surpasses the conventional QAOA in terms of quantum circuit depth and optimization e\ufb03ciency. This is particularly evident in complex molecular-docking challenges, where DCQAOA delivers more accurate and biologically relevant results. Our research highlights the promising role of quantum computing in drug discovery and contributes signi\ufb01cant insights towards the optimization of protein-ligand docking methodologies."
+          },
+          "summary": "The supported, non-obvious connexion is that encoding EMLE\u2019s convex dipole response can create strict product-state optimisation traps and counterdiabatic pair terms even without physical coupling; a classical correlated update removes the demonstrated carry barrier. The mixed-field residual identity supplies a complementary observable certificate while correctly excluding its saddle functional from joint minimisation, with prior methodology attributed. These results justify a conditional methodological section and materially strengthen the classical comparator; they establish neither publication-matched EMLE performance nor quantum advantage, limitations the note preserves.",
+          "usage": {
+            "calls": 53,
+            "input_tokens": 60993467,
+            "output_tokens": 355434,
+            "seconds": 13540.309471545786
+          },
+          "research": {
+            "status": "DRAFT",
+            "stage": "done",
+            "round": 1,
+            "reason": "The supported, non-obvious connexion is that encoding EMLE\u2019s convex dipole response can create strict product-state optimisation traps and counterdiabatic pair terms even without physical coupling; a classical correlated update removes the demonstrated carry barrier. The mixed-field residual identity supplies a complementary observable certificate while correctly excluding its saddle functional from joint minimisation, with prior methodology attributed. These results justify a conditional methodological section and materially strengthen the classical comparator; they establish neither publication-matched EMLE performance nor quantum advantage, limitations the note preserves."
+          },
+          "editorial": {
+            "status": "done",
+            "reason": null
+          },
+          "assessment": {
+            "status": null,
+            "reason": null
+          },
+          "actionability": {
+            "status": "done",
+            "decision": "NEEDS_INPUTS",
+            "reason": null
+          },
+          "controller": "done",
+          "lifecycle": "noted",
+          "last_activity": "2026-10-19T18:40:29Z",
+          "documents": [
+            {
+              "kind": "research note",
+              "pdf": null,
+              "source": "threads/Q010-P011/Q010-P011.tex",
+              "stale": false
+            },
+            {
+              "kind": "readable note",
+              "pdf": "threads/Q010-P011/edited/note.pdf",
+              "source": "threads/Q010-P011/edited/note.tex",
+              "stale": true
+            }
+          ],
+          "branches": [
+            {
+              "label": "branch-1",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-2",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-3",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    "playbook": [
+      {
+        "owner": "operator",
+        "action": "1 thread(s) without their fetched sources",
+        "why": "they were opened before the engine fetched papers ahead of research, so their agents read abstracts and fetch papers in their own calls: Q010-P011. Add them to each thread (the command shows the first).",
+        "command": "pathfinder --root /Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q010-P011 sources Q010-P011 --into-inputs"
+      }
+    ]
+  },
+  "Q010-P046": {
+    "state": {
+      "generated_at": "2026-10-19T20:25:56Z",
+      "panels": [],
+      "scan": {
+        "done": 1,
+        "total": 1,
+        "errors": 0,
+        "same_corpus": false,
+        "rate_per_minute": null,
+        "eta_seconds": null,
+        "first_call": null,
+        "last_call": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "selected": 1,
+        "cut": null,
+        "min_score": null,
+        "per_paper": null,
+        "default_cut": 1,
+        "version": "5375.1791407747662369581/37.1791407747662505331/-/3815.1791407747660942873/3647.1791407747660810456/-/-"
+      },
+      "campaign": {
+        "name": "Q010-P046",
+        "title": null,
+        "description": null,
+        "backend": "codex",
+        "model": "gpt-6-astra",
+        "seats": 1,
+        "rounds": 3,
+        "allowances": {
+          "peer_calls": 2,
+          "peer_seconds": 2400,
+          "consolidate_seconds": 1800,
+          "verify_seconds": 1200,
+          "edit_seconds": 900
+        },
+        "research_scheme": "composable",
+        "account": {
+          "name": "codex-subscription",
+          "seats": 6,
+          "in_use": 0
+        },
+        "budget": {
+          "calls": 49,
+          "input_tokens": 63921549,
+          "output_tokens": 308557,
+          "cache_read": 57894400,
+          "interrupted": {
+            "calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "limits": {}
+        },
+        "execution_id": "31210cd5fa16c5112f046bd556d1e080cddf2e9a478cde5b2d41df9acf6794bb",
+        "stop": null
+      },
+      "progress": {
+        "cooldown_seconds": 0.0,
+        "status": "idle",
+        "last_event_at": "2026-10-19T18:53:26Z",
+        "events_truncated": false,
+        "events_corrupt": 0
+      },
+      "runner": {
+        "status": null,
+        "pid_alive": null,
+        "heartbeat_age_seconds": null,
+        "active_pairs": []
+      },
+      "stages": {
+        "research": {
+          "PAUSE": 1
+        },
+        "edit": {
+          "done": 1
+        },
+        "paper": {}
+      },
+      "pipeline": [
+        {
+          "title": "Selected",
+          "count": 0,
+          "states": [
+            {
+              "key": "waiting",
+              "label": "Waiting",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Research",
+          "count": 0,
+          "states": [
+            {
+              "key": "researching",
+              "label": "In progress",
+              "count": 0
+            },
+            {
+              "key": "stopped",
+              "label": "Stopped",
+              "count": 0
+            },
+            {
+              "key": "orphaned",
+              "label": "Orphaned",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Outcome",
+          "count": 0,
+          "states": [
+            {
+              "key": "draft",
+              "label": "DRAFT",
+              "count": 0
+            },
+            {
+              "key": "pause",
+              "label": "Paused",
+              "count": 0
+            },
+            {
+              "key": "handoff",
+              "label": "Handed off",
+              "count": 0
+            },
+            {
+              "key": "blocked",
+              "label": "Blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Readable note",
+          "count": 1,
+          "states": [
+            {
+              "key": "editing",
+              "label": "Editing",
+              "count": 0
+            },
+            {
+              "key": "noted",
+              "label": "Note ready",
+              "count": 1
+            },
+            {
+              "key": "note-blocked",
+              "label": "Note blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Paper",
+          "count": 0,
+          "states": [
+            {
+              "key": "writing",
+              "label": "Writing",
+              "count": 0
+            },
+            {
+              "key": "accepted",
+              "label": "Accepted",
+              "count": 0
+            },
+            {
+              "key": "amend",
+              "label": "Amendments asked",
+              "count": 0
+            },
+            {
+              "key": "paper-blocked",
+              "label": "Paper blocked",
+              "count": 0
+            },
+            {
+              "key": "cleared",
+              "label": "Cleared",
+              "count": 0
+            },
+            {
+              "key": "released",
+              "label": "Released",
+              "count": 0
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "calls": 49,
+        "completed": 48,
+        "calls_with_usage": 48,
+        "input_tokens": 63921549,
+        "cache_read": 57894400,
+        "output_tokens": 308557,
+        "seconds": 11661.2
+      },
+      "blocks": [],
+      "units": [
+        {
+          "unit": "Q010-P046",
+          "score": 1056,
+          "feasibility": 48,
+          "gain": 22,
+          "connexion": "The physical target is the absolute hydration free energy of polar drug-like fragments. A plausible connection is to use TenCirChem's variational quantum eigensolver machinery to test correlated electronic-response labels for EMLE training on selected aqueous configurations. This would be an offline reference-data experiment, rather than quantum molecular dynamics.",
+          "q": {
+            "id": "doi:10.1021/acs.jctc.5c01464",
+            "title": "Enhancing Electrostatic Embedding for ML/MM Free Energy Calculations",
+            "abstract": "Hybrid ML/MM approaches that combine machine learning (ML) potentials with molecular mechanics (MM) potentials offer a promising balance between computational cost and accuracy. Most ML/MM simulations reported to date employ mechanical embedding schemes, and rely on Lennard-Jones and Coulomb potentials to model intermolecular interactions between the ML and MM regions. A promising approach to improving ML/MM schemes is to use electrostatic embedding, where polarization effects on the ML region by the MM region are explicitly incorporated. The electrostatic machine learning embedding (EMLE) method has been developed for this purpose. Here, we compute absolute hydration free energies for a set of small organic molecules to derive robust methodologies for training EMLE models using quantum mechanical data. We establish protocols for fine-tuning the static and induced components of electrostatic interactions and evaluate the accuracy limits of fitting these components to first-principles calculations. We also introduce an empirical adjustment to enhance agreement with experimental results, strengthening the competitiveness of ML/MM simulations relative to state-of-the-art methods. Overall, our findings provide valuable insights into the challenges and opportunities of electrostatic embedding ML/MM simulations, and offer strategies for achieving robust modeling of classes of drug-like molecules where the accuracy of conventional MM force fields fall short."
+          },
+          "p": {
+            "id": "doi:10.1021/acs.jctc.3c00319",
+            "title": "TenCirChem: An Efficient Quantum Computational Chemistry Package for the NISQ Era",
+            "abstract": "TENCIRCHEM is an open-source Python library for simulating variational quantum algorithms for quantum computa- tional chemistry. TENCIRCHEM shows high-performance in the simulation of unitary coupled-cluster circuits, using compact representations of quantum states and excitation operators. Additionally, TENCIRCHEM supports noisy circuit simulation and provides algorithms for variational quantum dynamics. TENCIRCH- EM\u2019s capabilities are demonstrated through various examples, such as the calculation of the potential energy curve of H2O with a 6- 31G(d) basis set using a 34-qubit quantum circuit, the examination of the impact of quantum gate errors on the variational energy of the H2 molecule, and the exploration of the Marcus inverted region for charge transfer rate based on variational quantum dynamics. Furthermore, TENCIRCHEM is capable of running real quantum hardware experiments, making it a versatile tool for both simulation and experimentation in the field of quantum computational chemistry."
+          },
+          "summary": "The complementary shape and directional-response controls are supported under their stated assumptions, but establish synthetic diagnostic limitations rather than a demonstrated benefit from connecting TenCirChem to EMLE. The ledger repeatedly records unsuccessful acquisition of a complete molecular input and no executed molecular calculation, so another request for the same pilot would repeat the unresolved gap. Progress needs a provenance-pinned aqueous configuration with matched MM charges and electronic settings, a runnable reference stack, and subsequent evidence that response-converged label corrections survive fitting and held-out hydration uncertainty.",
+          "usage": {
+            "calls": 49,
+            "input_tokens": 63921549,
+            "output_tokens": 308557,
+            "seconds": 11661.196300165704
+          },
+          "research": {
+            "status": "PAUSE",
+            "stage": "done",
+            "round": 1,
+            "reason": "The complementary shape and directional-response controls are supported under their stated assumptions, but establish synthetic diagnostic limitations rather than a demonstrated benefit from connecting TenCirChem to EMLE. The ledger repeatedly records unsuccessful acquisition of a complete molecular input and no executed molecular calculation, so another request for the same pilot would repeat the unresolved gap. Progress needs a provenance-pinned aqueous configuration with matched MM charges and electronic settings, a runnable reference stack, and subsequent evidence that response-converged label corrections survive fitting and held-out hydration uncertainty."
+          },
+          "editorial": {
+            "status": "done",
+            "reason": null
+          },
+          "assessment": {
+            "status": null,
+            "reason": null
+          },
+          "actionability": {
+            "status": "done",
+            "decision": "NEEDS_INPUTS",
+            "reason": null
+          },
+          "controller": "done",
+          "lifecycle": "noted",
+          "last_activity": "2026-10-19T18:53:26Z",
+          "documents": [
+            {
+              "kind": "research note",
+              "pdf": null,
+              "source": "threads/Q010-P046/Q010-P046.tex",
+              "stale": false
+            },
+            {
+              "kind": "readable note",
+              "pdf": "threads/Q010-P046/edited/note.pdf",
+              "source": "threads/Q010-P046/edited/note.tex",
+              "stale": true
+            }
+          ],
+          "branches": [
+            {
+              "label": "branch-1",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-2",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-3",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    "playbook": [
+      {
+        "owner": "operator",
+        "action": "1 thread(s) without their fetched sources",
+        "why": "they were opened before the engine fetched papers ahead of research, so their agents read abstracts and fetch papers in their own calls: Q010-P046. Add them to each thread (the command shows the first).",
+        "command": "pathfinder --root /Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q010-P046 sources Q010-P046 --into-inputs"
+      }
+    ]
+  },
+  "Q010-P072": {
+    "state": {
+      "generated_at": "2026-10-19T20:25:56Z",
+      "panels": [],
+      "scan": {
+        "done": 1,
+        "total": 1,
+        "errors": 0,
+        "same_corpus": false,
+        "rate_per_minute": null,
+        "eta_seconds": null,
+        "first_call": null,
+        "last_call": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "selected": 1,
+        "cut": null,
+        "min_score": null,
+        "per_paper": null,
+        "default_cut": 1,
+        "version": "4975.1791407747837130041/37.1791407747837285540/-/3815.1791407747835487374/3784.1791407747835353541/-/-"
+      },
+      "campaign": {
+        "name": "Q010-P072",
+        "title": null,
+        "description": null,
+        "backend": "codex",
+        "model": "gpt-6-astra",
+        "seats": 1,
+        "rounds": 3,
+        "allowances": {
+          "peer_calls": 2,
+          "peer_seconds": 2400,
+          "consolidate_seconds": 1800,
+          "verify_seconds": 1200,
+          "edit_seconds": 900
+        },
+        "research_scheme": "composable",
+        "account": {
+          "name": "codex-subscription",
+          "seats": 6,
+          "in_use": 0
+        },
+        "budget": {
+          "calls": 42,
+          "input_tokens": 41903579,
+          "output_tokens": 255349,
+          "cache_read": 37593088,
+          "interrupted": {
+            "calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "limits": {}
+        },
+        "execution_id": "98603530bb3ae0c8aebb0cd1cfe22139c76d5687e610016bf2abd4607f414d7d",
+        "stop": null
+      },
+      "progress": {
+        "cooldown_seconds": 0.0,
+        "status": "idle",
+        "last_event_at": "2026-10-19T18:38:12Z",
+        "events_truncated": false,
+        "events_corrupt": 0
+      },
+      "runner": {
+        "status": null,
+        "pid_alive": null,
+        "heartbeat_age_seconds": null,
+        "active_pairs": []
+      },
+      "stages": {
+        "research": {
+          "PAUSE": 1
+        },
+        "edit": {
+          "done": 1
+        },
+        "paper": {}
+      },
+      "pipeline": [
+        {
+          "title": "Selected",
+          "count": 0,
+          "states": [
+            {
+              "key": "waiting",
+              "label": "Waiting",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Research",
+          "count": 0,
+          "states": [
+            {
+              "key": "researching",
+              "label": "In progress",
+              "count": 0
+            },
+            {
+              "key": "stopped",
+              "label": "Stopped",
+              "count": 0
+            },
+            {
+              "key": "orphaned",
+              "label": "Orphaned",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Outcome",
+          "count": 0,
+          "states": [
+            {
+              "key": "draft",
+              "label": "DRAFT",
+              "count": 0
+            },
+            {
+              "key": "pause",
+              "label": "Paused",
+              "count": 0
+            },
+            {
+              "key": "handoff",
+              "label": "Handed off",
+              "count": 0
+            },
+            {
+              "key": "blocked",
+              "label": "Blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Readable note",
+          "count": 1,
+          "states": [
+            {
+              "key": "editing",
+              "label": "Editing",
+              "count": 0
+            },
+            {
+              "key": "noted",
+              "label": "Note ready",
+              "count": 1
+            },
+            {
+              "key": "note-blocked",
+              "label": "Note blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Paper",
+          "count": 0,
+          "states": [
+            {
+              "key": "writing",
+              "label": "Writing",
+              "count": 0
+            },
+            {
+              "key": "accepted",
+              "label": "Accepted",
+              "count": 0
+            },
+            {
+              "key": "amend",
+              "label": "Amendments asked",
+              "count": 0
+            },
+            {
+              "key": "paper-blocked",
+              "label": "Paper blocked",
+              "count": 0
+            },
+            {
+              "key": "cleared",
+              "label": "Cleared",
+              "count": 0
+            },
+            {
+              "key": "released",
+              "label": "Released",
+              "count": 0
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "calls": 42,
+        "completed": 41,
+        "calls_with_usage": 41,
+        "input_tokens": 41903579,
+        "cache_read": 37593088,
+        "output_tokens": 255349,
+        "seconds": 9344.8
+      },
+      "blocks": [],
+      "units": [
+        {
+          "unit": "Q010-P072",
+          "score": 1008,
+          "feasibility": 42,
+          "gain": 24,
+          "connexion": "The physical target is the polarization contribution to absolute hydration free energies of drug-like fragments. A possible contribution from P is an independent electronic-response diagnostic for EMLE: adapt its time-dependent variational quantum propagation and correlation-function measurement to test whether correlated, environment-dependent solute polarizabilities materially change EMLE training targets. This is a transfer hypothesis, not an established route to better hydration free energies.",
+          "q": {
+            "id": "doi:10.1021/acs.jctc.5c01464",
+            "title": "Enhancing Electrostatic Embedding for ML/MM Free Energy Calculations",
+            "abstract": "Hybrid ML/MM approaches that combine machine learning (ML) potentials with molecular mechanics (MM) potentials offer a promising balance between computational cost and accuracy. Most ML/MM simulations reported to date employ mechanical embedding schemes, and rely on Lennard-Jones and Coulomb potentials to model intermolecular interactions between the ML and MM regions. A promising approach to improving ML/MM schemes is to use electrostatic embedding, where polarization effects on the ML region by the MM region are explicitly incorporated. The electrostatic machine learning embedding (EMLE) method has been developed for this purpose. Here, we compute absolute hydration free energies for a set of small organic molecules to derive robust methodologies for training EMLE models using quantum mechanical data. We establish protocols for fine-tuning the static and induced components of electrostatic interactions and evaluate the accuracy limits of fitting these components to first-principles calculations. We also introduce an empirical adjustment to enhance agreement with experimental results, strengthening the competitiveness of ML/MM simulations relative to state-of-the-art methods. Overall, our findings provide valuable insights into the challenges and opportunities of electrostatic embedding ML/MM simulations, and offer strategies for achieving robust modeling of classes of drug-like molecules where the accuracy of conventional MM force fields fall short."
+          },
+          "p": {
+            "id": "doi:10.1021/acs.jctc.1c00849",
+            "title": "Simulation of Condensed-Phase Spectroscopy with Near-Term Digital Quantum Computers",
+            "abstract": "Spectroscopy is an indispensable tool for understanding the structures and dynamics of molecular systems. However, computational modeling of spectroscopy is challenging due to the exponential scaling of computational complexity with system sizes unless drastic approximations are made. Quantum computers could potentially overcome these classically intractable computational tasks, but the existing approaches using quantum computers to simulate spectroscopy can only handle isolated and static molecules. In this work, we develop a work\ufb02ow that combines multi-scale modeling and a time-dependent variational quantum algorithm to compute the linear spectroscopy of systems interacting with their condensed-phase environment via the relevant time correlation function. We demonstrate the feasibility of our approach by numerically simulating the UV\u2212vis absorption spectra of organic semiconductors. We show that our dynamical approach captures several spectral features that are otherwise overlooked by static methods. Our method can be directly used for other linear condensed-phase spectroscopy and could potentially be extended to nonlinear multi-dimensional spectroscopy."
+          },
+          "summary": "The ledger supports a synthetic representation counterexample and field-preserving rigid-water motion, but the latter changes a potential Hessian, not a measured molecular induction energy or hydration free energy. P supplies a conditional correlation-estimation method requiring a replacement electronic Hamiltonian; no useful improvement over classical response is established. Further progress needs validated aqueous molecular configurations, the corresponding trained EMLE model and descriptor conventions, and converged electronic induction calculations on matched-field endpoints, inputs the ledger repeatedly reports unavailable.",
+          "usage": {
+            "calls": 42,
+            "input_tokens": 41903579,
+            "output_tokens": 255349,
+            "seconds": 9344.810673078988
+          },
+          "research": {
+            "status": "PAUSE",
+            "stage": "done",
+            "round": 1,
+            "reason": "The ledger supports a synthetic representation counterexample and field-preserving rigid-water motion, but the latter changes a potential Hessian, not a measured molecular induction energy or hydration free energy. P supplies a conditional correlation-estimation method requiring a replacement electronic Hamiltonian; no useful improvement over classical response is established. Further progress needs validated aqueous molecular configurations, the corresponding trained EMLE model and descriptor conventions, and converged electronic induction calculations on matched-field endpoints, inputs the ledger repeatedly reports unavailable."
+          },
+          "editorial": {
+            "status": "done",
+            "reason": null
+          },
+          "assessment": {
+            "status": null,
+            "reason": null
+          },
+          "actionability": {
+            "status": "done",
+            "decision": "NEEDS_INPUTS",
+            "reason": null
+          },
+          "controller": "done",
+          "lifecycle": "noted",
+          "last_activity": "2026-10-19T18:38:12Z",
+          "documents": [
+            {
+              "kind": "research note",
+              "pdf": null,
+              "source": "threads/Q010-P072/Q010-P072.tex",
+              "stale": false
+            },
+            {
+              "kind": "readable note",
+              "pdf": "threads/Q010-P072/edited/note.pdf",
+              "source": "threads/Q010-P072/edited/note.tex",
+              "stale": true
+            }
+          ],
+          "branches": [
+            {
+              "label": "branch-1",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-2",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-3",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 1,
+              "reviews": 1,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    "playbook": [
+      {
+        "owner": "operator",
+        "action": "1 thread(s) without their fetched sources",
+        "why": "they were opened before the engine fetched papers ahead of research, so their agents read abstracts and fetch papers in their own calls: Q010-P072. Add them to each thread (the command shows the first).",
+        "command": "pathfinder --root /Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q010-P072 sources Q010-P072 --into-inputs"
+      }
+    ]
+  },
+  "Q016-P072": {
+    "state": {
+      "generated_at": "2026-10-19T20:25:56Z",
+      "panels": [],
+      "scan": {
+        "done": 1,
+        "total": 1,
+        "errors": 0,
+        "same_corpus": false,
+        "rate_per_minute": null,
+        "eta_seconds": null,
+        "first_call": null,
+        "last_call": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "selected": 1,
+        "cut": null,
+        "min_score": null,
+        "per_paper": null,
+        "default_cut": 1,
+        "version": "5166.1791407747884747488/37.1791407747884886238/-/3572.1791407747883236363/3784.1791407747883013447/-/-"
+      },
+      "campaign": {
+        "name": "Q016-P072",
+        "title": null,
+        "description": null,
+        "backend": "codex",
+        "model": "gpt-6-astra",
+        "seats": 1,
+        "rounds": 3,
+        "allowances": {
+          "peer_calls": 2,
+          "peer_seconds": 2400,
+          "consolidate_seconds": 1800,
+          "verify_seconds": 1200,
+          "edit_seconds": 900
+        },
+        "research_scheme": "composable",
+        "account": {
+          "name": "codex-subscription",
+          "seats": 6,
+          "in_use": 0
+        },
+        "budget": {
+          "calls": 45,
+          "input_tokens": 46119827,
+          "output_tokens": 345285,
+          "cache_read": 41856128,
+          "interrupted": {
+            "calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "limits": {}
+        },
+        "execution_id": "a8727e775e5ac7d8e6330927b6c164c2b2528ca730158001066d471315bf6246",
+        "stop": null
+      },
+      "progress": {
+        "cooldown_seconds": 0.0,
+        "status": "idle",
+        "last_event_at": "2026-10-19T18:52:59Z",
+        "events_truncated": false,
+        "events_corrupt": 0
+      },
+      "runner": {
+        "status": null,
+        "pid_alive": null,
+        "heartbeat_age_seconds": null,
+        "active_pairs": []
+      },
+      "stages": {
+        "research": {
+          "PAUSE": 1
+        },
+        "edit": {
+          "done": 1
+        },
+        "paper": {}
+      },
+      "pipeline": [
+        {
+          "title": "Selected",
+          "count": 0,
+          "states": [
+            {
+              "key": "waiting",
+              "label": "Waiting",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Research",
+          "count": 0,
+          "states": [
+            {
+              "key": "researching",
+              "label": "In progress",
+              "count": 0
+            },
+            {
+              "key": "stopped",
+              "label": "Stopped",
+              "count": 0
+            },
+            {
+              "key": "orphaned",
+              "label": "Orphaned",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Outcome",
+          "count": 0,
+          "states": [
+            {
+              "key": "draft",
+              "label": "DRAFT",
+              "count": 0
+            },
+            {
+              "key": "pause",
+              "label": "Paused",
+              "count": 0
+            },
+            {
+              "key": "handoff",
+              "label": "Handed off",
+              "count": 0
+            },
+            {
+              "key": "blocked",
+              "label": "Blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Readable note",
+          "count": 1,
+          "states": [
+            {
+              "key": "editing",
+              "label": "Editing",
+              "count": 0
+            },
+            {
+              "key": "noted",
+              "label": "Note ready",
+              "count": 1
+            },
+            {
+              "key": "note-blocked",
+              "label": "Note blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Paper",
+          "count": 0,
+          "states": [
+            {
+              "key": "writing",
+              "label": "Writing",
+              "count": 0
+            },
+            {
+              "key": "accepted",
+              "label": "Accepted",
+              "count": 0
+            },
+            {
+              "key": "amend",
+              "label": "Amendments asked",
+              "count": 0
+            },
+            {
+              "key": "paper-blocked",
+              "label": "Paper blocked",
+              "count": 0
+            },
+            {
+              "key": "cleared",
+              "label": "Cleared",
+              "count": 0
+            },
+            {
+              "key": "released",
+              "label": "Released",
+              "count": 0
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "calls": 45,
+        "completed": 43,
+        "calls_with_usage": 43,
+        "input_tokens": 46119827,
+        "cache_read": 41856128,
+        "output_tokens": 345285,
+        "seconds": 11683.8
+      },
+      "blocks": [],
+      "units": [
+        {
+          "unit": "Q016-P072",
+          "score": 950,
+          "feasibility": 38,
+          "gain": 25,
+          "connexion": "The useful connection is a test of whether 10058-F4 absorption can distinguish transient association with c-Myc402\u2013412 from an unbound ligand. The observable is the concentration-dependent UV\u2013vis spectrum, not a binding energy computed from an electronic excitation. P could supply environment-dependent optical correlation functions for the diverse bound and unbound conformations sampled in Q.",
+          "q": {
+            "id": "doi:10.1021/acs.jctc.4c00942",
+            "title": "Comparison of Methodologies for Absolute Binding Free Energy Calculations of Ligands to Intrinsically Disordered Proteins",
+            "abstract": "Modulating the function of Intrinsically Disordered Proteins (IDPs) with small molecules is of considerable importance given the crucial roles of IDPs in the pathophysiology of numerous diseases. Reported binding affinities for ligands to diverse IDPs vary broadly, and little is known about the detailed molecular mechanisms that underpin ligand efficacy. Molecular simulations of IDP ligand binding mechanisms can help us understand the mode of action of small molecule inhibitors of IDP function, but it is still unclear how binding energies can be modeled rigorously for such a flexible class of proteins. Here, we compare alchemical absolute binding free energy calculations (ABFE) and Markov-State Modeling (MSM) protocols to model the binding of the small molecule 10058-F4 to a disordered peptide extracted from a segment of the oncoprotein c-Myc. The ABFE results produce binding energy estimates that are sensitive to the choice of reference structure. In contrast, the MSM results produce more reproducible binding energy estimates consistent with weak mM binding affinities and transient intermolecular contacts reported in the literature."
+          },
+          "p": {
+            "id": "doi:10.1021/acs.jctc.1c00849",
+            "title": "Simulation of Condensed-Phase Spectroscopy with Near-Term Digital Quantum Computers",
+            "abstract": "Spectroscopy is an indispensable tool for understanding the structures and dynamics of molecular systems. However, computational modeling of spectroscopy is challenging due to the exponential scaling of computational complexity with system sizes unless drastic approximations are made. Quantum computers could potentially overcome these classically intractable computational tasks, but the existing approaches using quantum computers to simulate spectroscopy can only handle isolated and static molecules. In this work, we develop a work\ufb02ow that combines multi-scale modeling and a time-dependent variational quantum algorithm to compute the linear spectroscopy of systems interacting with their condensed-phase environment via the relevant time correlation function. We demonstrate the feasibility of our approach by numerically simulating the UV\u2212vis absorption spectra of organic semiconductors. We show that our dynamical approach captures several spectral features that are otherwise overlooked by static methods. Our method can be directly used for other linear condensed-phase spectroscopy and could potentially be extended to nonlinear multi-dimensional spectroscopy."
+          },
+          "summary": "The ledger supports the conditional identifiability, background-confounding and control-precision derivations, but these are generic titration results whose applicability to this pair remains untested. Neither Q nor P establishes concentration-invariant conditional absorption spectra or useful dynamical contrast for 10058-F4/c-Myc, so the synthetic separation gains do not yet change a system-specific experimental decision. Further progress needs verified molecular optical inputs and attainable concentration ranges, together with matched sample/control covariance or defensible bounds on these quantities; additional synthetic optimisation alone cannot supply that evidence.",
+          "usage": {
+            "calls": 45,
+            "input_tokens": 46119827,
+            "output_tokens": 345285,
+            "seconds": 11683.755028248484
+          },
+          "research": {
+            "status": "PAUSE",
+            "stage": "done",
+            "round": 1,
+            "reason": "The ledger supports the conditional identifiability, background-confounding and control-precision derivations, but these are generic titration results whose applicability to this pair remains untested. Neither Q nor P establishes concentration-invariant conditional absorption spectra or useful dynamical contrast for 10058-F4/c-Myc, so the synthetic separation gains do not yet change a system-specific experimental decision. Further progress needs verified molecular optical inputs and attainable concentration ranges, together with matched sample/control covariance or defensible bounds on these quantities; additional synthetic optimisation alone cannot supply that evidence."
+          },
+          "editorial": {
+            "status": "done",
+            "reason": null
+          },
+          "assessment": {
+            "status": null,
+            "reason": null
+          },
+          "actionability": {
+            "status": "done",
+            "decision": "NEEDS_INPUTS",
+            "reason": null
+          },
+          "controller": "done",
+          "lifecycle": "noted",
+          "last_activity": "2026-10-19T18:52:59Z",
+          "documents": [
+            {
+              "kind": "research note",
+              "pdf": null,
+              "source": "threads/Q016-P072/Q016-P072.tex",
+              "stale": false
+            },
+            {
+              "kind": "readable note",
+              "pdf": "threads/Q016-P072/edited/note.pdf",
+              "source": "threads/Q016-P072/edited/note.tex",
+              "stale": true
+            }
+          ],
+          "branches": [
+            {
+              "label": "branch-1",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-2",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-3",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 1,
+              "reviews": 1,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    "playbook": [
+      {
+        "owner": "operator",
+        "action": "1 thread(s) without their fetched sources",
+        "why": "they were opened before the engine fetched papers ahead of research, so their agents read abstracts and fetch papers in their own calls: Q016-P072. Add them to each thread (the command shows the first).",
+        "command": "pathfinder --root /Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q016-P072 sources Q016-P072 --into-inputs"
+      }
+    ]
+  },
+  "Q053-P072": {
+    "state": {
+      "generated_at": "2026-10-19T20:25:56Z",
+      "panels": [],
+      "scan": {
+        "done": 1,
+        "total": 1,
+        "errors": 0,
+        "same_corpus": false,
+        "rate_per_minute": null,
+        "eta_seconds": null,
+        "first_call": null,
+        "last_call": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "selected": 1,
+        "cut": null,
+        "min_score": null,
+        "per_paper": null,
+        "default_cut": 1,
+        "version": "5358.1791407748143958803/37.1791407748144095095/-/3890.1791407748142620095/3784.1791407748142473595/-/-"
+      },
+      "campaign": {
+        "name": "Q053-P072",
+        "title": null,
+        "description": null,
+        "backend": "codex",
+        "model": "gpt-6-astra",
+        "seats": 1,
+        "rounds": 3,
+        "allowances": {
+          "peer_calls": 2,
+          "peer_seconds": 2400,
+          "consolidate_seconds": 1800,
+          "verify_seconds": 1200,
+          "edit_seconds": 900
+        },
+        "research_scheme": "composable",
+        "account": {
+          "name": "codex-subscription",
+          "seats": 6,
+          "in_use": 0
+        },
+        "budget": {
+          "calls": 42,
+          "input_tokens": 34988896,
+          "output_tokens": 291064,
+          "cache_read": 31109504,
+          "interrupted": {
+            "calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "limits": {}
+        },
+        "execution_id": "4727e3834a53f727aa696c8f2c0ff0b45eb33dfd0b6c4f402e15c54ac6414e34",
+        "stop": null
+      },
+      "progress": {
+        "cooldown_seconds": 0.0,
+        "status": "idle",
+        "last_event_at": "2026-10-19T18:52:45Z",
+        "events_truncated": false,
+        "events_corrupt": 0
+      },
+      "runner": {
+        "status": null,
+        "pid_alive": null,
+        "heartbeat_age_seconds": null,
+        "active_pairs": []
+      },
+      "stages": {
+        "research": {
+          "DRAFT": 1
+        },
+        "edit": {
+          "done": 1
+        },
+        "paper": {
+          "queued": 1
+        }
+      },
+      "pipeline": [
+        {
+          "title": "Selected",
+          "count": 0,
+          "states": [
+            {
+              "key": "waiting",
+              "label": "Waiting",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Research",
+          "count": 0,
+          "states": [
+            {
+              "key": "researching",
+              "label": "In progress",
+              "count": 0
+            },
+            {
+              "key": "stopped",
+              "label": "Stopped",
+              "count": 0
+            },
+            {
+              "key": "orphaned",
+              "label": "Orphaned",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Outcome",
+          "count": 0,
+          "states": [
+            {
+              "key": "draft",
+              "label": "DRAFT",
+              "count": 0
+            },
+            {
+              "key": "pause",
+              "label": "Paused",
+              "count": 0
+            },
+            {
+              "key": "handoff",
+              "label": "Handed off",
+              "count": 0
+            },
+            {
+              "key": "blocked",
+              "label": "Blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Readable note",
+          "count": 1,
+          "states": [
+            {
+              "key": "editing",
+              "label": "Editing",
+              "count": 0
+            },
+            {
+              "key": "noted",
+              "label": "Note ready",
+              "count": 1
+            },
+            {
+              "key": "note-blocked",
+              "label": "Note blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Paper",
+          "count": 0,
+          "states": [
+            {
+              "key": "writing",
+              "label": "Writing",
+              "count": 0
+            },
+            {
+              "key": "accepted",
+              "label": "Accepted",
+              "count": 0
+            },
+            {
+              "key": "amend",
+              "label": "Amendments asked",
+              "count": 0
+            },
+            {
+              "key": "paper-blocked",
+              "label": "Paper blocked",
+              "count": 0
+            },
+            {
+              "key": "cleared",
+              "label": "Cleared",
+              "count": 0
+            },
+            {
+              "key": "released",
+              "label": "Released",
+              "count": 0
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "calls": 42,
+        "completed": 39,
+        "calls_with_usage": 39,
+        "input_tokens": 34988896,
+        "cache_read": 31109504,
+        "output_tokens": 291064,
+        "seconds": 10394.8
+      },
+      "blocks": [],
+      "units": [
+        {
+          "unit": "Q053-P072",
+          "score": 840,
+          "feasibility": 35,
+          "gain": 24,
+          "connexion": "Thrombin ligand non-additivity is measured by NA = [Gbind(5R\u2033) \u2212 Gbind(5R\u2032)] \u2212 [Gbind(3R\u2033) \u2212 Gbind(3R\u2032)]. Q associates this observable partly with shortening of the ligand\u2013Gly216 hydrogen bond, while finding compensating interactions elsewhere. P offers a possible route to an independent spectroscopic test of that local mechanism through environment-dependent time correlation functions. It does not, on the supplied evidence, provide a binding-free-energy estimator.",
+          "q": {
+            "id": "doi:10.1021/acs.jpcb.6b03296",
+            "title": "Elucidation of Non-Additive Effects in Protein-Ligand Binding Energies: Thrombin as a Case Study",
+            "abstract": "Accurate predictions of free energies of binding of ligands to proteins are challenging partly because of the nonadditivity of protein-ligand interactions; i.e., the free energy of binding is the sum of numerous enthalpic and entropic contributions that cannot be separated into functional group contributions. In principle, molecular simulations methodologies that compute free energies of binding do capture nonadditivity of protein-ligand interactions, but efficient protocols are necessary to compute well-converged free energies of binding that clearly resolve nonadditive effects. To this end, an efficient GPU-accelerated implementation of alchemical free energy calculations has been developed and applied to two congeneric series of ligands of the enzyme thrombin. The results show that accurate binding affinities are computed across the two congeneric series and positive coupling between nonpolar R(1) substituents and a X = NH3(+) substituent is reproduced, albeit with a weaker trend than experimentally observed. By contrast, a docking methodology completely fails to capture nonadditive effects. Further analysis shows that the nonadditive effects are partly due to variations in the strength of a hydrogen-bond between the X = NH3(+) ligands family and thrombin residue Gly216. However, other partially compensating interactions occur across the entire binding site, and no single interaction dictates the magnitude of the nonadditive effects for all the analyzed protein-ligand complexes."
+          },
+          "p": {
+            "id": "doi:10.1021/acs.jctc.1c00849",
+            "title": "Simulation of Condensed-Phase Spectroscopy with Near-Term Digital Quantum Computers",
+            "abstract": "Spectroscopy is an indispensable tool for understanding the structures and dynamics of molecular systems. However, computational modeling of spectroscopy is challenging due to the exponential scaling of computational complexity with system sizes unless drastic approximations are made. Quantum computers could potentially overcome these classically intractable computational tasks, but the existing approaches using quantum computers to simulate spectroscopy can only handle isolated and static molecules. In this work, we develop a work\ufb02ow that combines multi-scale modeling and a time-dependent variational quantum algorithm to compute the linear spectroscopy of systems interacting with their condensed-phase environment via the relevant time correlation function. We demonstrate the feasibility of our approach by numerically simulating the UV\u2212vis absorption spectra of organic semiconductors. We show that our dynamical approach captures several spectral features that are otherwise overlooked by static methods. Our method can be directly used for other linear condensed-phase spectroscopy and could potentially be extended to nonlinear multi-dimensional spectroscopy."
+          },
+          "summary": "The fixed-intervention counterexample establishes a substantive limitation of the proposed connexion: identical spectra and baseline affinities can coexist with different interaction susceptibilities, reconciling the branches\u2019 response and identifiability arguments (ledger 7\u201310, 13). The thermal construction adds a useful independent result: zero dynamical-minus-frozen excess does not validate a vacuum approximation, while a substantial thermal correction can remain classically tractable (ledger 5, 9, 13). These supported conditional results justify a methodological paper section delimiting the transfer from P to Q; they do not establish a thrombin mechanism, an experimentally discriminating reporter or quantum advantage.",
+          "usage": {
+            "calls": 42,
+            "input_tokens": 34988896,
+            "output_tokens": 291064,
+            "seconds": 10394.814248375034
+          },
+          "research": {
+            "status": "DRAFT",
+            "stage": "done",
+            "round": 1,
+            "reason": "The fixed-intervention counterexample establishes a substantive limitation of the proposed connexion: identical spectra and baseline affinities can coexist with different interaction susceptibilities, reconciling the branches\u2019 response and identifiability arguments (ledger 7\u201310, 13). The thermal construction adds a useful independent result: zero dynamical-minus-frozen excess does not validate a vacuum approximation, while a substantial thermal correction can remain classically tractable (ledger 5, 9, 13). These supported conditional results justify a methodological paper section delimiting the transfer from P to Q; they do not establish a thrombin mechanism, an experimentally discriminating reporter or quantum advantage."
+          },
+          "editorial": {
+            "status": "done",
+            "reason": null
+          },
+          "assessment": {
+            "status": null,
+            "reason": null
+          },
+          "actionability": {
+            "status": "done",
+            "decision": "NEEDS_INPUTS",
+            "reason": null
+          },
+          "controller": "done",
+          "lifecycle": "noted",
+          "last_activity": "2026-10-19T18:52:45Z",
+          "documents": [
+            {
+              "kind": "research note",
+              "pdf": null,
+              "source": "threads/Q053-P072/Q053-P072.tex",
+              "stale": false
+            },
+            {
+              "kind": "readable note",
+              "pdf": "threads/Q053-P072/edited/note.pdf",
+              "source": "threads/Q053-P072/edited/note.tex",
+              "stale": true
+            }
+          ],
+          "branches": [
+            {
+              "label": "branch-1",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-2",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 1,
+              "reviews": 1,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-3",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 1,
+              "reviews": 1,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    "playbook": [
+      {
+        "owner": "operator",
+        "action": "1 thread(s) without their fetched sources",
+        "why": "they were opened before the engine fetched papers ahead of research, so their agents read abstracts and fetch papers in their own calls: Q053-P072. Add them to each thread (the command shows the first).",
+        "command": "pathfinder --root /Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q053-P072 sources Q053-P072 --into-inputs"
+      }
+    ]
+  },
+  "Q084-P011": {
+    "state": {
+      "generated_at": "2026-10-19T20:25:56Z",
+      "panels": [],
+      "scan": {
+        "done": 1,
+        "total": 1,
+        "errors": 0,
+        "same_corpus": false,
+        "rate_per_minute": null,
+        "eta_seconds": null,
+        "first_call": null,
+        "last_call": null,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "selected": 1,
+        "cut": null,
+        "min_score": null,
+        "per_paper": null,
+        "default_cut": 1,
+        "version": "5166.1791407748188408834/37.1791407748188546626/-/4168.1791407748187094585/3739.1791407748186869918/-/-"
+      },
+      "campaign": {
+        "name": "Q084-P011",
+        "title": null,
+        "description": null,
+        "backend": "codex",
+        "model": "gpt-6-astra",
+        "seats": 1,
+        "rounds": 3,
+        "allowances": {
+          "peer_calls": 2,
+          "peer_seconds": 2400,
+          "consolidate_seconds": 1800,
+          "verify_seconds": 1200,
+          "edit_seconds": 900
+        },
+        "research_scheme": "composable",
+        "account": {
+          "name": "codex-subscription",
+          "seats": 6,
+          "in_use": 0
+        },
+        "budget": {
+          "calls": 50,
+          "input_tokens": 58069470,
+          "output_tokens": 398052,
+          "cache_read": 52799616,
+          "interrupted": {
+            "calls": 0,
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "limits": {}
+        },
+        "execution_id": "6d9f263eae1c74478da3ebe876f7267ad6c8753be07b529c7fc467050d63e71c",
+        "stop": null
+      },
+      "progress": {
+        "cooldown_seconds": 0.0,
+        "status": "idle",
+        "last_event_at": "2026-10-19T18:56:36Z",
+        "events_truncated": false,
+        "events_corrupt": 0
+      },
+      "runner": {
+        "status": null,
+        "pid_alive": null,
+        "heartbeat_age_seconds": null,
+        "active_pairs": []
+      },
+      "stages": {
+        "research": {
+          "DRAFT": 1
+        },
+        "edit": {
+          "done": 1
+        },
+        "paper": {
+          "queued": 1
+        }
+      },
+      "pipeline": [
+        {
+          "title": "Selected",
+          "count": 0,
+          "states": [
+            {
+              "key": "waiting",
+              "label": "Waiting",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Research",
+          "count": 0,
+          "states": [
+            {
+              "key": "researching",
+              "label": "In progress",
+              "count": 0
+            },
+            {
+              "key": "stopped",
+              "label": "Stopped",
+              "count": 0
+            },
+            {
+              "key": "orphaned",
+              "label": "Orphaned",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Outcome",
+          "count": 0,
+          "states": [
+            {
+              "key": "draft",
+              "label": "DRAFT",
+              "count": 0
+            },
+            {
+              "key": "pause",
+              "label": "Paused",
+              "count": 0
+            },
+            {
+              "key": "handoff",
+              "label": "Handed off",
+              "count": 0
+            },
+            {
+              "key": "blocked",
+              "label": "Blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Readable note",
+          "count": 1,
+          "states": [
+            {
+              "key": "editing",
+              "label": "Editing",
+              "count": 0
+            },
+            {
+              "key": "noted",
+              "label": "Note ready",
+              "count": 1
+            },
+            {
+              "key": "note-blocked",
+              "label": "Note blocked",
+              "count": 0
+            }
+          ]
+        },
+        {
+          "title": "Paper",
+          "count": 0,
+          "states": [
+            {
+              "key": "writing",
+              "label": "Writing",
+              "count": 0
+            },
+            {
+              "key": "accepted",
+              "label": "Accepted",
+              "count": 0
+            },
+            {
+              "key": "amend",
+              "label": "Amendments asked",
+              "count": 0
+            },
+            {
+              "key": "paper-blocked",
+              "label": "Paper blocked",
+              "count": 0
+            },
+            {
+              "key": "cleared",
+              "label": "Cleared",
+              "count": 0
+            },
+            {
+              "key": "released",
+              "label": "Released",
+              "count": 0
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "calls": 50,
+        "completed": 47,
+        "calls_with_usage": 47,
+        "input_tokens": 58069470,
+        "cache_read": 52799616,
+        "output_tokens": 398052,
+        "seconds": 14027.2
+      },
+      "blocks": [],
+      "units": [
+        {
+          "unit": "Q084-P011",
+          "score": 798,
+          "feasibility": 42,
+          "gain": 19,
+          "connexion": "The physical target is the free-energy difference between CDK2 ligand binding modes, \u0394G(B\u2212A)=\u2212kBT ln(ZB/ZA), including solvent and ligand configurational entropy. A defensible transfer is to test whether P's DCQAOA can discover important ligand\u2013water configurations that improve subsequent classical free-energy sampling. Optimized docking scores cannot directly supply this observable.",
+          "q": {
+            "id": "doi:10.1021/ct700081t",
+            "title": "Protein-ligand complexes: computation of the relative free energy of different scaffolds and binding modes",
+            "abstract": "A methodology for the calculation of the free energy difference between a pair of molecules of arbitrary topology is proposed. The protocol relies on a dual-topology paradigm, a softening of the intermolecular interactions, and a constraint that prevents the perturbed molecules from drifting away from each other at the end states. The equivalence and the performance of the methodology against a single-topology approach are demonstrated on a pair of harmonic oscillators, the calculation of the relative solvation free energy of ethane and methanol, and the relative binding free energy of two congeneric inhibitors of cyclooxygenase 2. The stability of two alternative binding modes of an inhibitor of cyclin-dependent kinase 2 is then investigated. Finally, the relative binding free energy of two structurally different inhibitors of cyclin-dependent kinase 2 is calculated. The proposed methodology allows the study of a range of problems that are beyond the reach of traditional relative free energy calculation protocols and should prove useful in drug design studies."
+          },
+          "p": {
+            "id": "doi:10.1103/PhysRevApplied.21.034036",
+            "title": "Molecular docking via quantum approximate optimization algorithm",
+            "abstract": "Molecular docking plays a pivotal role in drug discovery and precision medicine, furnishing insights into protein functionalities and fostering the development of therapeutics. Here, we introduce a poten- tial alternative solution to this problem using a quantum approximate optimization algorithm (QAOA) based algorithm. Our method was applied to analyze diverse biological systems, including the SARS- CoV-2 Mpro complex with PM-2-020B, the DPP-4 complex with piperidine fused imidazopyridine 34, and the HIV-1 gp120 complex with JP-III-048. We found that the digitized-counterdiabatic QAOA (DCQAOA), which integrates the concept of counterdiabatic driving, surpasses the conventional QAOA in terms of quantum circuit depth and optimization e\ufb03ciency. This is particularly evident in complex molecular-docking challenges, where DCQAOA delivers more accurate and biologically relevant results. Our research highlights the promising role of quantum computing in drug discovery and contributes signi\ufb01cant insights towards the optimization of protein-ligand docking methodologies."
+          },
+          "summary": "The ledger supports a non-obvious connexion: equilibrium correction can rescue energy-trained discovery outputs for a free-energy estimator, while elementary classical mixtures explain much of the improvement and the tested depth-one basis-input proposals are classically reproducible. The fixed-support identity and changing-support counterexample also establish a distinct, mathematically supported limitation of transferring discovered states into thermodynamic integration. These findings justify a methods section, with the note appropriately limiting its claims to enumerated models and leaving molecular utility, publication priority and quantum advantage unresolved.",
+          "usage": {
+            "calls": 50,
+            "input_tokens": 58069470,
+            "output_tokens": 398052,
+            "seconds": 14027.208464083773
+          },
+          "research": {
+            "status": "DRAFT",
+            "stage": "done",
+            "round": 1,
+            "reason": "The ledger supports a non-obvious connexion: equilibrium correction can rescue energy-trained discovery outputs for a free-energy estimator, while elementary classical mixtures explain much of the improvement and the tested depth-one basis-input proposals are classically reproducible. The fixed-support identity and changing-support counterexample also establish a distinct, mathematically supported limitation of transferring discovered states into thermodynamic integration. These findings justify a methods section, with the note appropriately limiting its claims to enumerated models and leaving molecular utility, publication priority and quantum advantage unresolved."
+          },
+          "editorial": {
+            "status": "done",
+            "reason": null
+          },
+          "assessment": {
+            "status": null,
+            "reason": null
+          },
+          "actionability": {
+            "status": "done",
+            "decision": "NEEDS_INPUTS",
+            "reason": null
+          },
+          "controller": "done",
+          "lifecycle": "noted",
+          "last_activity": "2026-10-19T18:56:36Z",
+          "documents": [
+            {
+              "kind": "research note",
+              "pdf": null,
+              "source": "threads/Q084-P011/Q084-P011.tex",
+              "stale": false
+            },
+            {
+              "kind": "readable note",
+              "pdf": "threads/Q084-P011/edited/note.pdf",
+              "source": "threads/Q084-P011/edited/note.tex",
+              "stale": true
+            }
+          ],
+          "branches": [
+            {
+              "label": "branch-1",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-2",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 1,
+              "reviews": 1,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            },
+            {
+              "label": "branch-3",
+              "status": "HANDOFF",
+              "stage": "done",
+              "round": 2,
+              "reviews": 2,
+              "handoff_reason": "no_further_requests",
+              "reason": null
+            }
+          ]
+        }
+      ]
+    },
+    "playbook": [
+      {
+        "owner": "operator",
+        "action": "1 thread(s) without their fetched sources",
+        "why": "they were opened before the engine fetched papers ahead of research, so their agents read abstracts and fetch papers in their own calls: Q084-P011. Add them to each thread (the command shows the first).",
+        "command": "pathfinder --root /Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q084-P011 sources Q084-P011 --into-inputs"
+      }
+    ]
+  }
+}
