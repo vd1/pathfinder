@@ -480,7 +480,18 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                                        for c in json.loads(shown[CLAIMS])])
             except (ValueError, TypeError, KeyError):
                 pass
-        prompt = head + _json(fit(shown, transport.max_prompt_chars(campaign) - len(head)))
+        if grant and grant.get("strict_evidence"):
+            if role in ("fact-checker", "critic") and any(
+                    n.startswith(("sources/internal/", "reviews/", "revisions/")) for n in shown):
+                raise Changed("fresh review scope exposes internal material or previous reviews")
+            prompt = head + _json(shown)
+            if len(prompt) > transport.max_prompt_chars(campaign):
+                raise Changed("complete review context exceeds prompt allowance; no call or truncation")
+            _write(root, f"visibility/{pass_id}-{role}.json", _json({
+                "prompt_sha256": _sha(prompt), "prompt_chars": len(prompt), "truncated": False,
+                "files_sha256": {n: _sha(t) for n, t in shown.items()}}), immutable=True)
+        else:
+            prompt = head + _json(fit(shown, transport.max_prompt_chars(campaign) - len(head)))
         order[0] += 1
         record = f"dispatch/{pass_id}-{role}.json"
         if (root / record).exists():                  # a retained call is replayed, never paid for twice

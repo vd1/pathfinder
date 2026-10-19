@@ -126,6 +126,8 @@ def prepare(campaign, pair_id, *, identity, packet, evidence_root, reason):
 
 def apply(campaign, pair_id, *, identity, packet, evidence_root, reason, resume=False, accept_change=None):
     with health.owner(campaign, nested=True), runner.Lock(campaign.thread_dir(pair_id)):
+        if (_root(campaign, pair_id, identity) / 'review-active.json').exists():
+            raise pce.Changed('use account-amend-review to resume the evidence-repair grant')
         root, request, bib = prepare(campaign, pair_id, identity=identity, packet=packet,
                                     evidence_root=evidence_root, reason=reason)
         if (root / 'acceptance.json').exists():
@@ -139,23 +141,27 @@ def apply(campaign, pair_id, *, identity, packet, evidence_root, reason, resume=
             c = copy.copy(campaign)
             c._pce_workflow = root / 'review'
             result = pce.run(c, pair_id, stop=lambda: runner.stopped(campaign))
-        if result['status'] != 'accepted':
-            return 'review_required: ' + result.get('reason', '')
-        candidate = (root / 'candidate.tex').read_text()
-        if (root / 'review' / pce.DRAFT).read_text() != candidate:
-            raise pce.Changed('review did not accept the exact candidate')
-        build = root / 'build'
-        pce._write(build, 'paper.tex', candidate, immutable=True)
-        pce._write(build, 'references.bib', bib, immutable=True)
-        ok, log = paper.build(build)
-        pce._write(build, 'build-log.txt', log)
-        if not ok:
-            return 'review accepted but candidate build failed; no installation'
-        record = {'kind': 'bounded account amendment PCE acceptance',
-                  'workflow': str((root / 'review').relative_to(campaign.thread_dir(pair_id))),
-                  'accepted_at': research._now(), 'original_acceptance': request['original_acceptance'],
-                  'baseline_sha256': request['changes']['baseline_sha256'],
-                  'candidate_sha256': pce._sha(candidate), 'bibliography_sha256': pce._sha(bib),
-                  'files_sha256': _hashes(root)}
-        pce._write(root, 'acceptance.json', pce._json(record), immutable=True)
-        return 'accepted; run present PAIR --edited for fresh presentation before release'
+        return finish(campaign, pair_id, root, root / 'review', request, bib, result)
+
+
+def finish(campaign, pair_id, root, review, request, bib, result):
+    if result['status'] != 'accepted':
+        return 'review_required: ' + result.get('reason', '')
+    candidate = (root / 'candidate.tex').read_text()
+    if (review / pce.DRAFT).read_text() != candidate:
+        raise pce.Changed('review did not accept the exact candidate')
+    build = root / 'build'
+    pce._write(build, 'paper.tex', candidate, immutable=True)
+    pce._write(build, 'references.bib', bib, immutable=True)
+    ok, log = paper.build(build)
+    pce._write(build, 'build-log.txt', log)
+    if not ok:
+        return 'review accepted but candidate build failed; no installation'
+    record = {'kind': 'bounded account amendment PCE acceptance',
+              'workflow': str(review.relative_to(campaign.thread_dir(pair_id))),
+              'accepted_at': research._now(), 'original_acceptance': request['original_acceptance'],
+              'baseline_sha256': request['changes']['baseline_sha256'],
+              'candidate_sha256': pce._sha(candidate), 'bibliography_sha256': pce._sha(bib),
+              'files_sha256': _hashes(root)}
+    pce._write(root, 'acceptance.json', pce._json(record), immutable=True)
+    return 'accepted; run present PAIR --edited for fresh presentation before release'

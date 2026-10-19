@@ -75,6 +75,14 @@ def main(argv=None):
     am.add_argument("--evidence-root", type=Path, required=True, help="base for packet evidence paths")
     am.add_argument("--reason", required=True, help="recorded owner authority and scope")
     am.add_argument("--apply", action="store_true", help="run one fresh PCE review and install only if accepted; default prepares without calls")
+    ar = sub.add_parser("account-amend-review", help="grant one evidence-repaired review of an unchanged account amendment")
+    ar.add_argument("pair")
+    ar.add_argument("--id", required=True, help="existing amendment identity")
+    ar.add_argument("--grant", required=True, help="immutable bounded review grant ID")
+    ar.add_argument("--inputs", type=Path, required=True, help="retained historical scientific inputs JSON")
+    ar.add_argument("--inputs-sha256", required=True, help="explicitly approved packet SHA256")
+    ar.add_argument("--reason", required=True, help="authority and reason for this additional review")
+    ar.add_argument("--apply", action="store_true", help="run this same prepared review; default makes no calls")
     pr = sub.add_parser("present", help="the presentation pass on an accepted paper: editor, lookup, fresh check, corrections; ends CLEARED")
     pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
     pr.add_argument("--edited", action="store_true", help="finish a PCE-accepted account without commissioning a paper")
@@ -282,6 +290,11 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "account-amend-review":
+        from . import account_review
+        print(account_review.apply(c, ns.pair, identity=ns.id, grant_id=ns.grant,
+                                   inputs=ns.inputs, inputs_sha256=ns.inputs_sha256, reason=ns.reason,
+                                   resume=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-amend":
         from . import account_amend
         print(account_amend.apply(c, ns.pair, identity=ns.id, packet=ns.packet,
