@@ -1,0 +1,23 @@
+{
+  "parent_candidate_sha256": "38ff5224ea58ac29a6a1128faffd794a24b04b45af810b2150b0117c529af1f7",
+  "changes": [
+    {
+      "finding": "reader-definitions",
+      "before": "The proposed encoding is $\\mu=\\ell+Bx$, with binary components of $x$.",
+      "after": "The proposed encoding is $\\mu=\\ell+Bx$, with binary components of $x$. Here $\\ell\\in\\mathbb R^d$ is the dipole offset vector, $x\\in\\{0,1\\}^{db}$ contains the bits, and $B\\in\\mathbb R^{d\\times(db)}$ is the matrix of bit weights. The encoding is componentwise: each dipole component uses its own block of $b$ bits, and its row of $B$ has zero entries outside that block."
+    },
+    {
+      "finding": "reader-definitions",
+      "before": "The inherited branch calculations show that well-conditioned continuous response problems can acquire many strict single-bit minima after binary encoding.",
+      "after": "For the encoded quadratic cost, write $f(x)=U(\\ell+Bx;E)$. A strict single-bit minimum has lower cost than every bitstring obtained by flipping exactly one bit. A strict adjacent-level minimum has lower cost than every available grid point obtained by increasing or decreasing exactly one dipole component by one grid spacing, with all other components fixed. The inherited branch calculations show that well-conditioned continuous response problems can acquire many strict single-bit minima after binary encoding."
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-definitions",
+      "path": "reviews/current/critic-reader.md",
+      "sha256": "ea1ee1f083f00206fb272ff9e045b7cd076597454cdadb4d5127c0ea0b41ee97",
+      "quote": "- Required revisions: At the first encoding equation, define \u2113 as the dipole offset vector and B as the matrix of bit weights, including their dimensions and the componentwise encoding assumption used subsequently. Before the product-angle expansion, define f(x) as the encoded quadratic cost. Before reporting local-minimum counts, define a strict single-bit minimum through all one-bit flips and a strict adjacent-level minimum through available single-component increments or decrements by one grid spacing. These are explanatory revisions using existing evidence; retain all scientific limitations and the production pause."
+    }
+  ]
+}
