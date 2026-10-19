@@ -149,7 +149,13 @@ def _run(campaign, pair_id, restart) -> str:
     if getattr(campaign, "_edited_publication", False) and s.get("state") in TERMINAL and not restart:
         return s["state"]
     if restart or s.get("accepted_sha256") != sha(accepted) or s.get("state") not in ("running", "stopped"):
-        shutil.rmtree(d, ignore_errors=True)       # a new accepted paper, or a pass ended before: start afresh
+        if d.exists():
+            archive = pd / "presentation-history"
+            archive.mkdir(exist_ok=True)
+            n = 1
+            while (archive / f"attempt-{n:04d}").exists():
+                n += 1
+            d.rename(archive / f"attempt-{n:04d}")
         d.mkdir(parents=True)
         (d / "open-findings.json").write_text(json.dumps(_open_findings(campaign, pair_id), indent=1))
         s = _save(campaign, pair_id, state="running", accepted_sha256=sha(accepted), stage=None, cycles=0,

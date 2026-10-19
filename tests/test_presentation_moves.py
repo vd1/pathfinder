@@ -31,3 +31,18 @@ def test_moved_citation_is_not_new_but_new_citation_is():
     after=doc(r'A bound follows \cite{Smith}.','Introduction.','Conclusion.')
     assert not guard(before,after,before,'')
     assert guard(before,after.replace('Conclusion.',r'Conclusion \cite{New}.'),before,'')
+
+
+def test_restart_archives_prior_attempt_before_new_work(tmp_path,monkeypatch):
+    import json,pytest
+    from pathfinder import presentation,paper
+    from stubcampaign import make
+    c=make(tmp_path);pd=paper.folder(c,'Q1P1');d=presentation.folder(c,'Q1P1');d.mkdir(parents=True)
+    (pd/'paper.tex').write_text(doc('Accepted result.'))
+    old={'state':'PAUSE-ON-PRESENT','reason':'correction refused by the guard: deletion'}
+    (d/'state.json').write_text(json.dumps(old));(d/'guard.json').write_text('original refusal')
+    monkeypatch.setattr(presentation,'_save',lambda *a,**k:(_ for _ in ()).throw(RuntimeError('stop before dispatch')))
+    with pytest.raises(RuntimeError,match='before dispatch'):presentation._run(c,'Q1P1',True)
+    kept=pd/'presentation-history/attempt-0001'
+    assert json.loads((kept/'state.json').read_text())==old
+    assert (kept/'guard.json').read_text()=='original refusal'
