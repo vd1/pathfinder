@@ -68,6 +68,13 @@ def main(argv=None):
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
     w.add_argument("--amend", metavar="FINDINGS.json", help="an author round answering outside findings (review.json's findings schema), then a reviewer round")
+    am = sub.add_parser("account-amend", help="review a fixed bounded account candidate without changing historical acceptance")
+    am.add_argument("pair")
+    am.add_argument("--id", required=True, help="immutable amendment identity")
+    am.add_argument("--packet", type=Path, required=True, help="directory containing candidate, changes and evidence JSON")
+    am.add_argument("--evidence-root", type=Path, required=True, help="base for packet evidence paths")
+    am.add_argument("--reason", required=True, help="recorded owner authority and scope")
+    am.add_argument("--apply", action="store_true", help="run one fresh PCE review and install only if accepted; default prepares without calls")
     pr = sub.add_parser("present", help="the presentation pass on an accepted paper: editor, lookup, fresh check, corrections; ends CLEARED")
     pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
     pr.add_argument("--edited", action="store_true", help="finish a PCE-accepted account without commissioning a paper")
@@ -275,6 +282,11 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "account-amend":
+        from . import account_amend
+        print(account_amend.apply(c, ns.pair, identity=ns.id, packet=ns.packet,
+                                 evidence_root=ns.evidence_root, reason=ns.reason,
+                                 resume=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "present":
         if ns.edited:
             from . import account_release

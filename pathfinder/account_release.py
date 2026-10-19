@@ -3,7 +3,7 @@ import copy
 from . import edit, paper, pce, pce_recovery, presentation, research, runner
 
 
-def view(campaign, pair_id, *, create=False):
+def source(campaign, pair_id):
     pce_recovery.preflight(campaign, presentation=True)
     e = edit.status(campaign, pair_id)
     if research.status(campaign, pair_id).get("status") not in research.TERMINAL:
@@ -21,6 +21,16 @@ def view(campaign, pair_id, *, create=False):
             raise pce.Changed("the account changed after PCE acceptance")
         acceptance = {"kind": "PCE editorial acceptance",
                       "workflow": str(pce.workflow(campaign, pair_id).relative_to(campaign.thread_dir(pair_id)))}
+    return note, bib, acceptance
+
+
+def view(campaign, pair_id, *, create=False, original=False):
+    note, bib, acceptance = source(campaign, pair_id)
+    ed = campaign.thread_dir(pair_id) / "edited"
+    e = edit.status(campaign, pair_id)
+    if not original:
+        from . import account_amend
+        note, bib, acceptance = account_amend.selected(campaign, pair_id, note, bib, acceptance)
     identity = pce._sha(note + '\0' + bib)
     root = ed / "publication" / identity
     c = copy.copy(campaign)

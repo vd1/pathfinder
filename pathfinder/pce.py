@@ -113,6 +113,8 @@ def settings(campaign) -> dict:
 
 
 def workflow(campaign, pair_id) -> Path:
+    if getattr(campaign, "_pce_workflow", None) is not None:
+        return campaign._pce_workflow
     ed = campaign.thread_dir(pair_id) / "edited"
     pointer = ed / "pce-active.json"
     if pointer.exists():
@@ -464,6 +466,11 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
         from types import SimpleNamespace
         from . import library
         contract = resources.prompt(campaign, f"pce-{role}", **values)
+        if grant and grant.get("fixed_candidate") and role == "author":
+            contract += ("\nThis is a fixed-candidate review. Do not revise or return LaTeX. "
+                         "Extract every material claim from sources/internal/baseline.tex, including "
+                         "each definition and numerical claim in sources/internal/changes.json. "
+                         "Return only claims/current.json; the host installs the exact candidate for review.\n")
         head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
         head = library.request_rule(campaign, SimpleNamespace(prompt=head, tools=False, reads=False)) + head
         shown = visible(files, contract)
@@ -509,14 +516,23 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
             del files[name]
             (root / name).unlink(missing_ok=True)
         try:
-            authored = call("author", pass_id, [DRAFT, CLAIMS], DRAFT=DRAFT, CLAIMS_SCHEMA=_json(CLAIMS_SCHEMA).strip())
-            draft = unfence(authored[DRAFT])
+            fixed = bool(grant and grant.get("fixed_candidate"))
+            authored = call("author", pass_id, [CLAIMS] if fixed else [DRAFT, CLAIMS],
+                            DRAFT=DRAFT, CLAIMS_SCHEMA=_json(CLAIMS_SCHEMA).strip())
+            draft = files[BASELINE] if fixed else unfence(authored[DRAFT])
             if not is_latex_document(draft) or re.search(r"[\x08\x0c\t]", draft):
                 raise InvalidOutput("the draft is not a whole LaTeX document, or a backslash escape was decoded")
             try:
                 claims = json.loads(authored[CLAIMS])
             except json.JSONDecodeError as error:
                 raise InvalidOutput(f"claims are not JSON: {error}") from None
+            _check_schema(claims, CLAIMS_SCHEMA, "claims")
+            if fixed:
+                changes = json.loads(files["sources/internal/changes.json"])["changes"]
+                claims += [{"id": "amendment-" + str(i + 1), "text": change["after"],
+                            "kind": "definition", "location": "bounded replacement " + change["finding"],
+                            "status": "needs-review"} for i, change in enumerate(changes)]
+                authored[CLAIMS] = _json(claims)
             _check_schema(claims, CLAIMS_SCHEMA, "claims")
             ids = [c["id"] for c in claims]
             if not claims or len(set(ids)) != len(ids):
@@ -558,7 +574,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                     source = re.split(r"[:#]", evidence, maxsplit=1)[0]
                     if not source.startswith("sources/external/") or source not in files:
                         raise InvalidOutput(f"evidence {evidence!r} is outside the approved external sources")
-                    cited.add("research record" if source == SUPPLEMENT else "papers")
+                    cited.add("research record" if source == SUPPLEMENT or source.startswith("sources/external/amendment-") else "papers")
                 expected = {"papers": {"papers"}, "research record": {"research record"},
                             "both": {"papers", "research record"}, "none": set()}[claim["basis"]]
                 if claim["status"] == "supported" and cited != expected:
@@ -572,7 +588,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                 "baseline_diff": "".join(difflib.unified_diff(baseline.splitlines(keepends=True), draft.splitlines(keepends=True),
                                                               fromfile="frozen-baseline.tex", tofile=f"{pass_id}-draft.tex")),
                 "claims": claims, "fact_check": fact}), immutable=True)
-            if fact["verdict"] != "pass" or any(c["status"] == "unsupported" for c in fact["claims"]):
+            if fact["verdict"] != "pass" or any(c["status"] == "unsupported" or (fixed and c["status"] != "supported") for c in fact["claims"]):
                 continue
 
             critic_current = f"reviews/current/critic-{profile}.md"

@@ -108,7 +108,8 @@ def pce_reply(campaign, role: str, prompt: str, verdict: str | None = None) -> s
             "\\end{document}", f"Revised by the stub PCE author, pass {n}.\n\\end{{document}}")
         claims = [{"id": "c1", "text": "The stub cites one source.", "kind": "fact", "location": "Introduction",
                    "status": "needs-review"}]
-        out = {permitted[0]: draft, permitted[1]: json.dumps(claims)}
+        out = ({permitted[0]: json.dumps(claims)} if permitted == ["claims/current.json"]
+               else {permitted[0]: draft, permitted[1]: json.dumps(claims)})
     elif role == "archivist":
         out = {permitted[0]: "Stub provenance note: the author's draft, kept by the host."}
     elif role == "fact-checker":
