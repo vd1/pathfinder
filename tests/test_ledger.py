@@ -29,3 +29,19 @@ def test_cli_roundtrip(tmp_path):
     subprocess.run(cmd + ["add", "--kind", "idea", "--text", "hello"], check=True)
     out = subprocess.run(cmd + ["read"], check=True, capture_output=True, text=True).stdout
     assert "hello" in out and "#1" in out
+
+
+def test_readiness_can_require_acknowledging_a_review(tmp_path):
+    l = Ledger(tmp_path / "ledger.jsonl")
+    l.add("ada", "finding", "result")
+    l.add("ada", "ready", "done", seen=1)
+    review = l.add("verifier", "review", "ITERATE: check boundary")
+    assert l.latest_substantive() == 1
+    assert l.ready(["ada"])  # Callers opt into a review barrier.
+    assert not l.ready(["ada"], after=review)
+    l.add("ada", "ready", "stale acknowledgment", seen=1)
+    assert not l.ready(["ada"], after=review)
+    l.add("ada", "ready", "read review, gap still open", seen=review)
+    assert l.ready(["ada"], after=review)
+    l.add("emmy", "objection", "new issue")
+    assert not l.ready(["ada"], after=review)

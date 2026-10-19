@@ -27,6 +27,18 @@ def _outline(path) -> str:
     return f"\n\nOutline of inputs/{path.name} ({len(text.splitlines())} lines):\n{found}\n" if found else ""
 
 
+
+def _iteration_review_seq(ledger):
+    """Classic ITERATE reviews reopen readiness, including after a process restart.
+
+    Keep these reviews distinct from substantive research entries and REVISE:
+    peers must acknowledge the request but need not invent a finding to finish.
+    """
+    return max((r["seq"] for r in ledger.read()
+                if r["actor"] == "verifier" and r["kind"] == "review"
+                and r["text"].startswith("ITERATE:")), default=0)
+
+
 def _peers(campaign, pair_id, stop):
     """@planks("When Pathfinder executes scan, peer, consolidation, and verification model requests")
     @planks("When Pathfinder executes one stage attempt")
@@ -40,6 +52,7 @@ def _peers(campaign, pair_id, stop):
     used = {}; lock = threading.Lock()                    # each peer's own seconds; the round's clock is the largest
 
     peers = list(campaign.peers)
+    review_seq = _iteration_review_seq(L)
     outlines = "".join(_outline(d / "inputs" / inp[side]) for side in "QP")
 
 
@@ -48,13 +61,13 @@ def _peers(campaign, pair_id, stop):
         for call_no in range(A["peer_calls"]):
             with lock:
                 left = A["peer_seconds"] - max(used.values(), default=0.0)
-            if left <= 0 or L.ready(peers):
+            if left <= 0 or L.ready(peers, after=review_seq):
                 return
-            while L.ready([actor]) and not all(done[o] for o in others):   # my word stands; wait for my partners
+            while L.ready([actor], after=review_seq) and not all(done[o] for o in others):   # my word stands; wait for my partners
                 time.sleep(15)
-                if L.ready(peers):
+                if L.ready(peers, after=review_seq):
                     return
-            if L.ready(peers):
+            if L.ready(peers, after=review_seq):
                 return
             _check(stop)
             # two independent switches, both off by default: the agent reads what it needs through tools
@@ -183,7 +196,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 _set(campaign, pair_id, stage="consolidate")
             elif s["stage"] == "consolidate":
                 _check(stop)
-                why = "" if L.ready(list(campaign.peers)) else " because the allowance ran out before every peer declared ready"
+                why = "" if L.ready(list(campaign.peers), after=_iteration_review_seq(L)) else " because the allowance ran out before every peer declared ready"
                 repair = s.get("repair")
                 if repair:
                     prior = (f" This is a repair of the existing {note.name}, not new research. An independent verifier found"

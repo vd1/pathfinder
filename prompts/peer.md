@@ -48,7 +48,9 @@ directly.
 Declare ready when you judge the ledger holds the best account of the pair
 you can give with the material at hand, naming the latest entry number you
 have read. Say what remains unresolved. A new substantive entry from a
-partner reopens the question. If you disagree, leave the disagreement
+partner or an ITERATE review from the verifier reopens the question. After
+an ITERATE review, investigate its request and declare ready again, naming
+an entry number that includes that review. If you disagree, leave the disagreement
 explicit rather than manufacturing consensus.
 
 You have {{SECONDS}} seconds in this call and {{CALLS_LEFT}} calls after it.

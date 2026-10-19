@@ -40,8 +40,10 @@ class Ledger:
     def latest_substantive(self) -> int:
         return max((r["seq"] for r in self.read() if r["kind"] in SUBSTANTIVE), default=0)
 
-    def ready(self, actors: list[str]) -> bool:
-        rows, latest = self.read(), self.latest_substantive()
+    def ready(self, actors: list[str], *, after: int = 0) -> bool:
+        """Each peer has acknowledged the substantive work and any required review."""
+        rows = self.read()
+        latest = max(after, max((r["seq"] for r in rows if r["kind"] in SUBSTANTIVE), default=0))
         for a in actors:
             last = next((r for r in reversed(rows) if r["actor"] == a and r["kind"] == "ready"), None)
             if not last or last["seq"] < latest or (last.get("seen") or 0) < latest:

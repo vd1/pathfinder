@@ -168,7 +168,7 @@ def test_a_classic_thread_also_spends_clock_time(tmp_path, monkeypatch):
         return r
     monkeypatch.setattr(transport, "execute", execute)
     from pathfinder import ledger as ledger_module
-    monkeypatch.setattr(ledger_module.Ledger, "ready", lambda self, actors: False)
+    monkeypatch.setattr(ledger_module.Ledger, "ready", lambda self, actors, *, after=0: False)
     research.run_thread(c, "Q1P1")
     assert sorted(calls) == ["ada", "ada", "emmy", "emmy"]
 
