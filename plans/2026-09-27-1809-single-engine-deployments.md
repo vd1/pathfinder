@@ -32,9 +32,9 @@ Success means:
 | This repository | live `pathfinder/` | reference | none |
 | statarb (`../statarb/arxiv_drip/research_protocol.py`) | per-job copy of `../pathfinder/pathfinder` and `prompts/`, with a file-digest manifest | `campaign.json` keys; its research brief appended to four prompts; `PATHFINDER_CODEX`; an extra `inputs/supporting.json`; engine styles and `paper.build` for its own implementation note | none in code, but the copy is taken live at job start, so each job silently runs whatever is on disk |
 | Repeat and reinjection pilot (`experiments/2026-09-25-repeat-injection/`, finished and archived) | frozen `engine/` copy, 131 file digests checked at preflight | runtime replacement of `transport.call` (reservation counting around each call), `runner.pending` (restricted to one scheduled pair) and `health.snapshot` (two child campaigns); a coordinator loop running research, edit and paper per pair; `codex_adapter.py` mapping `--search` to `web_search`; an appended role instruction | engine behaviour changed by monkeypatching, invisible to the engine's tests |
-| pathfinder-julien-2, at `5cc82db` (2026-09-27 17:25 +0200; since then `8c0aad3`) | two vendored copies: `dependencies/pathfinder/` and, for the EVA experiment, `experiments/eva-minus-reuse-01/dependencies/pathfinder/` | its own EVA and PCE controllers, which replace `transport.execute` and call `run_thread` directly; since `8c0aad3`, readable accounts rendered with the vendored `paper.build` and `pathfinder-readable` | two forks of upstream `57e9a7a`; see [the inventory](../deployments/pathfinder-julien-2/inventory.md) |
+| pathfinder-julien-2, at `5cc82db` (2026-09-27 17:25 +0200; since then `8c0aad3`) | two vendored copies: `dependencies/pathfinder/` and, for the EVA experiment, `experiments/eva-minus-reuse-01/dependencies/pathfinder/` | its own EVA and PCE controllers, which replace `transport.execute` and call `run_thread` directly; since `8c0aad3`, readable accounts rendered with the vendored `paper.build` and `pathfinder-readable` | two forks of upstream `57e9a7a`; see [the inventory](archive/2026-09-julien-2-migration/inventory.md) |
 
-The [inventory](../deployments/pathfinder-julien-2/inventory.md) establishes
+The [inventory](archive/2026-09-julien-2-migration/inventory.md) establishes
 that both julien-2 copies fork upstream `57e9a7a` (2026-09-24). The main copy,
 `dependencies/pathfinder/`, changes only `research.py`: inline assessment
 evidence (`_assessment_evidence`), path and symlink rejection, configurable
@@ -319,7 +319,7 @@ Astra's second review, of `4a094be`:
   extension point (`bdc45a7`, release check passed, not tagged) removes the
   need for julien-2 to replace `transport.execute`. julien-2 stays not yet
   supported: its EVA research scheme still lives in its own copy of the
-  engine; see `deployments/pathfinder-julien-2/migration.md`.
+  engine; see `plans/archive/2026-09-julien-2-migration/migration.md`.
 - Behave scenarios without model access: 87 pass, 0 fail, 9 error. All nine
   errors are in `features/operational/edit-stage.feature`: eight call
   `edit_stage.run_author` and `run_round`, which the later PCE delegation
