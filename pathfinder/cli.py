@@ -75,6 +75,13 @@ def main(argv=None):
     am.add_argument("--evidence-root", type=Path, required=True, help="base for packet evidence paths")
     am.add_argument("--reason", required=True, help="recorded owner authority and scope")
     am.add_argument("--apply", action="store_true", help="run one fresh PCE review and install only if accepted; default prepares without calls")
+    av = sub.add_parser("account-amend-revise", help="review a bounded revised candidate under the existing amendment identity")
+    av.add_argument("pair")
+    av.add_argument("--id", required=True)
+    av.add_argument("--revision", required=True)
+    av.add_argument("--packet", type=Path, required=True)
+    av.add_argument("--reason", required=True)
+    av.add_argument("--apply", action="store_true")
     ar = sub.add_parser("account-amend-review", help="grant one evidence-repaired review of an unchanged account amendment")
     ar.add_argument("pair")
     ar.add_argument("--id", required=True, help="existing amendment identity")
@@ -306,6 +313,10 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "account-amend-revise":
+        from . import account_revision
+        print(account_revision.run(c, ns.pair, identity=ns.id, revision=ns.revision, packet=ns.packet,
+                                   reason=ns.reason, apply=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-present-continue":
         from . import account_present
         print(account_present.apply(c, ns.pair, identity=ns.id, context_path=ns.context,

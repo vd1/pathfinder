@@ -10,10 +10,22 @@ def _read(path):
     return json.loads(path.read_text())
 
 
-def _root(campaign, pair_id, identity):
+def _base(campaign, pair_id, identity):
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', identity or ''):
         raise pce.Changed('invalid account amendment ID')
     return campaign.thread_dir(pair_id) / 'edited' / 'account-amendments' / identity
+
+
+def _root(campaign, pair_id, identity):
+    base = _base(campaign, pair_id, identity)
+    pointer = campaign.thread_dir(pair_id) / 'edited/account-amendment.json'
+    selected = _read(pointer) if pointer.exists() else {}
+    revision = selected.get('revision') if selected.get('id') == identity else None
+    if revision is not None:
+        if not isinstance(revision, str) or not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', revision):
+            raise pce.Changed('invalid amendment revision pointer')
+        return base / 'revisions' / revision
+    return base
 
 
 def _hashes(root):
