@@ -1,0 +1,12 @@
+{
+  "parent_candidate_sha256": "e6e385a0a0578949dae56a6e567ed9f82064d2b7b975cde8ee3ea2cdf71c0e6f",
+  "parent_acceptance_sha256": "dda7d293b813b155c3086d4d7062b07a49832f6a6191dfa57c472855eeb5b856",
+  "returned_findings_sha256": "94cb164f39be524aa2f9350a32ca38c46d638e726acab6172e239130b3ca2614",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "For \\emph{one correlation quadrature}, the naive finite-kick estimator has variance at most $1/(\\lambda^4S)$ when $S$ shots are allocated equally across four independent bounded amplitude-quadrature estimates. For dimensionless normalised operators, $\\lambda=0.1$ and quadrature standard error 0.01 give $10^8$ sufficient worst-case shots for one time and geometry. This is neither the budget for the complete complex correlator nor a necessary or measured cost. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space.",
+      "after": "For \\emph{one correlation quadrature}, the naive finite-kick estimator has variance at most $1/(\\lambda^4S)$ when $S$ shots are allocated equally across four independent bounded amplitude-quadrature estimates. The retained audit does not identify the normalised operators, the norm or its assumed bound, so no numerical shot-budget example is asserted here. The conditional variance statement above is not a measured cost or a budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space."
+    }
+  ]
+}
