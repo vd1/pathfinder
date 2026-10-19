@@ -52,7 +52,7 @@ def reply(campaign, request) -> str:
         ledger = Ledger(cwd / "ledger.jsonl")
         if not any(r["actor"] == request.actor and r["kind"] in SUBSTANTIVE for r in ledger.read()):
             ledger.add(request.actor, "finding", f"stub finding by {request.actor}")
-        latest = ledger.latest_substantive()
+        latest = ledger.count()
         ledger.add(request.actor, "ready", f"ready at #{latest}", seen=latest)
         return "stub peer turn"
     if stage == "consolidate":
