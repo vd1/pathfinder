@@ -270,7 +270,7 @@ def _published(campaign, pair_id, pd, out, record):
 def run(campaign, pair_id: str, timestamp: str | None = None) -> dict:
     pd = paper.folder(campaign, pair_id)
     if not pd.is_dir():
-        raise SystemExit(f"{pair_id}: no cleared publication")
+        raise SystemExit(f"{pair_id}: publication is not CLEARED")
     with (pd / ".release.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         return _run(campaign, pair_id, timestamp)
