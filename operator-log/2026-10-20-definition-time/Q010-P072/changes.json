@@ -1,0 +1,46 @@
+{
+  "baseline_sha256": "160242542b7e5ee321987e09ae9c2b9a68707eba64641904911197e3e291ff8d",
+  "candidate_sha256": "9f88a8300344a6289a1f08df90e93141f13c49cb0190cacc001deec9f5dce0e0",
+  "changes": [
+    {
+      "after": "For each corrected configuration, the translation statistic is the maximum Euclidean norm of the translation vector over its eight rigid waters, measured from the baseline configuration. The largest such statistic across the three recorded corrected configurations was 0.0259504 angstrom. At that same corrected configuration, the change from baseline in the $xx$ component of the potential Hessian at the first synthetic site was $2.4182008\\times10^{-4}$ in elementary charge per cubic angstrom.",
+      "before": "The largest maximum water translation was 0.0259504 angstrom, with Hessian change $2.4182008\\times10^{-4}$ in elementary charge per cubic angstrom.",
+      "finding": "P1"
+    },
+    {
+      "after": "Branch 2's retained repository inspection identifies a benzene/water generation recipe",
+      "before": "The retained repository inspection identifies a benzene/water generation recipe",
+      "finding": "C077"
+    },
+    {
+      "after": "Branch 2's conditional scaling analysis shows that scaling only the dipole-driving field",
+      "before": "This distinction matters because scaling only the dipole-driving field",
+      "finding": "C079"
+    },
+    {
+      "after": "For \\emph{one correlation quadrature}, the naive finite-kick estimator has variance at most $1/(\\lambda^4S)$ when $S$ shots are allocated equally across four independent bounded amplitude-quadrature estimates. The retained audit does not identify the normalised operators, the norm or its assumed bound, so no numerical shot-budget example is asserted here. The conditional variance statement above is not a measured cost or a budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space.",
+      "before": "For \\emph{one correlation quadrature}, the naive finite-kick estimator has variance at most $1/(\\lambda^4S)$ when $S$ shots are allocated equally across four independent bounded amplitude-quadrature estimates. For dimensionless normalised operators, $\\lambda=0.1$ and quadrature standard error 0.01 give $10^8$ sufficient worst-case shots for one time and geometry. This is neither the budget for the complete complex correlator nor a necessary or measured cost. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space.",
+      "finding": "P1"
+    },
+    {
+      "finding": "reader-definitions",
+      "before": "For a positive-semidefinite electronic quadratic kernel $K$, an unrestricted positive-semidefinite field-response representation exists precisely when",
+      "after": "Here $q$ is the vector of coefficients of a specified solvent-potential input basis, such as charge-site amplitudes, and $D$ maps that same input space to the driving fields. Define the electronic quadratic induction energy by $I_{\\mathrm{quad}}(q)=-q^{\\mathrm T}Kq/2$, with positive-semidefinite kernel $K$ on that input space. An unrestricted positive-semidefinite field-response representation exists precisely when"
+    },
+    {
+      "finding": "reader-definitions",
+      "before": "For an induction-only correction $u(R)$ that vanishes in vacuum, holding all other Hamiltonian terms fixed, the ultimate observable is",
+      "after": "Define $u(R)$ as the proposed Hamiltonian minus the reference Hamiltonian at configuration $R$. Restrict this change to induction, with all other Hamiltonian terms fixed and $u(R)$ vanishing in vacuum. Under this restriction, the ultimate observable is"
+    },
+    {
+      "finding": "reader-definitions",
+      "before": "For \\emph{one correlation quadrature}, the naive finite-kick estimator has variance at most $1/(\\lambda^4S)$ when $S$ shots are allocated equally across four independent bounded amplitude-quadrature estimates. The retained audit does not identify the normalised operators, the norm or its assumed bound, so no numerical shot-budget example is asserted here. The conditional variance statement above is not a measured cost or a budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space.",
+      "after": "The naive finite-kick estimator combines independently measured amplitude quadratures, so measurement precision must be budgeted separately from circuit-type counts. The retained audit does not identify the normalised operators, the norm or its assumed bound. No quantitative variance bound or numerical shot-budget example is asserted here without those conventions. A budget for one real or imaginary correlation component would not by itself be the budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space."
+    },
+    {
+      "finding": "reader-definitions",
+      "before": "limits the finite-kick variance statement to one correlation quadrature",
+      "after": "retains a qualitative finite-kick precision caveat without a quantitative variance bound"
+    }
+  ]
+}

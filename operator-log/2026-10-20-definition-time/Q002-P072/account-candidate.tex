@@ -1,0 +1,136 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\title{Can absorption test the contact environments of a designed ligand?}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+CReM-dock designs ligands through fragment growth and docking. The paired quantum-method paper calculates condensed-phase linear spectra from molecular trajectories and electronic propagation. This work asked whether absorption could distinguish independently characterised contact environments of the same final designed ligand. Its conditional calculations show how to test spectral separation against nuisance and model errors, and when temporal correlations can add information beyond a specified static ensemble. They also show why unrestricted static fitting can reproduce dynamic spectra. No ligand-specific optical data or calibrated uncertainty establishes a molecular discrimination result or quantum benefit. The next decision is experimental: establish an accessible band for the exact final candidate against matched protein and buffer backgrounds, then test static discrimination before considering a temporal extension.
+\end{abstract}
+
+\section{The next decision comes before quantum propagation}
+
+The proposed observable is the complete, instrument-convolved and binned absorption spectrum of the \emph{same final ligand} under independently labelled contact-environment hypotheses. Concentration, chemical states, free and bound fractions, lifetime and protein/buffer background belong in its forward model before intensity is discarded by normalisation. A bound-versus-water shift is a control. Comparing a parent with its grown derivative also changes chemical identity; neither comparison alone assigns a retained pose.
+
+The practical sequence is therefore to establish optical feasibility for the exact final candidate, independently characterise competing solution environments and their populations, and test whether constrained static spectra already distinguish them. Temporal correlations become useful only if they supply additional discrimination that survives the same nuisance alternatives and uncertainties. A quantum benchmark requires a justified electronic model and an accuracy target in that final observable. These are proposed requirements, not completed measurements (research supplement, joint entries 11, 24 and 28).
+
+The first requirement remains unmet in the approved research record: exact-ligand bands and strengths, matched backgrounds, independently populated solution environments, static distributions, embedded gap/dipole models, converged sampling and calibrated instrument/model errors are absent. The calculations below establish conditional possibilities and limits, rather than a spectrum or pose assignment for a Q ligand.
+
+Throughout, research-supplement locators refer to \texttt{sources/external/research-supplement.md}. That supplement is this campaign's generated research evidence, not independent molecular ground truth. Branch results are attributed separately where the joint work did not adopt them.
+
+\section{What the two papers contribute}
+
+Paper Q, CReM-dock, combines fragment growth, docking and physicochemical filtering, with optional contact and pose constraints. It assesses selected compounds through absolute binding free energy calculations \cite{Q}. Binding energetics and optical discrimination answer different questions: the proposed spectrum would test competing contact environments, rather than correct a binding free energy.
+
+Q's pose reference remains unresolved. Methods defines heavy-atom root mean square deviation (RMSD) on the maximum common substructure between parent and successor; Conclusions describes a threshold relative to the initial fragment. The expansion study states a \(1\,\mathrm{\AA}\) threshold, whereas Table 4 reports generated-to-starting values of \(1.37,1.47,0.04,1.7\) and \(1.54\,\mathrm{\AA}\) \cite{Q}. These passages do not specify a common atom map and alignment that reconciles the metrics. They cannot certify every reported endpoint against a fixed original-anchor threshold. Accumulated local changes, different comparison metrics or inconsistent reporting remain possible explanations, not observed software failures. Study-version filter code, configuration, final coordinates and an original-anchor atom map would resolve the question.
+
+The contact terminology also needs its source context: Methods names ProLIF as the fingerprint calculator, the expansion study says PLIP similarity, and the abbreviations define PLIP as protein--ligand interaction pattern \cite{Q}. The text alone does not settle the implementation.
+
+Paper P combines classical molecular dynamics and electronic-structure calculations with time-dependent variational quantum propagation based on McLachlan's principle. It obtains linear spectra from Fourier transforms of dipole time correlation functions \cite{P}. Its bithiophene-cluster numerical demonstrations agree with classical integration of the same supplied Hamiltonians and differ from its static ensemble calculation. This checks propagation within those models; it does not independently validate a protein-bound Q ligand's optical Hamiltonian.
+
+\section{What temporal correlations can add}
+
+For one bright transition with fixed dipole \(\mu\), prescribed stationary Gaussian gap fluctuations of mean \(\bar E\) and covariance \(K\), this work uses
+\[
+ C(t)=|\mu|^2e^{-i\bar E t/\hbar-g(t)},\qquad
+ g(t)=\hbar^{-2}\int_0^t(t-s)K(s)\,ds.
+\]
+Here \(\hbar\) is the reduced Planck constant. For exponential covariance,
+\[
+ K(s)=\sigma_E^2e^{-|s|/\tau_c},\qquad
+ g(t)=\frac{\sigma_E^2\tau_c^2}{\hbar^2}
+ \left(t/\tau_c-1+e^{-t/\tau_c}\right),\quad t\geq0.
+\]
+The matched instantaneous Gaussian static ensemble instead uses \(g_{\rm stat}(t)=\sigma_E^2t^2/(2\hbar^2)\), with identical additional damping. Thus temporal correlations can change a line shape at fixed instantaneous Gaussian distribution. Scalar phase accumulation computes this model classically; no Q-specific covariance or spectrum follows from the checked identities (joint entries 10, 20 and 23).
+
+The contextual literature controls temper that possibility. Branch-2's simplified calculation using recovered photoactive yellow protein parameters obtained almost the same between-case width contrast statically and dynamically, demoting a temporal-only width argument for those parameters. Its Fenna--Matthews--Olson pigment control permitted substantial motional narrowing, but the fitted fast component concerns total gap fluctuations, without a unique assignment to a pose-sensitive environmental contribution. The FMO controls changed only the fast correlation time at fixed component variances and slow correlation time: one compared 4.04 with 4.56 fs, and a separate low/high control compared 3.79 with 4.56 fs. These were counterfactual variants of the recovered two-component FMO covariance model, not exchanges between observed FMO cases, PYP intermediates or docking poses. The lifetime-and-intensity nuisance construction used the 4.04 versus 4.56 fs pair. Lifetime and intensity adjustments absorbed much of their spectral contrast, leaving an unweighted residual with no calibrated detection meaning. These are branch-reported model controls, not Q-pose predictions; the joint work adopts the nuisance example (branch-2 entries 72, 75, 85 and 89; joint entry 11).
+
+A more selective diagnostic illustrates both the opportunity and its limits. For the pure model \(|C(t)|=a e^{-\gamma t-g(t)}\), with \(a>0\), define
+\[
+ Q_h(t)=2\log|C(t+h)|-\log|C(t)|-\log|C(t+2h)|.
+\]
+Amplitude and a single exponential lifetime cancel. Within the exponential-covariance family,
+\[
+ Q_h(t)=\frac{\sigma_E^2\tau_c^2}{\hbar^2}
+ e^{-t/\tau_c}(1-e^{-h/\tau_c})^2,
+ \qquad \frac{Q_h(t+h)}{Q_h(t)}=e^{-h/\tau_c}.
+\]
+The matched static Gaussian ratio is one when the statistic is nonzero. Independently checked synthetic examples separated chosen correlation times under an assumed relative modulus-error bound and zero additional model error. They supply neither experimental precision nor calibrated inversion from absorption (joint entries 8 and 10).
+
+Positive curvature alone is insufficient: a static two-carrier mixture can produce it. Mixtures, nonexponential decay, dipole fluctuations, background and unknown response remain alternatives. The statistic vanishes in the white-noise limit at fixed integrated covariance. Passing absolute coherence-error bounds through logarithms additionally requires a positive lower modulus bound (joint entries 6--10).
+
+\section{Discrimination must survive populations and uncertainty}
+
+Even distinct pure-environment spectra can fail to identify populations. In this work's dilute, additive, slow-exchange model,
+\[
+ S=f[(1-w)S_A+wS_B]+(1-f)S_{\rm aq},
+\]
+where \(f\) is bound fraction and \(w\) the bound fraction in environment \(B\). If \(S_B-S_A=c(S_A-S_{\rm aq})\), then
+\[
+ S-S_{\rm aq}=f(1+cw)(S_A-S_{\rm aq}).
+\]
+Feasible populations giving the same product are indistinguishable. Local nuisance profiling diagnoses contrast absorbed by fitted parameters, but does not establish global uniqueness. Fast exchange requires a different model (joint entries 4 and 9, adopting branch-2 entries 16 and 26 and branch-3 entry 35).
+
+The general conditional test compares complete allowed spectral sets in a fixed metric. Let their approximate minimum distance be \(\widetilde D\), and suppose each approximate set and its true counterpart are mutually within uniform Hausdorff radii \(\rho_A,\rho_B\). The true distance obeys
+\[
+ \max(0,\widetilde D-\rho_A-\rho_B)
+ \leq D\leq\widetilde D+\rho_A+\rho_B.
+\]
+With measurement error bounded by \(\eta\) in the same metric, a sufficient separation certificate is
+\[
+ \widetilde D>\rho_A+\rho_B+2\eta.
+\]
+This triangle-inequality construction was independently checked on synthetic intervals. It certifies separation on the declared error event, not a significance level. Shared nuisance constraints must remain shared; a sampled grid needs coverage or interpolation control. Failure of this sufficient certificate does not prove physical ambiguity (joint entries 7 and 9).
+
+Propagation error must enter that observable's budget. Under the record's chosen normalised convention,
+\[
+ L(E)=\frac{1}{\pi\hbar}\operatorname{Re}
+ \int_0^\infty c(t)e^{iEt/\hbar-t/T_d}\,dt,
+ \qquad
+ \|\widetilde L-L\|_\infty\leq\frac{\epsilon T_d}{\pi\hbar},
+\]
+provided complex coherence error is uniformly at most \(\epsilon\), with fixed dipoles, normalisation and damping. Electronic-model, sampling, quadrature and finite-time errors remain separate. No calibrated Q-specific radii are supplied (joint entries 4, 9 and 28, adopting the corrected branch-3 observable bound).
+
+\section{Why the static comparator needs independent constraints}
+
+A stronger boundary concerns attribution to dynamics. The work assumes a jointly stationary Hermitian excited-sector Hamiltonian and transition vector \(d(t)\), a decoupled reference ground state, unitary propagation and continuous finite-strength correlation:
+\[
+ C(t-s)=\mathbb E[d(t)^\dagger U(t,s)d(s)].
+\]
+Writing \(x_t=U(0,t)d(t)\) gives a positive Gram correlation. The record's application of Bochner's theorem then gives
+\[
+ C(t)=\int_{\mathbb R}e^{-iEt/\hbar}\nu(dE),
+ \qquad \nu\geq0,\quad \nu(\mathbb R)=C(0).
+\]
+An unrestricted positive static transition-strength measure therefore reproduces the complete linear spectrum under common damping and response, including noncommuting excited-sector Hamiltonians and fluctuating dipoles. The supplement records theorem-source recovery from Tropp's notes and an independent local algebra and synthetic-example check. The latter was not independent recovery of that external source (joint entries 22 and 26).
+
+This emulator need not be P's frozen molecular ensemble or a physically attainable Q environment. Nor are these reference assumptions established for P's full ground-mixing model. The result limits attribution to temporal correlations; it does not establish that two physical Q poses are isospectral.
+
+In the scalar Gaussian exponential-covariance case, the work also constructed a positive static equivalent with the same mean and variance as the instantaneous gap. Its ideal distribution has unbounded support and no finite fourth moment, but finite-fourth-moment cutoff measures approach its damped spectrum arbitrarily closely. Merely requiring some finite fourth moment therefore supplies no robust separation gap. Independently justified numerical moment, support or distributional constraints are needed (joint entries 20, 23 and 27).
+
+The restricted memory diagnostic and unrestricted static equivalence are compatible. The closing joint accounts report no substantive disagreement: a specified family may be distinguishable while unrestricted fitting can imitate its dynamic spectrum (joint entries 24 and 28).
+
+\section{Resources and existing spectroscopic evidence}
+
+P numerically studies four two-level bithiophenes in their tensor-product space, and fifteen single-excitation states plus ground encoded in four qubits. Its chosen ansatz depth is quadratic in qubit count, with per-step circuit-setting upper count \(O(N_p^2+N_pN_h)\), for \(N_p\) parameters and \(N_h\) Hamiltonian Pauli terms. It averages 400 trajectory correlation functions and leaves actual-device robustness for future work \cite{P}. Circuit settings are not a precision-independent shot budget.
+
+Branch-1's comparator analysis gives \(O(RT)\) scalar work and \(O(RTkN^2)\) dense single-excitation vector propagation for \(R\) trajectories, \(T\) steps and \(k\) Hamiltonian applications per step. Precision, Hamiltonian norm and integrator determine \(k,T\); trajectory and Hamiltonian construction add costs. This is that branch's analysis, not a joint resource estimate (branch-1 entry 39). P's ground-inclusive single-excitation model has \(N+1\) states, while its chosen full two-level tensor product has \(2^N\) states \cite{P}. No physically necessary large interacting Q model or quantum advantage is established by this work (joint entries 11, 24 and 28).
+
+Existing spectroscopy also constrains what would count as an advance. Branch-1's recovered author-copy account of Mondal and Meuwly supports computed nitrile spectra and frequency-fluctuation analysis across lysozyme environments, without experimental resolution of two same-protein poses. Its Haldar evidence is abstract-only protein electric-field spectroscopy; a separate unverified pose-discrimination assertion was withdrawn. These recovery accounts establish no priority verdict for the proposed Q test (branch-1 entries 16, 33 and 37).
+
+\section{Why the work stops, and what would change the decision}
+
+The scientific reason to pause is that the checked conditional constructions have no validated molecular instance in this record. Progress requires controlled real-system discrimination or demonstrable design benefit beyond those identities (joint entries 24 and 28). The attained searches found no exact-ligand wavelength, extinction coefficient and matched protein/buffer background for Q's three expansion pairs. This is a branch-reported documentation negative within the attained search, not evidence of non-absorption (branch-3 entries 52 and 61).
+
+Structural leads do not fill the optical or solution-population gaps. Branch-1's recovered article account reports TGT ligand 9 conformers at \(56/44\%\) refined crystal occupancy. Its corrected coordinate account reports scaffold alternate positions as well, superseding the earlier fixed-anchor interpretation. These are branch-reported crystal models, not solution populations or optical discrimination of a designed Q product (branch-1 entries 42, 73 and 87).
+
+The smallest useful next experiment is aqueous absorption of one exact final designed candidate, with matched protein and buffer blanks at defined concentration and chemical state. A reproducible separable band would remove the first barrier; an inaccessible or background-dominated band would stop this absorption route for that candidate and setup. This is a proposed measurement, not an experiment performed here.
+
+The baseline's example, ITE identified through branch-1's deposited-structure recovery for Q-listed 3S1G, is a seed-level feasibility control. Its optical suitability remains unverified. Measuring that seed could inform screening, but would leave the grown product's band, strength and background separability unresolved. The intended final-product test requires measuring that exact product (branch-1 entries 8 and 85; joint entry 28).
+
+If optical feasibility passes, independently establish solution environments, populations and exchange; constrain static and nuisance alternatives; and validate electronic models and sampling before comparing full convolved spectral sets. Useful discrimination already supplied by the constrained static comparator defeats the proposed incremental temporal benefit. Intersection of allowed true sets establishes ambiguity in the declared observation model; failure of the sufficient error certificate alone calls for tighter bounds. Quantum benchmarking requires an established observable and a physically justified model. This work supplies no affinity correction, Q pose assignment, priority verdict or validated quantum utility (joint entries 9, 24 and 28).
+
+\clearpage
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}
