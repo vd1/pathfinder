@@ -147,6 +147,10 @@ def _inspect(campaign, pair_id: str) -> dict:
 def _later_stage(campaign, pair_id, s) -> str:
     """After a research ending: the editor, then for a DRAFT the paper, each with its one safe action."""
     from . import edit, paper
+    from . import pce_recovery
+    continuation = pce_recovery.action(campaign, pair_id)
+    if continuation:
+        return continuation
     e = edit.status(campaign, pair_id)
     failure = e.get("failure") or {}
     if e.get("status") == "blocked" and failure.get("class") == "input_too_large":
@@ -172,13 +176,19 @@ def _record(module, campaign, pair_id, action):
     module._set(campaign, pair_id, history=history)
 
 
-def apply(campaign, pair_id: str, resume: bool = True) -> str:
+def apply(campaign, pair_id: str, resume: bool = True, accept_change=None) -> str:
     """@planks("When the operator applies the recovery action for pair \"Q1P1\"")
     @planks("When the operator applies reconciliation to the shortlist")
 
     resume=False (reconcile --repair-only) makes the state repair the action needs (superseding a request,
     stripping a failed reply, lifting a block) and calls no model: the deployment's own command resumes the run,
     inside its own transport (proofTree's sandbox)."""
+    from . import pce_recovery
+    action = inspect(campaign, pair_id)["action"]
+    if action.startswith("grant PCE"):
+        return "nothing: explicit --pce-grant, --passes, --fact-checks and --reason required"
+    if action == "resume PCE continuation":
+        return pce_recovery.apply(campaign, pair_id, resume=resume, accept_change=accept_change)
     if campaign.raw.get("research_scheme") == "composable":
         return _apply_composable(campaign, pair_id, resume)
     return _apply(campaign, pair_id, resume)

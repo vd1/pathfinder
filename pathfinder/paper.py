@@ -16,15 +16,19 @@ TERMINAL = {"ACCEPTED", "CLEARED", "RELEASED", "PAUSE-ON-AMEND", "blocked"}
 ACCEPTED_STATES = ("ACCEPTED", "CLEARED", "RELEASED")   # accepted for its science; then cleared, then released
 
 
+def folder(campaign, pair_id):
+    return getattr(campaign, "_publication_folder", None) or campaign.thread_dir(pair_id) / "paper"
+
+
 def status(campaign, pair_id) -> dict:
-    p = campaign.thread_dir(pair_id) / "paper" / "paper.json"
+    p = folder(campaign, pair_id) / "paper.json"
     s = json.loads(p.read_text()) if p.exists() else {"status": "none", "round": 0}
     s["status"] = LEGACY.get(s.get("status"), s.get("status"))
     return s
 
 
 def _set(campaign, pair_id, **kw):
-    d = campaign.thread_dir(pair_id) / "paper"; d.mkdir(exist_ok=True)
+    d = folder(campaign, pair_id); d.mkdir(parents=True, exist_ok=True)
     s = status(campaign, pair_id); before = dict(s); s.update(kw, updated=_now())
     (d / "paper.json").write_text(json.dumps(s, indent=1))
     from . import events

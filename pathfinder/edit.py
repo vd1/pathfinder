@@ -124,14 +124,14 @@ def _pce(campaign, pair_id: str, stop) -> str:
     problem = _install(campaign, pair_id) if out["status"] == "accepted" else None
     _set(campaign, pair_id, status="done", scheme="pce", editorial_status=out["status"],
          editorial_reason=out.get("reason") or None, accepted_note=out["status"] == "accepted" and problem is None,
-         presentation_error=problem, pce="edited/pce", claim_basis=out.get("basis"))
+         presentation_error=problem, pce=str(pce.workflow(campaign, pair_id).relative_to(campaign.thread_dir(pair_id))), claim_basis=out.get("basis"))
     return "done"
 
 
 def _install(campaign, pair_id: str) -> str | None:
     """The accepted draft as note.tex, built and checked; on failure the baseline is restored and rebuilt."""
     ed = campaign.thread_dir(pair_id) / "edited"; root = pce.workflow(campaign, pair_id)
-    draft, baseline = (root / pce.DRAFT).read_text(), (root / pce.BASELINE).read_text()
+    draft, baseline = (root / pce.DRAFT).read_text(), (ed / "note.tex").read_text()
     if (ed / "note.tex").read_text() == draft and (ed / "note.pdf").exists():
         return None
     (ed / "note.tex").write_text(draft)

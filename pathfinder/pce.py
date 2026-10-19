@@ -17,8 +17,8 @@ admits. The round lives in edited/pce/ (julien-2's reports/pce-*): the input man
 every dispatch with its prompt digest, the drafts, the reviews, the revision history and result.json. A
 retained dispatch is replayed, never paid for twice, so a stopped round resumes where it stopped.
 
-Not ported: julien-2's recovery grants and retained-response imports (one-off repairs of its own rounds),
-the reviewers' separate source projection, the length-framed editor packet, and the body-only LaTeX
+Explicit recovery grants live in pce_recovery; reviewers receive a scientific source projection.
+Not ported: retained-response imports, the length-framed editor packet, and the body-only LaTeX
 command allowlist (the engine's note is a whole document, checked by its build and reference checks)."""
 from __future__ import annotations
 import difflib, fnmatch, hashlib, json, re, time
@@ -36,7 +36,7 @@ DEFAULTS = {"passes": 2, "critic": {"profile": "reader", "remit": "Comprehension
 BOUNDARY = (
     "The baseline and all internal material are editorial context, never factual authority. "
     "sources/external/research-supplement.md is the campaign's own research record for this pair (its "
-    "ledger and the verifier's reasons): generated evidence, approved for this comparison, not original "
+    "scientific ledger entries, excluding earlier review decisions): generated evidence, approved for this comparison, not original "
     "literature or independent ground truth. Its claims hold only with the derivations, checks and "
     "limitations recorded there; a claim resting on it alone must read as this work's finding, with its recorded "
     "limits, never as an established fact. No new research, derivation or outside discovery may enter this editing: "
@@ -113,7 +113,14 @@ def settings(campaign) -> dict:
 
 
 def workflow(campaign, pair_id) -> Path:
-    return campaign.thread_dir(pair_id) / "edited" / "pce"
+    ed = campaign.thread_dir(pair_id) / "edited"
+    pointer = ed / "pce-active.json"
+    if pointer.exists():
+        identity = json.loads(pointer.read_text())["grant"]
+        if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}", identity):
+            raise Changed("invalid continuation identity")
+        return ed / "pce-rounds" / identity
+    return ed / "pce"
 
 
 def result(campaign, pair_id) -> dict:
@@ -284,7 +291,7 @@ def fit(files: dict, room: int) -> dict:
     return out
 
 
-def _supplement(campaign, pair_id, limit: int) -> str:
+def _supplement(campaign, pair_id, limit: int, *, reviewers=False) -> str:
     """The research record as external evidence: the joint thread's ledger first, then the ledgers of its frozen
     branch bundles, then the verifier's reasons, cut at the limit with the cut stated. Each entry carries its
     standing (superseded, corrected, objected to, an objection answered or not), so a superseded or contested
@@ -320,7 +327,7 @@ def _supplement(campaign, pair_id, limit: int) -> str:
         notes = standing(rows)
         parts.append(f"\n## {ledger.relative_to(d)}\n\n({role})\n")
         for r in rows:
-            if r.get("kind") == "ready":
+            if r.get("kind") == "ready" or (reviewers and r.get("kind") in ("review", "operator", "intention")):
                 continue
             marks = list(notes[r["seq"]]) or ["current"]
             if label:
@@ -330,7 +337,7 @@ def _supplement(campaign, pair_id, limit: int) -> str:
             mark = f" [{'; '.join(marks)}]"
             parts.append(f"#{r['seq']} [{r.get('actor')}, {r.get('kind')}]{mark} {r.get('text')}")
     verdict = d / f"{pair_id}.verdict.json"
-    if verdict.exists():
+    if verdict.exists() and not reviewers:
         parts.append(f"\n## {verdict.name}\n\n{verdict.read_text()}")
     text = "\n".join(parts) + "\n"
     if len(text) > limit:
@@ -369,7 +376,8 @@ def sources(campaign, pair_id) -> dict:
             files[f"sources/external/{p.name}"] = p.read_text(errors="replace")
     if not any(n.startswith("sources/external/") for n in files):
         raise Changed(f"{pair_id}: no external sources (inputs/Q and inputs/P) to check the draft against")
-    files["sources/external/research-supplement.md"] = _supplement(campaign, pair_id, s["supplement_chars"])
+    files[SUPPLEMENT] = _supplement(campaign, pair_id, s["supplement_chars"], reviewers=True)
+    files["sources/internal/research-review-record.md"] = _supplement(campaign, pair_id, s["supplement_chars"])
     return files
 
 
@@ -411,17 +419,25 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     done = root / "result.json"
     if done.exists():
         return json.loads(done.read_text())
-    s = settings(campaign)
+    grant_path = root / "grant.json"
+    grant = json.loads(grant_path.read_text()) if grant_path.exists() else None
+    if grant:
+        from . import pce_recovery
+        if pce_recovery.preflight(campaign) != grant["routes"]:
+            raise Changed("continuation routes changed since the grant")
+    s = grant["settings"] if grant else settings(campaign)
     profile = s["critic"]["profile"]
-    files = sources(campaign, pair_id)
+    files = json.loads((root / "frozen-inputs.json").read_text()) if grant else sources(campaign, pair_id)
+    if grant and _sha(_json(files)) != grant["inputs_sha256"]:
+        raise Changed("the continuation frozen inputs changed")
     contracts = {role: resources.prompt_template(campaign, f"pce-{role}") for role in ROLES}
     fingerprint = _sha(_json({"files": files, "contracts": contracts, "settings": s}))
     manifest_path = root / "input-manifest.json"
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
         if manifest.get("fingerprint") != fingerprint:
-            raise Changed("the PCE round's inputs or role prompts changed since it began; move edited/pce aside "
-                          "to start a new round")
+            raise Changed("the PCE round's inputs or role prompts changed since it began; use an explicit reconciliation PCE grant "
+                          "for a new round")
     else:
         root.mkdir(parents=True, exist_ok=True)
         manifest = {"fingerprint": fingerprint, "date": time.strftime("%Y-%m-%d"), "source_boundary": BOUNDARY,

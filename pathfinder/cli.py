@@ -70,9 +70,12 @@ def main(argv=None):
     w.add_argument("--amend", metavar="FINDINGS.json", help="an author round answering outside findings (review.json's findings schema), then a reviewer round")
     pr = sub.add_parser("present", help="the presentation pass on an accepted paper: editor, lookup, fresh check, corrections; ends CLEARED")
     pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
+    pr.add_argument("--edited", action="store_true", help="finish a PCE-accepted account without commissioning a paper")
     pr.add_argument("--restart", action="store_true", help="start the pass afresh, discarding an earlier one")
     rl = sub.add_parser("release", help="export a CLEARED paper as a clean article in paper/release/ with a leak check; ends RELEASED")
     rl.add_argument("pair")
+    rl.add_argument("--timestamp", help="fixed release UTC timestamp, YYYYMMDDTHHMMSSZ; retries reuse it")
+    rl.add_argument("--edited", action="store_true", help="release the cleared PCE account")
     ro = sub.add_parser("reopen", help="give a finished thread one more step: a repair (PAUSE-ON-REVISE), a peer round "
                         "(PAUSE-ON-ITERATE, PAUSE) or an extend round toward a target (DRAFT); the next verdict ends it")
     ro.add_argument("pair"); ro.add_argument("--grant", choices=("repair", "round", "extend"), required=True)
@@ -89,6 +92,10 @@ def main(argv=None):
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     r.add_argument("--repair-only", action="store_true",
                    help="make the action's state repair and call no model; the deployment's own command resumes")
+    r.add_argument("--pce-grant", help="unique ID for an explicit bounded editorial continuation")
+    r.add_argument("--passes", type=int)
+    r.add_argument("--fact-checks", type=int)
+    r.add_argument("--reason")
     r.add_argument("--retire-orphans", action="store_true",
                    help="only retire call records whose runner and child are dead; no thread is touched")
     sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
@@ -127,6 +134,11 @@ def main(argv=None):
         from . import import_eva2
         print(import_eva2.run(Path(ns.experiment), Path(ns.out))); return 0
     c = config.load(Path(ns.root))
+    if ns.cmd in ("present", "release") and ns.edited:
+        from . import pce_recovery
+        if not ns.pair:
+            raise SystemExit("--edited requires one explicit pair")
+        pce_recovery.preflight(c, presentation=True)
     if ns.cmd in DISPATCHING and ns.cmd != "research":       # research opens its own run inside runner.run
         from . import provenance
         try:
@@ -264,6 +276,10 @@ def _dispatch(ns, c):
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
     elif ns.cmd == "present":
+        if ns.edited:
+            from . import account_release
+            print(f"{ns.pair}: {account_release.present(c, ns.pair, restart=ns.restart)}")
+            return
         from . import presentation
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
@@ -278,8 +294,12 @@ def _dispatch(ns, c):
             if reason:
                 print(f"  {reason}")
     elif ns.cmd == "release":
+        if ns.edited:
+            from . import account_release
+            print(json.dumps(account_release.release(c, ns.pair, timestamp=ns.timestamp)))
+            return
         from . import release
-        out = release.run(c, ns.pair)
+        out = release.run(c, ns.pair, timestamp=ns.timestamp)
         print(f"{ns.pair}: {out['status']}: {out['path']} ({out['keys']} keys renamed, {out['pointers']} ledger pointers kept in paper/provenance.json)")
     elif ns.cmd == "reopen":
         from . import reopen
@@ -313,6 +333,13 @@ def _dispatch(ns, c):
         for name, tail in res["failed"]:
             print(f"--- {name}\n{tail[-800:]}")
     elif ns.cmd == "reconcile":
+        if ns.pce_grant:
+            from . import pce_recovery
+            if not ns.pair or not (ns.apply or ns.repair_only) or ns.retire_orphans:
+                raise SystemExit("PCE grant requires one pair and --apply or --repair-only")
+            print(pce_recovery.apply(c, ns.pair, identity=ns.pce_grant, passes=ns.passes,
+                                    fact_checks=ns.fact_checks, reason=ns.reason, resume=not ns.repair_only, accept_change=ns.accept_change))
+            return
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for path, call in health.orphans(c, None if not ns.pair else set(pairs)):
             print(f"orphaned call record {call.get('attempt_id')} ({call.get('thread')}/{call.get('stage')}/{call.get('actor')}): "
@@ -324,7 +351,7 @@ def _dispatch(ns, c):
         for pid in [] if ns.retire_orphans else pairs:
             info = reconcile.inspect(c, pid); print(f"{pid}: {info['status']} at {info['stage']} round {info['round']}: {info['action']}")
             if (ns.apply or ns.repair_only) and not info["action"].startswith("nothing"):
-                print(f"  -> {reconcile.apply(c, pid, resume=not ns.repair_only)}")
+                print(f"  -> {reconcile.apply(c, pid, resume=not ns.repair_only, accept_change=ns.accept_change)}")
 
 
 def explore(c, min_score: float, page: int, passes: int):

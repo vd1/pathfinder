@@ -9,7 +9,8 @@ two source papers). It builds the PDF, then checks the source and the PDF text f
 acknowledgement: any hit, or an undefined citation, refuses the release and the paper stays CLEARED. The export
 reads the manuscript the presentation pass cleared, and only while its sha256 is the one cleared."""
 from __future__ import annotations
-import json, re, shutil, subprocess, unicodedata
+import fcntl, hashlib, json, re, shutil, subprocess, unicodedata
+from datetime import datetime, timezone
 from . import paper, presentation
 from .research import _now
 
@@ -94,8 +95,10 @@ def strip_comments(tex: str):
     return "\n".join(out) + "\n", pointers
 
 
-def _preamble(tex: str, author: str) -> str:
+def _preamble(tex: str, author: str, date: str | None = None) -> str:
     head, sep, body = tex.partition("\\begin{document}")
+    if date is not None:
+        head = re.sub(r"\\date\s*\{(?:[^{}]|\{[^{}]*\})*\}", "", head)
     keep = []
     for line in head.splitlines():
         s = line.strip()
@@ -109,8 +112,10 @@ def _preamble(tex: str, author: str) -> str:
         keep.append(line)
     if not any(l.strip().startswith("\\author") for l in keep):
         keep.append(f"\\author{{{author}}}")
-    if not any(l.strip().startswith("\\date") for l in keep):
+    if date is None and not any(l.strip().startswith("\\date") for l in keep):
         keep.append("\\date{}")
+    if date is not None:
+        keep.append("\\date{" + date + "}")
     body = re.sub(r"\\input\{pathfinder-meta(\.tex)?\}\s*", "", body)
     return PREAMBLE + "\n".join(keep) + "\n" + sep + body
 
@@ -220,7 +225,58 @@ def _around(text, m) -> str:
     return text[max(0, m.start() - 50):m.end() + 50].replace("\n", " ")
 
 
-def run(campaign, pair_id: str) -> dict:
+def _digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _stamp(value=None):
+    """A UTC second, explicit or captured once. No implicit local date or TeX today."""
+    if value is None:
+        value = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    try:
+        instant = datetime.strptime(value, "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+    except ValueError:
+        raise SystemExit("release timestamp must be UTC YYYYMMDDTHHMMSSZ") from None
+    if instant.strftime("%Y%m%dT%H%M%SZ") != value:
+        raise SystemExit("release timestamp must be UTC YYYYMMDDTHHMMSSZ")
+    return value, instant.strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def _published(campaign, pair_id, pd, out, record):
+    manifest = out / "manifest.json"
+    if not manifest.is_file() or json.loads(manifest.read_text()) != record:
+        raise SystemExit("release pointer disagrees with its authoritative manifest")
+    for name, digest in record["sha256"].items():
+        path = out / name
+        if not path.is_file() or _digest(path) != digest:
+            raise SystemExit(f"dated release changed or missing: {path}; refusing to overwrite it")
+    from .thread import _atomic_write
+    provenance = pd / "release-records" / (record["timestamp"] + ".json")
+    if not provenance.is_file():
+        raise SystemExit("dated release provenance is missing")
+    _atomic_write(pd / "provenance.json", provenance.read_bytes())
+    # Compatibility aliases are refreshed only from the verified authoritative artifacts.
+    for source, target in ((record["tex"], "paper.tex"), (record["pdf"], "paper.pdf"),
+                           ("references.bib", "references.bib")):
+        shutil.copyfile(out / source, out.parent / target)
+    _atomic_write(out.parent / "release.json", (json.dumps(record, indent=2) + "\n").encode())
+    paper._set(campaign, pair_id, status="RELEASED", release_sha256=record["sha256"][record["tex"]],
+               released=record["timestamp_utc"], release_manifest=str((out / "manifest.json").relative_to(pd)),
+               reason="released: " + str((out / record["pdf"]).relative_to(campaign.thread_dir(pair_id))))
+    return {"status": "RELEASED", "path": str((out / record["pdf"]).relative_to(campaign.root)),
+            "timestamp": record["timestamp"], "keys": record["keys"], "pointers": record["pointers"]}
+
+
+def run(campaign, pair_id: str, timestamp: str | None = None) -> dict:
+    pd = paper.folder(campaign, pair_id)
+    if not pd.is_dir():
+        raise SystemExit(f"{pair_id}: no cleared publication")
+    with (pd / ".release.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        return _run(campaign, pair_id, timestamp)
+
+
+def _run(campaign, pair_id: str, timestamp: str | None = None) -> dict:
     s = paper.status(campaign, pair_id)
     if s.get("status") not in ("CLEARED", "RELEASED"):
         raise SystemExit(f"{pair_id}: the paper is {s.get('status')}, not CLEARED; run `pathfinder present {pair_id}`")
@@ -230,28 +286,63 @@ def run(campaign, pair_id: str) -> dict:
                          f"presentation pass again: `pathfinder present {pair_id} --restart`")
     if not shutil.which("pdftotext"):
         raise SystemExit("pdftotext is needed for the leak check on the PDF text")
-    pd = campaign.thread_dir(pair_id) / "paper"; out = pd / "release"
+    pd = paper.folder(campaign, pair_id)
     rel = (campaign.raw or {}).get("release") or {}
     tex, pointers = strip_comments(src.read_text())
     bib = "\n".join(l for l in (src.parent / "references.bib").read_text().splitlines() if not l.lstrip().startswith("%")) + "\n"
-    tex = _add_disclosure(_preamble(tex, rel.get("author", "")), disclosure(campaign, pair_id, bib))
+    acknowledgement = disclosure(campaign, pair_id, bib)
+    inputs = presentation.sha(json.dumps({"tex": tex, "bib": bib, "acknowledgement": acknowledgement,
+                                          "author": rel.get("author", ""), "policy": "dated-release-v1"}, sort_keys=True))
+    target = pd / "release"
+    target.mkdir(exist_ok=True)
+    current = target / "release.json"
+    if current.exists():
+        previous = json.loads(current.read_text())
+        if previous["input_sha256"] == inputs and timestamp in (None, previous["timestamp"]):
+            return _published(campaign, pair_id, pd, target / previous["timestamp"], previous)
+    attempt = pd / "release-attempt.json"
+    pending = json.loads(attempt.read_text()) if attempt.exists() else {}
+    if timestamp is None and pending.get("input_sha256") == inputs:
+        timestamp = pending["timestamp"]
+    stamp, label = _stamp(timestamp)
+    out = target / stamp
+    tex = _add_disclosure(_preamble(tex, rel.get("author", ""), "Released " + label), acknowledgement)
     mapping = new_keys(bib)
     tex, bib = _rename(tex, bib, mapping)
-    shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True)
-    (out / "paper.tex").write_text(tex)
-    (out / "references.bib").write_text(bib)
-    (pd / "provenance.json").write_text(json.dumps({"source": src.relative_to(campaign.thread_dir(pair_id)).as_posix(),
-                                                     "sha256": s.get("cleared_sha256"), "keys": mapping,
-                                                     "pointers": pointers}, indent=1, ensure_ascii=False) + "\n")
-    ok, log = paper.build(out)
+    texname, pdfname = f"paper-{stamp}.tex", f"paper-{stamp}.pdf"
+    intent = {"policy": "dated-release-v1", "timestamp": stamp, "timestamp_utc": label, "input_sha256": inputs}
+    if out.exists():
+        old_intent = out / "intent.json"
+        if not old_intent.exists() or json.loads(old_intent.read_text()) != intent:
+            raise SystemExit(f"release timestamp already used: {stamp}; choose a different --timestamp")
+        if (out / "manifest.json").exists():
+            return _published(campaign, pair_id, pd, out, json.loads((out / "manifest.json").read_text()))
+    out.mkdir(exist_ok=True)
+    from .pce import _write
+    _write(out, "intent.json", json.dumps(intent, indent=2) + "\n", immutable=True)
+    _write(out, texname, tex, immutable=True)
+    _write(out, "references.bib", bib, immutable=True)
+    _write(pd, "release-attempt.json", json.dumps(intent, indent=2) + "\n")
+    provenance = {"source": src.relative_to(campaign.thread_dir(pair_id)).as_posix(),
+                  "sha256": s.get("cleared_sha256"), "timestamp": stamp, "keys": mapping, "pointers": pointers}
+    records = pd / "release-records"
+    _write(records, stamp + ".json", json.dumps(provenance, indent=2, ensure_ascii=False) + "\n", immutable=True)
+    ok, log = paper.build(out, main=texname)
     if not ok:
         raise SystemExit(f"{pair_id}: the release copy does not build:\n{log}")
     undefined = [l for l in log.splitlines() if "undefined" in l.lower() and ("Citation" in l or "Reference" in l)]
-    pdf_text = subprocess.run(["pdftotext", str(out / "paper.pdf"), "-"], capture_output=True, text=True).stdout
-    hits = leak_check(campaign, tex, pdf_text) + [f"build: {u}" for u in undefined]
+    extracted = subprocess.run(["pdftotext", str(out / pdfname), "-"], capture_output=True, text=True)
+    if extracted.returncode:
+        raise SystemExit(f"{pair_id}: PDF text extraction failed; release not validated")
+    hits = leak_check(campaign, tex, extracted.stdout) + [f"build: {u}" for u in undefined]
+    if "Released " + label not in " ".join(extracted.stdout.split()):
+        hits.append("fixed UTC release date is not visible in the PDF")
     if hits:
         raise SystemExit(f"{pair_id}: leak check failed, the paper stays CLEARED:\n" + "\n".join(hits))
-    paper._set(campaign, pair_id, status="RELEASED", release_sha256=presentation.sha(tex), released=_now(),
-               reason="released: paper/release/paper.pdf")
-    return {"status": "RELEASED", "path": f"{campaign.thread_dir(pair_id).name}/paper/release/paper.pdf",
-            "keys": len(mapping), "pointers": len(pointers)}
+    from . import provenance as engine_provenance
+    record = {**intent, "engine": engine_provenance.engine(), "tex": texname, "pdf": pdfname, "keys": len(mapping), "pointers": len(pointers),
+              "cleared_sha256": s.get("cleared_sha256"),
+              "sha256": {name: _digest(out / name) for name in (texname, pdfname, "references.bib")}}
+    _write(out, "manifest.json", json.dumps(record, indent=2) + "\n", immutable=True)
+    _write(pd, "provenance.json", json.dumps(provenance, indent=2, ensure_ascii=False) + "\n")
+    return _published(campaign, pair_id, pd, out, record)

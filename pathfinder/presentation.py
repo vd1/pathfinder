@@ -67,7 +67,7 @@ def sha(text: str) -> str:
 
 
 def folder(campaign, pair_id) -> Path:
-    return campaign.thread_dir(pair_id) / "paper" / "presentation"
+    return paper.folder(campaign, pair_id) / "presentation"
 
 
 def state(campaign, pair_id) -> dict:
@@ -95,7 +95,7 @@ def _save(campaign, pair_id, **kw) -> dict:
 def run(campaign, pair_id: str, restart: bool = False) -> str:
     """The pass for one accepted paper, resuming a stopped one; returns CLEARED, RETURNED, PAUSE-ON-PRESENT,
     blocked or stopped, or the paper's state after an automatic amend that did not end ACCEPTED."""
-    if research.status(campaign, pair_id).get("status") != "DRAFT":
+    if not getattr(campaign, "_edited_publication", False) and research.status(campaign, pair_id).get("status") != "DRAFT":
         raise SystemExit(f"{pair_id} is not DRAFT")
     s = paper.status(campaign, pair_id)
     if s.get("status") in ("CLEARED", "RELEASED") and not restart:
@@ -131,7 +131,7 @@ def tidy(campaign, pair_id) -> list[str]:
 
 def _open_findings(campaign, pair_id) -> list[dict]:
     """The minor findings the accepting review left open, numbered F1, F2, ... (the review's own id kept)."""
-    p = campaign.thread_dir(pair_id) / "paper" / "review.json"
+    p = paper.folder(campaign, pair_id) / "review.json"
     reviews = json.loads(p.read_text()) if p.exists() else []
     last = reviews[-1] if reviews else {}
     if last.get("decision") != "ACCEPT":
@@ -142,9 +142,11 @@ def _open_findings(campaign, pair_id) -> list[dict]:
 
 
 def _run(campaign, pair_id, restart) -> str:
-    pd = campaign.thread_dir(pair_id) / "paper"; d = folder(campaign, pair_id)
+    pd = paper.folder(campaign, pair_id); d = folder(campaign, pair_id)
     accepted = (pd / "paper.tex").read_text(errors="replace")
     s = state(campaign, pair_id)
+    if getattr(campaign, "_edited_publication", False) and s.get("state") in TERMINAL and not restart:
+        return s["state"]
     if restart or s.get("accepted_sha256") != sha(accepted) or s.get("state") not in ("running", "stopped"):
         shutil.rmtree(d, ignore_errors=True)       # a new accepted paper, or a pass ended before: start afresh
         d.mkdir(parents=True)
@@ -237,9 +239,9 @@ def _return(campaign, pair_id, confirmed) -> str:
                               "fix": c.get("fix")} for i, c in enumerate(confirmed, 1)]}
     (d / "amend-findings.json").write_text(json.dumps(findings, indent=1))
     amends = list(paper.status(campaign, pair_id).get("presentation_amends") or [])
-    if len(amends) >= AUTO_AMENDS:
+    if getattr(campaign, "_edited_publication", False) or len(amends) >= AUTO_AMENDS:
         _save(campaign, pair_id, state="RETURNED", reason=f"{len(confirmed)} confirmed: " + _summary(confirmed),
-              findings="paper/presentation/amend-findings.json")
+              findings=str((d / "amend-findings.json").relative_to(campaign.thread_dir(pair_id))))
         return "RETURNED"
     n = len(amends) + 1
     kept = pd / f"presentation-amend-{n}.json"      # outside presentation/, which the next pass starts afresh
@@ -270,6 +272,27 @@ def _sources(campaign, pair_id) -> list[Section]:
     return out
 
 
+def _task(campaign, pair_id, name):
+    text = _prompt(campaign, name)
+    if not getattr(campaign, "_edited_publication", False):
+        return text
+    text = text.replace("You are the final editor of a mathematics paper that referees have already\n"
+                        "accepted for its mathematics, attribution and prior work.",
+                        "You are the final presentation editor of a PCE-approved research account.")
+    text = text.replace("Referees have accepted its mathematics;", "PCE approved its exposition;")
+    text = text.replace("You are one of the referees who accepted the paper above.",
+                        "You are an independent reviewer of the research account above.")
+    text = text.replace("mathematics paper", "research account").replace("accepted mathematics\npaper", "editorially accepted research\naccount")
+    text = text.replace("the referees left open with their acceptance", "the editorial review left open")
+    text = text.replace("the referees left with their acceptance", "the editorial review left open")
+    status = research.status(campaign, pair_id).get("status")
+    return (f"Account publication boundary: the recorded scientific status is {status}. "
+            "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
+            "Preserve the account's negative findings, qualifications and unresolved limitations. "
+            "A confirmed scientific problem stops publication for the operator; no research or automatic "
+            "author amendment is authorised.\n\n" + text)
+
+
 def _call(campaign, pair_id, stage, actor, prompt, *, schema=None, search=False, cwd=None, seconds=None):
     A = campaign.allowances
     kw = dict(model=campaign.model, tools=search, reads=search, search=search, cwd=cwd or campaign.thread_dir(pair_id),
@@ -284,7 +307,7 @@ def _call(campaign, pair_id, stage, actor, prompt, *, schema=None, search=False,
 def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispositions=None, findings=(), accepted=None):
     """One editing call (editor, lookup or corrector) into presentation/<name>/: the manuscript, its BibTeX and a
     report (change log, title, open-finding dispositions, escalations), built as the paper is."""
-    pd = campaign.thread_dir(pair_id) / "paper"; d = folder(campaign, pair_id); out = d / name
+    pd = paper.folder(campaign, pair_id); d = folder(campaign, pair_id); out = d / name
     src = pd if base is None else d / base
     shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True)
     for f in pd.iterdir():
@@ -302,7 +325,7 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
         sections.append(Section("accepted manuscript (reference only, to restore wording; do not return it)", text=accepted))
         sections.append(Section("checker findings to resolve", text=json.dumps(list(findings), indent=1), keep=True))
     sections += [Section("manuscript", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
-                 Section("your task", text=_prompt(campaign, prompt_name), keep=True)]
+                 Section("your task", text=_task(campaign, pair_id, prompt_name), keep=True)]
     stage = "present_lookup" if actor == "lookup" else "present"
     prompt = context.build(campaign, stage, sections, tools=actor == "lookup", cwd=out, unit=pair_id)
     r, _ = _call(campaign, pair_id, stage, actor, prompt, search=actor == "lookup", cwd=out)
@@ -402,7 +425,7 @@ def _check(campaign, pair_id, stage, opened, disposition) -> dict:
     if (d / stage / "reworded.json").exists():
         sections.append(Section("sentences the last correction reworded (before, after)", keep=True,
                                 text=(d / stage / "reworded.json").read_text()))
-    sections.append(Section("your task", text=_prompt(campaign, "present-check"), keep=True))
+    sections.append(Section("your task", text=_task(campaign, pair_id, "present-check"), keep=True))
     prompt = context.build(campaign, "present_check", sections, tools=False, cwd=d / stage, unit=pair_id)
     n, found = checkers(campaign), []
     for k in range(1, n + 1):
@@ -430,7 +453,7 @@ def _claims(campaign, pair_id, stage, items, accepted) -> list[dict]:
     sections = [Section("accepted paper", text=accepted, keep=True),
                 Section("the paper after its presentation edit", text=(d / stage / "paper.tex").read_text(), keep=True),
                 Section("items to decide", text=json.dumps(numbered, indent=1), keep=True),
-                Section("your task", text=_prompt(campaign, "present-claims"), keep=True)]
+                Section("your task", text=_task(campaign, pair_id, "present-claims"), keep=True)]
     prompt = context.build(campaign, "review", sections, tools=False, cwd=d / stage, unit=pair_id)
     r, kw = _call(campaign, pair_id, "review", "claims", prompt, schema=contracts.SCHEMAS["presentation_claims"],
                   seconds=campaign.allowances.get("review_seconds", 900))

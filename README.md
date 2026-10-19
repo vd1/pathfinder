@@ -1057,3 +1057,65 @@ Licence: MIT.
 ## Built with Shipshape
 
 This repository uses [Shipshape](https://github.com/dmytri/shipshape), a context-isolated spec-driven workflow for coding agents. Install with `npx skills add dmytri/shipshape --skill '*'`, or the experimental open-plugin build with `npx plugins add dmytri/shipshape`.
+
+### Continuing PCE and releasing an edited account
+
+`edit_scheme: pce` selects PCE after the ordinary editor supplies a baseline.
+Changing this setting or raising `pce.passes` does not reopen a completed
+round. Reconciliation now identifies unfinished terminal PCE and requires
+an explicit continuation grant. For example:
+
+```sh
+pathfinder --root CAMPAIGN reconcile PAIR --pce-grant completion-1 --passes 3 --fact-checks 3 --reason 'Complete independent editorial gates' --repair-only
+pathfinder --root CAMPAIGN --accept-change 'Upgrade engine and OpenAI editorial routes' reconcile PAIR --apply
+pathfinder --root CAMPAIGN present PAIR --edited
+pathfinder --root CAMPAIGN release PAIR --edited
+```
+
+The grant creates `edited/pce-rounds/completion-1`, leaving historical rounds
+in place. It records the reason, bounded allowances, routes, previous edit
+record, baseline and historical hashes. The latest retained draft is the
+baseline unless the current note was accepted by its owner. A single-editor
+note can enter PCE with the same explicit grant. Repeating the same grant ID
+and parameters resumes it; it does not allocate another allowance. Every
+new pass must have a fact check; both allowances are bounded by five.
+Independent reviewers receive scientific ledger entries without previous
+review decisions. The full record remains available to the author and in
+historical evidence.
+
+This recovery and the account presentation path require OpenAI routes for
+all their roles and no `refusal_fallback`. Resolve actor-specific overrides
+as well as stage defaults before granting. They do not clear stop markers,
+provider pauses or budget guards. A safety refusal stops the work. A changed
+engine or configuration still needs the ordinary recorded `--accept-change`
+reason. Recovery calls no consumer, research stage or paper author.
+
+`present --edited` requires PCE acceptance and the installed, unchanged
+accepted note. It applies the existing notation, definition, background and
+meaning checks, with bounded corrections, to the account. Its records live
+under `edited/publication/<content-hash>`; scientific status and paper-stage
+acceptance are unchanged. A confirmed scientific problem returns to the
+operator without automatic amendment. `--restart` archives the earlier
+account presentation attempt. The clean release removes comments and
+pipeline terminology and requires the configured `release.disclosure`.
+
+### Dated release artifacts
+
+Every release captures one UTC timestamp. `release --timestamp
+20261019T142530Z` can set it explicitly. The authoritative files are
+`release/20261019T142530Z/paper-20261019T142530Z.tex` and the matching PDF,
+with `references.bib` and `manifest.json` alongside. The document visibly
+says `Released 2026-10-19 14:25:30 UTC`; it never uses a changing TeX date.
+The manifest records input and artifact hashes, clearance, timestamp and
+engine provenance. Canonical `release/paper.tex`, `paper.pdf` and
+`references.bib` remain compatibility copies, refreshed after validation.
+
+A failed build or leak check retains its timestamp for retry. A successful
+retry validates the published hashes and returns the same artifacts without
+recompiling. Changed release inputs or an explicit different timestamp make
+a separate dated release. Timestamp collisions and modifications to dated
+artifacts are refused. Recompiling the dated source retains its printed date,
+but a locally rebuilt PDF is not covered by the published PDF hash; request
+a new timestamp to publish another build. Historical dated releases are
+never silently replaced. Internal provenance remains outside the exported
+artifact directory.
