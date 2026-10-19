@@ -21,6 +21,10 @@ def prepare(campaign, pair, *, identity, packet, reason):
     pointer = thread / 'edited/account-amendment.json'
     pending = thread / 'edited/account-successor.json'
     selected = json.loads(pointer.read_text())
+    if pending.exists():
+        active = json.loads(pending.read_text())
+        if active.get('id') == identity and active.get('revision'):
+            raise pce.Changed('resume the pending successor with account-amend-revise')
     if (root / 'successor.json').exists():
         record = json.loads((root / 'successor.json').read_text())
         if record['binding'] != binding:

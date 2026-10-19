@@ -108,3 +108,32 @@ def test_inherits_external_evidence_without_parent_reviews(tmp_path,monkeypatch)
     changes=json.loads(new['sources/internal/changes.json'])
     assert len(changes['changes'])==1
     assert changes['baseline_sha256']==pce._sha((parent/'candidate.tex').read_text())
+
+
+def test_failed_successor_revision_keeps_predecessor_until_accepted(tmp_path,monkeypatch):
+    from pathfinder import account_revision
+    c,ed,parent,pd,args=ready(tmp_path,monkeypatch)
+    script(monkeypatch,c,critic=['revise'])
+    assert 'review_required' in account_successor.run(c,'Q1P1',**args,apply=True)
+    failed=ed/'account-amendments/withdrawal'
+    old=(failed/'candidate.tex').read_text();new=old.replace('The convention remains unspecified.','The convention is not supplied.')
+    finding=next((failed/'review/reviews/current').glob('*critic*'))
+    pk=tmp_path/'revise-successor';pk.mkdir()
+    req=json.loads((failed/'request.json').read_text())
+    change=dict(finding='reader',before='The convention remains unspecified.',after='The convention is not supplied.')
+    changes={**req['changes'],'candidate_sha256':pce._sha(new),'changes':req['changes']['changes']+[change]}
+    (pk/'account-candidate.tex').write_text(new)
+    (pk/'changes.json').write_text(json.dumps(changes))
+    (pk/'revision.json').write_text(json.dumps(dict(parent_candidate_sha256=pce._sha(old),changes=[change],findings=[dict(id='reader',path=str(finding.relative_to(failed/'review')),sha256=pce._sha(finding.read_text()),quote=finding.read_text())])))
+    opts=dict(identity='withdrawal',revision='clarity',packet=pk,reason='Approved retained clarification')
+    selected=(ed/'account-amendment.json').read_bytes();before=pce_recovery.hashes(ed)
+    calls=script(monkeypatch,c)
+    assert 'no calls' in account_revision.run(c,'Q1P1',**opts)
+    assert (ed/'account-amendment.json').read_bytes()==selected
+    with pytest.raises(pce.Changed,match='account-amend-revise'):account_successor.run(c,'Q1P1',**args,apply=True)
+    assert 'accepted;' in account_revision.run(c,'Q1P1',**opts,apply=True)
+    assert 'accepted;' in account_revision.run(c,'Q1P1',**opts,apply=True)
+    assert len(calls)==5
+    after=pce_recovery.hashes(ed)
+    assert all(after[k]==h for k,h in before.items() if k not in ('account-amendment.json','account-successor.json'))
+    account_release.view(c,'Q1P1',create=True)

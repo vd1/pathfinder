@@ -36,21 +36,45 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
              'candidate_sha256':pce._sha(candidate)}
     pointer=thread/'edited/account-amendment.json'
     selected=json.loads(pointer.read_text())
-    if selected['id']!=identity:raise pce.Changed('revise only the selected amendment')
+    successor_pointer=thread/'edited/account-successor.json'
+    pending=json.loads(successor_pointer.read_text()) if successor_pointer.exists() else {}
+    successor_mode=selected['id']!=identity and pending.get('id')==identity
+    if selected['id']!=identity and not successor_mode:
+        raise pce.Changed('revise only the selected amendment or its pending successor')
+    if successor_mode:
+        record=json.loads((base/'successor.json').read_text())
+        if selected!=record['parent_pointer']:
+            raise pce.Changed('pending successor predecessor was superseded')
+        import hashlib
+        for name,digest in record['history'].items():
+            path=thread/name
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=digest:
+                raise pce.Changed('successor predecessor history changed')
+    def select_revision():
+        destination=successor_pointer if successor_mode else pointer
+        pce._write(destination.parent,destination.name,pce._json({'id':identity,'revision':revision}))
+    def current_root():
+        if not successor_mode:return account_amend._root(campaign,pair,identity)
+        previous=pending.get('revision')
+        if previous is not None and not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}',previous):
+            raise pce.Changed('invalid pending successor revision')
+        return base/'revisions'/previous if previous else base
+
     if (root/'revision.json').exists():
         grant=json.loads((root/'revision.json').read_text())
         if grant['binding']!=binding:
             raise pce.Changed('revision identity binds different inputs')
-        if (selected.get('revision')!=revision
-            and str(account_amend._root(campaign,pair,identity).relative_to(thread))!=grant['parent']):
+        active=pending if successor_mode else selected
+        if (active.get('revision')!=revision
+            and str(current_root().relative_to(thread))!=grant['parent']):
             raise pce.Changed('revision was superseded')
         parent=thread/grant['parent']
         if _history(parent)!=grant['parent_sha256']:
             raise pce.Changed('previous amendment history changed')
         request,_,bib=account_review.custody(campaign,pair,root)
-        pce._write(pointer.parent,pointer.name,pce._json({'id':identity,'revision':revision}))
+        select_revision()
         return root,request,bib
-    parent=account_amend._root(campaign,pair,identity)
+    parent=current_root()
     if (parent/'acceptance.json').exists():raise pce.Changed('cannot revise an accepted amendment with this path')
     review=account_review.workflow(parent)
     old_result=json.loads((review/'result.json').read_text()) if (review/'result.json').exists() else {}
@@ -98,7 +122,7 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     pce._write(root/'review','frozen-inputs.json',pce._json(files),immutable=True)
     pce._write(root/'review','grant.json',pce._json(settings),immutable=True)
     root.rename(target)
-    pce._write(pointer.parent,pointer.name,pce._json({'id':identity,'revision':revision}))
+    select_revision()
     return target,request,bib
 
 
@@ -106,6 +130,7 @@ def run(campaign,pair,*,apply=False,accept_change=None,**kwargs):
     with health.owner(campaign,nested=True),runner.Lock(campaign.thread_dir(pair)):
         root,request,bib=prepare(campaign,pair,**kwargs)
         if (root/'acceptance.json').exists():
+            _install_successor_revision(campaign,pair,kwargs)
             account_amend.selected(campaign,pair,*account_release.source(campaign,pair))
             return 'accepted; run present PAIR --edited'
         if not apply:return 'revision prepared; no calls; repeat with --apply for one fixed-candidate review'
@@ -114,4 +139,14 @@ def run(campaign,pair,*,apply=False,accept_change=None,**kwargs):
             c=copy.copy(campaign);c._pce_workflow=root/'review'
             result=pce.run(c,pair,stop=lambda:runner.stopped(campaign))
         prepare(campaign,pair,**kwargs)
-        return account_amend.finish(campaign,pair,root,root/'review',request,bib,result)
+        outcome=account_amend.finish(campaign,pair,root,root/'review',request,bib,result)
+        if (root/'acceptance.json').exists():_install_successor_revision(campaign,pair,kwargs)
+        return outcome
+
+
+def _install_successor_revision(campaign,pair,args):
+    ed=campaign.thread_dir(pair)/'edited'
+    pending=ed/'account-successor.json'
+    expected={'id':args['identity'],'revision':args['revision']}
+    if pending.exists() and json.loads(pending.read_text())==expected:
+        pce._write(ed,'account-amendment.json',pce._json(expected))
