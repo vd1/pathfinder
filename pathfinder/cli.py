@@ -113,6 +113,7 @@ def main(argv=None):
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     r.add_argument("--repair-only", action="store_true",
                    help="make the action's state repair and call no model; the deployment's own command resumes")
+    r.add_argument("--pce-evidence", help="approved hash-bound retained evidence projection JSON; requires --pce-grant")
     r.add_argument("--pce-grant", help="unique ID for an explicit bounded editorial continuation")
     r.add_argument("--passes", type=int)
     r.add_argument("--fact-checks", type=int)
@@ -368,12 +369,14 @@ def _dispatch(ns, c):
         for name, tail in res["failed"]:
             print(f"--- {name}\n{tail[-800:]}")
     elif ns.cmd == "reconcile":
+        if ns.pce_evidence and not ns.pce_grant:
+            raise SystemExit("--pce-evidence requires --pce-grant")
         if ns.pce_grant:
             from . import pce_recovery
             if not ns.pair or not (ns.apply or ns.repair_only) or ns.retire_orphans:
                 raise SystemExit("PCE grant requires one pair and --apply or --repair-only")
             print(pce_recovery.apply(c, ns.pair, identity=ns.pce_grant, passes=ns.passes,
-                                    fact_checks=ns.fact_checks, reason=ns.reason, resume=not ns.repair_only, accept_change=ns.accept_change))
+                                    fact_checks=ns.fact_checks, reason=ns.reason, evidence=ns.pce_evidence, resume=not ns.repair_only, accept_change=ns.accept_change))
             return
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for path, call in health.orphans(c, None if not ns.pair else set(pairs)):

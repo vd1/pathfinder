@@ -293,7 +293,7 @@ def fit(files: dict, room: int) -> dict:
     return out
 
 
-def _supplement(campaign, pair_id, limit: int, *, reviewers=False) -> str:
+def _supplement(campaign, pair_id, limit: int, *, reviewers=False, excluded=()) -> str:
     """The research record as external evidence: the joint thread's ledger first, then the ledgers of its frozen
     branch bundles, then the verifier's reasons, cut at the limit with the cut stated. Each entry carries its
     standing (superseded, corrected, objected to, an objection answered or not), so a superseded or contested
@@ -313,6 +313,8 @@ def _supplement(campaign, pair_id, limit: int, *, reviewers=False) -> str:
                 row = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            if ("ledger.jsonl", row.get("seq")) in excluded:
+                continue
             for label, n in BRANCH_REFERENCE.findall(str(row.get("text") or "")):
                 adopted.setdefault((f"branch-{label}", int(n)), []).append(row.get("seq"))
     for ledger, role in ledgers:
@@ -326,10 +328,11 @@ def _supplement(campaign, pair_id, limit: int, *, reviewers=False) -> str:
             except json.JSONDecodeError:
                 continue
         rows = [r for r in rows if isinstance(r, dict) and isinstance(r.get("seq"), int)]
+        rows = [r for r in rows if (str(ledger.relative_to(d)), r["seq"]) not in excluded]
         notes = standing(rows)
         parts.append(f"\n## {ledger.relative_to(d)}\n\n({role})\n")
         for r in rows:
-            if r.get("kind") == "ready" or (reviewers and r.get("kind") in ("review", "operator", "intention")):
+            if r.get("kind") == "ready" or (reviewers and r.get("kind") in ("review", "operator", "intention", "editorial")):
                 continue
             marks = list(notes[r["seq"]]) or ["current"]
             if label:
@@ -348,7 +351,7 @@ def _supplement(campaign, pair_id, limit: int, *, reviewers=False) -> str:
     return text
 
 
-def sources(campaign, pair_id) -> dict:
+def sources(campaign, pair_id, *, excluded=()) -> dict:
     """The round's frozen inputs: the brief, the state, the bibliography, the internal sources (the baseline
     note and the research account, editorial context only) and the external sources (the papers as the
     thread read them and the research supplement), keyed by their workflow names.
@@ -378,7 +381,7 @@ def sources(campaign, pair_id) -> dict:
             files[f"sources/external/{p.name}"] = p.read_text(errors="replace")
     if not any(n.startswith("sources/external/") for n in files):
         raise Changed(f"{pair_id}: no external sources (inputs/Q and inputs/P) to check the draft against")
-    files[SUPPLEMENT] = _supplement(campaign, pair_id, s["supplement_chars"], reviewers=True)
+    files[SUPPLEMENT] = _supplement(campaign, pair_id, s["supplement_chars"], reviewers=True, excluded=excluded)
     files["sources/internal/research-review-record.md"] = _supplement(campaign, pair_id, s["supplement_chars"])
     return files
 

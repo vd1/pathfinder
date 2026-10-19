@@ -13,14 +13,23 @@ def source(campaign, pair_id):
         from . import imported_account
         note, bib, acceptance = imported_account.source(campaign, pair_id, e)
     else:
-        if (pce.result(campaign, pair_id).get("status") != "accepted"
-                or not e.get("accepted_note") or e.get("presentation_error")):
+        accepted = pce.result(campaign, pair_id).get("status") == "accepted"
+        pending_build = (accepted and e.get("editorial_status") == "accepted"
+                         and not e.get("accepted_note") and bool(e.get("presentation_error"))
+                         and e.get("pce") == str(pce.workflow(campaign, pair_id).relative_to(campaign.thread_dir(pair_id))))
+        if not accepted or (not pending_build and (not e.get("accepted_note") or e.get("presentation_error"))):
             raise pce.Changed("account presentation requires completed PCE gates and an installed accepted note")
-        note, bib = (ed / "note.tex").read_text(), (ed / "references.bib").read_text()
+        # A failed build leaves the old baseline installed. Presentation can correct the
+        # exact accepted draft in its own revision, without altering that acceptance.
+        note = (pce.workflow(campaign, pair_id) / pce.DRAFT if pending_build else ed / "note.tex").read_text()
+        bib = (ed / "references.bib").read_text()
         if note != (pce.workflow(campaign, pair_id) / pce.DRAFT).read_text():
             raise pce.Changed("the account changed after PCE acceptance")
         acceptance = {"kind": "PCE editorial acceptance",
                       "workflow": str(pce.workflow(campaign, pair_id).relative_to(campaign.thread_dir(pair_id)))}
+        if pending_build:
+            acceptance["installation_pending"] = True
+            acceptance["installation_error"] = e["presentation_error"]
     return note, bib, acceptance
 
 

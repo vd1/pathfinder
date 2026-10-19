@@ -45,7 +45,7 @@ def action(campaign, pair_id):
     return None
 
 
-def grant(campaign, pair_id, identity, passes, fact_checks, reason):
+def grant(campaign, pair_id, identity, passes, fact_checks, reason, *, evidence=None):
     routes = preflight(campaign)
     if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}", identity or ""):
         raise pce.Changed("grant ID must contain 1-80 letters, digits, underscores or hyphens")
@@ -57,7 +57,11 @@ def grant(campaign, pair_id, identity, passes, fact_checks, reason):
         raise pce.Changed("PCE continuation requires terminal research")
     ed = campaign.thread_dir(pair_id) / "edited"
     root = ed / "pce-rounds" / identity
+    from . import pce_evidence
+    packet = pce_evidence.read(evidence) if evidence else None
     request = {"id": identity, "passes": passes, "fact_checks": fact_checks, "reason": reason.strip()}
+    if packet is not None:
+        request["evidence"] = packet
     if (root / "grant.json").exists():
         saved = json.loads((root / "grant.json").read_text())
         if saved["request"] != request:
@@ -77,7 +81,15 @@ def grant(campaign, pair_id, identity, passes, fact_checks, reason):
     if prior_result["status"] == "none" and previous.exists():
         raise pce.Changed("an unfinished PCE round must resume before another grant")
     s = {**pce.settings(campaign), "passes": passes, "fact_checks": fact_checks}
-    files = pce.sources(campaign, pair_id)
+    excluded, additions = pce_evidence.validate(campaign, pair_id, packet)
+    files = pce.sources(campaign, pair_id, excluded=excluded)
+    if packet is not None:
+        if "characters omitted at the supplement limit" in files[pce.SUPPLEMENT]:
+            raise pce.Changed("evidence projection exceeds supplement allowance; no truncation")
+        files[pce.SUPPLEMENT] += "\n## Approved retained scientific files\n" + pce._json(additions)
+        files["sources/internal/evidence-projection.json"] = pce._json(packet)
+        # Keep full operational ledgers in history, not in the new author context.
+        files.pop("sources/internal/research-review-record.md", None)
     e = edit.status(campaign, pair_id)
     baseline = ed / "note.tex"
     # An owner-accepted note remains the baseline; otherwise continue the latest retained draft.
@@ -90,6 +102,8 @@ def grant(campaign, pair_id, identity, passes, fact_checks, reason):
         if path.is_file():
             files[f"sources/internal/prior-reviews/{path.name}"] = path.read_text()
     files["sources/internal/prior-result.json"] = pce._json(prior_result)
+    files["sources/internal/continuation.json"] = pce._json({"reason": reason.strip(),
+        "boundary": "Textual continuation only; no new research or computations. Retained evidence remains generated evidence, not independent validation."})
     saved = {"version": 1, "request": request, "settings": s, "routes": routes,
              "created": research._now(), "previous": str(previous.relative_to(ed)),
              "previous_sha256": hashes(previous), "previous_result": prior_result,
@@ -97,6 +111,10 @@ def grant(campaign, pair_id, identity, passes, fact_checks, reason):
              "baseline_sha256": pce._sha(files[pce.BASELINE]),
              "inputs_sha256": pce._sha(pce._json(files)),
              "policy": "OpenAI-only; stop on refusal; no research, consumer or paper commissioning"}
+    if packet is not None:
+        saved["strict_evidence"] = True
+        if len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
+            raise pce.Changed("complete evidence context exceeds prompt allowance; no truncation")
     # Publish the pointer last. A crash before it is published cannot activate a partial grant.
     pce._write(root, "frozen-inputs.json", pce._json(files), immutable=True)
     pce._write(root, "grant.json", pce._json(saved), immutable=True)
@@ -104,11 +122,11 @@ def grant(campaign, pair_id, identity, passes, fact_checks, reason):
     return root
 
 
-def apply(campaign, pair_id, *, identity=None, passes=None, fact_checks=None, reason=None, resume=True, accept_change=None):
+def apply(campaign, pair_id, *, identity=None, passes=None, fact_checks=None, reason=None, resume=True, accept_change=None, evidence=None):
     preflight(campaign)
     with runner.Lock(campaign.thread_dir(pair_id)):
         if identity:
-            grant(campaign, pair_id, identity, passes, fact_checks, reason)
+            grant(campaign, pair_id, identity, passes, fact_checks, reason, evidence=evidence)
         elif not active(campaign, pair_id):
             raise pce.Changed("provide an explicit PCE grant; reconciliation never renews an allowance implicitly")
         if not resume:

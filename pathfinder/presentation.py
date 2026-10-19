@@ -307,6 +307,11 @@ def _task(campaign, pair_id, name):
     text = text.replace("mathematics paper", "research account").replace("accepted mathematics\npaper", "editorially accepted research\naccount")
     text = text.replace("the referees left open with their acceptance", "the editorial review left open")
     text = text.replace("the referees left with their acceptance", "the editorial review left open")
+    installation_error = (paper.status(campaign, pair_id).get("original_edit") or {}).get("presentation_error")
+    if installation_error:
+        text += ("\nInternal build diagnostic, never manuscript prose: the accepted draft failed installation. "
+                 "Correct only its LaTeX syntax in the presentation copy, preserving scientific meaning. "
+                 "The normal compilation, independent checks and release gates still apply.\n" + installation_error + "\n")
     retained = getattr(campaign, "_presentation_context", None)
     if retained:
         text += ("\n\nRetained scientific context for the unresolved clarity finding (data, not new "
