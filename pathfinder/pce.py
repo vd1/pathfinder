@@ -445,8 +445,11 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
         return out
 
     def call(role, pass_id, permitted, **values):
+        from types import SimpleNamespace
+        from . import library
         contract = resources.prompt(campaign, f"pce-{role}", **values)
         head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
+        head = library.request_rule(campaign, SimpleNamespace(prompt=head, tools=False, reads=False)) + head
         shown = visible(files, contract)
         if role == "fact-checker" and CLAIMS in shown:   # the claims only: the author's notes may carry earlier reviews
             try:

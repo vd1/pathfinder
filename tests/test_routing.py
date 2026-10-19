@@ -170,7 +170,8 @@ def test_a_call_routed_to_claude_with_a_contract_is_told_to_answer_with_json_onl
                                                timeout=5, thread="Q1P1", stage=stage, actor="x", schema=schema))
     (claude_backend, claude_prompt), (codex_backend, codex_prompt) = seen
     assert claude_backend == "claude" and "exactly one JSON object" in claude_prompt and '"approved"' in claude_prompt
-    assert codex_backend == "codex" and codex_prompt == "Judge it."
+    assert codex_backend == "codex" and codex_prompt.endswith("Judge it.")
+    assert "Paper pool:" in codex_prompt and transport.JSON_ONLY_MARK not in codex_prompt
 
 
 def test_a_pair_blocked_by_a_refusal_resumes_on_the_fallback_once_one_is_set(tmp_path, monkeypatch):

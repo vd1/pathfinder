@@ -105,11 +105,15 @@ def test_a_latex_eprint_is_never_read_from_its_pdf(tmp_path, online, monkeypatch
     assert path.suffix == ".tex" and "Theorem of Q." in path.read_text() and "\\input" not in path.read_text()
 
 
-def test_an_eprint_without_latex_is_an_error_not_a_pdf_fallback(tmp_path, online):
-    n = online({EPRINT + "2401.00001": tarball({"notes.txt": "no tex here"})})
-    with pytest.raises(RuntimeError, match="no .tex"):
-        paper_source.get("2401.00001", tmp_path, urlopen=net.urlopen)
-    assert not [u for u in n.calls if "/pdf/" in u]
+@needs_pdftotext
+def test_an_eprint_without_latex_falls_back_to_one_pooled_pdf(tmp_path, online):
+    n = online({EPRINT + "2401.00001": tarball({"notes.txt": "no tex here"}),
+                "https://arxiv.org/pdf/2401.00001": pdf("Only PDF available")})
+    first = paper_source.get("2401.00001", tmp_path, urlopen=net.urlopen)
+    assert "Only PDF available" in first.read_text()
+    assert n.calls == [EPRINT + "2401.00001", "https://arxiv.org/pdf/2401.00001"]
+    assert paper_source.get("2401.00001", tmp_path, urlopen=net.urlopen) == first
+    assert len(n.calls) == 2
 
 
 @needs_pdftotext
@@ -192,7 +196,7 @@ def test_peers_get_the_reading_rule_the_library_and_the_helper(tmp_path, online,
     monkeypatch.setattr(transport, "execute", lambda campaign, request: seen.append(request) or real(campaign, request))
     research.run_thread(c, "Q1P1")
     peer = " ".join([r for r in seen if r.stage == "peer"][0].prompt.split())
-    assert "do not download a PDF" in peer and "2301.00007" in peer and ".pathfinder/paper_source.py --cache" in peer
+    assert "Paper pool:" in peer and "2301.00007" in peer and ".pathfinder/paper_source.py --cache" in peer
     assert (c.thread_dir("Q1P1") / ".pathfinder" / "paper_source.py").read_bytes() == Path(paper_source.__file__).read_bytes()
 
 

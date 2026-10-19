@@ -18,7 +18,8 @@ set), and one fetch per paper at a time.
 prints "<ref> <path>" or "<ref> ERROR <reason>" per reference; exit status 1 if any failed.
 PATHFINDER_OFFLINE=1 makes a miss an error instead of a download."""
 from __future__ import annotations
-import argparse, gzip, io, json, os, re, shutil, subprocess, sys, tarfile, tempfile, time
+import argparse, fcntl, gzip, hashlib, io, json, os, re, shutil, subprocess, sys, tarfile, tempfile, time
+from contextlib import contextmanager
 import urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
@@ -46,20 +47,34 @@ def name(aid: str) -> str:
 
 
 def lookup(aid: str, dirs) -> Path | None:
-    """A cached text of the paper in any of dirs: <name>.tex, then <name>.txt, also the older nested layout
-    (math/0601001.tex)."""
-    for d in dirs:
-        d = Path(d)
-        for f in (d / f"{name(aid)}.tex", d / f"{aid}.tex", d / f"{name(aid)}.txt", d / f"{aid}.txt"):
-            if f.is_file() and f.stat().st_size > 0:
-                return f
+    """Check every local pool before downloading; prefer LaTeX, then a justified PDF extraction.
+
+    Legacy arXiv .txt files may hide an available source. Leave them intact but recheck for LaTeX.
+    Non-arXiv deployments may supply their own plain-text sources.
+    """
+    for suffix in (".tex", ".txt"):
+        for d in dirs:
+            for stem in (name(aid), aid):
+                f = Path(d) / f"{stem}{suffix}"
+                if f.is_file() and f.stat().st_size > 0 and (suffix == ".tex" or not parse(aid) or _pdf_text_ready(f)):
+                    return f
     return None
+
+
+def _pdf_text_ready(path: Path) -> bool:
+    """Old text alone does not establish that a LaTeX source was unavailable."""
+    try:
+        return json.loads(path.with_suffix(".source.json").read_text()).get("latex_unavailable") is True
+    except (OSError, ValueError):
+        return False
 
 
 def references(path: Path, aid: str | None = None, cache=None, urlopen=None) -> list[str]:
     """The arXiv ids and DOIs the paper's bibliography names: kept by the fetch beside the paper (or in the
     cache); for a text fetched before that was kept, read again from the e-print once (its .bbl and .bib are
     not in the flattened text) and kept, or offline read from the text itself."""
+    if Path(path).suffix.lower() == ".pdf":
+        return []                               # never decode or extract a pooled PDF as text
     for refs in [Path(str(path).rsplit(".", 1)[0] + ".refs.json"),
                  *([Path(cache) / f"{name(aid)}.refs.json"] if aid and cache else [])]:
         if refs.is_file():
@@ -79,6 +94,28 @@ def references(path: Path, aid: str | None = None, cache=None, urlopen=None) -> 
     return _refs_in([Path(path).read_text(errors="replace")], aid or "")
 
 
+@contextmanager
+def _locked(cache: Path, key: str):
+    """Process-safe fetch ownership, released by the OS even if the downloader dies."""
+    locks = cache / ".locks"
+    locks.mkdir(parents=True, exist_ok=True)
+    path = locks / hashlib.sha256(key.encode()).hexdigest()
+    with path.open("a") as handle:
+        deadline = time.monotonic() + LOCK_WAIT
+        while True:
+            try:
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    raise TimeoutError(f"another process is fetching {key}; try again later")
+                time.sleep(0.1)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle, fcntl.LOCK_UN)
+
+
 def get(aid: str, cache, also=(), urlopen=None) -> Path:
     """The paper's text: from the cache (or the extra read-only dirs), else fetched once into the cache."""
     cache = Path(cache)
@@ -87,37 +124,23 @@ def get(aid: str, cache, also=(), urlopen=None) -> Path:
         return hit
     if os.environ.get("PATHFINDER_OFFLINE"):
         raise RuntimeError("not cached, and downloads are off (PATHFINDER_OFFLINE)")
-    cache.mkdir(parents=True, exist_ok=True)
-    lock = cache / f".{name(aid)}.lock"
-    deadline = time.time() + LOCK_WAIT
-    while True:
-        try:
-            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.close(fd); break
-        except FileExistsError:                   # another process is fetching it: wait for its result
-            if time.time() > deadline:
-                lock.unlink(missing_ok=True)
-            time.sleep(2)
-            hit = lookup(aid, [cache])
-            if hit:
-                return hit
-    try:
-        hit = lookup(aid, [cache])
+    with _locked(cache, f"arxiv:{aid}"):
+        hit = lookup(aid, [cache, *also])
         return hit or _fetch(aid, cache, urlopen)
-    finally:
-        lock.unlink(missing_ok=True)
 
 
 def _wait_turn(cache: Path, name: str = ".last-request", spacing: float = SPACING):
     """One request every `spacing` seconds to a service across processes: a timestamp file in the cache."""
-    stamp = cache / name
-    try:
-        last = float(stamp.read_text())
-    except (OSError, ValueError):
-        last = 0.0
-    pause = last + spacing - time.time()
-    if pause > 0:
-        time.sleep(pause)
-    stamp.write_text(str(time.time()))
+    with _locked(cache, f"rate:{name}"):
+        stamp = cache / name
+        try:
+            last = float(stamp.read_text())
+        except (OSError, ValueError):
+            last = 0.0
+        pause = last + spacing - time.time()
+        if pause > 0:
+            time.sleep(pause)
+        stamp.write_text(str(time.time()))
 
 
 def _download(aid: str, cache: Path, urlopen=None):
@@ -171,14 +194,18 @@ def _refs_in(texts, own: str) -> list[str]:
 
 
 def _fetch(aid: str, cache: Path, urlopen=None) -> Path:
-    blob, ctype = _download(aid, cache, urlopen)
+    try:
+        blob, ctype = _download(aid, cache, urlopen)
+    except urllib.error.HTTPError as error:
+        if error.code not in (404, 410):
+            raise                               # a transient failure does not mean LaTeX is unavailable
+        return _arxiv_pdf(aid, cache, urlopen)
     with tempfile.TemporaryDirectory(prefix="arxiv-source-") as tmp:
         work = Path(tmp)
         if blob[:4] == b"%PDF" or "pdf" in ctype:
-            (work / "paper.pdf").write_bytes(blob)     # a PDF-only submission: the one case for pdftotext
-            text = subprocess.run(["pdftotext", "-layout", str(work / "paper.pdf"), "-"], capture_output=True,
-                                  text=True, errors="replace", timeout=300, check=True).stdout
-            return _store(aid, cache, text, ".txt", [])
+            if not blob.startswith(b"%PDF"):
+                raise RuntimeError("the e-print response is not a PDF")
+            return _store_pdf(aid, cache, blob)
         try:
             with tarfile.open(fileobj=io.BytesIO(blob), mode="r:*") as tf:
                 tf.extractall(work, filter="data")
@@ -189,21 +216,46 @@ def _fetch(aid: str, cache: Path, urlopen=None) -> Path:
                 (work / "main.tex").write_bytes(blob)
         main = _main_tex(work)
         if main is None:
-            raise RuntimeError("the e-print holds no .tex file with \\documentclass")
+            return _arxiv_pdf(aid, cache, urlopen)
         text = None
         if shutil.which("latexpand"):
-            r = subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, capture_output=True,
-                               text=True, errors="replace", timeout=120)
-            text = r.stdout if r.returncode == 0 and r.stdout.strip() else None
+            try:
+                r = subprocess.run(["latexpand", "--empty-comments", main.name], cwd=main.parent, capture_output=True,
+                                   text=True, errors="replace", timeout=120)
+                text = r.stdout if r.returncode == 0 and r.stdout.strip() else None
+            except subprocess.TimeoutExpired:
+                pass
         if text is None:
             text = inline(main, work)
         return _store(aid, cache, text, ".tex", _refs(work, aid))
 
 
-def _store(aid: str, cache: Path, text: str, suffix: str, refs: list[str]) -> Path:
+def _arxiv_pdf(aid: str, cache: Path, urlopen=None) -> Path:
+    _wait_turn(cache)
+    existing = cache / f"{name(aid)}.pdf"
+    blob = existing.read_bytes() if existing.is_file() else _pdf_bytes(f"https://arxiv.org/pdf/{aid}", urlopen)
+    return _store_pdf(aid, cache, blob)
+
+
+def _store_pdf(aid: str, cache: Path, blob: bytes) -> Path:
+    """Called only after the source lookup establishes that LaTeX is unavailable."""
+    original = _store(aid, cache, blob, ".pdf", [])
+    text = subprocess.run(["pdftotext", "-layout", str(original), "-"], capture_output=True,
+                          text=True, errors="replace", timeout=300, check=True).stdout
+    if not text.strip():
+        raise RuntimeError("the PDF has no extractable text")
+    path = _store(aid, cache, text, ".txt", [])
+    marker = path.with_suffix(".source.json")
+    temporary = marker.with_name(f".{marker.name}.{os.getpid()}")
+    temporary.write_text(json.dumps({"latex_unavailable": True, "pdf": original.name}))
+    os.replace(temporary, marker)
+    return path
+
+
+def _store(aid: str, cache: Path, text: str | bytes, suffix: str, refs: list[str]) -> Path:
     dst = cache / f"{name(aid)}{suffix}"
     tmp = dst.with_name(f".{dst.name}.{os.getpid()}")
-    tmp.write_text(text); os.replace(tmp, dst)
+    tmp.write_bytes(text if isinstance(text, bytes) else text.encode()); os.replace(tmp, dst)
     (cache / f"{name(aid)}.refs.json").write_text(json.dumps(refs))
     with open(cache / "index.jsonl", "a") as f:
         f.write(json.dumps({"id": aid, "path": dst.name, "kind": suffix[1:], "references": len(refs),
@@ -277,27 +329,54 @@ def _record_for(k: str, v: str, cache: Path, urlopen=None):
 
 
 def resolve(ref: str, cache, also=(), urlopen=None) -> Path:
-    """The paper a reference names, from the cache or fetched once: its arXiv source when it is on arXiv, else
-    the text of its open PDF; the resolution is recorded so that the same reference is a hit next time."""
+    """Local pool first, then LaTeX, then PDF extraction when no LaTeX source is available."""
     cache = Path(cache)
     k, v = kind(ref)
     if k == "arxiv":
         return get(v, cache, also, urlopen)
-    known = _aliases(cache).get(_alias_key(ref))
+    hit, known = _known(ref, [cache, *also])
+    if hit:
+        return hit
     if known and known.get("arxiv"):
         return get(known["arxiv"], cache, also, urlopen)
-    if known and known.get("path") and (cache / known["path"]).is_file():
-        return cache / known["path"]
     if known and not known.get("found", True) and time.time() - known.get("at", 0) < NOT_FOUND_RETRY:
         raise RuntimeError(f"no open version found ({known.get('reason')})")
     if os.environ.get("PATHFINDER_OFFLINE"):
         raise RuntimeError("not cached, and downloads are off (PATHFINDER_OFFLINE)")
-    cache.mkdir(parents=True, exist_ok=True)
+    with _locked(cache, _alias_key(ref)):
+        hit, known = _known(ref, [cache, *also])
+        if hit:
+            return hit
+        return _resolve(ref, cache, also, urlopen)
+
+
+def _known(ref: str, dirs) -> tuple[Path | None, dict | None]:
+    known = None
+    hits = []
+    for directory in dirs:
+        row = _aliases(Path(directory)).get(_alias_key(ref))
+        if not row:
+            continue
+        known = known or row
+        if row.get("arxiv"):
+            path = lookup(row["arxiv"], dirs)
+        else:
+            path = Path(directory) / row["path"] if row.get("path") else None
+            if path and path.with_suffix(".tex").is_file():
+                path = path.with_suffix(".tex")
+        if (path and path.is_file() and path.stat().st_size
+                and (path.suffix.lower() == ".tex" or (path.suffix.lower() == ".txt" and _pdf_text_ready(path)))):
+            hits.append(path)
+    return (min(hits, key=lambda p: p.suffix != ".tex") if hits else None), known
+
+
+def _resolve(ref: str, cache: Path, also, urlopen) -> Path:
+    k, v = kind(ref)
     record = _record_for(k, v, cache, urlopen)
     arxiv = parse(((record or {}).get("externalIds") or {}).get("ArXiv") or "")
     if arxiv:
         path = get(arxiv, cache, also, urlopen)
-        _record(cache, ref, arxiv=arxiv, path=path.name, found=True, title=(record or {}).get("title"))
+        _remember(cache, ref, path, record, arxiv=arxiv)
         return path
     pdf = ((record or {}).get("openAccessPdf") or {}).get("url") or (v if k == "url" else None)
     if not pdf:
@@ -308,29 +387,48 @@ def resolve(ref: str, cache, also=(), urlopen=None) -> Path:
     except Exception as error:
         _record(cache, ref, found=False, reason=f"open PDF failed: {error}"[:200])
         raise
-    _record(cache, ref, path=path.relative_to(cache).as_posix(), found=True, pdf=pdf, title=(record or {}).get("title"))
+    _remember(cache, ref, path, record, pdf=pdf)
     return path
 
 
+def _remember(cache, ref, path, record, **fields):
+    """Index the known DOI, title and open-copy URL so other agents can find this paper locally."""
+    record = record or {}
+    refs = []
+    doi = (record.get("externalIds") or {}).get("DOI")
+    if doi:
+        refs.append(f"doi:{doi}")
+    if record.get("title"):
+        refs.append(f"title:{record['title']}")
+    if (record.get("openAccessPdf") or {}).get("url"):
+        refs.append(record["openAccessPdf"]["url"])
+    for alias in dict.fromkeys([*refs, ref]):
+        _record(cache, alias, path=str(path.resolve()), found=True, title=record.get("title"), **fields)
+
+
 def _pdf(ref: str, url: str, cache: Path, urlopen=None) -> Path:
-    """A paper that is not on arXiv: its open PDF, fetched once and kept as text under other/."""
-    import hashlib
-    _wait_turn(cache, ".last-pdf", 1.0)
+    """Share a PDF and its extracted text by URL, including different DOI/title aliases."""
+    key = hashlib.sha256(url.encode()).hexdigest()[:20]
+    target = cache / "other"
+    dst = target / f"{key}.txt"
+    with _locked(cache, f"pdf:{url}"):
+        if dst.is_file() and dst.stat().st_size and _pdf_text_ready(dst):
+            return dst
+        _wait_turn(cache, ".last-pdf", 1.0)
+        original = dst.with_suffix(".pdf")
+        blob = original.read_bytes() if original.is_file() else _pdf_bytes(url, urlopen)
+        target.mkdir(parents=True, exist_ok=True)
+        return _store_pdf(key, target, blob)
+
+
+def _pdf_bytes(url: str, urlopen=None) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "pathfinder/0.1"})
     opener = urlopen or urllib.request.build_opener(urllib.request.ProxyHandler(urllib.request.getproxies_environment())).open
     with opener(req, timeout=120) as r:
         blob = r.read()
     if blob[:4] != b"%PDF":
         raise RuntimeError("the open copy is not a PDF")
-    with tempfile.TemporaryDirectory(prefix="paper-source-") as tmp:
-        (Path(tmp) / "paper.pdf").write_bytes(blob)
-        text = subprocess.run(["pdftotext", "-layout", str(Path(tmp) / "paper.pdf"), "-"], capture_output=True,
-                              text=True, errors="replace", timeout=300, check=True).stdout
-    dst = cache / "other" / f"{hashlib.sha256(_alias_key(ref).encode()).hexdigest()[:20]}.txt"
-    dst.parent.mkdir(parents=True, exist_ok=True)
-    tmp = dst.with_name(f".{dst.name}.{os.getpid()}")
-    tmp.write_text(text); os.replace(tmp, dst)
-    return dst
+    return blob
 
 
 def main(argv=None) -> int:

@@ -477,8 +477,9 @@ def execute(campaign, request: ModelRequest):
     """Refuse an oversized prompt, then admit the call, then record an active attempt before launching it,
     including abrupt-exit evidence. A refused call raises before any active-call record exists. A campaign
     route for the request's stage (pathfinder.routing) applies first, so every stage is routed alike."""
-    from . import routing
+    from . import routing, library
     campaign, request = routing.apply(campaign, request)
+    request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
     limit, size = max_prompt_chars(campaign), len(request.prompt)
     if size > limit:
@@ -544,7 +545,8 @@ JSON_ONLY_MARK = "(JSON only.)"
 
 def execute_routed(campaign, request: ModelRequest):
     """One call on an already routed campaign: admission, then the attempt (the refusal fallback's second try)."""
-    from . import admission
+    from . import admission, library
+    request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
     with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
         return _attempt(campaign, request)

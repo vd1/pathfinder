@@ -4,13 +4,13 @@ Peers downloaded PDFs (from arXiv and from publishers) and ran pdftotext inside 
 came out garbled, every peer repeated another's download, and retrieval ate their calls and seconds. Now the
 engine fetches, before any agent starts and outside every allowance, the pair's two papers, the papers their
 bibliographies name (by arXiv id or DOI) and the papers citing both (the campaign's novelty_citers file), as LaTeX
-for every paper on arXiv, into one shared cache ("source_cache", default the campaign's sources/), and gives the
+when available, into one shared pool ("source_cache", PATHFINDER_SOURCE_CACHE, or ~/.cache/pathfinder/papers), and gives the
 thread an index, inputs/library.jsonl. An agent that needs another paper runs the thread's copy of
 pathfinder.paper_source with an arXiv id, a DOI, a URL or a title: a hit is returned at once, a miss is fetched
 once and added to the cache for everyone; calls with tools may write that one directory. `pathfinder prefetch`
 fills the cache for every shortlisted pair at once, before research."""
 from __future__ import annotations
-import json, re, shutil, sys, time
+import json, os, re, shlex, shutil, sys, time
 from pathlib import Path
 from . import paper_source, net
 
@@ -19,7 +19,8 @@ HELPER = "paper_source.py"
 
 
 def cache(campaign) -> Path:
-    return campaign.path((campaign.raw or {}).get("source_cache", "sources"))
+    configured = (campaign.raw or {}).get("source_cache") or os.environ.get("PATHFINDER_SOURCE_CACHE")
+    return campaign.path(configured) if configured else Path.home() / ".cache" / "pathfinder" / "papers"
 
 
 def _also(campaign) -> list[Path]:
@@ -48,9 +49,15 @@ def get(campaign, ref: str) -> Path:
 def paper_text(campaign, row: dict) -> Path | None:
     """A corpus paper's full text: the row's own text, else its arXiv source through the cache (fetched once);
     None when there is none (not an arXiv paper, no e-print, or offline): the abstract is used."""
-    if row.get("text") and campaign.path(row["text"]).is_file():
-        return campaign.path(row["text"])
     aid = paper_source.parse(row.get("id", ""))
+    if aid:
+        pooled = paper_source.lookup(aid, [cache(campaign), *_also(campaign)])
+        if pooled and pooled.suffix == ".tex":
+            return pooled
+    if row.get("text") and campaign.path(row["text"]).is_file():
+        path = campaign.path(row["text"])
+        if not aid or path.suffix.lower() == ".tex" or paper_source._pdf_text_ready(path):
+            return path
     if aid is None:                              # not an arXiv paper: a text placed in the cache under its id, or none
         return paper_source.lookup(str(row.get("id", "")), [cache(campaign), *_also(campaign)]) if row.get("id") else None
     try:
@@ -116,8 +123,30 @@ def install(campaign, d: Path) -> str:
     if not target.is_file() or target.read_bytes() != source:
         target.parent.mkdir(parents=True, exist_ok=True)
         _atomic_write(target, source)
-    also = "".join(f" --also {p.resolve()}" for p in _also(campaign))
-    return f"{sys.executable} -I {HELPER_DIR}/{HELPER} --cache {cache(campaign).resolve()}{also}"
+    args = [sys.executable, "-I", str(target.resolve()), "--cache", str(cache(campaign).resolve())]
+    for p in _also(campaign):
+        args += ["--also", str(p.resolve())]
+    return shlex.join(args)
+
+
+POOL_RULE = ("Paper pool: check the shared pool first. On a miss, fetch LaTeX source into the pool if available. "
+             "Only when LaTeX source is unavailable, fetch the original PDF into the pool. "
+             "Use the pool helper for this sequence; do not download separate copies into agent folders. "
+             "The pool may run pdftotext once for that PDF and cache the text for later requests. "
+             "Never use PDF-to-text extraction when LaTeX source is available. "
+             "This rule takes precedence over older paper-download instructions.")
+
+
+def request_rule(campaign, request) -> str:
+    """Apply the same pool rule to every role without granting extra tools to restricted reviewers."""
+    if POOL_RULE in request.prompt:
+        return ""
+    rule = "\n\n" + POOL_RULE + f"\nShared pool: {cache(campaign).resolve()}\n"
+    if request.tools and not request.reads:
+        rule += f"Run: {install(campaign, Path(request.cwd or campaign.root))} REF [REF ...]\n"
+    else:
+        rule += "Use only sources available within your permitted read scope; report missing papers rather than fetching them.\n"
+    return rule
 
 
 def reading(campaign, d: Path) -> str:
@@ -126,14 +155,12 @@ def reading(campaign, d: Path) -> str:
     entries = [json.loads(l) for l in lib.read_text().splitlines() if l.strip()] if lib.is_file() else []
     listed = "".join(f"- {e['id']}: {e.get('title') or 'untitled'} ({', '.join(e.get('why') or [])}) {e['path']}\n"
                      for e in entries if e.get("path"))
-    return ("\n\nReading papers. Read every paper through the engine's source service, never by downloading it: do "
-            "not download a PDF, from arXiv or a publisher, and do not run pdftotext; the engine has fetched the "
-            "sources for you, as LaTeX for every paper on arXiv. The two papers are in inputs/. " + (f"inputs/library.jsonl lists {len(entries)} more papers fetched for this thread "
+    return ("\n\n" + POOL_RULE + " The two papers are in inputs/. " + (f"inputs/library.jsonl lists {len(entries)} more papers fetched for this thread "
             "(papers citing both, and the papers their bibliographies name), each with the path of its source:\n"
             + listed if listed else "")
             + f"For any other paper run\n    {install(campaign, d)} REF [REF ...]\nwith an arXiv id, a DOI, a URL or "
-            "title:<the title> as REF; it prints the path of each paper's text from the shared cache (its LaTeX when "
-            "the paper is on arXiv), fetching it once if nobody has, and waits for it. Read texts in bounded slices "
+            "title:<the title> as REF; it prints the path of the pooled LaTeX source or cached PDF text, "
+            "fetching it once if nobody has, and waits for it. Read texts in bounded slices "
             "(search for the theorem or section you need).\n")
 
 

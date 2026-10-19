@@ -267,9 +267,10 @@ your own campaign directory and edit the models and the budget.
   keeps a single request below it.
 - `scan.fulltext`: `null`, `"q"`, `"p"` or `"both"` to scan with flattened
   sources instead of abstracts on that side.
-- `source_cache`: the directory of the shared paper cache (default the
-  campaign's `sources/`; a path outside the campaign is shared by every
-  campaign naming it). `prefetch_limit`: papers fetched per thread beyond its
+- `source_cache`: an explicit paper-pool directory. Otherwise use
+  `PATHFINDER_SOURCE_CACHE`, or `~/.cache/pathfinder/papers` by default, shared
+  across campaigns. Existing campaign `sources/` directories are also checked
+  before downloading. `prefetch_limit`: papers fetched per thread beyond its
   two (default 60). See "Papers before research" below.
 - `codex`: optional, for the Codex backend through a custom OpenAI-compatible
   provider such as a university proxy: `name`, `base_url`, `env_key` (the
@@ -357,9 +358,11 @@ your own campaign directory and edit the models and the budget.
 
 ### Papers before research
 
-Agents read papers as LaTeX, from one shared cache, and never fetch them in
-their own calls (nobel, October 2026: peers had downloaded some 6000 PDFs
-and read garbled pdftotext, spending their allowances on retrieval).
+Every agent receives the same paper-pool rule: check locally first; on a miss,
+download LaTeX source into the pool if available; only when LaTeX is unavailable,
+download the PDF. The pool may convert that PDF with `pdftotext` once and retain
+both the original and the text for later requests. Agents use the helper instead
+of downloading separate copies into their own folders.
 
 - When a thread opens, before any agent starts and outside every allowance,
   the engine fetches its two papers, the papers their bibliographies name (by
@@ -368,18 +371,24 @@ and read garbled pdftotext, spending their allowances on retrieval).
   the rest in `inputs/library.jsonl` (id, title, path, why). `pathfinder
   prefetch [PAIR ...]` does the same for the whole shortlist at once, before
   research, without opening threads.
-- A paper on arXiv is always its flattened LaTeX source (latexpand, else a
+- An available arXiv LaTeX source is flattened (latexpand, else a
   plain inlining of `\input` and `\include`); text from a PDF only for an
   e-print that holds no LaTeX. A DOI, a URL or a title is resolved to the
   paper's arXiv version first (Semantic Scholar; `SEMANTIC_SCHOLAR_API_KEY`
   when set); a paper not on arXiv is the text of one open PDF. Every paper is
-  fetched once and every resolution kept (`aliases.jsonl`, a reference not
-  found asked again after a week).
-- Agents with tools get the reading rule, the library and the thread's copy
+  fetched under a process lock and its DOI, title and URL aliases are kept
+  (`aliases.jsonl`, a reference not found asked again after a week). A temporary
+  source-server error does not trigger PDF fallback. A failed LaTeX flattener
+  falls back to source inlining, not PDF conversion. Cache lookup prefers LaTeX
+  across all configured directories. PDF text carries a record that LaTeX was
+  unavailable; an older extraction without that record triggers a source lookup
+  and is left intact.
+- Every role gets the reading rule. Agents with write tools also get the library and the thread's copy
   of the service, `.pathfinder/paper_source.py REF`, which answers a hit at
   once and fetches a miss once for everyone; such calls may write the cache
   directory (`--add-dir` for both CLIs, a write entry in a filesystem
-  profile), and nothing else outside their workspace.
+  profile), and nothing else outside their workspace. Restricted reviewers keep
+  their existing read scope and report missing sources instead of downloading.
 - `health` and `playbook` name threads opened before this, which read
   abstracts or have no library; `pathfinder sources PAIR --into-inputs` adds
   the full texts and the library beside their files (recorded in

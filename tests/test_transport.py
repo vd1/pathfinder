@@ -1,10 +1,16 @@
 import json, sys
 from pathlib import Path
 import pytest
-from pathfinder import transport
+from pathfinder import library, transport
 from pathfinder.config import Campaign
 
 FAKE = str(Path(__file__).parent / "fake_cli.py")
+
+
+def pool_rule_size(c, tools=False):
+    request = transport.request("", model="m", tools=tools, search=False, cwd=c.root,
+                                timeout=10, thread="T", stage="scan", actor="judge")
+    return len(library.request_rule(c, request))
 
 
 def campaign(tmp_path, backend="claude"):
@@ -215,7 +221,7 @@ def test_receipt_records_prompt_size_and_tool_calls(tmp_path, monkeypatch):
         transport.call("x" * 1234, campaign=campaign(tmp_path, mode), model="m", tools=True, search=False,
                        cwd=tmp_path, timeout=10, thread="T", stage="peer", actor="ada")
         row = rows(tmp_path)[0]
-        assert (row["prompt_chars"], row["tool_calls"]) == (1234, 3)
+        assert (row["prompt_chars"], row["tool_calls"]) == (1234 + pool_rule_size(campaign(tmp_path, mode), True), 3)
 
 
 def test_no_session_receipt_is_classified_and_sized(tmp_path, monkeypatch):
@@ -223,7 +229,7 @@ def test_no_session_receipt_is_classified_and_sized(tmp_path, monkeypatch):
     transport.call("abc", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
                    timeout=10, thread="T", stage="scan", actor="judge")
     row = rows(tmp_path)[0]
-    assert row["failure"]["class"] == "no_session" and row["prompt_chars"] == 3 and row["tool_calls"] is None
+    assert row["failure"]["class"] == "no_session" and row["prompt_chars"] == 3 + pool_rule_size(campaign(tmp_path)) and row["tool_calls"] is None
 
 
 def test_transient_error_then_completion_stays_unclassified(tmp_path):
@@ -243,16 +249,17 @@ def test_quota_receipt_stops_the_campaign(tmp_path, monkeypatch):
 
 def test_prompt_at_limit_runs_and_one_over_is_refused_without_launch(tmp_path, monkeypatch):
     monkeypatch.setenv("FAKE_MODE", "codex")
-    c = campaign(tmp_path, "codex"); c.raw["max_prompt_chars"] = 50
+    c = campaign(tmp_path, "codex"); limit = 50 + pool_rule_size(c)
+    c.raw["max_prompt_chars"] = limit
     r = transport.call("x" * 50, campaign=c, model="m", tools=False, search=False, cwd=tmp_path,
                        timeout=10, thread="T", stage="verify", actor="judge")
     assert r["outcome"] == "completed"
     monkeypatch.setenv("PATHFINDER_CODEX", str(tmp_path / "must-not-launch"))
-    with pytest.raises(transport.PromptTooLarge, match="51 characters exceed 50"):
+    with pytest.raises(transport.PromptTooLarge, match=f"{limit + 1} characters exceed {limit}"):
         transport.call("x" * 51, campaign=c, model="m", tools=False, search=False, cwd=tmp_path,
                        timeout=10, thread="T", stage="verify", actor="judge")
     row = rows(tmp_path)[-1]
-    assert row["outcome"] == "refused" and row["prompt_chars"] == 51
+    assert row["outcome"] == "refused" and row["prompt_chars"] == limit + 1
     assert row["failure"]["class"] == "input_too_large" and row["usage"] is None
     assert not (tmp_path / "stop.json").exists()          # a call-scoped refusal, not a campaign stop
     assert len(rows(tmp_path)) == 2                       # no launch-failed receipt: nothing was launched
