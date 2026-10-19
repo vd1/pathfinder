@@ -1,0 +1,36 @@
+{
+  "baseline_sha256": "a2d878df03946afcb1e4c348dd5f41d1ec3e53391c9be807389004736c6494aa",
+  "candidate_sha256": "2efb55157c27211d2f5d316078b622cfcbd61af264cc3c71e7362d49ef732c22",
+  "changes": [
+    {
+      "after": "The branch-3 readout analysis is conditional on its ideal measurement protocol and excludes optimisation and circuit costs. No total-cost saving is established.",
+      "before": "Branch-3 reports conditional analytic readout ratios favouring integration at some couplings and endpoints at others. Those ratios exclude optimisation and circuit costs, and their underlying cost-result file is omitted from this transport. No total-cost saving is established.",
+      "finding": "P1"
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "\\section{Correlated electronic response for EMLE: a conditional benchmark}",
+      "after": "\\section{Correlated electronic response for electrostatic machine learning embedding (EMLE): a conditional benchmark}"
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "TenCirChem supplies quantum-algorithm simulation tools; EMLE supplies the physical target and the test of usefulness.",
+      "after": "TenCirChem supplies quantum-algorithm simulation tools; EMLE supplies the physical target and the test of usefulness. Machine learning/molecular mechanics (ML/MM) combines a machine-learning potential with a molecular-mechanics (MM) environment. EMLE adds electrostatic embedding interactions to a vacuum machine-learning potential."
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "prepare a parametrised unitary coupled-cluster state",
+      "after": "prepare a parametrised unitary coupled-cluster (UCC) state"
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "The earlier DFT pilot has a different constraint.",
+      "after": "The earlier density-functional theory (DFT) pilot has a different constraint."
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "The branch-1 synthetic example has physical-total error $-0.0156876$ kcal/mol but damped-total error $+0.1160872$ kcal/mol at $s=0.6$. Its deliberately imperfect vacuum state is nonstationary. It shows that the specified endpoint error tolerances do not ensure the desired component or damped-total tolerance, not that a practical UCC optimiser failed.",
+      "after": "The branch-1 synthetic example has vacuum endpoint error $0.0156876$ kcal/mol and zero embedded endpoint error. Its physical-total error is $-0.0156876$ kcal/mol, but its damped-total error is $+0.1160872$ kcal/mol at $s=0.6$. Both endpoint errors are below the proposed $0.1$ kcal/mol component or damped-observable target, whereas the damped-total error exceeds it. Its deliberately imperfect vacuum state is nonstationary. Thus small endpoint errors do not ensure the proposed component or damped-total accuracy; this does not show that a practical UCC optimiser failed. The target is a pilot choice, not a hydration guarantee."
+    }
+  ]
+}

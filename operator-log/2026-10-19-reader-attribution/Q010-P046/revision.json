@@ -1,0 +1,38 @@
+{
+  "parent_candidate_sha256": "5aaa9c4a92fa25f03cdec7e843fe356a9ab7aca4198d48abb93072d13071d276",
+  "changes": [
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "\\section{Correlated electronic response for EMLE: a conditional benchmark}",
+      "after": "\\section{Correlated electronic response for electrostatic machine learning embedding (EMLE): a conditional benchmark}"
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "TenCirChem supplies quantum-algorithm simulation tools; EMLE supplies the physical target and the test of usefulness.",
+      "after": "TenCirChem supplies quantum-algorithm simulation tools; EMLE supplies the physical target and the test of usefulness. Machine learning/molecular mechanics (ML/MM) combines a machine-learning potential with a molecular-mechanics (MM) environment. EMLE adds electrostatic embedding interactions to a vacuum machine-learning potential."
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "prepare a parametrised unitary coupled-cluster state",
+      "after": "prepare a parametrised unitary coupled-cluster (UCC) state"
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "The earlier DFT pilot has a different constraint.",
+      "after": "The earlier density-functional theory (DFT) pilot has a different constraint."
+    },
+    {
+      "finding": "reader-definitions-and-example",
+      "before": "The branch-1 synthetic example has physical-total error $-0.0156876$ kcal/mol but damped-total error $+0.1160872$ kcal/mol at $s=0.6$. Its deliberately imperfect vacuum state is nonstationary. It shows that the specified endpoint error tolerances do not ensure the desired component or damped-total tolerance, not that a practical UCC optimiser failed.",
+      "after": "The branch-1 synthetic example has vacuum endpoint error $0.0156876$ kcal/mol and zero embedded endpoint error. Its physical-total error is $-0.0156876$ kcal/mol, but its damped-total error is $+0.1160872$ kcal/mol at $s=0.6$. Both endpoint errors are below the proposed $0.1$ kcal/mol component or damped-observable target, whereas the damped-total error exceeds it. Its deliberately imperfect vacuum state is nonstationary. Thus small endpoint errors do not ensure the proposed component or damped-total accuracy; this does not show that a practical UCC optimiser failed. The target is a pilot choice, not a hydration guarantee."
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-definitions-and-example",
+      "path": "reviews/current/critic-reader.md",
+      "sha256": "8a7513dcb63b773d39d0f4f2ac371c586434cd7813834a13e39f11f8cb2ee2f3",
+      "quote": "- Required revisions: Expand EMLE, ML/MM, MM, DFT and UCC at first use and briefly explain EMLE's role as an embedding model added to a vacuum machine-learning potential. In the branch-1 component-error paragraph, state the retained example's vacuum endpoint error of 0.0156876 kcal/mol, zero embedded endpoint error and proposed 0.1 kcal/mol component or damped-observable target; replace the unspecified-tolerance wording with an explicit comparison. Preserve the qualification that the vacuum state is nonstationary and the target is a pilot choice rather than a hydration guarantee."
+    }
+  ]
+}
