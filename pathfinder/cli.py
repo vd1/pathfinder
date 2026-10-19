@@ -83,6 +83,12 @@ def main(argv=None):
     ar.add_argument("--inputs-sha256", required=True, help="explicitly approved packet SHA256")
     ar.add_argument("--reason", required=True, help="authority and reason for this additional review")
     ar.add_argument("--apply", action="store_true", help="run this same prepared review; default makes no calls")
+    pc = sub.add_parser("account-present-continue", help="grant one guarded clarity correction cycle on a paused account")
+    pc.add_argument("pair")
+    pc.add_argument("--id", required=True)
+    pc.add_argument("--context", type=Path, required=True, help="JSON with source, exact quote and finding location")
+    pc.add_argument("--reason", required=True)
+    pc.add_argument("--apply", action="store_true", help="run this continuation; default prepares without calls")
     pr = sub.add_parser("present", help="the presentation pass on an accepted paper: editor, lookup, fresh check, corrections; ends CLEARED")
     pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
     pr.add_argument("--edited", action="store_true", help="finish a PCE-accepted account without commissioning a paper")
@@ -290,6 +296,10 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "account-present-continue":
+        from . import account_present
+        print(account_present.apply(c, ns.pair, identity=ns.id, context_path=ns.context,
+                                    reason=ns.reason, resume=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-amend-review":
         from . import account_review
         print(account_review.apply(c, ns.pair, identity=ns.id, grant_id=ns.grant,

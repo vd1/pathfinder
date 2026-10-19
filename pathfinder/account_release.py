@@ -57,6 +57,12 @@ def present(campaign, pair_id, *, restart=False):
             return "stopped: campaign stop or budget guard"
         c = view(campaign, pair_id, create=True)
         d = presentation.folder(c, pair_id)
+        continuation = d.parent / "presentation-continuation.json"
+        if continuation.exists():
+            import json
+            identity = json.loads(continuation.read_text())["id"]
+            if not (d.parent / "presentation-continuations" / identity / "result.json").exists():
+                raise pce.Changed("resume the active account-present-continue grant before another presentation")
         # Preserve a finished/failed presentation attempt before an explicit restart.
         if restart and d.exists():
             archive = d.parent / "presentation-history"

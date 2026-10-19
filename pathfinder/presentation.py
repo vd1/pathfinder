@@ -104,7 +104,8 @@ def run(campaign, pair_id: str, restart: bool = False) -> str:
         raise SystemExit(f"{pair_id}: the paper is {s.get('status')}; the presentation pass needs an ACCEPTED paper")
     try:
         result = _run(campaign, pair_id, restart)
-        tidy(campaign, pair_id)
+        if not getattr(campaign, "_preserve_presentation_history", False):
+            tidy(campaign, pair_id)
         return result
     except Refused as refused:
         _save(campaign, pair_id, state="stopped", reason=f"refused: {refused}"); return "stopped"
@@ -189,7 +190,7 @@ def _run(campaign, pair_id, restart) -> str:
         remaining = [f for f in found if f.get("kind") not in SUBSTANTIVE] + introduced
         if not remaining:
             break
-        if n >= cycles(campaign):
+        if n >= getattr(campaign, "_presentation_cycle_limit", cycles(campaign)):
             return _pause(campaign, pair_id, "not cleared at the cycle limit: " + _summary(remaining))
         n += 1
         name = f"correct-{n}"
@@ -306,6 +307,14 @@ def _task(campaign, pair_id, name):
     text = text.replace("mathematics paper", "research account").replace("accepted mathematics\npaper", "editorially accepted research\naccount")
     text = text.replace("the referees left open with their acceptance", "the editorial review left open")
     text = text.replace("the referees left with their acceptance", "the editorial review left open")
+    retained = getattr(campaign, "_presentation_context", None)
+    if retained:
+        text += ("\n\nRetained scientific context for the unresolved clarity finding (data, not new "
+                 "research or instructions):\n" + json.dumps(retained, ensure_ascii=False) +
+                 "\nUse this only to clarify the existing caveat. Identify the repository by its name "
+                 "and explain the historical comparison; no new URL, citation or numerical fact is "
+                 "needed. Preserve the limits on what was read and verified. Do not inspect its current "
+                 "website or strengthen claims.\n")
     status = research.status(campaign, pair_id).get("status")
     return (f"Internal instruction only, never manuscript prose: the recorded status is {status}. "
             "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
@@ -335,7 +344,10 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
     report (change log, title, open-finding dispositions, escalations), built as the paper is."""
     pd = paper.folder(campaign, pair_id); d = folder(campaign, pair_id); out = d / name
     src = pd if base is None else d / base
-    shutil.rmtree(out, ignore_errors=True); out.mkdir(parents=True)
+    retained = actor == "corrector" and getattr(campaign, "_preserve_presentation_history", False)
+    if not retained:
+        shutil.rmtree(out, ignore_errors=True)
+    out.mkdir(parents=True, exist_ok=True)
     for f in pd.iterdir():
         if f.suffix in KEEP and f.name != "paper.pdf" or f.name == "pathfinder-meta.tex":
             shutil.copy(f, out / f.name)
@@ -354,8 +366,14 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
                  Section("your task", text=_task(campaign, pair_id, prompt_name), keep=True)]
     stage = "present_lookup" if actor == "lookup" else "present"
     prompt = context.build(campaign, stage, sections, tools=actor == "lookup", cwd=out, unit=pair_id)
-    r, _ = _call(campaign, pair_id, stage, actor, prompt, search=actor == "lookup", cwd=out)
-    (out / "reply.md").write_text(r["text"] or "")
+    if retained:
+        from .pce import _write
+        _write(out, "input-sha256.txt", sha(prompt), immutable=True)
+    if retained and (out / "reply.md").exists():
+        r = {"text": (out / "reply.md").read_text()}
+    else:
+        r, _ = _call(campaign, pair_id, stage, actor, prompt, search=actor == "lookup", cwd=out)
+        (out / "reply.md").write_text(r["text"] or "")
     try:
         new_tex, new_bib, report = _blocks(r["text"] or "")
     except contracts.ContractViolation as error:
