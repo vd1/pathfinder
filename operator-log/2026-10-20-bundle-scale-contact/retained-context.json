@@ -1,0 +1,624 @@
+{
+  "external_sha256": {
+    "sources/external/P.txt": "735fba14b2af62cd83438d0b32a3b1d1d0e83e760db218bd23c4b41a0dc21762",
+    "sources/external/Q.txt": "d38483c8cfbf26170e21aa59ccffa8c7df3078d4dd685df8966bb1e637cbf95e",
+    "sources/external/research-supplement.md": "f64a2742ed45eecdfba84232a9d92a1267ac41f554e878af1666b526c1247112"
+  },
+  "embedded_sha256": {
+    "ada/check_conditional_information.py": "051212eb0ec9f25ee05bd60054c37fa39c85fd480c52f5524fac51cd71d04bc8",
+    "ada/conditional-information.md": "4ee0753c982c62e8aa42d2fcefe5f56bbabec77b14ef6bf8efe01fbccda61e49",
+    "branches/branch-1/ledger.jsonl": "9bfeda6d77e2252a68b160692c11adef0475cfeafe94dc8588a6d19d9d22ae4f",
+    "branches/branch-2/ledger.jsonl": "f8df98ed4b1e6bb35c92be26f9b02696ebd6cb88d79a403073ef2ff1b35d2966",
+    "branches/branch-3/emmy/rank-m-bridge.md": "5d99013de820badbc00a6297ebca0c2231840ccdc2447ae42d92584d22ec9949",
+    "branches/branch-3/ledger.jsonl": "10a39bc6f12bf7e6e43e5a28e1073e0b4a190b02916ae98548985950cc609a9f",
+    "emmy/check_marginal_bounds.py": "68181299b9b29e4114a2ad8e5c96c6c3981dfad9e65c54a0db30f3b75a83c573",
+    "emmy/marginal-bounds.md": "aa13b28c0106e2e55aaaaec9c4306fad7a38030c9f4b700ea71a8707d44e71aa",
+    "ledger.jsonl": "57ba7e1a6eb418bc68a69b2de3ede8fb2db9992243328ce1ca32a3e21eb99980"
+  },
+  "added_sources": [
+    {
+      "path": "branches/branch-3/ada/check_ligand_enm.py",
+      "sha256": "24f4492faa81533c4a97f77a7a55d1daaa764a4eb70e71dc24320019fcb26e12",
+      "purpose": "P1 exact unit-edge baseline and relative update scales"
+    },
+    {
+      "path": "emmy/full_deletion_check.py",
+      "sha256": "0fdf1555e814c3751fde19e75504096c432f659885ed33c1f6a263e167b54509",
+      "purpose": "P1 corrected restoration convention and proportional scale"
+    },
+    {
+      "path": "branches/branch-1/emmy/mode-audit/check_modes.py",
+      "sha256": "2bc23c079849bec7c32dee69b6c604b8c245577976f23633a30db24aadf405fb",
+      "purpose": "P2 exact contact selection, signed gradient and spectral fraction"
+    },
+    {
+      "path": "branches/branch-1/emmy/mode-audit/mode-results.json",
+      "sha256": "81ef496a13e77cbdca974a7ee73bcaa54a477aca6d0c8e1bc1a3522429b51adc",
+      "purpose": "P2 stored node identities and reported fractions"
+    },
+    {
+      "path": "branches/branch-1/emmy/conditioning/check_networks.py",
+      "sha256": "514c43f0238e7674d3823a3f35ffaf64ada833cae7a5abf2875563a9afaaef21",
+      "purpose": "P2 imported node parser, equal-spring matrix and rigid basis"
+    }
+  ],
+  "mode_row": {
+    "ligand_nodes": 27,
+    "cutoff_angstrom": 8.0,
+    "remedy": false,
+    "remedy_extra_springs": 0,
+    "dimension": 918,
+    "smallest_internal_eigenvalue": 0.0015816921006984975,
+    "largest_eigenvalue": 24.7824503370178,
+    "spectral_condition": 15668.31517086892,
+    "alpha_row_sum": 57.866046981442366,
+    "encoding_condition": 36584.89977656707,
+    "a_R": 1264.4686024016762,
+    "a_Q": 46260457.08948117,
+    "gly216_contact_nodes": [
+      [
+        "H",
+        "216",
+        "GLY",
+        "CA"
+      ],
+      [
+        "H",
+        "1501",
+        "22U",
+        "C13"
+      ]
+    ],
+    "gly216_contact_response": 0.20563402893960453,
+    "ligand_selected_trace": 24.981839205580837,
+    "all_node_internal_trace": 2057.8518609923194,
+    "ligand_selected_trace_protein_fit": 29.158782379229873,
+    "five_lowest_internal_modes": [
+      {
+        "rank": 1,
+        "eigenvalue": 0.0015816921006984975,
+        "participation_ratio_nodes": 7.632752825405771,
+        "participation_fraction": 0.024943636684332585,
+        "top_nodes": [
+          {
+            "key": [
+              "H",
+              "245",
+              "PHE",
+              "CA"
+            ],
+            "weight": 0.2188433329011575
+          },
+          {
+            "key": [
+              "H",
+              "246",
+              "GLY",
+              "CA"
+            ],
+            "weight": 0.1966818200101623
+          },
+          {
+            "key": [
+              "H",
+              "244",
+              "GLN",
+              "CA"
+            ],
+            "weight": 0.1345395005760337
+          },
+          {
+            "key": [
+              "H",
+              "242",
+              "ILE",
+              "CA"
+            ],
+            "weight": 0.09933125655130316
+          },
+          {
+            "key": [
+              "H",
+              "241",
+              "VAL",
+              "CA"
+            ],
+            "weight": 0.0923036899202033
+          },
+          {
+            "key": [
+              "H",
+              "243",
+              "ASP",
+              "CA"
+            ],
+            "weight": 0.06906931986397263
+          },
+          {
+            "key": [
+              "H",
+              "240",
+              "LYS",
+              "CA"
+            ],
+            "weight": 0.040331864275252045
+          },
+          {
+            "key": [
+              "H",
+              "238",
+              "ILE",
+              "CA"
+            ],
+            "weight": 0.02685063319072459
+          },
+          {
+            "key": [
+              "H",
+              "237",
+              "TRP",
+              "CA"
+            ],
+            "weight": 0.021071294099985205
+          },
+          {
+            "key": [
+              "H",
+              "239",
+              "GLN",
+              "CA"
+            ],
+            "weight": 0.018325830228276586
+          }
+        ],
+        "top10_weight": 0.917348541617071,
+        "total_trace_fraction": 0.3072302303120923,
+        "ligand_weight": 0.002049117191119716,
+        "gly216_gradient_overlap_squared": 3.1588345291286825e-10,
+        "contact_response_contribution": 1.9971235411327506e-07,
+        "contact_response_fraction": 9.712028458671658e-07,
+        "ligand_trace_contribution": 1.2955221754061976,
+        "ligand_trace_fraction": 0.0518585587212003,
+        "protein_fit_ligand_trace_fraction": 0.05584020730227592
+      },
+      {
+        "rank": 2,
+        "eigenvalue": 0.003354753533811211,
+        "participation_ratio_nodes": 2.1090864789658177,
+        "participation_fraction": 0.006892439473744503,
+        "top_nodes": [
+          {
+            "key": [
+              "L",
+              "1B",
+              "ALA",
+              "CA"
+            ],
+            "weight": 0.49248837839279347
+          },
+          {
+            "key": [
+              "L",
+              "1A",
+              "ASP",
+              "CA"
+            ],
+            "weight": 0.4812326883203522
+          },
+          {
+            "key": [
+              "L",
+              "1C",
+              "GLU",
+              "CA"
+            ],
+            "weight": 0.002214956217842759
+          },
+          {
+            "key": [
+              "L",
+              "2",
+              "GLY",
+              "CA"
+            ],
+            "weight": 0.0008540131061406104
+          },
+          {
+            "key": [
+              "L",
+              "3",
+              "LEU",
+              "CA"
+            ],
+            "weight": 0.00047122612004564627
+          },
+          {
+            "key": [
+              "L",
+              "9",
+              "LYS",
+              "CA"
+            ],
+            "weight": 0.00036724181983099376
+          },
+          {
+            "key": [
+              "H",
+              "115",
+              "SER",
+              "CA"
+            ],
+            "weight": 0.0003453043347039714
+          },
+          {
+            "key": [
+              "H",
+              "78",
+              "ASN",
+              "CA"
+            ],
+            "weight": 0.00031490042403668197
+          },
+          {
+            "key": [
+              "L",
+              "1",
+              "CYS",
+              "CA"
+            ],
+            "weight": 0.00030565303410381246
+          },
+          {
+            "key": [
+              "H",
+              "246",
+              "GLY",
+              "CA"
+            ],
+            "weight": 0.0003010892645741891
+          }
+        ],
+        "top10_weight": 0.9788954510344243,
+        "total_trace_fraction": 0.14485225918470196,
+        "ligand_weight": 0.0002418064224656772,
+        "gly216_gradient_overlap_squared": 1.6009270633764736e-10,
+        "contact_response_contribution": 4.772115290263126e-08,
+        "contact_response_fraction": 2.3206836508877205e-07,
+        "ligand_trace_contribution": 0.07207874439317451,
+        "ligand_trace_fraction": 0.002885245709894427,
+        "protein_fit_ligand_trace_fraction": 0.0032684505094278606
+      },
+      {
+        "rank": 3,
+        "eigenvalue": 0.014025523767670252,
+        "participation_ratio_nodes": 7.07637829427421,
+        "participation_fraction": 0.023125419262334017,
+        "top_nodes": [
+          {
+            "key": [
+              "H",
+              "246",
+              "GLY",
+              "CA"
+            ],
+            "weight": 0.29867575454364736
+          },
+          {
+            "key": [
+              "H",
+              "245",
+              "PHE",
+              "CA"
+            ],
+            "weight": 0.14490660880268696
+          },
+          {
+            "key": [
+              "H",
+              "243",
+              "ASP",
+              "CA"
+            ],
+            "weight": 0.11780150375342777
+          },
+          {
+            "key": [
+              "H",
+              "242",
+              "ILE",
+              "CA"
+            ],
+            "weight": 0.11215545655095156
+          },
+          {
+            "key": [
+              "H",
+              "244",
+              "GLN",
+              "CA"
+            ],
+            "weight": 0.049983424434227014
+          },
+          {
+            "key": [
+              "H",
+              "239",
+              "GLN",
+              "CA"
+            ],
+            "weight": 0.02742484293541588
+          },
+          {
+            "key": [
+              "H",
+              "241",
+              "VAL",
+              "CA"
+            ],
+            "weight": 0.02653302949329996
+          },
+          {
+            "key": [
+              "H",
+              "238",
+              "ILE",
+              "CA"
+            ],
+            "weight": 0.012181599500420444
+          },
+          {
+            "key": [
+              "H",
+              "89",
+              "TYR",
+              "CA"
+            ],
+            "weight": 0.010465726825444714
+          },
+          {
+            "key": [
+              "H",
+              "236",
+              "LYS",
+              "CA"
+            ],
+            "weight": 0.010422129921124242
+          }
+        ],
+        "top10_weight": 0.8105500767606459,
+        "total_trace_fraction": 0.03464709314461027,
+        "ligand_weight": 0.012349161473910696,
+        "gly216_gradient_overlap_squared": 2.1537413173231935e-08,
+        "contact_response_contribution": 1.5355870860863733e-06,
+        "contact_response_fraction": 7.467572823452197e-06,
+        "ligand_trace_contribution": 0.8804777403305479,
+        "ligand_trace_fraction": 0.035244712492339354,
+        "protein_fit_ligand_trace_fraction": 0.04309071271346116
+      },
+      {
+        "rank": 4,
+        "eigenvalue": 0.020249112220158537,
+        "participation_ratio_nodes": 5.33156986084554,
+        "participation_fraction": 0.01742343091779588,
+        "top_nodes": [
+          {
+            "key": [
+              "H",
+              "60D",
+              "TRP",
+              "CA"
+            ],
+            "weight": 0.2755426113220924
+          },
+          {
+            "key": [
+              "H",
+              "60E",
+              "ASP",
+              "CA"
+            ],
+            "weight": 0.2489815574391769
+          },
+          {
+            "key": [
+              "H",
+              "60C",
+              "PRO",
+              "CA"
+            ],
+            "weight": 0.1869371639451956
+          },
+          {
+            "key": [
+              "H",
+              "60B",
+              "PRO",
+              "CA"
+            ],
+            "weight": 0.09423439739867065
+          },
+          {
+            "key": [
+              "H",
+              "60F",
+              "LYS",
+              "CA"
+            ],
+            "weight": 0.06763560747097198
+          },
+          {
+            "key": [
+              "H",
+              "60G",
+              "ASN",
+              "CA"
+            ],
+            "weight": 0.034199670908702066
+          },
+          {
+            "key": [
+              "H",
+              "75",
+              "ARG",
+              "CA"
+            ],
+            "weight": 0.0030293198904950843
+          },
+          {
+            "key": [
+              "H",
+              "76",
+              "TYR",
+              "CA"
+            ],
+            "weight": 0.0029553397767022173
+          },
+          {
+            "key": [
+              "H",
+              "60H",
+              "PHE",
+              "CA"
+            ],
+            "weight": 0.0027918558804732596
+          },
+          {
+            "key": [
+              "H",
+              "74",
+              "THR",
+              "CA"
+            ],
+            "weight": 0.0023927976813273772
+          }
+        ],
+        "top10_weight": 0.9187003217138076,
+        "total_trace_fraction": 0.02399826832391429,
+        "ligand_weight": 0.005774052590487847,
+        "gly216_gradient_overlap_squared": 5.59632018032499e-07,
+        "contact_response_contribution": 2.7637360687614257e-05,
+        "contact_response_fraction": 0.0001344007158257423,
+        "ligand_trace_contribution": 0.2851509008251543,
+        "ligand_trace_fraction": 0.011414327763403937,
+        "protein_fit_ligand_trace_fraction": 0.013996019054172153
+      },
+      {
+        "rank": 5,
+        "eigenvalue": 0.027645104829574316,
+        "participation_ratio_nodes": 84.25285528939283,
+        "participation_fraction": 0.27533612839670857,
+        "top_nodes": [
+          {
+            "key": [
+              "H",
+              "246",
+              "GLY",
+              "CA"
+            ],
+            "weight": 0.04455157844184611
+          },
+          {
+            "key": [
+              "H",
+              "60D",
+              "TRP",
+              "CA"
+            ],
+            "weight": 0.02419870437354033
+          },
+          {
+            "key": [
+              "H",
+              "77A",
+              "ARG",
+              "CA"
+            ],
+            "weight": 0.023703823465246274
+          },
+          {
+            "key": [
+              "H",
+              "37",
+              "PRO",
+              "CA"
+            ],
+            "weight": 0.023039233691655118
+          },
+          {
+            "key": [
+              "H",
+              "60C",
+              "PRO",
+              "CA"
+            ],
+            "weight": 0.022430121082255013
+          },
+          {
+            "key": [
+              "H",
+              "76",
+              "TYR",
+              "CA"
+            ],
+            "weight": 0.02084207534028823
+          },
+          {
+            "key": [
+              "H",
+              "36A",
+              "SER",
+              "CA"
+            ],
+            "weight": 0.02073035132317347
+          },
+          {
+            "key": [
+              "H",
+              "243",
+              "ASP",
+              "CA"
+            ],
+            "weight": 0.020044799624335162
+          },
+          {
+            "key": [
+              "L",
+              "14A",
+              "LYS",
+              "CA"
+            ],
+            "weight": 0.01944109306902844
+          },
+          {
+            "key": [
+              "L",
+              "11",
+              "SER",
+              "CA"
+            ],
+            "weight": 0.018672119680316686
+          }
+        ],
+        "top10_weight": 0.23765390009168483,
+        "total_trace_fraction": 0.01757792677496239,
+        "ligand_weight": 0.026646597664467014,
+        "gly216_gradient_overlap_squared": 8.948096422388053e-09,
+        "contact_response_contribution": 3.236774277960239e-07,
+        "contact_response_fraction": 1.5740460344289085e-06,
+        "ligand_trace_contribution": 0.9638812306459726,
+        "ligand_trace_fraction": 0.03858327734455379,
+        "protein_fit_ligand_trace_fraction": 0.047158106640314806
+      }
+    ],
+    "lowest_eigenpair_residual": 2.4105522841937842e-14,
+    "residual_interval_not_certified": [
+      0.001581692100674392,
+      0.001581692100722603
+    ],
+    "eigenvector_orthogonality_frobenius_error": 3.2295995554523497e-12,
+    "rigid_null_residual": 2.4122619794854796e-15,
+    "gap_status": "floating-point estimate; residual interval locates an eigenvalue, not a certified indexed lower bound"
+  },
+  "cleanliness": "All five files inspected as scientific code/results. Prior-review commentary in mode-note.md is not transported; no scientific clauses are removed from included files.",
+  "scientific_execution": false
+}

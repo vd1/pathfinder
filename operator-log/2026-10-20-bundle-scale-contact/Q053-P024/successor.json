@@ -1,0 +1,48 @@
+{
+  "parent_candidate_sha256": "c45c4d4093ef33ee19b6473401c19245702308769cedd22045c8f011aad56400",
+  "parent_acceptance_sha256": "309fcd761b763a7b922e5d204aaa30c7fc913ea2003c244e0a300c1748a7fc93",
+  "returned_findings_sha256": "b67c11d7184d3ce165d2b0763efda6155a53dfe3a9bd1ba749f24f3b8a780e99",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "The baseline spring scales are 1 and 2 in the prescribed model, without chemical fitting.",
+      "after": "The baseline spring scales 1 and 2 are relative numerical multipliers \\(s\\) of the retained unit-spring matrix, without chemical fitting or an assigned physical force-constant calibration. In the code's convention, \\(K_{\\rm unit}=\\sum_e g_e g_e^T\\) over all cutoff-selected baseline edges, where each Cartesian distance-gradient column places \\((x_i-x_j)/\\lVert x_i-x_j\\rVert\\) at node \\(i\\), its negative at node \\(j\\), and zeros elsewhere. Coordinates and cutoffs are in angstroms; dividing by the edge length normalises the direction, rather than assigning a physical spring constant. The full baseline is scaled as \\(sK_{\\rm unit}\\). The earlier stiffening calculation expresses update strengths relative to that baseline through \\(a/s\\) and \\(b/s\\); the corrected restoration calculation deletes and restores unit edge matrices, with common proportional scaling of all four corners for \\(s=2\\). Its dimensionless determinant cycle is therefore unchanged by that common scale, as recorded, rather than representing a second calibrated molecular model.\\footnote{Retained numerical conventions: \\texttt{branches/branch-3/ada/check\\_ligand\\_enm.py} and \\texttt{emmy/full\\_deletion\\_check.py}. No kcal/mol/angstrom-squared or other physical spring unit is inferred.}"
+    },
+    {
+      "finding": "P2",
+      "before": "of the Gly216 distance self-response.",
+      "after": "of the Gly216 distance self-response. For this ligand-inclusive mode audit, the exact contact is chain-H Gly216 alpha carbon (CA) to chain-H residue 1501, ligand 22U atom C13: the retained selection chooses the nearest 22U heavy node to Gly216 CA. This is a coarse CA--C13 distance, not Q's Gly216 carbonyl contact or the separate N1--Gly216 N/CA/C/O intervention bundle. With \\(d=(x_{\\rm CA}-x_{\\rm C13})/\\lVert x_{\\rm CA}-x_{\\rm C13}\\rVert\\), its Cartesian gradient \\(g\\) has block \\(+d\\) at CA, \\(-d\\) at C13 and zero elsewhere; the code does not rescale this whole vector to unit norm. The six Euclidean rigid modes are removed by restriction to their orthogonal complement. For Cartesian-normalised internal eigenvectors \\(v_k\\) and positive eigenvalues \\(\\lambda_k\\) of that unit-spring matrix, the self-response is \\(g^TK^+g=\\sum_k(v_k^Tg)^2/\\lambda_k\\); the quoted lowest-mode share divides \\((v_1^Tg)^2/\\lambda_1\\) by that entire sum. Here \\(K^+\\) is the inverse on the internal subspace, zero on the rigid modes. The share is dimensionless, not an absolute contact variance or a physically calibrated force-field response. The separate protein-only audit instead chooses the nearest protein CA more than 4 angstroms from Gly216 CA; its saved contact is Gly226 CA, and it is not the contact behind the quoted ligand-inclusive fraction.\\footnote{Exact saved node identities and mode fraction: \\texttt{branches/branch-1/emmy/mode-audit/mode-results.json}; selection, gradient and spectral sum: \\texttt{check\\_modes.py} in that directory; node/parser and rigid-basis definitions: \\texttt{branches/branch-1/emmy/conditioning/check\\_networks.py}. These retained files are inspected without executing their calculations.}"
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "branches/branch-3/ada/check_ligand_enm.py",
+        "sha256": "24f4492faa81533c4a97f77a7a55d1daaa764a4eb70e71dc24320019fcb26e12",
+        "purpose": "P1 exact unit-edge baseline and relative update scales"
+      },
+      {
+        "path": "emmy/full_deletion_check.py",
+        "sha256": "0fdf1555e814c3751fde19e75504096c432f659885ed33c1f6a263e167b54509",
+        "purpose": "P1 corrected restoration convention and proportional scale"
+      },
+      {
+        "path": "branches/branch-1/emmy/mode-audit/check_modes.py",
+        "sha256": "2bc23c079849bec7c32dee69b6c604b8c245577976f23633a30db24aadf405fb",
+        "purpose": "P2 exact contact selection, signed gradient and spectral fraction"
+      },
+      {
+        "path": "branches/branch-1/emmy/mode-audit/mode-results.json",
+        "sha256": "81ef496a13e77cbdca974a7ee73bcaa54a477aca6d0c8e1bc1a3522429b51adc",
+        "purpose": "P2 stored node identities and reported fractions"
+      },
+      {
+        "path": "branches/branch-1/emmy/conditioning/check_networks.py",
+        "sha256": "514c43f0238e7674d3823a3f35ffaf64ada833cae7a5abf2875563a9afaaef21",
+        "purpose": "P2 imported node parser, equal-spring matrix and rigid basis"
+      }
+    ]
+  }
+}
