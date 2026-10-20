@@ -1,0 +1,28 @@
+{
+  "parent_candidate_sha256": "d3bdad3816da0b9f2f1134829f0baf9e12ac4abd68fdf28c3fcc29c0e147fcd6",
+  "parent_acceptance_sha256": "b953d6c4cfc1964d92f9aaf8e3c65f47fb0365f4f62f8293d162f4c1c570ced4",
+  "returned_findings_sha256": "9673cab9bb066a82970447f6337f7a215049d1f738aa1821af80a78ac74a8255",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "while comparison and cycle changes stay below \\(2.4\\times10^{-14}\\).",
+      "after": "while comparison and cycle changes stay below \\(2.4\\times10^{-14}\\) kcal/mol. Here the saved comparison statistic is \\(\\max_i|[(H-G)Bz]_i|\\), over ligand estimates, and the saved cycle-residual-change statistic is \\(\\max_e|[Bz-BG(Bz)]_e|\\), over candidate edges: the latter is the change in the edge-fit residual after the common potential shift, not a separately normalised sum around a chosen cycle basis. The recorded values are respectively \\(1.6237011735142914\\times10^{-14}\\) and \\(2.3092638912203256\\times10^{-14}\\) kcal/mol. Both are absolute component maxima, with no division by ligand or edge count, no root-mean-square averaging and no relative-error normalisation. The constructed \\(z\\) is centred and assigned mean absolute ligand magnitude 1 kcal/mol; the incidence matrix and centred fit maps act on that energy-valued shift. The separate saved maximum entrywise discrepancy of \\(GB\\) and \\(HB\\) from \\(C_0\\) is dimensionless and is not the quoted energy residual. These floating-point diagnostic residuals are not a physical accuracy threshold.\\footnote{Retained definition and saved values: \\texttt{emmy/common\\_bias\\_audit.py} and \\texttt{emmy/common-bias-diagnostic.json}; the script is inspected, not rerun.}"
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "emmy/common_bias_audit.py",
+        "sha256": "6a926fa897b7e395f4ae10036c2c00d7c540de0516adaf3a964b24a577e6983e",
+        "purpose": "Exact component-maximum residual definitions and energy scale"
+      },
+      {
+        "path": "emmy/common-bias-diagnostic.json",
+        "sha256": "4e2f9744cecdab3842440dd2c3be3bc6681b984da164bb983a9b5a09ab404659",
+        "purpose": "Retained residual values, model scope and original input hashes"
+      }
+    ]
+  }
+}

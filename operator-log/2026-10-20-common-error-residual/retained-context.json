@@ -1,0 +1,40 @@
+{
+  "external_sha256": {
+    "sources/external/P.txt": "57eb9cb9e2754cfbefd76b5ec9535b6190349e328e63b98db6919f7de3aeab74",
+    "sources/external/Q.txt": "26e3a31040fa5bec2bb4284d82e481eb574ea4ccb6abe63917b4a93e1913e5dd",
+    "sources/external/research-supplement.md": "f41d1240f5c91e60768afd98e410f718efe17963092919af4abe954051d0adb5"
+  },
+  "embedded_sha256": {
+    "ada/loading_cost_audit.py": "e77e1eaa30e161182c35557862987e2034a5098b22c6da9b508f55f55298a9b0",
+    "ada/loading_cost_variants.py": "c305bbc39f2015498b9ad654f76408585f625b49985c0351693400ec0b7ab008",
+    "branches/branch-1/ledger.jsonl": "066fd0a761b638b0b3ce290d90476d7924cac524956b13f03185cb38bab76c15",
+    "branches/branch-2/ledger.jsonl": "e73c09e8de89f9571615d42047c2f31c0c84ed577c903a8a7beea25f383dc5e8",
+    "branches/branch-3/emmy/check_fixed_budget_planning.py": "4653984c8fbf12a86b522c2a1ba6aa80abe52a74cdb70925c82d077a98b7a5c2",
+    "branches/branch-3/ledger.jsonl": "fdb372f2efd8109331c104eaf022015d1098c92a62c433a597f55f44118d9f5b",
+    "emmy/ensemble-allocation-diagnostic.json": "39d742b2b1c209a47798d3d7525f530759123847134c5da16bc1592749df36bc",
+    "emmy/ensemble_allocation_audit.py": "e70950216248d8153ab00bc99f16377c378f693bffc0b978c6e3be836a9b23f6",
+    "emmy/final-precision-account.md": "2873d13836fe98e58e13e6c3a15e2e16e264064c2cac6b6554348c08e38c1f56",
+    "emmy/paired_graph_risk.py": "408d96595c31677d61b698218c49b8ae720864380566536e569694ef8816f873",
+    "ledger.jsonl": "e2cfa19ee3abf288e69f97c3325b2bd5c8241c5d2dbbecb8e4d52f85c3e06a94"
+  },
+  "added_sources": [
+    {
+      "path": "emmy/common_bias_audit.py",
+      "sha256": "6a926fa897b7e395f4ae10036c2c00d7c540de0516adaf3a964b24a577e6983e",
+      "purpose": "Exact component-maximum residual definitions and energy scale"
+    },
+    {
+      "path": "emmy/common-bias-diagnostic.json",
+      "sha256": "4e2f9744cecdab3842440dd2c3be3bc6681b984da164bb983a9b5a09ab404659",
+      "purpose": "Retained residual values, model scope and original input hashes"
+    }
+  ],
+  "cleanliness": "Full script and diagnostic inspected: scientific code/results, no prior review/editorial instructions.",
+  "definition_lines": [
+    "graph_difference_change_max: np.max(abs((H-G)@added))",
+    "cycle_residual_change_max: np.max(abs(added-B@(G@added)))",
+    "added = B@z",
+    "Its mean absolute ligand magnitude is 1 kcal/mol, and it is centred."
+  ],
+  "source_execution": false
+}
