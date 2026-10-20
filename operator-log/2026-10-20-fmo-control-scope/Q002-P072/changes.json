@@ -1,0 +1,71 @@
+{
+  "baseline_sha256": "66c9f03ad6cb3c634f2b9e15013ee8e1cdbded210b36f94697c346307576f9c7",
+  "candidate_sha256": "b9999937ee412fbcdf95b19fc98f05a4f39f6ab05c9aa668c0901ed999662673",
+  "changes": [
+    {
+      "after": "The FMO controls changed only the fast correlation time at fixed component variances and slow correlation time: one compared 4.04 with 4.56 fs, and a separate low/high control compared 3.79 with 4.56 fs. These were counterfactual variants of the recovered two-component FMO covariance model, not exchanges between observed FMO cases, PYP intermediates or docking poses. The lifetime-and-intensity nuisance construction used the 4.04 versus 4.56 fs pair.",
+      "before": "Matched-variance time swaps were counterfactual.",
+      "finding": "P1"
+    },
+    {
+      "after": "Useful discrimination supplied by the constrained static comparator does not by itself establish or exclude an incremental temporal benefit. For the specified PYP parameters and width statistic, no usable temporal increment has been demonstrated; that limited result does not exclude other observables or parameter regimes (Branch-2 entry 72). Any proposed temporal increment must survive the uncertainty and nuisance comparison before it can support an additional benefit.",
+      "before": "Useful discrimination already supplied by the constrained static comparator defeats the proposed incremental temporal benefit.",
+      "finding": "C091"
+    },
+    {
+      "after": "Propagation error must enter that observable's budget. Here \\(C(t)\\) is the undamped scalar optical correlation defined above, including its carrier phase and fixed transition-dipole strength. Its normalised coherence is \\(c(t)=C(t)/C(0)\\), where \\(C(0)=|\\mu|^2>0\\) for that bright fixed-dipole transition, so \\(c(0)=1\\). This division removes the dipole-strength intensity scale; it does not calibrate the complete experimental absorption. The damping factor is applied separately in the following integral. Its positive time constant \\(T_d\\) is an imposed exponential-decay parameter held fixed between the propagation calculations. It is not a measured or calibrated Q-ligand physical lifetime. If the same single exponential is used in the earlier modulus model with rate \\(\\gamma\\), its rate is \\(1/T_d\\); it must not be included again inside \\(c(t)\\). The gap-correlation time \\(\\tau_c\\) instead belongs to the covariance model and is a different parameter. Under the retained audit's chosen normalised line-shape convention,",
+      "before": "Propagation error must enter that observable's budget. Under the record's chosen normalised convention,",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "Here \\(E\\) is the transform's energy argument, and \\(\\epsilon\\) bounds the complex error in \\(c(t)\\) uniformly over the integration interval, with the same Hamiltonian, dipoles, initial normalisation and imposed damping in both calculations. The displayed bound applies only to this correlation-derived \\(L(E)\\); the convention gives an area-normalised Lorentzian for a noiseless isolated transition. It is an explicitly chosen convention, not a reconstruction of damaged absorption prefactors in P. A nonnegative instrument-convolution kernel of unit area cannot increase this uniform line-shape bound. Transfer to complete instrument-convolved and binned absorption still requires the appropriate optical frequency prefactor, absolute intensity scale and calibrated response/binning map, with their scales and uncertainties controlled. The removed dipole strength, concentrations and free/bound fractions cannot be recovered by treating \\(L\\) as an absolute absorption spectrum. Electronic-model, sampling, quadrature and finite-time errors remain separate. No calibrated Q-specific radii are supplied (joint entries 4, 9 and 28, adopting the corrected branch-3 observable bound).",
+      "before": "provided complex coherence error is uniformly at most \\(\\epsilon\\), with fixed dipoles, normalisation and damping. Electronic-model, sampling, quadrature and finite-time errors remain separate. No calibrated Q-specific radii are supplied (joint entries 4, 9 and 28, adopting the corrected branch-3 observable bound).",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "Branch-2's simplified calculation using recovered photoactive yellow protein parameters~\\cite{PYP}",
+      "before": "Branch-2's simplified calculation using recovered photoactive yellow protein parameters",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "Its Fenna--Matthews--Olson pigment control~\\cite{FMO} permitted",
+      "before": "Its Fenna--Matthews--Olson pigment control permitted",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "theorem-source recovery from Tropp's notes~\\cite{Tropp}",
+      "before": "theorem-source recovery from Tropp's notes",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "Branch-1's recovered author-copy account of Mondal and Meuwly~\\cite{Mondal} supports",
+      "before": "Branch-1's recovered author-copy account of Mondal and Meuwly supports",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "Its Haldar evidence~\\cite{Haldar} is abstract-only",
+      "before": "Its Haldar evidence is abstract-only",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "after": "Branch-1's recovered article account~\\cite{Ehrmann} reports TGT ligand 9 conformers",
+      "before": "Branch-1's recovered article account reports TGT ligand 9 conformers",
+      "finding": "normalisation-and-context-citations"
+    },
+    {
+      "finding": "fmo-fit-limitations",
+      "before": "Its Fenna--Matthews--Olson pigment control~\\cite{FMO} permitted substantial motional narrowing, but the fitted fast component concerns total gap fluctuations, without a unique assignment to a pose-sensitive environmental contribution.",
+      "after": "Its Fenna--Matthews--Olson pigment control~\\cite{FMO} permitted substantial motional narrowing, but the fitted fast component concerns total gap fluctuations, without a unique assignment to a pose-sensitive environmental contribution. The roughly 4 fs fitted component lies near or below the source's 5 fs sampling interval. The recovered two-exponential Fit 2 omits oscillatory covariance, and no fitted-time uncertainty is supplied. These limitations qualify the inferred fast temporal regime (branch-2 entries 73--76)."
+    },
+    {
+      "finding": "assumed-nuisance-controls",
+      "before": "The lifetime-and-intensity nuisance construction used the 4.04 versus 4.56 fs pair.",
+      "after": "The lifetime-and-intensity nuisance construction used the 4.04 versus 4.56 fs pair. Its carrier energy of 2.78 eV, baseline extra damping time of 50 fs and Gaussian instrument response with full width at half maximum of 1 nm at 446 nm were imposed controls, not measured FMO or Q-ligand settings. The nuisance construction retained these carrier and instrument assumptions while varying damping and intensity (branch-2 entries 75, 76 and 89)."
+    },
+    {
+      "finding": "convergence-boundary",
+      "before": "These are branch-reported model controls, not Q-pose predictions; the joint work adopts the nuisance example (branch-2 entries 72, 75, 85 and 89; joint entry 11).",
+      "after": "Grid and time-step checks establish numerical convergence of the chosen control calculation; they do not validate the source covariance fit or its transfer to a Q ligand (branch-2 entries 77 and 79). These are branch-reported model controls, not Q-pose predictions; the joint work adopts the nuisance example (branch-2 entries 72, 75, 85 and 89; joint entry 11)."
+    }
+  ]
+}

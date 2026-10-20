@@ -1,0 +1,40 @@
+{
+  "parent_candidate_sha256": "65d3474fba40b968de6a9ebffaf42be4d092c65e5df60329e5e6fb746fe57af5",
+  "changes": [
+    {
+      "finding": "fmo-fit-limitations",
+      "before": "Its Fenna--Matthews--Olson pigment control~\\cite{FMO} permitted substantial motional narrowing, but the fitted fast component concerns total gap fluctuations, without a unique assignment to a pose-sensitive environmental contribution.",
+      "after": "Its Fenna--Matthews--Olson pigment control~\\cite{FMO} permitted substantial motional narrowing, but the fitted fast component concerns total gap fluctuations, without a unique assignment to a pose-sensitive environmental contribution. The roughly 4 fs fitted component lies near or below the source's 5 fs sampling interval. The recovered two-exponential Fit 2 omits oscillatory covariance, and no fitted-time uncertainty is supplied. These limitations qualify the inferred fast temporal regime (branch-2 entries 73--76)."
+    },
+    {
+      "finding": "assumed-nuisance-controls",
+      "before": "The lifetime-and-intensity nuisance construction used the 4.04 versus 4.56 fs pair.",
+      "after": "The lifetime-and-intensity nuisance construction used the 4.04 versus 4.56 fs pair. Its carrier energy of 2.78 eV, baseline extra damping time of 50 fs and Gaussian instrument response with full width at half maximum of 1 nm at 446 nm were imposed controls, not measured FMO or Q-ligand settings. The nuisance construction retained these carrier and instrument assumptions while varying damping and intensity (branch-2 entries 75, 76 and 89)."
+    },
+    {
+      "finding": "convergence-boundary",
+      "before": "These are branch-reported model controls, not Q-pose predictions; the joint work adopts the nuisance example (branch-2 entries 72, 75, 85 and 89; joint entry 11).",
+      "after": "Grid and time-step checks establish numerical convergence of the chosen control calculation; they do not validate the source covariance fit or its transfer to a Q ligand (branch-2 entries 77 and 79). These are branch-reported model controls, not Q-pose predictions; the joint work adopts the nuisance example (branch-2 entries 72, 75, 85 and 89; joint entry 11)."
+    }
+  ],
+  "findings": [
+    {
+      "id": "fmo-fit-limitations",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "0d9946358c93c5ecb47195e41c39ae7c7a73fd0c6168e92622ff81ca27baa5cf",
+      "quote": "Add the FMO sampling, omitted-oscillation and unavailable fit-uncertainty limitations to the contextual-control discussion."
+    },
+    {
+      "id": "assumed-nuisance-controls",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "0d9946358c93c5ecb47195e41c39ae7c7a73fd0c6168e92622ff81ca27baa5cf",
+      "quote": "Identify the carrier, damping and instrument response used for those calculations as assumed controls,"
+    },
+    {
+      "id": "convergence-boundary",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "0d9946358c93c5ecb47195e41c39ae7c7a73fd0c6168e92622ff81ca27baa5cf",
+      "quote": "preserving the distinction between numerical convergence and validation of the source covariance or its molecular transfer."
+    }
+  ]
+}
