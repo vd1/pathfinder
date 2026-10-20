@@ -36,7 +36,9 @@ def custody(campaign, pair_id, root):
     thread = campaign.thread_dir(pair_id).resolve()
     for name, text in snapshots.items():
         path = (thread / name).resolve()
-        if not path.is_relative_to(thread) or path.read_text() != text:
+        # Snapshots preserve decoded UTF-8 bytes, including CRLF. Text-mode reads
+        # normalise line endings and falsely reject unchanged retained evidence.
+        if not path.is_relative_to(thread) or path.read_bytes() != text.encode('utf-8'):
             raise pce.Changed('original amendment evidence changed')
     return request, candidate, bib
 
