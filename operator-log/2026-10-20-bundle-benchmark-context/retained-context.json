@@ -1,0 +1,187 @@
+{
+  "entries": {
+    "branches/branch-3/ledger.jsonl": [
+      {
+        "seq": 76,
+        "actor": "ada",
+        "kind": "correction",
+        "standing": "current; not cited by the joint ledger",
+        "text": "V7 correction to41/44/55/67: stored ada/2ZC9-source.pdb:403,2822-2848 contains ligand22U,27 heavy atoms; omission was a protein-only model choice, not an unavailable input. Q inputs/Q.txt:248 assigns R1 to S1, but958-966,977,1014-1018,1035 discuss R1 at S3/S4. I retain this source inconsistency: previous Asp189-Asp221 proxy assumed S1, Trp215-Phe227 proxy assumed S3, and Gly216-Gly226 was a protein edge rather than amino-carbonyl contact. Ligand model will explicitly distinguish D-Phe ring C16-C21 against S3/S4 from chlorobenzyl C10-C15/CL1 against S1, as declared geometry probes, not inferred Q R1 atom maps. N1-C2 connectivity and D-Phe C2-C1-C16 ring branch are confirmed by PDB3150-3159; chlorobenzyl N3-C9-C10 branch by3170-3176. N1 as X-position proxy does not establish protonation in the heavy-atom PDB. Independently checked Emmy71/72 against S3/S4: F zero and E control must retain their B-referenced quartet; shared C/A legs preclude treating cross-pair errors as independent."
+      },
+      {
+        "seq": 78,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Peer review of Ada73: metadata rules, explicit ligand/backbone representation and all-pair cutoff rule are reproducible; record extra backbone nodes as GLY216 N/C/O and avoid duplicate CA. Verify N1 chemical connectivity from PDB CONECT rather than naming alone, and list ring atom names and every selected protein residue/edge length. Equal baseline springs between every nearby ligand pair are a declared ENM, not a bonded force field, and dense local ligand connectivity may dominate its rigidity. No missing residues or hydrogens should be fabricated. Keep both S1 and S3/S4 alternatives because Q pocket wording is inconsistent74. Preserve bundle multiplicities when compressing dependent columns: replacing U by an orthonormal basis alone changes UU^T; use SVD retaining singular values or full Gram matrices with supported pseudoinverses. Rank-m formula75 and direct logdet quartet should agree; report rank tolerances and any canonical singular value near1 rather than clipping it into a finite saturation bound. Model columns must annihilate rigid modes, and extra internal null modes must be reported/rejected. Costs now need as many classical solves as independent bundle columns, rather than the previous two rank-one solves. This review covers metadata, implementation and scientific/quantum-scope boundaries: it adds no quantum theorem, advantage or molecular NA claim. Proceed with the prescribed benchmark."
+      },
+      {
+        "seq": 80,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; adopted by the joint ledger #1",
+        "text": "V7 completed after peer review78: new ada/check_ligand_enm.py and check_ligand_enm-results.json, raw2ZC9 H/L C-alpha plus27 ligand22U heavy atoms plus Gly216 N/C/O (no duplicate CA), optional I, cutoff10/12/15 Angstrom, baseline spring1/2. All nearby pairs use equal central-force springs, including ligand-internal and ligand-protein; this is an ENM, not a chemically parameterised bonded Hessian. X columns are N1-Gly216 N/CA/C/O distance gradients. R alternatives are D-Phe ring C16-C21 to Leu99/Ile174/Trp215 C-alpha (S3/S4 assumption), or chlorobenzyl C10-C15/CL1 to Asp189/Ala190/Gly219 C-alpha (S1 assumption), restricted by cutoff. Each edge and length, baseline spring counts, full P/Q/R, ranks and spectra are recorded. Prescribed a=b=1 or baseline spring, no chemical fit. All48 networks have no extra internal null modes after six rigid modes are projected. Cycles lie from -5.04818e-5 to -7.81334e-7 kBT; full internal log determinants cross-check joint rank-m determinant compliance to3.14e-12 kBT. Canonical saturation ranges -0.00116587 to -0.000201190 kBT, so the old below0.000644 protein-edge bound48/65 does NOT apply unchanged to these bundles. Still these exact prescribed positive bundles cannot reach order-kBT cycles under this model. Output is neither an observed NA nor a B/F/E quartet, and excludes bound minimum offsets, kinetic, Jacobian, basin/population terms and all aqueous quartet terms38. No bound on NA or quantum advantage follows. Emmy, please independently audit the new source/model and rank-m result before closing."
+      },
+      {
+        "seq": 81,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Independent V7 geometry check from stored PDB coordinates, not an ENM output: ada/2ZC9-source.pdb:2467-2470,2822-2848 gives N1-to-Gly216 distances N4.693462, CA5.004340, C3.919891 and O2.890271 Angstrom by direct Euclidean subtraction. This supports explicitly using the carbonyl O node instead of silently treating CA as the hydrogen-bond atom; hydrogen/protonation and energetics remain absent. Among residue189 heavy atoms, nearest D-Phe ring C16-C21 distance is11.906408 Angstrom, whereas chlorobenzyl C10-C15/CL1 nearest is3.859903; D-Phe ring to Trp215 nearest is3.636608. Thus the declared D-Phe/S3 and chlorobenzyl/S1 probes have distinguishable geometry in this one ligand. Chlorobenzyl/CL1 also lies within3.353958/3.435653 of residue215/227 atoms, so ring-to-pocket assignment is not exclusive and cutoff spring rules can cross-link several pockets. These coordinate facts do not fix Q R1 atom mapping or represent the B/F/E quartet."
+      },
+      {
+        "seq": 82,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Additional V7 accounting and independent derivation audit: ada/check_ligand_enm.py:65-128 gives309/319 nodes,921/951 internal DOF, kappa44.45-405.97, X rank4 and R rank18(S3/S4) or21(S1), all gradients rigid-orthogonal to8.40e-18 relative error; spectral solve residual below3.24e-15. Thus a direct bundle compliance baseline needs22 or25 independent-column right-hand sides, not the two rank-one solves29. Quantum estimation likewise requires a new multi-observable or trace-estimation precision/resource budget;14 is not automatically its cost. Maximum canonical singular value0.04424 is far below1 in these stored floating-point results; saturation is numerically regular, not interval-certified. Joint spring/update scaling gives identical dimensionless cycles. Independently read emmy/rank-m-bridge.md:17-45: Schur complement and contraction factors correctly prove each singular value of T is bounded by the supported canonical value, preserving multiplicities. The finite and saturation results do not validate physical force-field stiffness: uniform nearby ligand springs, added Gly216 backbone nodes, lack of waters and dense intraligand connections are declared modelling assumptions. Alternative fitted ligand/protein spring strengths, bonded force-field Hessians, softening, multiple basins or ligand-specific re-minimisation could change the signal. Literal22U coordinates still do not supply a matched B/F/E quartet."
+      },
+      {
+        "seq": 83,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Independent V7 audit of Ada80: read ada/check_ligand_enm.py:14-154 once and recomputed the symmetric Schur-complement formula79 from all48 stored P/Q/R matrices. Cycles agree with stored joint determinant values to9.65e-16 kBT; recomputed range -5.0481780412e-5 to -7.8133354625e-7 kBT. Canonical saturation range is -0.0011658671347 to -0.0002011901627 kBT, confirming that the earlier protein-edge limit does not transfer unchanged. Stored ranks are X4, R18 or21, maximum spectral solve residual3.2388e-15 and rigid-gradient error8.40e-18; all48 rows report zero extra null modes. Parser selects27 ligand nodes plus specified Gly216 backbone atoms, and equal-cutoff central-force assembly preserves the declared update multiplicities. I did not rerun full eigendecompositions. These are floating-point model checks, not interval certificates, chemical force-field validation, MD evidence or B-referenced binding quartets. The new benchmark includes ligand geometry but its positive bundles still have small model-only cycles. Quantum/classical comparison now needs rank4 plus rank18/21 bundle observables/solves, rather than a two-solve rank-one price."
+      },
+      {
+        "seq": 92,
+        "actor": "emmy",
+        "kind": "correction",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Counting clarification to80/82/83/86: ada/check_ligand_enm.py:63-128 constructs six geometric baselines (two hirugen choices times three cutoffs), or twelve when overall spring scaling is counted. The48 stored rows additionally cross two R proxies and two update-scaling flags; they contain24 distinct dimensionless proxy configurations. They are sensitivity rows, not48 independent protein structures, independent samples or independent model validations. emmy/check_cross_pair_envelope.py:41-49/results reproduces these counts from the stored output. The same raw2ZC9 geometry is used throughout. All prior reported cycle ranges and no-extra-null-mode claims remain numerically unchanged; independence and robustness to independent matched B/F/E structures have not been shown."
+      },
+      {
+        "seq": 93,
+        "actor": "ada",
+        "kind": "correction",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Qualification to80/82/84: the stored48 rows are parameter-sensitivity cases, not48 distinct networks or independent validation observations. Counting keys gives6 geometry/cutoff networks (hirugen2 times cutoff3),12 baseline stiffness networks after spring1/2, and48 cases after R-bundle/update-scale alternatives. Joint spring/update scaling repeats the dimensionless cycles exactly by construction. Also every X/R update edge already belongs to the cutoff baseline; these positive additions stiffen existing contacts on fixed22U topology, rather than create/remove the extra amino group or implement B-to-F/E chemical changes. The retained-ligand calculation answers V7 as a prescribed model benchmark only, with no structural replicate or B-referenced NA interpretation."
+      }
+    ],
+    "branches/branch-1/ledger.jsonl": [
+      {
+        "seq": 51,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "sampling extension to #36-37/#44: emmy/bfactor-window-response.md:7-25 derives the expected mean-centred per-run variance for stationary samples, and emmy/check_bfactor_windows.py passes exact rational covariance-sum assertions (output emmy/bfactor-window-check.json). A symmetric two-state process plus fast fluctuations preserves the equilibrium selected-coordinate contrast \\(13/256\\), while a 64-frame Q-style estimator gives positive contrast 0.04998779 for independent signs and negative contrast -0.01022305 for lag correlation \\(999/1000\\). Separate trapped quadratures give \\(-3/256\\) versus pooled \\(+13/256\\). Thus agreement with per-run Q B-factors need not validate equilibrium mobility, and extra repeats alone do not recover missing within-window slow variance. Q inputs/Q.txt:609-617 explicitly averages per-trajectory B-factors. This is a synthetic stationary moment model, not MD, molecular evidence, an inferred timescale for A/F or a novelty claim; the required Q trajectory correlations and basin sampling remain unavailable."
+      },
+      {
+        "seq": 54,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Single-basin sampling extension to #36-37 and complementary to Emmy #51: ada/finite-window-mobility.md:9-47 derives the exact mean-centred finite-window expectation, including the autocovariance subtraction. ada/check_finite_window_mobility.py passes exact rational discrete Lyapunov and centred-Toeplitz-trace assertions; saved output ada/finite-window-mobility-check.json. Two stationary canonical overdamped harmonic coordinates have equilibrium variances 1 and 1/2, but with 20 snapshots and lag correlations 99/100 and 1/100 their expected per-run variances are 0.06360659 and 0.47452046. The contrast reverses from -0.5 to +0.41091387 without multiple basins or incorrect thermal equilibrium. Different friction/relaxation is explicitly assumed, not inferred for Q. Q inputs/Q.txt:609-617 centres each run separately and 541-547 states 10 ns/window; static Hessians cannot determine this temporal correction. This sharpens : matching equilibrium mobility is insufficient unless trajectory-mean variance is negligible or the observation window and dynamics are matched. Missing aligned time correlations, trajectories, snapshot spacing and effective relaxation remain; this is no A/F mechanism or molecular result."
+      },
+      {
+        "seq": 62,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "measured-mobility check: ada/measured-mobility/check_bfactors.py uses preserved 2ZC9 coordinates with all-node and protein-only alignment maps, saves atom-level predictions in bfactor-results.json, and passes sparse-solve/spectral consistency assertions under uv/Python3.13 NumPy/SciPy. One no-intercept scale per network is fitted to protein CA and reused on ligand. Protein Pearson/Spearman at cutoff8/12 without ligand are 0.4734/0.6402 and 0.5355/0.6559; with ligand 0.4720/0.6135 and 0.5912/0.6251. Ligand Pearson is about0.50, Spearman about0.46-0.49, but fitted mean B only0.404/0.472 at8 and5.749/6.027 at12 for all/protein fits versus deposited15.660 angstrom squared: poor quantitative agreement. Fit-convention mean changes0.06756/0.27784 angstrom squared, relative16.72%/4.83%. Each fit needs81 residual-certified constrained solves sharing a factorisation; residuals below8e-15 and conditional unscaled mean-B error bounds below2.25e-10/1.75e-13. Bounds use estimated gaps, not certified intervals. Ligand readout is undefined in protein-only networks, explicitly reported unavailable. Note ada/measured-mobility/bfactor-note.md:1-35 records method, correlations, scale and limits. Crystal B includes lattice/static disorder/refinement; 22U is not a Q ligand and these are ENM results, not Q Hessians, A/F mobility, NA or quantum advantage."
+      },
+      {
+        "seq": 63,
+        "actor": "ada",
+        "kind": "correction",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Locator correction to #61-62: provenance-note.md has lines1-9, bfactor-note.md lines1-27, and check_bfactors.py lines1-109. Their scientific results are unchanged. The public mobility comparison remains a limited crystallographic sanity check, rather than validation against Q solution trajectories."
+      },
+      {
+        "seq": 64,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": ": emmy/mode-audit/check_modes.py and mode-results.json report all five lowest internal modes for each ANM case, Gly216 contact overlaps, ligand weights, global and aligned ligand trace fractions. emmy/mode-audit/mode-note.md:7-37 records the conventions and predeclared remedy. The 8 angstrom lowest mode is terminal-localised: participation ratio 7.63 of 306 ligand-inclusive nodes, 91.7% weight on heavy-chain residues 237-246. It supplies 30.7% of the global internal trace, 5.19% of the all-node-fit ligand trace (5.58% under protein-only fit), but only \\(9.71\\times10^{-7}\\) of the Gly216 distance self-response. Thus the gap is set by a terminal ENM mode, but it does not dominate the ligand trace or the contact. The predeclared 276 additional unit backbone springs raise the ligand-inclusive gap from 0.00158169 to 0.00168079; spectral condition falls from 15668.32 to 14806.50 and repaired \\(a_R,a_Q\\) from 1264.47,46260457.09 to 1189.92,40966365.74. The soft terminal mode persists; protein-only \\(a_Q\\) increases. No tuned second remedy is applied. At 12 angstrom the ligand-inclusive lowest participation ratio is 33.31 and ligand trace fraction 1.88%; protein-only low mode is localised at the 60B-60E insertion. Complete spectra are taken on the analytic internal subspace, with lowest eigenpair residuals below \\(3.1\\times10^{-14}\\). These residuals locate an eigenvalue but do not certify an indexed spectral lower bound; no rigorous gap certificate is claimed. Execution via uv/Python3.13 with NumPy/SciPy passes internal-positivity assertions. All results are public deposited unit-spring ENM diagnostics, not Q force-field Hessians, A/F data, a mechanism or quantum advantage."
+      },
+      {
+        "seq": 65,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Independent cross-check: read emmy/mode-audit/check_modes.py and replayed an isolated copy in ada/mode-independent using uv/Python3.13 NumPy/SciPy, preserving partner files. All six cases match gaps, spectral conditions, a_Q, Gly216 responses and selected ligand traces within relative1e-8. At cutoff8, lowest-mode participation is7.66 protein or7.63 with ligand, dominated by H245 PHE CA (weight0.219); its Gly216-response fraction is about1e-6 and ligand-selected-trace fraction5.19%. Ligand-inclusive backbone remedy changes gap0.00158169 to0.00168079 and a_Q4.626e7 to4.097e7, retaining localisation; it is not a successful repair of global conditioning. At cutoff12 ligand-inclusive gap0.471969, a_Q966.24, lowest-mode ligand-trace fraction1.88%. Residual intervals are correctly labelled as locating an eigenvalue, not certified indexed gap bounds. Output ada/mode-independent/mode-results.json is independent executable corroboration, limited to ENMs. Global worst-case spectral bounds need not describe ligand-local response size; an improved quantum cost cannot be inferred solely from small mode overlap."
+      },
+      {
+        "seq": 66,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Current account after reading through #65: source provenance (#60-61,#63) establishes that audited P v2 is the latest listed arXiv version; no separate publication or erratum was found in the recorded searches. Its cited PRX oscillator source is conservative, velocity-first and energy-normalised, without a thermal-covariance or damping treatment. (#62-63) now supplies measured crystallographic comparisons under both alignments: correlations are modest and a protein-calibrated scale substantially underpredicts ligand22U B magnitudes. This is a public sanity check, not Q trajectory validation. (#64-65) is independently reproduced: cutoff8 global conditioning is set by a localised terminal mode with negligible Gly216 contact response; the declared backbone remedy barely changes the gap. The strongest supported transfer remains a corrected, alignment-aware harmonic B-factor workload with explicit temporal/model validation, rather than NA screening from arbitrary contact covariance. Source audit corrections, exact synthetic counterexamples and public-network calculations are established; Q congeneric structures/maps, actual alignment and numerical Fig9/SI, independent aligned trajectories/autocorrelations, basin and force-field robustness, physical units/constraints/volume/aqueous terms, regional coefficients, rigorously certified gaps, implemented coherent loaders/readout and matched total quantum resources remain missing. Same-force-field Hessians cannot resolve F artefact. Source provenance search is not a publication-novelty search. No Q molecular calculation, quantum execution, A/F mechanism, advantage or scientific verdict is assigned."
+      },
+      {
+        "seq": 69,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Independent cross-check of Ada #62-63: read ada/measured-mobility/check_bfactors.py:1-109 and bfactor-note.md:1-27, then replayed an isolated copy in emmy/mobility-independent with uv/Python3.13 NumPy/SciPy. All four network cases match fitted scales, estimated gaps, Pearson/Spearman and RMSE within 1e-8; both ligand fits use81 solves and pass sparse-versus-spectral assertions. Protein-calibrated ligand means remain0.404/0.472 at8 angstrom and5.749/6.027 at12 versus deposited15.660 angstrom squared. The mismatch is retained as poor quantitative agreement, not hidden by a ligand-specific fit. Crystallographic disorder/refinement and heterogeneous ENM node choices limit interpretation, and no Q ligand or solution trajectory has been tested. Small locator correction to my #64: emmy/mode-audit/mode-note.md ends at line36, not37. Current account after reading through #68: V2 requests have attainable evidence from measured deposited B comparisons (#62-63, this replay), mode localisation/remedy (#64-65) and current-source provenance (#60-61,#68). The strongest supported line is a corrected alignment-aware harmonic mobility readout whose physical, temporal and model fidelity must be established before Q screening. P current reachable scalar stochastic construction and static readout text require the previously documented corrections; its conservative ancestor does not repair them. Contact covariance does not identify NA, and small local low-mode overlap alone does not establish a cheaper quantum algorithm. The public ENM check fails quantitative ligand B fidelity with the stated protein calibration, while its terminal-localised global gap poorly represents selected contact response. Unresolved: Q congeneric structures/R1 maps and fit definitions, numerical Fig9/SI uncertainties, independent aligned trajectories/autocorrelations and basin populations, force-field sensitivity, physical units/constraints/volume and aqueous terms, regional forces/curvatures/offsets, certified indexed gaps, implemented coherent input/readout and total resources at matched error, and publication novelty. Same-force-field Hessians cannot adjudicate F artefact. No Q molecular calculation, quantum execution, A/F mechanism, advantage or scientific verdict is assigned."
+      }
+    ],
+    "ledger.jsonl": [
+      {
+        "seq": 5,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current",
+        "text": "Independent small-matrix deletion check complete: emmy/downdate_check.py and downdate-results.json use inherited full-baseline response G=W^T K_full^{-1}W. The matrix I-G is positive definite for all 12 geometry/cutoff/R-proxy cases, so K_00=K_full-WW^T is positive definite on the inherited internal space. Woodbury gives G_00=(I-G)^{-1}G. The deletion determinant quartet equals the restored-compliance quartet to numerical precision. These data predict the full-Hessian rerun Ada is pursuing; they are an independent algebraic route using shared inherited input, not independent molecular validation. I am checking the numerical ranges and primary Baum chemistry before giving the final scope."
+      },
+      {
+        "seq": 7,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current",
+        "text": "V10 direct check completed in emmy/full_deletion_check.py:1-51 and full-deletion-results.json. All12 geometry/cutoff/R-proxy restoring quartets have no extra rigid-projected null modes. Direct determinants agree with independent Woodbury response to1.27e-12 kBT. Deleted-baseline finite cycles range[-0.000251595,-0.00000573776]kBT, 1.974 to5.392 times the inherited unit-extra-stiffening magnitudes; deleted-baseline saturation range[-0.0024763204,-0.0002786471]kBT. Both spring scales are covered by exact proportional-scale cancellation rather than duplicate numerical rows. N1 is retained; all non-selected springs remain. These are prescribed edge-restoration results, not Q B-referenced quartets, literal X=H, binding NA or quantum advantage. emmy/deletion-audit.md:5-31 records Woodbury, the determinant cycle and the response-error amplification bound delta/[mu(mu-delta)], with mu=lambda_min(I-G). Classical reused factorisation supplies the same response matrix. The note script locators are being corrected to41 and51 lines respectively."
+      },
+      {
+        "seq": 8,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current",
+        "text": "Primary chemistry recovery for branch-3 V9: a successful RCSB full-text DOI query for 10.1016/j.jmb.2010.02.007 returns 2ZGB, 2ZHQ, 2ZI2 and 2ZNK, matching the primary RCSB citation pages. Two earlier PMID query attempts failed HTTP400 and remain recorded. emmy/baum-primary/doi-query.json and followup-manifest.json save the successful query and hash; manifest.json and coordinate-manifest.json save unmodified API and PDB responses with URLs/hashes. 2ZGB contains21U, D-leucyl/chlorobenzyl, at1.60 angstrom, a chemistry-based candidate5F using inherited branches/branch-2/ada/round2/figure8.png. The other2010 hits change P1 to amidinobenzyl and cannot be assigned to Q series3/5 from side-chain size alone. Related2ZFP/19U is a candidate5C, not B/E/F. 2ZC9/22U carries the2009 JMB391 citation, not the2010 primary citation. Q Figure8 fixed chlorobenzyl scaffold and21U chemistry support R1 at the P3 side-chain position; Baum primary abstract explicitly names S3, https://pubmed.ncbi.nlm.nih.gov/20156458/. Thus the chlorobenzyl-to-S1 bundle is a sensitivity alternative, not Q R1 variation. The D-Phe-ring/S3 proxy marks the correct scaffold position but is not an actual B/E/F substitution. No identified3B/5B/3E/5E/3F crystal structure was recovered in this bounded audit; not proof of absence. emmy/chemistry-audit.md records identities, differences, provenance and candidate mapping limitations. No NA or mechanism inference follows."
+      },
+      {
+        "seq": 9,
+        "actor": "emmy",
+        "kind": "correction",
+        "standing": "current",
+        "text": "Correction/qualification to joint7: the new note now cites emmy/downdate_check.py:1-41 and emmy/full_deletion_check.py:1-51. Shared scalar spring doubling is proved by cancellation of the same internal-dimension log-scale constant in every corner; no second execution or independent validation is claimed. Source-recovery failure: branches/branch-2/ada/Q-primary.pdf is HTML despite its extension, and my attempted rendering failed. The inspected Figure8 is the inherited branch-2 image, not a newly recovered primary PDF. No inherited file was changed."
+      },
+      {
+        "seq": 10,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current",
+        "text": "Current joint account after reading through9: the sharpened line is a physically normalised static compliance benchmark, now corrected from stiffening existing contacts to a fixed-node deletion/restoration quartet. Joint7 provides executable full-matrix/response agreement and shows the small model coupling survives the deleted baseline, with larger magnitudes and a recomputed saturation. Joint8 narrows the relevant chemical position to P3/S3, identifies candidate5F crystal coordinates, and excludes changed-P1 entries as automatic Q-series matches. This builds on branch-3 rank-m algebra and branch-2 source recovery, rather than claiming either as independently verified chemistry. Equal-time equilibrium covariance does not need P transient evolution; inherited primary audits require valid-state and inverse-scale repairs before quantum pricing. Formula novelty is blocked by inherited Hawkins2006 antecedent branch-3 ledger42. A practical decision follows: test matched chemical maps and sampled physical Hessians/classical response calibration before a quantum implementation. No Q F mechanism, molecular covariance signature, binding NA bound, publication novelty or attainable speedup is established. Remaining: identified B/E/F crystal quartets and stereochemical maps, actual replacement perturbations and marginalisation, independent MD/force-field/basin validation, minimum-energy/kinetic/Jacobian/aqueous terms and joint affinity uncertainties, achieved Gram/whitening accuracy, all-atom conditioning and complete corrected quantum costs versus reused sparse solves. Ada joint4 information/marginalisation proposal remains to be cross-checked when posted; no result for it is assumed. Working files and raw recoveries stay in emmy; imported bundles were not modified."
+      },
+      {
+        "seq": 17,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current",
+        "text": "Current account after reading through joint16 and cross-checking the derivations, joint7 scripts and joint8 chemistry note: the useful joint advance is a representation test for the static compliance transfer. The prescribed finite-contact stiffness cycle is exactly negative auxiliary Gaussian information (joint15); marginalising coordinates affected by both substitutions can make the retained Hessian updates non-additive and reverse the retained determinant-cycle sign (joint16). The executable verifies both and twelve inherited deleted-baseline information/cycle values. ada/information-marginalisation.md records assumptions, excluded terms, source locations and sparse-solve comparison. Q Eq4/5 at branches/branch-3/inputs/Q.txt:398-428 targets a bound-minus-aqueous isothermal-isobaric binding cycle, whereas P S8.4 at branches/branch-3/ada/P-covariance-primary.txt:40-95 proposes inverse-Hessian correlation readout; neither equates these. Joint8 chemistry narrows R1 to P3/S3 and candidate5F, while branch-2 ledger74/78 supplies prepared systems but no validated cross-series map. The next discriminating classical step is a chemical common-coordinate map, physical full-space responses and a test of the additive marginal model at matched error, retaining omitted determinants before any free-energy interpretation. Prior art blocks treating the determinant algebra as novelty. Missing matched maps/crystal quartets, sampled Hessians and independent MD, force-field/basin validation, aqueous and measure/offset terms, joint experimental covariance, conditioning and complete corrected quantum-versus-reused-solve costs still prevent a Q mechanism, binding NA bound, publication novelty or attained quantum advantage. No molecular simulation or quantum execution was done. No disagreement with joint10 is required; the marginalisation obstruction strengthens its actual-replacement caveat."
+      },
+      {
+        "seq": 30,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current",
+        "text": "Best current account after reading joint29: the concrete supported advance is a representation audit for the static compliance transfer. Joint21 identifies the retained-minus-full stiffness cycle as nonnegative conditional auxiliary contact information; joint25/26 gives an explicit bundle Schur reduction, omitted-response saturation interval and an invisible-mode witness proving that retained covariances alone admit no finite lower bound even for positive additive full-space springs. Joint29 sharpens the exact zero-conditional-cross criterion to preserve additive effective retained bundles, in addition to determinant equality; the remaining textual qualification in Ada note is explicit pending her response. Twenty-four synthetic controls corroborate the formula and both preservation cases, with conditional-orthogonal additive and cycle errors at most \\(6.22\\times10^{-15}\\) and \\(2.67\\times10^{-15}\\). New files: emmy/marginal-bounds.md, check_marginal_bounds.py, marginal-bounds-results.json. Inherited joint7 deletion/restoration numerics and joint8 P3/S3 chemistry remain prescribed-model/source evidence, not a chemical quartet. This suggests a precise next classical benchmark: validated chemical map, full and conditional omitted compliances, and matched uncertainty before interpreting any common-core determinant. P static inverse readout still needs valid-state/normalisation/resource repairs; Q Eq4/5 remains bound-minus-aqueous binding thermodynamics. No actual F signature, binding NA bound, novel physical result or quantum advantage has been demonstrated. Missing matched B/E/F chemistry and full replacement perturbations, sampled Hessians and independent MD/force-field/basin validation, thermodynamic offsets/measures/aqueous terms, joint affinity covariance and corrected end-to-end costs versus reused sparse solves prevent a publication claim. Existing algebra is established; the possible contribution is a physically validated diagnostic or algorithm/model audit, not this synthetic algebra alone."
+      }
+    ]
+  },
+  "external_sha256": {
+    "sources/external/P.txt": "735fba14b2af62cd83438d0b32a3b1d1d0e83e760db218bd23c4b41a0dc21762",
+    "sources/external/Q.txt": "d38483c8cfbf26170e21aa59ccffa8c7df3078d4dd685df8966bb1e637cbf95e",
+    "sources/external/research-supplement.md": "f64a2742ed45eecdfba84232a9d92a1267ac41f554e878af1666b526c1247112"
+  },
+  "embedded_sha256": {
+    "ada/check_conditional_information.py": "051212eb0ec9f25ee05bd60054c37fa39c85fd480c52f5524fac51cd71d04bc8",
+    "ada/conditional-information.md": "4ee0753c982c62e8aa42d2fcefe5f56bbabec77b14ef6bf8efe01fbccda61e49",
+    "branches/branch-1/ledger.jsonl": "9bfeda6d77e2252a68b160692c11adef0475cfeafe94dc8588a6d19d9d22ae4f",
+    "branches/branch-2/ledger.jsonl": "f8df98ed4b1e6bb35c92be26f9b02696ebd6cb88d79a403073ef2ff1b35d2966",
+    "branches/branch-3/emmy/rank-m-bridge.md": "5d99013de820badbc00a6297ebca0c2231840ccdc2447ae42d92584d22ec9949",
+    "branches/branch-3/ledger.jsonl": "10a39bc6f12bf7e6e43e5a28e1073e0b4a190b02916ae98548985950cc609a9f",
+    "emmy/check_marginal_bounds.py": "68181299b9b29e4114a2ad8e5c96c6c3981dfad9e65c54a0db30f3b75a83c573",
+    "emmy/marginal-bounds.md": "aa13b28c0106e2e55aaaaec9c4306fad7a38030c9f4b700ea71a8707d44e71aa",
+    "ledger.jsonl": "57ba7e1a6eb418bc68a69b2de3ede8fb2db9992243328ce1ca32a3e21eb99980"
+  }
+}
