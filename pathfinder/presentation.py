@@ -220,7 +220,8 @@ def _run(campaign, pair_id, restart) -> str:
             except pce.Changed as error:
                 refused = [str(error)]
         else:
-            refused = guard(before, after, accepted, bibliography, rewordable)
+            refused = guard(before, after, accepted, bibliography, rewordable,
+                            getattr(campaign, "_presentation_residue_identifiers", ()))
         pairs = reworded((d / stage / "paper.tex").read_text(), (d / name / "paper.tex").read_text(), accepted)
         if pairs:
             (d / name / "reworded.json").write_text(json.dumps(pairs, indent=1))
@@ -345,6 +346,13 @@ def _task(campaign, pair_id, name):
                  "sentences verbatim when adding definitions. If the retained evidence does not specify "
                  "a convention, explicitly identify the missing definition rather than remove or replace "
                  "the assumption. Do not invent an acronym expansion.\n")
+    residue_identifiers = getattr(campaign, "_presentation_residue_identifiers", ())
+    if residue_identifiers:
+        text += ("\nExplicit source-bound residue-label allowance: " + ", ".join(residue_identifiers) +
+                 ". These exact labels may be introduced when explaining the named finding; their digits "
+                 "identify residues, not new numerical results. Preserve all existing residue identities. "
+                 "This allowance does not permit numerical values, parameters, equations or new conclusions. "
+                 "The fresh checker must assess the explanation against the retained evidence.\n")
     notation = getattr(campaign, "_presentation_notation", None)
     if notation:
         text += ("\nEngine-authorized reviewed notation continuation. For this correction only, "
@@ -600,7 +608,10 @@ def _surnames(bib: str) -> set:
     return names
 
 
-def _inserted(text: str, numbers: set, surnames: set) -> list[str]:
+RESIDUE = re.compile(r"(?:Ala|Arg|Asn|Asp|Cys|Gln|Glu|Gly|His|Ile|Leu|Lys|Met|Phe|Pro|Ser|Thr|Trp|Tyr|Val)[1-9]\d*")
+
+
+def _inserted(text: str, numbers: set, surnames: set, residue_identifiers=()) -> list[str]:
     if not text.strip():
         return []
     out, short = [], " ".join(text.split())[:160]
@@ -609,7 +620,11 @@ def _inserted(text: str, numbers: set, surnames: set) -> list[str]:
     named = sorted({w for w in re.findall(r"\b[A-Z][a-z]{2,}\b", text) if w.lower() in surnames})
     if named:
         out.append(f"inserted text names an author ({', '.join(named)}): {short}")
-    for n in sorted(set(_NUMBER.findall(text)) - numbers):
+    numeric_text = text
+    for identifier in residue_identifiers:
+        if RESIDUE.fullmatch(identifier):
+            numeric_text = re.sub(r'(?<!\w)' + re.escape(identifier) + r'(?!\w)', '', numeric_text)
+    for n in sorted(set(_NUMBER.findall(numeric_text)) - numbers):
         out.append(f"inserted text brings the number {n}: {short}")
     if _CROSS.search(text):
         out.append(f"inserted text adds a cross-reference: {short}")
@@ -635,7 +650,7 @@ def reworded(before: str, after: str, accepted: str) -> list[dict]:
     return out
 
 
-def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> list[str]:
+def guard(before: str, after: str, accepted: str, bib: str, rewordable=(), residue_identifiers=()) -> list[str]:
     """What a correction did beyond adding definitions and rewording, comparing `after` with `before` sentence by
     sentence: an accepted sentence lost or changed (unless the change restores the accepted wording, or the
     sentence holds a phrase an "unclear" finding quotes, `rewordable`), or inserted text that cites, names an
@@ -647,6 +662,10 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> li
     numbers, surnames = set(_NUMBER.findall(_body(before))), _surnames(bib)
     out = []
     from collections import Counter
+    old_residues = Counter(re.findall(r'\b' + RESIDUE.pattern + r'\b', _body(before)))
+    new_residues = Counter(re.findall(r'\b' + RESIDUE.pattern + r'\b', _body(after)))
+    if residue_identifiers and old_residues - new_residues:
+        out.append("source-bound residue clarification removes or changes an existing residue identifier")
     ops = difflib.SequenceMatcher(None, b, a, autojunk=False).get_opcodes()
     old_counts = Counter(s for tag, i1, i2, _, _ in ops if tag != "equal" for s in b[i1:i2])
     new_counts = Counter(s for tag, _, _, j1, j2 in ops if tag != "equal" for s in a[j1:j2])
@@ -674,7 +693,7 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> li
             out += [f"deletes accepted text: {s[:160]}" for s in old if s in acc]
             continue
         if tag == "insert":
-            out += _inserted(" ".join(new), numbers, surnames)
+            out += _inserted(" ".join(new), numbers, surnames, residue_identifiers)
             continue
         if all(s in acc for s in new) and not any(s in acc for s in old):
             continue                                   # restores the accepted wording
@@ -686,5 +705,5 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> li
                 break
             if t in ("replace", "insert"):
                 added += nt[l1:l2]
-        out += _inserted(" ".join(added), numbers, surnames)
+        out += _inserted(" ".join(added), numbers, surnames, residue_identifiers)
     return out

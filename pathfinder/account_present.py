@@ -12,7 +12,8 @@ def _context(campaign, pair_id, pd, path):
         from . import notation_continuation
         return notation_continuation.validate(pd, context)
     thread = campaign.thread_dir(pair_id).resolve()
-    if set(context) == {'version', 'contexts'} and context['version'] == 1:
+    if (set(context) in ({'version', 'contexts'}, {'version', 'contexts', 'residue_identifiers'})
+            and context['version'] == 1):
         entries = context['contexts']
         if not isinstance(entries, list) or not 1 <= len(entries) <= 20:
             raise pce.Changed('provide 1-20 retained context quotations')
@@ -42,6 +43,20 @@ def _context(campaign, pair_id, pd, path):
                 raise pce.Changed('retained context hash or exact quote differs')
             hashes[entry['source']] = entry['sha256']
             locations.add(entry['where'])
+        identifiers = context.get('residue_identifiers', [])
+        if not isinstance(identifiers, list) or len(identifiers) > 20:
+            raise pce.Changed('provide at most 20 source-bound residue identifiers')
+        seen = set()
+        for item in identifiers:
+            if (not isinstance(item, dict) or set(item) != {'identifier', 'source'}
+                    or not isinstance(item['identifier'], str)
+                    or not presentation.RESIDUE.fullmatch(item['identifier'])
+                    or item['identifier'] in seen
+                    or not any(e['source'] == item['source'] and re.search(
+                        r'(?<!\w)' + re.escape(item['identifier']) + r'(?!\w)', e['quote'])
+                        for e in entries)):
+                raise pce.Changed('residue identifier requires an exact occurrence in hash-bound retained context')
+            seen.add(item['identifier'])
         if len(pce._json(context)) > 40_000:
             raise pce.Changed('retained presentation context exceeds bounded quote allowance')
         return context, hashes, locations
@@ -145,6 +160,8 @@ def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, ac
         c._presentation_cycle_limit = grant['cycle_limit']
         c._preserve_presentation_history = True
         c._presentation_context = context
+        c._presentation_residue_identifiers = tuple(
+            item['identifier'] for item in context.get('residue_identifiers', []))
         if context.get("version") == 2:
             c._presentation_notation = context
         # The recorded paused state remains immutable in grant.json. Resume its last stage.
