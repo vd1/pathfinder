@@ -1,5 +1,9 @@
 # Q053-P011 whole-body readability repair
 
+Frozen engine commit: `438592b029c9c39749a2bb95affa6a8ed1442806`.
+Runtime: `/private/tmp/pathfinder-whole-body-438592b`.
+Archive SHA-256: `9d2db2d11c9d46562105d77ab5f089155d3dfe1a4b4fb4a7ffc937821496f4db`.
+
 This is a same-successor transport repair, with no scientific text or evidence change. Use the exact frozen
 runtime identified in `freeze.json` and the argument arrays in `action.json`, after independently checking
 `bindings.json`, idle ownership, provider/stop state and OpenAI routes. Preparation makes no calls. Apply
@@ -74,3 +78,6 @@ boundary, actual generated editor overflow, and legacy prompt/receipt invariance
 Stub acceptance tests engine plumbing and custody, not scientific correctness or model comprehension. All five
 live reviewers must judge independently under ordinary gates. No live model calls or deployment writes were
 performed.
+
+Focused regression suite: 125 passed. Frozen suite: 26 passed, followed by a separate passing copied-flow test
+with an explicit imported-runtime path assertion. All 39 live bindings reverified read-only. See `verification.json`.

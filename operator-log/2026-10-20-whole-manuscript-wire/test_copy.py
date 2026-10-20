@@ -8,6 +8,7 @@ spec=importlib.util.spec_from_file_location('helper',REPO/'operator-log/2026-10-
 ID='floating-bound-definition-20261020';PAIR='Q053-P011'
 
 def setup(tmp_path,monkeypatch):
+ if os.environ.get("PATHFINDER_TEST_RUNTIME"):assert Path(pce.__file__).resolve().is_relative_to(Path(os.environ["PATHFINDER_TEST_RUNTIME"]))
  c,t=helper.copied(tmp_path,monkeypatch,helper.BASE,PAIR,ID)
  root=t/'edited/account-amendments'/ID;prev=root/'review'
  args=dict(identity=ID,grant_id='whole-body-readability-1',failed_round_sha256=pce._sha(pce._json(pce_recovery.hashes(prev))),reason='One bounded independent whole-body readability repair; candidate and scientific inputs unchanged')
