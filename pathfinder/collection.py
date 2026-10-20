@@ -191,7 +191,12 @@ def prepare(campaign, pair_id, rows):
         check_inputs(d, data)
         thread.install_helper(d)
         return d
-    if d.exists() and any(d.iterdir()):
+    # The native runner acquires its thread lock before initialisation. Only that
+    # regular, current-process lock is administrative; no existing content is admitted.
+    def runner_lock(p):
+        return (p.name == "lock" and not p.is_symlink() and p.is_file()
+                and p.read_text() == str(os.getpid()))
+    if d.exists() and any(not runner_lock(p) for p in d.iterdir()):
         raise Refused("restricted collection requires a fresh thread")
     if any(row["id"] != data["inputs"][side]["id"] for side, row in zip("QP", rows)):
         raise Refused("corpus row does not match admitted input contract")

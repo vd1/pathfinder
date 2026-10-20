@@ -35,6 +35,7 @@ def main(argv=None):
     s.add_argument("--cut", type=float); s.add_argument("--min-score", type=float); s.add_argument("--force", action="store_true")
     s.add_argument("--per-paper", type=int, help="at most this many pairs per paper; the next best pairs take the places")
     rs = sub.add_parser("research", help="run the shortlisted threads")
+    rs.add_argument("--research-only", action="store_true", help="stop at terminal research; do not run editorial stages")
     rs.add_argument("--pairs", nargs="+", help="a bounded run over exactly these shortlisted pairs")
     co = sub.add_parser("coordinate", help="run a schedule of (arm, pair) entries across child campaigns, one pair at a time")
     co.add_argument("schedule"); co.add_argument("--status", action="store_true", help="print the aggregated snapshot instead")
@@ -275,7 +276,7 @@ def _dispatch(ns, c):
             weighted = f"  weighted {p['weighted']:g} (x {p['weight']:g})" if "weighted" in p else ""
             print(f"  {p['pair_id']}  score {p['score']}  ({p['feasibility']} x {p['gain']}){weighted}")
     elif ns.cmd == "research":
-        return runner.run(c, pairs=ns.pairs, accept_change=ns.accept_change)
+        return runner.run(c, pairs=ns.pairs, accept_change=ns.accept_change, research_only=ns.research_only)
     elif ns.cmd == "repair-verdict":
         from . import recovery
         print(json.dumps(recovery.repair_verdict(c, ns.pair), indent=2))

@@ -132,6 +132,9 @@ def pending(campaign) -> list[str]:
     selection = getattr(campaign, "selection", None)
     if selection is not None:                    # a bounded run: unlisted pairs, BLOCKED ones included, are not considered
         pairs = [p for p in pairs if p in selection]
+    if getattr(campaign, "_research_only", False):
+        return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
+                and research.status(campaign, p).get("status") not in research.TERMINAL | {"BLOCKED", "HANDOFF"}]
     from . import actionability, edit
     return [p for p in pairs if not Lock.holder(campaign.thread_dir(p))
             and research.status(campaign, p).get("status") not in {"BLOCKED", "HANDOFF"}
@@ -149,7 +152,7 @@ def _work(campaign, pair_id):
         try:
             if result not in research.TERMINAL:
                 result = research.run_thread(campaign, pair_id, stop=stop)
-            if result in research.TERMINAL and not stop():
+            if result in research.TERMINAL and not stop() and not getattr(campaign, "_research_only", False):
                 from . import edit
                 stage = "edit"
                 if edit.status(campaign, pair_id).get("status") != "done":
@@ -184,11 +187,15 @@ def _validate_selection(campaign, pairs) -> list[str]:
     return pairs
 
 
-def run(campaign, interval: float = 5.0, pairs=None, accept_change: str | None = None):
+def run(campaign, interval: float = 5.0, pairs=None, accept_change: str | None = None, *, research_only=False):
     """Run under exclusive ownership; an explicit invocation starts a new run.
     pairs: a bounded run over exactly these shortlisted pairs, through research and edit. Unlisted pairs are
     ignored, BLOCKED ones included; when no listed pair has research or edit work left, the run returns at
-    once with status nothing-to-run. A listed BLOCKED pair is reported and does not stop the others."""
+    once with status nothing-to-run. A listed BLOCKED pair is reported and does not stop the others.
+    research_only explicitly stops at terminal research, without editing, actionability or GC."""
+    # Execution scope is invocation-local, including failure/stop paths and nested coordination.
+    campaign = copy.copy(campaign)
+    campaign._research_only = bool(research_only)
     if pairs is not None:
         campaign.selection = _validate_selection(campaign, pairs)
     try:
@@ -205,7 +212,8 @@ def _owned_run(campaign, interval, accept_change=None):
             return 1
         selection = getattr(campaign, "selection", None)
         if selection is not None and not pending(campaign) and not _blocked(campaign):
-            print("nothing to run: every selected pair has finished research and edit")
+            print("nothing to run: every selected pair has finished " +
+                  ("research" if campaign._research_only else "research and edit"))
             return 0
         from . import provenance
         try:
@@ -256,7 +264,8 @@ def _recorded_run(campaign, interval):
     old = health.read(campaign.path("health.json"))
     metadata = {"run_id": campaign.run_id, "pid": os.getpid(), "status": "running",
                 "started_at": time.time(), "heartbeat_at": time.time(),
-                "last_progress": None, "previous_failure": old, "launch": launch_record()}
+                "last_progress": None, "previous_failure": old, "launch": launch_record(),
+                "stages": ["research"] if campaign._research_only else ["research", "edit"]}
     warn_if_attached(metadata["launch"])
     campaign.path("health.json").unlink(missing_ok=True)
     health.write(campaign.path("runner.json"), metadata); _write_state(campaign)
@@ -309,7 +318,8 @@ def _blocked(campaign) -> list[str]:
     return [p["pair_id"] for p in json.loads(campaign.path("shortlist.json").read_text())["pairs"]
             if (selection is None or p["pair_id"] in selection)
             and (research.status(campaign, p["pair_id"]).get("status") == "BLOCKED"
-                 or edit.status(campaign, p["pair_id"]).get("status") == "blocked")]
+                 or (not getattr(campaign, "_research_only", False)
+                     and edit.status(campaign, p["pair_id"]).get("status") == "blocked"))]
 
 
 def _loop(campaign, ex, interval, futures, metadata):
@@ -333,7 +343,8 @@ def _loop(campaign, ex, interval, futures, metadata):
             print(f"{_now()} admitted {pair_id} ({len(futures)}/{campaign.seats} seats)")
         if not futures:
             if stopped(campaign) or unhealthy(campaign) or not pending(campaign):
-                done = "selected pairs finished research and edit" if getattr(campaign, "selection", None) is not None else "all threads terminal"
+                done = ("selected pairs finished " + ("research" if campaign._research_only else "research and edit")
+                        if getattr(campaign, "selection", None) is not None else "all threads terminal")
                 print("failure: inspect `pathfinder health`" if unhealthy(campaign) else "stopped" if stopped(campaign) else done); return
             time.sleep(interval); continue
         done, _ = wait(list(futures), timeout=interval, return_when=FIRST_COMPLETED)
@@ -344,7 +355,7 @@ def _loop(campaign, ex, interval, futures, metadata):
                 metadata["consecutive_failures"] = 0
                 print(f"{_now()} {pair_id}: {result}")
                 from . import edit
-                if result in research.TERMINAL and edit.status(campaign, pair_id).get("status") == "done":
+                if result in research.TERMINAL and (campaign._research_only or edit.status(campaign, pair_id).get("status") == "done"):
                     metadata["last_progress"] = {"pair": pair_id, "result": result, "at": _now()}
             except Refused as e:
                 print(f"{_now()} {pair_id}: refused ({e}); stopping")
@@ -375,16 +386,19 @@ def _loop(campaign, ex, interval, futures, metadata):
 
 
 PAPER_DONE = {"ACCEPTED", "CLEARED", "RELEASED", "PAUSE-ON-AMEND"}
-STAGE_SETS = {("research", "edit"), ("research", "edit", "paper")}
+STAGE_SETS = {("research",), ("research", "edit"), ("research", "edit", "paper")}
 
 
 def pair_complete(campaign, pair_id, stages=("research", "edit", "paper")) -> bool:
     """Complete over the requested stages: research terminal and edit done; with paper, also either research
     is not DRAFT or the paper is ACCEPTED or PAUSE-ON-AMEND; with "presentation": true, an ACCEPTED paper also
-    needs its presentation pass ended (CLEARED, or stopped for the operator)."""
+    needs its presentation pass ended (CLEARED, or stopped for the operator).
+    The explicit ("research",) scope requires terminal research only."""
     from . import edit, paper, presentation
     if research.status(campaign, pair_id).get("status") not in research.TERMINAL:
         return False
+    if tuple(stages) == ("research",):
+        return True
     if edit.status(campaign, pair_id).get("status") != "done":
         return False
     if "paper" in stages and research.status(campaign, pair_id).get("status") == "DRAFT":
@@ -413,8 +427,9 @@ def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), inter
 def _run_pair(campaign, pair_id, stages, interval) -> dict:
     from . import edit, paper
     code = 0
-    if not pair_complete(campaign, pair_id, ("research", "edit")):
-        code = run(campaign, interval=interval, pairs=[pair_id])
+    research_only = stages == ("research",)
+    if not pair_complete(campaign, pair_id, ("research",) if research_only else ("research", "edit")):
+        code = run(campaign, interval=interval, pairs=[pair_id], research_only=research_only)
     out = {"code": code, "research": research.status(campaign, pair_id).get("status"),
            "edit": edit.status(campaign, pair_id).get("status"), "paper": paper.status(campaign, pair_id).get("status")}
     def paper_due():
