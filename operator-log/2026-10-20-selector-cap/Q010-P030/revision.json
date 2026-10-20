@@ -1,0 +1,18 @@
+{
+  "parent_candidate_sha256": "3506389ddc5cd9547c482848fad5a84b6f9d784dac87edb3a5d5d6bdf00da7d6",
+  "changes": [
+    {
+      "finding": "C041",
+      "before": "They retained P's successive-energy stop and an explicit iteration cap; the supplied approved findings do not specify the cap's numerical value.",
+      "after": "They retained P's successive-energy stop and, for this retained comparison implementation, imposed a cap of 80 iterations. This cap is not asserted to be part of P's authors' original protocol."
+    }
+  ],
+  "findings": [
+    {
+      "id": "C041",
+      "path": "reviews/current/fact-check.json",
+      "sha256": "5f91e2bd78f19d397a89f3be615127c1734e64e39f5314531b92241406d0f491",
+      "quote": "Contradicted by the approved retained ada/adapt_qsci/run.py: cap=80, range(cap), and max_iterations=cap specify the numerical iteration cap. Mandatory replacement: state that the cap was 80 iterations."
+    }
+  ]
+}

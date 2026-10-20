@@ -1,0 +1,132 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\title{Testing quantum-selected electrostatic references for ML/MM hydration}
+\newcommand{\record}[1]{\footnote{Campaign research record, \texttt{sources/external/research-supplement.md}, #1. This is generated evidence from this work, not an independent literature reference.}}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Could adaptive quantum-selected configuration interaction supply useful electrostatic reference data for ML/MM hydration calculations? This work tested separate convergence of static, induced and screened interactions within an identical electronic Hamiltonian. On one water configuration, finite-shot ADAPT-QSCI simulations reached an illustrative component tolerance with an added pooling extension. Classical selection reached it with fewer determinants and no quantum sampling. The compact electronic model remained an unvalidated physical reference. The brief records the administrative ending as PAUSE; the scientific result supports stopping this local advantage proposal while retaining a separate question about physical-reference adequacy. The immediate next task is to compare static and induced components across method, basis and response-space prescriptions on identical inputs.
+\end{abstract}
+
+\section{The chemical question and the quantum proposal}
+Q, \emph{Enhancing Electrostatic Embedding for ML/MM Free Energy Calculations}, combines a vacuum machine-learning solute potential with molecular mechanics (MM) surroundings. Its electrostatic machine-learning embedding (EMLE) separates the interaction of the vacuum solute density with MM charges from induction, including the polarisation cost. Lennard--Jones interactions remain separate~\cite{Q}. Bespoke training and component patching improve agreement with B3LYP/cc-pVTZ references. Static-component RMSEs are reported as three to four times larger than induction RMSEs, whereas induction fitting improves accuracy by only about 0.1--0.2 kcal/mol. That improvement is distinct from the absolute induction error~\cite{Q}.
+
+Better agreement with these electronic targets does not eliminate Q's overly negative hydration bias. Empirical damping with inverse dielectric factor 0.6 improves agreement with experiment. Q proposes double-counted induction as an explanation, while leaving functional, basis and Lennard--Jones compatibility questions open~\cite{Q}. A reference replacement therefore needs to establish changes in both electrostatic components before asking what survives fitting and affects hydration.
+
+P, \emph{ADAPT-QSCI: Adaptive Construction of an Input State for Quantum-Selected Configuration Interaction}, supplies a possible determinant selector. Computational-basis measurements of a prepared quantum state select electronic occupation patterns; classical configuration-interaction (CI) diagonalisation in that space gives an energy and wavefunction. Operator ranking and angle optimisation use the CI wavefunction, but the chosen rotation acts on the accumulated circuit state. P explicitly lacks an analytical guarantee that improvement transfers between these states~\cite{P}. Its demonstrations are small-molecule circuit simulations, including a noisy eight-qubit example. Its demonstrated 0.001-Hartree accuracy scale differs from its successive-energy stopping threshold of \(10^{-5}\) Hartree~\cite{P}.
+
+The proposed connection was to use P to generate improved embedded reference data for Q. This work narrowed that proposal to a test of component accuracy and selector cost inside a specified Hamiltonian. Physical-reference adequacy remained a separate requirement.\record{joint ledger entries 14, 21, 32 and 64}
+
+\section{The observable and the physical-reference question}
+At fixed geometry, orbital basis and inactive-core prescription, this work used
+\[
+ H(s)=H_0+sV,\qquad
+ D=\langle u_0|V|u_0\rangle,\qquad
+ I(s)=E(s)-E(0)-sD.
+\]
+Here \(H_0\) is the vacuum Hamiltonian, \(V\) the MM-charge perturbation, \(E(s)\) the parent ground energy and \(u_0\) its normalised vacuum ground state. Nuclear and inactive-core contributions are included consistently. At full field the static interaction is \(D\), and write \(I=I(1)\). This fixed-model construction follows Q's decomposition~\cite{Q}; its implementation is a finding of this work.\record{joint ledger entries 17, 19, 20, 43 and 46}
+
+For a common determinant space \(S\), let \(E_S(s)\) be the lowest energy obtained by diagonalising \(H(s)\) within \(S\), and let \(u_{S,0}\) be its normalised vacuum ground state. Define
+\[
+ D_S=\langle u_{S,0}|V|u_{S,0}\rangle,\qquad
+ I_S(s)=E_S(s)-E_S(0)-sD_S.
+\]
+Every quantity in this construction uses the same space. With \(e_s=E_S(s)-E(s)\) and \(e_D=D_S-D\), the recorded identity is
+\[
+ I_S(s)-I(s)=e_s-e_0-se_D.
+\]
+Endpoint energy accuracy alone therefore leaves the static subtraction uncontrolled. The component tests used an illustrative absolute tolerance of 0.1 kcal/mol, not an established hydration-accuracy requirement.\record{joint ledger entries 17, 19 and 32; branch-3 ledger entry 10}
+
+Fixed-field snapshots were recovered while production provenance remained incomplete. Branch-1's input audit reported 2000 released testing records, coordinates in angstroms, MM charges in elementary-charge units and static/induced labels in kJ/mol. Measured charge-cloud distances were consistent with Q's atom-based 12-angstrom cutoff~\cite{Q}. These measurements are attributed to the branch audit; periodic reconstruction and production ensemble weights remained unverified.\record{branch-1 ledger entries 38 and 42, with corrections in entries 48 and 49; joint ledger entry 14}
+
+The inherited calculations addressed different obstacles. Three methanol frames and an acetic-acid frame gave snapshot-specific optimal two-point quadratic induction errors of approximately 0.000071--0.01976 kcal/mol. No 0.1-kcal/mol shape obstruction appeared on those tested points. These individually fitted optima do not bound the errors of Q's transferable EMLE model, response over an interval or hydration impact. Genuine absolute numerical-error certificates were unavailable.\record{joint ledger entry 3; branch-1 ledger entries 82, 83, 89 and 90}
+
+A fixed-frontier methanol prescription lost much full-basis response. This restricts that orbital/active-space prescription rather than all twelve-qubit models. In water, field-specific orbital relaxation restored much total response, but the corrected CAS-minus-RHF trace increments were only 0.34208 and 0.40569 bohr cubed, against MP2-minus-RHF increments of 1.01620 and 3.23619 in cc-pVTZ and aug-cc-pVTZ respectively. The corresponding shares are about 34\% and 13\%, with the smaller share in the diffuse basis. Most restored response accompanied classical full-basis orbital relaxation. These cross-method increments do not uniquely partition physical effects, and MP2 is a practical comparator rather than an exact reference.\record{joint ledger entries 5, 7 and 21}
+
+\section{The controlled selector comparison}
+The selector test used unchanged water record 1926, vacuum RHF/cc-pVTZ orbitals, an inactive oxygen \(1s\) orbital and CAS(8e,6o): eight active electrons in six spatial orbitals, represented by twelve qubits. The target electron/spin sector contained 225 determinants. Checks against PySCF CASCI with shared integrals supported the Hamiltonian implementation to numerical precision; they did not independently validate the chemistry.\record{joint ledger entries 17, 20, 43 and 46}
+
+An idealised control selected determinants using exact parent probabilities, without shots or an ADAPT circuit. At pooled size 16, its component errors were
+\[
+ e_D=-0.139684,\qquad e_I=+0.054478,\qquad
+ e_D+e_I=-0.085206
+ \quad\text{in kcal/mol}.
+\]
+Both endpoint energy errors passed P's demonstrated 0.001-Hartree scale. Induction and total interaction passed 0.1 kcal/mol, while static failed. At size 32, pooled and field-only ideal spaces coincided and both components passed. This supplies a concrete component-cancellation case, without establishing a sampling advantage.\record{joint ledger entries 17, 19 and 20}
+
+Q's written damping convention scales only the driving field in its linear induced-dipole solve, retaining unscaled charges in the energy contraction~\cite{Q}. For fixed components this gives \(D+fI\), where \(f=\epsilon^{-1}\), and error \(e_D+fe_I\). This work recovered corroborating candidate author code, but not the production version and launch setting. The ideal size-16 error becomes \(-0.106997\) kcal/mol at \(f=0.6\), crossing the diagnostic threshold. This is saved-component arithmetic, not an electronic calculation at \(H_0+0.6V\), an EMLE refit or a hydration result.\record{joint ledger entries 25, 26, 28 and 31; branch-1 ledger entry 41}
+
+The completed finite-shot simulations used nominal maximum sizes \(R=16,32\), ten seeds and 100000 shots per iteration at zero, half and full field, with noiseless gates. They retained P's successive-energy stop and, for this retained comparison implementation, imposed a cap of 80 iterations. This cap is not asserted to be part of P's authors' original protocol. The record reports recovery of the 1050-string twelve-qubit operator pool from publisher supporting information~\cite{SI,SIfile}. Full circuit action, the Hamiltonian sectors needed for angle optimisation and saved trajectories were checked. These are research-record implementation findings; the supporting-information text is not separately supplied here.\record{joint ledger entries 39--43, 46, 50 and 56}
+
+The comparison distinguishes original P outputs from the pooling extension. Original endpoint calculations select their spaces independently: their endpoint-energy difference and vacuum static subtraction do not come from a common projector. Original P endpoint outputs were kept separate from a frequency-pooling extension. For each field \(s\in\{0,1/2,1\}\), let \(n_s(d)\) be the last iteration's accepted count for determinant \(d\) in the 225-determinant target sector, and \(N_s=\sum_d n_s(d)\). Each field first retained at most \(R\) positive-count determinants, ordered by decreasing count and then increasing stored determinant index. Over the union of those three retained sets, pooling ranked
+\[
+ w(d)=\sum_{s\in\{0,1/2,1\}}\frac{n_s(d)}{N_s}.
+\]
+Thus the three fields enter with equal weight; the denominator includes all accepted target-sector counts, not only those of the retained set. The resulting common space is rediagonalised to evaluate \(D_S\) and \(I_S\) as defined above. The final pool contains at most \(R\) union members in decreasing \(w(d)\), breaking ties by increasing stored determinant index.
+
+The practical classical comparator started with the same Hartree--Fock determinant. At each step it diagonalised each field Hamiltonian \(H_s\) in the current selected space \(S\), obtaining its lowest Ritz energy \(E_s\) and real, normalised Ritz vector \(u_s\), extended by zero outside \(S\). Each external determinant \(d\notin S\) received the score
+\[
+ a(d)=\sum_{s\in\{0,1/2,1\}}
+ \frac{|(H_su_s)_d|^2}{\max\{|(H_s)_{dd}-E_s|,10^{-8}\ \mathrm{Hartree}\}}.
+\]
+For an external determinant, \((u_s)_d=0\), so this numerator is the squared external residual component. All matrix entries and energies in the implementation are in Hartree. The algorithm added the external determinant with largest score, breaking ties by increasing stored index, and repeated the three diagonalizations until \(|S|=R\). It used no exact-ground-state coefficients. These are definitions of the retained implementation in Ada's \texttt{adapt\_qsci/run.py}, not an optimality claim.\record{joint ledger entries 43, 48--50 and 64}
+
+\section{Results and the practical falsifier}
+Signed pooled errors, in kcal/mol, were reported as means and sample standard deviations across ten seeds:
+\[
+\begin{array}{c|rrr}
+ \text{Nominal }R&e_D&e_I&e_D+0.6e_I\\ \hline
+16&-0.28038\pm0.16848&0.37596\pm0.51560&-0.05481\pm0.14636\\
+32&0.00432\pm0.01484&0.04333\pm0.00441&0.03032\pm0.01225
+\end{array}
+\]
+At size 16, static and field-only screened tests passed in zero of ten seeds, while induction passed in seven. The small screened mean concealed individual failures. At nominal size 32, actual pooled spaces contained 22--27 determinants and every seed passed both components and the tested screening alternatives. Independently selected original P endpoints failed static and induction in every seed at both nominal sizes. All sixty field runs stopped by P's energy rule rather than the cap. These spreads describe selection variation within one fixed model, not hydration uncertainty.\record{joint ledger entries 48--51 and 56}
+
+The alternative fixed-component errors were \(e_D+0.36e_I\) for induction-path charge scaling and \(0.6e_D+0.36e_I\) for all-charge scaling. Their conventions differ from field-only damping. The nominal size-32 pools passed these alternatives in every seed, but none of these recombinations represents a production-model calculation.\record{joint ledger entries 26, 28, 49 and 51}
+
+Classical selection passed all tests at every matched final size of 22--27. A later audit of its unchanged nested path found the first simultaneous component/scaling pass at 19 determinants:
+\[
+ e_D=-0.04984916,\qquad e_I=+0.05575921,\qquad
+ e_D+0.6e_I=-0.01639363
+ \quad\text{in kcal/mol}.
+\]
+Size 18 still failed static at approximately \(-0.110354\) kcal/mol. Size 19 was identified using exact parent errors after the calculation; it is not an online certified stopping prescription.\record{joint ledger entries 49, 58, 59 and 63}
+
+Successful ADAPT pooling used a mean 6.45 million shots across the three fields and 64575 Pauli rankings. Its recorded diagonalisation proxy, the sum of cubed solve dimensions, was 238339. The size-19 classical path used no shots or Pauli rankings, a smaller proxy of 101441, 115425 residual matrix entries and 3879 external candidate scores. Across all sixty ADAPT runs, the accounting totalled 132.9 million shots and 9.9066 billion shot-weighted controlled-NOT gates under the ideal all-to-all decomposition reported in the SI audit.\record{joint ledger entries 49, 56, 59 and 63}
+
+Integral generation and parent validation were shared overhead; full-state simulation was accounted for separately. Ranking used padded parent vectors and matrices, so these are implementation counters rather than lower bounds on optimised P. No hardware time, routing or latency comparison was measured. The observed matched-accuracy comparison nevertheless rejects the proposed practical selector advantage for this record and tolerance: the classical path needs smaller support, a smaller recorded solve proxy and no quantum sampling. It establishes no universal resource limit.\record{joint ledger entries 49, 61, 63 and 64}
+
+Saved-trajectory replays provide a further diagnostic. Only 19 of 60 stops repeated the preceding determinant support. Of 1269 appended rotations, 235 raised actual circuit energy while minimising the CI objective; the largest rise was 1.267183 kcal/mol alongside a CI-objective decrease of 0.159916 kcal/mol. This realises P's acknowledged transfer limitation~\cite{P}, but neither invalidates QSCI nor explains every component failure. Monotone circuit energy was unnecessary for the successful pools. These replays check shared numerical evidence, rather than independently replicate chemistry.\record{joint ledger entries 50 and 56--60}
+
+\section{What selector convergence does not establish}
+Here B3LYP5 identifies the retained PySCF restricted Kohn--Sham calculation with \texttt{xc=b3lyp5}: the VWN5 correlation convention, distinct from the default PySCF \texttt{b3lyp} VWN-RPA/Gaussian variant. The retained Branch-3 reference audit used PySCF 2.14.0 with LibXC 7.0.0, spherical cc-pVTZ, a neutral singlet, unchanged geometry and retained point charges, grid level 4, an SCF energy tolerance of \(10^{-11}\) Hartree and at most 150 SCF cycles, without density fitting or frozen orbitals. Static interaction included the vacuum-density electronic contribution and the solute-nuclear/MM term; induction was embedded minus vacuum total energy minus that static interaction. The original ORCA version, grid and possible integral approximations were not recovered: this identifies the retained reproduction calculation, not an exact reconstruction of the original label-generation setup. The six-record reproduction was within the stated tolerance and does not certify physical accuracy.\record{branch-3 Ada's V7 reference audit, reference\_audit.py, runtime.json and reproduction.csv}
+
+The completely solved compact water CAS differed from full-basis B3LYP5 on the same record by \(-1.25131\) kcal/mol in static energy and \(+4.51453\) kcal/mol in induction. Neither was certified exact. Further determinant selection within that CAS cannot remove its physical-model discrepancy.\record{joint ledger entries 19 and 21}
+
+This work also examined conditional certification using full-parent residuals, verified lower bounds on first-excited energies and perturbation spectral width. Projected residuals and excited Ritz values do not supply those premises. Numerical parent spectra used as oracle inputs still gave static/induction bounds of 37.84/40.84 kcal/mol at ideal size 16 and 17.37/18.01 at size 32. The checked Temple-based algebra supplied no useful 0.1-kcal/mol molecular certificate or physical-reference validation.\record{joint ledger entries 11, 12, 18, 20 and 21}
+
+Reference changes also need both components. Six selected MP2-minus-B3LYP5 comparisons gave negative static shifts, positive induction shifts and negative total shifts. Field-only damping made their fixed-component totals more negative. These are selected-record differences between references, not evidence that MP2 is more accurate or that a production-ensemble mean has that sign.\record{joint ledger entries 8 and 26}
+
+For fitted potentials \(U_A=T_A+r_A\) and \(U_B=T_B+r_B\), the recorded conditional bridge is
+\[
+ \delta U=\delta T+(r_B-r_A),\qquad
+ \Delta\Delta G=-\beta^{-1}\log\langle e^{-\beta\delta U}\rangle_A
+ \leq\langle\delta U\rangle_A.
+\]
+Here \(\beta\) is inverse thermal energy. The formula assumes a solution-only intervention, unchanged vacuum, Lennard--Jones and solvent models, and finite canonical averages. A negative production-ensemble mean actual fitted-potential change guarantees a negative hydration shift; a positive mean gives no converse guarantee. Selected labels do not establish this post-refitting premise, and snapshot RMS errors do not establish a uniform free-energy bound. No hydration improvement or causal identification of Lennard--Jones double counting followed.\record{joint ledger entries 10, 13, 31 and 64}
+
+The research audits also identify response-aware classical selected CI, including LR-SCI and its perturbative extension~\cite{LR,LRPT}, broad quantum-selected hydration precedents, and sampling/read-out work on a Hartree--Fock-separated QSCI variant~\cite{readout}. These are reported source-audit findings, not independently verified literature results in this account. They leave novelty of the particular pooling comparison unresolved.\record{joint ledger entries 5, 14, 39 and 64}
+
+\section{Why the work pauses, and the immediate next decision}
+The brief supplies the administrative status PAUSE. Scientifically, the approved research findings support stopping the practical quantum-selector advantage proposal on this record: the requested finite-shot comparison was completed, and classical selection already met the illustrative component tolerance. The evidence remains confined to a physically incomplete water CAS, ten seeds at one shot budget and noiseless gates. It establishes neither a better physical reference nor a hydration improvement.\record{joint ledger entries 51, 61 and 64}
+
+The smallest useful next task in the recorded route is an identical-record comparison of physical references. Hold the solute geometry, MM sites and charges fixed, compare the recorded method, basis and response-space prescriptions, and report static and induced components separately. Its output should show how \(D\) and \(I\) change with those prescriptions and whether the proposed compressed Hamiltonian retains the response of the better-converged comparators. This would inform physical-reference adequacy before another selector benchmark; a difference between methods alone would still not certify which is accurate. No new method, numerical threshold or budget is specified here.\record{joint ledger entries 7, 14, 19, 21, 32 and 64}
+
+A later selector comparison would require a response-valid physical Hamiltonian at a size that meaningfully tests classical selection, separate component acceptance and complete resource accounting. A classical comparator matching that accuracy without greater recorded work remains the local falsifier. A favourable quantum result would reopen only its tested comparison. Diverse records, shot-budget dependence, noisy gates and practical sparse implementations remain unresolved.\record{joint ledger entries 21, 32, 51, 61 and 64}
+
+Physical target replacement would then require the pinned production screening convention and trajectories, conservative fitting and force checks, and representative held-out hydration ensembles with overlap, autocorrelation and tail uncertainty assessed. Those requirements remain separate from the immediate component comparison. Accurate selected energies and acceptable screened totals can coexist with inaccurate embedded components; solving the selected-CI problem does not by itself establish better chemistry.\record{joint ledger entries 10, 14, 21, 31 and 64}
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}
