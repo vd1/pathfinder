@@ -1,0 +1,77 @@
+{
+  "entries": {
+    "branches/branch-1/ledger.jsonl": [
+      {
+        "seq": 24,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "New comparator qualification from primary P code: ada/P-models.py:30-45 constructs the scratch classical CNN with ordinary nn.Conv2d when transfer=False, whereas transfer=True selects FilterNormalizationConv2DParallel. The latter normalises each unfolded input patch in ada/P-modules.py:94-105; the quantum route also normalises patches at :59. Therefore the published ordinary CNN is not the exact input-normalised, circuit-parameter classical comparator identified in entries 4 and 10. Its comparison can confound input normalisation and weight parameterisation with quantum implementation. This does not invalidate the demonstrated instantaneous transfer map, but similar ROC-AUC cannot isolate a quantum training effect. Source: [P model routing](https://github.com/anthonysmaldone/Quantum-to-Classical-Transfer-Learning/blob/474781690264e117960db573c844302ebc1998b6/src/models.py#L30-L45) and [normalised classical convolution](https://github.com/anthonysmaldone/Quantum-to-Classical-Transfer-Learning/blob/474781690264e117960db573c844302ebc1998b6/src/modules.py#L94-L105). No model was run."
+      }
+    ],
+    "branches/branch-2/ledger.jsonl": [
+      {
+        "seq": 5,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Primary repository recovery strengthens the classical-comparator objection. P snapshot 474781690264e117960db573c844302ebc1998b6: src/quantum_layers.py:6-19 uses default.qubit, no shots argument, and expectation values; src/weight_extraction.py:6-10 computes the FULL unitary via qml.matrix and takes its real first column, then reshapes to a 2-by-2 filter (29). This is simulator-side extraction, not demonstrated hardware tomography. src/modules.py:94-105 classically normalises each patch and multiplies it by an explicit weight vector. The identity permits a matched classical state-vector parameterisation comparator. Sources: [P circuit code](https://github.com/anthonysmaldone/Quantum-to-Classical-Transfer-Learning/blob/474781690264e117960db573c844302ebc1998b6/src/quantum_layers.py), [P extraction code](https://github.com/anthonysmaldone/Quantum-to-Classical-Transfer-Learning/blob/474781690264e117960db573c844302ebc1998b6/src/weight_extraction.py), [P normalised convolution code](https://github.com/anthonysmaldone/Quantum-to-Classical-Transfer-Learning/blob/474781690264e117960db573c844302ebc1998b6/src/modules.py). Saved under ada/recovered/Quantum-to-Classical-Transfer-Learning with SHA256 emitted by recovery command. This does not invalidate P forward equivalence; it leaves finite-shot/hardware transfer cost untested."
+      },
+      {
+        "seq": 47,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "corrected by #70; not cited by the joint ledger",
+        "text": "prior-work search dated 7 October 2026 is recorded in emmy/literature-search.md and literature-search-log.json, with 31 verbatim web queries and access failures. Examples: \"Quantum-to-Classical\" \"transfer\" \"2025\" Smaldone; HiMap NetBFE optimal design relative binding free energy variance network; quantum neural networks amplitude encoding data loading complexity inner product classical data. Primary sources: [QKDTI 2025 publisher PDF](https://www.nature.com/articles/s41598-025-07303-z.pdf) explicitly cites P as reference 5 but uses quantum kernels/SVR rather than exact learnable-weight transfer. [Quantum-Train](https://arxiv.org/abs/2405.11304) and [QT-CNN 2025](https://ieeexplore.ieee.org/abstract/document/11011133) already cover quantum-to-classical parameter generation with classical deployment; direct citation to P was not verified for these. [NetBFE](https://arxiv.org/abs/2107.04726) already allocates RBFE resources adaptively using measured variance. [HiMap](https://pmc.ncbi.nlm.nih.gov/articles/PMC10547263/) already explicitly asks in Discussion/Design Weights how noisy weights may be while designs remain efficient. Thus the broad decision-quality/noisy-score question is also prior art, not merely optimal-design integration. [Landman 2022](https://quantum-journal.org/papers/q-2022-12-22-881/) Section 2.1 counts data-loader preprocessing, gate count and depth; Section 2.2 counts inverse-square precision shots for dense-network inner products. [AMLET](https://arxiv.org/abs/2309.13108) addresses loading cost with structured approximate preparation. These cover the components of our frontier; none was verified to establish this particular RBFE compiled-cost curve. No novelty or publication verdict follows from this bounded search."
+      },
+      {
+        "seq": 51,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "corrected by #70; not cited by the joint ledger",
+        "text": "Independent V5 cross-check of #47: Landman primary text emmy/sources/Landman2022.txt:262-298 explicitly counts classical preprocessing and d-1 unary loader gates, supporting the loading-cost accounting; :321-344 counts shot repetitions for squared inner products. This uses d qubits and is not P logarithmic-qubit preparation. Primary source: https://quantum-journal.org/papers/q-2022-12-22-881/ . Independent searches for HiMap Design Weights recover its discussion of approximate weights and ML reliability inputs; the author manuscript indexed by query \"To Design Scalable\" \"noisy\" weights contains the explicit noisy-weight question, consistent with Emmy. Primary article: https://pmc.ncbi.nlm.nih.gov/articles/PMC10547263/ . Bounded 7 October 2026 query log and access failures are in ada/literature-crosscheck.json. These checks support existing coverage of broad robustness and loading-aware resource questions; they do not establish publication novelty or this RBFE compiled-cost frontier."
+      },
+      {
+        "seq": 70,
+        "actor": "emmy",
+        "kind": "correction",
+        "standing": "current; not cited by the joint ledger",
+        "text": "V9 clarification superseding the version attribution in #47/#51: the explicit HiMap noisy-weight question is recovered in indexed primary text associated with the archived AUTHOR MANUSCRIPT, repository https://escholarship.org/uc/item/8671b2rz, header J Chem Inf Model. Author manuscript; available in PMC 2024 March 27. Discussion / Design Weights asks: \"Or, how random or noisy can the weights be for optimal designs to still be efficient?\" The same exact passage is indexed at https://pmc.ncbi.nlm.nih.gov/articles/PMC10547263/ . This does not establish comparison with the publisher version of record. Direct PMC and repository opens encountered bot checks; PDF download attempts returned zero bytes. emmy/literature-search.md now names the author-manuscript version and access limits; emmy/HiMap-attribution.json records queries and evidence. Broad imperfect-weight robustness was therefore already posed in this archived primary manuscript, without a novelty verdict."
+      }
+    ],
+    "branches/branch-3/ledger.jsonl": [
+      {
+        "seq": 80,
+        "actor": "emmy",
+        "kind": "finding",
+        "standing": "current; not cited by the joint ledger",
+        "text": "Best current Emmy account incorporates through #78: the supported joint line remains actual-decision precision and measured total cost for a function-controlled P-style transferable predictor in Q at fixed RBFE allocation. Ideal-shot adaptive-process equality concerns a hypothetical variant and a matched circuit-family/gradient/optimiser/reuse comparator; P recovered implementation is analytic and its default classical baseline differs in normalisation. history now puts all cited P implementation lines before submission and all Q evidence before acceptance, while FEW first-parent comparison isolates only disconnected-component handling after acceptance (#73/#75); dates still do not prove run identity. corrections #71/#72 withdraw any implication of internally inconsistent Fig. 9. Ada #74/#76 calibrates unchanged FEW on FC and all stars within 0.01 in saved printed tuples, and reveals the source-specific confidence indexing in computePM, superseding earlier median comparisons. Ada #77 supplies six-decimal-consistent reconstructed candidate selected graphs, pending uniqueness/author refits. My #78 and conditional cutoff cross-check show almost all selected edges lie below the later-public cutoff, so stable cutoff membership alone is inadequate; component-connection decisions and complete-input correlations remain central. Unresolved: verified complete selected graphs/exchange bounds and exact planner/ties, restored publication-equivalent activations/ensemble and optimiser path, complete-input reuse, measured preparation/gradient/gate/shot/transfer and optimised classical costs, characterised device noise and independent held-out targets. No new MD, preserved physical MUE, hardware advantage, necessary-shot requirement or publication novelty is established. This is executable provenance/decision evidence and a falsifiable study, without a scientific verdict."
+      },
+      {
+        "seq": 87,
+        "actor": "ada",
+        "kind": "finding",
+        "standing": "current; adopted by the joint ledger #3",
+        "text": "Provenance refinement of #83: public BioSimSpace Align/_align.py:298-305 writes numerically prefixed molecule filenames (three-digit input index) before the DB filename sort, so the notebook input order is an explicit public-path mechanism, not an arbitrary graph-index adapter choice. [Public molecule filename mapping](https://github.com/OpenBioSim/biosimspace/blob/ef328f960fdd4ba8f6825c606d9f0cdacc826e8f/python/BioSimSpace/Align/_align.py#L298). Alphabetically sorting ligand labels directly bypasses that mechanism and explains the differing diagnostic graphs; exact Flare V4 build identity remains unproved. Emmy #73/#75 history evidence is incorporated: Q notebook/arrays precede acceptance, P cited analytic/normalisation implementation lines are unchanged from March2024 before submission despite later pinned README commits, and FEW connected-network conventions persist across the post-acceptance merge. Dates and byte identity narrow provenance, not publication-run identity."
+      }
+    ]
+  },
+  "external_sha256": {
+    "sources/external/P.txt": "57eb9cb9e2754cfbefd76b5ec9535b6190349e328e63b98db6919f7de3aeab74",
+    "sources/external/Q.txt": "26e3a31040fa5bec2bb4284d82e481eb574ea4ccb6abe63917b4a93e1913e5dd",
+    "sources/external/research-supplement.md": "f41d1240f5c91e60768afd98e410f718efe17963092919af4abe954051d0adb5"
+  },
+  "embedded_sha256": {
+    "ada/loading_cost_audit.py": "e77e1eaa30e161182c35557862987e2034a5098b22c6da9b508f55f55298a9b0",
+    "ada/loading_cost_variants.py": "c305bbc39f2015498b9ad654f76408585f625b49985c0351693400ec0b7ab008",
+    "branches/branch-1/ledger.jsonl": "066fd0a761b638b0b3ce290d90476d7924cac524956b13f03185cb38bab76c15",
+    "branches/branch-2/ledger.jsonl": "e73c09e8de89f9571615d42047c2f31c0c84ed577c903a8a7beea25f383dc5e8",
+    "branches/branch-3/emmy/check_fixed_budget_planning.py": "4653984c8fbf12a86b522c2a1ba6aa80abe52a74cdb70925c82d077a98b7a5c2",
+    "branches/branch-3/ledger.jsonl": "fdb372f2efd8109331c104eaf022015d1098c92a62c433a597f55f44118d9f5b",
+    "emmy/ensemble-allocation-diagnostic.json": "39d742b2b1c209a47798d3d7525f530759123847134c5da16bc1592749df36bc",
+    "emmy/ensemble_allocation_audit.py": "e70950216248d8153ab00bc99f16377c378f693bffc0b978c6e3be836a9b23f6",
+    "emmy/final-precision-account.md": "2873d13836fe98e58e13e6c3a15e2e16e264064c2cac6b6554348c08e38c1f56",
+    "emmy/paired_graph_risk.py": "408d96595c31677d61b698218c49b8ae720864380566536e569694ef8816f873",
+    "ledger.jsonl": "e2cfa19ee3abf288e69f97c3325b2bd5c8241c5d2dbbecb8e4d52f85c3e06a94"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "baseline_sha256": "d9673738d30309c5d226fb2d36e0be8699e34f08b27b9500079748d398e8d231",
+  "candidate_sha256": "d3bdad3816da0b9f2f1134829f0baf9e12ac4abd68fdf28c3fcc29c0e147fcd6",
+  "changes": [
+    {
+      "after": "The sampling estimator above requires positive integer shot counts; it is not defined by substituting zero into its denominators. For a fixed edge, suppress the edge index. The following norm-based proportional rule is stated only for strictly positive norm products \\(c_m\\), positive per-shot costs \\(k_m\\) and positive fixed cost \\(K=\\sum_m k_mS_m\\). It is the equality allocation in a continuous relaxation with positive real \\(S_m\\), not an integer sampling prescription. Under these conditions, joint entries 20 and 24 give",
+      "before": "For positive per-shot costs \\(k_m\\) and fixed cost \\(K=\\sum_m k_mS_m\\), joint entries 20 and 24 give",
+      "finding": "P1"
+    },
+    {
+      "after": "The variance-optimal proportional rule instead uses \\(c_m\\sqrt{1-h_m^2}\\), and is stated here only when every variance coefficient \\(c_m^2(1-h_m^2)\\) is strictly positive. Zero norm products or zero variance coefficients are outside the respective proportional prescriptions as stated here and require separate treatment; no zero-shot estimator is defined. The retained audit checks positive variance coefficients in its conditional arrays and does not supply a policy for the zero-coefficient case. Integer allocations constrained to positive shot counts require a separate constrained prescription: no rounding or minimum-shot allocation rule is asserted here. The continuous calculation excludes integer, setup and pilot costs.",
+      "before": "Variance-optimal allocation replaces \\(c_m\\) by \\(c_m\\sqrt{1-h_m^2}\\). The continuous calculation excludes integer, setup and pilot costs.",
+      "finding": "P2"
+    },
+    {
+      "after": "Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\\cite{Q}. Q reports the supervised RBFE-Space label as the standard error of the mean across five solvent-phase relative free-energy calculations for a perturbation between the grafted benzene derivatives: the standard deviation across those five estimates divided by the square root of five. Where both perturbation directions were simulated, Q reports averaging their SEM values for the two directional labels. This describes the source-reported label construction, not an independent validation of deposited SEM values. It is distinct from dispersion among predictions of the neural-network ensemble members, and it is not a calibrated uncertainty on binding affinity~\\cite{Q}.",
+      "before": "Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\\cite{Q}.",
+      "finding": "training-label-and-domain"
+    },
+    {
+      "after": "Q's training-domain construction discarded perturbations changing formal charge and those involving ten or more perturbed heavy atoms. Q also excluded structurally complex grafting cases, including multiple fused rings or more than six R-groups, for implementation simplicity; perturbations involving a benzene ring without other constituents were excluded because they caused difficulties enforcing the benzene maximum common substructure. These are source-reported domain restrictions, not evidence of validated transfer to excluded chemistry~\\cite{Q}.\n\nQ explicitly included TYK2- and TNKS2-derived perturbations in training. Its stated rationale was that the R-group modifications substantially overlap those in other congeneric series, so omitting these series would leave essentially the same perturbation domain; inclusion also simplified the workflow. That is Q's rationale, not an independently tested absence of data overlap. The proposed TYK2 reproduction is consequently not a target-held-out generalisation test~\\cite{Q}.\n\nThis chemical abstraction also limits what successful numerical reproduction would establish.",
+      "before": "This chemical abstraction also limits what successful numerical reproduction would establish.",
+      "finding": "training-label-and-domain"
+    },
+    {
+      "after": "Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment. This is a reproduction prerequisite within the source-reported training domain, not an independent target-held-out validation of transferability or binding-affinity uncertainty.",
+      "before": "Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment.",
+      "finding": "training-label-and-domain"
+    },
+    {
+      "after": "The next useful experiment",
+      "before": "The thread ended with PAUSE. The next useful experiment",
+      "finding": "editor-framing"
+    },
+    {
+      "after": "\\section{Prioritising input reproduction}",
+      "before": "\\section{Why PAUSE, and the smallest useful next experiment}",
+      "finding": "editor-framing"
+    },
+    {
+      "after": "Faithful predictions from validated inputs remain missing.",
+      "before": "The thread ended with PAUSE because faithful predictions from validated inputs remain missing.",
+      "finding": "editor-framing"
+    },
+    {
+      "after": "The scientific reason for prioritising input reproduction is the still-unvalidated predictor inputs and the missing physical calibration and native costs.",
+      "before": "The PAUSE status is supplied by the brief; the scientific reason is the still-unvalidated predictor inputs and the missing physical calibration and native costs.",
+      "finding": "editor-framing"
+    },
+    {
+      "after": "Success at this criterion would establish an aggregate-output reproduction milestone for that chosen reconstruction. Agreement of the five-model group means, even for all nine groups, does not validate individual-model outputs or latent norm products: discrepancies between members can compensate in a mean. Retaining activations and norm products records the reconstruction but does not itself validate them. The aggregate check must therefore be distinguished from the additional input and per-model validation needed before resource estimates can be attached to the released predictor. Extend the aggregate check to all nine groups, while keeping that validation gap explicit. Neither aggregate agreement nor this extension uniquely establishes historical inputs or prospective physical accuracy. Failure blocks attaching the present conditional calculations to the historical predictor; it does not exclude every admissible mapping or quantum method.",
+      "before": "Success would support numerical reproduction for that chosen reconstruction. It would not uniquely establish historical inputs, validate the other eight groups, or establish prospective physical accuracy. Extend the check to all nine groups before attaching ensemble resource estimates. Failure blocks attaching the present conditional calculations to the historical predictor; it does not exclude every admissible mapping or quantum method.",
+      "finding": "aggregate-not-member-validation"
+    },
+    {
+      "after": "The variance-optimal proportional rule is \\(S_m\\propto c_m\\sqrt{1-h_m^2}/\\sqrt{k_m}\\) for the same positive per-shot costs \\(k_m\\) and continuous fixed-cost relaxation",
+      "before": "The variance-optimal proportional rule instead uses \\(c_m\\sqrt{1-h_m^2}\\)",
+      "finding": "P1"
+    },
+    {
+      "after": "Joint entry 9 selects the largest point-MUE increase among 100 fixed-count trials. Each trial adds an independent uniform perturbation on \\([-0.001,+0.001]\\) kcal/mol to each undirected candidate edge's predicted SEM, sharing that perturbation across reverse directions; reciprocal scaling and its extrema are then recomputed. This is the independent-original-edge family, not the shared-prediction-signature family. Its selected point-MUE increase is 0.0146809 kcal/mol. Separately, the retained risk calculation uses zero-mean Gaussian errors on candidate-edge free energies with standard deviation 0.4 kcal/mol (variance 0.16 in squared kcal/mol units), the author hysteresis-floor model, not a floor on predicted SEMs or a calibrated MD uncertainty. These edge errors are independent across candidate edges; the shared-outcome comparison reuses the same errors in both graph estimators, whereas the independent-outcome comparison draws a separate error vector for the changed graph. Under this model,",
+      "before": "Joint entry 9 selects the largest point-MUE increase among 100 fixed-count trials at bounded SEM halfwidth 0.001 kcal/mol. Its increase is 0.0146809 kcal/mol. Under an author-model Gaussian floor of 0.4 kcal/mol,",
+      "finding": "P2"
+    },
+    {
+      "after": "Joint entries 8, 11 and 14 describe synthetic unoptimised compilations using the documented preparation implementation~\\cite{preparation}. The retained scripts recursively decompose preparations and controlled operations into RX, RY, RZ, PhaseShift, Hadamard, Pauli X, Pauli Z and CNOT operations, also retaining GlobalPhase as a primitive bookkeeping operation. The reported controlled-NOT counts are the CNOT entries in the resulting operation histogram for one circuit execution per shot, including the preparation and ancilla operations in that circuit. They are not total primitive-operation counts. No gate cancellation, routing, native scheduling or error correction is applied.",
+      "before": "Joint entries 8, 11 and 14 describe synthetic unoptimised compilations in a declared elementary basis, using the documented preparation implementation~\\cite{preparation}.",
+      "finding": "P3"
+    },
+    {
+      "finding": "reader-motivation-context",
+      "before": "Its matrix-product complexity argument assumes efficient state preparation. The toxicity study supplies no RBFE planning result.",
+      "after": "Its matrix-product complexity argument assumes efficient state preparation. The toxicity study supplies no RBFE planning result. The supplied research supplement reports that the inspected implementation uses analytic simulator expectations, not measured finite-shot hardware outputs. It also reports that the ordinary classical convolutional baseline differs from the quantum route in input normalisation as well as weight parameterisation: the quantum and transferred classical paths normalise input patches, whereas the ordinary scratch classical baseline does not. Comparable reported predictive performance therefore does not isolate a quantum training effect under matched inputs and parameterisation. These are attributed implementation findings, corroborated along the retained reproduction and source-history path; dated source lines and byte identity narrow provenance but do not establish which exact implementation produced the publication runs. They do not invalidate the stated instantaneous transfer map.\\footnote{Supplied research supplement: branch-1 entry 24, branch-2 entry 5, and branch-3 entries 80 and 87. These are recorded source inspections, not new execution or independent inspection for this account.}"
+    },
+    {
+      "finding": "reader-motivation-context",
+      "before": "Neither absence nor novelty follows.",
+      "after": "Neither absence nor novelty follows.\n\nBranch-2 also records directly relevant planning and loading-aware neighbours. Its corrected HiMap attribution concerns an explicit question about how random or noisy weights can become while optimal designs remain efficient, recovered from indexed text of the archived author manuscript, rather than an independently checked publisher version of record. Direct repository/PMC access met bot checks and attempted PDF downloads returned no content; that version and access limitation must accompany the attribution. The branch also reports that Landman's neural-network work counts classical loader preprocessing, unary-loader gates and depth, and repeated measurements for dense-network inner products. That unary construction uses a different encoding from P's logarithmic-qubit preparation. These are descriptions of the retained branch's source inspections; the HiMap manuscript and Landman primary text are not independently supplied here. They identify prior coverage of broad noisy-weight robustness and loading-aware inner-product costs, without establishing this specific RBFE compiled-cost curve or its novelty.\\footnote{Supplied research supplement: branch-2 entries 47 and 51, with the HiMap version correction in entry 70. No new search or primary-source verification is claimed.}"
+    }
+  ]
+}
