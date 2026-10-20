@@ -526,6 +526,9 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
             encoding = {}
             if role == "editor" and len(prompt) > transport.max_prompt_chars(campaign):
                 prompt, encoding = editor_alias_packet(head, shown)
+                if len(prompt) > transport.max_prompt_chars(campaign):
+                    from . import editor_packet
+                    prompt, encoding = editor_packet.packet(head, shown, len(prompt))
             if len(prompt) > transport.max_prompt_chars(campaign):
                 raise Changed("complete review context exceeds prompt allowance; no call or truncation")
             _write(root, f"visibility/{pass_id}-{role}.json", _json({
