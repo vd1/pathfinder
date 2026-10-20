@@ -5,8 +5,12 @@ was performed. Do not execute the action until that approval is recorded.
 
 ## Frozen engine and packet
 
-Use separate runtime `/private/tmp/pathfinder-selector-11efb02`, exact commit
-`11efb02928cceae0e58942d3603d98957e4ac270`. `freeze.json` binds its archive and manifest.
+Use separate runtime `/private/tmp/pathfinder-selector-9aaf946`, exact commit
+`9aaf946009b062e9c6f4f62fe5019abe087d0bde`. `freeze.json` binds its archive and manifest.
+This corrected freeze supersedes 11efb02 for execution. It fixes selected-source evidence basis
+and gives the fresh roles an explicit research-record/provenance boundary. The candidate and
+approval contract are unchanged. The earlier freeze remains recorded in `freeze-11efb02.json`.
+
 The runtime includes the earlier lossless transport and Q024 continuation-instruction fixes.
 Do not replace an active deployment engine.
 
@@ -68,8 +72,8 @@ the archivist retains its ordinary draft/claims/provenance scope.
 
 The full actual parent report profile includes 130 claims, fact-check and critic current/history
 reports, and all archivist revision/custody/evidence-diff reports. With the new candidate and source,
-the original editor prompt is 1067541 characters. Existing exact whole-file alias transport yields
-899109 characters, leaving 100891 below the unchanged 1000000 cap. All 21 expanded paths were checked
+the original editor prompt is 1067845 characters. Existing exact whole-file alias transport yields
+899413 characters, leaving 100587 below the unchanged 1000000 cap. All 21 expanded paths were checked
 against exact content hashes. No source, report or selected scientific value is omitted or truncated.
 
 This is an offline representative capacity test, not a prediction of fresh report lengths. Old reports
@@ -78,8 +82,12 @@ before dispatch; there is no cap adjustment or truncation fallback.
 
 Verification:
 
-- 65 regression and copied-account tests passed.
-- 29 tests passed against the exact frozen import, including the ordinary guard refusal.
+- 59 focused regression and copied-account tests passed for the source-basis correction.
+- Real selected-source citation tests pass with `research record`; the same citation labelled
+  `papers` stops at fact-check before critic/editor. Author and critic see the selected science;
+  archivist sees the claim and provenance boundary without expanding its normal source scope.
+  Host custody metadata is not extracted as scientific claims.
+- 31 tests passed against the corrected exact frozen import, including the ordinary guard refusal.
 - The copied canonical workflow completed five stub roles, a real build and idempotent acceptance.
 - All 554 pre-existing edited artifacts and scientific-status bytes were preserved, apart from the
   canonical selected pointer after copied acceptance.
