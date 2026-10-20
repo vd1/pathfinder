@@ -141,3 +141,21 @@ def test_failed_successor_revision_keeps_predecessor_until_accepted(tmp_path,mon
     after=pce_recovery.hashes(ed)
     assert all(after[k]==h for k,h in before.items() if k not in ('account-amendment.json','account-successor.json'))
     account_release.view(c,'Q1P1',create=True)
+    # A completed successor's accepted child may itself have a genuine returned tail.
+    # The retained pending pointer names the child, not acceptance at the base folder.
+    accepted_child=failed/'revisions/clarity'
+    assert not (failed/'acceptance.json').exists()
+    v=account_release.view(c,'Q1P1');tail=presentation.folder(v,'Q1P1');tail.mkdir()
+    (tail/'state.json').write_text(json.dumps({'state':'RETURNED'}))
+    returned=tail/'amend-findings.json';returned.write_text(json.dumps({'findings':[{'id':'P2','issue':'Clarify supplied convention wording.'}]}))
+    next_packet=tmp_path/'next-successor';next_packet.mkdir()
+    next_candidate=new.replace('The convention is not supplied.','No convention is supplied.')
+    (next_packet/'account-candidate.tex').write_text(next_candidate)
+    (next_packet/'successor.json').write_text(json.dumps(dict(parent_candidate_sha256=pce._sha(new),parent_acceptance_sha256=pce._sha((accepted_child/'acceptance.json').read_text()),returned_findings_sha256=pce._sha(returned.read_text()),changes=[dict(finding='P2',before='The convention is not supplied.',after='No convention is supplied.')])))
+    before=pce_recovery.hashes(ed);calls=script(monkeypatch,c)
+    next_args=dict(identity='next-clarity',packet=next_packet,reason='Approved next returned finding')
+    assert 'accepted;' in account_successor.run(c,'Q1P1',**next_args,apply=True)
+    assert len(calls)==5
+    after=pce_recovery.hashes(ed)
+    assert all(after[k]==h for k,h in before.items() if k not in ('account-amendment.json','account-successor.json'))
+    assert account_successor.run(c,'Q1P1',**next_args,apply=True).startswith('accepted;') and len(calls)==5

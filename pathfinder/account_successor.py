@@ -42,7 +42,10 @@ def prepare(campaign, pair, *, identity, packet, reason):
         if root.exists():
             raise pce.Changed('successor ID already exists')
         if pending.exists():
-            prior = account_amend._base(campaign, pair, json.loads(pending.read_text())['id'])
+            prior_pointer = json.loads(pending.read_text())
+            if prior_pointer != selected:
+                raise pce.Changed('finish the existing successor before preparing another')
+            prior = account_amend._root(campaign, pair, prior_pointer['id'])
             if not (prior / 'acceptance.json').exists():
                 raise pce.Changed('finish the existing successor before preparing another')
         original, bib, imported = account_release.source(campaign, pair)
