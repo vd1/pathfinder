@@ -33,21 +33,28 @@ def source(campaign, pair_id):
     return note, bib, acceptance
 
 
-def view(campaign, pair_id, *, create=False, original=False):
+def view(campaign, pair_id, *, create=False, original=False, bibliography=True):
     note, bib, acceptance = source(campaign, pair_id)
     ed = campaign.thread_dir(pair_id) / "edited"
     e = edit.status(campaign, pair_id)
     if not original:
         from . import account_amend
         note, bib, acceptance = account_amend.selected(campaign, pair_id, note, bib, acceptance)
+    metadata = None
+    if not original and bibliography:
+        from . import account_bibliography
+        bib, metadata = account_bibliography.selected(campaign, pair_id, note, bib, acceptance)
     identity = pce._sha(note + '\0' + bib)
     root = ed / "publication" / identity
     c = copy.copy(campaign)
     c._publication_folder = root
     c._edited_publication = True
+    c._bibliography_metadata = metadata
     if not root.exists() and not create:
         raise pce.Changed("run present PAIR --edited before release")
     if create:
+        if metadata is not None:
+            pce._write(root, "metadata-provenance.json", pce._json(metadata), immutable=True)
         pce._write(root, "acceptance.json", pce._json(acceptance), immutable=True)
         pce._write(root, "paper.tex", note, immutable=True)
         pce._write(root, "references.bib", bib, immutable=True)

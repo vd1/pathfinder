@@ -142,6 +142,10 @@ def prepare(campaign, pair_id, *, identity, packet, evidence_root, reason):
              'settings': settings, 'inputs_sha256': pce._sha(pce._json(files))}
     if projection is not None:
         grant['strict_evidence'] = True
+    old_grant = root / 'review/grant.json'
+    if not old_grant.exists() or _read(old_grant).get('replacement_register'):
+        from . import account_register
+        account_register.attach(root/'review',grant,files,note,replacements,candidate)
     if findings is not None:
         pce._write(root, 'returned-findings.json', pce._json(findings), immutable=True)
     pce._write(root, 'request.json', pce._json(request), immutable=True)

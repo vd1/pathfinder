@@ -106,8 +106,12 @@ def test_inherits_external_evidence_without_parent_reviews(tmp_path,monkeypatch)
             assert new[name]==old[name]
     assert not any(name.startswith('reviews/') for name in new)
     changes=json.loads(new['sources/internal/changes.json'])
-    assert len(changes['changes'])==1
-    assert changes['baseline_sha256']==pce._sha((parent/'candidate.tex').read_text())
+    register=json.loads((root/'review/replacement-register.json').read_text())
+    assert changes['changes']==[{'finding':r['finding'],'after':r['claim']} for r in register['records'] if r['claim']]
+    assert len(changes['changes'])==2  # Surviving parent mandate plus the new withdrawal.
+    final=(root/'candidate.tex').read_text()
+    assert all(x['after'] in final for x in changes['changes'])
+    assert 'The empty minimum is infinity.' not in str(changes)
 
 
 def test_failed_successor_revision_keeps_predecessor_until_accepted(tmp_path,monkeypatch):

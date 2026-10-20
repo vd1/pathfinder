@@ -96,6 +96,19 @@ def main(argv=None):
     ar.add_argument("--inputs-sha256", required=True, help="explicitly approved packet SHA256")
     ar.add_argument("--reason", required=True, help="authority and reason for this additional review")
     ar.add_argument("--apply", action="store_true", help="run this same prepared review; default makes no calls")
+    br = sub.add_parser("account-bibliography", help="build and select a metadata-only bibliography revision without scientific review calls")
+    br.add_argument("pair")
+    br.add_argument("--id", required=True)
+    br.add_argument("--packet", type=Path, required=True)
+    br.add_argument("--reason", required=True)
+    br.add_argument("--apply", action="store_true")
+    rr = sub.add_parser("account-register-review", help="repair superseded mandatory claims in a fresh immutable round of the same candidate")
+    rr.add_argument("pair")
+    rr.add_argument("--id", required=True)
+    rr.add_argument("--revision", required=True)
+    rr.add_argument("--grant", default="final-candidate-register-v1")
+    rr.add_argument("--reason", required=True)
+    rr.add_argument("--apply", action="store_true")
     pc = sub.add_parser("account-present-continue", help="grant one guarded clarity correction cycle on a paused account")
     pc.add_argument("pair")
     pc.add_argument("--id", required=True)
@@ -320,6 +333,13 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
+    elif ns.cmd == "account-bibliography":
+        from . import account_bibliography
+        print(account_bibliography.run(c, ns.pair, identity=ns.id, packet=ns.packet, reason=ns.reason, apply=ns.apply))
+    elif ns.cmd == "account-register-review":
+        from . import account_register
+        print(account_register.repair(c, ns.pair, identity=ns.id, revision=ns.revision,
+              grant_id=ns.grant, reason=ns.reason, apply=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-amend-successor":
         from . import account_successor
         print(account_successor.run(c, ns.pair, identity=ns.id, packet=ns.packet,

@@ -91,6 +91,8 @@ def prepare(campaign, pair, *, identity, packet, reason):
                             for name,digest in pce_recovery.hashes(source).items()})
         record = dict(binding=binding, parent_pointer=selected, history=history)
         stage = root.with_name('.'+identity+'.preparing')
+        from . import account_register
+        account_register.attach(stage/'review',grant,files,original,cumulative['changes'],candidate)
         for name, text in [('successor.json',pce._json(record)), ('request.json',pce._json(request)),
                            ('candidate.tex',candidate), ('returned-findings.json',pce._json(findings)),
                            ('evidence-snapshots.json',(parent/'evidence-snapshots.json').read_text())]:

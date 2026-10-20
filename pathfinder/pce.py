@@ -466,6 +466,10 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     files = json.loads((root / "frozen-inputs.json").read_text()) if grant else sources(campaign, pair_id)
     if grant and _sha(_json(files)) != grant["inputs_sha256"]:
         raise Changed("the continuation frozen inputs changed")
+    registered = None
+    if grant and grant.get("replacement_register"):
+        from . import account_register
+        registered = account_register.claims(root, grant, files[BASELINE])
     contracts = {role: resources.prompt_template(campaign, f"pce-{role}") for role in ROLES}
     fingerprint = _sha(_json({"files": files, "contracts": contracts, "settings": s}))
     manifest_path = root / "input-manifest.json"
@@ -577,7 +581,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
             _check_schema(claims, CLAIMS_SCHEMA, "claims")
             if fixed:
                 changes = json.loads(files["sources/internal/changes.json"])["changes"]
-                claims += [{"id": "amendment-" + str(i + 1), "text": change["after"],
+                claims += registered if registered is not None else [{"id": "amendment-" + str(i + 1), "text": change["after"],
                             "kind": "definition", "location": "bounded replacement " + change["finding"],
                             "status": "needs-review"} for i, change in enumerate(changes)]
                 authored[CLAIMS] = _json(claims)

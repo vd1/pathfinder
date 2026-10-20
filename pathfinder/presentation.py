@@ -402,6 +402,8 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
             shutil.copy(f, out / f.name)
     tex, bib = (src / "paper.tex").read_text(errors="replace"), (src / "references.bib").read_text(errors="replace")
     sections = []
+    if getattr(campaign, "_bibliography_metadata", None):
+        sections.append(Section("verified bibliography metadata correction (metadata only)", text=json.dumps(campaign._bibliography_metadata), keep=True))
     if actor == "editor":
         sections += _sources(campaign, pair_id)
         sections.append(Section("open review findings", text=json.dumps(list(opened), indent=1), keep=True))
@@ -515,6 +517,9 @@ def _check(campaign, pair_id, stage, opened, disposition) -> dict:
                 Section("open review findings and what the editor did with each", keep=True,
                         text=json.dumps([{**f, **disposition.get(f["id"], {"status": "not addressed"})} for f in opened], indent=1)),
                 Section("questions the editor escalated", text=json.dumps(s.get("escalations", []), indent=1), keep=True)]
+    if getattr(campaign, "_bibliography_metadata", None):
+        sections += [Section("references.bib", text=(d / stage / "references.bib").read_text(), keep=True),
+                     Section("verified bibliography metadata correction (metadata only)", text=json.dumps(campaign._bibliography_metadata), keep=True)]
     if (d / stage / "reworded.json").exists():
         sections.append(Section("sentences the last correction reworded (before, after)", keep=True,
                                 text=(d / stage / "reworded.json").read_text()))

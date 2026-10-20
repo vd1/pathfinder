@@ -129,6 +129,11 @@ def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, rea
              'routes': {k: v for k, v in routes.items() if k.startswith('edit/')},
              'settings': settings, 'inputs_sha256': pce._sha(pce._json(files))}
     # Reserve room for generated claims/reviews; every individual call also enforces full visibility.
+    old_grant = target / 'grant.json'
+    if not old_grant.exists() or account_amend._read(old_grant).get('replacement_register'):
+        from . import account_register
+        original, _, _ = account_release.source(campaign, pair_id)
+        account_register.attach(target,grant,files,original,request['changes']['changes'],candidate)
     if len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
         raise pce.Changed('complete evidence packet exceeds prompt allowance; no truncation is allowed')
     manifest = {'external_sha256': {k: pce._sha(v) for k, v in files.items() if k.startswith('sources/external/')},

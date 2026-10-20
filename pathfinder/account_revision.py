@@ -114,6 +114,8 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     record={'binding':binding,'parent':str(parent.relative_to(thread)),'parent_sha256':_history(parent)}
     target=root
     root=root.with_name('.'+revision+'.preparing')
+    from . import account_register
+    account_register.attach(root/'review',settings,files,original,changes['changes'],candidate)
     pce._write(root,'revision.json',pce._json(record),immutable=True)
     for name,text in [('request.json',pce._json(request)),('candidate.tex',candidate),
                       ('evidence-snapshots.json',(parent/'evidence-snapshots.json').read_text()),
@@ -133,6 +135,8 @@ def run(campaign,pair,*,apply=False,accept_change=None,**kwargs):
             _install_successor_revision(campaign,pair,kwargs)
             account_amend.selected(campaign,pair,*account_release.source(campaign,pair))
             return 'accepted; run present PAIR --edited'
+        if account_review.workflow(root) != root/'review':
+            raise pce.Changed('resume the explicit account review/register repair grant')
         if not apply:return 'revision prepared; no calls; repeat with --apply for one fixed-candidate review'
         if runner.stopped(campaign) or not runner.guard_ok(campaign,inflight=1):return 'stopped: revision retained'
         with provenance.run_context(campaign,accept_change):
