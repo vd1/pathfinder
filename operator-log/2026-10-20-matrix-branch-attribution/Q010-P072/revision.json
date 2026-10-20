@@ -1,0 +1,29 @@
+{
+  "parent_candidate_sha256": "f6a85ef7ab7c335104f3f76fe950fe33194a3429c2a011b1ded15a3c6dd4d4c3",
+  "changes": [
+    {
+      "finding": "C091",
+      "before": "The retained molecular-input repository inspection identifies",
+      "after": "Branch 2's retained molecular-input repository inspection identifies"
+    },
+    {
+      "finding": "C095",
+      "before": "The retained driving-field versus charge-scaling analysis shows",
+      "after": "Branch 2's retained driving-field versus charge-scaling analysis shows"
+    }
+  ],
+  "findings": [
+    {
+      "id": "C091",
+      "path": "reviews/current/fact-check.json",
+      "sha256": "50f3399940544c3906eb557671009cb1c72568ab58f0c54f2d0cf2cc3894be72",
+      "quote": "The recipe and named MAT-model inspection are branch-2 findings explicitly marked not cited by the joint ledger. The draft does not identify them as branch-2 findings. Attribute the inspection to that branch, or obtain an approved evidence change adopting it; do not present it as an unqualified joint result."
+    },
+    {
+      "id": "C095",
+      "path": "reviews/current/fact-check.json",
+      "sha256": "50f3399940544c3906eb557671009cb1c72568ab58f0c54f2d0cf2cc3894be72",
+      "quote": "The linear-versus-quadratic attenuation distinction is explicitly an uncited branch-2 finding. Its conditional algebra is recorded, but the draft presents it without branch attribution. Identify it as branch-2's conditional analysis or request an approved adoption; it does not verify Q's implementation."
+    }
+  ]
+}
