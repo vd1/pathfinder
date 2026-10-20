@@ -21,6 +21,32 @@ def _history(root):
     return {k:v for k,v in pce_recovery.hashes(root).items() if not k.startswith('revisions/')}
 
 
+def _operator_framing(campaign, pair, delta):
+    """A separate operator scope may delete only complete internal-status sentences."""
+    scope=delta.get('operator_framing')
+    if scope is None:return set()
+    import hashlib
+    if (scope.get('kind')!='operator-framing-v1' or not isinstance(scope.get('authority'),str)
+        or not scope['authority'].strip() or scope.get('parent_candidate_sha256')!=delta['parent_candidate_sha256']
+        or scope.get('scientific_status_sha256')!=hashlib.sha256((campaign.thread_dir(pair)/'status.json').read_bytes()).hexdigest()):
+        raise pce.Changed('operator framing authority, candidate or scientific status binding differs')
+    changes=scope.get('changes')
+    if not isinstance(changes,list) or not 1<=len(changes)<=4:
+        raise pce.Changed('operator framing requires 1-4 exact status-sentence removals')
+    ids=set()
+    for change in changes:
+        removed=change.get('remove','')
+        if (not re.fullmatch(r'operator-framing-[a-zA-Z0-9_-]+',change['finding'])
+            or not re.fullmatch(r'The thread ended at (?:PAUSE|DRAFT)(?:, as specified (?:in|by) the brief)?\. ',removed)
+            or change['before'].count(removed)!=1 or change['after']!=change['before'].replace(removed,'',1)
+            or not change['after']):
+            raise pce.Changed('operator framing may only remove an exact internal-status sentence')
+        ids.add(change['finding'])
+    if [c for c in delta['changes'] if c['finding'] in ids]!=changes:
+        raise pce.Changed('operator framing changes differ from the declared exact delta')
+    return ids
+
+
 def prepare(campaign,pair,*,identity,revision,packet,reason):
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}',revision or '') or not reason.strip():
         raise pce.Changed('revision needs an explicit ID and authority')
@@ -32,6 +58,7 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     changes=json.loads((packet/'changes.json').read_text())
     delta=json.loads((packet/'revision.json').read_text())
     candidate=(packet/'account-candidate.tex').read_text()
+    operator_ids=_operator_framing(campaign,pair,delta)
     binding={'id':identity,'revision':revision,'reason':reason,'changes':changes,'revision_changes':delta,
              'candidate_sha256':pce._sha(candidate)}
     pointer=thread/'edited/account-amendment.json'
@@ -64,6 +91,8 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
         grant=json.loads((root/'revision.json').read_text())
         if grant['binding']!=binding:
             raise pce.Changed('revision identity binds different inputs')
+        if operator_ids and json.loads((root/'operator-framing.json').read_text())!=delta['operator_framing']:
+            raise pce.Changed('recorded operator framing scope changed')
         active=pending if successor_mode else selected
         if (active.get('revision')!=revision
             and str(current_root().relative_to(thread))!=grant['parent']):
@@ -88,19 +117,25 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
         or _apply(original,changes['changes'])!=candidate):
         raise pce.Changed('candidate must match both original-baseline and previous-candidate exact changes')
     findings=delta.get('findings',[])
-    if not findings or len(findings)>20:raise pce.Changed('bind the terminal reviewer findings explicitly')
+    if (not findings and not operator_ids) or len(findings)>20:raise pce.Changed('bind terminal reviewer findings or explicit operator framing')
     ids=set()
     for finding in findings:
         rel=Path(finding['path']);path=review/rel
-        if (rel.is_absolute() or '..' in rel.parts or not str(rel).startswith('reviews/current/')
+        passes=old_result.get('passes')
+        latest_editor=f"reviews/history/pass-{passes:02d}-editor.json" if type(passes) is int and passes>0 else None
+        terminal_editor=(str(rel)==latest_editor and str(rel) in old_result.get('history',[]))
+        if (rel.is_absolute() or '..' in rel.parts or not (str(rel).startswith('reviews/current/') or terminal_editor)
             or not path.resolve().is_relative_to(review.resolve()) or path.is_symlink()):
             raise pce.Changed('revision findings must come from the terminal current review')
         text=path.read_text()
+        if terminal_editor and json.loads(text).get('decision')!='revise':
+            raise pce.Changed('terminal editor feedback must request revision')
+        if finding['id'] in ids or finding['id'] in operator_ids:raise pce.Changed('duplicate or mixed finding authority')
         if pce._sha(text)!=finding['sha256'] or not finding['quote'] or text.count(finding['quote'])!=1:
             raise pce.Changed('review finding hash or exact quote differs')
         ids.add(finding['id'])
-    if {x['finding'] for x in delta['changes']}!=ids:
-        raise pce.Changed('each revision replacement must bind the approved reviewer findings')
+    if {x['finding'] for x in delta['changes']}!=ids|operator_ids:
+        raise pce.Changed('each replacement must bind reviewer findings or its separate operator framing scope')
     if not {x['finding'] for x in old_request['changes']['changes']} <= {x['finding'] for x in changes['changes']}:
         raise pce.Changed('retain the original mandatory amendment findings')
     files=json.loads((review/'frozen-inputs.json').read_text())
@@ -117,6 +152,7 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     from . import account_register
     account_register.attach(root/'review',settings,files,original,changes['changes'],candidate)
     pce._write(root,'revision.json',pce._json(record),immutable=True)
+    if operator_ids:pce._write(root,'operator-framing.json',pce._json(delta['operator_framing']),immutable=True)
     for name,text in [('request.json',pce._json(request)),('candidate.tex',candidate),
                       ('evidence-snapshots.json',(parent/'evidence-snapshots.json').read_text()),
                       ('returned-findings.json',(parent/'returned-findings.json').read_text())]:
