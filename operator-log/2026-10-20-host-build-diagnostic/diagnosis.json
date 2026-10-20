@@ -1,0 +1,17 @@
+{
+  "pair": "Q027-P024",
+  "scope": "Private-copy prompt inspection only; no runtime patch, deployment mutation, rebuild, model call or clearance change",
+  "publication": "5c153c52209460b028ca5a0dedab41324ef31129f76001b99261d11584210e62",
+  "state": "RELEASED",
+  "historical_error_sha256": "f8c5b7660a090ef6d561ff144ef0ff5a7a8c8d23915411e67948db5d1f2bc251",
+  "historical_error": "Hy@tempa native installation diagnostic",
+  "selected_source_sha256": "490ee8f9c328fa17df469f53eddd8ac5260b9552537f949430833cfecdd711d6",
+  "roles_receive_historical_error": {
+    "present": true,
+    "present-check": true,
+    "present-correct": true
+  },
+  "cause": "account_release preserves original_edit as history; presentation._task treats its old presentation_error as current for every role",
+  "future_fix_requirement": "Bind build diagnosis to selected source and bibliography hashes and its actual build receipt; preserve original_edit historically; host owns compilation/style/release checks. Do not reopen this cleared/released publication.",
+  "live_calls": 0
+}

@@ -1,0 +1,12 @@
+{
+  "parent_candidate_sha256": "9f88a8300344a6289a1f08df90e93141f13c49cb0190cacc001deec9f5dce0e0",
+  "parent_acceptance_sha256": "2a7224359303156127786f31550a58653371195f073e534ff4a3673a68f8cc4e",
+  "returned_findings_sha256": "316da94fa0b66bf87aa9b4a61350538f0f2f759380b6c9326c878a6f7d75bba0",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "Cross terms on a nonzero background can reverse the sign: the supplement's positive-semidefinite matrix control gives full energy $-0.18$ against a visible-field fit of $-0.5$. This supports a sign caution, not a prediction for Q.",
+      "after": "Cross terms on a nonzero background can reverse the sign: the supplement's positive-semidefinite matrix control gives full energy $-0.18$ against a visible-field fit of $-0.5$. The retained control specifies $K=\\left(\\begin{smallmatrix}1&0.8\\\\0.8&1\\end{smallmatrix}\\right)$, the descriptor map $D=(1,0)$ and the input $q=(1,-0.8)^T$. The visible descriptor is $Dq=q_1$: its fitted energy is $E_{\\rm vis}(q_1)=-q_1^2/2$, whereas the full model uses $E_{\\rm full}(q)=-q^TKq/2$, retaining both input components and their cross term. The two reported numbers use this same numerical quadratic-control scale. The retained results file labels its synthetic checks dimensionless, with mass, angular frequency and $\\hbar$ set to unity for the oscillator; it specifies no separate molecular energy unit or conversion for this matrix example. This supports a synthetic sign caution, not a prediction for Q."
+    }
+  ]
+}

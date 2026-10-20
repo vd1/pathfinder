@@ -1,0 +1,61 @@
+{
+  "parent_candidate_sha256": "9f88a8300344a6289a1f08df90e93141f13c49cb0190cacc001deec9f5dce0e0",
+  "parent_acceptance_sha256": "2a7224359303156127786f31550a58653371195f073e534ff4a3673a68f8cc4e",
+  "accepted_review": "/Users/v/Code_2026/pathfinder-julien-2/campaign-2-batch-1/Q010-P072/threads/Q010-P072/edited/account-amendments/shot-budget-withdrawal-20261020/revisions/definitions-1/review-grants/final-candidate-register-v1",
+  "supplement_sha256": "64eedf3cdf7b1a07e9896b61a06b06958605827d2bc0faad3bf22a5c69700d84",
+  "scope": "Existing retained controls only; no execution, new evidence, unit conversion or numerical withdrawal",
+  "sources": {
+    "ada/field-null-diagnostic.json": {
+      "sha256": "e3f30e91173bcc62893082012353453c7b80e4ba78254b0e804e70b47ee04a5f",
+      "quotes": [
+        "For a specified nondegenerate gapped electronic Hamiltonian and perturbations \\(V_i\\), define \\(K_{ij}=2\\operatorname{Re}\\sum_{n>0}\\langle0|V_i|n\\rangle\\langle n|V_j|0\\rangle/(E_n-E_0)\\). Then \\(K\\) is positive semidefinite and \\(I_{\\rm quad}(q)=-q^TKq/2\\). Consistent relaxed DFT curvature must replace this exact-eigenstate expression when testing B3LYP; a bare Kohn-Sham transition sum is not sufficient.",
+        "A separate positive-semidefinite matrix control uses \\(K=\\begin{pmatrix}1&0.8\\\\0.8&1\\end{pmatrix}\\), \\(D=(1,0)\\), and \\(q=(1,-0.8)^T\\). A visible-direction fit gives energy -0.5 but the full quadratic energy is -0.18. Thus mixed visible/hidden response can yield a positive correction 0.32, despite negative induction in the isolated hidden direction. This checks the sign caveat in joint ledger #7, not a molecular mechanism."
+      ]
+    },
+    "ada/field-null-results.json": {
+      "sha256": "9e9a5cc8c6f6144c68544f65dc4def73f73a1cd2eea1e00ffe91ea68ba3df75a",
+      "excerpt": {
+        "scope": "New synthetic checks, no molecule, EMLE execution, VQA or hydration",
+        "units": "Dimensionless oscillator units with mass, angular frequency and hbar unity",
+        "cross_term_control": {
+          "response_matrix": [
+            [
+              1,
+              0.8
+            ],
+            [
+              0.8,
+              1
+            ]
+          ],
+          "field_map": [
+            [
+              1,
+              0
+            ]
+          ],
+          "charge_vector": [
+            1.0,
+            -0.8
+          ],
+          "response_matrix_eigenvalues": [
+            0.19999999999999996,
+            1.8
+          ],
+          "fitted_visible_energy": -0.5,
+          "full_energy": -0.17999999999999994,
+          "full_minus_visible": 0.32000000000000006,
+          "qualification": "Positive semidefinite response does not require a negative correction relative to a separately fitted visible-field model for mixed inputs"
+        }
+      }
+    },
+    "ada/field_null_check.py": {
+      "sha256": "72de0bb6d786227eb2ae235231535a777ba5317377c1b7153fa6f9653be9b210",
+      "quote": "    rho=0.8\n    base_q=1.0\n    hidden_q=-rho\n    fitted_energy=-0.5*base_q**2\n    full_energy=-0.5*(base_q**2+2*rho*base_q*hidden_q+hidden_q**2)\n    assert full_energy-fitted_energy>0\n"
+    },
+    "ledger.jsonl": {
+      "sha256": "62f69c7836255bd123d1996d84c09644f147dc57c049b339b51761df8bd502d2",
+      "quote": "{\"seq\": 10, \"at\": \"2026-10-01T19:52:20Z\", \"actor\": \"ada\", \"kind\": \"finding\", \"text\": \"Full new derivation, experiment, provenance and limitations are in ada/field-null-diagnostic.json; execution checks in ada/verification.json. I agree with Emmy #6/#7: exact paired-field equality gives the stated minimax endpoint lower bound, but physical aqueous accessibility and sign must be established. My separate positive-semidefinite matrix check (ada/field-null-results.json) gives visible-field fitted energy -0.5 versus full response -0.18 for a mixed visible/hidden input, confirming that cross terms can reverse the correction sign; this is not a Q correction. A near-match allowance for one fixed response matrix is \\\\(\\\\|A^{-1}\\\\|\\\\|F_1-F_2\\\\|(\\\\|F_1\\\\|+\\\\|F_2\\\\|)/2\\\\), so a merely similar-field pair needs quantitative mismatch control. The exact representation criterion \\\\(\\\\ker D\\\\subseteq\\\\ker K\\\\) is equivalent to existence of an unrestricted positive-semidefinite field response \\\\(K=D^TBD\\\\), but does not guarantee restricted Thole representability. This provides a stronger classical comparator before quantum work. Novelty remains unestablished.\", \"supersedes\": null, \"seen\": null}"
+    }
+  }
+}
