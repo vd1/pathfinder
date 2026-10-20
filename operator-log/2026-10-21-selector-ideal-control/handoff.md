@@ -83,3 +83,25 @@ The copied preparation serializes 677,380 characters, retaining the full 100,000
 The real-build test preserves 626 pre-existing edited files except the canonical selection pointers
 changed by copied acceptance. Artifact style checks report zero errors; source line-length warnings
 are retained to avoid unrelated reformatting of the hash-bound accepted manuscript.
+
+## Exact frozen handoff
+
+Runtime commit: `3a731c3e2eb77599b309e7045d7977f82783fd0a`.
+Frozen directory: `/private/tmp/pathfinder-ideal-control-3a731c3`.
+Archive: `/private/tmp/pathfinder-ideal-control-3a731c3.tar.gz`.
+Archive SHA256: `885b6ee57ab563f1b723aac5d3bbe7622ad5a1df68ad59f592fdfd3634f8e8eb`.
+Manifest SHA256: `97aae6aa6485ccad3d4654787a0ea85413059c535ad95c34f14b53389dc47593`.
+Preserve the archive durably before relying on a temporary-directory runtime across reboot.
+
+The operator must independently verify the freeze, packet bindings, unchanged parent and idle ownership.
+After actual owner approval is recorded, invoke the prepare argv from `action.json` using
+`PYTHONPATH=/private/tmp/pathfinder-ideal-control-3a731c3` and the deployment Python interpreter with
+`-P -m pathfinder.cli`. Inspect the prepared grant before using the separately listed apply argv.
+No approval receipt, prepare command or apply command has been executed against the live deployment.
+
+Owner decision to request: approve the exact contract digest above for a single retained-definition
+replacement, 23 to 24 cumulative records, the full retained script addition, and one strict five-role
+review pass plus one fact-check. The prior 23-record approval does not cover this exception; that is why
+this completed, tested proposal needs a new decision before live preparation.
+
+Final verification: 47 tests passed against the frozen runtime in 38.36 seconds, zero failures/errors.
