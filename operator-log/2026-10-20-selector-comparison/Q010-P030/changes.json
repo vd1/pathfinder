@@ -1,0 +1,51 @@
+{
+  "baseline_sha256": "8831368cf7c7e1fe20c448b660adf373f5b750dcde8493f3b53200357945e6b0",
+  "candidate_sha256": "b61f98e920309d0120949d935cf48f16c077164433af18604546b2140fc23acd",
+  "changes": [
+    {
+      "after": "Original P endpoint outputs were kept separate from a frequency-pooling extension. For each field \\(s\\in\\{0,1/2,1\\}\\), let \\(n_s(d)\\) be the last iteration's accepted count for determinant \\(d\\) in the 225-determinant target sector, and \\(N_s=\\sum_d n_s(d)\\). Each field first retained at most \\(R\\) positive-count determinants, ordered by decreasing count and then increasing stored determinant index. Over the union of those three retained sets, pooling ranked\n\\[\n w(d)=\\sum_{s\\in\\{0,1/2,1\\}}\\frac{n_s(d)}{N_s}.\n\\]\nThus the three fields enter with equal weight; the denominator includes all accepted target-sector counts, not only those of the retained set. The resulting common space is rediagonalised to evaluate \\(D_S\\) and \\(I_S\\) as defined above. The final pool contains at most \\(R\\) union members in decreasing \\(w(d)\\), breaking ties by increasing stored determinant index.\n\nThe practical classical comparator started with the same Hartree--Fock determinant. At each step it diagonalised each field Hamiltonian \\(H_s\\) in the current selected space \\(S\\), obtaining its lowest Ritz energy \\(E_s\\) and real, normalised Ritz vector \\(u_s\\), extended by zero outside \\(S\\). Each external determinant \\(d\\notin S\\) received the score\n\\[\n a(d)=\\sum_{s\\in\\{0,1/2,1\\}}\n \\frac{|(H_su_s)_d|^2}{\\max\\{|(H_s)_{dd}-E_s|,10^{-8}\\ \\mathrm{Hartree}\\}}.\n\\]\nFor an external determinant, \\((u_s)_d=0\\), so this numerator is the squared external residual component. All matrix entries and energies in the implementation are in Hartree. The algorithm added the external determinant with largest score, breaking ties by increasing stored index, and repeated the three diagonalizations until \\(|S|=R\\). It used no exact-ground-state coefficients. These are definitions of the retained implementation in Ada's \\texttt{adapt\\_qsci/run.py}, not an optimality claim.",
+      "before": "The extension instead collects final candidates across the three fields, ranks them using normalised postselected empirical frequencies and retains at most \\(R\\). The resulting common space is rediagonalised to evaluate \\(D_S\\) and \\(I_S\\) as defined above. The practical classical comparator starts from the same Hartree--Fock determinant and greedily selects external determinants using three-field residual contributions, without exact-ground-state probabilities.",
+      "finding": "P1"
+    },
+    {
+      "after": "Here B3LYP5 identifies the retained PySCF restricted Kohn--Sham calculation with \\texttt{xc=b3lyp5}: the VWN5 correlation convention, distinct from the default PySCF \\texttt{b3lyp} VWN-RPA/Gaussian variant. The retained Branch-3 reference audit used PySCF 2.14.0 with LibXC 7.0.0, spherical cc-pVTZ, a neutral singlet, unchanged geometry and retained point charges, grid level 4, an SCF energy tolerance of \\(10^{-11}\\) Hartree and at most 150 SCF cycles, without density fitting or frozen orbitals. Static interaction included the vacuum-density electronic contribution and the solute-nuclear/MM term; induction was embedded minus vacuum total energy minus that static interaction. The original ORCA version, grid and possible integral approximations were not recovered: this identifies the retained reproduction calculation, not an exact reconstruction of the original label-generation setup. The six-record reproduction was within the stated tolerance and does not certify physical accuracy.\\record{branch-3 Ada's V7 reference audit, reference\\_audit.py, runtime.json and reproduction.csv}\n\nThe completely solved compact water CAS differed from full-basis B3LYP5 on the same record",
+      "before": "The completely solved compact water CAS differed from full-basis B3LYP5 on the same record",
+      "finding": "P2"
+    },
+    {
+      "after": "They retained P's successive-energy stop and, for this retained comparison implementation, imposed a cap of 80 iterations. This cap is not asserted to be part of P's authors' original protocol.",
+      "before": "They retained P's successive-energy stop and an explicit iteration cap; the supplied approved findings do not specify the cap's numerical value.",
+      "finding": "C041"
+    },
+    {
+      "after": "The scientific result supports stopping this local advantage proposal while retaining a separate question about physical-reference adequacy.",
+      "before": "The brief records the administrative ending as PAUSE; the scientific result supports stopping this local advantage proposal while retaining a separate question about physical-reference adequacy.",
+      "finding": "stop-attribution"
+    },
+    {
+      "after": "The approved research findings support stopping",
+      "before": "The brief supplies the administrative status PAUSE. Scientifically, the approved research findings support stopping",
+      "finding": "stop-attribution"
+    },
+    {
+      "after": "All six retained records met the predeclared reproduction tolerance of 0.02 kcal/mol per component. This is distinct from the illustrative 0.1 kcal/mol selector tolerance and does not certify physical accuracy.",
+      "before": "The six-record reproduction was within the stated tolerance and does not certify physical accuracy.",
+      "finding": "reproduction-tolerance"
+    },
+    {
+      "after": "The selector test used unchanged water record 1926. The retained Branch-3 audit deliberately selected this record as the water configuration nearest the first percentile of signed induction labels; it was not a random or representative configuration. The selector conclusion therefore remains limited to this selected strong-induction record. The test used vacuum RHF/cc-pVTZ orbitals,",
+      "before": "The selector test used unchanged water record 1926, vacuum RHF/cc-pVTZ orbitals,",
+      "finding": "record-selection"
+    },
+    {
+      "finding": "abstract-components",
+      "before": "This work tested separate convergence of static, induced and screened interactions within an identical electronic Hamiltonian.",
+      "after": "This work tested separate convergence of static and induced components within one electronic Hamiltonian, then assessed screened interaction errors by recombining those fixed components. These screened errors are not results of screened-Hamiltonian calculations."
+    },
+    {
+      "finding": "comparison-prescriptions",
+      "before": "The smallest useful next task in the recorded route is an identical-record comparison of physical references. Hold the solute geometry, MM sites and charges fixed, compare the recorded method, basis and response-space prescriptions, and report static and induced components separately. Its output should show how \\(D\\) and \\(I\\) change with those prescriptions and whether the proposed compressed Hamiltonian retains the response of the better-converged comparators. This would inform physical-reference adequacy before another selector benchmark; a difference between methods alone would still not certify which is accurate. No new method, numerical threshold or budget is specified here.\\record{joint ledger entries 7, 14, 19, 21, 32 and 64}",
+      "after": "The smallest useful next task in the recorded route is an identical-record comparison of physical references. Hold the solute geometry, MM sites and charges fixed. For embedded components, compare the retained water CAS(8e,6o) in fixed vacuum RHF/cc-pVTZ orbitals with inactive oxygen \\(1s\\), the full-basis B3LYP5/cc-pVTZ reproduction prescription described above, and all-electron MP2/cc-pVTZ. In the retained MP2 prescription the RHF reference relaxes at each scaled MM field; static interaction is the central total-energy derivative at zero field, not an unrelaxed MP2-density contraction, and induction is the full-field minus vacuum energy minus that derivative. Preserve the consistent nuclear/MM contribution and report static and induced changes separately.\\record{joint ledger entries 19 and 21; branch-3 Ada's V7 reference audit}\n\nKeep the homogeneous-field response diagnostics separate from these embedded-component comparisons. The retained water diagnostics use cc-pVTZ and aug-cc-pVTZ to compare field-relaxed RHF and all-electron finite-field MP2 with CAS(8e,6o) under two orbital prescriptions: CASSCF optimises full-basis orbitals at each field; the fixed-optimised CASCI control instead holds zero-field CASSCF orbitals fixed at all fields. These diagnostics probe response lost by orbital restriction, but do not supply embedded static or induction energies. The decision before another selector benchmark is whether a specified compressed Hamiltonian retains the embedded components of the better-converged physical comparators on identical inputs, informed separately by the basis and orbital-response diagnostics. Improved homogeneous-field response alone does not settle that comparison. Differences between methods do not certify which is accurate; the retained MP2 comparator is not exact, and neither an accuracy certificate nor a new numerical threshold or budget is supplied here.\\record{joint ledger entries 7, 14, 19, 21, 32 and 64; branch-1 Ada's relaxed-control interpretation}"
+    }
+  ]
+}

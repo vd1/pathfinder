@@ -1,0 +1,29 @@
+{
+  "parent_candidate_sha256": "662a75b7cb9cd739215ac3d99c6ef00736119e022ad8f58547cccc5eed5abab7",
+  "changes": [
+    {
+      "finding": "abstract-components",
+      "before": "This work tested separate convergence of static, induced and screened interactions within an identical electronic Hamiltonian.",
+      "after": "This work tested separate convergence of static and induced components within one electronic Hamiltonian, then assessed screened interaction errors by recombining those fixed components. These screened errors are not results of screened-Hamiltonian calculations."
+    },
+    {
+      "finding": "comparison-prescriptions",
+      "before": "The smallest useful next task in the recorded route is an identical-record comparison of physical references. Hold the solute geometry, MM sites and charges fixed, compare the recorded method, basis and response-space prescriptions, and report static and induced components separately. Its output should show how \\(D\\) and \\(I\\) change with those prescriptions and whether the proposed compressed Hamiltonian retains the response of the better-converged comparators. This would inform physical-reference adequacy before another selector benchmark; a difference between methods alone would still not certify which is accurate. No new method, numerical threshold or budget is specified here.\\record{joint ledger entries 7, 14, 19, 21, 32 and 64}",
+      "after": "The smallest useful next task in the recorded route is an identical-record comparison of physical references. Hold the solute geometry, MM sites and charges fixed. For embedded components, compare the retained water CAS(8e,6o) in fixed vacuum RHF/cc-pVTZ orbitals with inactive oxygen \\(1s\\), the full-basis B3LYP5/cc-pVTZ reproduction prescription described above, and all-electron MP2/cc-pVTZ. In the retained MP2 prescription the RHF reference relaxes at each scaled MM field; static interaction is the central total-energy derivative at zero field, not an unrelaxed MP2-density contraction, and induction is the full-field minus vacuum energy minus that derivative. Preserve the consistent nuclear/MM contribution and report static and induced changes separately.\\record{joint ledger entries 19 and 21; branch-3 Ada's V7 reference audit}\n\nKeep the homogeneous-field response diagnostics separate from these embedded-component comparisons. The retained water diagnostics use cc-pVTZ and aug-cc-pVTZ to compare field-relaxed RHF and all-electron finite-field MP2 with CAS(8e,6o) under two orbital prescriptions: CASSCF optimises full-basis orbitals at each field; the fixed-optimised CASCI control instead holds zero-field CASSCF orbitals fixed at all fields. These diagnostics probe response lost by orbital restriction, but do not supply embedded static or induction energies. The decision before another selector benchmark is whether a specified compressed Hamiltonian retains the embedded components of the better-converged physical comparators on identical inputs, informed separately by the basis and orbital-response diagnostics. Improved homogeneous-field response alone does not settle that comparison. Differences between methods do not certify which is accurate; the retained MP2 comparator is not exact, and neither an accuracy certificate nor a new numerical threshold or budget is supplied here.\\record{joint ledger entries 7, 14, 19, 21, 32 and 64; branch-1 Ada's relaxed-control interpretation}"
+    }
+  ],
+  "findings": [
+    {
+      "id": "abstract-components",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "7cd2418e9d1778e39403390fa44975074f906f388ac6fa02e703cde819d6b2e1",
+      "quote": "Clarify in the abstract that static and induced components are tested within one Hamiltonian and screened errors are assessed by subsequent component recombination."
+    },
+    {
+      "id": "comparison-prescriptions",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "7cd2418e9d1778e39403390fa44975074f906f388ac6fa02e703cde819d6b2e1",
+      "quote": "In the final section, name the retained method, basis and orbital-response prescriptions intended for the immediate comparison, distinguish embedded-component comparisons from homogeneous-field response diagnostics, and state which resulting comparison will inform whether the compressed Hamiltonian merits another selector benchmark. Use existing evidence and retain the absence of an accuracy certificate or newly specified numerical threshold."
+    }
+  ]
+}
