@@ -1,0 +1,13 @@
+# Manuscript block reuse: no additional capacity
+
+Keep the Q053-P011 feature-record successor held. The bounded manuscript-only experiment provides no additional room on the actual full scalar-report profile. No engine change is proposed or frozen.
+
+The measured packet remains 999726 characters against the unchanged 1000000 cap: 274 characters of headroom. Whole-file JSON aliases are 1095557 characters and raw-file framing is 1025305. These measurements include the actual claims, reviews and all revision reports, including the archivist evidence-diff. Historical reports were used only for offline sizing, not successor judgement.
+
+The exact manuscript inventory explains the result. The current draft has 29462 characters. The historical original has 27335 characters, and the existing encoder already reconstructs every character from two backward ranges of the current draft: [0,14560) and [16687,29462). Their only intervening difference is the 2127-character insertion. The remaining manuscript paths are complete-file aliases. There are no additional unique historical manuscript literals for a multi-block encoder to remove. All file paths, statuses and expanded hashes remain represented.
+
+The isolated prototype permits interior matching only between recognised manuscript paths. It uses exact lines with their original endings, bounded by 200000 code points, 2048 lines, 64 matched blocks and a minimum 256-character block. It selects an alternative only if the encoded packet is smaller. It neither normalises nor interprets text. The decoder and format are unchanged. The prototype is retained here as an experiment; production encoder files were restored unchanged.
+
+Verification: 40 tests passed. Coverage includes Unicode astral characters and combining sequences, CRLF, intervening literals, deterministic encoding, roundtrip equality, source-range overlap as exact concatenation, rejection of self/forward/alias references, length/hash corruption, and bounded matching. All 38 copied parent-review files and all 38 live review files checked read-only remained byte-identical, including earlier receipts. Four fresh stub roles were used only in a private successor sizing copy; no live dispatch or deployment mutation occurred.
+
+This rules out the requested manuscript-only strategy as a capacity repair for this packet. It does not prove that every possible future lossless codec is exhausted. Any broader representation change would need its own exact expanded-file and receipt tests. The current handoff is not robust-capacity green; no source omission, cap increase, reset or scientific change is justified by this result.
