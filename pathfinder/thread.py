@@ -64,11 +64,16 @@ def install_helper(d: Path) -> str:
     if not target.is_file() or target.read_bytes() != source:
         target.parent.mkdir(parents=True, exist_ok=True)
         _atomic_write(target, source)                  # an agent may be running the old copy right now
-    return f"{sys.executable} {HELPER_DIR}/ledger.py --root ."
+    executable = (Path(sys.executable).resolve()
+                  if (d / "inputs/restricted-collection.json").exists() else sys.executable)
+    return f"{executable} {HELPER_DIR}/ledger.py --root ."
 
 
 def prepare(campaign, pair_id: str) -> Path:
     """@planks("When the standard research entry point opens the investigation")"""
+    from . import collection
+    if collection.enabled(campaign):
+        return collection.prepare(campaign, pair_id, _pair(campaign, pair_id))
     d = campaign.thread_dir(pair_id)
     if (d / "status.json").exists():
         install_helper(d)
@@ -310,5 +315,8 @@ def _check(stop):
 
 
 def _scan_row(campaign, pair_id) -> dict:
+    from . import collection
+    if collection.enabled(campaign):
+        return {}
     from . import scan
     return next((r for r in scan.current(campaign) if r["pair_id"] == pair_id), {})   # a rescanned pair's latest score

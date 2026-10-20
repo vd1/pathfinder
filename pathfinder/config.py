@@ -96,7 +96,14 @@ def load(root: Path) -> Campaign:
     if raw.get("account") or raw.get("accounts"):
         from . import seats
         seats.account(SimpleNamespace(raw=raw))      # a malformed account fails here, not inside a call
-    return campaign_from(root, raw)
+    campaign = campaign_from(root, raw)
+    if "restricted_collection" in raw:
+        from . import collection
+        collection.validate_config(campaign)
+    if "budget_group" in raw:
+        from . import budget_group
+        budget_group.load(campaign)
+    return campaign
 
 
 def campaign_from(root: Path, raw: dict) -> Campaign:

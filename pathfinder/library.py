@@ -43,12 +43,29 @@ def validate(raw: dict) -> None:
 
 def get(campaign, ref: str) -> Path:
     """Any paper (an arXiv id, a DOI, a URL, a title) through the cache: its LaTeX when it is on arXiv."""
+    from . import collection
+    if collection.enabled(campaign):
+        data = collection.load(campaign)
+        for source in data["sources"]:
+            if ref == source["id"]:
+                return Path(source["files"][0]["path"])
+        path = campaign.path("source-requests.jsonl")
+        with path.open("a") as handle:
+            handle.write(json.dumps({"reference": ref, "outcome": "restricted; not fetched"}) + "\n")
+        raise collection.Refused("source is outside the fixed collection; request logged, no retrieval")
     return paper_source.resolve(ref, cache(campaign), _also(campaign), urlopen=lambda r, timeout: net.urlopen(r, timeout))
 
 
 def paper_text(campaign, row: dict) -> Path | None:
     """A corpus paper's full text: the row's own text, else its arXiv source through the cache (fetched once);
     None when there is none (not an arXiv paper, no e-print, or offline): the abstract is used."""
+    from . import collection
+    if collection.enabled(campaign):
+        data = collection.load(campaign)
+        for admitted in data["inputs"].values():
+            if row.get("id") == admitted["id"]:
+                return Path(admitted["path"])
+        return get(campaign, row.get("id", ""))
     aid = paper_source.parse(row.get("id", ""))
     if aid:
         pooled = paper_source.lookup(aid, [cache(campaign), *_also(campaign)])
@@ -99,6 +116,13 @@ def wanted(campaign, pair_id, rows) -> list[dict]:
 
 def build(campaign, pair_id, rows) -> list[dict]:
     """Fetch what the pair needs (a cache hit costs nothing) and return the library's entries."""
+    from . import collection
+    if collection.enabled(campaign):
+        data = collection.load(campaign)
+        if data["pair_id"] != pair_id:
+            raise collection.Refused("collection belongs to another pair")
+        return [{"id": s["id"], "path": f["path"], "sha256": f["sha256"], "why": ["fixed collection"]}
+                for s in data["sources"] for f in s["files"]]
     entries = []
     for want in wanted(campaign, pair_id, rows):
         try:
@@ -117,6 +141,9 @@ def write(d: Path, entries: list[dict]) -> Path:
 
 def install(campaign, d: Path) -> str:
     """Copy the source helper into the thread; returns the command an agent runs (an id or more after it)."""
+    from . import collection
+    if collection.enabled(campaign):
+        raise collection.Refused("fetch helper is disabled for restricted collections")
     from .thread import HELPER_DIR, _atomic_write
     target = d / HELPER_DIR / HELPER
     source = Path(paper_source.__file__).read_bytes()
@@ -139,6 +166,9 @@ POOL_RULE = ("Paper pool: check the shared pool first. On a miss, fetch LaTeX so
 
 def request_rule(campaign, request) -> str:
     """Apply the same pool rule to every role without granting extra tools to restricted reviewers."""
+    from . import collection
+    if collection.enabled(campaign):
+        return collection.rule(campaign, request.cwd)
     if POOL_RULE in request.prompt:
         return ""
     rule = "\n\n" + POOL_RULE + f"\nShared pool: {cache(campaign).resolve()}\n"
@@ -151,6 +181,9 @@ def request_rule(campaign, request) -> str:
 
 def reading(campaign, d: Path) -> str:
     """The reading rule for an agent with tools in a thread, with its library and the helper command."""
+    from . import collection
+    if collection.enabled(campaign):
+        return collection.rule(campaign, d)
     lib = d / "inputs" / "library.jsonl"
     entries = [json.loads(l) for l in lib.read_text().splitlines() if l.strip()] if lib.is_file() else []
     listed = "".join(f"- {e['id']}: {e.get('title') or 'untitled'} ({', '.join(e.get('why') or [])}) {e['path']}\n"

@@ -146,6 +146,13 @@ def _source_cache(campaign) -> Path:
 
 
 def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None):
+    from . import collection
+    restricted = collection.enabled(campaign)
+    if restricted:
+        collection.validate_config(campaign)
+        if campaign.backend != "codex":
+            raise collection.Refused("restricted real calls require Codex")
+        search = False
     if campaign.backend == "claude":
         cmd = shlex.split(os.environ.get("PATHFINDER_CLAUDE", "claude"))
         cmd += ["-p", "--model", model, "--output-format", "stream-json", "--verbose", "--no-session-persistence"]
@@ -168,7 +175,9 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
         cmd += ["--search"]
     cmd += ["exec", "--json", "--ephemeral", "--ignore-user-config", "--skip-git-repo-check",
             "--cd", str(cwd), "--model", model, "-c", 'approval_policy="never"']
-    if prov.get("filesystem_profile"):             # a per-request permission profile in place of the sandbox mode
+    if restricted:
+        cmd += collection.args(campaign, cwd, tools and not reads)
+    elif prov.get("filesystem_profile"):             # a per-request permission profile in place of the sandbox mode
         from . import sandbox
         cmd += sandbox.args(cwd, tools and not reads, prov["filesystem_profile"], network=bool(tools and search and not reads),
                             cache=_source_cache(campaign))
@@ -479,8 +488,11 @@ def execute(campaign, request: ModelRequest):
     """Refuse an oversized prompt, then admit the call, then record an active attempt before launching it,
     including abrupt-exit evidence. A refused call raises before any active-call record exists. A campaign
     route for the request's stage (pathfinder.routing) applies first, so every stage is routed alike."""
-    from . import routing, library
+    from . import routing, library, collection
     campaign, request = routing.apply(campaign, request)
+    if collection.enabled(campaign):
+        collection.check_request(campaign, request)
+        request = dataclasses.replace(request, search=False)
     request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
     limit, size = max_prompt_chars(campaign), len(request.prompt)
@@ -491,11 +503,12 @@ def execute(campaign, request: ModelRequest):
             "cache_write": None, "cache_read": None, "prefix_read": None, "cost": None, "cost_basis": None,
             "error": error, "prompt_chars": size, "tool_calls": None})
         raise PromptTooLarge(error)
-    from . import admission
+    from . import admission, budget_group
     retries, backoff = retry_policy(campaign)
     unserved_asked = transient_asked = 0
     while True:
-        with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+        with budget_group.admission(campaign, request), admission.admission(
+                campaign, request.stage, request.actor, thread=request.thread, model=request.model):
             result = _attempt(campaign, request)
         failure = result.get("failure") or {}
         wait = None
@@ -517,6 +530,8 @@ def execute(campaign, request: ModelRequest):
             events.emit(campaign, "admission_deferred", unit=request.thread, stage=request.stage, actor=request.actor,
                         reason=f"refused by {campaign.backend}'s safety filter; retried on {found[0].backend}/{found[1].model}")
             return execute_routed(*found)
+    if collection.enabled(campaign):
+        collection.check_request(campaign, request)
     return result
 
 
@@ -547,10 +562,14 @@ JSON_ONLY_MARK = "(JSON only.)"
 
 def execute_routed(campaign, request: ModelRequest):
     """One call on an already routed campaign: admission, then the attempt (the refusal fallback's second try)."""
-    from . import admission, library
+    from . import admission, library, collection, budget_group
+    if collection.enabled(campaign):
+        collection.check_request(campaign, request)
+        request = dataclasses.replace(request, search=False)
     request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
-    with admission.admission(campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+    with budget_group.admission(campaign, request), admission.admission(
+            campaign, request.stage, request.actor, thread=request.thread, model=request.model):
         return _attempt(campaign, request)
 
 

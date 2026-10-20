@@ -15,6 +15,7 @@ def main(argv=None):
     ap.add_argument("--accept-change", metavar="REASON",
                     help="dispatch although the run record changed since the previous run; the reason is recorded")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("collection-check", help="read-only validation of a restricted collection and shared budget")
     f = sub.add_parser("fetch", help="fill Q.jsonl and P.jsonl from the arXiv API, or append older papers with --more")
     f.add_argument("--q"); f.add_argument("--p"); f.add_argument("--n", type=int, default=5)
     f.add_argument("--more", type=int, metavar="N", help="append the next N older papers per side using the saved queries")
@@ -192,6 +193,14 @@ def main(argv=None):
         from . import import_eva2
         print(import_eva2.run(Path(ns.experiment), Path(ns.out))); return 0
     c = config.load(Path(ns.root))
+    from . import collection
+    if ns.cmd == "collection-check":
+        result = collection.inspect(c)
+        print(json.dumps(result, indent=1))
+        return 0 if result["status"] == "verified" else 1
+    if collection.enabled(c) and ns.cmd not in (
+            "research", "state", "health", "stop", "playbook", "economy", "serve", "view"):
+        raise collection.Refused("restricted collection permits research and read-only operational commands only")
     if ns.cmd in ("present", "release") and ns.edited:
         from . import pce_recovery
         if not ns.pair:

@@ -128,7 +128,11 @@ def admission(campaign, stage: str, role: str, *, thread: str | None = None, mod
             if remaining > 0:                      # a rate limit holds every call, not only the one that hit it
                 _cond.wait(timeout=min(remaining, STOP_POLL))
                 continue
-            decision = ADMIT if policy is None else policy(campaign, stage, role, _reserved.get(key, 0))
+            from . import collection
+            decision = (budget_per_call(campaign, stage, role, _reserved.get(key, 0))
+                        if policy is None and collection.enabled(campaign)
+                        else ADMIT if policy is None
+                        else policy(campaign, stage, role, _reserved.get(key, 0)))
             if not isinstance(decision, Decision) or decision.kind not in ("admit", "defer", "stop"):
                 raise TypeError(f"admission policy returned {decision!r}; expected admit, defer or stop")
             if decision.kind == "admit":
