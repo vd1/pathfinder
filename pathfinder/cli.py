@@ -106,6 +106,13 @@ def main(argv=None):
     br.add_argument("--packet", type=Path, required=True)
     br.add_argument("--reason", required=True)
     br.add_argument("--apply", action="store_true")
+    wr = sub.add_parser("account-wire-review", help="one immutable whole-body readability repair of a failed raw-literal review")
+    wr.add_argument("pair")
+    wr.add_argument("--id", required=True)
+    wr.add_argument("--grant", required=True)
+    wr.add_argument("--failed-round-sha256", required=True)
+    wr.add_argument("--reason", required=True)
+    wr.add_argument("--apply", action="store_true")
     rr = sub.add_parser("account-register-review", help="repair superseded mandatory claims in a fresh immutable round of the same candidate")
     rr.add_argument("pair")
     rr.add_argument("--id", required=True)
@@ -348,6 +355,11 @@ def _dispatch(ns, c):
     elif ns.cmd == "account-bibliography":
         from . import account_bibliography
         print(account_bibliography.run(c, ns.pair, identity=ns.id, packet=ns.packet, reason=ns.reason, apply=ns.apply))
+    elif ns.cmd == "account-wire-review":
+        from . import account_wire
+        print(account_wire.repair(c, ns.pair, identity=ns.id, grant_id=ns.grant,
+              failed_round_sha256=ns.failed_round_sha256, reason=ns.reason,
+              apply=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-register-review":
         from . import account_register
         print(account_register.repair(c, ns.pair, identity=ns.id, revision=ns.revision,

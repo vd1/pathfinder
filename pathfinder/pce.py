@@ -461,6 +461,15 @@ def _dispatch(campaign, pair_id, role, prompt, seconds=None) -> dict:
             "text": r.get("text") or ""}
 
 
+def _validate_wire(root, grant, files, cap, campaign):
+    from . import raw_literals, account_wire
+    repair = root / 'repair.json'
+    is_repair = repair.exists() and json.loads(repair.read_text()).get('policy') == 'whole-body-repair-v1'
+    if is_repair or grant.get('whole_body_repair') or (grant.get('review_wire') or {}).get('version') == 'whole-body-v1':
+        return account_wire.validate(root, grant, files, cap, campaign)
+    return raw_literals.validate(root, grant, files, cap, campaign)
+
+
 def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) -> dict:
     """The round over the edited note; result.json once it ends. Raises Stopped when stop() turns true before
     a new call, TransportFailed when a call fails in transport, Changed when retained work no longer matches.
@@ -477,7 +486,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     if done.exists():
         if (root/'wire-declaration.json').exists():
             from . import raw_literals
-            raw_literals.validate(root, json.loads((root/'grant.json').read_text()),
+            _validate_wire(root, json.loads((root/'grant.json').read_text()),
                                   json.loads((root/'frozen-inputs.json').read_text()), transport.max_prompt_chars(campaign), campaign)
         return json.loads(done.read_text())
     grant_path = root / "grant.json"
@@ -493,7 +502,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
         raise Changed("the continuation frozen inputs changed")
     from . import raw_literals
     if grant:
-        raw_literals.validate(root, grant, files, transport.max_prompt_chars(campaign), campaign)
+        _validate_wire(root, grant, files, transport.max_prompt_chars(campaign), campaign)
     registered = None
     if grant and grant.get("replacement_register"):
         from . import account_register
@@ -540,7 +549,9 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
             prompt = head + _json(shown)
             encoding = {}
             if grant.get('review_wire'):
-                prompt, encoding = raw_literals.packet(head, shown, role)
+                from . import whole_bodies
+                codec = whole_bodies if grant['review_wire'].get('version') == whole_bodies.VERSION else raw_literals
+                prompt, encoding = codec.packet(head, shown, role)
             elif role == "editor" and len(prompt) > transport.max_prompt_chars(campaign):
                 prompt, encoding = editor_alias_packet(head, shown)
                 if len(prompt) > transport.max_prompt_chars(campaign):
