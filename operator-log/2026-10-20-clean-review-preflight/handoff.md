@@ -59,9 +59,11 @@ active/selection pointers. Candidate, request and scientific-status bytes remain
 external key and embedded file was accounted for; all ledger records and standing were preserved. All five
 role visibility records per account reported no truncation.
 
-Maximum tested prompt sizes were 946,967 characters for affinity, 658,659 for bundle and 682,457 for
+Maximum tested prompt sizes were 946,972 characters for affinity, 658,664 for bundle and 682,462 for
 allocation. Actual generated reviews can differ in length; the ordinary per-call prompt guard remains
 authoritative and must not be bypassed if it stops a later call.
 
 No live model calls, deployment writes or scientific computations were performed by the maintainer. The
 running selector review is independent and unchanged.
+
+The frozen-copy test explicitly asserts its imported module path and runs with Python -P to exclude the checkout from import precedence.

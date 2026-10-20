@@ -9,6 +9,7 @@ CASES={'affinity':('Q053-P011','preparation-spec-20261020','affinity-cycle-defin
 sha=lambda b:hashlib.sha256(b).hexdigest()
 @pytest.mark.parametrize('tag',CASES)
 def test_clean_copy(tmp_path,monkeypatch,tag):
+    assert Path(account_review.__file__).resolve().is_relative_to(Path('/private/tmp/pathfinder-clean-c12d7c8'))
     pair,identity,revision=CASES[tag]
     c,t=helper.copied(tmp_path,monkeypatch,helper.BASE,pair,identity,revision)
     before=pce_recovery.hashes(t/'edited');science=(t/'status.json').read_bytes()
