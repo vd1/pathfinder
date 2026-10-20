@@ -1,0 +1,28 @@
+{
+  "parent_candidate_sha256": "799da3b60dd1d99b9f16d43d881929bf4b18e148e8cd9433ab2f59f02e3c0be0",
+  "parent_acceptance_sha256": "18a5cb3215844733850fcd0b9ee204412d3f28dd74a1403e280220fc8576976c",
+  "returned_findings_sha256": "931565cd8c9000b2fa33cdebb0fa9c2d9fee756ec8b80908a5eee00f7f7574a7",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "Branch 1's custom distance-only F/B minimisation-score cycle has floating-bound interval \\([-3.6495,-3.6491]\\), without energy calibration.",
+      "after": "Branch 1's reported interval \\([-3.6495,-3.6491]\\) bounds the uncalibrated, dimensionless cycle \\(C=S_{5F}-S_{5B}-S_{3F}+S_{3B}\\), with \\(S_L=-W_L\\) and \\(W_L\\) the maximum clique weight for each fixed distance-only Appendix-B graph. For ligand \\(L\\), write \\(l_L\\) for the returned feasible-clique weight and \\(u_L\\) for minus the minimisation solver's dual bound. The retained runner forms the lower endpoint as \\(-u_{5F}+l_{5B}+l_{3F}-u_{3B}\\) and the upper endpoint as \\(-l_{5F}+u_{5B}+u_{3F}-l_{3B}\\). In order \\((5F,5B,3F,3B)\\), the saved incumbents are \\((41.0582,35.8431,36.8334,35.2678)\\), and the upper bounds are \\((41.0582,35.8431,36.8338,35.2678)\\) at the displayed precision. The residual 3F gap accounts for the displayed interval width; the other differences close to floating precision. These are floating MILP optimisation bounds for fixed custom features and endpoint snapshots, not a spread across preparations, a thermodynamic confidence interval or a formal rational-arithmetic certificate. In particular, the saved \\texttt{exact} flag records solver-optimal status, not proof that the 3F weight is exactly known to four decimals. The endpoints are rounded for display, and the negative score sign supplies no energy calibration. The complete retained runner \\texttt{branches/branch-1/ada/scripts2/distance\\_only\\_big.py} and its \\texttt{ada/distance-only-big-results.json} result within the same branch supply the endpoint construction and values. This qualification belongs to Branch 1's graph calculation, not to the distinct joint polar/v2 preparation ranges or Branch 2's receptor domains."
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "branches/branch-1/ada/scripts2/distance_only_big.py",
+        "sha256": "2c612bcc11066c8e10afe658769b2abde1da7e0ae25886c970d1866232628d94",
+        "purpose": "Complete retained scientific source for the fixed Branch-1 floating MILP cycle endpoint construction and saved bounds; no execution or recalculation."
+      },
+      {
+        "path": "branches/branch-1/ada/distance-only-big-results.json",
+        "sha256": "d2f578a9b76a3f933b81a9640d163c3de26eee8950bf1e887e1c56240aa433f8",
+        "purpose": "Complete retained scientific source for the fixed Branch-1 floating MILP cycle endpoint construction and saved bounds; no execution or recalculation."
+      }
+    ]
+  }
+}

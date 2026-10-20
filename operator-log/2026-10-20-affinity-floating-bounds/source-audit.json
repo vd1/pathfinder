@@ -1,0 +1,185 @@
+{
+  "scope": "Read-only inspection, no retained script executed and no scientific recomputation. One confirmed P1 only.",
+  "current_records": 13,
+  "proposed_records": 14,
+  "clean_existing_file_count": 14,
+  "clean_existing_science_preserved": true,
+  "other_appended_scientific_files_preserved": true,
+  "cycle_result_exact_retained_value": {
+    "incumbent_C": -3.6495000000000104,
+    "certified_interval": [
+      -3.6495000000002165,
+      -3.649099999999997
+    ]
+  },
+  "solver_records": {
+    "5F": {
+      "density": 0.8176301932050297,
+      "nonadjacent_pairs": 48659,
+      "status": 0,
+      "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "W_incumbent": 41.058200000000014,
+      "W_upper_bound": 41.0582,
+      "clique_certified_pairwise": true,
+      "clique_size": 190,
+      "distinct_lig_points_used": 17,
+      "distinct_prot_points_used": 26,
+      "exact": true,
+      "seconds": 54.4
+    },
+    "5B": {
+      "density": 0.8207577306414515,
+      "nonadjacent_pairs": 28055,
+      "status": 0,
+      "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "W_incumbent": 35.8431,
+      "W_upper_bound": 35.84310000000002,
+      "clique_certified_pairwise": true,
+      "clique_size": 154,
+      "distinct_lig_points_used": 14,
+      "distinct_prot_points_used": 26,
+      "exact": true,
+      "seconds": 10.0
+    },
+    "3F": {
+      "density": 0.8423853854811737,
+      "nonadjacent_pairs": 34589,
+      "status": 0,
+      "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "W_incumbent": 36.833400000000005,
+      "W_upper_bound": 36.8338,
+      "clique_certified_pairwise": true,
+      "clique_size": 169,
+      "distinct_lig_points_used": 17,
+      "distinct_prot_points_used": 29,
+      "exact": true,
+      "seconds": 74.2
+    },
+    "3B": {
+      "density": 0.8191376154599243,
+      "nonadjacent_pairs": 29743,
+      "status": 0,
+      "message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "W_incumbent": 35.2678,
+      "W_upper_bound": 35.26780000000022,
+      "clique_certified_pairwise": true,
+      "clique_size": 160,
+      "distinct_lig_points_used": 14,
+      "distinct_prot_points_used": 24,
+      "exact": true,
+      "seconds": 38.3
+    }
+  },
+  "interval_code_quote": "        # S=-W; cycle C = S5F - S5B - S3F + S3B; interval from W in [inc, ub]\n        lo = -g('5F', 'W_upper_bound') + g('5B', 'W_incumbent') + g('3F', 'W_incumbent') - g('3B', 'W_upper_bound')\n        hi = -g('5F', 'W_incumbent') + g('5B', 'W_upper_bound') + g('3F', 'W_upper_bound') - g('3B', 'W_incumbent')\n        inc = sum(-a[L]*g(L, 'W_incumbent') for L in a)\n        res['cycle_'+key] = {'incumbent_C': inc, 'certified_interval': [lo, hi]}\n",
+  "source_quotes": [
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 41,
+      "actor": "emmy",
+      "kind": "correction",
+      "quote": "clarifies #8/#16/#20/#25/#26: use Q Eq.(4), inputs/Q.txt:399-411, with B reference: \\(\\mathrm{NA}_{R/B}=\\Delta\\Delta G(5B\\to5R)-\\Delta\\Delta G(3B\\to3R)\\), equivalently coefficients \\((1,-1,-1,1)\\) in order \\((5R,5B,3R,3B)\\). Negative NA means the R change improves binding more in series 5, corresponding to Q positive coupling (inputs/Q.txt:903-915), not negative cooperativity. The two bound microstates in #8 are assigned to \\(5R=5R^{\\prime\\prime}\\); their free-energy reduction gives \\(-RT\\ln2\\). Assigning them instead to \\(5B=5R^{\\prime}\\), \\(3R=3R^{\\prime\\prime}\\), or \\(3B=3R^{\\prime}\\) gives respectively \\(+RT\\ln2,+RT\\ln2,-RT\\ln2\\). The synthetic minimisation-score cycles in #25 and #26 remain -1 in the same signed convention; they favour the series-5 R change in graph units, with #26 pose cycle zero. A/B and F/B have matching labels; any extension across other substituents must use Q Figure 1 mapping \\(3G\\leftrightarrow5H\\) and \\(3H\\leftrightarrow5I\\) (inputs/Q.txt:1392-1394), not automatic same-letter pairing."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 52,
+      "actor": "ada",
+      "kind": "finding",
+      "quote": "progress, extending #44. Endpoint rule frozen in ada/endpoint_big.py (docstring): ligand L is taken only from a bound Complex/core pair L~X in which L is the INITIAL state, removing atoms whose MORPH.pert initial_type is du; coordinates and GAFF types come from SYSTEM.top/crd (read as data, Python -I, no archive code run). Under this rule all four F/B positions have a usable bound starting structure: 5F from 5Series/5F~5C, 5B from 5B~5A, 3F from 3Series/3F~3C, 3B from 3B~3A (top/crd only, no PDB). 3A and 5A occur only as FINAL states (3B~3A, 3D~3A, 3G~3A, 3H~3A; 5B~5A, 5D~5A, 5H~5A, 5I~5A), so their coordinates would be the partner ligand geometry with retyped atoms; under the frozen rule the A/B cycle is NOT constructible and I record that as a limitation rather than projecting. Caveats: these are FESetup minimised/restrained-equilibrated starting poses (inputs/Q.txt Methods, 10 kcal/mol/A^2 restraint), single snapshots, not ensembles or crystal endpoints. MORPH.pert lists only perturbed atoms (40 of 51 for 5F~5C), so types for unchanged atoms must come from the topology, which the script does. Feature rule (not RDKit, which is unavailable here): ligand HD = N/O bearing H; HA = any O or N of GAFF type nb/nc/nd/n2/ne/nf; HP = C bonded only to C/H, or Cl/Br; AR = 5/6-ring centroids of aromatic GAFF types; protein features from fixed residue templates (backbone N/O, polar side chains, aliphatic carbons, aromatic ring centroids); receptor points kept within 5 Angstrom of any ligand heavy atom (P rule, inputs/P.txt:358-366). BIG: vertex weight Table I, strict compatibility \\(|d_1-d_2|<\\tau+\\epsilon_i+\\epsilon_j\\) with \\(\\epsilon_s\\) for HD/HA-HD/HA vertices, three frozen parameter sets from P Appendices B/C/D. Exact solver: branch-and-bound over ligand points (a clique uses each ligand point at most once), with time limit and completion flag; no heuristic substitution. The exact run is in progress; results will be in ada/endpoint-big-results.json with N=n*m, density, S_L=-W and the raw cycle \\(S_{5F}-S_{5B}-S_{3F}+S_{3B}\\) (Q Eq.4 sign, #41). No result is claimed yet."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 67,
+      "actor": "ada",
+      "kind": "finding",
+      "quote": "result in the P distance-only domain, superseding the injective-domain cycle in #55 as the P-style answer (#61). Evidence: ada/scripts2/distance_only_big.py, ada/distance-only-big-results.json, ada/distance-only-big.log (Python -I via uv with numpy/scipy; archive read as data; only function defs/constants of ada/endpoint_big.py reused, SHA256 recorded). Appendix B parameters (\\(\\epsilon=4,\\epsilon_s=3,\\tau=0.6\\)), strict Appendix B margin, no injectivity, frozen #52 features and 5 Angstrom receptor rule. Exact maximum-weight cliques were obtained by HiGHS MILP (edge formulation), all four with status Optimal inside the 90 s limit, and each returned clique was checked pairwise as a clique. \\(W\\) for (5F,5B,3F,3B) = (41.0582, 35.8431, 36.8334, 35.2678) on graphs of N = (731,560,663,574) vertices, density 0.82-0.84. Clique sizes are (190,154,169,160) vertices; every ligand point is used, together with 26, 26, 29 and 24 receptor points. Raw dimensionless cycle \\(C=S_{5F}-S_{5B}-S_{3F}+S_{3B}\\) with \\(S=-W\\) (Q Eq. 4 sign, #41) = \\(-3.6495\\). Certified interval from the dual bounds: \\([-3.6495,-3.6491]\\), so the sign is resolved and negative, the same sign as the experimental \\(-1.6\\) kcal/mol (Q positive coupling). Decomposition: series-3 R effect \\(S_{3F}-S_{3B}=-1.566\\), series-5 R effect \\(S_{5F}-S_{5B}=-5.215\\), X effect \\(S_{5B}-S_{3B}=-0.575\\). Emmy greedy certificates in #62 (34.68, 34.05, 30.99, 32.69) are 6.4%, 5.0%, 15.9% and 7.3% below these optima, so the greedy cycle (\\(-1.35\\)) had the wrong magnitude. That is an instance of #11: per-ligand optimisation residuals do not cancel in the cycle. Graph units are not kcal/mol, and no calibration exists (#47)."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 84,
+      "actor": "emmy",
+      "kind": "correction",
+      "quote": "Numerical qualification of #67/#69: HiGHS status Optimal does not by itself prove exact equality at Table I four-decimal precision. For 3F the saved W incumbent is 36.8334 and upper bound 36.8338, leaving four 0.0001 score lattice units; other intervals close to floating precision. Thus report solver-declared optimal with the residual numerical bound, rather than a proven exact scalar 3F optimum. The signed F/B interval [-3.6495,-3.6491] still excludes zero and supports its negative sign under the frozen custom features. These are floating MILP bounds, not formal rational-arithmetic certificates or thermodynamic confidence intervals. Ada #83 zero requested relative gap and saved selected vertices are useful safeguards for subsequent runs."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 86,
+      "actor": "ada",
+      "kind": "correction",
+      "quote": "Agree with Emmy #84: qualify #67/#69 exact-optimum wording. Prior 3F Appendix B HiGHS status Optimal retains W in [36.8334,36.8338], so the quartet is interval-certified in floating arithmetic, not a proven four-decimal exact scalar. The negative F/B interval remains [-3.6495,-3.6491]. Extended runner requests zero relative gap and records clique vertices, bounds and statuses separately; any residual gap remains visible."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 92,
+      "actor": "emmy",
+      "kind": "finding",
+      "quote": "F/B Appendix C/D sensitivity completed: emmy/fb_parameter_sensitivity.py (preserved copy of Ada distance-only runner), emmy/fb-parameter-offline-results.json/log, emmy/fb_certificate_check.py/results and emmy/fb_sensitivity_summary.py/json. Offline uv numpy 2.5.3/scipy 1.18.1; isolated Python, archive read as data, 60 s each, strict P Appendix rule, frozen #52 own selections/features and no injectivity. All eight C/D MILPs hit time limit; therefore no exact C/D cycles. Combining each MILP dual upper bound with the larger of its returned feasible incumbent and independently validated #85 clique weight yields raw F/B intervals C=[-4.2251,+6.7841], D=[-5.3563,+5.3286] graph units; normalised S_n intervals C=[-0.2422895,+0.4391525], D=[-0.3240550,+0.3399529]. Both contain zero; no sign reversal or agreement is established. Appendix B remains raw [-3.6495,-3.6491] and normalised [-0.20742479,-0.20740126], both negative. Solver-incumbent C/D cycles are preserved in the files but not interpreted, since 5F has an especially weak solver incumbent. Feasible-clique lower bounds tighten intervals without becoming exact-cycle substitutes. No calibration or kcal/mol comparison is fitted. Initial fresh-cache run was interrupted (exit 130) after eventually entering MILP; its partial log is unused, correcting the transient pre-solve description in #78."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 112,
+      "actor": "emmy",
+      "kind": "finding",
+      "quote": "D/B intermediate control resolves the #102 alternative: emmy/common_identity_control.py ran offline uv, Python -I, frozen #52 features and strict distance-only Appendix B, union of 44 receptor identities with each endpoint own coordinates, repeated contacts allowed, 60 s per MILP/two one-thread workers. emmy/common-identity-results.json/log saves vertices, bounds and statuses. W intervals in order (5D,5B,3D,3B) are [41.1992,41.1992], [36.8515,36.8515], [37.3696,38.3714], [35.2806,35.2806] to displayed precision; 3D hit time limit, not replaced by a heuristic. Raw intermediate cycle is [-2.2587,-1.2569], still negative; predeclared normalised cycle is [-0.127143,-0.064530], also negative. emmy/common_identity_check.py independently verifies all four returned cliques and sums, and uses graph-domain inclusion to bound nonnegative per-ligand membership gains. Membership-only cycle change against own-selection is [0.8865,2.4993] raw and [0.064296,0.165096] per-point; geometry-only change from intermediate to fixed-3B union is [1.9690,3.8086] raw and [0.138665,0.253640] per-point. Both exclude zero. Thus membership affects this surrogate cycle, but the sign reversal occurs when receptor intradistances are fixed, not merely when membership is standardised. No physical error or calibration is inferred; fixing geometry may remove relevant receptor adaptation. Source-rule basis: inputs/P.txt:1135-1141 uses pair-distance compatibility only; Q inputs/Q.txt:1020-1030 explicitly describes small ligand/residue readjustments. The observed graph change does not establish that it represents those physical readjustments."
+    },
+    {
+      "source": "branches/branch-1/ledger.jsonl",
+      "seq": 113,
+      "actor": "ada",
+      "kind": "finding",
+      "quote": "Arithmetic cross-check of Emmy #112 from its stated W intervals with \\(S=-W\\) and Q Eq.(4) coefficients (1,-1,-1,1) in order (5D,5B,3D,3B): intermediate (union identities, own coordinates) cycle \\(=-41.1992+36.8515+[37.3696,38.3714]-35.2806=[-2.2587,-1.2569]\\), negative. Geometry-only change, fixed-3B union #93 \\([0.7121,1.5499]\\) minus intermediate, by plain interval subtraction is \\([1.9690,3.8086]\\), matching #112 and excluding zero. Membership-only change by plain interval subtraction from own \\([-4.7128,-2.2749]\\) would be only \\([0.0162,3.4559]\\); the tighter \\([0.8865,2.4993]\\) in #112 rests on Emmy graph-inclusion argument (own selection a subset of union identities at the same coordinates, so per-ligand W cannot decrease), which I accept as valid in principle but did not rerun. Both channels therefore move the D/B surrogate cycle positive; the sign reversal appears only once receptor intradistances are frozen to 3B. Scope unchanged: dimensionless custom-feature graph scores, single restrained snapshots, no calibration."
+    },
+    {
+      "source": "branches/branch-2/ledger.jsonl",
+      "seq": 98,
+      "actor": "emmy",
+      "kind": "finding",
+      "quote": "V6 independent certificate completed: all twelve injective optimum weights now agree with an independent matching-bound branch-and-bound proof. The original 5 s attempt certified nine; a bounded 30 s retry certified the remaining three in 5.7, 8.0 and 7.0 s, retaining the earlier timeouts (emmy/v6-matching-certificates.json and emmy/v6-matching-retry-certificates.json). emmy/v6_audit.py independently rebuilds every one of the 24 adjacency matrices from feature coordinates by vectorised Appendix-B margins and confirms all saved edges, Table-I weights, witness sums and explicit attached-H donor checks (emmy/v6-graph-audit.json). It verifies common N11 retention, false N4 exclusion, and amino N3/N23 with three bonded hydrogens. Thus every injective cycle has two independent optimality methods plus a separate graph/chemistry audit; non-injective A/B still has CP-SAT proofs only, and the F/B non-injective cases remain unresolved. No optimiser or physical claim is inferred."
+    },
+    {
+      "source": "branches/branch-2/ledger.jsonl",
+      "seq": 99,
+      "actor": "emmy",
+      "kind": "correction",
+      "quote": "V6 domain qualification of #81/#82/#96, after independently viewing Ada recovered primary Q Figure 10A (ada/Q-Fig10-primary.png, printed p.37; author PDF https://www.pure.ed.ac.uk/ws/portalfiles/portal/26399735/ThrombinNA_revised.pdf, sha256 reported in #97). My S2 and S3/S4 residue choices match the figure. Its S1 group is Ser214, Val213, Ala190, Cys191, Cys220, Gly219, Tyr228. My frozen 56-feature domain has Ala190 and Gly219 plus Asp189/Glu192/Ser195, but omits Ser214, Val213, Cys191, Cys220 and Tyr228. It is therefore a residue-defined subset spanning the groups, not the full Figure-10 partition. The earlier four-feature domain comprises Ser214 (S1 in the primary figure) and Trp215 (S3/S4); describing all of it as S3/S4-adjacent in #81 was imprecise. No scored specification was changed. This limits the zero-cycle result to that recorded subset and leaves full S1 coverage unresolved. I read Ada #93/#95: her initial donor-free graphs are an implementation failure excluded from interpretation; my donor counts independently include explicit neighbours and pass all 24 audits."
+    },
+    {
+      "source": "branches/branch-2/ledger.jsonl",
+      "seq": 100,
+      "actor": "ada",
+      "kind": "finding",
+      "quote": "V6 attained exact repaired calculation: ada/v6hc-results.json and ada/v6-account.txt record all 24 graphs, witnesses, per-family allocations and SHA256 manifest. The unchanged 29-feature domain hash is 18e902b7cbc002f587babfc935f9f858a7e4c06a8e8a772b556def31c8688640; correspondence maps are in ada/v6-correspondence.json. Each graph has 377-493 vertices and two agreeing exact proofs, HiGHS MILP and independent CP-SAT; NetworkX timed out at 30 s on every repaired graph. The separate ada/v6_audit.py recomputes every Appendix-B edge and Table-I weight, checks clique feasibility/sums and explicit-H donor retention. For \\(S=-W\\), raw \\((C_F,C_A)\\) are: allowance 3.0, non-injective \\((-1.0138,0)\\); 3.0, feature-injective \\((0,0)\\); 3.3, non-injective \\((-0.1008,0)\\); 3.3, feature-injective \\((-0.0864,-0.0864)\\). All values are uncalibrated, pose-informed P weight units, NOT kcal/mol. In recorded witnesses each nonzero cycle is entirely Hydrophobe weight; HD/HA/AR contributions are zero. Amino-N/Gly216-O exists in every 5-series graph and is selected in 5F at both injective allowances, absent in 5A/5B and all non-injective witnesses. This does not determine membership in every degenerate optimum. The original donor-free run remains preserved as failure (#93), not a chemical result. Primary Fig.10 recovery (#97) shows incomplete S1 coverage, which limits all findings to this frozen subset. Exact optimisation therefore exposes significant rule/domain sensitivity and does not identify Q charged interaction mechanism; an independently calibrated alternative remains open, particularly the nonzero 3.3 injective cycle. No physical comparison, simulation or quantum optimisation was performed."
+    },
+    {
+      "source": "branches/branch-2/ledger.jsonl",
+      "seq": 101,
+      "actor": "ada",
+      "kind": "finding",
+      "quote": "Independent partner cross-check and final current account: I read Emmy #98/#99, inspected emmy/v6_matching_certificate.py:11-41 and checked all twelve saved injective clique witnesses against their adjacency/weights and combined original/retry certificate hashes/statuses (ada/partner-v6-certificate-audit.json). The recurrence branches over every selected/omitted ligand feature; Hungarian matching after dropping remaining pairwise geometry is a valid upper bound. Thus her injective zero cycles have an independent optimality certificate. Her 56-feature domain differs from my 29-feature subset, so her zeros and my allowance-dependent nonzeros are retained as different frozen-domain results, not reconciled. Neither covers the complete Q S1 partition (#97/#99). Established paired-paper line is now a concrete representation-sensitivity audit before optimiser attribution: exact raw cycles on recovered molecular inputs depend on feature coverage, attached-H implementation, tolerance and injectivity; positive contact weights and optimal bitstrings do not establish Q thermodynamic coupling. In three of my four variants A/B is zero, hence any common affine scalar calibration also gives zero rather than the published central \\(-1.5\\) kcal/mol; this is confined to those domains/calibration family, with covariance still conditional. The fourth variant has equal nonzero F/B and A/B cycles, so calibrated surrogate adequacy remains open and must be tested independently. Prior generic cycle-validation and local-product-state controls already exist (#43/#54); no novelty is claimed. V7 corrections are explicit (#78/#91), V6 exact molecular results and failure records are in #93/#97/#100 and ada/v6-account.txt. Still unresolved: complete S1 coverage and blinded domain choice, independent endpoint/protonation/stereochemistry validation and relaxed A coordinates, simultaneous pose placement and optimal-witness degeneracy, original ITC covariance, independent calibration, corrected publisher implementation, and empirical optimiser/noise/resource comparisons. No scientific verdict, publication readiness, classical superiority or quantum benefit is awarded. No further calculation is required to state this bounded account."
+    },
+    {
+      "source": "branches/branch-2/ledger.jsonl",
+      "seq": 103,
+      "actor": "emmy",
+      "kind": "finding",
+      "quote": "Read Ada #100 and independently recomputed every cycle and per-family sum from ada/v6hc-results.json; all eight cycles and all 24 reported HiGHS/CP-SAT weight agreements pass (emmy/v6-partner-arithmetic-check.json, input hash retained). This is a summary arithmetic/status cross-check, not a separate optimum proof of her graphs. Her repaired 29-feature domain gives raw F/B -1.0138 at 3.0 non-injective and -0.1008 at 3.3 non-injective; feature-injective cycles are (F/B,A/B)=(0,0) at 3.0 and (-0.0864,-0.0864) at 3.3. All nonzero terms are Hydrophobe contributions of selected witnesses. My independently certified 56-feature injective domain yields zero at both allowances. These findings need not agree because the domains differ; they demonstrate rule/domain sensitivity rather than one physical answer. Both omit part of the primary Q S1 partition. The 3.3 alternative therefore remains a calibration hypothesis, not evidence of the charged Gly216 mechanism or empirical physical prediction."
+    },
+    {
+      "source": "branches/branch-2/ledger.jsonl",
+      "seq": 104,
+      "actor": "emmy",
+      "kind": "finding",
+      "quote": "Final current account (read through #103, including Ada #101): the attained line is a concrete representation-sensitivity audit before quantum-optimiser attribution. V7 is corrected (#78/#91/#99): abandoned files, post-hoc hydrophobe cycle, false receptor donor and pose-conditioning location are explicit. V6 maps the old Ser214/Trp215 domain, retains chemically corresponding common and charged amino donors in newly frozen residue subsets, and records allowance/injectivity variants, graph hashes, witnesses and solver failures. My 56-feature domain has independently certified zero F/B and A/B cycles for both injective allowances (#98); non-injective A/B zeros have CP-SAT proofs, while F/B is unproved at the recorded limit. Ada 29-feature domain has all exact variants (#100), with cycles independently recomputed in #103. Its nonzero selected-witness cycles are hydrophobe bookkeeping, and rule/domain sensitivity is observed rather than repaired by consensus. Any common affine scalar calibration preserves the exact zero cycles; nonlinear maps and alternative domains remain hypotheses. Full primary Q S1 coverage remains missing (#97/#99), so no general P-style or thrombin failure follows. Prior general cycle benchmarks and local controls already exist (#43/#54). Evidence, hashes, independent proof method and bounded outcomes are in emmy/v6-account.txt, emmy/v6-summary.json, emmy/v6-graph-audit.json, emmy/v6-matching-certificates.json and emmy/v6-matching-retry-certificates.json. Unresolved: complete/blinded receptor domains, independently validated endpoint stereochemistry/protonation and relaxed A geometry, simultaneous pose placement and witness degeneracy, original covariance/ITC, independent calibration, corrected publisher implementation and empirical optimiser/noise/resource comparisons. No scientific verdict, novelty, publication readiness, classical superiority or quantum benefit is awarded."
+    }
+  ],
+  "whole_domain_audit": [
+    "Branch1 uses fixed custom distance-only Appendix-B graphs, no injectivity; do not confuse its floating interval with joint polar/v2 preparation spreads or calibrated affinity uncertainty.",
+    "Branch1 #84/#86 supersede exact-scalar interpretation: 3F residual bound remains; all status0/exact fields are solver declarations. Displayed endpoints are rounded, not outward-rounded rational certificates.",
+    "Branch1 Appendix C/D bounds include zero after timeouts (#92); candidate does not generalise the negative Appendix-B sign to those parameter domains. No new C/D numerical claim is inserted.",
+    "Branch1 D/B receptor-identity versus geometry control retains dimensionless single-snapshot limitations (#112/#113); no new interpretation or experimental calibration.",
+    "Branch2 29-feature all24 graphs have reported MILP/CP-SAT agreements; separate 56-feature injective zero-cycle certificates and unresolved noninjective F optima remain distinct (#98-104). No downgrade or transfer of certificate status across domains.",
+    "Hydrophobe witness contributions, incomplete S1 coverage, wrong-donor repair, witness degeneracy and lack of physical confirmation remain unchanged.",
+    "Joint polar residual and joint v2 solver checks remain model-specific numerical checks, not molecular pose/ensemble validation."
+  ],
+  "separate_unmodified_tail_findings": "correct-1/check.json also asks v2-label and source-table/PRIMARY/ALT locator prose clarification. These are not confirmed P1 scientific findings and were not silently added to this successor.",
+  "dependencies": "Full retained interval runner and saved result are proposed additive evidence. Its endpoint feature-generation dependency and molecular archive are not newly embedded or claimed independently reproduced."
+}

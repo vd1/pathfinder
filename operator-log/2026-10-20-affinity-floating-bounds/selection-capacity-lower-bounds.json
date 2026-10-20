@@ -1,0 +1,110 @@
+{
+  "status": "OFFLINE ASSESSMENT ONLY: no canonical selected route or grant implemented",
+  "metrics": [
+    {
+      "mode": "zero-new-evidence-lower-bound",
+      "prep_chars": 896394,
+      "reserve": 100000,
+      "prep_total": 996394,
+      "actual_editor_chars": 999505,
+      "headroom": 495,
+      "stress": [
+        {
+          "additional_note_chars": 2048,
+          "editor_chars": 1001554
+        },
+        {
+          "additional_note_chars": 8192,
+          "editor_chars": 1007698
+        }
+      ],
+      "old_external_identical": true,
+      "paths": 20
+    },
+    {
+      "mode": "full-result-only-lower-bound",
+      "prep_chars": 900150,
+      "reserve": 100000,
+      "prep_total": 1000150,
+      "actual_editor_chars": 1003169,
+      "headroom": -3169,
+      "stress": [
+        {
+          "additional_note_chars": 2048,
+          "editor_chars": 1005218
+        },
+        {
+          "additional_note_chars": 8192,
+          "editor_chars": 1011362
+        }
+      ],
+      "old_external_identical": true,
+      "paths": 21
+    },
+    {
+      "mode": "full-separate",
+      "prep_chars": 905097,
+      "reserve": 100000,
+      "prep_total": 1005097,
+      "actual_editor_chars": 1008242,
+      "headroom": -8242,
+      "stress": [
+        {
+          "additional_note_chars": 2048,
+          "editor_chars": 1010291
+        },
+        {
+          "additional_note_chars": 8192,
+          "editor_chars": 1016435
+        }
+      ],
+      "old_external_identical": true,
+      "paths": 22
+    },
+    {
+      "mode": "selected-separate",
+      "prep_chars": 904710,
+      "reserve": 100000,
+      "prep_total": 1004710,
+      "actual_editor_chars": 1007855,
+      "headroom": -7855,
+      "stress": [
+        {
+          "additional_note_chars": 2048,
+          "editor_chars": 1009904
+        },
+        {
+          "additional_note_chars": 8192,
+          "editor_chars": 1016048
+        }
+      ],
+      "old_external_identical": true,
+      "paths": 22
+    }
+  ],
+  "script_partition": {
+    "source": "branches/branch-1/ada/scripts2/distance_only_big.py",
+    "sha256": "2c612bcc11066c8e10afe658769b2abde1da7e0ae25886c970d1866232628d94",
+    "kept": [
+      {
+        "start": 0,
+        "end": 658,
+        "sha256": "ab7369c369775aa847848c42615e99c377979b61aa7b2aebd55b2dcdd1573039"
+      },
+      {
+        "start": 1366,
+        "end": 4636,
+        "sha256": "d62ca1f5dd0f8f63167eabbf75724d2f844e8b1c892705226abcf7b1a7fb66f8"
+      }
+    ],
+    "omitted": [
+      {
+        "start": 658,
+        "end": 1366,
+        "sha256": "82701a2bd48e9540b9199f3cb3c17bfa9583cfccb80c78bd8f340fd713ad51e3",
+        "text": "import sys, ast, json, os, time, hashlib\nimport numpy as np\nfrom scipy.optimize import milp, LinearConstraint, Bounds\nfrom scipy.sparse import coo_matrix\nSRC, SYS, OUT, KEYS, LIM = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4].split(','), float(sys.argv[5])\nsrc = open(SRC).read(); tree = ast.parse(src)\nkeep = [n for n in tree.body if isinstance(n, (ast.Import, ast.ImportFrom, ast.FunctionDef)) or\n        (isinstance(n, ast.Assign) and all(isinstance(t, (ast.Name, ast.Tuple)) for t in n.targets) and not any(getattr(t, 'id', None) in ('SYS', 'OUT', 'out', 'a') for t in getattr(n.targets[0], 'elts', [n.targets[0]])))]\nns = {}; exec(compile(ast.Module(body=keep, type_ignores=[]), SRC, 'exec'), ns)\n"
+      }
+    ]
+  },
+  "result": "Complete raw result retained, all fields/all four ligand optimisation rows and cycle; no result omissions"
+}
