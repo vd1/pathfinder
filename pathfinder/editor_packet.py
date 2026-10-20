@@ -90,3 +90,137 @@ def packet(head, shown, alias_chars):
         "raw_unique_chars": sum(r["chars"] for r in header["files"]),
         "payload_sha256": digest(payload),
     }
+
+
+SPAN_MAGIC = "PATHFINDER-EDITOR-SPANS-V1\n"
+
+
+def encode_spans(files):
+    """Reuse exact prefix/suffix spans of earlier files; all other text remains raw."""
+    canonical, bodies, aliases = {}, {}, {}
+    for name, text in sorted(files.items()):
+        if text in canonical:
+            aliases[name] = canonical[text]
+        else:
+            canonical[text] = name
+            bodies[name] = text
+    records, literals, previous = [], [], {}
+    for name, text in bodies.items():
+        best = None
+        for source, base in previous.items():
+            prefix = 0
+            for a, b in zip(text, base):
+                if a != b:
+                    break
+                prefix += 1
+            suffix = 0
+            limit = min(len(text), len(base)) - prefix
+            while suffix < limit and text[len(text)-1-suffix] == base[len(base)-1-suffix]:
+                suffix += 1
+            # Avoid reference overhead for small shared punctuation or labels.
+            if prefix + suffix > 512 and (best is None or prefix + suffix > best[0]):
+                best = (prefix + suffix, source, base, prefix, suffix)
+        segments = []
+        if best:
+            _, source, base, prefix, suffix = best
+            if prefix:
+                segments.append({'copy': source, 'start': 0, 'end': prefix})
+            middle = text[prefix:len(text)-suffix if suffix else len(text)]
+        else:
+            middle = text
+        if middle or not best:
+            segments.append({'chars': len(middle), 'sha256': digest(middle)})
+            literals.append(middle)
+        if best and suffix:
+            segments.append({'copy': source, 'start': len(base)-suffix, 'end': len(base)})
+        records.append({'path': name, 'chars': len(text), 'sha256': digest(text), 'segments': segments})
+        previous[name] = text
+    header = {'files': records, 'aliases': aliases}
+    payload = SPAN_MAGIC + json.dumps(header, ensure_ascii=False, separators=(',', ':')) + '\n'
+    payload += ''.join(text + '\n' for text in literals)
+    if decode_spans(payload) != files:
+        raise ValueError('editor span framing failed exact reconstruction')
+    return payload, header
+
+
+def decode_spans(payload):
+    """Expand backward-only, half-open Unicode spans and verify every complete file."""
+    if not payload.startswith(SPAN_MAGIC):
+        raise ValueError('invalid editor span version')
+    line, separator, body = payload[len(SPAN_MAGIC):].partition('\n')
+    if not separator:
+        raise ValueError('missing editor span index')
+    header = json.loads(line)
+    if (not isinstance(header, dict) or set(header) != {'files', 'aliases'}
+            or not isinstance(header['files'], list) or not isinstance(header['aliases'], dict)):
+        raise ValueError('invalid editor span index')
+    contents, offset = {}, 0
+    for record in header['files']:
+        if not isinstance(record, dict) or set(record) != {'path', 'chars', 'sha256', 'segments'}:
+            raise ValueError('invalid editor span file')
+        name, count = record['path'], record['chars']
+        if (not isinstance(name, str) or name in contents or type(count) is not int or count < 0
+                or not isinstance(record['segments'], list) or not record['segments']):
+            raise ValueError('invalid editor span identity')
+        parts = []
+        for segment in record['segments']:
+            if not isinstance(segment, dict):
+                raise ValueError('invalid editor span segment')
+            if set(segment) == {'copy', 'start', 'end'}:
+                source, start, end = segment['copy'], segment['start'], segment['end']
+                if (not isinstance(source, str) or source not in contents
+                        or type(start) is not int or type(end) is not int
+                        or not 0 <= start < end <= len(contents[source])):
+                    raise ValueError('invalid editor backward span')
+                parts.append(contents[source][start:end])
+            elif set(segment) == {'chars', 'sha256'}:
+                length = segment['chars']
+                if type(length) is not int or length < 0:
+                    raise ValueError('invalid editor literal length')
+                value = body[offset:offset+length]
+                if (len(value) != length or body[offset+length:offset+length+1] != '\n'
+                        or digest(value) != segment['sha256']):
+                    raise ValueError('editor literal length or hash differs')
+                parts.append(value)
+                offset += length + 1
+            else:
+                raise ValueError('unknown editor span segment')
+        text = ''.join(parts)
+        if len(text) != count or digest(text) != record['sha256']:
+            raise ValueError('expanded editor file length or hash differs')
+        contents[name] = text
+    if offset != len(body):
+        raise ValueError('unexpected trailing editor span content')
+    expanded = dict(contents)
+    for name, source in header['aliases'].items():
+        if not isinstance(name, str) or not isinstance(source, str) or name in expanded or source not in contents:
+            raise ValueError('invalid editor span alias')
+        expanded[name] = contents[source]
+    return expanded
+
+
+def span_packet(head, shown, alias_chars, raw_chars):
+    from . import pce
+    payload, header = encode_spans(shown)
+    instruction = (
+        "\nLossless shared-span transport v1. After 'Allowed input files:' comes "
+        "PATHFINDER-EDITOR-SPANS-V1, one JSON index, then raw literal segments in index order. "
+        "Reconstruct each file by concatenating its listed segments: a copy segment names an earlier "
+        "file and its zero-based, half-open Unicode-code-point [start,end) range; a literal segment "
+        "consumes exactly chars code points followed by one framing newline. Literal text is readable "
+        "raw text, not JSON-escaped. Every complete file has its own length and UTF-8 SHA-256. "
+        "An alias has exactly its canonical file's complete content. Shared spans are exact text, "
+        "not summaries or scientific equivalences. Preserve each file path's provenance/status; "
+        "a historical manuscript remains historical even when it shares current-draft text. "
+        "All scoped content is present; no tools, fetches or omitted sources. Output contracts unchanged.\n")
+    framed = head.replace(pce.TRANSPORT, pce.TRANSPORT.replace('The JSON mapping', 'The indexed shared-span packet'), 1)
+    return instruction + framed + payload, {
+        'encoding': 'raw-length-shared-span-v1', 'aliases': header['aliases'], 'file_frames': header['files'],
+        'expanded_files_sha256': {n: digest(t) for n, t in sorted(shown.items())},
+        'expanded_json_sha256': digest(pce._json(shown)),
+        'original_prompt_sha256': digest(head+pce._json(shown)),
+        'original_prompt_chars': len(head+pce._json(shown)), 'json_alias_prompt_chars': alias_chars,
+        'whole_file_raw_prompt_chars': raw_chars, 'raw_unique_chars': sum(len(v) for v in set(shown.values())),
+        'literal_chars': sum(s['chars'] for r in header['files'] for s in r['segments'] if 'chars' in s),
+        'payload_sha256': digest(payload),
+    }
