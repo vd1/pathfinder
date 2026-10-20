@@ -8,6 +8,9 @@ from . import account_release, health, paper, pce, pce_recovery, presentation, p
 
 def _context(campaign, pair_id, pd, path):
     context = json.loads(Path(path).read_text())
+    if context.get("version") == 2:
+        from . import notation_continuation
+        return notation_continuation.validate(pd, context)
     thread = campaign.thread_dir(pair_id).resolve()
     if set(context) == {'version', 'contexts'} and context['version'] == 1:
         entries = context['contexts']
@@ -79,6 +82,10 @@ def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, ac
             if pointer.exists() and json.loads(pointer.read_text())['id'] != identity:
                 raise pce.Changed('presentation continuation was superseded')
         else:
+            if context.get("version") == 2:
+                if (hashlib.sha256((d / "state.json").read_bytes()).hexdigest() != context["state_sha256"]
+                        or state.get("stage") != context["stage"]):
+                    raise pce.Changed("notation paused state changed")
             if pointer.exists():
                 old = pd / 'presentation-continuations' / json.loads(pointer.read_text())['id']
                 if not (old / 'result.json').exists():
@@ -113,6 +120,8 @@ def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, ac
         c._presentation_cycle_limit = grant['cycle_limit']
         c._preserve_presentation_history = True
         c._presentation_context = context
+        if context.get("version") == 2:
+            c._presentation_notation = context
         # The recorded paused state remains immutable in grant.json. Resume its last stage.
         with provenance.run_context(campaign, accept_change):
             c.run_id = campaign.run_id

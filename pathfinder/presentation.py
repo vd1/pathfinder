@@ -184,6 +184,10 @@ def _run(campaign, pair_id, restart) -> str:
             found += source_findings
         s = state(campaign, pair_id)
         fresh = [e for e in s.get("escalations", []) if _key(e) not in s.get("reviewed", [])]
+        notation = getattr(campaign, "_presentation_notation", None)
+        if notation and stage != notation["stage"] and (found or fresh):
+            return _pause(campaign, pair_id, "reviewed notation cycle not cleared: " +
+                          _summary(found + fresh))
         items = [f for f in found if f.get("kind") in SUBSTANTIVE] + [{**e, "kind": "escalation"} for e in fresh]
         introduced = []
         if items:
@@ -204,8 +208,19 @@ def _run(campaign, pair_id, restart) -> str:
               accepted=accepted)
         rewordable = [q for f in remaining if f.get("kind") == "unclear" or f.get("decision") == "presentation"
                       for q in quoted(f.get("where"))]
-        refused = guard((d / stage / "paper.tex").read_text(), (d / name / "paper.tex").read_text(), accepted,
-                        (d / name / "references.bib").read_text(), rewordable)
+        before = (d / stage / "paper.tex").read_text()
+        after = (d / name / "paper.tex").read_text()
+        bibliography = (d / name / "references.bib").read_text()
+        notation = getattr(campaign, "_presentation_notation", None)
+        if notation:
+            from . import notation_continuation, pce
+            try:
+                projected = notation_continuation.projected_correction(before, after, bibliography, notation)
+                refused = guard(before, projected, accepted, bibliography, rewordable)
+            except pce.Changed as error:
+                refused = [str(error)]
+        else:
+            refused = guard(before, after, accepted, bibliography, rewordable)
         pairs = reworded((d / stage / "paper.tex").read_text(), (d / name / "paper.tex").read_text(), accepted)
         if pairs:
             (d / name / "reworded.json").write_text(json.dumps(pairs, indent=1))
@@ -330,6 +345,17 @@ def _task(campaign, pair_id, name):
                  "sentences verbatim when adding definitions. If the retained evidence does not specify "
                  "a convention, explicitly identify the missing definition rather than remove or replace "
                  "the assumption. Do not invent an acronym expansion.\n")
+    notation = getattr(campaign, "_presentation_notation", None)
+    if notation:
+        text += ("\nEngine-authorized reviewed notation continuation. For this correction only, "
+                 "the exact symbol occurrences listed in the packet may be alpha-renamed in inline "
+                 "and displayed math. This supersedes the general prohibition on formula edits only "
+                 "for those literal symbol replacements. Preserve every other source byte, including "
+                 "prose, gas-constant occurrences, equations' other tokens and bibliography. "
+                 "Return the manuscript with exactly the granted replacements and no other edits. "
+                 "An unchanged manuscript or any additional edit will be refused. "
+                 "The independent checker must assess the notation and mathematical equivalence; "
+                 "this grant does not imply clearance.\n")
     status = research.status(campaign, pair_id).get("status")
     return (f"Internal instruction only, never manuscript prose: the recorded status is {status}. "
             "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
