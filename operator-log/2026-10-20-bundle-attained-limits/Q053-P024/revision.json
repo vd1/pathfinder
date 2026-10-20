@@ -1,0 +1,23 @@
+{
+  "parent_candidate_sha256": "dc402d8ad0518e23b41722a0abb2335b7472e3cd4526f6e918638320afd84536",
+  "changes": [
+    {
+      "finding": "reader-attained-limits",
+      "before": "Harmonic fidelity is a further question. It requires comparison with independently sampled molecular trajectories, including assessment of basin sampling.",
+      "after": "Harmonic fidelity is a further question. It requires comparison with independently sampled molecular trajectories, including assessment of basin sampling and of the quantity estimated over a finite observation window. Branch-1's retained sampling counterexamples distinguish equilibrium inverse-stiffness covariance from Q's mobility estimated after centring each trajectory separately. Subtracting a run's own mean removes temporally correlated variance; repeated runs alone need not recover slow variance missing within each window. The retained stationary single-harmonic-basin example reverses the equilibrium mobility contrast under different assumed relaxation rates, without multiple basins or incorrect thermal equilibrium. Neither relaxation times nor the finite-window temporal correction follow from a static Hessian alone. Trajectory agreement therefore needs matched observation windows and dynamics, or negligible variance of the trajectory mean; the needed aligned time correlations, snapshot spacing and effective relaxation remain unavailable. These are synthetic counterexamples, not inferred Q timescales or an A/F molecular mechanism.\\footnote{Retained branch-1 findings 51 and 54; their stated distinction is between equilibrium covariance and separately mean-centred per-run mobility. No new estimator or temporal calibration is selected here.}"
+    },
+    {
+      "finding": "reader-attained-limits",
+      "before": "The conditional falsification questions are consequently distinct:",
+      "after": "A separate attained limitation is Branch-1's protein-calibrated ligand-mobility check on deposited 2ZC9/22U. With one no-intercept scale fitted to protein alpha-carbon B-factors per network and reused for the ligand, the recorded mean ligand B-factors ranged from approximately \\(0.404\\) to \\(6.027\\) square angstroms across the stated 8- and 12-angstrom network cutoffs and all-node versus protein-only alignment choices, against the deposited mean \\(15.660\\) square angstroms. The recorded independent replay retained this poor quantitative agreement rather than fitting a separate ligand scale. Crystallographic B-factors also contain lattice/static disorder and refinement effects; heterogeneous elastic-network node choices limit interpretation, these are not Q Hessians, and 22U is not a Q ligand. No Q solution trajectory was validated. This failed quantitative B-factor comparison concerns a different observable from the proposed shared-contact covariance diagnostic: it is an attained calibration/validation limitation, not a rejection of that diagnostic or a binding non-additivity result.\\footnote{Retained branch-1 entries 62, 63 and 69; these are recorded checks on shared deposited coordinates, not independent molecular validation.}\n\nThe conditional falsification questions are consequently distinct:"
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-attained-limits",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "aac87aca8f50036c4ffcdeb62dec8324b9bf762567cb8c7e12826d7217cc9dd3",
+      "quote": "Explain the equilibrium versus finite-window distinction using the supplied branch-1 entries 51 and 54, and qualify trajectory agreement accordingly; preserve that neither relaxation times nor the temporal correction follow from a static Hessian alone. Include the failed protein-calibrated ligand B-factor comparison from branch-1 entries 62, 63 and 69, with its crystallographic-disorder, model and non-Q-ligand limitations, and explicitly delimit its relevance to the proposed contact observable. These revisions can use existing evidence without selecting a new estimator, calibration protocol or rejection threshold."
+    }
+  ]
+}

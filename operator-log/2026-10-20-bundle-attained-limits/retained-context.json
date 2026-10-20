@@ -1,0 +1,55 @@
+{
+  "entries": [
+    {
+      "seq": 51,
+      "actor": "emmy",
+      "kind": "finding",
+      "standing": "current; not cited by the joint ledger",
+      "text": "sampling extension to #36-37/#44: emmy/bfactor-window-response.md:7-25 derives the expected mean-centred per-run variance for stationary samples, and emmy/check_bfactor_windows.py passes exact rational covariance-sum assertions (output emmy/bfactor-window-check.json). A symmetric two-state process plus fast fluctuations preserves the equilibrium selected-coordinate contrast \\(13/256\\), while a 64-frame Q-style estimator gives positive contrast 0.04998779 for independent signs and negative contrast -0.01022305 for lag correlation \\(999/1000\\). Separate trapped quadratures give \\(-3/256\\) versus pooled \\(+13/256\\). Thus agreement with per-run Q B-factors need not validate equilibrium mobility, and extra repeats alone do not recover missing within-window slow variance. Q inputs/Q.txt:609-617 explicitly averages per-trajectory B-factors. This is a synthetic stationary moment model, not MD, molecular evidence, an inferred timescale for A/F or a novelty claim; the required Q trajectory correlations and basin sampling remain unavailable."
+    },
+    {
+      "seq": 54,
+      "actor": "ada",
+      "kind": "finding",
+      "standing": "current; not cited by the joint ledger",
+      "text": "Single-basin sampling extension to #36-37 and complementary to Emmy #51: ada/finite-window-mobility.md:9-47 derives the exact mean-centred finite-window expectation, including the autocovariance subtraction. ada/check_finite_window_mobility.py passes exact rational discrete Lyapunov and centred-Toeplitz-trace assertions; saved output ada/finite-window-mobility-check.json. Two stationary canonical overdamped harmonic coordinates have equilibrium variances 1 and 1/2, but with 20 snapshots and lag correlations 99/100 and 1/100 their expected per-run variances are 0.06360659 and 0.47452046. The contrast reverses from -0.5 to +0.41091387 without multiple basins or incorrect thermal equilibrium. Different friction/relaxation is explicitly assumed, not inferred for Q. Q inputs/Q.txt:609-617 centres each run separately and 541-547 states 10 ns/window; static Hessians cannot determine this temporal correction. This sharpens : matching equilibrium mobility is insufficient unless trajectory-mean variance is negligible or the observation window and dynamics are matched. Missing aligned time correlations, trajectories, snapshot spacing and effective relaxation remain; this is no A/F mechanism or molecular result."
+    },
+    {
+      "seq": 62,
+      "actor": "ada",
+      "kind": "finding",
+      "standing": "current; not cited by the joint ledger",
+      "text": "measured-mobility check: ada/measured-mobility/check_bfactors.py uses preserved 2ZC9 coordinates with all-node and protein-only alignment maps, saves atom-level predictions in bfactor-results.json, and passes sparse-solve/spectral consistency assertions under uv/Python3.13 NumPy/SciPy. One no-intercept scale per network is fitted to protein CA and reused on ligand. Protein Pearson/Spearman at cutoff8/12 without ligand are 0.4734/0.6402 and 0.5355/0.6559; with ligand 0.4720/0.6135 and 0.5912/0.6251. Ligand Pearson is about0.50, Spearman about0.46-0.49, but fitted mean B only0.404/0.472 at8 and5.749/6.027 at12 for all/protein fits versus deposited15.660 angstrom squared: poor quantitative agreement. Fit-convention mean changes0.06756/0.27784 angstrom squared, relative16.72%/4.83%. Each fit needs81 residual-certified constrained solves sharing a factorisation; residuals below8e-15 and conditional unscaled mean-B error bounds below2.25e-10/1.75e-13. Bounds use estimated gaps, not certified intervals. Ligand readout is undefined in protein-only networks, explicitly reported unavailable. Note ada/measured-mobility/bfactor-note.md:1-35 records method, correlations, scale and limits. Crystal B includes lattice/static disorder/refinement; 22U is not a Q ligand and these are ENM results, not Q Hessians, A/F mobility, NA or quantum advantage."
+    },
+    {
+      "seq": 63,
+      "actor": "ada",
+      "kind": "correction",
+      "standing": "current; not cited by the joint ledger",
+      "text": "Locator correction to #61-62: provenance-note.md has lines1-9, bfactor-note.md lines1-27, and check_bfactors.py lines1-109. Their scientific results are unchanged. The public mobility comparison remains a limited crystallographic sanity check, rather than validation against Q solution trajectories."
+    },
+    {
+      "seq": 69,
+      "actor": "emmy",
+      "kind": "finding",
+      "standing": "current; not cited by the joint ledger",
+      "text": "Independent cross-check of Ada #62-63: read ada/measured-mobility/check_bfactors.py:1-109 and bfactor-note.md:1-27, then replayed an isolated copy in emmy/mobility-independent with uv/Python3.13 NumPy/SciPy. All four network cases match fitted scales, estimated gaps, Pearson/Spearman and RMSE within 1e-8; both ligand fits use81 solves and pass sparse-versus-spectral assertions. Protein-calibrated ligand means remain0.404/0.472 at8 angstrom and5.749/6.027 at12 versus deposited15.660 angstrom squared. The mismatch is retained as poor quantitative agreement, not hidden by a ligand-specific fit. Crystallographic disorder/refinement and heterogeneous ENM node choices limit interpretation, and no Q ligand or solution trajectory has been tested. Small locator correction to my #64: emmy/mode-audit/mode-note.md ends at line36, not37. Current account after reading through #68: V2 requests have attainable evidence from measured deposited B comparisons (#62-63, this replay), mode localisation/remedy (#64-65) and current-source provenance (#60-61,#68). The strongest supported line is a corrected alignment-aware harmonic mobility readout whose physical, temporal and model fidelity must be established before Q screening. P current reachable scalar stochastic construction and static readout text require the previously documented corrections; its conservative ancestor does not repair them. Contact covariance does not identify NA, and small local low-mode overlap alone does not establish a cheaper quantum algorithm. The public ENM check fails quantitative ligand B fidelity with the stated protein calibration, while its terminal-localised global gap poorly represents selected contact response. Unresolved: Q congeneric structures/R1 maps and fit definitions, numerical Fig9/SI uncertainties, independent aligned trajectories/autocorrelations and basin populations, force-field sensitivity, physical units/constraints/volume and aqueous terms, regional forces/curvatures/offsets, certified indexed gaps, implemented coherent input/readout and total resources at matched error, and publication novelty. Same-force-field Hessians cannot adjudicate F artefact. No Q molecular calculation, quantum execution, A/F mechanism, advantage or scientific verdict is assigned."
+    }
+  ],
+  "external_sha256": {
+    "sources/external/P.txt": "735fba14b2af62cd83438d0b32a3b1d1d0e83e760db218bd23c4b41a0dc21762",
+    "sources/external/Q.txt": "d38483c8cfbf26170e21aa59ccffa8c7df3078d4dd685df8966bb1e637cbf95e",
+    "sources/external/research-supplement.md": "f64a2742ed45eecdfba84232a9d92a1267ac41f554e878af1666b526c1247112"
+  },
+  "embedded_sha256": {
+    "ada/check_conditional_information.py": "051212eb0ec9f25ee05bd60054c37fa39c85fd480c52f5524fac51cd71d04bc8",
+    "ada/conditional-information.md": "4ee0753c982c62e8aa42d2fcefe5f56bbabec77b14ef6bf8efe01fbccda61e49",
+    "branches/branch-1/ledger.jsonl": "9bfeda6d77e2252a68b160692c11adef0475cfeafe94dc8588a6d19d9d22ae4f",
+    "branches/branch-2/ledger.jsonl": "f8df98ed4b1e6bb35c92be26f9b02696ebd6cb88d79a403073ef2ff1b35d2966",
+    "branches/branch-3/emmy/rank-m-bridge.md": "5d99013de820badbc00a6297ebca0c2231840ccdc2447ae42d92584d22ec9949",
+    "branches/branch-3/ledger.jsonl": "10a39bc6f12bf7e6e43e5a28e1073e0b4a190b02916ae98548985950cc609a9f",
+    "emmy/check_marginal_bounds.py": "68181299b9b29e4114a2ad8e5c96c6c3981dfad9e65c54a0db30f3b75a83c573",
+    "emmy/marginal-bounds.md": "aa13b28c0106e2e55aaaaec9c4306fad7a38030c9f4b700ea71a8707d44e71aa",
+    "ledger.jsonl": "57ba7e1a6eb418bc68a69b2de3ede8fb2db9992243328ce1ca32a3e21eb99980"
+  }
+}
