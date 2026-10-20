@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\title{A harmonic contact diagnostic for thrombin binding: what survives coordinate reduction}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A proposed connexion between thrombin binding non-additivity and quantum harmonic readout survives as a conditional contact-response diagnostic. This work found that exact coordinate reduction preserves shared-coordinate covariance but can reverse the sign of a retained harmonic stiffness cycle; an omitted-coordinate contribution restores the full cycle. The evidence concerns prescribed spring models, without molecular validation or demonstrated quantum advantage. The thread ended at PAUSE. Its first useful deliverable is a checked chemical map for 3B, 5B, 3F and 5F. Exact reduction checks, approximate spring-model tests and independent trajectory validation answer different questions. The estimator, calibration procedure, uncertainty choices and quantitative rejection threshold remain unresolved.
+\end{abstract}
+
+\section{The chemical question and the immediate decision}
+Calabr\`o and colleagues, paper Q, study two congeneric series of thrombin inhibitors~\cite{Q}. Series 3 has \(X=H\), and series 5 has \(X=\mathrm{NH}_3^+\); both vary a substituent \(R_1\), abbreviated here to \(R\). B is the reference substituent, and E and F are compound/substituent labels. Q identifies F as isobutyl. Its alchemical calculations recover favourable coupling missed by the docking comparator. Hydrogen bonding to Gly216 contributes, alongside compensating interactions across the binding site; no single interaction explains every compound.
+
+Liu and colleagues, paper P, propose quantum algorithms for loading protein models, preparing states, simulating harmonic dynamics and reading observables, including displacement correlations~\cite{P}. Their normal-mode approximation describes fluctuations about a single well-defined conformation. The proposed transfer is selected inverse-stiffness readout within that approximation, rather than a complete binding-free-energy calculation.
+
+For a computational chemist, the immediate decision concerns chemical correspondence. The research recovered prepared within-series morph systems, but no validated cross-series map or independently sampled endpoint ensembles. Inspected protein atom order agreed despite differing coordinates; ligand names and order differed. A checked common-coordinate map for 3B, 5B, 3F and 5F is therefore the first deliverable. It would make a shared-contact fluctuation comparison well defined despite different full atom counts. It would not establish that a harmonic model reproduces those fluctuations or that prescribed springs represent chemical replacement.\footnote{Research-record references identify entries in \texttt{sources/external/research-supplement.md}, the campaign's generated evidence, not independent molecular ground truth. Mapping and proposed next step: joint entries 17 and 30; starting-system inspection: branch-2 entries 74 and 78.}
+
+The proposed observable is precise at the mathematical level. Let \(K\) be physical stiffness, positive definite on a declared internal coordinate space after rigid motions are removed, and let \(\theta=k_{\rm B}T\). For compatible gradients \(g,h\) of chemically shared contact distances,
+\[
+ C=\theta K^{-1},\qquad S_{gh}=\theta g^TK^{-1}h,
+ \qquad D_{R;B}=S_{gh}^{5R}-S_{gh}^{5B}-S_{gh}^{3R}+S_{gh}^{3B}.
+\]
+Here \(S_{gh}\) is the predicted covariance of linearised contact-distance fluctuations, in squared-displacement units. Shared amide/Gly216 and pyrrolidine/pocket contacts are candidates. The extra amino nitrogen has no atom counterpart in series 3 and cannot silently define a four-state observable. Exact atoms and coordinate conventions remain unvalidated, and no molecular values of this diagnostic were obtained.\footnote{Research record: joint entries 10, 17 and 30; branch-3 entries 13, 14 and 71.}
+
+Q's target is instead the binding quartet~\cite{Q}
+\[
+\begin{split}
+ \mathrm{NA}_{R;B}={}&[G_{\rm bind}(5R)-G_{\rm bind}(5B)]\\
+ &-[G_{\rm bind}(3R)-G_{\rm bind}(3B)]
+ =Q_{\rm prot}-Q_{\rm wat}.
+\end{split}
+\]
+The last terms are corresponding quartets in solvated protein and aqueous free ligand. Negative NA has the orientation Q calls favourable positive coupling. Potential constants can change this quartet without changing any stiffness or covariance. The restricted bound stiffness calculation below excludes minimum-energy offsets, kinetic and coordinate-measure contributions, basin populations and the entire aqueous quartet. Without separate control of these contributions, it gives neither an upper nor a lower bound on binding NA.\footnote{Research record: joint entry 17; branch-3 entry 38.}
+
+\section{What the chemical evidence permits}
+The research record's audit of Q's supporting tables gives approximate B-referenced F central NA values of \(-1.60\) experimentally and \(0.00\) computationally, in \(\mathrm{kcal\,mol^{-1}}\). The computed near-zero means that the X substitution has approximately the same binding effect at F and B within rounded table precision. It is neither an experimental null nor zero absolute X/R coupling. Its diagnostic must therefore use the B/F quartet specified above.\footnote{Research record: branch-3 entries 45 and 71. These are recorded audits of Q SI reproductions; neither those tables nor the original Baum numerical tables are separately supplied here. The original Baum tables were not independently recovered.}
+
+Weaker computed magnitude is an overall tendency, with an explicit exception: the audited 3H/5I central quartet is approximately \(-2.50\) computationally versus \(-1.70\) experimentally. E/B gives approximately \(-0.70\) computationally versus \(-2.10\) experimentally and remains a candidate control. Q maps 3G to 5H and 3H to 5I, so letter matching alone is insufficient~\cite{Q}. Printed marginal errors do not recover joint uncertainty: E and F share B-to-C alchemical legs within each series, and experimental rows share B references. They cannot establish actual cross-pair covariance or simultaneous significance counts.\footnote{Research record: branch-3 entries 45, 55, 61, 71 and 72. Initial cross-series error propagation assumed independence; conservative marginal-error envelopes do not recover actual covariance or bound model bias.}
+
+Structural correspondence also remains provisional. Q's introduction places \(R_1\) in S1, while its later discussion describes S3/S4 contacts~\cite{Q}. The joint audit favours P3/S3 and identifies 2ZGB/21U as a chemistry-based candidate 5F, pending compound-number and stereochemical validation. Chlorobenzyl/S1 remains a sensitivity alternative. No identified complete B/F crystal quartet was recovered in that bounded audit; this is not proof of absence.\footnote{Research record: joint entries 8--10, reporting deposited chemistry and recovery of Baum's abstract~\cite{Baum}. These materials are not separately supplied here. The chemical figure inspected in the joint audit was inherited; a purported Q PDF was HTML.}
+
+The prescribed network instead uses deposited ligand 22U in 2ZC9, including D-Phe and chlorobenzyl groups and an N1 amino-position proxy. This does not establish its protonation or correspondence to Q's B/E/F chemical states. The distinction matters because a mechanical intervention on that geometry is not a molecular replacement experiment.\footnote{Research record: joint entries 8, 10 and 17; branch-3 entries 76 and 80.}
+
+\section{What the spring benchmark establishes}
+The restricted model fixes internal coordinates, measures and offsets, then prescribes positive spring bundles:
+\[
+ K_{ij}=K+i\,aUU^T+j\,bVV^T,\qquad i,j\in\{0,1\},\quad a,b>0.
+\]
+Bundle column weights must be retained. Its dimensionless stiffness cycle is
+\[
+ f(K)=\frac12\log\frac{\det K_{11}\det K_{00}}
+ {\det K_{10}\det K_{01}}\le0.
+\]
+Multiplication by \(\theta\) gives the restricted harmonic free-energy contribution. This sign follows under the fixed-space positive-addition assumptions, not from Q's chemistry. The record identifies Hawkins and McLeish's equation 2.3 as an antecedent determinant quartet~\cite{Hawkins}; the algebra is not claimed as novel.\footnote{Research record: joint entries 10, 15 and 26; branch-3 entries 42 and 79. The Hawkins antecedent rests on the recorded primary-source recovery, not independent inspection of an original supplied here.}
+
+The initial 22U model strengthened existing contacts. The corrected benchmark deleted both selected bundles and restored them separately and together, retaining N1 and all non-selected springs. Across twelve geometry/cutoff/proxy cases, direct projected determinants agreed with a small response calculation within \(1.27\times10^{-12}\theta\), with no extra internal null modes found numerically. Restoration cycles ranged approximately from \(-2.516\times10^{-4}\theta\) to \(-5.738\times10^{-6}\theta\). Positive-restoration saturation limits ranged from \(-0.0024763\theta\) to \(-0.00027865\theta\). These remain small within this prescribed model.\footnote{Research record: joint entries 5, 7 and 9. Common proportional spring scaling cancels exactly; these are floating-point checks, without interval certificates.}
+
+Restoration clarifies the intervention but neither removes the amino group nor implements B-to-F/E replacement. The numerical routes share inherited geometry. Their agreement checks the model calculation without supplying independent molecular validation or a binding-NA bound.\footnote{Research record: joint entries 7, 9, 17 and 30.}
+
+\section{What coordinate reduction preserves and loses}
+Partition retained coordinates \(z\) and omitted coordinates \(w\):
+\[
+ K_{ij}=\begin{pmatrix}A_{ij}&B_{ij}\\B_{ij}^T&D_{ij}\end{pmatrix},
+ \qquad S_{ij}=A_{ij}-B_{ij}D_{ij}^{-1}B_{ij}^T.
+\]
+Exact Gaussian marginalisation gives retained covariance \(\theta S_{ij}^{-1}\); using \(\theta A_{ij}^{-1}\) instead fixes the omitted coordinates. For the prescribed positive-addition quartet,
+\[
+ f(K)=f(S)+f(D),\qquad f(D)\le0,
+ \qquad f(K)\le\min\{0,f(S)\}.
+\]
+Thus exact reduction preserves shared-coordinate covariance while its retained determinant can omit a contribution needed for the full harmonic cycle. This mathematical preservation does not validate the underlying physical model.\footnote{Research record: joint entries 16, 17, 21 and 26. The recorded Gaussian derivations establish these identities within the stated model.}
+
+A synthetic example makes the consequence concrete:
+\[
+ K=\begin{pmatrix}2&1\\1&2\end{pmatrix},\quad
+ U=\begin{pmatrix}1\\1\end{pmatrix},\quad
+ V=\begin{pmatrix}0\\1\end{pmatrix},\quad a=b=1.
+\]
+Retaining the first coordinate gives full, retained and omitted determinant ratios \(24/25\), \(27/25\) and \(8/9\). Their dimensionless cycles are approximately \(-0.020411\), \(+0.038481\) and \(-0.058892\). The omitted contribution restores the full result and explains the retained sign reversal. This is a representation counterexample, without evidence that the reversal occurs in thrombin.\footnote{Research record: corrected joint entry 16.}
+
+For the information functional, let the baseline displacement \(q=(z,w)\) be Gaussian with covariance \(\theta K^{-1}\), and define auxiliary contacts \(x=U^Tq+\epsilon_X\), \(y=V^Tq+\epsilon_R\). Both auxiliary noises are Gaussian and are independent of each other and of \(q\), with covariances \(\theta I/a\) and \(\theta I/b\). Write \(D=D_{00}\) and
+\[
+ P_w=U_w^TD^{-1}U_w,\quad Q_w=V_w^TD^{-1}V_w,\quad R_w=U_w^TD^{-1}V_w,
+ \qquad
+ \Sigma_{xy\mid z}=\theta\begin{pmatrix}P_w+I/a&R_w\\R_w^T&Q_w+I/b\end{pmatrix}.
+\]
+Here \(U_w,V_w\) are the omitted-coordinate rows of the bundles. With \(\Sigma_{x\mid z}\) and \(\Sigma_{y\mid z}\) the diagonal covariance blocks, the retained Gaussian functional is
+\[
+ I(x;y\mid z)=\frac12\log\frac{\det\Sigma_{x\mid z}\det\Sigma_{y\mid z}}
+ {\det\Sigma_{xy\mid z}}=-f(D)=f(S)-f(K)\ge0.
+\]
+Logarithms are natural, so information is in nats. The covariance is independent of the conditioning value \(z\). This definition assumes the same positive-definite internal-coordinate baseline and positive prescribed spring coefficients as above; its artificial independent noise is not a measured molecular noise model.\footnote{Retained derivation: \texttt{ada/conditional-information.md}; the determinant functional is explicitly implemented in \texttt{ada/check\_conditional\_information.py}, function \texttt{information}. No new computation is used here.}
+
+Omission alone need not break the spring representation. Exact conditional orthogonality, \(U_w^TD_{00}^{-1}V_w=0\), makes the omitted cycle vanish. A later block-reduction argument also establishes additive positive effective retained bundles, including when one bundle is retained-only. An earlier note denied that stronger implication; its author's response remained pending. The textual disagreement concerns retained additivity, rather than the agreed determinant decomposition. Small conditional information does not imply exact additivity.\footnote{Research record: joint entries 22, 25, 29 and 30; the later reduction has 24 synthetic controls.}
+
+Conversely, even an exact additive retained fit supplies no finite lower bound on the full cycle without omitted response. A recorded synthetic extension keeps the retained covariance quartet fixed while the full stiffness cycle tends to minus infinity. Define the normalised omitted overlap on the Gram supports by
+\[
+ C_w=(P_w^+)^{1/2}R_w(Q_w^+)^{1/2},\qquad s_j=\sigma_j(C_w),\qquad
+ \ell_D=\frac12\sum_j\log(1-s_j^2).
+\]
+The superscript \(+\) denotes the Moore--Penrose inverse, followed by its positive square root; dependent bundle columns are allowed. For all supported singular values \(s_j<1\), the prescribed positive-addition model obeys
+\[
+ \ell_D\le f(D)\le0,\qquad f(S)+\ell_D\le f(K)\le\min\{0,f(S)\}.
+\]
+The omitted-cycle lower limit is approached as both positive spring coefficients grow without bound on their supports. A shared supported direction with \(s_j=1\) gives no finite uniform lower bound; finite known positive strengths still give a finite exact correction. Empty bundles give zero cycle. These are dimensionless stiffness-cycle bounds, not bounds on binding non-additivity.\footnote{Retained definitions: \texttt{emmy/marginal-bounds.md}, omitted-response section, and \texttt{branches/branch-3/emmy/rank-m-bridge.md}, supported whitened overlap and positive-addition bound.} The required response uses \(D_{00}^{-1}\), not the omitted principal block of \(K^{-1}\). None of these stiffness-model bounds controls the excluded binding contributions.\footnote{Research record: joint entries 26 and 27. The auxiliary Gaussian-information interpretation in joint entries 15 and 21 explains the nonnegative retained-minus-full correction; it is not measured molecular information.}
+
+\section{The quantum route and its classical comparator}
+P's printed construction needs corrections before supplying this physical response. Its stochastic supplement changes lower-block damping in S7.32 to scalar damping in S7.34~\cite{P}. The joint account retains the objection that this obstructs the required thermal covariance. Physical damping and fluctuation-dissipation give the equilibrium inverse-stiffness target independently; transient evolution is unnecessary for that equal-time quantity. This does not repair P's transient trace proof or exclude corrected dynamical methods.\footnote{Research record: joint entries 10, 17 and 30.}
+
+P S8.4 also treats an off-diagonal dyad as a preparable state and substitutes a reciprocal inverse-encoding scale into its cost~\cite{P}. Its correlation section uses a Hessian-like squared-frequency operator, whereas oscillator evolution uses a signed block Hamiltonian. Physical covariance requires Cartesian stiffness inversion or conversion of a mass-weighted inverse back to physical coordinates. Branch 3 supplies a conditional repair by polarisation into valid normalised quadratic-form states, restoring their squared norms. Its conservative sufficient query construction is neither an attained cost nor an optimality result, and the joint account does not adopt a precise total bound.\footnote{Research record: branch-3 entry 14; joint entries 17 and 30.}
+
+The classical comparator solves the same projected sparse systems and takes dot products, reusing factorisation or preconditioning across independent bundle columns. It does not require a dense inverse. A quantum comparison must include projection, gradient preparation, conditioning, inverse approximation, physical scale, confidence, setup, loading and coherent readout. P Theorem 3 gives \(O(\log N)\) oracle depth with \(O(N\log N)\) gates~\cite{P}; low depth alone does not establish low total effort. This work obtained no matched all-atom conditioning or complete corrected quantum resource comparison, and performed no quantum execution.\footnote{Research record: joint entries 7, 17 and 30; branch-3 entry 79 records the bundle-dependent response workload.}
+
+\section{What would change the stopping decision}
+The thread ended at PAUSE, as specified in the brief. The scientific obstacle is the gap between checked mathematical representations and a validated molecular diagnostic. Completing the chemical map introduced in Section 1 would remove an immediate obstacle to defining \(S_{gh}\) in all four B/F states and forming \(D_{F;B}\). It would permit the next classical response comparison, without itself validating a model or establishing a molecular sign or ordering.\footnote{Research record: joint entries 17 and 30; branch-3 entry 71.}
+
+The comparisons must be interpreted separately. Full-space inverse response and its exact Schur marginal are mathematically equal on shared coordinates. Comparing their implementations checks reduction or numerical implementation; agreement alone cannot validate the physical spring model. Testing an approximate retained spring representation instead asks whether that approximation preserves the relevant full-model responses and omitted contribution. Its failure would concern the approximation, without showing that exact marginalisation fails.
+
+Harmonic fidelity is a further question. It requires comparison with independently sampled molecular trajectories, including assessment of basin sampling. The recorded next step is a classical examination of physical full-space contact responses and conditional omitted compliances at matched uncertainty before interpreting a shared-coordinate determinant. No such molecular comparison was completed. The response estimator, physical calibration procedure, uncertainty choices and quantitative rejection threshold were not selected. The record also leaves the operational separation of calibration and independent validation unspecified. These remain missing decisions; a more detailed protocol requires an evidence change.\footnote{Research record: joint entries 17, 22 and 30.}
+
+The conditional falsification questions are consequently distinct: does an approximate retained spring representation preserve the full-model response, and does the harmonic diagnostic survive independent trajectory validation? Exact marginalisation agreement answers neither physical question by itself. The approved record supplies no quantitative rejection rule or resolved molecular sign/order to test. E/B remains an additional candidate control only after chemical mapping and joint uncertainty are resolved.\footnote{Research record: joint entries 17 and 30; branch-3 entries 71 and 72.}
+
+Agreement with trajectories using the same force field would test harmonic fidelity within that force field. Q leaves a possible ligand-force-field artefact for F unresolved~\cite{Q}; such agreement would not settle it. Binding interpretation still requires the omitted thermodynamic contributions, and quantum implementation requires corrected total costs against the same sparse classical task. No F mechanism, binding-NA bound, publication novelty or attained quantum advantage has been established.\footnote{Research record: joint entries 17 and 30.}
+
+\clearpage
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

@@ -1,0 +1,40 @@
+{
+  "changes": [
+    {
+      "after": "Branch 3 reports one acceptor, two donors and one hydrophobe. The retained \\texttt{fixed\\_receptor\\_features} record supplies atom indices and names: acceptor 3649 (O), donors 3674 (N) and 3314 (OG), and hydrophobe 3652 (CA), together with their coordinates. Residue assignments and Gly216 coverage remain unverified.",
+      "before": "Branch 3 reports one acceptor, two donors and one hydrophobe; their selected atom and residue identities are not supplied, leaving Gly216 coverage unverified.",
+      "finding": "C061"
+    },
+    {
+      "after": "Hydrophobes include chlorine and bromine atoms, protein sulphur and terminal methyl carbons;",
+      "before": "Hydrophobes include halogens, protein sulphur and terminal methyl carbons;",
+      "finding": "C066"
+    },
+    {
+      "after": "Each ligand retains a receptor feature when at least one of its constituent receptor atoms lies within 5~\\AA\\ of a ligand heavy atom. For an aromatic feature, the centroid need not itself meet that distance criterion.",
+      "before": "Each ligand selects receptor points within 5~\\AA\\ of its heavy atoms.",
+      "finding": "C067"
+    }
+  ],
+  "findings": [
+    {
+      "id": "C061",
+      "path": "reviews/current/fact-check.json",
+      "quote": "The supplied fixed_receptor_features gives atom indices 3649, 3674, 3314 and 3652, names O, N, OG and CA, and coordinates. The manuscript's statement that selected atom identities are not supplied is false. Residue identities and Gly216 coverage remain unverified. Mandatory correction: acknowledge the supplied atom identifiers and restrict the missing information to residue assignment and Gly216 coverage.",
+      "sha256": "fb545d8d1551a5527283de527c3a90ecee431ced5ee98d8d775e6676e07f7e2c"
+    },
+    {
+      "id": "C066",
+      "path": "reviews/current/fact-check.json",
+      "quote": "The retained halogen rule is specifically Cl/Br, not every halogen. Protein sulphur, terminal methyl and aromatic-carbon centroid rules otherwise agree. Mandatory correction: replace generic halogens with chlorine and bromine.",
+      "sha256": "fb545d8d1551a5527283de527c3a90ecee431ced5ee98d8d775e6676e07f7e2c"
+    },
+    {
+      "id": "C067",
+      "path": "reviews/current/fact-check.json",
+      "quote": "receptor_points retains a feature when any constituent receptor atom lies within 5.0 angstrom of a ligand heavy atom. An aromatic feature centroid need not itself satisfy that distance. Mandatory correction: specify the constituent-atom selection rule rather than asserting every retained feature point lies within 5 angstrom.",
+      "sha256": "fb545d8d1551a5527283de527c3a90ecee431ced5ee98d8d775e6676e07f7e2c"
+    }
+  ],
+  "parent_candidate_sha256": "bee3c40a3068fa4506a97ef466a0afb5ee29a4cb312355dccb33f121f6b5037d"
+}
