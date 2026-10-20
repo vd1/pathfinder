@@ -1,0 +1,184 @@
+{
+  "entries": {
+    "branches/branch-2/ledger.jsonl": [
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 70,
+        "standing": "current; not cited by the joint ledger",
+        "text": "Independent pre-result V2-I1 script review: inspected ada/finite_field/polarisability.py:15-69. It centres the frame-900 geometry, adds a homogeneous electronic field operator, computes negative central energy curvature with steps 0.001 and 0.0005 atomic units, averages all Cartesian diagonal components and converts cubic Bohr to cubic Angstrom. Omitted nuclear-field energy is linear at fixed geometry and cancels in this curvature. Its CASCI uses six vacuum RHF orbitals (zero-based 6-11), six active electrons, six frozen doubly occupied orbitals, and fixed coefficients at every field. Thus it measures this declared 12-qubit active Hamiltonian, not an optimised response active space. CCSD is all-electron as written. Independent SCF/CC convergence flags are recorded. Method and basis differences at one geometry will be diagnostics; CASCI-minus-CCSD combines active-space omission with a method difference and cannot alone isolate pure active-space truncation relative to full-CI. No result is yet certified."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 71,
+        "standing": "current; not cited by the joint ledger",
+        "text": "Implementation convention for V2-I1: ada/finite_field/polarisability.py reads only the inert JSON geometry, recentres it on carbon and keeps geometry fixed. It uses total-energy central second differences at field steps 0.001 and 0.0005 atomic units along all three axes. Electronic perturbation is plus field times position; the nuclear field scalar is linear and cancels in curvature. CASCI(6e,6o) retains vacuum canonical RHF orbitals and six doubly occupied inactive orbitals across fields, with active zero-based indices 6-11 (a specific frontier-space diagnostic, not an optimised response space). B3LYP uses grid level 5; CCSD is all-electron. All energy evaluations must converge; JSON records partial results and failures. Official fixed-orbital convention: https://pyscf.org/user/mcscf.html ; CCSD implementation: https://pyscf.org/user/cc.html . These runs are classical, and no quantum sampler or hydration simulation is launched."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 72,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V2-I1 space-definition check, emmy/basis_space_counts.py and JSON: PySCF 2.14.0 builds 14, 116, 82 and 184 spatial functions for frame-900 methanol in STO-3G, cc-pVTZ, aug-cc-pVDZ and aug-cc-pVTZ. Thus even full minimal-basis methanol has 28 spin orbitals before reductions, while a chosen CAS(6e,6o) has 12 and only 400 fixed-spin determinants. Full homogeneous-field response includes virtual orbital directions beyond that space; enlarging the AO basis while retaining six frontier MOs need not restore them. This is a dimension count, not an energy calculation or resource advantage. It reinforces the distinction between converging the CAS solver and supplying reference adequacy. Actual response comparisons from Ada remain pending."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 75,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V2-I1 active-only control review: the new ada/finite_field/polarisability.py:41-49 holds the vacuum RHF coefficients and occupation vector fixed, recomputes field-dependent Fock/integral data, and freezes occupied indices 0-5 and virtual indices 12 onward in CCSD. This is a same-correlation-method restriction control. The manually set mf.converged flag is a constructor convenience; no field-SCF optimisation is claimed for activeCCSD, and only CC-amplitude convergence is measured there. Full CCSD relaxes HF orbitals at each field, so active-only versus full also includes omitted orbital relaxation outside the active set, as appropriate to the frozen P-style model; it is not an exact full-CI truncation theorem. Installed PySCF update_amps explicitly uses off-diagonal occupied/virtual Fock blocks and occupied-virtual fock elements, consistent with the noncanonical fixed-reference calculation. The source inspection is not an independent electronic calculation."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 76,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V2-I1 completed matched aug-cc-pVDZ comparison, independently recomputed from saved energies by emmy/check_finite_field_results.py and JSON: at field step 0.0005 atomic units, B3LYP mean 3.13670614 and all-electron CCSD mean 3.01002337 cubic Angstrom differ by 0.12668276. Same-method all-electron CCSD/STO-3G is lower than augmented-double-zeta CCSD by 1.92722979. Fixed frontier active-only CCSD/aug-cc-pVDZ is lower than full CCSD by 2.92414268, about 23 times the same-basis B3LYP-minus-CCSD difference; CASCI is essentially identical to active-only CCSD in that augmented frontier space. Thus in this particular controlled snapshot diagnostic, minimal-basis response loss and the chosen active-space loss greatly exceed the measured DFT-versus-CCSD difference. The basis increment is not a complete-basis error estimate, and active-only loss includes frozen external orbital response as entry 75 states. The six frontier orbitals differ across bases, so the decreasing CAS response with an enlarged AO basis is not a universal basis trend or evidence against response-tailored compression. This is a gas-phase fixed-geometry numerical finding, with field-halving stability checks, not an observed embedded induction or hydration change. Triple-zeta CCSD remains in progress; these completed comparisons already remove the assumption that an arbitrary P-sized frontier Hamiltonian supplies improved Q response targets."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 77,
+        "standing": "current; not cited by the joint ledger",
+        "text": "I read Emmy entries 68, 69, 72 and 75. They correctly distinguish mean polarisability from tensor ordering and fixed-orbital response from field-relaxed orbitals. Script review confirms activeCCSD intentionally sets the constructed reference flag without a field SCF optimisation: its measured convergence is CC-amplitude convergence, not an assertion that fixed vacuum orbitals satisfy the field HF equations. For V2-I1 the completed augmented-double-zeta comparison already supplies a same-method restriction diagnostic: full CCSD 3.0100234 versus active-only CCSD 0.0858807 cubic Angstrom, while B3LYP/aug-cc-pVDZ is 3.1367061. The 2.9241427 restriction deficit includes missing frozen-core/external-virtual response and orbital relaxation; it is about 23 times the 0.1266828 B3LYP-minus-CCSD difference at that basis. This is specific to the declared vacuum frontier orbitals, not all six-orbital choices. Triple-zeta calculations remain in progress; I will report cost limits if they cannot complete in this call."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 79,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V2-I1 controlled basis supplement: B3LYP/aug-cc-pVTZ now completed with mean polarisability \\(3.16678122\\) cubic Angstrom at step \\(0.0005\\) atomic units, versus \\(2.75045973\\) for cc-pVTZ at exactly the same frame-900 geometry. The difference \\(0.41632149\\) isolates the effect of augmenting that basis within this PySCF functional convention, unlike the earlier optimised-geometry NIST comparison. Field-halving mean change is approximately \\(-0.00003198\\) cubic Angstrom. I independently recomputed the central curvatures in emmy/check_finite_field_results.py, whose JSON also includes completed augmented-triple-zeta CASCI and active-only CCSD (means \\(0.05608529\\) and \\(0.05608494\\)); full augmented-triple-zeta CCSD is not yet complete. A uniform-field gas-phase response comparison cannot establish compatibility of augmented embedded targets with MM charges or prove hydration benefit. The calculations are one snapshot, the frontier orbital definition is fixed and explicit, and programme-level B3LYP details need checking before equating these energies with Q historical Orca calculations."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 82,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V2-I1 complete DFT and restricted-space comparisons at frame 900: B3LYP/cc-pVTZ 2.7504597, B3LYP/aug-cc-pVDZ 3.1367061 and B3LYP/aug-cc-pVTZ 3.1667812 cubic Angstrom. At fixed geometry the cc-pVTZ to aug-cc-pVTZ change is 0.4163215; the augmented DZ-to-TZ change is 0.0300751. CASCI(6e,6o) in fixed vacuum frontier orbitals gives 0.5675643 (STO-3G), 0.0858805 (aug-cc-pVDZ) and 0.0560853 (aug-cc-pVTZ). Active-only CCSD gives 0.5689734, 0.0858807 and 0.0560849 in those bases. All completed levels have 13 converged energies and field-halving differences below 0.000032 cubic Angstrom. Full CCSD/STO-3G to aug-cc-pVDZ increases by 1.9272298; the active restriction deficit is 0.5138202 in STO-3G and 2.9241427 in aug-cc-pVDZ, both exceeding the same-basis B3LYP-minus-CCSD difference 0.1266828 in aug-cc-pVDZ. The restricted basis comparison changes frontier MO content and is not a monotone basis-error bound. Augmented TZ full CCSD is still running (vacuum and one field converged); no TZ CCSD mean is yet available. These are new gas-phase fixed-snapshot electronic calculations, not Q replication, experiment or hydration results. I read Emmy 78: NIST experimental provenance does not establish a clamped-nuclei static benchmark."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 83,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V2-I1 final computational account: ada/finite_field/response_comparison.md records the fixed-frame protocol, table, comparison scales and limits; executable scripts are polarisability.py and comparison.py, with per-level JSON/logs and requirements.lock. Every reported mean uses 13 converged energies at field steps 0.001 and 0.0005 atomic units; all reported halving changes are below 0.000032 cubic Angstrom. The largest completed augmented CCSD basis here is aug-cc-pVDZ. I interrupted full CCSD/aug-cc-pVTZ with SIGINT (exit 130) after four converged energies, preserving its partial JSON/log: vacuum took 104.35 seconds and subsequent evaluations about 80-86 seconds, so the nine remaining evaluations projected beyond the remaining call budget. This is a recorded cost-limit interruption, not a convergence failure; no TZ CCSD mean is claimed. The script supports resuming cached converged energies. The matched aug-cc-pVDZ numbers establish a specific reference-adequacy limitation: B3LYP 3.1367061, full CCSD 3.0100234, fixed-frontier active-only CCSD 0.0858807 and CASCI 0.0858805 cubic Angstrom. The active restriction deficit 2.9241427 is much larger than the same-basis DFT-versus-CCSD difference 0.1266828; the STO-to-augmented-DZ full-CCSD difference 1.9272298 is also larger. These are cross-level diagnostic differences, not exact truncation-error bounds. Response-tailored spaces remain a plausible alternative. No embedded induction target, improved reference accuracy, hydration consequence or quantum advantage follows."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 88,
+        "standing": "current; not cited by the joint ledger",
+        "text": "Final account for this call after independently reading Ada 83-84 and auditing the complete files: V2-R1 is supported by 67-68 and the experimental-provenance limits in 78; V2-I1 now has actual fixed-geometry finite-field B3LYP, CCSD, CASCI and same-method restriction diagnostics, step-halving checks, package versions and environment location in ada/finite_field/response_comparison.md:5-29 and polarisability.py:18-21. The sharp question has changed from whether an arbitrary small correlated reference can improve hydration to whether a response-tailored compressed Hamiltonian can retain static and finite-field electronic response before ADAPT-QSCI sampling is tested. The tested frozen frontier space fails this reference-adequacy diagnostic by a much larger amount than the same-basis DFT-versus-CCSD difference; this is a useful restriction on the transfer hypothesis, not a verdict on all active spaces. Q inputs/Q.txt:889-913 still places its main fitting error in static interactions, and :1067-1073 separates QM/MM target agreement from hydration bias. P inputs/P.txt:309-325 uses STO-3G and exact-state-based determinant budgets and supplies no response/reference guarantee. Classical augmented-basis DFT, response-selected CI and external-space response corrections remain live comparators. Unresolved: broader basis/correlation convergence including full augmented-TZ CCSD, response-tailored space adequacy, embedded MM-field response and spill-out, static-target accuracy, historical functional/dielectric implementation, trajectory provenance and overlap, nonlinear Thole representability, fitted-potential and held-out hydration changes, measured total costs and pooling novelty. No new molecular run was launched in this call; the audit checks existing gas-phase calculations only. No embedded induction result, hydration improvement, quantum advantage, publication novelty or scientific verdict is established."
+      },
+      {
+        "actor": "emmy",
+        "kind": "correction",
+        "seq": 89,
+        "standing": "current; not cited by the joint ledger",
+        "text": "Rendering correction to entry 87; scientific assertions unchanged. Final independent V2-I1 audit of Ada 82-84: emmy/final_response_audit.py:9-34 recomputes all 11 completed levels from their 13 saved energies, checks every convergence flag, geometry/frame/species and recorded means, without rerunning electronic calculations or overwriting earlier outputs. Results are emmy/final_response_audit.json. Mean values reproduce the previous account; maximum Cartesian-component field-halving change is \\(3.508\\times10^{-5}\\) cubic Angstrom (the earlier \\(3.2\\times10^{-5}\\) bound refers to means). At aug-cc-pVDZ, full-minus-active-only CCSD diagonal responses along the saved x,y,z axes are \\(3.26878,2.68649,2.81716\\) cubic Angstrom, compared with B3LYP-minus-full-CCSD \\(0.14607,0.11404,0.11994\\). The active space retains only \\(2.63\\%,2.76\\%,3.20\\%\\) of these full diagonal components. Thus the mean deficit is not cancellation between these Cartesian components. Off-diagonal tensor elements were not computed, so this does not establish ordering for arbitrary MM fields. It remains a declared fixed-frontier-space, one-geometry gas-phase diagnostic, including omitted orbital relaxation, not an exact truncation bound or evidence against every response-tailored 12-qubit space. The interrupted CCSD/aug-cc-pVTZ JSON has four converged energies and no polarisability, as Ada 83 states; no missing result was inferred."
+      }
+    ],
+    "branches/branch-1/ledger.jsonl": [
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 75,
+        "standing": "current; not cited by the joint ledger",
+        "text": "V7 common-basis consequence and supplementary negative: fixed_optimised.py holds ground-state-optimised zero-field CASSCF orbitals fixed across fields; complete CASCI gives alpha=(0.01708,1.90983,0.80061) and (0.01953,1.83948,0.80029), only 14.84%/11.21% of RHF trace or 14.06%/9.86% of MP2 trace. Raw signed energies/orbitals are in ada/relaxed_control/fixed_optimised_result.json and *_zero_casscf_orbitals.npy. Clarification of #71: these are energy-optimised zero-field orbitals, not orbitals selected for response. This tested common-basis prescription fails to retain the relaxed response; genuinely response-adapted or downfolded spaces remain untested. Field-specific orbital relaxation in #74 means bitstrings are not common determinants. Exact full-basis transport uses occupied-orbital minors and may generate support outside the six-orbital CAS; full sector sizes are 2.10e13 and 2.42e15, potential support counts rather than necessary runtime. Active-only rotations stay in 225 dimensions, but general active/inactive/virtual mixing does not. Retain Emmy #70 nonorthogonal actual-determinant union as a classical transport alternative, with dense pair/overlap-conditioning/full-basis integral costs, or independently converged field solvers with directly validated response differences. Interpretation and transport algebra: ada/relaxed_control/interpretation.md. Neither route has a cost or novelty result."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 88,
+        "standing": "current; not cited by the joint ledger",
+        "text": "Final independent saved-evidence check: isolated Python executed emmy/final_saved_evidence_check.py:1-60 with decimal recomputation and assertions, output emmy/final_saved_evidence_check.json. Final acid frame 304 raw energies/static slope at emmy/dft_field_result.json:291-318 reproduce static/induction dataset differences -0.012213783/+0.004000616 kcal/mol and positive residual 0.052303419. Independently checked Ada #75 raw signed energies in ada/relaxed_control/fixed_optimised_result.json:23-95: fixed zero-field energy-optimised CAS trace ratios are 0.14836866/0.11208103 to relaxed RHF and 0.14059675/0.09862855 to MP2, corroborating her supplementary negative. Source fixed_optimised.py:13-22 uses the same fixed orbitals with the field-dependent electronic core and signed nuclear term. This is arithmetic/source verification of existing calculations, not another molecular run or a rigorous numerical certificate."
+      }
+    ],
+    "branches/branch-3/ledger.jsonl": [
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 94,
+        "standing": "current; not cited by the joint ledger",
+        "text": "Final V7 saved-result audit: ada/review3/check_saved_response.py:9-25 independently recomputes all six MP2 static/induced/total shifts from raw tight-MP2 and B3LYP5 energy JSON. Output saved-response-check.json agrees with correlated-differences.csv within 7.11e-15 kcal/mol and confirms opposing components with negative total changes. No electronic calculation was rerun. Supported stopping-rule clarification in ada/review3/response-tolerance.txt:9-39: a fixed-space CI vacuum expectation gives the static derivative directly, so the small MP2 finite-difference step is not a QSCI requirement. For energy errors bounded by \\(\\eta\\) at signed fields, central-derivative error obeys \\(\\eta/h+Mh^2/6\\) if the third derivative is bounded by \\(M\\); this exposes why absolute-energy convergence alone is insufficient. Direct CI expectations avoid finite-difference amplification but still require state/response convergence. Both static and induction errors need separate tests because total cancellation can hide component errors. This is a derived clarification, not a new response formalism, cost estimate or hydration certificate. P inputs/P.txt:453-458 supplies an absolute-energy demonstration; Q inputs/Q.txt:674-691 and :890-915 identify the decomposition and static-dominated fit limitation."
+      }
+    ],
+    "ledger.jsonl": [
+      {
+        "actor": "emmy",
+        "kind": "correction",
+        "seq": 7,
+        "standing": "current",
+        "text": "Inherited attribution correction to branch-1 entries 74/91/93: emmy/component_audit.py:10-22 recomputes branches/branch-1/ada/relaxed_control/check_result.json. Water cc-pVTZ trace CAS-minus-RHF is 0.3420815 bohr cubed versus MP2-minus-RHF 1.0161984, ratio 0.3366287; aug-cc-pVTZ gives 0.4056940 versus 3.2361914, ratio 0.1253616. Thus the relaxed CAS total response is near RHF, and supplies only about 34% or 13% of the MP2 increment. Most restored response is associated with the full-basis orbital-relaxed calculation done classically; these cross-method increments do not uniquely partition relaxation/correlation effects, and MP2 is not exact. The minority share is smaller in the diffuse basis, contrary to any reading that it becomes larger. Response-adapted/downfolded spaces capturing dynamic correlation and actual nonorthogonal field-specific unions remain conditional alternatives, not demonstrated improvements over Q B3LYP. Ground-state-optimised fixed spaces remain failed prescriptions rather than a general twelve-qubit limit. This is saved-evidence arithmetic, not a new molecular run."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 14,
+        "standing": "current",
+        "text": "End-of-call account after reading joint 11: the best-supported line is component-preserving response validation before applying ADAPT-QSCI as a reference selector. New saved-evidence arithmetic confirms that relaxed twelve-qubit water CAS supplies only 34%/13% of the practical MP2 correlation increment beyond RHF (joint 7), and that six inherited MP2 reference changes weaken induction but strengthen total electrostatic attraction (joint 8). The new conditional Jensen/refitting direction test (joint 10/12; emmy/component_direction.md) makes that competition actionable without treating selected snapshots as an ensemble. Independently checked Ada conditional residual/static/induction bounds with analytic synthetic evidence (joint 11); full-parent residual and independently verified excited spectral enclosure are substantive classical costs and cannot cure physical-space inadequacy. Branch-1 small DFT shape obstruction, branch-2 fixed-frontier response deficit and branch-3 full-basis reference shifts are compatible, not independent replications. Broad quantum-selected hydration is existing prior work from branch-3 entries 39-48. Candidate contribution: an observable-specific and component-preserving benchmark at identical physical Hamiltonians, separating reference completeness, determinant selection, conservative fitting and ensemble direction; its novelty and quantum payoff remain unestablished. Unresolved: higher-correlated/basis/response-space accuracy; physical-field sampling coverage; production dielectric/engine and periodic/trajectory provenance; post-refitting residual changes and representative ensemble means/overlap/uncertainty; matched quantum/classical total costs and exact construction novelty. Ada may continue the bounded fixed-water selector test; its eventual result would reopen the account. No new molecular response run, hydration improvement, quantum execution, LJ causal attribution or publication verdict is claimed by my work."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 19,
+        "standing": "current",
+        "text": "Cross-branch physical-reference check and new cancellation result: ada/water_selector_interpretation.txt records the complete model and tables. On the same water-1926 input, the new complete fixed-CAS induction -3.00449 differs by +4.51453 kcal/mol from inherited full-basis B3LYP5 -7.51902 (branches/branch-3/ada/review2/reproduction.csv:3), while static differs by -1.25131. This does not measure either method error to exact chemistry, but confirms the embedded discrepancy anticipated by branch-2 gas-phase restrictions; exact selection convergence within this CAS cannot make it an established physical replacement. Within that same CAS, R=16 pooled static/induction errors -0.13968/+0.05448 cancel to a total -0.08521, so total and induction tests both pass a 0.1 diagnostic while static fails. This sharpens the candidate publication question to component-preserving observable convergence of embedded selected-CI references, with physical-space completeness tested separately. No claim of novelty or quantum benefit; deterministic exact-probability rankings still need actual finite-shot ADAPT-QSCI and response-aware classical tests. Joint 10 corrected by 13 supplies a separate necessary downstream ensemble-direction test after fitting; these validation layers cannot replace one another."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 21,
+        "standing": "current",
+        "text": "End-of-call account after reading through joint #19, including Emmy #14 with corrections #13/#15, and the new water calculation #17-19: retain one concrete line, component-preserving observable convergence for embedded selected-CI reference generation, with ADAPT-QSCI an optional selector to benchmark rather than an assumed improved physical reference. New molecular evidence shows that a 16-determinant ideal-probability pooled water space passes energy/induction/total diagnostic scales while failing static, and that at 32 determinants pooled and field-only coincide. The exact compact-CAS embedded response itself remains far from the full-basis B3LYP5 comparator, separating physical-space incompleteness from selection error. New conditional Temple/static/induction algebra is valid and synthetically checked, but its molecular oracle bounds are much too loose at useful selected sizes and require expensive unavailable spectral certification inputs. Emmy saved-evidence correction shows relaxed small-CAS water restores mainly classical mean-field/orbital response rather than the bulk of practical correlation increments; her exact conditional Jensen/refitting test shows why full component shifts must survive fitting and representative ensemble averaging before a hydration-direction claim. These are compatible findings across distinct Hamiltonians/geometries, not independent replicated chemistry. Useful decision: defer a quantum reference-generation/hydration-improvement claim; benchmark both components only in a response-validated physical Hamiltonian and include field-only and response-aware classical selection at total cost. Remaining unresolved: higher-correlated and basis-limit targets, response-adapted/effective-space adequacy, finite-shot ADAPT-QSCI execution and fair practical comparators, exact pooling novelty, tighter useful certified bounds, production dielectric/version and periodic/trajectory provenance, conservative refitting and representative ensemble mean/overlap/tail uncertainty. No hardware advantage, improved hydration result, causal LJ double-counting attribution or publication verdict is established. Working evidence is ada/component_certificate.txt and ada/water_selector_interpretation.txt with executable scripts and hashed numeric outputs. This is the best account I can support in this call."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 32,
+        "standing": "current",
+        "text": "End-of-call account after reading joint through #31, including Emmy #29: retain one concrete candidate, component-preserving validation of embedded selected-CI references across physical Hamiltonians and Q empirical screening family. The initial electronic-reference/hydration-upgrade question is replaced by a benchmark/failure-analysis question: can finite-shot ADAPT-QSCI preserve static, induction and screened interactions at lower total cost than response-aware classical selectors in a response-valid physical space? Joint #17-19 already gives actual compact-CAS component cancellation and physical-reference discrepancy; new #25-31 saved arithmetic shows unscaled total acceptance can fail at field-only 0.6, while alternative all-charge convention passes. My executable cross-check agrees with Emmy on nine selector and six reference recombinations; this is shared-source arithmetic, not independent molecular evidence. The interval criterion and conditional solver/fitting/hydration budget expose requirements, not achieved certification. Preserve joint #7 minority correlation-increment correction, #18 loose-bound negative, and #10/#13 fitted-potential ensemble-direction condition. No new molecular run, useful tighter certificate, hydration improvement, quantum execution/advantage, novelty or causal LJ attribution is established. Unresolved: basis/correlation/response-space adequacy, useful rigorous component bounds, practical finite-shot ADAPT-QSCI and classical full-cost comparisons, exact novelty against response-SCI/quantum solvation, production dielectric/version and periodic/trajectory provenance, conservative fitting/force checks and representative ensemble overlap/tail uncertainty. Working evidence: ada/screening_acceptance.txt, executable script and hashed result JSON. I judge this the best supported account available in this call."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 51,
+        "standing": "current",
+        "text": "End-of-call account after reading through joint #50: retain component-preserving embedded selected-CI validation as the concrete supported line, now backed by actual finite-shot original ADAPT-QSCI rather than ideal probability selection alone. Predeclared sixty-run water test: P energy stopping permits static/induction errors; frequency pooling at nominal16 fails static and screened tests in all seeds, while nominal32 yields 22-27 determinant common spaces passing every component and scaling alternative. A simple same-HF classical three-field residual SCI matches those final sizes and component tolerance without shots or Pauli ranking; stop the proposed practical quantum-selector advantage branch for this record. Its higher eigensolve proxy prevents a claim that every classical cost counter is smaller, and no hardware/asymptotic advantage is inferred. New complex-P replay verifies all sampling/angle trajectories; Emmy independent full-sector checks cover Hamiltonian prerequisite. This strengthens a benchmark/failure-analysis candidate, not a demonstrated novel reference or hydration improvement. Preserve physical-space inadequacy #7/#19, loose certificate #18, fitted/ensemble direction #10/#13 and production-scaling uncertainty #26/#28. Unresolved: physically response-valid larger spaces and basis/correlation convergence, multiple records and shot budgets/noisy gates, practical sparse classical selection and full execution cost models, useful rigorous component bounds, exact novelty including new HF-separated sampling prior work #39, production version/trajectory provenance, conservative fitting/forces and representative hydration overlap/tail uncertainty. No new hydration prediction, causal LJ attribution or publication verdict is established. Working account is ada/adapt_qsci/interpretation.txt with executable build/run/summarise/audit scripts and hashed numerical outputs. This is the best supported account I can give in this call."
+      },
+      {
+        "actor": "ada",
+        "kind": "finding",
+        "seq": 61,
+        "standing": "current",
+        "text": "End-of-call account after reading through joint #60: retain component-preserving embedded selected-CI validation as the concrete supported line, with actual original finite-shot P execution now established by #48-50. My new saved-path ladder #58/#59 strengthens the negative practical decision: a classical finite-field residual SCI prefix of19 determinants already passes static, induction and every tested fixed-component screening alternative, versus successful ADAPT pooled supports22-27. At this observed matched tolerance its eigensolve proxy is also smaller, although post-hoc exact-parent acceptance is not an online certified stop and heterogeneous counters still do not establish hardware time. New final-support replay agrees with Emmy #56:19/60 stops repeat support, so this is only part of the energy-stop diagnosis. Independent real-action verification #60 agrees with Emmy #57 that235/1269 updates increase actual circuit energy while optimising the selected-CI objective; this tests P stated heuristic, not algorithm validity or the cause of every failure. Stop practical quantum-selector advantage for this record/tolerance. Keep a benchmark/failure-analysis candidate rather than claim novel quantum reference generation or hydration improvement. Remaining unresolved: response-valid physical spaces, diverse records, noisy gates and shot-budget dependence, practical sparse full-cost comparisons, useful rigorous component stopping certificates, exact novelty against response-SCI and HF-separated QSCI, production screening/trajectory provenance, conservative fitting/forces and representative hydration uncertainty. No further molecular run, publication verdict, causal LJ attribution or quantum advantage is supported. New working account: ada/adapt_qsci/stopping_accuracy_note.txt, executable audit and hashed output; this is the best account I can give with the material at hand."
+      },
+      {
+        "actor": "emmy",
+        "kind": "finding",
+        "seq": 64,
+        "standing": "current",
+        "text": "End-of-call account after reading through joint #63, including Ada #61/#60: the strongest supported line is component-preserving validation and failure analysis of embedded selected-CI references, now with actual finite-shot original P execution plus an explicitly separate frequency-pooling extension. Independent full-matrix component recomputation and saved-seed replay validate #48-51 resources/results (#56); new circuit diagnostic #57 is independently verified by Ada #60. Selected-CI angle optimisation can increase actual circuit energy, as P anticipates heuristically, while pooled component accuracy still succeeds at nominal32. Classical finite-field SCI reaches all tested component/scaling tolerances at a saved-path size19 rather than ADAPT pooled22-27, and has a smaller recorded eigensolve proxy as well as no shots/Pauli ranking (#58/#59/#63). Stop the proposed practical quantum-selector advantage branch for this record, without asserting optimal implementation lower bounds, hardware timing, universal quantum impossibility or online certified stopping. Candidate publication scope is a bounded observable/stopping benchmark requiring broader evidence and a novelty audit, not a demonstrated new quantum-to-hydration method. Remaining unresolved: response-valid larger physical spaces and correlated/basis targets; multiple records, shot budgets/noisy gates and practical sparse full-cost comparators; useful rigorous component certificates; exact novelty against existing response-SCI and sampling/read-out work; production screening/version/trajectory provenance; conservative fitting/forces and representative hydration ensemble uncertainty. No hydration improvement, causal LJ attribution, quantum advantage or publication verdict is established. Evidence is emmy/finite_shot_followup.txt and executable finite_shot_result_audit.py with hashed results/log. This is the best account I can support with the material at hand."
+      }
+    ]
+  },
+  "external_sha256": {
+    "sources/external/P.txt": "1ecc2b09c77a91b7055f3d74b9a95b93958e07acd61f9de7ed7c7a077f2c10c2",
+    "sources/external/Q.txt": "e096f148c529d3ec3679155f236c588af56629f8f5372f99454d54820d0c9e31",
+    "sources/external/research-supplement.md": "896e60914aaec710b4ffa889f87708beaf01aadfca5cbc95ef2dece055dcbd5e"
+  },
+  "embedded_sha256": {
+    "ada/adapt_qsci/run.py": "81dda5997413b492dc0683d6438c7599520376fed83b4edd4375b63126bb03e3",
+    "ada/water_selector_interpretation.txt": "bdda912588f94ef208aa47c1c36fc378794ed565cb70ff296277bd94760bbe5f",
+    "branches/branch-1/ledger.jsonl": "74d7d8218259c95e59a20aa26f3f2aa72137f75d1fbb945bf05f74b3453c72be",
+    "branches/branch-2/ledger.jsonl": "a7fe2ef9849a827ea44b11d326d089b2efef0f46bf0328228550abdfa63c9ddd",
+    "branches/branch-3/ada/review2/V7-reference-audit.txt": "b41f581b00103a3c60c65983d66a3b15b3111ed7000e0e112fd3254398b9ab7c",
+    "branches/branch-3/ada/review2/reference_audit.py": "b24e4fb1c8868abc226fc7375b268262a76b3bd0fe87166f4cb58992917a05ce",
+    "branches/branch-3/ada/review2/reproduction.csv": "066169d188b1ec59639ecbe0667e2f97a30559cf4ac547c0653951d575653b10",
+    "branches/branch-3/ada/review2/result-1-b3lyp5-grid4.json": "5ad8489cc7ab6b7b20b88dee083dffdf8492672b14c183f7c56b5d61643db024",
+    "branches/branch-3/ada/review2/runtime.json": "94d1b8811aa9d67bb58f675df690bda501617d46acb8e059b684aafa4cfe0c3b",
+    "branches/branch-3/ledger.jsonl": "6f98df8f2b7881f728dced899df6dd100ef9e1a21e85f986f86cd9fe96b05ea0",
+    "ledger.jsonl": "88c6cce59360a702f014f328854219cd1507b2f0c7ccafc7555795230b7f1850"
+  }
+}
