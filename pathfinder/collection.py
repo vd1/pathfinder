@@ -248,6 +248,7 @@ def settings(campaign, cwd, tools):
           "/private/tmp": "deny", "/tmp": "deny", "/private/var/folders": "deny"}
     for name in sandbox.CONTROL:
         fs[str(d / name)] = "read"
+    fs[str(d / "inputs/restricted-collection.json")] = "deny"
     fs[str(d / ".pathfinder")] = "read"
     for name in ("tmp", "texmf-var"):
         fs[str(d / ".pathfinder" / name)] = "write" if tools else "read"
@@ -281,9 +282,10 @@ def args(campaign, cwd, tools):
 
 def rule(campaign, d):
     data = load(campaign)
-    return ("\n\nRestricted historical collection: use only the admitted input contracts and source files below. "
+    return ("\n\nApproved research collection: use only the admitted input contracts and source files below. "
             "No retrieval, web search, network access or full-pool browsing. Missing-source requests are requests "
             "only: when your role permits writes, append the requested reference and reason to "
             "source-requests.jsonl; otherwise report it in your response. Do not fetch it. "
-            "The collection cutoff is not a global literature-priority claim.\n"
-            + json.dumps({"sources": data["sources"]}, ensure_ascii=False) + "\n")
+            + "\n" + json.dumps({"sources": [
+                {"id": s["id"], "version": s["version"], "paths": [f["path"] for f in s["files"]]}
+                for s in data["sources"]]}, ensure_ascii=False) + "\n")

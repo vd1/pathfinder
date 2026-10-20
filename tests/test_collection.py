@@ -147,3 +147,15 @@ def test_unadmitted_stages_and_cli_fetch_refused(case,monkeypatch):
     monkeypatch.setattr(config,'load',lambda *a:c)
     monkeypatch.setattr(corpus,'fetch',lambda *a,**kw:pytest.fail('retrieval'))
     with pytest.raises(collection.Refused):cli.main(['--root',str(c.root),'fetch'])
+
+
+def test_operator_cutoff_seal_not_model_visible(case):
+    c,data,_,_,_=case;d=thread.prepare(c,'Q1P1')
+    rule=collection.rule(c,d)
+    intro=rule.split('{',1)[0]
+    assert 'Approved research collection' in intro and 'historical' not in intro and 'cutoff' not in intro
+    assert data['cutoff_utc'] not in rule and data['sources'][0]['first_appearance_utc'] not in rule
+    fs=collection.settings(c,d,True)[f'permissions.{collection.PROFILE}.filesystem']
+    assert fs[str(d/'inputs')]=='read'
+    assert fs[str(d/'inputs/restricted-collection.json')]=='deny'
+    collection.check_inputs(d,data)
