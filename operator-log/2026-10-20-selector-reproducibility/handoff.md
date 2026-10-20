@@ -1,0 +1,7 @@
+# Q010-P030 retained reproducibility definitions
+
+Use the existing verified 1d3f477 runtime; no engine patch is needed. Canonical arguments are in action.json for same-identity child reproducibility-definitions-1. The packet binds the ACTUAL complete-evidence-1 current critic, not the original contaminated review. Verify bindings and idle ownership before preparing and applying the recorded one-pass/fact-check OpenAI review.
+
+Three exact local replacements specify zero-based vacuum canonical RHF orbital 0 inactive and 1 through 6 active, repeat that selection in the immediate comparison task, and give the retained MP2 derivative steps 0.0005 and 0.001 in dimensionless MM-charge scaling. The step comparison measures sensitivity, not an absolute-error certificate. No new result, convention, threshold or withdrawal is introduced.
+
+The child inherits the entire latest clean external projection byte-for-byte, including all eleven embedded files. Actual copied-account validation on frozen 1d3f477 passed five stub roles and a real canonical LaTeX build in 3.11 seconds. It preserved all 378 prior edited-account files except the expected selected-child pointer, and preserved scientific-status bytes. The historical acceptance and every failed review remain intact. Stub acceptance tests custody and build plumbing, not scientific correctness. No scientific script, live model call or deployment mutation was performed.

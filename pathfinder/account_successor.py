@@ -130,6 +130,8 @@ def run(campaign, pair, *, apply=False, accept_change=None, **kwargs):
         root, request, bib = prepare(campaign,pair,**kwargs)
         if (root/'acceptance.json').exists():
             result = 'accepted; run present PAIR --edited'
+        elif account_review.workflow(root) != root/'review':
+            raise pce.Changed('resume the explicit account evidence review grant')
         elif not apply:
             return 'successor prepared; acceptance unchanged; no calls; repeat with --apply for one fixed-candidate review'
         else:

@@ -97,6 +97,7 @@ def main(argv=None):
     ar.add_argument("--inputs-sha256", required=True, help="explicitly approved packet SHA256")
     ar.add_argument("--reason", required=True, help="authority and reason for this additional review")
     ar.add_argument("--apply", action="store_true", help="run this same prepared review; default makes no calls")
+    ar.add_argument("--before-first-call", action="store_true", help="isolate approved evidence before any role has run")
     br = sub.add_parser("account-bibliography", help="build and select a metadata-only bibliography revision without scientific review calls")
     br.add_argument("pair")
     br.add_argument("--id", required=True)
@@ -365,7 +366,8 @@ def _dispatch(ns, c):
         from . import account_review
         print(account_review.apply(c, ns.pair, identity=ns.id, grant_id=ns.grant,
                                    inputs=ns.inputs, inputs_sha256=ns.inputs_sha256, reason=ns.reason,
-                                   resume=ns.apply, accept_change=ns.accept_change))
+                                   resume=ns.apply, accept_change=ns.accept_change,
+                                   before_first_call=ns.before_first_call))
     elif ns.cmd == "account-amend":
         from . import account_amend
         print(account_amend.apply(c, ns.pair, identity=ns.id, packet=ns.packet,

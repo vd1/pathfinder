@@ -1,0 +1,28 @@
+{
+  "parent_candidate_sha256": "b61f98e920309d0120949d935cf48f16c077164433af18604546b2140fc23acd",
+  "changes": [
+    {
+      "finding": "reader-reproducibility",
+      "before": "The test used vacuum RHF/cc-pVTZ orbitals, an inactive oxygen \\(1s\\) orbital and CAS(8e,6o):",
+      "after": "The test used vacuum canonical RHF/cc-pVTZ orbitals with zero-based orbital 0 (oxygen \\(1s\\)) inactive and orbitals 1--6 active in CAS(8e,6o):"
+    },
+    {
+      "finding": "reader-reproducibility",
+      "before": "compare the retained water CAS(8e,6o) in fixed vacuum RHF/cc-pVTZ orbitals with inactive oxygen \\(1s\\),",
+      "after": "compare the retained water CAS(8e,6o) in fixed vacuum canonical RHF/cc-pVTZ orbitals, with zero-based orbital 0 (oxygen \\(1s\\)) inactive and orbitals 1--6 active,"
+    },
+    {
+      "finding": "reader-reproducibility",
+      "before": "static interaction is the central total-energy derivative at zero field, not an unrelaxed MP2-density contraction, and induction is the full-field minus vacuum energy minus that derivative.",
+      "after": "static interaction is the central total-energy derivative at zero field, evaluated with step \\(h=0.0005\\) and compared against \\(h=0.001\\) in the dimensionless parameter that scales the MM charges. The retained step comparison measures finite-difference sensitivity; it is not an absolute-error certificate. Static interaction is not an unrelaxed MP2-density contraction, and induction is the full-field minus vacuum energy minus that derivative."
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-reproducibility",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "a42cff7d838f1f27c1db7c35384d53af9a18baddde7060819541040809786e7f",
+      "quote": "Specify the retained active-orbital selection explicitly: vacuum canonical RHF orbitals with zero-based orbital 0 inactive and orbitals 1\u20136 active, as stated in the supplied selector interpretation. For the MP2 static derivative, state the retained step h=0.0005 and comparison against h=0.001 in the dimensionless MM-charge scaling parameter, distinguishing measured step sensitivity from an absolute-error certificate. Carry these prescriptions into the immediate next-task description so a computational chemist can reproduce the intended comparison without inferring missing choices."
+    }
+  ]
+}

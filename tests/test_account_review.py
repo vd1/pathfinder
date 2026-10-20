@@ -172,3 +172,49 @@ def test_evidence_repair_of_selected_child_preserves_identity_and_history(tmp_pa
     assert all(pce_recovery.hashes(ed)[k]==v for k,v in before.items())
     assert 'accepted;' in account_review.apply(c,'Q1P1',**args,resume=True)
     assert len(calls)==5
+
+
+def clean_packet(tmp_path,root,identity):
+    files=json.loads((root/'review/frozen-inputs.json').read_text())
+    inputs=tmp_path/'clean-inputs.json'
+    inputs.write_text(json.dumps({'external':{'P.txt':files['sources/external/P.txt'],'Q.txt':files['sources/external/Q.txt'],'research-supplement.md':json.dumps({'files':{'ada/proof.txt':'Retained scientific definition.'}})}}))
+    return dict(identity=identity,grant_id='preflight-clean',inputs=inputs,inputs_sha256=pce._sha(inputs.read_text()),reason='Explicit preflight evidence isolation',before_first_call=True)
+
+
+def test_prepared_review_clean_before_first_call(tmp_path,monkeypatch):
+    c,ed,candidate,args=packet(tmp_path)
+    assert 'no calls' in account_amend.apply(c,'Q1P1',**args)
+    root=ed/'account-amendments/definitions';before=pce_recovery.hashes(root/'review')
+    opts=clean_packet(tmp_path,root,'definitions');calls=script(monkeypatch,c)
+    with pytest.raises(pce.Changed,match='terminal failed'):
+        account_review.apply(c,'Q1P1',**{**opts,'before_first_call':False})
+    assert 'no calls' in account_review.apply(c,'Q1P1',**opts) and not calls
+    assert 'accepted;' in account_review.apply(c,'Q1P1',**opts,resume=True)
+    assert len(calls)==5 and pce_recovery.hashes(root/'review')==before
+    assert 'accepted;' in account_review.apply(c,'Q1P1',**opts,resume=True) and len(calls)==5
+
+
+def test_preflight_cannot_relabel_served_review(tmp_path,monkeypatch):
+    c,root,candidate,args=failed(tmp_path,monkeypatch);before=pce_recovery.hashes(root)
+    with pytest.raises(pce.Changed,match='untouched prepared'):
+        account_review.apply(c,'Q1P1',**args,before_first_call=True)
+    assert pce_recovery.hashes(root)==before
+
+
+def test_pending_successor_clean_grant_preserves_predecessor(tmp_path,monkeypatch):
+    from test_account_successor import ready
+    from pathfinder import account_successor
+    c,ed,parent,pd,args=ready(tmp_path,monkeypatch)
+    calls=script(monkeypatch,c);pointer=(ed/'account-amendment.json').read_bytes();before=pce_recovery.hashes(parent)
+    assert 'no calls' in account_successor.run(c,'Q1P1',**args)
+    root=ed/'account-amendments/withdrawal';opts=clean_packet(tmp_path,root,'withdrawal')
+    assert 'no calls' in account_review.apply(c,'Q1P1',**opts)
+    assert (ed/'account-amendment.json').read_bytes()==pointer
+    with pytest.raises(pce.Changed,match='explicit account evidence'):
+        account_successor.run(c,'Q1P1',**args,apply=True)
+    assert not calls
+    assert 'accepted;' in account_review.apply(c,'Q1P1',**opts,resume=True)
+    assert len(calls)==5 and pce_recovery.hashes(parent)==before
+    assert json.loads((ed/'account-amendment.json').read_text())=={'id':'withdrawal'}
+    account_release.view(c,'Q1P1',create=True)
+    assert 'accepted;' in account_review.apply(c,'Q1P1',**opts,resume=True) and len(calls)==5

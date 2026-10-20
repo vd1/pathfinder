@@ -16,6 +16,37 @@ def workflow(root):
     return root / 'review-grants' / identity
 
 
+def _review_root(campaign, pair_id, identity):
+    """Resolve the selected child or the engine-owned pending successor."""
+    thread = campaign.thread_dir(pair_id)
+    selected = account_amend._read(thread / 'edited/account-amendment.json')
+    if selected['id'] == identity:
+        return account_amend._root(campaign, pair_id, identity), selected
+    pending = thread / 'edited/account-successor.json'
+    expected = account_amend._read(pending) if pending.exists() else {}
+    if expected.get('id') != identity:
+        raise pce.Changed('review only the selected amendment or its pending successor')
+    base = account_amend._base(campaign, pair_id, identity)
+    predecessor = account_amend._read(base / 'successor.json')
+    if selected != predecessor['parent_pointer']:
+        raise pce.Changed('evidence repair predecessor was superseded')
+    import hashlib
+    for name, digest in predecessor['history'].items():
+        path = thread / name
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+            raise pce.Changed('evidence repair predecessor history changed')
+    revision = expected.get('revision')
+    if revision is not None and not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', revision):
+        raise pce.Changed('invalid pending successor child')
+    return (base / 'revisions' / revision if revision else base), expected
+
+
+def _install(campaign, pair_id, expected):
+    pending = campaign.thread_dir(pair_id) / 'edited/account-successor.json'
+    if pending.exists() and account_amend._read(pending) == expected:
+        pce._write(pending.parent, 'account-amendment.json', pce._json(expected))
+
+
 def custody(campaign, pair_id, root):
     request = account_amend._read(root / 'request.json')
     note, bib, accepted = account_release.source(campaign, pair_id)
@@ -82,12 +113,11 @@ def external_packet(path, expected_sha, previous):
     return raw, {**external, 'research-supplement.md': pce._json(supplement)}, removed
 
 
-def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, reason):
+def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, reason, before_first_call=False):
     routes = pce_recovery.preflight(campaign, presentation=True)
-    root = account_amend._root(campaign, pair_id, identity)
-    selected = account_amend._read(campaign.thread_dir(pair_id) / 'edited/account-amendment.json')
-    if selected['id'] != identity or (root / 'acceptance.json').exists():
-        raise pce.Changed('evidence repair requires the selected, unaccepted amendment')
+    root, _ = _review_root(campaign, pair_id, identity)
+    if (root / 'acceptance.json').exists():
+        raise pce.Changed('evidence repair requires an unaccepted amendment')
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', grant_id or '') or not reason.strip():
         raise pce.Changed('provide an explicit review grant ID and reason')
     request, candidate, bib = custody(campaign, pair_id, root)
@@ -97,7 +127,13 @@ def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, rea
     previous = root / saved['previous'] if saved else current
     if saved and current not in (target, previous):
         raise pce.Changed('review grant was superseded')
-    if account_amend._read(previous / 'result.json')['status'] != 'review_required':
+    if before_first_call:
+        allowed = {'frozen-inputs.json', 'grant.json', 'replacement-history.json', 'replacement-register.json'}
+        present = set(pce_recovery.hashes(previous))
+        if not {'frozen-inputs.json', 'grant.json'} <= present or not present <= allowed:
+            raise pce.Changed('before-first-call repair requires an untouched prepared review')
+    elif (not (previous / 'result.json').exists()
+          or account_amend._read(previous / 'result.json')['status'] != 'review_required'):
         raise pce.Changed('evidence repair requires a terminal failed review')
     old_inputs = account_amend._read(previous / 'frozen-inputs.json')
     raw, external, removed = external_packet(inputs, inputs_sha256, old_inputs)
@@ -105,6 +141,8 @@ def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, rea
               'previous': str(previous.relative_to(root)), 'previous_sha256': pce_recovery.hashes(previous),
               'candidate_sha256': pce._sha(candidate), 'request_sha256': pce._sha(pce._json(request)),
               'removed_operational_files': removed, 'maximum_calls': 5}
+    if before_first_call:
+        repair['before_first_call'] = True
     if saved and saved != repair:
         raise pce.Changed('review grant inputs, parent round or authority changed')
     files = {k: v for k, v in old_inputs.items() if not k.startswith('sources/external/')}
@@ -150,8 +188,9 @@ def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, rea
 
 def apply(campaign, pair_id, *, resume=False, accept_change=None, **kwargs):
     with health.owner(campaign, nested=True), runner.Lock(campaign.thread_dir(pair_id)):
-        root = account_amend._root(campaign, pair_id, kwargs['identity'])
+        root, expected = _review_root(campaign, pair_id, kwargs['identity'])
         if (root / 'acceptance.json').exists():
+            _install(campaign, pair_id, expected)
             account_amend.selected(campaign, pair_id, *account_release.source(campaign, pair_id))
             return 'accepted; run present PAIR --edited'
         root, target, request, bib = prepare(campaign, pair_id, **kwargs)
@@ -165,4 +204,7 @@ def apply(campaign, pair_id, *, resume=False, accept_change=None, **kwargs):
             result = pce.run(c, pair_id, stop=lambda: runner.stopped(campaign))
         # Recheck original custody, parent hashes and immutable inputs before installation.
         prepare(campaign, pair_id, **kwargs)
-        return account_amend.finish(campaign, pair_id, root, target, request, bib, result)
+        outcome = account_amend.finish(campaign, pair_id, root, target, request, bib, result)
+        if (root / 'acceptance.json').exists():
+            _install(campaign, pair_id, expected)
+        return outcome
