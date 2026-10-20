@@ -1,0 +1,195 @@
+[
+  {
+    "arm": "strong",
+    "pair": "Q242-P465",
+    "reconcile": {
+      "action": "resume peers",
+      "lock": null,
+      "pair_id": "Q242-P465",
+      "reason": "The explicit-input depth-two estimator under \\(4e\\kappa_1\\kappa_2\\leq1-\\zeta\\), with fixed \\(K,\\zeta\\), merits score=5/10 and paper review: the gas reduction, convergent tree estimator, clipping recovery and parameter costs substantiate a non-obvious tractable regime on unrestricted graphs. I found no material correctness obstruction in that derivation; randomized cluster sampling is appropriately attributed, while novelty of the QAOA-specific criterion remains uncertified. At round three, the new covariance bound and the demonstrated removal of the star obstruction by root splitting justify a bounded investigation of that materially different representation, improving an already publishable result rather than repairing a demonstrated gap.",
+      "round": 4,
+      "stage": "peers",
+      "status": "stopped"
+    },
+    "timeouts": []
+  },
+  {
+    "arm": "strong",
+    "pair": "Q462-P471",
+    "reconcile": {
+      "action": "run edit",
+      "lock": null,
+      "pair_id": "Q462-P471",
+      "reason": "The coherent-entry lower bound \\(\\widetilde\\Omega(\\min\\{d^2,d^{3/2}/(\\sqrt\\gamma\\varepsilon)\\})\\), supported by ada/joint-lower-bound.md:20–194 and ledger entries 9–12, merits score=6/10 and is ready for paper review: it establishes optimal constant-gap precision dependence and a nontrivial necessary threshold for quantum advantage. The counting, analytic-response and interpolation arguments withstand this audit, with compatible access models and baseline costs; independent novelty certification remains outstanding, and the primitive obstructions are correctly distinguished from stronger eigenvector lower bounds. At round 2, the anchored investigation is complete and its cache sensitivity and full costs support its negative conclusion; alternatives remain possible, but no sufficiently concrete new opportunity presently justifies another research round.",
+      "round": 2,
+      "stage": "done",
+      "status": "DRAFT"
+    },
+    "timeouts": [
+      {
+        "at": "2026-10-20T01:48:39Z",
+        "call_id": "7cd2b1b100064108903169d2008b7fd5",
+        "deadline": 900,
+        "last_event": "item.completed",
+        "path_failures": [
+          {
+            "command_sha256": "6338ac9bc04c1c65fb95715083a2063545f548d0de5d2f2c0baff3453c3ef37d",
+            "output": "zsh:1: no such file or directory: edited/note.tex\nzsh:398: no such file or directory: edited/references.bib\nRc files read:\n  NONE\nLatexmk: This is Latexmk, John Collins, 7 Jan. 2023. Version 4.79.\n\n------------\nLatexmk: Could not find file 'note.tex'.\n-- Use the -f option to force complete processing.\n"
+          }
+        ],
+        "seconds": 900.0
+      },
+      {
+        "at": "2026-10-20T02:08:35Z",
+        "call_id": "eafc509a613a4ee9b7ffc49ff1341dda",
+        "deadline": 900,
+        "last_event": "item.completed",
+        "path_failures": [],
+        "seconds": 900.0
+      }
+    ]
+  },
+  {
+    "arm": "strong",
+    "pair": "Q138-P280",
+    "reconcile": {
+      "action": "run edit",
+      "lock": null,
+      "pair_id": "Q138-P280",
+      "reason": "The supported logarithmic-mean reweighting theorem achieves \\(R_FW_F=O(H\\log(nK))\\) and marked probability at least \\(1/4\\), with robustness, an exact layered tradeoff, and matching worst-case logarithmic overhead: score=5/10, a non-obvious structural contribution ready for paper review. These results trace to ledger #16–21 and ada/potential-transform-tradeoff.md:11–259; the arguments check out, quantum consequences explicitly require transformed-network access, and novelty concerns the network consequences rather than the established transform algebra, with unavailable sources 1102.5238 and 1212.1129 leaving literature verification incomplete. At round 2, the previous optimality, robustness, and conditioned-walk investigation has been answered substantially; no distinct concrete next approach presently justifies another round beyond repeating the unresolved voltage-access implementation target.",
+      "round": 2,
+      "stage": "done",
+      "status": "DRAFT"
+    },
+    "timeouts": [
+      {
+        "at": "2026-10-20T02:37:57Z",
+        "call_id": "82088e33145e44eaa368e534fffaf6f9",
+        "deadline": 900,
+        "last_event": "item.completed",
+        "path_failures": [
+          {
+            "command_sha256": "5c7fd6d514bab6b85b72e7139bfc69579ee31137facf7a9142e8f8db155d08bf",
+            "output": "zsh:1: no such file or directory: edited/note.tex\nzsh:396: no such file or directory: edited/references.bib\nRc files read:\n  NONE\nLatexmk: This is Latexmk, John Collins, 7 Jan. 2023. Version 4.79.\n\n------------\nLatexmk: Could not find file 'note.tex'.\n-- Use the -f option to force complete processing.\n"
+          },
+          {
+            "command_sha256": "b8a3f26aed461d32c5e304e62a78104951a3c45a493a5586c793d8c8df659a09",
+            "output": "Traceback (most recent call last):\n  File \"<stdin>\", line 3, in <module>\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py\", \n[... 346 characters dropped ...]\no.open(self, mode, buffering, encoding, errors, newline)\n           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'edited/note.tex'\n"
+          }
+        ],
+        "seconds": 900.0
+      },
+      {
+        "at": "2026-10-20T02:56:15Z",
+        "call_id": "cd85ef6b48c74d3aa8d96324d0b01d3f",
+        "deadline": 900,
+        "last_event": "item.completed",
+        "path_failures": [],
+        "seconds": 900.0
+      }
+    ]
+  },
+  {
+    "arm": "control",
+    "pair": "Q242-P465",
+    "reconcile": {
+      "action": "run paper",
+      "lock": null,
+      "pair_id": "Q242-P465",
+      "reason": "The strongest supported contribution is polynomial-time estimation of supplied-instance depth-two correlators at each fixed inverse-polynomial accuracy for fully independent dense Rademacher weights, with separate disorder and sampling failures and a uniform landscape corollary; score=6/10, ready for paper review. The internal-edge parity identity, Fourier-tail argument, and explicit evaluation costs support this non-obvious restricted simulation theorem (ada/internal_disorder.md:16–166; ledger 35–37), although novelty against unavailable SK and average-case literature remains uncertified. The established contribution should proceed to review: no sufficiently developed new route presently justifies another research round.",
+      "round": 5,
+      "stage": "done",
+      "status": "DRAFT"
+    },
+    "timeouts": [
+      {
+        "at": "2026-10-20T05:16:34Z",
+        "call_id": "84120be0ddba488ca8f34d8933db043e",
+        "deadline": 1800,
+        "last_event": "item.completed",
+        "path_failures": [],
+        "seconds": 1800.0
+      },
+      {
+        "at": "2026-10-20T05:47:34Z",
+        "call_id": "4f175d9b55e04bd0a3a6e8c4938a7630",
+        "deadline": 1800,
+        "last_event": "item.completed",
+        "path_failures": [],
+        "seconds": 1800.0
+      }
+    ]
+  },
+  {
+    "arm": "control",
+    "pair": "Q177-P500",
+    "reconcile": {
+      "action": "run paper",
+      "lock": null,
+      "pair_id": "Q177-P500",
+      "reason": "Robust soft-cone localization and bounded Gibbs-tangent generators, with constructive Gaussian CKG access and costed warm-start refinement, support score=5/10 and are ready for paper review (ada/stable-soft-cones.md:59–138; ada/warm-start-refinement.md:73–149). The substantive extension handles noncommuting quasi-local parents without local kernel gaps; warm-input costs are charged, known filtering scaling is attributed, and independent novelty remains uncertified. A certified application family could strengthen the result, but round six exhausts the available research rounds, and unresolved warm-start construction and shared simulation do not invalidate the established contribution.",
+      "round": 6,
+      "stage": "done",
+      "status": "DRAFT"
+    },
+    "timeouts": [
+      {
+        "at": "2026-10-20T03:51:34Z",
+        "call_id": "15386071e0c14eae9f03084b75513804",
+        "deadline": 900,
+        "last_event": "item.completed",
+        "path_failures": [],
+        "seconds": 900.0
+      },
+      {
+        "at": "2026-10-20T06:17:34Z",
+        "call_id": "179759ca3f2f4f6fb8eb40e5c125461f",
+        "deadline": 1800,
+        "last_event": "item.completed",
+        "path_failures": [
+          {
+            "command_sha256": "34f0c8834ff6bd74a1eb82393bf2c2c3209eb585f678eb9938336ed6c620cafa",
+            "output": "Rc files read:\n  NONE\nLatexmk: This is Latexmk, John Collins, 7 Jan. 2023. Version 4.79.\n\n------------\nLatexmk: Could not find file 'paper.tex'.\n-- Use the -f option to force complete processing.\n"
+          }
+        ],
+        "seconds": 1800.1
+      },
+      {
+        "at": "2026-10-20T06:48:35Z",
+        "call_id": "2484ed9f251448f490698c56c34e9242",
+        "deadline": 1800,
+        "last_event": "item.completed",
+        "path_failures": [],
+        "seconds": 1800.1
+      }
+    ]
+  },
+  {
+    "arm": "control",
+    "pair": "Q462-P471",
+    "reconcile": {
+      "action": "nothing: terminal",
+      "lock": null,
+      "pair_id": "Q462-P471",
+      "reason": "The exact-entry lower bound \\(\\Omega(\\min\\{d^2,d^{3/2}/(\\varepsilon\\sqrt{\\gamma\\log d})\\})\\) supports a tight fixed-gap precision characterization up to logarithms, a non-obvious contribution of score=6/10 ready for paper review. The adversary, promise and decoding arguments withstand inspection, and the pooled sources support the upper-bound comparison and attribution; novelty of the spectral embedding remains independently uncertified. The completed momentum investigation correctly establishes only a covariance-based budgeting limitation, and examining actual tomography noise currently offers insufficient expected benefit to justify another round.",
+      "round": 2,
+      "stage": "done",
+      "status": "DRAFT"
+    },
+    "timeouts": [
+      {
+        "at": "2026-10-20T07:18:35Z",
+        "call_id": "cc22f42a1fa4460cbe117f28d12b53cd",
+        "deadline": 1800,
+        "last_event": "item.completed",
+        "path_failures": [
+          {
+            "command_sha256": "5b76d1e476bb2bb235ddc9825472067007eb8948b4b1d0faaafb3cfa6671e7c0",
+            "output": "zsh:1: no such file or directory: paper/paper.tex\nzsh:510: no such file or directory: paper/references.bib\nRc files read:\n  NONE\nLatexmk: This is Latexmk, John Collins, 7 Jan. 2023. Version 4.79.\n\n------------\nLatexmk: Could not find file 'paper.tex'.\n-- Use the -f option to force complete processing.\n"
+          }
+        ],
+        "seconds": 1800.1
+      }
+    ]
+  }
+]
