@@ -140,6 +140,10 @@ def encode_spans(files):
     payload += ''.join(text + '\n' for text in literals)
     if decode_spans(payload) != files:
         raise ValueError('editor span framing failed exact reconstruction')
+    from . import editor_blocks
+    block_payload, block_header, _ = editor_blocks.encode(files)
+    if len(block_payload) < len(payload):
+        return block_payload, block_header
     return payload, header
 
 
