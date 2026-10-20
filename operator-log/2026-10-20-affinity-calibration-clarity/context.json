@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "source": "emmy/heldout/refit_fraction_check.py",
+      "sha256": "ebae9f0f178944e5f0bfc4146926909993449c5da0ee8e1eba5f5b8de8658764",
+      "quote": "y = {'3C':-.2,'3D':-.6,'3E':0.,'3G':-1.1,'3H':-1.5,'3I':-.9,'3J':-1.6,'3K':-.9,\n     '5C':-.9,'5D':-1.5,'5E':-2.1,'5G':-2.6,'5H':-2.6,'5I':-3.2,'5J':-3.4,'5K':-3.1}",
+      "where": "At setting 3, the polar primary reference-relative fit predicts approximately \\(-0.66\\) for A/B and \\(-1.08\\ \\mathrm{kcal\\,mol^{-1}}\\) for F/B."
+    },
+    {
+      "source": "emmy/heldout/refit_fraction_check.py",
+      "sha256": "ebae9f0f178944e5f0bfc4146926909993449c5da0ee8e1eba5f5b8de8658764",
+      "quote": "        x = {l:F(str(next(iter(h['ligands'][l]['sources'].values()))['W'][k]))-w[l[0]+'B'] for l in y}\n        b = sum(x[l]*F(str(y[l])) for l in y)/sum(a*a for a in x.values())",
+      "where": "At setting 3, the polar primary reference-relative fit predicts approximately \\(-0.66\\) for A/B and \\(-1.08\\ \\mathrm{kcal\\,mol^{-1}}\\) for F/B."
+    },
+    {
+      "source": "emmy/heldout/final-account.txt",
+      "sha256": "ab2e4c382ce1c412971c598e4975c690ae653a3ec50a49194f8ed4f98440a1bb",
+      "quote": "Calibration correction, joint #17 and Ada #19:\n\\(y_L=b(W_L-W_{B,s})\\) follows from a common ligand-level affine map;\nthe diagnostic free-series-intercept regression answers a different question.\nAt triples (3.1,2.5,0.1), (4,3,0.6), (2.8,2.5,0.1), the reference-respecting\nslopes are -0.367149, -1.458310 and -3.693520. The primary predicted A/F\ncycles are (+0.034842,+0.000367), (0,-0.549783), and\n(-0.659663,-1.080355) kcal/mol. Thus claims of 5-7 per cent magnitude or\nan approximately 1.14 kcal/mol upper bound apply only to the earlier centred\nfit. Agreement with a target cycle after choosing calibration is not a rank\ntest and does not validate the representation. Snapshot scenario fractions\nremain arithmetic counts rather than success probabilities. Recalibrating\nwith a different B source is another analysis; fixed-slope snapshot ranges\ndo not cover that procedure.",
+      "where": "At setting 3, the polar primary reference-relative fit predicts approximately \\(-0.66\\) for A/B and \\(-1.08\\ \\mathrm{kcal\\,mol^{-1}}\\) for F/B."
+    },
+    {
+      "source": "emmy/heldout/final-account.txt",
+      "sha256": "ab2e4c382ce1c412971c598e4975c690ae653a3ec50a49194f8ed4f98440a1bb",
+      "quote": "New descriptive prediction check, joint #18:\nemmy/heldout/calibration_check.py:33-61 uses saved scores only. Each row's\nprediction is fitted on the remaining 15, keeping A/F/B excluded. A training-only\nper-series mean has RMSE 0.788437 kcal/mol. Free-series-intercept score models\nhave RMSE 0.827162, 0.724406 and 0.882167. Constraining their slope to the\nintended decreasing orientation gives 0.827162, 0.788437 and 0.845425.\nThe improvement at the second triple is obtained only with the reversed\norientation. Reference-respecting through-origin fits give RMSE 2.014844,\n1.897410 and 1.440081 despite their full-data negative slopes. These errors\nare descriptive central-value diagnostics, not independent test estimates,\nconfidence intervals or proof of universal contact-model failure. The mean\ncomparator is a diagnostic of added score information, not a replacement\ndocking objective or a thermodynamic cycle predictor.",
+      "where": "Reference-relative single-row exclusion errors exceed the series-mean comparator throughout the enumerated polar and v2 scenarios."
+    },
+    {
+      "source": "emmy/heldout/final-account.txt",
+      "sha256": "ab2e4c382ce1c412971c598e4975c690ae653a3ec50a49194f8ed4f98440a1bb",
+      "quote": "At settings (3.1,2.5,0.1), (4,3,0.6), (2.8,2.5,0.1), decreasing centred\nRMSEs are respectively 0.827162, 0.788437, 0.845425 kcal/mol versus the\nseries-mean RMSE 0.788437. Better/equal/worse tuple counts are 0/0/600,\n0/600/0, 0/0/600. All reference-origin folds also perform worse, with RMSE\nranges [1.301229,2.014844], [1.477909,2.049404], [0.975686,1.440081].\nFull non-quartet origin fits recover the A/F cycle ranges and counts of\njoint #20/#22. They can produce target-scale cycle magnitudes, but the\nsame tuple's predictive fit has not improved on the series-mean comparator.\nThe origin fit's lack of learned series offsets remains a limitation when\ninterpreting excess error; it is not an isolated test of score information.",
+      "where": "Reference-relative single-row exclusion errors exceed the series-mean comparator throughout the enumerated polar and v2 scenarios."
+    },
+    {
+      "source": "emmy/heldout/v2_partner_check.py",
+      "sha256": "3b8da8bcc8f9755c730ba1367b3a3079282397bd39ee3c330eea5631209ffe3c",
+      "quote": "        mse = float(np.mean((np.array(pred)-y)**2))\n        check(mse, float(Fraction(row['mse_origin'])))\n        origin_errors.append(mse**.5)",
+      "where": "Reference-relative single-row exclusion errors exceed the series-mean comparator throughout the enumerated polar and v2 scenarios."
+    },
+    {
+      "source": "emmy/heldout/final-account.txt",
+      "sha256": "ab2e4c382ce1c412971c598e4975c690ae653a3ec50a49194f8ed4f98440a1bb",
+      "quote": "All 48 unconstrained fold slopes are positive. The decreasing centred model\ntherefore equals the training-only series-mean comparator at every triple:\nRMSE 0.788437 kcal/mol. Unrestricted fits improve to 0.694769, 0.605271 and\n0.724313. Thus v2 has predictive score information in the opposite direction\nto the prespecified larger-score, more-favourable-affinity expectation.\nIt would be incorrect to describe v2 as containing no affinity information.\nThe full reference-origin slopes also have positive signs, and no primary\ncalibrated A/F pair has both experimental negative central signs.\nAll eight inherited source combinations per triple retain origin fold errors\nabove the series-mean baseline. These source combinations are separate from\nthe polar model's 600 tuples; no model scores or calibrations are pooled.",
+      "where": "Reference-relative single-row exclusion errors exceed the series-mean comparator throughout the enumerated polar and v2 scenarios."
+    }
+  ]
+}
