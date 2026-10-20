@@ -1,0 +1,53 @@
+{
+  "parent_candidate_sha256": "8b9891fba5276b5aa483ab2ab607552ad309cb1d58b5a208d4576d09c2271215",
+  "changes": [
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "Propagation error must enter that observable's budget. Under the record's chosen normalised convention,",
+      "after": "Propagation error must enter that observable's budget. Here \\(C(t)\\) is the undamped scalar optical correlation defined above, including its carrier phase and fixed transition-dipole strength. Its normalised coherence is \\(c(t)=C(t)/C(0)\\), where \\(C(0)=|\\mu|^2>0\\) for that bright fixed-dipole transition, so \\(c(0)=1\\). This division removes the dipole-strength intensity scale; it does not calibrate the complete experimental absorption. The damping factor is applied separately in the following integral. Its positive time constant \\(T_d\\) is an imposed exponential-decay parameter held fixed between the propagation calculations. It is not a measured or calibrated Q-ligand physical lifetime. If the same single exponential is used in the earlier modulus model with rate \\(\\gamma\\), its rate is \\(1/T_d\\); it must not be included again inside \\(c(t)\\). The gap-correlation time \\(\\tau_c\\) instead belongs to the covariance model and is a different parameter. Under the retained audit's chosen normalised line-shape convention,"
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "provided complex coherence error is uniformly at most \\(\\epsilon\\), with fixed dipoles, normalisation and damping. Electronic-model, sampling, quadrature and finite-time errors remain separate. No calibrated Q-specific radii are supplied (joint entries 4, 9 and 28, adopting the corrected branch-3 observable bound).",
+      "after": "Here \\(E\\) is the transform's energy argument, and \\(\\epsilon\\) bounds the complex error in \\(c(t)\\) uniformly over the integration interval, with the same Hamiltonian, dipoles, initial normalisation and imposed damping in both calculations. The displayed bound applies only to this correlation-derived \\(L(E)\\); the convention gives an area-normalised Lorentzian for a noiseless isolated transition. It is an explicitly chosen convention, not a reconstruction of damaged absorption prefactors in P. A nonnegative instrument-convolution kernel of unit area cannot increase this uniform line-shape bound. Transfer to complete instrument-convolved and binned absorption still requires the appropriate optical frequency prefactor, absolute intensity scale and calibrated response/binning map, with their scales and uncertainties controlled. The removed dipole strength, concentrations and free/bound fractions cannot be recovered by treating \\(L\\) as an absolute absorption spectrum. Electronic-model, sampling, quadrature and finite-time errors remain separate. No calibrated Q-specific radii are supplied (joint entries 4, 9 and 28, adopting the corrected branch-3 observable bound)."
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "Branch-2's simplified calculation using recovered photoactive yellow protein parameters",
+      "after": "Branch-2's simplified calculation using recovered photoactive yellow protein parameters~\\cite{PYP}"
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "Its Fenna--Matthews--Olson pigment control permitted",
+      "after": "Its Fenna--Matthews--Olson pigment control~\\cite{FMO} permitted"
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "theorem-source recovery from Tropp's notes",
+      "after": "theorem-source recovery from Tropp's notes~\\cite{Tropp}"
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "Branch-1's recovered author-copy account of Mondal and Meuwly supports",
+      "after": "Branch-1's recovered author-copy account of Mondal and Meuwly~\\cite{Mondal} supports"
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "Its Haldar evidence is abstract-only",
+      "after": "Its Haldar evidence~\\cite{Haldar} is abstract-only"
+    },
+    {
+      "finding": "normalisation-and-context-citations",
+      "before": "Branch-1's recovered article account reports TGT ligand 9 conformers",
+      "after": "Branch-1's recovered article account~\\cite{Ehrmann} reports TGT ligand 9 conformers"
+    }
+  ],
+  "findings": [
+    {
+      "id": "normalisation-and-context-citations",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "46f0ee2d5517bd6c7c00745849b75b3e6092b997c97c0e99b51729e083fa052f",
+      "quote": "- Required revisions: Define c(t), its normalisation and T_d, distinguishing imposed damping from a calibrated physical lifetime. Explicitly delimit the displayed bound to its stated normalised line-shape convention and explain that transfer to complete instrument-convolved absorption requires the appropriate prefactor, intensity and response treatment. Cite the existing bibliography entries for the contextual literature where discussed, retaining the stated branch-reported and source-recovery limitations. These are exposition and reference repairs within the supplied evidence; no new research is required."
+    }
+  ]
+}
