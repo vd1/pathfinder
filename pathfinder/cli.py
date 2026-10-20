@@ -285,7 +285,7 @@ def _dispatch(ns, c):
         report = probe.run(c, ns.pairs, Path(ns.out))
         print(json.dumps({k: v for k, v in report.items() if k != "units"}, indent=1))
     elif ns.cmd == "economy":
-        from . import economy, transport
+        from . import economy
         summary = economy.summary(transport.receipts(c))
         print(json.dumps(summary, indent=1) if ns.json else economy.text(summary))
     elif ns.cmd == "pauses":
