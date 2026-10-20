@@ -1,0 +1,28 @@
+{
+  "parent_candidate_sha256": "bb35ed1c907241bf7307ffeeacb47165c865bb20ebadf49722661763e575878f",
+  "parent_acceptance_sha256": "6e4ae99344dfae89bac48f79ee96a156628107a50f37193ec0e933bf6e3e5f6f",
+  "returned_findings_sha256": "9a90793fad6c7d356c43a413f94ed93b712f0428b48cc4c62ff9b8c93c488acc",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "Branch 2's repaired 29-feature subset gives raw",
+      "after": "For Branch 2's supporting 29-feature model, let a graph vertex \\(u=(i,j)\\) pair ligand feature \\(i\\) with receptor feature \\(j\\). Its allowance \\(\\epsilon_u\\) is \\(s\\) when both features are hydrogen-bond donor or acceptor types (each may be either type), and \\(4.0\\)~\\AA\\ otherwise. The scalar \\(s\\) takes the values \\(3.0\\) and \\(3.3\\)~\\AA. For distinct vertices \\(u=(i,j)\\) and \\(v=(k,l)\\), let \\(d_L(i,k)\\) and \\(d_R(j,l)\\) be the distances between their ligand and receptor feature positions respectively. An edge exists precisely when \\(0.6\\,\\text{\\AA}+\\epsilon_u+\\epsilon_v-|d_L(i,k)-d_R(j,l)|>0\\); equality is excluded. In the feature-injective variant it also requires \\(i\\ne k\\) and \\(j\\ne l\\). Thus \\(s\\) is a per-vertex allowance used twice when both vertices qualify, not the entire pairwise mismatch tolerance or a direct ligand--receptor distance cutoff. These scalar variants belong to this supporting model, not to the separate polar or v2 allowance triples. The frozen rule and retained saved-graph audit agree on the strict inequality.\\rr{branch-2 retained ada/v6-domain-frozen.txt and ada/v6\\_audit.py; entry 100 identifies the repaired execution}\n\nBranch 2's repaired 29-feature subset gives raw"
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "branches/branch-2/ada/v6-domain-frozen.txt",
+        "sha256": "18e902b7cbc002f587babfc935f9f858a7e4c06a8e8a772b556def31c8688640",
+        "purpose": "Frozen scalar allowance, strict margin, injectivity and model scope"
+      },
+      {
+        "path": "branches/branch-2/ada/v6_audit.py",
+        "sha256": "28c5bd5e48b92f7f43f21da8b1b8805a541be47188811dcfae32e2e1c3aa204e",
+        "purpose": "Independent saved-graph rule audit and repaired-run identification; read only"
+      }
+    ]
+  }
+}
