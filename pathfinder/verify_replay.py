@@ -1,4 +1,4 @@
-"""One classic verifier reassessment on a verified follow-up copy, never its original."""
+"""Classic verifier reassessment or retained-response restoration on an exact follow-up copy."""
 import copy
 import hashlib
 import json
@@ -9,7 +9,7 @@ from .context import Section
 from .ledger import Ledger
 
 
-def prepare(campaign, pair, origin, reason):
+def prepare(campaign, pair, origin, reason, receipt=None):
     origin = config.load(Path(origin))
     d = campaign.thread_dir(pair); old = origin.thread_dir(pair)
     root = d / 'reassessment'
@@ -19,7 +19,8 @@ def prepare(campaign, pair, origin, reason):
         raise pce.Changed('classic replay requires unchanged campaign configuration and no research scheme')
     if root.exists():
         request = json.loads((root/'request.json').read_text())
-        if request['origin'] != str(origin.root) or request['reason'] != reason:
+        if (request['origin'] != str(origin.root) or request['reason'] != reason
+                or request.get('restore_receipt') != receipt):
             raise pce.Changed('this copy already binds another reassessment')
         return request
     if runner.Lock.holder(old) or any(health.alive(x.get('pid')) or health.alive(x.get('child_pid'))
@@ -39,6 +40,10 @@ def prepare(campaign, pair, origin, reason):
     request = {'origin':str(origin.root),'pair':pair,'reason':reason,'source_files_sha256':hashes,
                'source_status':status,'config':campaign.raw,'prompts':resources.prompt_digests(campaign),
                'engine':provenance.engine(), 'original_run':health.read(origin.path('run.json'))}
+    if receipt is not None:
+        from . import verifier_receipt
+        restored = verifier_receipt.inspect(origin, pair, receipt)
+        request.update(restore_receipt=receipt, retained_response=restored)
     # Verify the source was stable during snapshot inspection, without writing a lock there.
     if {k:v for k,v in pce_recovery.hashes(old).items() if k!='lock'} != hashes:
         raise pce.Changed('original changed during inspection; take a new copy')
@@ -52,11 +57,13 @@ def prepare(campaign, pair, origin, reason):
     return request
 
 
-def run(campaign,pair,*,origin=None,reason=None,apply=False,accept_change=None):
+def run(campaign,pair,*,origin=None,reason=None,apply=False,accept_change=None,receipt=None):
     with health.owner(campaign,nested=True),runner.Lock(campaign.thread_dir(pair)):
         d=campaign.thread_dir(pair);root=d/'reassessment'
         if origin is not None:
-            prepare(campaign,pair,origin,reason or '')
+            prepare(campaign,pair,origin,reason or '',receipt)
+        elif receipt is not None:
+            raise pce.Changed('select the retained receipt with the original campaign during preparation')
         if not (root/'prepared.json').exists():
             raise pce.Changed('prepare an exact follow-up copy first')
         grant=json.loads((root/'request.json').read_text())
@@ -70,34 +77,46 @@ def run(campaign,pair,*,origin=None,reason=None,apply=False,accept_change=None):
             if (root/'commit.json').exists() and name in ('status.json','ledger.jsonl',f'{pair}.verdict.json','pathfinder-meta.tex'):continue
             if not (d/name).is_file() or hashlib.sha256((d/name).read_bytes()).hexdigest()!=digest:
                 raise pce.Changed('reassessment input changed: '+name)
-        if not apply:return {'status':'prepared','calls':'one verifier response; malformed output stops for inspection'}
+        if not apply:return {'status':'prepared','calls':'none; restore retained verdict' if grant.get('restore_receipt')
+                             else 'one verifier response; malformed output stops for inspection'}
         if runner.stopped(campaign) or not runner.guard_ok(campaign,inflight=1):return {'status':'stopped'}
         with provenance.run_context(campaign,accept_change):
             if (root/'commit.json').exists():return _install(campaign,pair,root)
             c=copy.copy(campaign)
-            if (c.raw.get('refusal_fallback') or {}).get('backend') not in (None,'codex','stub'):
-                raise pce.Changed('reassessment fallback must stay OpenAI-only')
-            inp=research._inputs(d)
-            task=research._prompt(c,'verify',Q_INPUT=f"inputs/{inp['Q']}",P_INPUT=f"inputs/{inp['P']}",NOTE=f'{pair}.tex')
-            task+='\n\n'+research.evidence_pointer(c)+' Do not modify any file.\n'
-            prompt=context.build(c,'verify',research.judge_sections(d,inp,f'{pair}.tex')+[Section('',text='## your task\n\n'+task,keep=True)],tools=True,cwd=d,unit=pair)
-            if (root/'prompt.txt').exists():prompt=(root/'prompt.txt').read_text()
-            req=research._stage_request(c,pair,'verify',prompt,True,c.allowances['verify_seconds'])
-            routed,_=routing.apply(c,req)
-            if routed.backend not in ('codex','stub'):
-                raise pce.Changed('reassessment verifier must stay OpenAI-only')
-            pce._write(root,'prompt.txt',prompt,immutable=True)
-            if not (root/'verdict.json').exists():
-                if not (root/'raw.json').exists():
-                    if (root/'dispatch.json').exists():raise pce.Changed('uncertain verifier dispatch; inspect receipts, do not repeat')
-                    pce._write(root,'dispatch.json',pce._json({'run_id':c.run_id,'prompt_sha256':pce._sha(prompt)}),immutable=True)
-                    raw=transport.execute(c,req)
-                    pce._write(root,'raw.json',pce._json(raw),immutable=True)
-                raw=json.loads((root/'raw.json').read_text())
-                if raw.get('error') or raw.get('failure'):raise pce.Changed('verifier failed; raw retained; no automatic new call')
-                # A malformed response stops for inspection rather than spending a new verdict.
-                verdict=contracts.parse('verify',raw.get('text',''))
+            if grant.get('restore_receipt'):
+                retained = grant['retained_response']
+                raw = retained['original_receipt']
+                text = transport._parse(c, raw['model'], raw['raw_events'])[0]
+                if text != retained['text']:
+                    raise pce.Changed('retained response differs from original receipt')
+                verdict = contracts.parse('verify', text)
+                if verdict != retained['verdict']:
+                    raise pce.Changed('retained verdict differs from its response')
                 pce._write(root,'verdict.json',pce._json(verdict),immutable=True)
+            else:
+                if (c.raw.get('refusal_fallback') or {}).get('backend') not in (None,'codex','stub'):
+                    raise pce.Changed('reassessment fallback must stay OpenAI-only')
+                inp=research._inputs(d)
+                task=research._prompt(c,'verify',Q_INPUT=f"inputs/{inp['Q']}",P_INPUT=f"inputs/{inp['P']}",NOTE=f'{pair}.tex')
+                task+='\n\n'+research.evidence_pointer(c)+' Do not modify any file.\n'
+                prompt=context.build(c,'verify',research.judge_sections(d,inp,f'{pair}.tex')+[Section('',text='## your task\n\n'+task,keep=True)],tools=True,cwd=d,unit=pair)
+                if (root/'prompt.txt').exists():prompt=(root/'prompt.txt').read_text()
+                req=research._stage_request(c,pair,'verify',prompt,True,c.allowances['verify_seconds'])
+                routed,_=routing.apply(c,req)
+                if routed.backend not in ('codex','stub'):
+                    raise pce.Changed('reassessment verifier must stay OpenAI-only')
+                pce._write(root,'prompt.txt',prompt,immutable=True)
+                if not (root/'verdict.json').exists():
+                    if not (root/'raw.json').exists():
+                        if (root/'dispatch.json').exists():raise pce.Changed('uncertain verifier dispatch; inspect receipts, do not repeat')
+                        pce._write(root,'dispatch.json',pce._json({'run_id':c.run_id,'prompt_sha256':pce._sha(prompt)}),immutable=True)
+                        raw=transport.execute(c,req)
+                        pce._write(root,'raw.json',pce._json(raw),immutable=True)
+                    raw=json.loads((root/'raw.json').read_text())
+                    if raw.get('error') or raw.get('failure'):raise pce.Changed('verifier failed; raw retained; no automatic new call')
+                    # A malformed response stops for inspection rather than spending a new verdict.
+                    verdict=contracts.parse('verify',raw.get('text',''))
+                    pce._write(root,'verdict.json',pce._json(verdict),immutable=True)
             verdict=json.loads((root/'verdict.json').read_text())
             if not (root/'commit.json').exists():
                 old=grant['source_status'];dec=verdict['decision'];now=research._now()
@@ -114,7 +133,8 @@ def run(campaign,pair,*,origin=None,reason=None,apply=False,accept_change=None):
                          'text':f"{dec}: {verdict.get('reason')} Action: {verdict.get('action')}",'supersedes':None,'seen':None})+'\n'
                 oldv=root/'prior'/f'{pair}.verdict.json';history=json.loads(oldv.read_text()) if oldv.exists() else []
                 history.append({'round':old['round'],'at':now,'note_sha256':grant['source_files_sha256'][f'{pair}.tex'],
-                                'reassessment':True,**verdict})
+                                'reassessment':True,**({'restored_receipt':grant['restore_receipt']}
+                                    if grant.get('restore_receipt') else {}),**verdict})
                 targets={'ledger.jsonl':ledger,f'{pair}.verdict.json':json.dumps(history,indent=1),
                          'status.json':json.dumps(status,indent=1)}
                 pce._write(root,'commit.json',pce._json(targets),immutable=True)

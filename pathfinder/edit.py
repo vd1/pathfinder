@@ -2,7 +2,7 @@
 from __future__ import annotations
 import json
 from . import corpus, pce, research, transport
-from .paper import build, check_references
+from .paper import build, check_references, workspace_rule
 from .research import _inputs, _prompt, _now
 from .admission import Refused
 from .thread import Stopped
@@ -81,6 +81,7 @@ def _run(campaign, pair_id: str, stop) -> str:
         research.write_meta(campaign, pair_id, ed, "readable note", protocol=True)
         p = _prompt(campaign, "editor", STATUS=st, NOTE=f"{pair_id}.tex", NOTE_STEM=pair_id,
                     Q_INPUT=f"inputs/{inp['Q']}", P_INPUT=f"inputs/{inp['P']}", RETRY=retry)
+        p += workspace_rule(d, "edited", "note.tex")
         try:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=False, cwd=d,
                                timeout=seconds, thread=pair_id, stage="edit", actor="editor")

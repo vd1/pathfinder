@@ -227,7 +227,9 @@ def _parse(campaign, model, lines):
             if row.get("is_error"):
                 err = text or "error"
         elif t == "item.completed" and (row.get("item") or {}).get("type") == "agent_message":
-            text = row["item"].get("text", "")
+            message = row["item"].get("text", "")
+            if isinstance(message, str) and message.strip():
+                text = message  # An empty trailing event must not erase a completed response.
         elif t == "turn.completed":
             usage = row.get("usage") or usage
             if not terminal_failure:

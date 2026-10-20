@@ -2,7 +2,7 @@
 With "paper_reviewers": 2 or 3, each round has that many independent reviews, as a programme committee: the paper
 is accepted only when every reviewer accepts, and otherwise the author answers all their findings."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, subprocess
+import hashlib, json, os, re, shlex, shutil, subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import context, contracts, corpus, research, transport
@@ -14,6 +14,23 @@ from .admission import Refused
 LEGACY = {"accepted": "ACCEPTED", "returned": "PAUSE-ON-AMEND"}
 TERMINAL = {"ACCEPTED", "CLEARED", "RELEASED", "PAUSE-ON-AMEND", "blocked"}
 ACCEPTED_STATES = ("ACCEPTED", "CLEARED", "RELEASED")   # accepted for its science; then cleared, then released
+
+
+def workspace_rule(thread, folder, main):
+    """Explicit paths for writes and compilation even if a tool changes its working directory."""
+    thread = Path(thread).resolve()
+    output = thread / folder
+    command = f"cd {shlex.quote(str(output))} && latexmk -pdf -interaction=nonstopmode -halt-on-error {shlex.quote(main)}"
+    return (f"\n\nWorkspace contract: initial working directory is {thread}.\n"
+            f"Read thread inputs relative to that directory. Write the document to {output / main} "
+            f"and bibliography to {output / 'references.bib'}. Use these absolute paths in file tools "
+            "and shell writes, including after changing a command's working directory. "
+            f"Do not prepend {folder}/ when already inside {output}.\n"
+            f"Compile with this explicit command:\n{command}\n"
+            "A command's directory does not establish the directory of later tool calls; "
+            "set each tool's working directory explicitly. Keep build files beside the document. "
+            "Once the required build and checks succeed, return the requested final response promptly. "
+            "Do not repeat successful checks without a new change or failure.\n")
 
 
 def folder(campaign, pair_id):
@@ -266,6 +283,7 @@ def _run(campaign, pair_id: str, stop) -> str:
                     NOTE_STEM=pair_id, ROUND=rnd, FINDINGS=findings)
         from . import library
         p += library.reading(campaign, d)
+        p += workspace_rule(d, "paper", "paper.tex")
         if not resume_review:
             r = transport.call(p, campaign=campaign, model=campaign.model, tools=True, search=True, cwd=d,
                                timeout=author_seconds, thread=pair_id, stage="author", actor="author")

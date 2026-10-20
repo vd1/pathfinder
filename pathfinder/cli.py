@@ -118,7 +118,8 @@ def main(argv=None):
     vr.add_argument("pair")
     vr.add_argument("--origin", type=Path, help="original campaign root; preparation requires an exact copied thread")
     vr.add_argument("--reason", help="owner authority and purpose of the replay")
-    vr.add_argument("--apply", action="store_true", help="run only the new verifier, then stop before subsequent research/editorial work")
+    vr.add_argument("--receipt", help="restore a completed verifier erased by an empty trailing event; no new call")
+    vr.add_argument("--apply", action="store_true", help="apply the verifier replay or selected receipt restoration, then stop before further work")
     ro = sub.add_parser("reopen", help="give a finished thread one more step: a repair (PAUSE-ON-REVISE), a peer round "
                         "(PAUSE-ON-ITERATE, PAUSE) or an extend round toward a target (DRAFT); the next verdict ends it")
     ro.add_argument("pair"); ro.add_argument("--grant", choices=("repair", "round", "extend"), required=True)
@@ -374,7 +375,7 @@ def _dispatch(ns, c):
     elif ns.cmd == "verify-replay":
         from . import verify_replay
         print(json.dumps(verify_replay.run(c, ns.pair, origin=ns.origin, reason=ns.reason,
-                                          apply=ns.apply, accept_change=ns.accept_change), indent=2))
+                                          apply=ns.apply, accept_change=ns.accept_change, receipt=ns.receipt), indent=2))
     elif ns.cmd == "reopen":
         from . import reopen
         try:

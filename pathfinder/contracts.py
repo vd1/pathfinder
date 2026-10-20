@@ -212,6 +212,10 @@ def ensure(campaign, request, result: dict, name, check=None) -> tuple:
         return parse(name, result.get("text") or "", check), result
     except ContractViolation as violation:
         first = violation
+    if name == "verify" and not (result.get("text") or "").strip():
+        failure = failures.Failure("contract", *failures.SCOPES["contract"]).record()
+        return None, {**result, "failure": failure, "error": "contract: empty verifier reply; no judgment to reformat",
+                      "contract_errors": first.errors}
     events.emit(campaign, "contract_repair", unit=request.thread, stage=request.stage, actor=request.actor,
                 contract=_label(name), errors=first.errors[:5])
     repair = replace(request, identity=request.identity + ":contract-repair", tools=False, search=False, reads=False,
