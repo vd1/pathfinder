@@ -632,7 +632,8 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                     source = re.split(r"[:#]", evidence, maxsplit=1)[0]
                     if not source.startswith("sources/external/") or source not in files:
                         raise InvalidOutput(f"evidence {evidence!r} is outside the approved external sources")
-                    cited.add("research record" if source == SUPPLEMENT or source.startswith("sources/external/amendment-") else "papers")
+                    cited.add("research record" if source == SUPPLEMENT or source.startswith(
+                        ("sources/external/amendment-", "sources/external/selected-json-")) else "papers")
                 expected = {"papers": {"papers"}, "research record": {"research record"},
                             "both": {"papers", "research record"}, "none": set()}[claim["basis"]]
                 if claim["status"] == "supported" and cited != expected:
