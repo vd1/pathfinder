@@ -1,0 +1,241 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\title{Testing a contact-score prerequisite for quantum docking explanations of thrombin nonadditivity}
+\newcommand{\rr}[1]{\footnote{The campaign's approved generated research record, \texttt{research-supplement.md}, #1.}}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Can better quantum optimisation of a docking score resolve a discrepancy in thrombin binding nonadditivity? The tested contact representations expose a prerequisite problem: neither improves prediction of 16 other ligands over training-only series means when larger scores are required to imply more favourable binding. One representation improves prediction with the opposite orientation. These descriptive results survive matched-substituent exclusions and the enumerated reference choices, but lack independent model-selection validation and experimental covariance. They support postponing thermodynamic attribution to the optimiser for the tested decreasing score-to-affinity rule. Candidate selection, access to untouched validation affinities and a replication criterion remain unresolved prerequisites to a prospective screen. The results remain subject to the stated assumptions and evidence limitations; generated supporting material is not independent evidence, and editing provides no additional scientific validation.
+\end{abstract}
+
+\section{The chemical question}
+
+Binding nonadditivity challenges ligand optimisation because the effect of changing a substituent can depend on the rest of the molecule. A docking method that explains this dependence could help distinguish useful chemical modifications. This work asks whether better quantum optimisation of a contact score can address that problem in thrombin. Its predictive diagnostics support postponing that attribution: under the tested rule that larger scores imply stronger binding, neither contact representation improves on training-only series means. The result concerns those representations and that orientation; it does not establish universal docking failure or absence of affinity information.
+
+Calabr\`o and colleagues study two congeneric thrombin inhibitor series: series 3 has \(X=\mathrm{H}\), series 5 has \(X=\mathrm{NH}_3^+\), and both vary the substituent \(R_1\). Their alchemical simulations reproduce the experimental trend towards positive coupling, generally with weaker magnitudes, but find no statistically significant coupling for ligands 3F and 5F. Vina docking misses the coupling trend.\cite{Q} Here, labels such as 3A and 5A identify ligands in the respective series, retaining the authors' lettering. A visual transcription of their Figure 1 identifies A as \(R_1=\mathrm{H}\), B as methyl and F as \(i\)-butyl. Comparisons A/B and F/B therefore concern removal or enlargement of the reference methyl substituent in the two charge series. These substituent identities rely on the recorded figure transcription.
+
+For a substituent label \(R\) occurring in both series, with B as reference, the thermodynamic nonadditivity is defined by
+\[
+ \mathrm{NA}_{R/B}
+ =\Delta\Delta G_{\mathrm{bind}}(5B\to5R)
+  -\Delta\Delta G_{\mathrm{bind}}(3B\to3R).
+\]
+Each \(\Delta\Delta G_{\mathrm{bind}}\) is the binding free energy of the final ligand minus that of the initial ligand. Negative \(\mathrm{NA}_{R/B}\) means that the B-to-\(R\) change improves binding more in series 5, corresponding to the positive-coupling convention of Calabr\`o and colleagues.\cite{Q} Transcriptions of their supplementary tables give the following recombinations of rounded published values:
+\[
+\begin{array}{c|rr}
+ & A/B & F/B\\ \hline
+\text{Experiment} & -1.5 & -1.6\\
+\text{Alchemical simulation} & -0.59 & 0.00\\
+\text{Vina} & +0.2 & +0.1
+\end{array}
+\qquad \mathrm{kcal\,mol^{-1}}.
+\]
+These are source comparators, not measurements made here. The original supplementary tables are not separately supplied with this account, so these numbers rely on research transcriptions; their joint covariance was not recovered.
+
+Calabr\`o and colleagues associate coupling partly with shortening of the charged amino-group hydrogen bond to Gly216, alongside compensating interactions elsewhere in the binding site. That contact does not explain every ligand. Quantitative entropy contributions for A and sufficiently precise hydration components remain unresolved.\cite{Q} A contact score therefore needs assessment as an affinity surrogate before a better optimiser can be credited with resolving the discrepancy.
+
+\section{From quantum docking to a predictive test}
+
+Ding, Huang and Yuan pair ligand and receptor pharmacophores into vertices of a binding interaction graph. Vertices receive knowledge-based weights; edges test compatibility using distances within the ligand and within the receptor. A maximum vertex-weight clique is a mutually connected set of vertices with the largest sum of weights. They seek such cliques using the quantum approximate optimisation algorithm, QAOA, and digitised-counterdiabatic QAOA, DCQAOA. Their six-, eight- and twelve-qubit numerical examples use full-parameter, or multiangle, circuits unless otherwise specified: individual parametrised gates have independent angles. DCQAOA adds local Y rotations and improves graph-solution recovery in those examples.\cite{P}
+
+Their applied weights distinguish donors, acceptors, hydrophobes and aromatic features, without a binding-free-energy calibration. Their worked receptor selection uses points within 5~\AA\ of the ligand's actual binding pose. Recovering a graph solution under that preparation does not establish blinded docking accuracy or a cross-ligand affinity relation.\cite{P}
+
+This work tested two custom representations, each frozen before its reported score calculations. The \emph{polar model} uses uncapped RDKit ligand features and four receptor features fixed from a 3B preparation. The \emph{v2 model} uses GAFF/ff99SB atom-type rules and a ligand-specific receptor neighbourhood within 5~\AA. Neither reproduces the executable implementation of Ding and colleagues. Detailed rules and provenance are retained in the appendix.
+
+The preparation distinction matters. All 16 predictive ligand rows outside A, F and B use archive initial states in both models. An initial state is the starting endpoint of an alchemical transformation; a final state is its target endpoint. Some quartet and reference alternatives instead reconstruct final states while retaining unrelaxed morph input coordinates. Those alternatives are preparation scenarios, not equilibrium samples; the polar predictive calculation also retains its fixed receptor preparation. Identity checks support non-stereochemical connectivity and the declared atom inventory, not independent stereochemical or ensemble validation.
+
+For a ligand \(L\), let \(W_L\) be its maximum weighted-clique score, a dimensionless sum of native vertex weights, and let \(s(L)\in\{3,5\}\) denote its series. Write \(B_s\) for reference ligand B in series \(s\). The predictive response is defined by
+\[
+ y_L=\Delta G_{\mathrm{bind}}^{\mathrm{exp}}(L)
+       -\Delta G_{\mathrm{bind}}^{\mathrm{exp}}(B_{s(L)}),
+\]
+where \(\Delta G_{\mathrm{bind}}^{\mathrm{exp}}\) denotes experimental binding free energy in \(\mathrm{kcal\,mol^{-1}}\). Negative \(y_L\) means more favourable binding than the reference in the same series. The diagnostic fits
+\[
+ y_L=a_{s(L)}+b_cW_L,
+\]
+where \(a_3,a_5\in\mathbb R\) are separate series intercepts in \(\mathrm{kcal\,mol^{-1}}\), and \(b_c\in\mathbb R\) is a common slope in binding-free-energy units per native score unit. The tested decreasing rule constrains \(b_c\leq0\): larger contact scores must imply more favourable binding. Ding and colleagues do not establish this cross-ligand orientation. Each prediction excludes its target from every fitted quantity. The comparator predicts the training-only mean response of the target's series. This tests within-series prediction, rather than directly validating a thermodynamic cycle calibration.
+
+Excluding a single row can retain the corresponding congener in the other series. A grouped diagnostic therefore excludes matched substituent groups together: C, D, E, J and K across the two series, together with 3G/5H and 3H/5I. Unmatched ligands 3I and 5G each form a singleton group. The non-identical G/H labels follow the chemical correspondence reported by Calabr\`o and colleagues.\cite{Q} A fold fits the model after excluding one such group and predicts the excluded responses.
+
+Root mean squared error, RMSE, is the square root of the mean squared prediction error. The following RMSEs weight each of the 16 ligand rows equally across the nine excluded groups:
+\[
+\begin{array}{c|rrr}
+ & \text{Setting 1} & \text{Setting 2} & \text{Setting 3}\\ \hline
+\text{Training series mean} & 0.788 & 0.788 & 0.788\\
+\text{Polar, decreasing} & 0.825 & 0.788 & 0.832\\
+\text{v2, decreasing} & 0.788 & 0.788 & 0.788\\
+\text{v2, unrestricted} & 0.699 & 0.612 & 0.715
+\end{array}
+\]
+All RMSEs are in \(\mathrm{kcal\,mol^{-1}}\). Settings 1--3 are the geometric allowance triples defined in the appendix. Neither decreasing model improves on the comparator. Every unrestricted v2 grouped-fit slope is positive: v2 retains descriptive predictive information in the opposite direction, and imposing the tested orientation removes that improvement.
+
+The single-row exclusion diagnostic gives the same bounded conclusion. Its mean comparator has RMSE approximately \(0.788\); decreasing polar fits give \(0.827\), \(0.788\) and \(0.845\), while decreasing v2 fits equal the comparator throughout. The result also survives the enumerated shared-reference choices. This robustness is an arithmetic property of centred fits, not additional molecular replication.
+
+These findings concern the tested representations and orientation. Ligands A, F and B had already informed representation assessment, the grouped diagnostic was post-hoc, and the original affinity covariance is missing. Excluding a target from regression does not undo model-selection exposure or justify an uncertainty-based rejection. The results support postponing thermodynamic optimiser attribution for the decreasing transfer rule; they do not show that contact scores contain no affinity information.
+
+\section{Why the predictive result does not settle the cycle}
+
+For \(R\in\{A,F\}\), define the native contact-score cycle by
+\[
+ D_R(W)=W_{5R}-W_{5B}-W_{3R}+W_{3B}.
+\]
+A common absolute affine affinity map is a function \(g:\mathbb R\to\mathbb R\) of the form \(g(W)=a+bW\), where \(a\) is an affinity intercept and \(b\) converts native scores to \(\mathrm{kcal\,mol^{-1}}\). It predicts the cycle \(bD_R(W)\), since its intercept cancels. For B-relative targets, this map requires calibration through the reference:
+\[
+ y_L=b_0(W_L-W_{B_{s(L)}}),
+\]
+where \(b_0\in\mathbb R\) is the reference-relative fitted slope, in binding-free-energy units per native score unit. This slope is not the diagnostic slope \(b_c\) obtained with separate series intercepts. Intercept cancellation in a cycle does not equate the training procedures. Native graph units cannot be compared directly with thermodynamic error bars.
+
+This distinction limits what the predictive failure establishes. At setting 3, the polar primary reference-relative fit predicts approximately \(-0.66\) for A/B and \(-1.08\ \mathrm{kcal\,mol^{-1}}\) for F/B. The primary reference-relative slope is fitted to the experimental B-relative responses of the same predictive ligands outside A, F and B; A/F responses are excluded. Here, ``primary'' denotes the endpoint preparation listed in the appendix. Refitting without A/F targets gives marginal cycle ranges across shared-reference preparation scenarios that include experimental-scale magnitudes. These are separate ranges for each cycle across scenarios; they do not establish simultaneous quantitative agreement for both cycles in one shared preparation. Both cycles are negative in 252, 90 and 336 of the 600 polar preparation tuples at settings 1, 2 and 3, respectively. These counts are not probabilities; marginal extrema and sign agreement do not establish simultaneous quantitative agreement.
+
+Reference-relative single-row exclusion RMSE exceeds the series-mean comparator RMSE in every enumerated polar and v2 scenario. Those fits lack learned series offsets, so that excess alone cannot establish absence of score information. Alternative calibration remains open, including investigation of v2's opposite-direction trend. Neither fit has become a validated affinity prediction.
+
+Chemical and geometric uncertainty also persists after an optimum is found. Supporting calculations show that feature perception, receptor coverage, allowances and feature reuse can change native cycles. Their distinct receptor domains give different answers and do not independently confirm one molecular mechanism. In particular, nonzero allocations in reported feasible cliques need not represent the charged Gly216 interaction discussed by Calabr\`o and colleagues. The appendix retains these disagreements and their numerical limits.
+
+For \(R=A\) or F, let \(g_L\in\mathbb R\) be a calibrated binding-free-energy estimate for ligand \(L\), in \(\mathrm{kcal\,mol^{-1}}\). Define the ordered quartet
+\[
+ z=(g_{5R},g_{5B},g_{3R},g_{3B})^T,
+ \qquad c=(1,-1,-1,1)^T,
+\]
+and the calibrated cycle
+\[
+ C=g_{5R}-g_{5B}-g_{3R}+g_{3B}=c^Tz.
+\]
+This ordering and sign agree with the native score cycle above and the B-relative thermodynamic contrast. Let \(\Sigma=\operatorname{Cov}(z)\) be the \(4\times4\) joint covariance matrix of the calibrated estimates, including shared-reference and calibration dependence. Then
+\[
+ \operatorname{Var}(C)=c^T\Sigma c.
+\]
+The covariance was not recovered. Complete receptor chemistry, independent endpoint stereochemistry and protonation validation, relaxed bound and aqueous ensembles, whole-ligand pose feasibility and independent model-selection validation remain unresolved. This work establishes neither a molecular mechanism nor universal docking failure, novelty or quantum benefit.
+
+\section{The next decision}
+
+The enumerated source-preparation and second-representation checks are complete. Their result is a descriptive failure of the tested decreasing transfer rule to improve on series means, with v2's opposite-direction signal retained. The within-ligand optimiser comparison of Ding and colleagues is not refuted by that cross-ligand result.
+
+A prospective prediction screen first requires a chemically justified candidate representation and affinity orientation; the present results identify no validated winner. It also requires access to validation affinities reserved from model selection, with matched substituent groups kept together. Availability of such untouched data is unresolved. Endpoint preparation, feature and receptor-domain rules, allowances, orientation, calibration family and the evaluation protocol would need to be frozen before inspecting those affinities. The protocol should state whether selection uses a known pose. A replication design and a criterion for reproducible improvement also remain to be specified. Existing A/F diagnostics cannot become untouched evidence through a new regression exclusion.
+
+Once those prerequisites are met, the smallest useful experiment is an unperformed descriptive prediction screen comparing the frozen model's validation RMSE with predictions from training-only series means and reporting source-choice dependence. Failure to reduce validation RMSE relative to that comparator would retain the reason to postpone thermodynamic attribution for that frozen model and orientation. No numerical improvement threshold or replication criterion has been established here. Without recovered covariance, this screen should not carry confidence claims.
+
+A favourable screen would permit further assessment, not establish thermodynamic adequacy. Independently calibrated cycle agreement, with shared-reference and calibration uncertainty, and feasible whole-ligand poses would still be required. Only then should exact clique solvers, classical product-distribution controls and QAOA/DCQAOA be compared under matched preprocessing, starts, objective evaluations, gates, noise and shot budgets.
+
+The opportunity is to connect progress in graph optimisation to a chemically useful predictive task. The present diagnostics identify the score-to-affinity relation as an unresolved prerequisite and preserve an opposite-direction trend for further study. Resolving that prerequisite would make subsequent optimiser comparisons more informative about ligand design.
+
+\appendix
+\section{Technical specifications and supporting checks}
+
+\paragraph{Exact supporting records.}
+The polar implementation stores an integer weight table with row and column order HD, HA, HP and AR, denoting hydrogen-bond donor, hydrogen-bond acceptor, hydrophobe and aromatic features. It divides entries by 10000 to obtain dimensionless native weights. The v2 implementation multiplies its weight-table entries by 10000 and rounds before optimisation, then divides the clique sum by 10000. These weights are not binding energies. The complete polar weight table is retained in \texttt{audit.py}, \texttt{WEIGHTS}, with row/column \texttt{ORDER}; the corresponding v2 table is retained in \texttt{v2\_wl.py}, \texttt{W}, with integer-weight clique scoring defined by \texttt{solve}.
+
+The polar calculation reads PDB coordinates and aligns structures using a specified atom correspondence. Its receptor selection sorts candidates lexicographically by nearest reference ligand-heavy-atom distance, family string and sorted atom-index list, then retains the first four. Ligand features are sorted by family and atom-index list. In the retained polar \texttt{audit.py}, \texttt{read\_system} reads SYSTEM.pdb, \texttt{align} specifies atom correspondence and alignment, and \texttt{receptor\_features} and \texttt{ligand\_features} specify the selection and sorting rules. All four fixed polar coordinates and atom identities are recorded in \texttt{polar-correction-results.json}, key \texttt{fixed\_receptor\_features}.
+
+The v2 calculation reads endpoint coordinate files and uses atom positions or arithmetic centroids of aromatic rings. Its receptor domain includes every eligible feature with a constituent atom at most 5~\AA\ from a ligand heavy atom. There is no nearest-four truncation or distance-ranking tie in that selection. No uniquely tie-broken optimum clique is claimed. The retained \texttt{v2\_wl.py} specifies aromatic-ring construction, endpoint coordinate reading in \texttt{load}/\texttt{read\_crd}, feature positions in \texttt{features}, and receptor-domain selection in \texttt{receptor\_points}. The existing source table and \texttt{PRIMARY}/\texttt{ALT} identify archive edges and states. For polar edges use \texttt{polar\_correction.py:corrected\_big}, not the preceding \texttt{audit.py} graph implementation. The model-specific allowances, reuse and preparation limits below remain; these records establish neither physical calibration nor the executable conventions of Ding and colleagues.
+
+\paragraph{Feature and edge rules.}
+The polar model extracts uncapped RDKit Donor, Acceptor, Hydrophobe, LumpedHydrophobe and Aromatic ligand features, merging the hydrophobe families for weighting. Receptor donors are N/O atoms with bonded H, acceptors are O without bonded H, hydrophobes are non-carbonyl C, and aromatic points are six-member carbon aromatic cycles. The four features nearest a 3B heavy atom are selected with the deterministic ties described above. The reported selection contains one acceptor, two donors and one hydrophobe: acceptor atom 3649 (O), donor atoms 3674 (N) and 3314 (OG), and hydrophobe atom 3652 (CA). These indices identify atoms in the prepared receptor, not residue numbers. Residue assignments and Gly216 coverage remain unverified.
+
+V2 uses GAFF/ff99SB atom types. Donors are N/O with bonded H. Acceptors include every O, protein nitrogen of Amber ff99SB type \texttt{NB}, and ligand nitrogen of GAFF types \texttt{nb}, \texttt{nc} and \texttt{nd}, with case significant. An O bearing H can therefore be both donor and acceptor. Hydrophobes include chlorine and bromine atoms, protein sulphur and terminal methyl carbons; aromatic points are six-member aromatic-carbon ring centroids. An atom may carry separate labels, including both donor and acceptor for O--H. Each ligand retains a receptor feature when at least one of its constituent receptor atoms lies within 5~\AA\ of a ligand heavy atom. For an aromatic feature, the centroid need not itself meet that distance criterion. These type-based approximations do not establish complete chemical coverage.
+
+Both implementations allow feature reuse: a clique may contain vertices that share a ligand feature or a receptor feature. Self-edges are excluded. For distinct graph vertices \(u\) and \(v\), let \(d^{\mathrm{lig}}_{uv}\) and \(d^{\mathrm{rec}}_{uv}\) be the distances between their ligand features and between their receptor features, respectively. The edge between them is defined by
+\[
+ |d^{\mathrm{lig}}_{uv}-d^{\mathrm{rec}}_{uv}|
+ <\tau+\epsilon_u+\epsilon_v.
+\]
+Here, \(\tau\) is a geometric flexibility allowance. The per-vertex allowance \(\epsilon_u\) equals \(\epsilon_s\) if both labels of vertex \(u\) are donor/acceptor families, including equal-family combinations, and equals \(\epsilon\) otherwise; the same rule defines \(\epsilon_v\). All distances and allowances are in \AA. Equality is excluded. Settings 1, 2 and 3 are, respectively,
+\[
+ (\epsilon,\epsilon_s,\tau)
+ =(3.1,2.5,0.1),\ (4,3,0.6),\ (2.8,2.5,0.1)
+ \quad\text{in \AA}.
+\]
+The appendices of Ding and colleagues supply these allowances and the positive-margin convention; their main text prints the opposite inequality direction. The custom implementations use the strict smaller-than convention without resolving the source implementation's executable conventions. After feature selection, edges use intraligand and intrareceptor distances, not direct ligand--receptor distances; the allowances are not established whole-ligand contact radii.\cite{P}
+
+\paragraph{Endpoint provenance.}
+An archive transformation is written \(U\to V\), where \(U\) and \(V\) are ligand labels. Its initial endpoint, denoted I, corresponds to alchemical parameter \(\lambda=0\), and its final endpoint, denoted F, to \(\lambda=1\). Final-state projection changes state types and removes dummy atoms without relaxing coordinates.
+
+The polar primary final reconstructions are 3A from \(3D\to3A\), 3B from \(3C\to3B\), and 5A from \(5B\to5A\); the other primary quartet endpoints are initial states. V2's primary final reconstructions are 3A from \(3B\to3A\) and 5A from \(5B\to5A\). Its alternate final sources are 3A from \(3D\to3A\), 3B from \(3C\to3B\), and 5A from \(5D\to5A\). Both predictive implementations select initial sources for all 16 rows.
+
+\paragraph{Enumeration of preparation choices.}
+The polar calculation enumerates the following usable endpoint sources. Each transformation and I/F designation identifies an endpoint reconstruction, with dummy atoms removed and coordinates unrelaxed.
+\begin{center}\begin{tabular}{llp{0.71\linewidth}}
+Endpoint & Count & Transformation and endpoint \\
+3A & 3 & \(3D\to3A\) (F), \(3G\to3A\) (F), \(3H\to3A\) (F) \\
+5A & 4 & \(5B\to5A\) (F), \(5D\to5A\) (F), \(5H\to5A\) (F), \(5I\to5A\) (F) \\
+3B & 5 & \(3C\to3B\) (F), \(3D\to3B\) (F), \(3I\to3B\) (F), \(3J\to3B\) (F), \(3K\to3B\) (F) \\
+5B & 5 & \(5B\to5A\) (I), \(5C\to5B\) (F), \(5D\to5B\) (F), \(5J\to5B\) (F), \(5K\to5B\) (F) \\
+3F & 1 & \(3F\to3C\) (I) \\
+5F & 2 & \(5F\to5C\) (I), \(5G\to5F\) (F) \\
+\end{tabular}\end{center}
+A preparation tuple selects one source for each endpoint, in order 3A, 5A, 3B, 5B, 3F and 5F. The Cartesian product has \(3\times4\times5\times5\times1\times2=600\) tuples per setting. The chosen 3B and 5B references are shared by both cycles within each tuple. Unavailable sources are excluded. The exact keys are retained under \texttt{grid[*].snapshot\_W\_integer} in \texttt{polar-correction-results.json}; \texttt{refit\_fraction\_check.py} enumerates those pools in the stated order.
+
+For v2, independently choose primary or alternate for 3A, 5A and 3B: 3A is \(3B\to3A\) (F) or \(3D\to3A\) (F); 5A is \(5B\to5A\) (F) or \(5D\to5A\) (F); 3B is \(3B\to3A\) (I) or \(3C\to3B\) (F). The fixed endpoints are 3F from \(3F\to3C\) (I), 5F from \(5F\to5C\) (I), and 5B from \(5B\to5A\) (I). Thus \(2\times2\times2=8\) combinations are used per setting, with the same selected B references in both cycles. These are the \texttt{PRIMARY}/\texttt{ALT} choices in the retained \texttt{v2\_wl.py} and the saved \texttt{alternate\_source\_scenarios} in \texttt{v2-fold-results.json}. Repeated preparations are neither independent observations nor a probabilistic ensemble.
+
+\paragraph{Reference and numerical checks.}
+For a series \(s\in\{3,5\}\), let \(\overline W_{\mathrm{train},s}\) denote the mean score among that series' training ligands in a given fold. Subtracting a common reference score leaves training-centred scores unchanged:
+\[
+ (W_L-W_{B_s})
+ -\overline{(W-W_{B_s})}_{\mathrm{train},s}
+ =W_L-\overline W_{\mathrm{train},s},
+ \qquad s=s(L).
+\]
+Centred predictions are therefore exactly invariant under these translations. The decreasing result holds across all 600 polar tuples and eight v2 combinations per setting. The polar tuples contain only eight, three and eight distinct numerical B-score pairs at settings 1, 2 and 3, respectively; repeated tuples are not independent trials. Grouped-fold rational arithmetic using Python's Fraction type and a separate NumPy calculation agree within \(1.16\times10^{-13}\).
+
+All 48 v2 scores, covering 16 predictive ligands at three settings, have reported solver-optimal status, zero reported mixed-integer gaps and checked clique witnesses. A clique witness is a returned feasible vertex set whose weight can be checked directly. Two initial timeouts for ligand 5E were resolved. Separate arithmetic checks corroborate saved-score calculations without independently regenerating molecular identities or graph witnesses. These are model-specific numerical checks, not pose or ensemble validation.
+
+\paragraph{Supporting calculation with a distance-only graph.}
+A separate calculation uses fixed custom features and distance-only graphs following the smaller-than compatibility convention in Appendix B of Ding and colleagues. The complete retained runner \texttt{distance\_only\_big.py} and its \texttt{distance-only-big-results.json} result supply the endpoint construction and values.
+
+For this calculation, define the negative score \(S_L=-W_L\) for each ligand \(L\), and the uncalibrated, dimensionless F/B cycle by
+\[
+ C_F^S=S_{5F}-S_{5B}-S_{3F}+S_{3B}.
+\]
+The reported interval \([-3.6495,-3.6491]\) bounds \(C_F^S\). For each ligand \(L\), let \(l_L\) be the returned feasible-clique weight and \(u_L\) be minus the minimisation solver's dual bound, so that they supply lower and upper bounds on its maximum clique weight. The calculation forms the lower cycle endpoint as
+\[
+ -u_{5F}+l_{5B}+l_{3F}-u_{3B}
+\]
+and the upper endpoint as
+\[
+ -l_{5F}+u_{5B}+u_{3F}-l_{3B}.
+\]
+In order \((5F,5B,3F,3B)\), the saved feasible weights are \((41.0582,35.8431,36.8334,35.2678)\), and the upper bounds are \((41.0582,35.8431,36.8338,35.2678)\) at the displayed precision. The residual 3F gap accounts for the displayed interval width; the other differences close to floating precision.
+
+These are floating mixed-integer linear programming (MILP) bounds for fixed custom features and endpoint snapshots, not a spread across preparations, a thermodynamic confidence interval or a formal rational-arithmetic certificate. Reported solver-optimal status does not prove that the 3F weight is exactly known to four decimals. The endpoints are rounded for display, and the negative score sign supplies no energy calibration. This qualification concerns this graph calculation, separately from the polar/v2 preparation ranges and the receptor-domain calculations below.
+
+The same calculation's D/B cycle, \(S_{5D}-S_{5B}-S_{3D}+S_{3B}\), stays negative when receptor identities are united using each endpoint's coordinates, then becomes positive when receptor intradistances are fixed to the reference. This locates that surrogate sign reversal in the geometry control; fixing geometry may remove relevant adaptation.
+
+\paragraph{Supporting receptor-domain calculations.}
+Another supporting model uses a selected set of 29 receptor features. Let a graph vertex \(u=(i,j)\) pair ligand feature \(i\) with receptor feature \(j\), where \(i\) and \(j\) range over the selected ligand and receptor feature sets. Its per-vertex allowance \(\epsilon_u\) equals \(s\) when both features are hydrogen-bond donor or acceptor types, each of which may be either type, and equals \(4.0\)~\AA\ otherwise. The scalar \(s\) takes values \(3.0\) and \(3.3\)~\AA.
+
+For distinct vertices \(u=(i,j)\) and \(v=(k,l)\), let \(d_L(i,k)\) and \(d_R(j,l)\) be the distances between their ligand and receptor feature positions, respectively. An edge is defined by
+\[
+ 0.6\,\text{\AA}+\epsilon_u+\epsilon_v
+       -|d_L(i,k)-d_R(j,l)|>0.
+\]
+Equality is excluded. In the \emph{feature-injective} variant, the edge also requires \(i\ne k\) and \(j\ne l\), forbidding feature reuse within a clique. Thus \(s\) is a per-vertex allowance used twice when both vertices qualify, not the entire pairwise mismatch tolerance or a direct ligand--receptor distance cutoff. These scalar variants belong to this supporting model, separately from the polar and v2 allowance triples. Its frozen rule and saved-graph audit agree on the strict inequality.
+
+Using \(S_L=-W_L\) for this model's scores, define \(C_R^S=S_{5R}-S_{5B}-S_{3R}+S_{3B}\) for \(R\in\{A,F\}\). The repaired 29-feature subset gives raw \((C_F^S,C_A^S)\) values of \((-1.0138,0)\), \((0,0)\), \((-0.1008,0)\) and \((-0.0864,-0.0864)\) at allowances 3.0 and 3.3~\AA, each first without and then with feature injectivity. Its 24 graphs have agreeing MILP and constraint-programming CP-SAT proofs of optimality. A different 56-feature subset gives independently certified injective zero cycles, while its non-injective F optima remain unproved. Both subsets omit part of the S1 partition used by Calabr\`o and colleagues. Nonzero allocations in the smaller subset's reported clique witnesses are hydrophobe weights, not an identified charged-contact mechanism.
+
+An earlier reduced domain excluded Gly216 and falsely labelled a Ser214 carbonyl O as a donor. The repaired calculation retains the ligand amino-N/Gly216-O vertex, but its membership in one witness does not establish membership in every degenerate optimum. These different-domain controls are supporting calculations, not independent molecular confirmation of the predictive result.
+
+\paragraph{Classical controls and resources.}
+Supporting controls distinguish possible causes of a score cycle. Synthetic contact competition produces coupling despite additive weights; a restricted rigid-contact example loses its graph cycle when pose feasibility is imposed. A finite-ensemble example changes a free-energy cycle without changing minimum energies, and nonlinear scalar calibration can create a cycle absent from raw scores. These conditional examples are not observed thrombin mechanisms and do not identify cliques with physical microstates.
+
+On transcriptions of Ding and colleagues' six- and eight-vertex graphs, a supporting calculation recovers optimum weights \(2.0058\) and \(2.2001\); weight-priority greedy selection finds both. Product-distribution descent, which optimises independent vertex-selection probabilities, depends on update order. Smaller-than compatibility reproduces those examples, but their rounded data do not settle equality handling.
+
+For a graph with \(N\) vertices indexed by \(i\in\{1,\ldots,N\}\), let \(w_i\) be the dimensionless weight of vertex \(i\). Let \(\overline E\) be the set of incompatible unordered vertex pairs, each listed once with \(i<j\), and let \(M=|\overline E|\) be their number. The supporting minimisation objective is defined by
+\[
+ E(x)=-\sum_{i=1}^N w_i x_i
+       +\kappa\sum_{(i,j)\in\overline E,\ i<j}x_ix_j,
+ \qquad x=(x_1,\ldots,x_N)\in\{0,1\}^N,
+\]
+where \(x_i\) indicates selection of vertex \(i\), and \(\kappa\) is the declared penalty coefficient in native objective units. For independent Bernoulli variables with selection probabilities \(q_i\in[0,1]\),
+\[
+ \mathbb E[E(x)]=-\sum_iw_iq_i
+       +\kappa\sum_{(i,j)\in\overline E,\ i<j}q_iq_j.
+\]
+The first sum ranges over all \(N\) vertices. Evaluation of this specified expectation takes \(O(N+M)\) arithmetic operations given the weights and pair list. This is an evaluation statement, not an optimisation guarantee or a claim that an unspecified penalty enforces a clique.
+
+Conditional on unrestricted independent gate angles, the full-parameter circuits of Ding and colleagues can represent every bitstring at one layer with zero entangling angles. Neither that representability nor the expectation-evaluation cost guarantees efficient discovery of the optimum or establishes classical superiority.\cite{P}
+
+Ding and colleagues use one qubit per graph vertex and reduce feature selections because of device constraints.\cite{P} The supporting distance-only calculation's custom 560--731-variable instances were solved classically in roughly 10--75 seconds, retaining the residual floating bound described above. Those timings and the small numerical examples of Ding and colleagues are not a matched resource comparison. The work reported here ran graph calculations and arithmetic checks, not molecular dynamics or quantum circuits. Attempted specialist reviews did not provide scientific sign-off. Generated supporting material is not independent molecular ground truth, and presentation editing provides no additional scientific validation.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}
