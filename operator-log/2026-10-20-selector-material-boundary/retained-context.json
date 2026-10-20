@@ -1,0 +1,31 @@
+{
+  "external_sha256": {
+    "sources/external/P.txt": "1ecc2b09c77a91b7055f3d74b9a95b93958e07acd61f9de7ed7c7a077f2c10c2",
+    "sources/external/Q.txt": "e096f148c529d3ec3679155f236c588af56629f8f5372f99454d54820d0c9e31",
+    "sources/external/research-supplement.md": "896e60914aaec710b4ffa889f87708beaf01aadfca5cbc95ef2dece055dcbd5e"
+  },
+  "embedded_sha256": {
+    "ada/adapt_qsci/run.py": "81dda5997413b492dc0683d6438c7599520376fed83b4edd4375b63126bb03e3",
+    "ada/water_selector_interpretation.txt": "bdda912588f94ef208aa47c1c36fc378794ed565cb70ff296277bd94760bbe5f",
+    "branches/branch-1/ledger.jsonl": "74d7d8218259c95e59a20aa26f3f2aa72137f75d1fbb945bf05f74b3453c72be",
+    "branches/branch-2/ledger.jsonl": "a7fe2ef9849a827ea44b11d326d089b2efef0f46bf0328228550abdfa63c9ddd",
+    "branches/branch-3/ada/review2/V7-reference-audit.txt": "b41f581b00103a3c60c65983d66a3b15b3111ed7000e0e112fd3254398b9ab7c",
+    "branches/branch-3/ada/review2/reference_audit.py": "b24e4fb1c8868abc226fc7375b268262a76b3bd0fe87166f4cb58992917a05ce",
+    "branches/branch-3/ada/review2/reproduction.csv": "066169d188b1ec59639ecbe0667e2f97a30559cf4ac547c0653951d575653b10",
+    "branches/branch-3/ada/review2/result-1-b3lyp5-grid4.json": "5ad8489cc7ab6b7b20b88dee083dffdf8492672b14c183f7c56b5d61643db024",
+    "branches/branch-3/ada/review2/runtime.json": "94d1b8811aa9d67bb58f675df690bda501617d46acb8e059b684aafa4cfe0c3b",
+    "branches/branch-3/ledger.jsonl": "6f98df8f2b7881f728dced899df6dd100ef9e1a21e85f986f86cd9fe96b05ea0",
+    "ledger.jsonl": "88c6cce59360a702f014f328854219cd1507b2f0c7ccafc7555795230b7f1850"
+  },
+  "source_scope": "Absence is asserted only from this exact supplied mapping. No archive-wide absence inferred.",
+  "accounting_support": {
+    "run.py": "classical costs add two final R-cubed evaluations; ADAPT families sum per-field eigensolve_cubic_sum and separately record validation_eigensolve_dimensions",
+    "joint59": {
+      "actor": "ada",
+      "kind": "finding",
+      "seq": 59,
+      "standing": "current",
+      "text": "Complementary resource conclusion to #58, documented in ada/adapt_qsci/stopping_accuracy_note.txt:36-51: following the existing unchanged classical path only to its first observed all-component pass at dimension19 gives cubic eigensolve proxy 101441 (including final endpoint evaluations), 115425 residual matrix entries and 3879 external candidate scores, with zero shots/Pauli ranks. Unlike matched-size #49, this observed matched-tolerance control has a smaller eigensolve proxy than successful ADAPT pooling mean238339, before adding pooling validation solves. This removes that specific higher-classical-eigensolve qualification for the saved-path matched-accuracy comparison, but no hardware-time inference is made. Size19 is a post-hoc threshold against exact parent errors, not a certified online stopping prescription. I have read Emmy #56-57: her independent support replay agrees with my 19/60 repeated-support count, and her circuit-energy increases diagnose P explicitly heuristic transfer rather than invalidate QSCI."
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent_candidate_sha256": "fc4b5f475a03f2bc0c1a9407c8504fd8b4da4951c431fcfe88ee3564c2b9cc80",
+  "changes": [
+    {
+      "finding": "reader-material-boundary",
+      "before": "These are research-record implementation findings; the supporting-information text is not separately supplied here.",
+      "after": "These are research-record implementation findings; the supporting-information text is not separately supplied here. The supplied supplement embeds the selector implementation \\texttt{ada/adapt\\_qsci/run.py}, but not its numerical inputs \\texttt{parent.npz}, \\texttt{H-active.npz} and \\texttt{V-active.npz}, or the recorded build implementation \\texttt{ada/adapt\\_qsci/build.py} and its \\texttt{build-result.json}. The input record copies \\texttt{selected-records.json} and \\texttt{water-1926-input.json} named in the embedded interpretation are also not embedded. Nor are the selector outputs \\texttt{ada/adapt\\_qsci/result.json} (including saved run histories and gates), \\texttt{summary.json}, \\texttt{audit-result.json} and \\texttt{stopping\\_accuracy\\_audit\\_result.json}, or \\texttt{emmy/finite\\_shot\\_result\\_audit\\_result.json}; the associated summarising and replay scripts are not embedded either. Thus the component statistics, Hamiltonian checks and trajectory replays below are ledger-recorded validation findings, not numerical checks a reader can reproduce from this supplied supplement alone. This describes the supplied material, not whether those files exist elsewhere in the retained research archive."
+    },
+    {
+      "finding": "reader-material-boundary",
+      "before": "The size-19 classical path used no shots or Pauli rankings, a smaller proxy of 101441, 115425 residual matrix entries and 3879 external candidate scores.",
+      "after": "The size-19 classical path used no shots or Pauli rankings, a smaller proxy of 101441, 115425 residual matrix entries and 3879 external candidate scores. These proxies use different accounting boundaries: the ADAPT value 238339 excludes the final pooled endpoint validation solves, which the retained implementation records separately, whereas the classical value 101441 includes final endpoint evaluations. They are not consistently bounded total-work estimates; this qualification does not reverse the bounded implementation comparison on the selected record."
+    }
+  ],
+  "findings": [
+    {
+      "id": "reader-material-boundary",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "dc30843e827b5a10a622792124558dd827f74b644699e685a3258058e1ae73c5",
+      "quote": "State explicitly which numerical inputs, implementation dependencies and outputs are unavailable in the supplied scientific supplement, and distinguish recorded validation claims from checks a reader can reproduce with that material; no new calculations are required. Define the accounting boundary beside the resource comparison and disclose that the ADAPT proxy excludes final pooled endpoint solves whereas the classical proxy includes them, or report consistently bounded totals from existing evidence. Preserve the conclusion as a bounded implementation comparison on the selected record."
+    }
+  ]
+}
