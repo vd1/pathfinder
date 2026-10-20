@@ -1,0 +1,16 @@
+{
+  "baseline_sha256": "792b68e91db66c51c15a7594e22a559919e937152ec206a6fe3eeb4f1c0591f1",
+  "candidate_sha256": "80627b65fd6c03dfec50d99046f93d6220d109c6341927dac07b6b0a25f612da",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "Omission alone need not break the spring representation.",
+      "after": "For the information functional, let the baseline displacement \\(q=(z,w)\\) be Gaussian with covariance \\(\\theta K^{-1}\\), and define auxiliary contacts \\(x=U^Tq+\\epsilon_X\\), \\(y=V^Tq+\\epsilon_R\\). The noises are independent of each other and of \\(q\\), with covariances \\(\\theta I/a\\) and \\(\\theta I/b\\). Write \\(D=D_{00}\\) and\n\\[\n P_w=U_w^TD^{-1}U_w,\\quad Q_w=V_w^TD^{-1}V_w,\\quad R_w=U_w^TD^{-1}V_w,\n \\qquad\n \\Sigma_{xy\\mid z}=\\theta\\begin{pmatrix}P_w+I/a&R_w\\\\R_w^T&Q_w+I/b\\end{pmatrix}.\n\\]\nHere \\(U_w,V_w\\) are the omitted-coordinate rows of the bundles. With \\(\\Sigma_{x\\mid z}\\) and \\(\\Sigma_{y\\mid z}\\) the diagonal covariance blocks, the retained Gaussian functional is\n\\[\n I(x;y\\mid z)=\\frac12\\log\\frac{\\det\\Sigma_{x\\mid z}\\det\\Sigma_{y\\mid z}}\n {\\det\\Sigma_{xy\\mid z}}=-f(D)=f(S)-f(K)\\ge0.\n\\]\nLogarithms are natural, so information is in nats. The covariance is independent of the conditioning value \\(z\\). This definition assumes the same positive-definite internal-coordinate baseline and positive prescribed spring coefficients as above; its artificial independent noise is not a measured molecular noise model.\\footnote{Retained derivation: \\texttt{ada/conditional-information.md}; the determinant functional is explicitly implemented in \\texttt{ada/check\\_conditional\\_information.py}, function \\texttt{information}. No new computation is used here.}\n\nOmission alone need not break the spring representation."
+    },
+    {
+      "finding": "P1",
+      "before": "Conditional omitted overlaps can supply a saturation bound when all supported canonical correlations are below one.",
+      "after": "Define the normalised omitted overlap on the Gram supports by\n\\[\n C_w=(P_w^+)^{1/2}R_w(Q_w^+)^{1/2},\\qquad s_j=\\sigma_j(C_w),\\qquad\n \\ell_D=\\frac12\\sum_j\\log(1-s_j^2).\n\\]\nThe superscript \\(+\\) denotes the Moore--Penrose inverse, followed by its positive square root; dependent bundle columns are allowed. For all supported singular values \\(s_j<1\\), the prescribed positive-addition model obeys\n\\[\n \\ell_D\\le f(D)\\le0,\\qquad f(S)+\\ell_D\\le f(K)\\le\\min\\{0,f(S)\\}.\n\\]\nThe omitted-cycle lower limit is approached as both positive spring coefficients grow without bound on their supports. A shared supported direction with \\(s_j=1\\) gives no finite uniform lower bound; finite known positive strengths still give a finite exact correction. Empty bundles give zero cycle. These are dimensionless stiffness-cycle bounds, not bounds on binding non-additivity.\\footnote{Retained definitions: \\texttt{emmy/marginal-bounds.md}, omitted-response section, and \\texttt{branches/branch-3/emmy/rank-m-bridge.md}, supported whitened overlap and positive-addition bound.}"
+    }
+  ]
+}

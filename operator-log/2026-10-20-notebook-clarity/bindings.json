@@ -1,0 +1,18 @@
+{
+  "state_sha256": "412e3405fce8937dd7f104d113bd75e775e57c3b723b9427478065818bce024a",
+  "check_sha256": "ea0d3d8b7c90b2e4603b9c80714373cad5cb5a5b55006d47795bc132f2c86e3e",
+  "sources": [
+    {
+      "source": "emmy/joint_ratio_audit.json",
+      "sha256": "10ac341bf30c67c56c0f22138ab615c09b1915ee6d449f2cb01bcbcf843bdcb2",
+      "quote": "  \"cached_population_rate_table\": {\n    \"WT\": {\n      \"cached_p_in\": 0.45201,\n      \"published_p_in\": 0.45,\n      \"cached_kA_kB\": [\n        65.70172729841067,\n        79.26379784560997\n      ],\n      \"published_kA_kB\": [\n        65,\n        78\n      ],\n      \"detailed_balance_flux_ratio_if_macrostate1_is_in\": 1.004908455242266\n    },\n    \"ST\": {\n      \"cached_p_in\": 0.012945,\n      \"published_p_in\": 0.01,\n      \"cached_kA_kB\": [\n        3.7899158676576543,\n        234.77485091796964\n      ],\n      \"published_kA_kB\": [\n        3.4,\n        208\n      ],\n      \"detailed_balance_flux_ratio_if_macrostate1_is_in\": 1.2308844742769\n    },\n    \"STCS\": {\n      \"cached_p_in\": 0.144423,\n      \"published_p_in\": 0.17,\n      \"cached_kA_kB\": [\n        7.2784017794236675,\n        39.22799309587322\n      ],\n      \"published_kA_kB\": [\n        8,\n        39\n      ],\n      \"detailed_balance_flux_ratio_if_macrostate1_is_in\": 1.0991644523046342\n    },\n    \"STCSIV\": {\n      \"cached_p_in\": 0.176161,\n      \"published_p_in\": 0.23,\n      \"cached_kA_kB\": [\n        9.472791773827623,\n        47.534617084892076\n      ],\n      \"published_kA_kB\": [\n        10.6,\n        52\n      ],\n      \"detailed_balance_flux_ratio_if_macrostate1_is_in\": 0.9319670790248488\n    }\n  }\n}",
+      "where": "The corrected reconciliation supports the notebook's macrostate 1 as in but leaves the mapping from cached values to the final estimator unresolved."
+    },
+    {
+      "source": "branches/branch-2/emmy/population-sensitivity-note.md",
+      "sha256": "314ab9b003216b8f3cadf9693ec49dfcc43a5243eec75c2441092eccc394bd38",
+      "quote": "A new primary repository recovery supplies archival population outputs, not amber99sb identification: emmy/q-msm-analysis.ipynb, source https://raw.githubusercontent.com/michellab/CypAcatalysis_input/7310aa36088e140f8197b626cd2998c740016eb3/MSM_Analysis/03_MSM_ALL_analysis.ipynb . Human-readable provenance and cached outputs are in emmy/q-msm-provenance.txt:1-151. WT cached macrostate fractions are 0.5480 and 0.452010 (lines 73-74), ST fractions 0.9871 and 0.012945 (lines 100-101). Cells 12 and 14-17 refer to missing trajectory inputs. No notebook source cell mentions amber; the notebook and README do not authenticate these as final production or amber99sb populations. Other variant outputs disagree with rounded final Table 1, reinforcing that limitation. They do not establish how ratio 46 was obtained.",
+      "where": "The corrected reconciliation supports the notebook's macrostate 1 as in but leaves the mapping from cached values to the final estimator unresolved."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "kind": "reviewed-alpha-rename",
+  "stage": "correct-2",
+  "review": "pass/claims.json",
+  "review_id": "C1",
+  "review_reason": "The residual and molar gas constant are distinguishable from context, but reusing R impairs clarity. Renaming the residual consistently is a notation-only change that preserves the mathematical claims.",
+  "where": "\u201cThe offset-free residual R is defined by\u201d",
+  "old": "R",
+  "new": "\\Delta_{\\mathrm{res}}",
+  "occurrences": [
+    {
+      "offset": 4256,
+      "action": "rename",
+      "meaning": "mutation residual"
+    },
+    {
+      "offset": 4277,
+      "action": "rename",
+      "meaning": "mutation residual"
+    },
+    {
+      "offset": 4364,
+      "action": "preserve",
+      "meaning": "molar gas constant"
+    },
+    {
+      "offset": 9087,
+      "action": "rename",
+      "meaning": "mutation residual"
+    },
+    {
+      "offset": 9101,
+      "action": "rename",
+      "meaning": "mutation residual"
+    },
+    {
+      "offset": 9262,
+      "action": "rename",
+      "meaning": "mutation residual"
+    },
+    {
+      "offset": 9293,
+      "action": "rename",
+      "meaning": "mutation residual"
+    }
+  ],
+  "source_sha256": "1efe3e85895514be44bb4afc60ce525ac2b59da88b3c13ab725db0b48796de7b",
+  "accepted_sha256": "9a6d0751cfa9d29ee872ebfec7fcaa8be3b59e941a9ac5bb0a2d064b9e0286b2",
+  "bibliography_sha256": "5fe1e7f3547c62195b8cc23f4226b1db9a3c5b5005b4ed9bcd98992e4e3e3ca6",
+  "state_sha256": "1abeb7b5a1749589fdfb50375568b8383afc5a953bda7c8b02fc8992d1c09ee6",
+  "check_sha256": "c7627a3ac320814dbd2c045dbe29eabaaba7c2b7cbc81beb5c7d46121398c3af",
+  "review_sha256": "7458250d0941c1432efe785c28f0d8586252cdf4c37aad1d231a6ecf4c8f4447",
+  "target_sha256": "32013c7727cc5f6e7d7353f12e935f848e35643700ba91653727e420e8c00f31"
+}

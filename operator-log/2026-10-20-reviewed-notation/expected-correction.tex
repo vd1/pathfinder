@@ -1,0 +1,142 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\title{Can an electronic correction improve a ternary binding prediction?}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Can a more accurate electronic calculation improve a predicted mutation effect on ternary binding? Conditional error bounds and synthetic counterexamples show that lowering individual electronic energies, even in shared determinant spaces, need not improve the binding free-energy contrast. The proposed application is CK1\(\alpha\) I37E association with lenalidomide-bound CRBNmidi, combining the geometric molecular-dynamics method of Tan and colleagues with the adaptive quantum-selected configuration interaction method of Nakagawa and colleagues. No molecular electronic correction or quantum resource benefit was established. The numerical mutation residual, adequate physical endpoint ensembles and sufficient assay correspondence remain unresolved. The immediate consequence is a need for numerical and assay audits, followed conditionally by cheaper classical sensitivity tests before quantum allocation.
+\end{abstract}
+
+\section{The scientific question}
+
+Predicting how an interface mutation changes molecular-glue binding could help assess resistance and prioritise candidate compounds. Can a more accurate electronic treatment improve that prediction? This account establishes conditional bounds on electronic-solver error and gives synthetic counterexamples showing why lower electronic energies alone do not ensure a better binding contrast. It does not establish a molecular correction or a resource benefit from quantum computation.
+
+Tan and colleagues calculate ternary binding free energies using explicit-solvent molecular dynamics and umbrella sampling. Their geometric cycle applies conformational and orientational restraints, separates the partners, then releases the restraints with a standard-state contribution. They report correct CK1\(\alpha\) interface-mutant ordering despite systematic absolute-affinity discrepancies, and also examine BRD4 complexes recruiting DCAF16 \cite{Q}. These are the source paper's reported results, rather than an independent validation by this work.
+
+Nakagawa and colleagues supply a possible electronic solver, adaptive quantum-selected configuration interaction (ADAPT-QSCI). It samples electronic configurations, or determinants, by measuring a quantum circuit. A classical computer constructs and diagonalises the Hamiltonian in the selected space; the resulting classical state guides circuit growth \cite{P}. Their demonstrations concern small molecular Hamiltonians, including an eight-qubit noisy circuit simulation, rather than a protein interface.
+
+The proposed connection would change the potential used to evaluate binding. Its target is the electronic correction to the I37E-minus-wild-type association free energy, conditional on lenalidomide already being bound to CRBNmidi, the construct used by Tan and colleagues in place of wild-type CRBN \cite{Q}. Neither an electronic defect specific to this mutation nor a need for quantum selection has been established. Quantum free-energy bookending, in which a reference free energy is supplemented by endpoint corrections, is inherited prior art, including work by Bazayeva and Li. That attribution comes from generated supporting material, rather than a fresh comparison with the complete primary texts.
+
+The numerical recoveries and mathematical analyses described below were reported in generated supporting material. Such material is not independent evidence; repeated derivations and synthetic checks do not provide additional molecular validation. Where an external result was recovered there but not independently inspected for this account, that limitation is stated with the result.
+
+\section{First establish the discrepancy}
+
+The practical question precedes solver choice: does the calculated mutation effect disagree with the corresponding experimental effect? Let \(M\) denote CK1\(\alpha\) I37E and \(W\) wild-type CK1\(\alpha\). For each variant \(v\in\{M,W\}\), let \(G_{\mathrm{calc},v}\) denote its calculated standard association free energy and \(K_{D,v}\) its corresponding experimental dissociation constant. The offset-free residual \(\Delta_{\mathrm{res}}\) is defined by
+\[
+\Delta_{\mathrm{res}}=[G_{\mathrm{calc},M}-G_{\mathrm{calc},W}]
+  -RT\log(K_{D,M}/K_{D,W}),
+\]
+where the \(R\) in \(RT\) is the molar gas constant and \(T\) is temperature. A shared additive free-energy offset cancels. The numerical calculated wild-type/I37E contrast and its uncertainty were not recovered, so the residual remains undetermined. There is no demonstrated residual-based reason to prefer I37E over the other mutants examined by Tan and colleagues.
+
+Reported apparent dissociation constants are \(0.33\pm0.03\) micromolar for wild type and \(3.52\pm0.18\) micromolar for I37E. These are refits of digitised Petzold TR-FRET curves described in the Mi\~narro-Lleonar study, with a common constrained maximum signal. At an assumed 300 K, the reported corrected conversion gives a mutation effect of \(1.41119\) kcal/mol and an independently propagated reported-error scale of \(0.06218\) kcal/mol. The error type and shared-fit covariance are unknown; this scale is not a complete experimental confidence interval. These values are recoveries reported in generated supporting material, rather than independently inspected assay evidence in this account.
+
+A subsequent reported calculation places N39G only \(0.13708\) kcal/mol above I37E at the same assumed temperature. A neighbour gap addresses ranking, whereas the wild-type-relative gap addresses the mutation effect. Neither supplies a certified solver tolerance. The recovery records saturation extrapolation beyond the digitised concentration range, unknown error definitions and covariance, the common fitted maximum and an unrecovered assay temperature.
+
+The audit must retain covariance within the simulation replicate estimates and within the shared experimental fit. It must distinguish an effect relevant to the chemical decision from a discrepancy resolved by its combined uncertainty. Tan and colleagues report per-system inter-replicate standard errors below \(1.1\) kcal/mol, which gives neither the actual pair uncertainty nor a lower uncertainty floor \cite{Q}. Previously considered targets of 1 kcal/mol for materiality and 0.25 kcal/mol for solver error were illustrative design choices, rather than measured precision or validated thresholds.
+
+A separate comparison prevents treating every discrepancy as a common offset. Tan and colleagues report a glue-induced binding change of \(-8.0\) kcal/mol \cite{Q}; the reported refitted experimental conversion is approximately \(-2.69039\) kcal/mol at assumed 300 K. This changes chemical composition and is not the wild-type/I37E mutation residual. Its interpretation remains conditional on fitting and assay/model comparability, and it does not prescribe an electronic correction. The experimental conversion is attributed to generated supporting material and was not independently recovered here.
+
+Reported partial recovery of the primary assay identifies neddylated, DDB1-containing CRL4 assemblies and CK1\(\alpha\) receptor titration with 5 micromolar lenalidomide. It does not establish CK1\(\alpha\)-specific glue saturation, complete donor chemistry, buffer or temperature. Reported competition evidence supports correspondence between tested full and DDB1-containing truncated assemblies, without establishing equivalence to isolated CRBNmidi. Construct correspondence therefore remains a specific open question, of unknown energetic magnitude. These assay recoveries were not independently inspected for this account.
+
+\section{The correction and its physical prerequisites}
+
+For each variant \(v\in\{M,W\}\), let the endpoint index \(s\in\{b,u\}\) denote either the physical bound association basin \(b\), without the cycle's added restraints, or fully released bulk \(u\). Let \(U_{\mathrm{MM},vs}\) and \(U_{\mathrm{corr},vs}\) be fixed molecular-mechanics and corrected potential-energy functions on the configuration space of endpoint \(vs\). Their difference \(\delta U_{vs}\), the endpoint free-energy correction \(\delta F_{vs}\), and the mutation correction \(C\) are defined by
+\[
+\begin{aligned}
+\delta U_{vs}&=U_{\mathrm{corr},vs}-U_{\mathrm{MM},vs},\\
+\delta F_{vs}&=-\beta^{-1}\log
+ \left\langle e^{-\beta\delta U_{vs}}\right\rangle_{\mathrm{MM},vs},\\
+C&=\delta F_{Mb}-\delta F_{Mu}-\delta F_{Wb}+\delta F_{Wu}.
+\end{aligned}
+\]
+Here \(\beta=1/(k_{\mathrm B}T)\), with \(k_{\mathrm B}\) denoting the Boltzmann constant, and the brackets denote a normalised equilibrium average under the declared molecular-mechanics endpoint potential. Replaced molecular-mechanics terms must be subtracted consistently. This is a conditional binding correction, not a degradation prediction; exact electronic solutions mean exact solutions of the specified finite Hamiltonian, not exact physical chemistry.
+
+Under matched endpoint and assay definitions, the corrected mutation residual is \(\Delta_{\mathrm{res}}+C\), with \(\Delta_{\mathrm{res}}\) now denoting the residual rather than the gas constant. A material \(C\) alone does not demonstrate improved agreement. The comparison must assess whether \(\Delta_{\mathrm{res}}+C\) is closer to zero than \(\Delta_{\mathrm{res}}\), allowing for combined experimental, sampling and solver uncertainty, their relevant covariance, and sensitivity to the molecular model. No such predictive improvement has been established here.
+
+Before a molecular pilot, independent prerequisites remain unresolved: a sufficient fragment, basis and active space; the glutamate protonation state and other microstates; ionic and electrostatic conventions; water, boundary and embedding rules; a defined replacement potential with consistent molecular-mechanics subtraction; and adequate nuclear sampling and overlap. Overlap here means sufficient sampling of configurations that carry appreciable weight under the corrected potential. Target-specific correlation diagnostics, practical electronic certificates and complete resource measurements are also missing. An electronic certificate means a valid bound on the remaining electronic-energy error for the specified Hamiltonian. Converging the electronic solver cannot establish the physical model, protonation populations or support of configurations never sampled.
+
+There is a concrete ensemble issue. Section 2.2 of Tan and colleagues' Methods reports triplicate 100 ns unrestrained bound production in the canonical ensemble, followed by extraction and reparametrisation of the complex and isolated partners and 400 ps NPT equilibration before umbrella sampling \cite{Q}. Thus bound production is NVT and umbrella sampling is NPT. Existing bound trajectories cannot simply supply corrections to the baseline binding free energy: matched ensembles or a justified pressure/volume conversion are needed. The paper reports no long unrestrained isolated-CK1\(\alpha\) production trajectory. The direct route requires adequate matched-ensemble released-bulk sampling unless complete, adequately supported reconstruction from bulk umbrella data is demonstrated.
+
+With valid physical endpoint legs, the intermediate restraint and separation stages remain the molecular-mechanics reference cycle and need not be recomputed under the corrected potential. Correcting restrained auxiliary states instead requires the remaining correction legs or justified reconstruction.
+
+The separation windows retain RMSD and Boresch restraints, while the docking and MM/GBSA frames are stripped of solvent and counterions \cite{Q}. Released solvated ensembles are therefore the preferred endpoints for the proposed correction. Reweighting requires compatible configuration-space measures and sufficient support; separately reparametrised bulk cannot be obtained by simple coordinate reweighting of a distant joint-box window. Effective weights and replica stability cannot certify unseen support. Retaining restraints defines a changed observable.
+
+Cancellation of a common bulk receptor--glue term also needs justification. Sufficient conditions include independent bulk partners and additive potentials, identical receptor--glue microstates, topology or verified atom mapping, potentials, subtraction, boundary and electrostatic rules, and equilibrium measures, with no mutation-dependent change in that term or its embedding. Tan and colleagues establish separate bulk preparation, not these assumed identities. Population cancellation does not cancel independent finite-sample errors: exact estimator cancellation requires algebraic removal or reuse of the common snapshots, energies and weights. Otherwise the full variant-specific bulk corrections must be retained.
+
+\section{What the electronic analysis found}
+
+For each endpoint \(vs\), freeze an approximate solver potential, including any randomness used in selecting it. Let \(e_{vs}\) be its approximate minus exact correction-energy function, and let \(\widetilde{\delta F}_{vs}\) be the free-energy correction evaluated with that approximate potential. The endpoint free-energy bias \(B_{vs}\) is defined by
+\[
+B_{vs}=\widetilde{\delta F}_{vs}-\delta F_{vs}
+ =-\beta^{-1}\log\mathbb E_{q_{vs}}e^{-\beta e_{vs}},
+\]
+where \(q_{vs}\) is the normalised exact corrected endpoint distribution, or its declared finite-support version. Solver error must therefore be assessed under corrected weights. An ordinary molecular-mechanics-frame mean error is insufficient, and averaging random energies differs from averaging their exponentials.
+
+Let \(\widetilde C\) denote the mutation correction formed from the four approximate endpoint free energies with the same signs as \(C\). If every complete endpoint has uniform variational solver error \(0\leq e_{vs}\leq\varepsilon\), where \(\varepsilon\geq0\) is a common energy-error bound, then
+\[
+\lvert\widetilde C-C\rvert\leq2\varepsilon.
+\]
+There is no sign guarantee. The bound concerns complete endpoint potential errors, not automatically separate fragment solves. Nakagawa and colleagues supply selected-space energies and an iteration stopping criterion, rather than this uniform remaining-error certificate \cite{P}.
+
+The principal counterexample makes the practical warning explicit. Expanding identical nested selected spaces at all four synthetic endpoints changes errors in the order \(Mb,Mu,Wb,Wu\) from \((1,1,1,1)\) to \((1,0,0,1)\) kcal/mol. Every variational energy decreases or stays fixed, yet contrast bias increases from zero to \(+2\) kcal/mol. With exact lower energies fixed at zero, the valid interval for contrast bias narrows from \([-2,2]\) to \([0,2]\) kcal/mol. Better point accuracy and a narrower certificate are distinct outcomes. This is disconnected-matrix arithmetic, not molecular physics or an ADAPT-QSCI run.
+
+The resulting research question is whether shared selections reduce corrected-weight bound--bulk solver bias at equal complete cost. Common determinant labels alone give no cancellation guarantee. The mathematical diagnostics below express additional sufficient conditions, rather than establish that a molecular correction exists.
+
+\section{What a molecular test would require}
+
+The conditional mathematical conclusions do not yet justify allocating a quantum calculation to this molecular target. The missing mutation residual, endpoint ensembles, model adequacy and cost evidence leave the physical correction unresolved; they do not falsify it.
+
+The smallest useful next step is a data audit: recover the numerical calculated mutant contrasts, replica errors and covariance, and establish which experimental values and fitting conventions they should be compared with. Assay and CRBNmidi correspondence must also be resolved. Donor chemistry, buffer, temperature, fit-error meaning and CK1\(\alpha\)-specific glue occupancy remain missing or incomplete in the reported recovery. This audit determines whether I37E is an appropriate discrepancy to investigate; it does not select an electronic mechanism.
+
+Only after the molecular prerequisites above are met should a computational experiment test a consistently defined polarisable or embedded Hartree--Fock/DFT correction, with local coupled-cluster checks where appropriate, model enlargement and sampling uncertainty. These cheaper controls and actual correlation diagnostics precede selected CI in the proposed assessment. Reported recoveries of the Panel and Sampson examples indicate model sensitivity in other systems, without a transferable I37E correction range. Those examples were not independently inspected here, and no molecular pilot is reported.
+
+If a selected-CI task remains justified, independent selections, within-variant shared selections, classical selected CI and ADAPT-QSCI should be compared on identical held-out small-active-space Hamiltonians and snapshot allocations. Here ``held-out'' means excluded from the choices used to tune the comparison. The quantity to measure is error in \(C\), rather than individual energy lowering. Reported recovery of semistochastic heat-bath configuration interaction supports a classical comparator but supplies no transferable interface runtime. That recovery does not constitute an independently established resource comparison.
+
+Resources and tolerances must be declared beforehand. The accounting includes orbital and integral construction, selection, adaptation, state preparation, all shots and mitigation, diagonalisation, references or certificates, sampling and reweighting. Total work and elapsed time must be compared at the same observable accuracy or valid interval width. Nakagawa and colleagues chose their demonstration's determinant budget using exact-ground-state information; a production comparison must choose it without that information \cite{P}. If practical certificates are unavailable, the comparison must be labelled as an exact-small-model error benchmark and retain its finite-support limits.
+
+A negligible or model-unstable physical correction would stop quantum allocation. Shared selections failing to reduce held-out contrast error at equal complete cost would falsify their proposed benefit in the tested models. A cheaper classical solution would defeat the resource case for ADAPT-QSCI. These are proposed stopping tests. No molecular correction, ranking repair, practical speed-up, quantum advantage or publication novelty was established.
+
+\section{Technical qualifications to the error analysis}
+
+A sharper bound pairs corrected bound and bulk distributions within each variant. For \(v\in\{M,W\}\), a coupling is a joint probability distribution with marginals \(q_{vb}\) and \(q_{vu}\); it need not map physical nuclear coordinates. If its support obeys
+\(l_v\leq e_{vb}-e_{vu}\leq u_v\), where \(l_v\) and \(u_v\) are finite lower and upper bounds on the paired error difference, then
+\[
+\begin{aligned}
+l_v&\leq B_{vb}-B_{vu}\leq u_v,\\
+l_M-u_W&\leq\widetilde C-C\leq u_M-l_W.
+\end{aligned}
+\]
+Large variant-specific constant errors can cancel, provided the paired-error premise holds.
+
+For a fixed variant on a scientifically justified common domain, suppose the bound and bulk endpoints have an identical error function. Let \(\omega\) be its oscillation, defined as its supremum minus its infimum, and let \(t\) be the total variation distance between the corrected endpoint distributions. Total variation is normalised here to lie in \([0,1]\), as the supremum of absolute probability differences over measurable sets. Suppressing the fixed variant index, the bound is
+\[
+|B_b-B_u|\leq\beta^{-1}\log[1+t(e^{\beta\omega}-1)].
+\]
+A uniform bound on the absolute pointwise difference between the bound and bulk error functions adds that amount to the preceding upper bound on \(|B_b-B_u|\). For known, strictly positive probability weights of the exact corrected bound and bulk distributions on a common finite support, the exact minimum and maximum of \(B_b-B_u\) over common error functions with oscillation at most \(\omega\) follow by sorting the bound-to-bulk probability-weight ratios. Shared determinants establish neither error agreement nor weight control.
+
+Coupling scalar error laws by common quantiles gives the narrowest paired-error range among their couplings. Here an error law is the probability distribution of the scalar solver error under the corrected endpoint distribution, and common-quantile coupling pairs the same cumulative-probability level in both laws. Identical laws cancel; equal means need not. This optimises the range diagnostic, not the exponential bias. Exact laws already permit direct bias evaluation, so the construction does not obtain missing references.
+
+For fixed finite support and a frozen solver potential, let \(q\) and \(\widehat q\) denote the normalised exact and approximate corrected distributions at a single endpoint, and let \(w\) be the oscillation of its solver-error function. The sharp radius \(\rho(w)\) is defined by
+\[
+\operatorname{TV}(q,\widehat q)\leq\rho(w)=\tanh(\beta w/4).
+\]
+For a fixed variant with a justified common-domain mapping, let \(\widehat t\) be the total variation distance between its approximate corrected bound and bulk distributions, and let \(w_b\) and \(w_u\) be their respective solver-error oscillations. The exact corrected bound--bulk distance \(t\) then obeys
+\[
+t\leq\min\{1,\widehat t+\rho(w_b)+\rho(w_u)\}.
+\]
+Valid same-Hamiltonian energy intervals can therefore replace exact corrected weights by conservative weight bounds. Practical lower certificates and independently justified error agreement remain separate requirements; physical support is not supplied by these intervals.
+
+The finite-support interval construction propagates valid lower and upper correction-energy bounds monotonically through the exponential estimator. Lower bounds on positive terms of \(C\) combine with upper bounds on negative terms, and conversely for the upper contrast limit. This encloses the retained estimator, not statistical uncertainty or absent configurations. Selected-CI upper energies alone cannot bound the alternating-sign contrast. The lower-bound investigation considers coefficient-norm bounds, complementary-space bounds needing omitted-block and coupling information, and residual/gap bounds needing an independent spectral separator. A spectral separator here is an independently established energy threshold that isolates the target eigenvalue from the rest of the spectrum. Exact small-space references certify their specified model; second-order perturbative corrections and larger-space agreement remain surrogate diagnostics. No useful interface certificate is established.
+
+Finally, stationarity cannot certify a ground state. For the synthetic two-state Hamiltonian \(H=\operatorname{diag}(0,-a)\), where \(a>0\) is an energy and \(\{|0\rangle,|1\rangle\}\) is the orthonormal basis in which \(H\) is diagonal, the selected state \(|0\rangle\) has zero residual and first-order rotation gradients but misses the lower state; a finite rotation detects it. Nakagawa and colleagues permit finite-rotation ranking, so this does not refute their method \cite{P}. A distinct implementation safeguard forms full composite operators before projection onto the selected space, as their method specifies.
+
+The recorded random enclosure tests, exhaustive finite comparisons and attaining examples use ordinary floating-point assertions. Their repetition checks synthetic arithmetic, rather than verified molecular electronic bounds or independent molecular evidence.
+
+These results provide criteria for testing whether electronic refinement improves a binding contrast, while preserving the distinction between solver accuracy and physical prediction. Once the mutation discrepancy, endpoint ensembles and molecular model are established, the bounds and counterexamples can guide comparisons of shared selections, classical solvers and ADAPT-QSCI. The opportunity is a controlled test of their contribution to ternary-binding prediction; its molecular value remains to be demonstrated.
+
+\clearpage
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}
