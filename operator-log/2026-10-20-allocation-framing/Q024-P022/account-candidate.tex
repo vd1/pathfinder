@@ -1,0 +1,175 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\title{Quantum weight transfer for RBFE planning: what the accuracy and cost audit supports}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Can a transferable quantum layer evaluate an RBFE network predictor approximately while preserving ligand accuracy and reducing total cost? This work identified an exact classical comparator and conditional precision controls, but did not establish quantum advantage. Its immediate obstacle is chemical input reproduction: all 45 released models were restored, yet tested substitutes for their molecular mapping inputs failed to reproduce saved predictions. Graph stability also cannot establish physical accuracy, because different networks can share the same error. The next useful experiment is numerical reproduction of a saved five-model TYK2 group across 120 edges, retaining final activations and norm products before assigning quantum resources.
+\end{abstract}
+
+\section{The chemical problem and the proposed connection}
+
+Scheen, Mackey and Michel's paper, Q, treats relative binding free energy (RBFE) planning as a network problem: ligands are nodes and pairwise calculations are edges. Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\cite{Q}. Q reports the supervised RBFE-Space label as the standard error of the mean across five solvent-phase relative free-energy calculations for a perturbation between the grafted benzene derivatives: the standard deviation across those five estimates divided by the square root of five. Where both perturbation directions were simulated, Q reports averaging their SEM values for the two directional labels. This describes the source-reported label construction, not an independent validation of deposited SEM values. It is distinct from dispersion among predictions of the neural-network ensemble members, and it is not a calibrated uncertainty on binding affinity~\cite{Q}. A precise calculation can still disagree with experiment through systematic protocol error. Predicting precision therefore does not establish physical accuracy.
+
+Q simplifies each original perturbation by extracting its changing R-groups and grafting them onto a common benzene scaffold. The predictor receives molecular graphs of the resulting derivatives, including atom and bond features, plus a separate atom-index mapping describing which atoms correspond between endpoints. At prediction time, Q compares AMBER atom-type changes in the original and grafted perturbations and rotates the forced benzene correspondence to select a suitable mapping~\cite{Q}. Consequently, saved derivative SMILES do not by themselves identify the complete historical predictor input: the indexed graphs and their mapping must agree.
+
+Q's training-domain construction discarded perturbations changing formal charge and those involving ten or more perturbed heavy atoms. Q also excluded structurally complex grafting cases, including multiple fused rings or more than six R-groups, for implementation simplicity; perturbations involving a benzene ring without other constituents were excluded because they caused difficulties enforcing the benzene maximum common substructure. These are source-reported domain restrictions, not evidence of validated transfer to excluded chemistry~\cite{Q}.
+
+Q explicitly included TYK2- and TNKS2-derived perturbations in training. Its stated rationale was that the R-group modifications substantially overlap those in other congeneric series, so omitting these series would leave essentially the same perturbation domain; inclusion also simplified the workflow. That is Q's rationale, not an independently tested absence of data overlap. The proposed TYK2 reproduction is consequently not a target-held-out generalisation test~\cite{Q}.
+
+This chemical abstraction also limits what successful numerical reproduction would establish. Q's grafted, solvent-only training examples discard protein topology, ligand--protein interactions and information from the original ligand scaffold. Grafting can alter intramolecular interactions, and the shorter sampling used for the training domain is a further limitation~\cite{Q}. Numerical agreement with released predictions would reproduce this proxy, rather than independently validate its physical accuracy on another target.
+
+Smaldone and Batista's paper, P, uses Hadamard-test inner products in a hybrid toxicity-prediction network, transfers real components of a learned quantum state into classical weights, and demonstrates continued classical training with comparable reported predictive performance~\cite{P}. Its matrix-product complexity argument assumes efficient state preparation. The toxicity study supplies no RBFE planning result.
+
+The proposed connection was to replace a dense component of Q with P's transferable layer. The surviving question is narrower: can approximate evaluation of the same predictor preserve ligand-error quality at competitive total cost? The findings below come from this campaign's approved research supplement. They are generated, conditional evidence, rather than independent literature confirmation. Supplementary detail gives the supporting calculations and provenance.
+
+\section{The observable and its exact comparator}
+
+The proposed experiment must compare approximate evaluation with exact classical evaluation of the same validated predictor, using the same declared planning and fitting procedure. Both routes must cover the same ligands and use the same experimental alignment. For a TYK2 retrospective, we propose the common 16-ligand set and separate mean-centring of each fitted vector and the experimental vector. These are explicit experimental choices, not claims about a uniquely established historical convention.
+
+Let \(g^{\mathrm{ex}}\) and \(g^{\mathrm{ap}}\) denote the centred ligand free energies obtained after exact and approximate predictor evaluation, respectively, and let \(g^{\mathrm{exp}}\) be the centred experimental vector. Define
+\[
+\mathrm{MUE}(g)=\frac{1}{N}\sum_{i=1}^{N}|g_i-g_i^{\mathrm{exp}}|,
+\qquad
+\Delta\mathrm{MUE}=\mathrm{MUE}(g^{\mathrm{ap}})-\mathrm{MUE}(g^{\mathrm{ex}}).
+\]
+Report this alongside the mean approximation-induced ligand shift, \(N^{-1}\sum_i|g_i^{\mathrm{ap}}-g_i^{\mathrm{ex}}|\), and its worst-ligand counterpart, \(\max_i|g_i^{\mathrm{ap}}-g_i^{\mathrm{ex}}|\). The latter measures change caused by approximation, rather than absolute error against experiment. Absolute experimental errors remain visible through the two MUEs. A probability target such as \(\Pr(\Delta\mathrm{MUE}>\tau)\) additionally requires a declared tolerance \(\tau\), sampling law and coupling of simulation outcomes. These are proposed reporting definitions grounded in the recorded accuracy-and-risk objective.
+
+The path from approximation to chemistry is indirect. Q takes predicted edge uncertainties, reciprocates them, applies common min--max scaling and passes the scores to LOMAP for network selection. Selected edges then supply simulated pairwise free energies for a weighted regression to ligand estimates~\cite{Q}. For positive uncertainties with distinct extrema, reciprocation reverses uncertainty ordering and common scaling preserves that resulting score ordering. Numerical thresholds can nevertheless depend on the extrema; ties, nonpositive estimates and degenerate extrema need stated policies. This work's corrected analysis does not infer historical threshold behaviour from the transform alone.
+
+For the proposed comparison, total simulation allocation must be fixed while connectivity and redundancy are preserved. Equal edge count represents equal nominal sampling only under the same per-edge protocol; it does not establish equal walltime. A constraint-preserving fixed-allocation policy remains proposed work. Conditional recovery of source networks does not validate such a policy.
+
+P's transfer interface makes a strong classical control available. For a nonzero real input \(x\), its ideal normalised response is
+\[
+f_\theta(x)=\left(\frac{x}{\|x\|_2}\right)^{\mathsf T}w(\theta)+b,
+\qquad w(\theta)=\operatorname{Re}(U_\theta|0\rangle),
+\qquad \|w(\theta)\|_2\leq1.
+\]
+Here \(U_\theta\) prepares a unit state and \(b\) is a classical bias~\cite{P}. Branch 1's corrected analysis finds an exact classical circuit-state comparator for explicit classical \(d\)-vectors and amplitude-encoded weights generated by polynomially many specified bounded-arity gates. It retains the same angle coordinates for optimisation. This is a scoped simulation result, rather than a favourable runtime guarantee or a conclusion about other encodings or inaccessible quantum inputs.
+
+Re-encoding a frozen, classically trained Q row tests approximate inference. A claim about P's quantum-origin learning would instead require angle optimisation with matched classical circuit-state, optimiser and joint-noise controls, followed by separately declared free-weight continuation. Prediction equality at transfer does not imply identical subsequent learning dynamics.
+
+\section{What was recovered, and why reproduction still fails}
+
+The recorded rebuilding restored all 45 released checkpoints. Branch checkpoint inspections identify a 187-input final scalar row, so the proposed amplitude construction pads to 256 components on eight data qubits plus an auxiliary qubit. This establishes model availability, without establishing historical input identity.
+
+The decisive joint audit combined twelve substitute mapping candidates over 120 TYK2 edges. For each edge, it allowed the best tested candidate, required that candidate to be common across the edge's nine saved five-model group means, and tested agreement within \(10^{-5}\) kcal/mol. Every edge failed. The maximum of these best per-edge discrepancies was 0.354968 kcal/mol. Tested norm products therefore describe conditional reconstructions, rather than validated historical activations or resource bounds. The candidates do not exhaust mappings, and the disagreement does not prove mapping alone is responsible; graph featurisation, atom ordering, checkpoints and environment provenance remain relevant.
+
+The chemical significance is direct. Changing the mapping changes part of the model input even when derivative SMILES are unchanged. A restored checkpoint evaluated on a substitute input can yield internally consistent activations and overlap calculations while computing a different prediction from the released one. Its norms cannot yet support a resource claim about the historical predictor.
+
+Other parts of the application were recovered conditionally. The record identifies RBFENN, LOMAP and retrospective offset networks with 27, 23 and 22 edges, with six-decimal fitted-energy agreement and a 14-edge RBFENN/LOMAP intersection. Public-planner and inverse-fit records agree for RBFENN and offset under the recorded input-order assumptions. These are reconstructed graphs, rather than original link files or proof of historical executable identity. A separate branch's poorer Kruskal proxy cannot supply shot thresholds for them.
+
+The reporting audit also leaves a visible uncertainty: saved-notebook MUE bars near 0.66--0.67 kcal/mol differ from Q's approximate prose value of 0.55, whose attachment in its discussion of the networks is ambiguous. The typeset publisher figure was not obtained. This is a qualified prose-versus-saved-notebook finding, rather than a claim about an inspected publication figure. Deterministic point MUEs are separate statistics.
+
+\section{Precision, physical error and total cost}
+
+An ordinary Q row needs both norms restored to preserve its function:
+\[
+u_{em}=b_m+c_{em}h_{em},\qquad
+c_{em}=\|x_{em}\|_2\|a_m\|_2,\qquad
+h_{em}=\frac{x_{em}^{\mathsf T}a_m}{c_{em}}.
+\]
+Here \(e\) denotes an edge, \(m\) a model, \(x_{em}\) its final activation and \(a_m\) its final weight row; the overlap definition assumes a nonzero norm product. Under ideal preparation and independent unbiased measurements, classical overlaps followed by binomial draws reproduce the conditional Hadamard sampling law. Shared reuse, gradient estimation and adaptive operations require matching the joint process. This equivalence does not cover unspecified device bias.
+
+The recorded allocation and member-subsampling calculations provide useful controls, but their variance coefficients compare different operations. They establish no runtime ordering or downstream accuracy guarantee. P's binary-filter reuse also does not establish cheap preparation of Q's continuous activations. Each executed shot carries preparation and measurement costs; caching compilation does not remove repeated circuit execution.
+
+Synthetic compilations illustrate that loading choices matter, while supplying no hardware timing comparison. Their controlled overlap routes were substantially more expensive in gate count than a separate jointly known-vector construction, which is not P's transferable architecture. The exact classical final-row workload is small enough that encoders, loading, shots, gradients, extraction and scheduling must all enter a measured total-cost comparison. Neither the synthetic gate counts nor the component CPU timing establishes an application speed ratio.
+
+Physical accuracy is a separate requirement. Different graphs convert pairwise free-energy differences into ligand estimates, and can share an error that looks exactly like a shift in ligand free energies. This work constructed such a common error: both graph fits moved, while their difference and cycle residuals stayed unchanged. In the artificial example, RBFENN point MUE rose from about 0.60 to 1.60 kcal/mol without a graph-comparison warning. This is an algebraic counterexample, rather than measured force-field bias or an explanation of Q's errors. It shows why graph stability needs an independently validated accuracy baseline.
+
+Probability claims need more than a small deterministic penalty. A selected retrospective trial with an MUE increase of about 0.015 kcal/mol produced different penalty probabilities when the two networks shared simulation outcomes and when they were independently rerun. These were probabilities under a declared source uncertainty model, rather than calibrated physical risks. Q's solvent-derived uncertainty proxy does not supply the missing joint physical bias and covariance.
+
+\section{Prioritising input reproduction}
+
+Faithful predictions from validated inputs remain missing. Its joint calculations established no practical quantum advantage or prospective accuracy preservation, and included no new molecular dynamics, training or hardware experiment. The appropriate immediate investment is input reproduction before hardware development.
+
+Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment. This is a reproduction prerequisite within the source-reported training domain, not an independent target-held-out validation of transferability or binding-affinity uncertainty. Require the arithmetic mean of its five predictions to agree with that group's released value within \(10^{-5}\) kcal/mol on every one of the 120 edges. This proposal adopts the recorded audit tolerance as an operational prerequisite. Retain each model's final activations, biases and norm products, together with input and dependency provenance.
+
+Success would support numerical reproduction for that chosen reconstruction. It would not uniquely establish historical inputs, validate the other eight groups, or establish prospective physical accuracy. Extend the check to all nine groups before attaching ensemble resource estimates. Failure blocks attaching the present conditional calculations to the historical predictor; it does not exclude every admissible mapping or quantum method.
+
+After reproduction, compare exact classical circuit-family evaluation, matched joint binomial controls, reduced-precision classical evaluation and exact-member subsampling using the declared ligand observables and measured total costs. Preserve simulation allocation and network constraints, distinguish shared outcomes from independent reruns, and validate baseline accuracy independently. Q's fully connected outcomes and experimental-offset scoring are retrospective evaluation information, rather than free prospective planning inputs~\cite{Q}. The quantum route fails the proposed practical test if it offers no cost benefit at the same validated accuracy and risk. Historical identity, calibrated physical error, native device costs, independent targets and fuller prior-work coverage remain unresolved.
+
+\appendix
+\section{Supplementary evidence and calculation detail}
+
+All numbered entries below refer to \texttt{sources/external/research-supplement.md}. Joint entries are this work's adopted findings; branch-only results retain explicit attribution. The implementation files named in that record were not independently inspected for this account.
+
+\subsection{Input, graph and reporting provenance}
+
+Joint entry 10 combines the all-45 restoration with the twelve-candidate audit. Branch-2 entries 73 and 81 describe heavy-atom and explicit-hydrogen mapping substitutes for Q's atom-type-change selection. Joint entry 10 reports conditional norm-product extrema of 0.0287107 and 43.2543, which are sampled extrema rather than bounds on historical mappings. Branch-1 entry 80 separately explains the BioSimSpace/AMBER mapping dependency; Q Sections 2.1.1, 2.2.1 and 2.3.1 describe the chemical interface~\cite{Q}.
+
+Branch-1 entries 42 and 80 and branch-2 entry 43 report the fine-tuned head widths
+\[
+905\longrightarrow700\longrightarrow560\longrightarrow373
+\longrightarrow187\longrightarrow1.
+\]
+Joint entry 8 uses the padded final-row construction. These are checkpoint-inspection and resource-construction reports, rather than facts inferred from the editorial baseline.
+
+Graph recovery is documented in branch-3 entries 77 and 82: binary edge indicators are constrained by rounded inverse-variance fits, edge counts and shared links. Excluded-solution searches found no alternative within declared numerical tolerances, rather than supplying a symbolic uniqueness proof. Recovered analysis refits match saved energies within \(5\times10^{-7}\) kcal/mol. Entries 83 and 87 document the public-planner and indexed-filename path; joint entries 3 and 10 correct locators and check agreement. Original selected-link files and historical binary identity remain unverified. Branch-1 entry 44 reports its separate proxy MUE near 1.22 kcal/mol; joint entry 10 rejects transferring its shot thresholds.
+
+Joint entries 4--6, used with both corrections, digitise saved notebook cell 41. RBFENN and LOMAP MUE centres are approximately 0.665 and 0.653 kcal/mol, with conservative pixel uncertainty 0.02447 kcal/mol; reconstructions agree at that resolution. The approximate prose MUE 0.55 is not a stated RBFENN-specific point estimate. The audit also distinguishes full-graph prose summary components from saved-figure components. The recorded publisher request failed, so the typeset comparison remains unavailable~\cite{Q,Qnotebook,publisher}. Joint entry 15 checks the same raster and does not supply independent publication evidence.
+
+\subsection{Comparator and ensemble precision}
+
+Branch-2 entry 5 reports analytic simulator expectations and extraction of the real first circuit-matrix column in P's released implementation~\cite{Player,Pextract}. This is attributed implementation inspection, rather than demonstrated finite-shot hardware extraction. P explicitly permits duplicate-pattern removal for both classical and quantum filters~\cite{P}; a corresponding small dictionary has not been established for Q latents.
+
+Branch-1 entries 38 and 47 give the scoped classical state-vector bound: \(O(Gd)\) time and \(O(d)\) state memory for explicitly described bounded-arity gates and classical inputs, with polynomial differentiation overhead for polynomial gate and parameter counts. This does not address superpolynomial-depth circuits, different encodings or classically inaccessible inputs, and polynomial complexity does not settle runtime constants. Joint entries 22 and 27 separate frozen inference from circuit-origin training and free-weight continuation.
+
+For the norm-restored row, ideal independent sampling gives
+\[
+K_{em}\sim\operatorname{Binomial}\left(S_{em},\frac{1+h_{em}}{2}\right),
+\qquad
+\widehat u_{em}=b_m+c_{em}\left(\frac{2K_{em}}{S_{em}}-1\right),
+\]
+\[
+\operatorname{Var}(\widehat{\bar u}_e)
+=\frac{1}{M^2}\sum_{m=1}^{M}
+\frac{c_{em}^2(1-h_{em}^2)}{S_{em}},\qquad M=45.
+\]
+The total shots per edge are \(\sum_mS_{em}\); biases are added exactly. These conditional formulas are recorded in joint entries 20--22 and branch-1 entry 87. A single synthetic binomial draw for an exported mean cannot automatically be relabelled as shots on all 45 heterogeneous models.
+
+The sampling estimator above requires positive integer shot counts; it is not defined by substituting zero into its denominators. For a fixed edge, suppress the edge index. The following norm-based proportional rule is stated only for strictly positive norm products \(c_m\), positive per-shot costs \(k_m\) and positive fixed cost \(K=\sum_m k_mS_m\). It is the equality allocation in a continuous relaxation with positive real \(S_m\), not an integer sampling prescription. Under these conditions, joint entries 20 and 24 give
+\[
+\sum_m\frac{c_m^2}{S_m}\geq
+\frac{\left(\sum_m c_m\sqrt{k_m}\right)^2}{K},
+\qquad S_m\propto\frac{c_m}{\sqrt{k_m}}.
+\]
+The variance-optimal proportional rule instead uses \(c_m\sqrt{1-h_m^2}\), and is stated here only when every variance coefficient \(c_m^2(1-h_m^2)\) is strictly positive. Zero norm products or zero variance coefficients are outside the respective proportional prescriptions as stated here and require separate treatment; no zero-shot estimator is defined. The retained audit checks positive variance coefficients in its conditional arrays and does not supply a policy for the zero-coefficient case. Integer allocations constrained to positive shot counts require a separate constrained prescription: no rounding or minimum-shot allocation rule is asserted here. The continuous calculation excludes integer, setup and pilot costs. On the conditional arrays, norm allocation improved the worst-case coefficient over equal shots by a median factor 1.4385, without validating historical inputs or removing bias.
+
+For member population variance \(v=M^{-1}\sum_m(u_m-\bar u)^2\), exact uniform sampling of \(k\) distinct members has
+\[
+\operatorname{Var}(\widehat{\bar u}_k)=\frac{M-k}{k(M-1)}v.
+\]
+Joint entry 21 records an exhaustive check of all 990 pairs for one coordinate. Joint entry 27 reports that oracle variance-optimal shot coefficients exceed member-sampling coefficients across all 1440 conditional mapping-edge coordinates, with minimum ratio 4.39869 and median 197.27762. These compare different operations and sampling laws, and establish neither runtime, tail-risk nor planner dominance.
+
+\subsection{Resource examples}
+
+Joint entries 8, 11 and 14 describe synthetic unoptimised compilations in a declared elementary basis, using the documented preparation implementation~\cite{preparation}. Controlled routes use 6040 or 6294 controlled-NOT gates per shot. A separate jointly known-vector preparation gives the same overlap with 1020 such gates, demonstrating that the larger counts are not minima; it is not P's transferable architecture. Exact evaluation of the final rows for 45 models and 120 inputs uses 1,009,800 multiply-adds. A separate synthetic NumPy component timing is 0.301 ms, excluding encoders and training. Gate counts and component CPU timings cannot yield a walltime ratio. Optimisation, reuse, native topology, actual shots and device bias remain unresolved.
+
+\subsection{Joint physical uncertainty and common error}
+
+The recorded graph-fit algebra uses an incidence matrix \(B\) to turn ligand free energies into candidate pairwise differences. Fixed connected fit maps \(G\) and \(H\) turn those differences back into centred estimates on \(N\) ligands. With \(C_0\) the centring projector and \(D=H-G\),
+\[
+GB=HB=C_0,\qquad DB=0.
+\]
+If shared candidate outcomes are \(y=Bg_\star+\varepsilon\), where \(g_\star\) denotes the underlying ligand vector and error \(\varepsilon\) has mean \(\mu\) and covariance \(\Sigma\), then
+\[
+\mathbb E\!\left[\frac{\|Hy-Gy\|_2^2}{N}\right]
+=\frac{\|D\mu\|_2^2+\operatorname{tr}(D\Sigma D^{\mathsf T})}{N}.
+\]
+Independent reruns instead contribute \(H\Sigma H^{\mathsf T}+G\Sigma G^{\mathsf T}\) to the comparison covariance. Joint entries 9 and 15 adopt and check the branch-1 entry 32 identity with correction 33. These are conditional propagation results informed by recovered analysis code~\cite{analysis}, rather than calibrated physical-error estimates.
+
+Joint entry 9 selects the largest point-MUE increase among 100 fixed-count trials at bounded SEM halfwidth 0.001 kcal/mol. Its increase is 0.0146809 kcal/mol. Under an author-model Gaussian floor of 0.4 kcal/mol, 50,000 draws give probabilities of a penalty above 0.05 kcal/mol of 0.34648 with shared outcomes and 0.43954 with independent outcomes. The selected graph has a bridge, so it does not establish the proposed redundancy-preserving acceptance policy. These are selected-trial model probabilities, rather than typical behaviour, quantum-shot results or calibrated physical risk.
+
+Joint entries 23 and 25 add an artificial candidate-edge error \(Bz\), with centred ligand shift \(z\) of mean absolute magnitude 1 kcal/mol. Both estimates shift by \(C_0z\), leaving graph differences and cycle residuals unchanged. RBFENN point MUE rises from 0.6018276 to 1.6018276 and LOMAP point MUE from 0.5526226 to 1.5229408, while comparison and cycle changes stay below \(2.4\times10^{-14}\). These deterministic point metrics are distinct from the saved figure summaries. The construction establishes a diagnostic limitation, rather than the occurrence of such bias in Q.
+
+\subsection{Limits of the wider evidence}
+
+Branch-1 entries 15, 45 and 51 attribute costly uncertain-edge queries to Focke, Megow and Meissner, input/output access caveats to Aaronson, and sampling-access comparisons to Tang and Chia and colleagues~\cite{queries,fineprint,Tang,Chia}. Their primary texts are not supplied here, so these remain descriptions of the branch's inspections. Its forward-citation searches in entries 76 and 81 did not verify a citing critique of P's complexity claim, with index limits and relevant unread texts remaining. Neither absence nor novelty follows.
+
+Joint entries 16, 25, 27 and 28 support the staged reproduction and subsequent accuracy/risk/cost comparison. The scientific reason for prioritising input reproduction is the still-unvalidated predictor inputs and the missing physical calibration and native costs. No verifier review is used as scientific evidence.
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

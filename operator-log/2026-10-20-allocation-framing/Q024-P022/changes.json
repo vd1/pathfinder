@@ -1,0 +1,51 @@
+{
+  "baseline_sha256": "d9673738d30309c5d226fb2d36e0be8699e34f08b27b9500079748d398e8d231",
+  "candidate_sha256": "18684a690bcfade6c2ade0daa6e0f5d52b09ae5f5db21db437c900752c64de49",
+  "changes": [
+    {
+      "after": "The sampling estimator above requires positive integer shot counts; it is not defined by substituting zero into its denominators. For a fixed edge, suppress the edge index. The following norm-based proportional rule is stated only for strictly positive norm products \\(c_m\\), positive per-shot costs \\(k_m\\) and positive fixed cost \\(K=\\sum_m k_mS_m\\). It is the equality allocation in a continuous relaxation with positive real \\(S_m\\), not an integer sampling prescription. Under these conditions, joint entries 20 and 24 give",
+      "before": "For positive per-shot costs \\(k_m\\) and fixed cost \\(K=\\sum_m k_mS_m\\), joint entries 20 and 24 give",
+      "finding": "P1"
+    },
+    {
+      "after": "The variance-optimal proportional rule instead uses \\(c_m\\sqrt{1-h_m^2}\\), and is stated here only when every variance coefficient \\(c_m^2(1-h_m^2)\\) is strictly positive. Zero norm products or zero variance coefficients are outside the respective proportional prescriptions as stated here and require separate treatment; no zero-shot estimator is defined. The retained audit checks positive variance coefficients in its conditional arrays and does not supply a policy for the zero-coefficient case. Integer allocations constrained to positive shot counts require a separate constrained prescription: no rounding or minimum-shot allocation rule is asserted here. The continuous calculation excludes integer, setup and pilot costs.",
+      "before": "Variance-optimal allocation replaces \\(c_m\\) by \\(c_m\\sqrt{1-h_m^2}\\). The continuous calculation excludes integer, setup and pilot costs.",
+      "finding": "P2"
+    },
+    {
+      "after": "Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\\cite{Q}. Q reports the supervised RBFE-Space label as the standard error of the mean across five solvent-phase relative free-energy calculations for a perturbation between the grafted benzene derivatives: the standard deviation across those five estimates divided by the square root of five. Where both perturbation directions were simulated, Q reports averaging their SEM values for the two directional labels. This describes the source-reported label construction, not an independent validation of deposited SEM values. It is distinct from dispersion among predictions of the neural-network ensemble members, and it is not a calibrated uncertainty on binding affinity~\\cite{Q}.",
+      "before": "Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\\cite{Q}.",
+      "finding": "training-label-and-domain"
+    },
+    {
+      "after": "Q's training-domain construction discarded perturbations changing formal charge and those involving ten or more perturbed heavy atoms. Q also excluded structurally complex grafting cases, including multiple fused rings or more than six R-groups, for implementation simplicity; perturbations involving a benzene ring without other constituents were excluded because they caused difficulties enforcing the benzene maximum common substructure. These are source-reported domain restrictions, not evidence of validated transfer to excluded chemistry~\\cite{Q}.\n\nQ explicitly included TYK2- and TNKS2-derived perturbations in training. Its stated rationale was that the R-group modifications substantially overlap those in other congeneric series, so omitting these series would leave essentially the same perturbation domain; inclusion also simplified the workflow. That is Q's rationale, not an independently tested absence of data overlap. The proposed TYK2 reproduction is consequently not a target-held-out generalisation test~\\cite{Q}.\n\nThis chemical abstraction also limits what successful numerical reproduction would establish.",
+      "before": "This chemical abstraction also limits what successful numerical reproduction would establish.",
+      "finding": "training-label-and-domain"
+    },
+    {
+      "after": "Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment. This is a reproduction prerequisite within the source-reported training domain, not an independent target-held-out validation of transferability or binding-affinity uncertainty.",
+      "before": "Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment.",
+      "finding": "training-label-and-domain"
+    },
+    {
+      "finding": "editor-framing",
+      "before": "The thread ended with PAUSE. The next useful experiment",
+      "after": "The next useful experiment"
+    },
+    {
+      "finding": "editor-framing",
+      "before": "\\section{Why PAUSE, and the smallest useful next experiment}",
+      "after": "\\section{Prioritising input reproduction}"
+    },
+    {
+      "finding": "editor-framing",
+      "before": "The thread ended with PAUSE because faithful predictions from validated inputs remain missing.",
+      "after": "Faithful predictions from validated inputs remain missing."
+    },
+    {
+      "finding": "editor-framing",
+      "before": "The PAUSE status is supplied by the brief; the scientific reason is the still-unvalidated predictor inputs and the missing physical calibration and native costs.",
+      "after": "The scientific reason for prioritising input reproduction is the still-unvalidated predictor inputs and the missing physical calibration and native costs."
+    }
+  ]
+}
