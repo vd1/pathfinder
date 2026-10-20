@@ -35,3 +35,25 @@ def test_projection_changes_if_omitted_content_changes():
     a,omitted_a=ex.project(first,['/a/0'])
     b,omitted_b=ex.project(second,['/a/0'])
     assert a==b and omitted_a!=omitted_b
+
+
+def test_legacy_23_contract_remains_exact(tmp_path):
+    import json
+    delta = dict(parent_candidate_sha256='a', parent_acceptance_sha256='b', returned_findings_sha256='c',
+                 changes=[dict(finding=f'P{i}', before=str(i), after=str(i+1)) for i in (1,2,3)])
+    c = dict(version=1, pair='Q1P1', identity='test', parent_pointer={'id':'prior'},
+             parent_request_sha256='request', parent_frozen_inputs_sha256='inputs',
+             parent_candidate_sha256='a', parent_acceptance_sha256='b', returned_findings_sha256='c',
+             candidate_sha256=pce._sha('candidate'), delta_sha256=ex.digest(delta),
+             original_baseline_sha256='original', cumulative_sha256='cumulative',
+             existing_count=20, total_count=23, finding_ids=['P1','P2','P3'], selected_json={})
+    packet=tmp_path/'packet';packet.mkdir();contract=packet/'history-exception.json'
+    contract.write_text(json.dumps(c));approval=tmp_path/'test-approval.json'
+    receipt=dict(version=1,decision='approve',authority='owner',approved_by='TEST ONLY',
+                 approval_reference='unit fixture',contract_sha256=ex.digest(c))
+    approval.write_text(json.dumps(receipt))
+    assert ex.authorize(packet,approval,'Q1P1','test',delta,'candidate')['contract']==c
+    c['total_count']=24;contract.write_text(json.dumps(c))
+    receipt['contract_sha256']=ex.digest(c);approval.write_text(json.dumps(receipt))
+    with pytest.raises(pce.Changed,match='binding differs'):
+        ex.authorize(packet,approval,'Q1P1','test',delta,'candidate')

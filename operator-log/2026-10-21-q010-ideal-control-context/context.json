@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "source": "ada/water_selector.py",
+      "sha256": "6530abfb26fe6823946860ea69f2946dd09b2cd977db7356db8cb981b1bc59c7",
+      "quote": "def build(s):\n    base=mf if s==0 else qmmm.mm_charge(scf.RHF(mol), record['xyz_mm'],\n                 np.asarray(record['charges_mm'])*s,unit='Angstrom')\n    cas=mcscf.CASCI(base,ncas,nelec);cas.mo_coeff=mo\n    cas.fcisolver.conv_tol=1e-13;cas.fcisolver.max_cycle=200\n",
+      "where": "At size 32, pooled and field-only ideal spaces coincided and both components passed."
+    },
+    {
+      "source": "ada/water_selector.py",
+      "sha256": "6530abfb26fe6823946860ea69f2946dd09b2cd977db7356db8cb981b1bc59c7",
+      "quote": "full=[build(s) for s in (0,.5,1)]\nh0=full[0][0];v=full[2][0]-h0\naffine=float(np.max(abs(full[1][0]-(h0+.5*v))))\nassert affine<1e-10\nprobs=[x[2][:,0]**2 for x in full]\nrank=lambda p: np.lexsort((np.arange(dim),-p))\nranks=[rank(p) for p in probs];score=sum(probs)\n",
+      "where": "At size 32, pooled and field-only ideal spaces coincided and both components passed."
+    },
+    {
+      "source": "ada/water_selector.py",
+      "sha256": "6530abfb26fe6823946860ea69f2946dd09b2cd977db7356db8cb981b1bc59c7",
+      "quote": "for R in (1,4,8,16,32,64,128,225):\n    union=np.unique(np.concatenate([r[:R] for r in ranks]))\n    # Union candidates ranked by equal-weight sum of the three exact probabilities.\n    pooled=union[np.lexsort((union,-score[union]))[:R]]\n    for method,indices in [('vacuum',ranks[0][:R]),('field',ranks[2][:R]),('pooled',pooled)]:\n        rows.append(dict(R=R,method=method,untruncated_union_dimension=len(union),\n                         **evaluate(np.sort(indices))))\n",
+      "where": "At size 32, pooled and field-only ideal spaces coincided and both components passed."
+    },
+    {
+      "source": "ada/water_selector_interpretation.txt",
+      "sha256": "bdda912588f94ef208aa47c1c36fc378794ed565cb70ff296277bd94760bbe5f",
+      "quote": "Selector definition and results\nExact parent ground probabilities at each field are the ideal test oracle.\nVacuum-only and field-only spaces take the largest \\(R\\) probabilities.\nPool candidates are the union of the three top-\\(R\\) lists, truncated back\nto \\(R\\) by equal-weight summed probabilities; ties use determinant index.\nThis is not a finite-shot sample, an ADAPT-QSCI state or response-aware SCI.\nThe raw pool dimensions at \\(R=8,16,32\\) are 12,19,36, respectively.\nAll endpoint diagonalisation and the static expectation use each selected\ncommon space, rather than separately selected endpoint wavefunctions.\n",
+      "where": "At size 32, pooled and field-only ideal spaces coincided and both components passed."
+    }
+  ]
+}

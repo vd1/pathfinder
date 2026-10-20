@@ -118,18 +118,32 @@ def authorize(packet, approval, pair, identity, delta, candidate):
                 'parent_frozen_inputs_sha256', 'parent_candidate_sha256', 'parent_acceptance_sha256',
                 'returned_findings_sha256', 'candidate_sha256', 'delta_sha256',
                 'original_baseline_sha256', 'cumulative_sha256', 'existing_count', 'total_count',
-                'finding_ids', 'selected_json'}
-    if (set(contract) != required or contract['version'] != 1
+                'finding_ids'}
+    version = contract.get('version')
+    if version == 1:
+        required.add('selected_json')
+        counts, findings = (20, 23), ['P1', 'P2', 'P3']
+    elif version == 2:
+        required.add('evidence_projection_sha256')
+        counts, findings = (23, 24), ['P1']
+        projection = delta.get('evidence_projection')
+        if (not isinstance(projection, dict) or not isinstance(projection.get('include'), list)
+                or len(projection['include']) != 1):
+            raise pce.Changed('24-record exception requires one complete retained evidence addition')
+    else:
+        raise pce.Changed('unsupported exact history exception version')
+    if (set(contract) != required
             or contract['pair'] != pair or contract['identity'] != identity
-            or contract['existing_count'] != 20 or contract['total_count'] != 23
-            or contract['finding_ids'] != ['P1', 'P2', 'P3']
-            or len(delta['changes']) != 3
+            or (contract['existing_count'], contract['total_count']) != counts
+            or contract['finding_ids'] != findings
+            or len(delta['changes']) != counts[1] - counts[0]
+            or (version == 2 and contract['evidence_projection_sha256'] != digest(delta.get('evidence_projection')))
             or [r['finding'] for r in delta['changes']] != contract['finding_ids']
             or contract['candidate_sha256'] != pce._sha(candidate)
             or contract['delta_sha256'] != digest(delta)
             or any(contract[k] != delta[k] for k in (
                 'parent_candidate_sha256', 'parent_acceptance_sha256', 'returned_findings_sha256'))):
-        raise pce.Changed('exact 23-record exception binding differs')
+        raise pce.Changed('exact history exception binding differs')
     if approval is None:
         raise pce.Changed('explicit owner approval of this exact history exception is required')
     receipt = json.loads(Path(approval).read_text())
@@ -149,8 +163,9 @@ def replay(exception, original, cumulative, parent, selected, review):
     if (selected != c['parent_pointer'] or pce._sha(original) != c['original_baseline_sha256']
             or pce._sha((parent/'request.json').read_text()) != c['parent_request_sha256']
             or pce._sha((review/'frozen-inputs.json').read_text()) != c['parent_frozen_inputs_sha256']
-            or len(cumulative['changes']) != 23 or digest(cumulative) != c['cumulative_sha256']):
-        raise pce.Changed('approved 23-record parent or cumulative history differs')
+            or len(cumulative['changes']) != c['total_count'] or digest(cumulative) != c['cumulative_sha256']
+            or len(json.loads((parent/'request.json').read_text())['changes']['changes']) != c['existing_count']):
+        raise pce.Changed('approved parent or cumulative history differs')
     # Existing accepted-parent checks happen before this call. This validates every
     # sequential change without changing the ordinary revision length guard.
     candidate = original

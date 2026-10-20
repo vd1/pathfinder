@@ -1,0 +1,23 @@
+{
+  "parent_candidate_sha256": "edacbf5ea41d33bc04dfc9e400ce431ab100f5c7c138c9c1f07e9464ba1b14d3",
+  "parent_acceptance_sha256": "803e025953acff5f976deb83ee1a79879bd2f6821bf440086c6b0eb277be075f",
+  "returned_findings_sha256": "9fa93871a7fb7ade8077d658a671e4353f4722a6d51cea1cf3ec20014b19c828",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "An idealised control selected determinants using exact parent probabilities, without shots or an ADAPT circuit.",
+      "after": "An idealised control selected determinants using exact parent probabilities, without shots or an ADAPT circuit. Here field-only means selection of the top \\(R\\) determinants by exact parent ground-state probability at full MM-charge scaling, \\(s=1\\). For the ideal pooled space, the candidates are the union of the top-\\(R\\) lists at vacuum, half field and full field, \\(s=0,1/2,1\\); the \\(R\\) largest equal-weight sums of the three exact probabilities are retained, with increasing determinant index breaking ties. The field scales the inherited MM charges in the same fixed vacuum-orbital parent CAS. This deterministic probability rule is distinct from the finite-shot frequency-pooling construction below."
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "ada/water_selector.py",
+        "sha256": "6530abfb26fe6823946860ea69f2946dd09b2cd977db7356db8cb981b1bc59c7",
+        "purpose": "Complete retained ideal-control implementation: field scaling, exact probabilities, top-R union/ranking/ties and common fixed-orbital model. No execution or new results."
+      }
+    ]
+  }
+}

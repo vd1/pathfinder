@@ -34,7 +34,7 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
     binding = dict(id=identity, reason=reason, delta=delta, candidate_sha256=pce._sha(candidate),
                    routes={k:v for k,v in routes.items() if k.startswith('edit/')})
     if exception is not None:
-        if projection is not None:
+        if exception['contract']['version'] == 1 and projection is not None:
             raise pce.Changed('exception permits only its exact selected JSON addition')
         binding['history_exception'] = exception
     pointer = thread / 'edited/account-amendment.json'
@@ -105,6 +105,8 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
         files = json.loads((review/'frozen-inputs.json').read_text())
         snapshots = json.loads((parent/'evidence-snapshots.json').read_text())
         if exception is not None:
+            request['history_exception'] = exception
+        if exception is not None and exception['contract']['version'] == 1:
             documents, custody = account_exception.selected_evidence(
                 campaign, pair, exception['contract']['selected_json'])
             if any(name in files for name in documents):
@@ -123,7 +125,7 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
                     raise pce.Changed('successor evidence conflicts with inherited snapshot')
             snapshots.update(additions)
             request['evidence_sha256'] = pce._sha(pce._json(snapshots))
-            if wire is None:
+            if wire is None and (exception is None or exception['contract']['version'] == 1):
                 files[pce.SUPPLEMENT] += '\n\n## Additional retained scientific files\n\n' + pce._json(additions)
             else:
                 for name, text in sorted(additions.items()):
