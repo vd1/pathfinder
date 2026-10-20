@@ -38,3 +38,30 @@ def test_refuses_unbound_metadata(change):
     if change=='existing-title':b=b.replace('author = {B},','author = {B},\n title = {Existing},')
     e['q']['text']=json.dumps(r)
     with pytest.raises(pce.Changed):ab.transform(b,ops,e)
+
+
+def test_operator_publisher_title_preserves_work_and_other_fields():
+    import hashlib
+    export='''@inproceedings{published,
+ title = {{Exact publisher title}},
+ year = {2017},
+ doi = {10.4230/test},
+ url = {https://drops.dagstuhl.de/entities/document/10.4230/test}
+}
+'''
+    raw='<pre>'+export+'</pre>'
+    evidence={'publisher':{'text':json.dumps(dict(bibtex=export,raw_response=raw,raw_sha256=hashlib.sha256(raw.encode()).hexdigest()))}}
+    bib='''@misc{queries,
+ author = {Existing authors},
+ title = {Descriptive wording},
+ year = {2017},
+ note = {Inherited source; descriptive title},
+ url = {https://drops.dagstuhl.de/entities/document/10.4230/test}
+}
+'''
+    op=dict(key='queries',operation='publisher-descriptive-title',doi='10.4230/test',evidence='publisher',quote='Exact publisher title',old_title='Descriptive wording',old_note='Inherited source; descriptive title')
+    old=paper.bib_entries(bib)['queries'];new=paper.bib_entries(ab.transform(bib,[op],evidence))['queries']
+    assert new['title']=='Exact publisher title'
+    assert {k:v for k,v in new.items() if k not in ('title','note')}=={k:v for k,v in old.items() if k not in ('title','note')}
+    op['old_title']='different'
+    with pytest.raises(pce.Changed):ab.transform(bib,[op],evidence)

@@ -16,7 +16,11 @@ def transform(bib, operations, evidence):
         key=op['key']
         if key in used or key not in entries:raise pce.Changed('metadata key is missing or repeated')
         used.add(key);entry=entries[key]
-        if op['doi']!=entry.get('doi'):raise pce.Changed('metadata operation must preserve the cited DOI')
+        publisher_title=op['operation']=='publisher-descriptive-title'
+        if publisher_title:
+            if entry.get('url')!='https://drops.dagstuhl.de/entities/document/'+op['doi']:
+                raise pce.Changed('publisher title must identify the existing cited Dagstuhl work')
+        elif op['doi']!=entry.get('doi'):raise pce.Changed('metadata operation must preserve the cited DOI')
         proof=evidence[op['evidence']]
         text=json.dumps(json.loads(proof['text']),ensure_ascii=False)
         if not op['quote'] or op['quote'] not in text or op['doi'] not in text:
@@ -26,7 +30,28 @@ def transform(bib, operations, evidence):
         while i<len(out) and depth:
             depth+={'{':1,'}':-1}.get(out[i],0);i+=1
         block=out[start:i];new=block
-        if op['operation']=='supply-missing-title':
+        if publisher_title:
+            proof_data=json.loads(proof['text'])
+            publisher=paper.bib_entries(proof_data.get('bibtex',''))
+            if len(publisher)!=1:raise pce.Changed('one publisher bibliography entry required')
+            supplied=next(iter(publisher.values()))
+            title=supplied.get('title','').strip('{}')
+            if (supplied.get('doi')!=op['doi'] or title!=op['quote']
+                or supplied.get('url')!=entry.get('url') or supplied.get('year')!=entry.get('year')
+                or op.get('old_title')!=entry.get('title') or op.get('old_note')!=entry.get('note')
+                or 'descriptive title' not in entry.get('note','')
+                or any(c in title for c in '\n\r{}\\')):
+                raise pce.Changed('publisher title or exact descriptive baseline differs')
+            import html
+            raw=proof_data.get('raw_response','')
+            if (hashlib.sha256(raw.encode()).hexdigest()!=proof_data.get('raw_sha256')
+                or proof_data['bibtex'].strip() not in html.unescape(raw)):
+                raise pce.Changed('publisher export is not present in bound raw response')
+            new,n=re.subn(r'(?m)^(\s*title\s*=\s*)\{[^\n{}]*\}',lambda m:m[1]+'{'+title+'}',new)
+            if n!=1:raise pce.Changed('title field must be a unique braced line')
+            new,n=re.subn(r'(?m)^(\s*note\s*=\s*)\{[^\n{}]*\}',lambda m:m[1]+'{Source identified in the inherited ledger; title corrected from publisher metadata only}',new)
+            if n!=1:raise pce.Changed('descriptive note must be a unique braced line')
+        elif op['operation']=='supply-missing-title':
             if entry.get('title') or any(c in op['quote'] for c in '\n\r{}\\'):
                 raise pce.Changed('only a missing title may be supplied as plain bibliographic text')
             offset=match.end()-start
@@ -56,7 +81,8 @@ def transform(bib, operations, evidence):
     revised=paper.bib_entries(out)
     if set(entries)!=set(revised):raise pce.Changed('bibliography keys changed')
     for key in entries:
-        allowed={'title'} if next((x['operation'] for x in operations if x['key']==key),None)=='supply-missing-title' else {'year','note'} if key in used else set()
+        operation=next((x['operation'] for x in operations if x['key']==key),None)
+        allowed={'title','note'} if operation=='publisher-descriptive-title' else {'title'} if next((x['operation'] for x in operations if x['key']==key),None)=='supply-missing-title' else {'year','note'} if key in used else set()
         if any(entries[key].get(f)!=revised[key].get(f) for f in set(entries[key])|set(revised[key]) if f not in allowed):
             raise pce.Changed('non-metadata bibliography field changed')
     return out
@@ -91,23 +117,44 @@ def run(campaign,pair,*,identity,packet,reason,apply=False):
         raise pce.Changed('bibliography revision needs an ID and explicit authority')
     with health.owner(campaign,nested=True),runner.Lock(campaign.thread_dir(pair)):
         if runner.stopped(campaign):return 'stopped: bibliography revision not installed'
-        view=account_release.view(campaign,pair,bibliography=False);parent=paper.folder(view,pair)
-        note=(parent/'paper.tex').read_text();bib=(parent/'references.bib').read_text()
-        acceptance=json.loads((parent/'acceptance.json').read_text())
-        spec=json.loads((Path(packet)/'metadata.json').read_text());evidence={}
+        spec=json.loads((Path(packet)/'metadata.json').read_text())
+        operator=spec.get('operator_scope')
+        if operator is not None:
+            if (set(operator)!={'kind','authority'} or operator['kind']!='bibliographic-title-only'
+                or not operator['authority'].strip()
+                or any(op.get('operation')!='publisher-descriptive-title' for op in spec['operations'])):
+                raise pce.Changed('operator metadata scope must be explicit and title-only')
+            from . import account_amend
+            note,bib,acceptance=account_amend.selected(campaign,pair,*account_release.source(campaign,pair))
+            if (pce._sha(note)!=spec['note_sha256'] or pce._sha(bib)!=spec['bibliography_sha256']):
+                raise pce.Changed('operator metadata packet belongs to another accepted source')
+            if spec['acceptance_sha256']=='bind-current-accepted':
+                spec={**spec,'acceptance_sha256':pce._sha(pce._json(acceptance))}
+            if pce._sha(pce._json(acceptance))!=spec['acceptance_sha256']:
+                raise pce.Changed('operator metadata acceptance differs')
+            # The host binds genuine acceptance; no reviewer finding is invented.
+            parent=campaign.thread_dir(pair)/'edited/publication'/pce._sha(note+'\0'+bib)
+        else:
+            view=account_release.view(campaign,pair,bibliography=False);parent=paper.folder(view,pair)
+        if operator is None:
+            note=(parent/'paper.tex').read_text();bib=(parent/'references.bib').read_text()
+            acceptance=json.loads((parent/'acceptance.json').read_text())
+        evidence={}
         for name,item in spec['evidence'].items():
             path=Path(item['path']);raw=path.read_bytes()
             if hashlib.sha256(raw).hexdigest()!=item['sha256']:raise pce.Changed('metadata evidence changed')
             evidence[name]={**item,'text':raw.decode('utf-8')}
         findings=parent/'presentation/amend-findings.json'
-        if (presentation.state(view,pair).get('state')!='RETURNED' or _hash(findings)!=spec['findings_sha256']
+        if operator is None and (presentation.state(view,pair).get('state')!='RETURNED' or _hash(findings)!=spec['findings_sha256']
             or pce._sha(note)!=spec['note_sha256'] or pce._sha(bib)!=spec['bibliography_sha256']
             or pce._sha(pce._json(acceptance))!=spec['acceptance_sha256']):
             raise pce.Changed('metadata packet does not bind this returned accepted publication')
-        if {x['finding'] for x in spec['operations']}!={x['id'] for x in json.loads(findings.read_text())['findings']}:
+        if operator is None and {x['finding'] for x in spec['operations']}!={x['id'] for x in json.loads(findings.read_text())['findings']}:
             raise pce.Changed('metadata operations must address exactly the returned findings')
         corrected=transform(bib,spec['operations'],evidence)
         if corrected!=(Path(packet)/'references.bib').read_text():raise pce.Changed('bibliography candidate differs from exact metadata operations')
+        if operator is not None:
+            account_release.view(campaign,pair,create=True,bibliography=False)
         ed=campaign.thread_dir(pair)/'edited';root=ed/'bibliography-revisions'/identity
         request={**spec,'id':identity,'reason':reason.strip(),'parent_publication':parent.name,
                  'parent_files_sha256':pce_recovery.hashes(parent)}
