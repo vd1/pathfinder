@@ -208,6 +208,37 @@ def visible(files: dict, contract: str) -> dict:
     return {n: t for n, t in sorted(files.items()) if any(fnmatch.fnmatchcase(n, p) for p in patterns)}
 
 
+def editor_alias_packet(head: str, shown: dict) -> tuple[str, dict]:
+    """Lossless whole-file aliases, only within the editor's already selected scope."""
+    canonical, contents, aliases = {}, {}, {}
+    for name, text in sorted(shown.items()):
+        # Key by the complete string, not just its hash; no normalization or partial dedup.
+        if text in canonical:
+            aliases[name] = canonical[text]
+        else:
+            canonical[text] = name
+            contents[name] = text
+    expanded = {**contents, **{name: contents[target] for name, target in aliases.items()}}
+    if expanded != shown:
+        raise Changed("editor alias packet does not reproduce complete scoped files")
+    instruction = (
+        "\nLossless file-alias transport v1: the following JSON has contents and aliases maps. "
+        "Every alias path has exactly the full content of its named contents path. Treat both "
+        "paths as present, with their original provenance and status; identical text is not "
+        "independent evidence. Read all contents and resolve all aliases in this packet. "
+        "No file is omitted, summarized or fetched; no tools are needed. "
+        "The role's read scope and required output are unchanged.\n")
+    prompt = instruction + head + _json({"contents": contents, "aliases": aliases})
+    return prompt, {
+        "encoding": "whole-file-alias-v1", "aliases": aliases,
+        "contents_sha256": {n: _sha(t) for n, t in contents.items()},
+        "expanded_files_sha256": {n: _sha(t) for n, t in sorted(expanded.items())},
+        "expanded_json_sha256": _sha(_json(expanded)),
+        "original_prompt_sha256": _sha(head + _json(shown)),
+        "original_prompt_chars": len(head + _json(shown)),
+    }
+
+
 def _files(text: str, permitted: list[str]) -> dict:
     try:
         envelope = extract_json(unfence(text or ""))
@@ -488,11 +519,14 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                     n.startswith(("sources/internal/", "reviews/", "revisions/")) for n in shown):
                 raise Changed("fresh review scope exposes internal material or previous reviews")
             prompt = head + _json(shown)
+            encoding = {}
+            if role == "editor" and len(prompt) > transport.max_prompt_chars(campaign):
+                prompt, encoding = editor_alias_packet(head, shown)
             if len(prompt) > transport.max_prompt_chars(campaign):
                 raise Changed("complete review context exceeds prompt allowance; no call or truncation")
             _write(root, f"visibility/{pass_id}-{role}.json", _json({
                 "prompt_sha256": _sha(prompt), "prompt_chars": len(prompt), "truncated": False,
-                "files_sha256": {n: _sha(t) for n, t in shown.items()}}), immutable=True)
+                "files_sha256": {n: _sha(t) for n, t in shown.items()}, **encoding}), immutable=True)
         else:
             prompt = head + _json(fit(shown, transport.max_prompt_chars(campaign) - len(head)))
         order[0] += 1
