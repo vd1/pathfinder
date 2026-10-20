@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "source": "emmy/ensemble_allocation_audit.py",
+      "sha256": "e70950216248d8153ab00bc99f16377c378f693bffc0b978c6e3be836a9b23f6",
+      "quote": "c = np.concatenate([a['norm_products'] for a in arrays], axis=1)\nu = np.concatenate([a['predictions'] for a in arrays], axis=1)\nrows = json.loads(paths[2].read_text())['rows']\nrows = sorted(rows, key=lambda r: (r['replicate'], r['fold']))\nassert [(r['replicate'], r['fold']) for r in rows] == [(r,f) for r in range(9) for f in range(5)]\nb = np.array([r['bias'][0] for r in rows])[:, None, None]\nv = c*c - (u-b)**2\nassert c.shape == (45,12,120) and v.min() > 0\n\ndef quantiles(a):\n    return np.quantile(a, [0,.05,.5,.95,1]).tolist()\n\n# With total shots T per edge, uniform allocation variance is mean(v)/T.\n# Continuous optimal allocation variance is mean(sqrt(v))**2/T.\nrobust_equal = np.mean(c*c, axis=0)\nrobust_opt = np.mean(c, axis=0)**2\nvar_equal = np.mean(v, axis=0)\nvar_opt = np.mean(np.sqrt(v), axis=0)**2\nmember_variance = np.var(u, axis=0, ddof=0)\nassert np.all(member_variance > 0)\n",
+      "where": "\u201cA further reported comparison found that oracle variance-optimal shot coefficients exceed member-sampling coefficients across all 1440 conditional mapping-edge coordinates, with minimum ratio 4.39869 and median 197.27762.\u201d"
+    },
+    {
+      "source": "emmy/ensemble_allocation_audit.py",
+      "sha256": "e70950216248d8153ab00bc99f16377c378f693bffc0b978c6e3be836a9b23f6",
+      "quote": "    'limitations': ['Continuous fixed allocation ignores integer and setup costs.',\n                    'Oracle variance allocation requires exact overlaps or separately charged pilot estimates.',\n                    'Mapping envelope bounds only the twelve tested candidates, not historical or all admissible inputs.',\n                    'Independent unbiased shots and exact frozen functions; correlated or systematic device error is excluded.']",
+      "where": "\u201cA further reported comparison found that oracle variance-optimal shot coefficients exceed member-sampling coefficients across all 1440 conditional mapping-edge coordinates, with minimum ratio 4.39869 and median 197.27762.\u201d"
+    },
+    {
+      "source": "ada/ensemble-subsampling-control.md",
+      "sha256": "fd88362ddbcb171ccaf3b2dc29428ec8cd3d7e0702f4d8227e6c56e970d423c5",
+      "quote": "For a fixed edge and mapping, let the restored model predictions be\n\\(u_m=b_m+c_mh_m\\), with \\(M=45\\). Define\n\\[\nv=M^{-1}\\sum_m(u_m-\\bar u)^2,\\qquad\nA=M^{-1}\\sum_m[c_m^2-(u_m-b_m)^2].\n\\]\nIndependent equal Hadamard allocations with \\(S\\) shots per member have\n\\(T=MS\\) total shots and ensemble variance \\(A/T\\). By contrast, choosing\n\\(k\\) independent uniform ensemble members and evaluating each exactly gives\nan unbiased ensemble estimator with variance \\(v/k\\). Uniform subsets of\n\\(k\\) distinct members give\n\\[\n\\operatorname{Var}(\\widehat{\\bar u}_k)\n=\\frac{M-k}{k(M-1)}v.\n\\]\n",
+      "where": "\u201cA further reported comparison found that oracle variance-optimal shot coefficients exceed member-sampling coefficients across all 1440 conditional mapping-edge coordinates, with minimum ratio 4.39869 and median 197.27762.\u201d"
+    },
+    {
+      "source": "branches/branch-3/ada/selected-reporting-check.json",
+      "sha256": "b539a649a73506504e647d9b655468822a9a34d7a7a8bd734a2fe3cf0a221128",
+      "quote": "{\n  \"scope\": \"Reporting-path verification only, reusing previously seeded unchanged-FEW triplets.\",\n  \"selected_plot_path\": \"plotPredictions reorders [median, lower, upper] before computePM.\",\n  \"FC_printed_path\": \"Cell 55 passes [median, lower, upper] directly to computePM.\",\n",
+      "where": "\u201cThe audit also distinguishes full-graph prose summary components from saved-figure components.\u201d"
+    },
+    {
+      "source": "branches/branch-3/ada/selected-reporting-check.json",
+      "sha256": "b539a649a73506504e647d9b655468822a9a34d7a7a8bd734a2fe3cf0a221128",
+      "quote": "  \"limitations\": \"Selected figure has no saved printed statistics. Approximate prose is not an exact numerical reference; random seeds, propagated uncertainties, original library/runtime and figure-generation run identity remain unverified. No internal inconsistency is inferred. The default FEW confidence interval and its indexing are source conventions, not a reproduced 95 percent interval.\"\n}\n",
+      "where": "\u201cThe audit also distinguishes full-graph prose summary components from saved-figure components.\u201d"
+    },
+    {
+      "source": "branches/branch-3/ada/Q-network-analysis-code.py",
+      "sha256": "ab0be06dc7ce8d73106a68a3b93b12ab8e9a82605385ea24380837582f0f5c2f",
+      "quote": "def computePM(stats_triplet):\n    \"\"\"For a list of three values where the middle value is the mean and the outer values are the outer bounds,\n    return the mean and the plus-minus as the mean error of the bounds compared to the mean.\"\"\"\n    mean_val = stats_triplet[1]\n    error_1 = mean_val - stats_triplet[0]\n    error_2 = stats_triplet[2] - mean_val \n    mean_err = np.mean([error_1, error_2])\n    \n    return round(mean_val, 2), round(mean_err, 2)\n\n",
+      "where": "\u201cThe audit also distinguishes full-graph prose summary components from saved-figure components.\u201d"
+    },
+    {
+      "source": "branches/branch-3/ada/Q-network-analysis-code.py",
+      "sha256": "ab0be06dc7ce8d73106a68a3b93b12ab8e9a82605385ea24380837582f0f5c2f",
+      "quote": "# CELL 55\nprint(\"Pearson R, +/-:\", computePM(r_confidence))\nprint(\"MUE, +/-:\", computePM(mue_confidence))\nprint(\"Kendall tau, +/-:\", computePM(tau_confidence))",
+      "where": "\u201cThe audit also distinguishes full-graph prose summary components from saved-figure components.\u201d"
+    }
+  ]
+}
