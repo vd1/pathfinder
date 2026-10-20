@@ -1,0 +1,40 @@
+{
+  "parent_candidate_sha256": "3e7d5be8e6661f60b0c47cd5dbea406605b5ce02917c7c3754d8f85487d0c42a",
+  "changes": [
+    {
+      "finding": "bundle-intervention",
+      "before": "The restricted model fixes internal coordinates, measures and offsets, then prescribes positive spring bundles:",
+      "after": "The restricted model fixes internal coordinates, measures and offsets. Following the retained contact-bundle construction, the columns of \\(U\\) and \\(V\\) are Cartesian contact-distance gradients projected into that common internal coordinate space, for the prescribed X and R contact bundles respectively. Their column magnitudes and multiplicities specify the bundle weights: if dependent columns are compressed, their nonzero singular values must be retained so that \\(UU^T\\) and \\(VV^T\\) are unchanged. The positive coefficients \\(a,b\\) scale the prescribed spring additions for the two bundles; they are not fitted chemical-substitution effects. The binary indices \\(i,j\\) switch those additions off or on:"
+    },
+    {
+      "finding": "diagnostic-relation",
+      "before": "Bundle column weights must be retained. Its dimensionless stiffness cycle is",
+      "after": "The earlier \\(S_{gh}\\) is a selected contact-covariance diagnostic from inverse stiffness; the bundle benchmark instead compares determinants after prescribed stiffness interventions. They use contact responses in a harmonic model, but the covariance quartet does not by itself identify those interventions or their determinant cycle. No validated correspondence between these prescribed X/R spring changes and Q's chemical substitutions has been established. Its dimensionless stiffness cycle is"
+    },
+    {
+      "finding": "retained-additivity",
+      "before": "Omission alone need not break the spring representation. Exact conditional orthogonality, \\(U_w^TD_{00}^{-1}V_w=0\\), makes the omitted cycle vanish. A later block-reduction argument also establishes additive positive effective retained bundles, including when one bundle is retained-only. An earlier note denied that stronger implication; its author's response remained pending. The textual disagreement concerns retained additivity, rather than the agreed determinant decomposition. Small conditional information does not imply exact additivity.\\footnote{Research record: joint entries 22, 25, 29 and 30; the later reduction has 24 synthetic controls.}",
+      "after": "Omission alone need not break the spring representation. On the same positive-definite internal coordinate space at all four corners, with fixed minima, offsets, configurational measures and kinetic terms and prescribed additive positive bundles, exact zero conditional cross-compliance \\(U_w^TD_{00}^{-1}V_w=0\\) is a sufficient condition for additive positive effective retained bundles after Schur reduction. This includes the case where one bundle is retained-only, and also permits both bundles to touch omitted coordinates. Under this condition the omitted determinant cycle vanishes, so the full and retained stiffness cycles agree. A merely small conditional information does not imply this exact additive representation. These sufficient fixed-space conditions do not validate chemical replacements.\\footnote{Retained derivation: \\texttt{emmy/marginal-bounds.md}, fixed-space assumptions and exact bundle reduction; joint entries 25 and 29. The retained synthetic checks corroborate the algebra, not molecular correspondence.}"
+    }
+  ],
+  "findings": [
+    {
+      "id": "bundle-intervention",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "c8927d123ea81b7b1981d876fef855ff97646516d3a868408a8d90f96707d935",
+      "quote": "Define U,V, their column weights and the roles of a,b at first use, using the retained evidence."
+    },
+    {
+      "id": "diagnostic-relation",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "c8927d123ea81b7b1981d876fef855ff97646516d3a868408a8d90f96707d935",
+      "quote": "Explicitly explain the relationship between the selected contact covariance diagnostic and the prescribed bundle stiffness-cycle benchmark, including that no validated chemical correspondence between their interventions has been established."
+    },
+    {
+      "id": "retained-additivity",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "c8927d123ea81b7b1981d876fef855ff97646516d3a868408a8d90f96707d935",
+      "quote": "Replace the pending-author-response narrative with a self-contained statement of the supported sufficient condition for additive effective retained bundles and its fixed-space assumptions; preserve the distinction between exact zero conditional cross-compliance and merely small conditional information."
+    }
+  ]
+}

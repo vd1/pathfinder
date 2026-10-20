@@ -1,0 +1,48 @@
+{
+  "baseline_sha256": "792b68e91db66c51c15a7594e22a559919e937152ec206a6fe3eeb4f1c0591f1",
+  "candidate_sha256": "dc402d8ad0518e23b41722a0abb2335b7472e3cd4526f6e918638320afd84536",
+  "changes": [
+    {
+      "after": "For the information functional, let the baseline displacement \\(q=(z,w)\\) be Gaussian with covariance \\(\\theta K^{-1}\\), and define auxiliary contacts \\(x=U^Tq+\\epsilon_X\\), \\(y=V^Tq+\\epsilon_R\\). The noises are independent of each other and of \\(q\\), with covariances \\(\\theta I/a\\) and \\(\\theta I/b\\). Write \\(D=D_{00}\\) and\n\\[\n P_w=U_w^TD^{-1}U_w,\\quad Q_w=V_w^TD^{-1}V_w,\\quad R_w=U_w^TD^{-1}V_w,\n \\qquad\n \\Sigma_{xy\\mid z}=\\theta\\begin{pmatrix}P_w+I/a&R_w\\\\R_w^T&Q_w+I/b\\end{pmatrix}.\n\\]\nHere \\(U_w,V_w\\) are the omitted-coordinate rows of the bundles. With \\(\\Sigma_{x\\mid z}\\) and \\(\\Sigma_{y\\mid z}\\) the diagonal covariance blocks, the retained Gaussian functional is\n\\[\n I(x;y\\mid z)=\\frac12\\log\\frac{\\det\\Sigma_{x\\mid z}\\det\\Sigma_{y\\mid z}}\n {\\det\\Sigma_{xy\\mid z}}=-f(D)=f(S)-f(K)\\ge0.\n\\]\nLogarithms are natural, so information is in nats. The covariance is independent of the conditioning value \\(z\\). This definition assumes the same positive-definite internal-coordinate baseline and positive prescribed spring coefficients as above; its artificial independent noise is not a measured molecular noise model.\\footnote{Retained derivation: \\texttt{ada/conditional-information.md}; the determinant functional is explicitly implemented in \\texttt{ada/check\\_conditional\\_information.py}, function \\texttt{information}. No new computation is used here.}\n\nOmission alone need not break the spring representation.",
+      "before": "Omission alone need not break the spring representation.",
+      "finding": "P1"
+    },
+    {
+      "after": "Define the normalised omitted overlap on the Gram supports by\n\\[\n C_w=(P_w^+)^{1/2}R_w(Q_w^+)^{1/2},\\qquad s_j=\\sigma_j(C_w),\\qquad\n \\ell_D=\\frac12\\sum_j\\log(1-s_j^2).\n\\]\nThe superscript \\(+\\) denotes the Moore--Penrose inverse, followed by its positive square root; dependent bundle columns are allowed. For all supported singular values \\(s_j<1\\), the prescribed positive-addition model obeys\n\\[\n \\ell_D\\le f(D)\\le0,\\qquad f(S)+\\ell_D\\le f(K)\\le\\min\\{0,f(S)\\}.\n\\]\nThe omitted-cycle lower limit is approached as both positive spring coefficients grow without bound on their supports. A shared supported direction with \\(s_j=1\\) gives no finite uniform lower bound; finite known positive strengths still give a finite exact correction. Empty bundles give zero cycle. These are dimensionless stiffness-cycle bounds, not bounds on binding non-additivity.\\footnote{Retained definitions: \\texttt{emmy/marginal-bounds.md}, omitted-response section, and \\texttt{branches/branch-3/emmy/rank-m-bridge.md}, supported whitened overlap and positive-addition bound.}",
+      "before": "Conditional omitted overlaps can supply a saturation bound when all supported canonical correlations are below one.",
+      "finding": "P1"
+    },
+    {
+      "after": "Both auxiliary noises are Gaussian and are independent of each other and of \\(q\\), with covariances \\(\\theta I/a\\) and \\(\\theta I/b\\).",
+      "before": "The noises are independent of each other and of \\(q\\), with covariances \\(\\theta I/a\\) and \\(\\theta I/b\\).",
+      "finding": "gaussian-auxiliary-noises"
+    },
+    {
+      "after": "Its first useful deliverable is a checked chemical map for 3B, 5B, 3F and 5F.",
+      "before": "The thread ended at PAUSE. Its first useful deliverable is a checked chemical map for 3B, 5B, 3F and 5F.",
+      "finding": "operator-framing-1",
+      "remove": "The thread ended at PAUSE. "
+    },
+    {
+      "after": "The scientific obstacle is the gap between checked mathematical representations and a validated molecular diagnostic.",
+      "before": "The thread ended at PAUSE, as specified in the brief. The scientific obstacle is the gap between checked mathematical representations and a validated molecular diagnostic.",
+      "finding": "operator-framing-2",
+      "remove": "The thread ended at PAUSE, as specified in the brief. "
+    },
+    {
+      "finding": "bundle-intervention",
+      "before": "The restricted model fixes internal coordinates, measures and offsets, then prescribes positive spring bundles:",
+      "after": "The restricted model fixes internal coordinates, measures and offsets. Following the retained contact-bundle construction, the columns of \\(U\\) and \\(V\\) are Cartesian contact-distance gradients projected into that common internal coordinate space, for the prescribed X and R contact bundles respectively. Their column magnitudes and multiplicities specify the bundle weights: if dependent columns are compressed, their nonzero singular values must be retained so that \\(UU^T\\) and \\(VV^T\\) are unchanged. The positive coefficients \\(a,b\\) scale the prescribed spring additions for the two bundles; they are not fitted chemical-substitution effects. The binary indices \\(i,j\\) switch those additions off or on:"
+    },
+    {
+      "finding": "diagnostic-relation",
+      "before": "Bundle column weights must be retained. Its dimensionless stiffness cycle is",
+      "after": "The earlier \\(S_{gh}\\) is a selected contact-covariance diagnostic from inverse stiffness; the bundle benchmark instead compares determinants after prescribed stiffness interventions. They use contact responses in a harmonic model, but the covariance quartet does not by itself identify those interventions or their determinant cycle. No validated correspondence between these prescribed X/R spring changes and Q's chemical substitutions has been established. Its dimensionless stiffness cycle is"
+    },
+    {
+      "finding": "retained-additivity",
+      "before": "Omission alone need not break the spring representation. Exact conditional orthogonality, \\(U_w^TD_{00}^{-1}V_w=0\\), makes the omitted cycle vanish. A later block-reduction argument also establishes additive positive effective retained bundles, including when one bundle is retained-only. An earlier note denied that stronger implication; its author's response remained pending. The textual disagreement concerns retained additivity, rather than the agreed determinant decomposition. Small conditional information does not imply exact additivity.\\footnote{Research record: joint entries 22, 25, 29 and 30; the later reduction has 24 synthetic controls.}",
+      "after": "Omission alone need not break the spring representation. On the same positive-definite internal coordinate space at all four corners, with fixed minima, offsets, configurational measures and kinetic terms and prescribed additive positive bundles, exact zero conditional cross-compliance \\(U_w^TD_{00}^{-1}V_w=0\\) is a sufficient condition for additive positive effective retained bundles after Schur reduction. This includes the case where one bundle is retained-only, and also permits both bundles to touch omitted coordinates. Under this condition the omitted determinant cycle vanishes, so the full and retained stiffness cycles agree. A merely small conditional information does not imply this exact additive representation. These sufficient fixed-space conditions do not validate chemical replacements.\\footnote{Retained derivation: \\texttt{emmy/marginal-bounds.md}, fixed-space assumptions and exact bundle reduction; joint entries 25 and 29. The retained synthetic checks corroborate the algebra, not molecular correspondence.}"
+    }
+  ]
+}

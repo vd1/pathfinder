@@ -1,0 +1,86 @@
+{
+  "parent_candidate_sha256": "38bb4c822c33a0bed861eb1a5b6a8671c28b6c8f3a3ff2651a7d88e0109ee91b",
+  "fact_sha256": "4daacd5d6294f60ac2af0731309d16b7a21fc9c5a148e3eb3fb9a54de28d9d55",
+  "frozen_supplement_sha256": "64eedf3cdf7b1a07e9896b61a06b06958605827d2bc0faad3bf22a5c69700d84",
+  "source_quotes": [
+    {
+      "branch": 1,
+      "entry": 6,
+      "quote": "#6 [emmy, finding] [current; not cited by the joint ledger] Executed emmy/response_audit.py (standard-library Python; exact artificial three-level Hamiltonian, NOT methanol, VQA, or hydration). A weak transition of weight 0.005 at 0.1 eV alongside weight 1 at 4.5 eV can be omitted with normalised TCF error everywhere below 0.004976, yet the static susceptibility is underestimated by 18.37%. Moving that weak transition to 3 eV reduces the same omission error to 0.744%. The exact spectral sum agrees with independent small-field ground-energy curvature, and analytic damped finite-time integration agrees with Simpson quadrature. Thus P\u2019s reported small normalised TCF errors do not alone certify Q-relevant static response; a gap/omitted-weight bound is needed. This is a conditional error example, not evidence of low-energy channels in Q\u2019s neutral organic fragments. Results and source hashes: emmy/response_audit_results.json. P-primary.pdf and raw/text hashes match pinned metadata; Q raw and supplied text hashes are identical."
+    },
+    {
+      "branch": 2,
+      "entry": 6,
+      "quote": "#6 [emmy, idea] [corrected by #19; not cited by the joint ledger] Precise transfer construction (derived, not in either source): for fixed nuclei and frozen MM charges define \\(H(s)=H_0+sV\\), where \\(V\\) is the complete solvent electrostatic potential operator, including its nuclear scalar. If the electronic ground state is nondegenerate and differentiable along the path, \\(E_{\\rm ind}=E(1)-E(0)-E\\prime(0)=\\int_0^1(1-s)E\\prime\\prime(s)\\,ds\\). Define the connected correlator \\(C_s(t)=\\langle\\delta V\\exp[-i(H(s)-E(s))t/\\hbar]\\delta V\\rangle_s\\). Then \\(E\\prime\\prime(s)=(2/\\hbar)\\lim_{\\eta\\to0^+}\\int_0^\\infty e^{-\\eta t}\\operatorname{Im}C_s(t)\\,dt=-2\\sum_{n>0}|V_{0n}(s)|^2/\\Delta_n(s)\\). P Section 3 measures general Hermitian-operator overlaps, so this is an admissible adaptation after replacing its exciton Hamiltonian and state preparation. It targets nonuniform-field induction without reconstructing the full density-response kernel. One vacuum correlator supplies only the quadratic term; nonlinear response needs multiple coupling values and new ground states. It remains a potentially expensive consistency check, not a speed-up or hydration observable. Ada can assess identifiability while I verify this identity and finite-time bias on a reproducible two-level control."
+    },
+    {
+      "branch": 2,
+      "entry": 17,
+      "quote": "#17 [emmy, finding] [current; not cited by the joint ledger] Added emmy/response-derivation.json with the response-to-induction derivation, assumptions, error bounds, resource account and exact source metadata/exposure. For a positive electronic gap bound \\(d_s\\), variance \\(W_s=\\operatorname{Var}_s(V)\\), regulator \\(\\eta\\), propagation time \\(T\\), and uniform absolute correlator error \\(e_s\\), curvature-error bounds are respectively \\(2W_s(\\hbar\\eta)^2/d_s^3\\) for regulator bias, \\(2W_s e^{-\\eta T}/d_s\\) for the tail, and \\(2e_s(1-e^{-\\eta T})/(\\hbar\\eta)\\) for correlation error. Integrate with weight \\((1-s)\\) and add coupling quadrature error. Nine exact-model checks of the first two bounds pass in the updated response-check.json; molecular gap/variance premises remain unverified. This gives an energy-unit acceptance criterion, unlike optical plot agreement. Existing response-function prior work also flags weak-pole measurement cost: [Kosugi and Matsushita, publisher abstract](https://journals.aps.org/prresearch/abstract/10.1103/PhysRevResearch.2.033043). No new general response algorithm is claimed."
+    },
+    {
+      "branch": 2,
+      "entry": 19,
+      "quote": "#19 [emmy, correction] [current; not cited by the joint ledger] Qualification to #6 and #11: the spectral sum and curvature identity use a consistently defined interacting electronic Hamiltonian. Substituting a bare Kohn-Sham orbital Hamiltonian would not reproduce self-consistent B3LYP response; orbital/density response and the exchange-correlation kernel matter. The exact-diagonalisation comparator must share the same electronic active space and perturbation as the quantum estimator, while comparison to B3LYP/cc-pVTZ or higher-level molecular response requires separate basis, active-space and orbital-relaxation convergence. Ground-state energy agreement or a symmetry reduction valid only for the unperturbed Hamiltonian does not certify retention of all perturbation-coupled response states. This does not alter the exact-model algebra or results in #15-17."
+    },
+    {
+      "branch": 3,
+      "entry": 24,
+      "quote": "#24 [emmy, finding] [current; adopted by the joint ledger #4] Final sharpening of #14, consistent with Ada #20: an EMLE versus reference induction discrepancy must be separated into nonlinear response and representation/fitting error within linear response. At the same frozen geometry, solvent potential, basis and electronic reference, define \\(E_{\\rm quad}^{\\rm ref}=-\\chi_{WW,0}^{\\rm ref}(0)/2\\), \\(\\delta_{\\rm nl}=E_{\\rm ind}^{\\rm ref}-E_{\\rm quad}^{\\rm ref}\\), and \\(\\delta_{\\rm repr}=E_{\\rm quad}^{\\rm ref}-E_{\\rm ind}^{\\rm EMLE}\\). Then exactly \\(E_{\\rm ind}^{\\rm ref}-E_{\\rm ind}^{\\rm EMLE}=\\delta_{\\rm nl}+\\delta_{\\rm repr}\\). This is an algebraic diagnostic, not a new response theorem or observed molecular result. Use unscaled EMLE for this first comparison, with static energies removed consistently. Q manuscript pp.13-17 supplies the geometry-dependent Thole construction and QM/MM decomposition; pp.20-21 reports comparatively small induction-fitting improvements. P pp.7180-7182 supplies a possible correlation estimator, but its optical exciton Hamiltonian does not supply the electronic reference required here. The exact spectral formula in #10 assumes eigenstates of the explicitly specified electronic Hamiltonian; an approximate reference must instead use curvature/response consistent with its own energy calculation, not substitute P optical transitions. Compute the nonlinear residual first from finite-field energies and vacuum curvature, then use integrated response only as an independent closure or estimator check. A small nonlinear residual would redirect attention to representation, static interactions, or solvent/LJ compatibility without establishing which explains the hydration bias. A large residual still needs electronic-reference convergence and ensemble free-energy impact. This decomposition strengthens the classical-first decision and preserves correlated-response and estimator-benchmark alternatives. Established evidence remains synthetic closure, estimator-invariance/time-window checks, and source-specific limitations. Unresolved: validated molecular configurations and EMLE outputs, residual magnitude/sign, experimental hydration benefit, causal LJ attribution, benchmark novelty and full quantum resource cost. No scientific verdict is awarded."
+    }
+  ],
+  "reader_scope_removed_label_lines": [
+    "The following construction is inherited from the approved supplement, especially branch 1's response construction and branch 2's response derivation. At frozen solute and solvent coordinates $R$, define",
+    "The endpoint objection must be preserved. The joint synthetic two-level control has susceptibility changing from 2.25 to 0.3840232, yet a fitted constant 1.6055513 reproduces the induction endpoint exactly. These are arbitrary-unit model quantities. Nonconstant curvature can cancel under the weighted integral, so a charging-curve discrepancy alone does not establish endpoint or hydration error.",
+    "At a common geometry, potential and electronic reference, branch 3 separates the residual as",
+    "The joint work asks whether different spatial solvent potentials can be indistinguishable to an atomic-field induction model while producing different electronic induction endpoints. At fixed solute geometry and parameters, suppose the model depends on solvent input $q$ only through the actual driving fields $f=Dq$, including applicable smearing. For a stable linear dipole solve with response matrix $B$,",
+    "The new joint controls establish why representation error need not require strong nonlinearity. Four charges, positive at opposite $x$ positions and negative at opposite $y$ positions, give zero potential and field at the origin but a nonzero potential Hessian. Separately, an ideal quadrupolar oscillator has",
+    "Arbitrary charge vectors need not correspond to physical water arrangements. The later joint control instead translates rigid neutral waters. For translation coordinates $x$, field descriptors $f(x)$ and Jacobian $J$, full row rank at a regular point gives a local constant-field surface with tangent projector",
+    "The joint artificial ensemble at $\\beta=1$ gives interval $[-0.2152999,-0.1062595]$, containing its true correction $-0.1410919$, in arbitrary units. This checks error propagation for that ensemble, not molecular sampling coverage.",
+    "Branch 2 gives conditional curvature-error bounds. Let $d_s>0$ bound the excitation gap below, $W_s=\\operatorname{Var}_s(V)$, $\\eta>0$ be the regulator, $T$ the propagation time and $e_s$ a uniform absolute correlator-error bound. Regulator bias, time-tail error and correlation error are bounded respectively by",
+    "Obtain a documented aqueous configuration at one fixed methanol geometry, matching point charges and boundary conventions, the second-generation patched EMLE model, compatible evaluator and production revision. Methanol belongs to Q's training chemistry; frame-level fitting exclusions are necessary before describing environments as held out. Branch 2's retained repository inspection identifies a benzene/water generation recipe and a named MAT model, but no validated frozen snapshot, decoded model parameters or historical attenuation implementation. Runtime probes document blockers in the researchers' accessible environments, not global software absence.",
+    "Branch 2's conditional scaling analysis shows that scaling only the dipole-driving field by $c$ while keeping charges in the energy contraction unchanged gives linear induction attenuation in the stated fixed model; scaling charges in both places gives quadratic attenuation. The historical implementation in Q remains unresolved. Current unpinned code inspection cannot settle it."
+  ],
+  "standing_audit": [
+    {
+      "topic": "response construction/formula",
+      "source": "Branch 1 construction; Branch 2 entries 6/19",
+      "disposition": "explicit branch attribution restored locally"
+    },
+    {
+      "topic": "inverse-gap omission",
+      "source": "Branch 1 entry 6",
+      "disposition": "explicit branch attribution restored locally"
+    },
+    {
+      "topic": "conditional error certificate",
+      "source": "Branch 2 entry 17",
+      "disposition": "explicit branch attribution restored for all following bounds"
+    },
+    {
+      "topic": "nonlinear/representation decomposition",
+      "source": "Branch 3 entry 24; current fact C040 records joint entry 4 adoption",
+      "disposition": "branch attribution restored, no new adoption assertion"
+    },
+    {
+      "topic": "repository and attenuation",
+      "source": "Branch 2 entries 32/33/35/39",
+      "disposition": "prior explicit attribution retained byte-for-byte"
+    },
+    {
+      "topic": "joint label removals",
+      "source": "current supported C038/39, C042-81",
+      "disposition": "descriptive scientific names retained; these joint findings do not acquire branch standing by deleting the joint label"
+    }
+  ],
+  "consolidation": {
+    "old_count": 19,
+    "new_count": 19,
+    "changed_records": [
+      12,
+      16
+    ],
+    "all_finding_ids_retained": true,
+    "method": "Update only the affected after texts in existing cumulative section records. Exact parent delta separately enumerates all edits. Original before texts, baseline hash, record order and finding IDs unchanged; historical packets untouched."
+  }
+}
