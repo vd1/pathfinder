@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 from . import (account_amend, account_release, account_review, account_revision,
-               health, paper, pce, pce_recovery, presentation, provenance, runner)
+               health, paper, pce, pce_evidence, pce_recovery, presentation, provenance, runner, transport)
 
 
 def prepare(campaign, pair, *, identity, packet, reason):
@@ -16,6 +16,14 @@ def prepare(campaign, pair, *, identity, packet, reason):
     packet = Path(packet)
     delta = json.loads((packet / 'successor.json').read_text())
     candidate = (packet / 'account-candidate.tex').read_text()
+    projection = delta.get('evidence_projection')
+    if projection is not None and (
+            set(projection) != {'version', 'exclude', 'include'}
+            or projection['version'] != 1 or projection['exclude']
+            or not isinstance(projection['include'], list)
+            or any('json_fields' in row for row in projection['include'])):
+        raise pce.Changed('successor evidence permits only complete retained scientific file additions')
+    _, additions = pce_evidence.validate(campaign, pair, projection)
     binding = dict(id=identity, reason=reason, delta=delta, candidate_sha256=pce._sha(candidate),
                    routes={k:v for k,v in routes.items() if k.startswith('edit/')})
     pointer = thread / 'edited/account-amendment.json'
@@ -79,6 +87,14 @@ def prepare(campaign, pair, *, identity, packet, reason):
         request = {**old_request, 'id':identity, 'reason':reason, 'changes':cumulative,
                    'candidate_sha256':pce._sha(candidate), 'predecessor':predecessor}
         files = json.loads((review/'frozen-inputs.json').read_text())
+        snapshots = json.loads((parent/'evidence-snapshots.json').read_text())
+        if additions:
+            for name, text in additions.items():
+                if name in snapshots and snapshots[name] != text:
+                    raise pce.Changed('successor evidence conflicts with inherited snapshot')
+            snapshots.update(additions)
+            request['evidence_sha256'] = pce._sha(pce._json(snapshots))
+            files[pce.SUPPLEMENT] += '\n\n## Additional retained scientific files\n\n' + pce._json(additions)
         files[pce.BASELINE] = candidate
         files['sources/internal/original.tex'] = old_candidate
         files['sources/internal/changes.json'] = pce._json(dict(
@@ -88,6 +104,8 @@ def prepare(campaign, pair, *, identity, packet, reason):
         grant['settings']['passes'] = 1
         grant['settings']['fact_checks'] = 1
         grant['inputs_sha256'] = pce._sha(pce._json(files))
+        if len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
+            raise pce.Changed('complete successor evidence exceeds prompt allowance; no truncation')
         history = {}
         for source in (parent, publication):
             history.update({str(source.relative_to(thread)/name):digest
@@ -98,7 +116,7 @@ def prepare(campaign, pair, *, identity, packet, reason):
         account_register.attach(stage/'review',grant,files,original,cumulative['changes'],candidate)
         for name, text in [('successor.json',pce._json(record)), ('request.json',pce._json(request)),
                            ('candidate.tex',candidate), ('returned-findings.json',pce._json(findings)),
-                           ('evidence-snapshots.json',(parent/'evidence-snapshots.json').read_text())]:
+                           ('evidence-snapshots.json',pce._json(snapshots))]:
             pce._write(stage,name,text,immutable=True)
         pce._write(stage/'review','frozen-inputs.json',pce._json(files),immutable=True)
         pce._write(stage/'review','grant.json',pce._json(grant),immutable=True)

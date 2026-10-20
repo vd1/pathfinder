@@ -159,3 +159,29 @@ def test_failed_successor_revision_keeps_predecessor_until_accepted(tmp_path,mon
     after=pce_recovery.hashes(ed)
     assert all(after[k]==h for k,h in before.items() if k not in ('account-amendment.json','account-successor.json'))
     assert account_successor.run(c,'Q1P1',**next_args,apply=True).startswith('accepted;') and len(calls)==5
+
+
+def test_additive_retained_evidence_custody(tmp_path, monkeypatch):
+    c,ed,parent,pd,args=ready(tmp_path,monkeypatch)
+    source=c.thread_dir('Q1P1')/c.peers[0]/'retained-definition.py'
+    source.parent.mkdir(parents=True,exist_ok=True)
+    source.write_text('# Retained definition only; never executed.\n')
+    path=args['packet']/'successor.json';delta=json.loads(path.read_text())
+    delta['evidence_projection']={'version':1,'exclude':[],'include':[{
+        'path':str(source.relative_to(c.thread_dir('Q1P1'))),
+        'sha256':pce._sha(source.read_text()),'purpose':'Explicit retained definition'}]}
+    path.write_text(json.dumps(delta));before=pce_recovery.hashes(ed)
+    calls=script(monkeypatch,c)
+    assert 'accepted;' in account_successor.run(c,'Q1P1',**args,apply=True)
+    assert len(calls)==5
+    root=ed/'account-amendments/withdrawal'
+    old=json.loads((parent/'review/frozen-inputs.json').read_text())
+    new=json.loads((root/'review/frozen-inputs.json').read_text())
+    assert new[pce.SUPPLEMENT].startswith(old[pce.SUPPLEMENT])
+    assert source.read_text() in json.loads(new[pce.SUPPLEMENT].split('## Additional retained scientific files\n\n')[1]).values()
+    after=pce_recovery.hashes(ed)
+    assert all(after[k]==h for k,h in before.items() if k!='account-amendment.json')
+    source.write_text('# altered\n')
+    with pytest.raises(pce.Changed,match='hash differs'):
+        account_successor.run(c,'Q1P1',**args,apply=True)
+    assert len(calls)==5
