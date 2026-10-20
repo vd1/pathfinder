@@ -1,0 +1,28 @@
+{
+  "parent_candidate_sha256": "6a7fa35d2451d52294eddf3c2fd3581d2cba2a65a74928f3fa7dd5bb58ee4d71",
+  "changes": [
+    {
+      "finding": "training-label-and-domain",
+      "before": "Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\\cite{Q}.",
+      "after": "Its graph siamese neural network, RBFENN, predicts a statistical-uncertainty proxy to guide edge selection; the subsequent simulations supply the free-energy differences~\\cite{Q}. Q reports the supervised RBFE-Space label as the standard error of the mean across five solvent-phase relative free-energy calculations for a perturbation between the grafted benzene derivatives: the standard deviation across those five estimates divided by the square root of five. Where both perturbation directions were simulated, Q reports averaging their SEM values for the two directional labels. This describes the source-reported label construction, not an independent validation of deposited SEM values. It is distinct from dispersion among predictions of the neural-network ensemble members, and it is not a calibrated uncertainty on binding affinity~\\cite{Q}."
+    },
+    {
+      "finding": "training-label-and-domain",
+      "before": "This chemical abstraction also limits what successful numerical reproduction would establish.",
+      "after": "Q's training-domain construction discarded perturbations changing formal charge and those involving ten or more perturbed heavy atoms. Q also excluded structurally complex grafting cases, including multiple fused rings or more than six R-groups, for implementation simplicity; perturbations involving a benzene ring without other constituents were excluded because they caused difficulties enforcing the benzene maximum common substructure. These are source-reported domain restrictions, not evidence of validated transfer to excluded chemistry~\\cite{Q}.\n\nQ explicitly included TYK2- and TNKS2-derived perturbations in training. Its stated rationale was that the R-group modifications substantially overlap those in other congeneric series, so omitting these series would leave essentially the same perturbation domain; inclusion also simplified the workflow. That is Q's rationale, not an independently tested absence of data overlap. The proposed TYK2 reproduction is consequently not a target-held-out generalisation test~\\cite{Q}.\n\nThis chemical abstraction also limits what successful numerical reproduction would establish."
+    },
+    {
+      "finding": "training-label-and-domain",
+      "before": "Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment.",
+      "after": "Select a saved TYK2 five-model group and identify its derivative molecular graphs, atom-index mappings, checkpoints and environment. This is a reproduction prerequisite within the source-reported training domain, not an independent target-held-out validation of transferability or binding-affinity uncertainty."
+    }
+  ],
+  "findings": [
+    {
+      "id": "training-label-and-domain",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "c7ced59f04152bc1d620499d5eaa0d60d7d50ba2b6a5772377d9221be3f0dad2",
+      "quote": "- Required revisions: Define Q's training label and distinguish it from dispersion across neural-network members and calibrated binding-free-energy uncertainty. State that TYK2/TNKS2-derived perturbations were included in Q's training domain, alongside Q's justification based on overlapping R-group modifications, and explain that the proposed TYK2 reproduction is consequently not a target-held-out generalisation test. State the training-domain exclusions for formal-charge changes, perturbations involving ten or more heavy atoms, and grafting cases excluded for structural complexity. Use the supplied Q text; no new evidence is required."
+    }
+  ]
+}
