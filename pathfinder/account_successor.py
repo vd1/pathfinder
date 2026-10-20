@@ -16,6 +16,11 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
     packet = Path(packet)
     delta = json.loads((packet / 'successor.json').read_text())
     candidate = (packet / 'account-candidate.tex').read_text()
+    wire = delta.get('review_wire')
+    if wire is not None:
+        from . import raw_literals
+        if wire != {'version': raw_literals.VERSION}:
+            raise pce.Changed('unknown fresh successor wire declaration')
     from . import account_exception
     exception = account_exception.authorize(packet, approval, pair, identity, delta, candidate)
     projection = delta.get('evidence_projection')
@@ -52,6 +57,9 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
             if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                 raise pce.Changed('successor parent history changed: ' + name)
         request, _, bib = account_review.custody(campaign, pair, root)
+        from . import raw_literals
+        raw_literals.validate(root/'review', json.loads((root/'review/grant.json').read_text()),
+                              json.loads((root/'review/frozen-inputs.json').read_text()), transport.max_prompt_chars(campaign), campaign)
     else:
         if root.exists():
             raise pce.Changed('successor ID already exists')
@@ -115,20 +123,37 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
                     raise pce.Changed('successor evidence conflicts with inherited snapshot')
             snapshots.update(additions)
             request['evidence_sha256'] = pce._sha(pce._json(snapshots))
-            files[pce.SUPPLEMENT] += '\n\n## Additional retained scientific files\n\n' + pce._json(additions)
+            if wire is None:
+                files[pce.SUPPLEMENT] += '\n\n## Additional retained scientific files\n\n' + pce._json(additions)
+            else:
+                for name, text in sorted(additions.items()):
+                    key = 'sources/external/amendment-retained-' + pce._sha(name)[:16] + '.txt'
+                    if key in files:raise pce.Changed('retained scientific source key conflict')
+                    files[key] = ('Retained research record: ' + name + '\nRaw SHA-256: ' + pce._sha(text)
+                                  + '\nComplete raw file, no omissions.\n\n' + text)
         files[pce.BASELINE] = candidate
         files['sources/internal/original.tex'] = old_candidate
         files['sources/internal/changes.json'] = pce._json(dict(
             baseline_sha256=pce._sha(old_candidate), candidate_sha256=pce._sha(candidate), changes=delta['changes']))
         grant = json.loads((review/'grant.json').read_text())
+        if grant.get('review_wire') and wire is None:
+            raise pce.Changed('fresh successor must explicitly declare inherited wire version')
+        grant.pop('review_wire', None)
         grant['routes'] = binding['routes']
         grant['settings']['passes'] = 1
         grant['settings']['fact_checks'] = 1
-        if exception is not None:
+        if exception is not None or wire is not None:
             grant['strict_evidence'] = True
             grant['settings']['critic'].pop('pass_score', None)
         grant['inputs_sha256'] = pce._sha(pce._json(files))
-        if len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
+        if wire is not None:
+            from . import account_register, raw_literals
+            register = account_register.build(original, cumulative['changes'], candidate)
+            files['sources/internal/changes.json'] = pce._json({'changes':[
+                {'finding':r['finding'], 'after':r['claim']} for r in register['records'] if r['claim'].strip()]})
+            grant['inputs_sha256'] = pce._sha(pce._json(files))
+            grant['review_wire'] = raw_literals.declaration(files, transport.max_prompt_chars(campaign), campaign)
+        elif len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
             raise pce.Changed('complete successor evidence exceeds prompt allowance; no truncation')
         history = {}
         for source in (parent, publication):
@@ -138,6 +163,8 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
         stage = root.with_name('.'+identity+'.preparing')
         from . import account_register
         account_register.attach(stage/'review',grant,files,original,cumulative['changes'],candidate)
+        if wire is not None:
+            pce._write(stage/'review','wire-declaration.json',pce._json(grant['review_wire']),immutable=True)
         for name, text in [('successor.json',pce._json(record)), ('request.json',pce._json(request)),
                            ('candidate.tex',candidate), ('returned-findings.json',pce._json(findings)),
                            ('evidence-snapshots.json',pce._json(snapshots))]:

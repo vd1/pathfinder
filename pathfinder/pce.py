@@ -422,6 +422,27 @@ def _seconds(campaign) -> int:
     return int(a.get("pce_seconds", a.get("edit_seconds", 900)))
 
 
+def role_context(campaign, role, permitted, files, grant, **values):
+    from types import SimpleNamespace
+    from . import library
+    contract = resources.prompt(campaign, f"pce-{role}", **values)
+    if grant and grant.get("fixed_candidate") and role == "author":
+        contract += ("\nThis is a fixed-candidate review. Do not revise or return LaTeX. "
+                     "Extract every material claim from sources/internal/baseline.tex, including "
+                     "each definition and numerical claim in sources/internal/changes.json. "
+                     "Return only claims/current.json; the host installs the exact candidate for review.\n")
+    head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
+    head = library.request_rule(campaign, SimpleNamespace(prompt=head, tools=False, reads=False)) + head
+    shown = visible(files, contract)
+    if role == "fact-checker" and CLAIMS in shown:   # the claims only: the author's notes may carry earlier reviews
+        try:
+            shown[CLAIMS] = _json([{k: c[k] for k in ("id", "text", "kind", "location") if k in c}
+                                   for c in json.loads(shown[CLAIMS])])
+        except (ValueError, TypeError, KeyError):
+            pass
+    return head, shown
+
+
 def _dispatch(campaign, pair_id, role, prompt, seconds=None) -> dict:
     """One tool-free role call through the engine's transport (stage edit, actor pce-<role>), with its receipt;
     the seam behaviour tests replace."""
@@ -454,6 +475,10 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     root = workflow(campaign, pair_id)
     done = root / "result.json"
     if done.exists():
+        if (root/'wire-declaration.json').exists():
+            from . import raw_literals
+            raw_literals.validate(root, json.loads((root/'grant.json').read_text()),
+                                  json.loads((root/'frozen-inputs.json').read_text()), transport.max_prompt_chars(campaign), campaign)
         return json.loads(done.read_text())
     grant_path = root / "grant.json"
     grant = json.loads(grant_path.read_text()) if grant_path.exists() else None
@@ -466,12 +491,18 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     files = json.loads((root / "frozen-inputs.json").read_text()) if grant else sources(campaign, pair_id)
     if grant and _sha(_json(files)) != grant["inputs_sha256"]:
         raise Changed("the continuation frozen inputs changed")
+    from . import raw_literals
+    if grant:
+        raw_literals.validate(root, grant, files, transport.max_prompt_chars(campaign), campaign)
     registered = None
     if grant and grant.get("replacement_register"):
         from . import account_register
         registered = account_register.claims(root, grant, files[BASELINE])
     contracts = {role: resources.prompt_template(campaign, f"pce-{role}") for role in ROLES}
-    fingerprint = _sha(_json({"files": files, "contracts": contracts, "settings": s}))
+    fingerprint_inputs = {"files": files, "contracts": contracts, "settings": s}
+    if grant and grant.get('review_wire'):
+        fingerprint_inputs['review_wire'] = grant['review_wire']
+    fingerprint = _sha(_json(fingerprint_inputs))
     manifest_path = root / "input-manifest.json"
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
@@ -501,30 +532,16 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
         return out
 
     def call(role, pass_id, permitted, **values):
-        from types import SimpleNamespace
-        from . import library
-        contract = resources.prompt(campaign, f"pce-{role}", **values)
-        if grant and grant.get("fixed_candidate") and role == "author":
-            contract += ("\nThis is a fixed-candidate review. Do not revise or return LaTeX. "
-                         "Extract every material claim from sources/internal/baseline.tex, including "
-                         "each definition and numerical claim in sources/internal/changes.json. "
-                         "Return only claims/current.json; the host installs the exact candidate for review.\n")
-        head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
-        head = library.request_rule(campaign, SimpleNamespace(prompt=head, tools=False, reads=False)) + head
-        shown = visible(files, contract)
-        if role == "fact-checker" and CLAIMS in shown:   # the claims only: the author's notes may carry earlier reviews
-            try:
-                shown[CLAIMS] = _json([{k: c[k] for k in ("id", "text", "kind", "location") if k in c}
-                                       for c in json.loads(shown[CLAIMS])])
-            except (ValueError, TypeError, KeyError):
-                pass
+        head, shown = role_context(campaign, role, permitted, files, grant, **values)
         if grant and grant.get("strict_evidence"):
             if role in ("fact-checker", "critic") and any(
                     n.startswith(("sources/internal/", "reviews/", "revisions/")) for n in shown):
                 raise Changed("fresh review scope exposes internal material or previous reviews")
             prompt = head + _json(shown)
             encoding = {}
-            if role == "editor" and len(prompt) > transport.max_prompt_chars(campaign):
+            if grant.get('review_wire'):
+                prompt, encoding = raw_literals.packet(head, shown, role)
+            elif role == "editor" and len(prompt) > transport.max_prompt_chars(campaign):
                 prompt, encoding = editor_alias_packet(head, shown)
                 if len(prompt) > transport.max_prompt_chars(campaign):
                     from . import editor_packet
