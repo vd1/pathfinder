@@ -71,6 +71,8 @@ def custody(campaign, pair_id, root):
         # normalise line endings and falsely reject unchanged retained evidence.
         if not path.is_relative_to(thread) or path.read_bytes() != text.encode('utf-8'):
             raise pce.Changed('original amendment evidence changed')
+    from . import account_exception
+    account_exception.custody(campaign, pair_id, root, request)
     return request, candidate, bib
 
 

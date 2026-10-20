@@ -1,0 +1,22 @@
+{
+  "changes": [
+    {
+      "after": "Thus the three fields enter with equal weight; the denominator includes all accepted target-sector counts, not only those of the retained set. All sixty retained final field-run records have \\(N_s>0\\): the records cover \\(R=16,32\\), seeds \\(0,\\ldots,9\\), and fields \\(s=0,1/2,1\\). The separately supplied selected-record evidence exposes each final target-sector count vector, its field, size and seed, and its final accepted-shot count from \\texttt{ada/adapt\\_qsci/result.json}. It does not embed the full result file, trajectories or earlier iteration histories; those omissions remain explicit.",
+      "before": "Thus the three fields enter with equal weight; the denominator includes all accepted target-sector counts, not only those of the retained set.",
+      "finding": "P1"
+    },
+    {
+      "after": "Each field first retained at most \\(R\\) positive-count determinants, ordered by decreasing count and then increasing stored determinant index. The retained implementation asserts that at least one target-sector count is positive before selecting determinants. A zero-accepted-count iteration therefore aborts at that assertion, before pooling; the implementation supplies no resampling, uniform-weight or dropped-field fallback. The pooling formula describes the retained positive-count runs, not a prescription for an unobserved zero-count field.",
+      "before": "Each field first retained at most \\(R\\) positive-count determinants, ordered by decreasing count and then increasing stored determinant index.",
+      "finding": "P2"
+    },
+    {
+      "after": "Original endpoint calculations select their spaces independently: their endpoint-energy difference and vacuum static subtraction do not come from a common projector. Specifically, let \\(S_0\\) and \\(S_1\\) be the independently selected vacuum and full-field spaces. The implementation takes \\(E_0\\) and its normalised ground-state vector from \\(H_0|_{S_0}\\), and \\(E_1\\) from the lowest eigenvalue of \\(H_1|_{S_1}\\). It extends the vacuum vector by zero to a vector \\(u_0\\) in the common 225-determinant parent basis. With \\(V=H_1-H_0\\) and the retained inactive-plus-nuclear endpoint increment \\(\\Delta c\\), it evaluates \\(D_{\\mathrm{ind}}=u_0^{T}Vu_0+\\Delta c\\) and \\(I_{\\mathrm{ind}}=E_1-E_0+\\Delta c-D_{\\mathrm{ind}}\\). Thus the static expectation uses the vacuum state in \\(S_0\\), whereas the full-field energy uses \\(S_1\\). The reported component errors subtract the exact-parent static and induction components and use the retained Hartree-to-kcal/mol conversion. This is the independently selected endpoint implementation, distinct from the common-space pooled calculation.",
+      "before": "Original endpoint calculations select their spaces independently: their endpoint-energy difference and vacuum static subtraction do not come from a common projector.",
+      "finding": "P3"
+    }
+  ],
+  "parent_acceptance_sha256": "c59892ddd3b49147657bbbfe0fb5d72a17ea45a055b042a126c3a5700ca37b88",
+  "parent_candidate_sha256": "54b7ed19e15e1106d083457f3e771c82f2576f3fe513fb6e4825f13c86822dea",
+  "returned_findings_sha256": "2f79566cb1ae653c268a7bdf19bc764baaacf5ee562daefb90e7bbe474f62139"
+}

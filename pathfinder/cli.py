@@ -89,6 +89,8 @@ def main(argv=None):
     successor.add_argument("--packet", type=Path, required=True)
     successor.add_argument("--reason", required=True)
     successor.add_argument("--apply", action="store_true")
+    successor.add_argument("--approval", type=Path,
+                           help="explicit owner approval artifact for an exact bound history exception")
     ar = sub.add_parser("account-amend-review", help="grant one evidence-repaired review of an unchanged account amendment")
     ar.add_argument("pair")
     ar.add_argument("--id", required=True, help="existing amendment identity")
@@ -353,7 +355,8 @@ def _dispatch(ns, c):
     elif ns.cmd == "account-amend-successor":
         from . import account_successor
         print(account_successor.run(c, ns.pair, identity=ns.id, packet=ns.packet,
-                                    reason=ns.reason, apply=ns.apply, accept_change=ns.accept_change))
+                                    reason=ns.reason, approval=ns.approval,
+                                    apply=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-amend-revise":
         from . import account_revision
         print(account_revision.run(c, ns.pair, identity=ns.id, revision=ns.revision, packet=ns.packet,

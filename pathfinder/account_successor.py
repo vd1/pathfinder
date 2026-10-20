@@ -7,7 +7,7 @@ from . import (account_amend, account_release, account_review, account_revision,
                health, paper, pce, pce_evidence, pce_recovery, presentation, provenance, runner, transport)
 
 
-def prepare(campaign, pair, *, identity, packet, reason):
+def prepare(campaign, pair, *, identity, packet, reason, approval=None):
     routes = pce_recovery.preflight(campaign, presentation=True)
     if not reason.strip():
         raise pce.Changed('successor requires explicit scope and authority')
@@ -16,6 +16,8 @@ def prepare(campaign, pair, *, identity, packet, reason):
     packet = Path(packet)
     delta = json.loads((packet / 'successor.json').read_text())
     candidate = (packet / 'account-candidate.tex').read_text()
+    from . import account_exception
+    exception = account_exception.authorize(packet, approval, pair, identity, delta, candidate)
     projection = delta.get('evidence_projection')
     if projection is not None and (
             set(projection) != {'version', 'exclude', 'include'}
@@ -26,6 +28,10 @@ def prepare(campaign, pair, *, identity, packet, reason):
     _, additions = pce_evidence.validate(campaign, pair, projection)
     binding = dict(id=identity, reason=reason, delta=delta, candidate_sha256=pce._sha(candidate),
                    routes={k:v for k,v in routes.items() if k.startswith('edit/')})
+    if exception is not None:
+        if projection is not None:
+            raise pce.Changed('exception permits only its exact selected JSON addition')
+        binding['history_exception'] = exception
     pointer = thread / 'edited/account-amendment.json'
     pending = thread / 'edited/account-successor.json'
     selected = json.loads(pointer.read_text())
@@ -61,6 +67,10 @@ def prepare(campaign, pair, *, identity, packet, reason):
         parent = account_amend._root(campaign, pair, selected['id'])
         if not (parent / 'acceptance.json').exists():
             raise pce.Changed('successor requires an accepted amendment')
+        old_request, _, _ = account_review.custody(campaign, pair, parent)
+        review = account_review.workflow(parent)
+        if json.loads((review/'result.json').read_text()).get('status') != 'accepted':
+            raise pce.Changed('parent review is not accepted')
         view = account_release.view(campaign, pair)
         publication = paper.folder(view, pair)
         pd = presentation.folder(view, pair)
@@ -74,13 +84,11 @@ def prepare(campaign, pair, *, identity, packet, reason):
             raise pce.Changed('successor candidate or returned finding binding differs')
         if {x['finding'] for x in delta['changes']} != {f['id'] for f in findings['findings']}:
             raise pce.Changed('successor must address exactly the returned findings')
-        old_request, _, _ = account_review.custody(campaign, pair, parent)
-        review = account_review.workflow(parent)
-        if json.loads((review/'result.json').read_text()).get('status') != 'accepted':
-            raise pce.Changed('parent review is not accepted')
         cumulative = {**old_request['changes'], 'candidate_sha256': pce._sha(candidate),
                       'changes': old_request['changes']['changes'] + delta['changes']}
-        if account_revision._apply(original, cumulative['changes']) != candidate:
+        replayed = (account_exception.replay(exception, original, cumulative, parent, selected, review)
+                    if exception is not None else account_revision._apply(original, cumulative['changes']))
+        if replayed != candidate:
             raise pce.Changed('successor does not preserve original baseline custody')
         predecessor = dict(workflow=str(parent.relative_to(thread)), acceptance_sha256=delta['parent_acceptance_sha256'],
                            publication=str(publication.relative_to(thread)))
@@ -88,6 +96,14 @@ def prepare(campaign, pair, *, identity, packet, reason):
                    'candidate_sha256':pce._sha(candidate), 'predecessor':predecessor}
         files = json.loads((review/'frozen-inputs.json').read_text())
         snapshots = json.loads((parent/'evidence-snapshots.json').read_text())
+        if exception is not None:
+            documents, custody = account_exception.selected_evidence(
+                campaign, pair, exception['contract']['selected_json'])
+            if any(name in files for name in documents):
+                raise pce.Changed('selected JSON addition conflicts with inherited evidence')
+            files.update(documents)
+            request['selected_json_custody'] = custody
+            request['history_exception'] = exception
         if additions:
             for name, text in additions.items():
                 if name in snapshots and snapshots[name] != text:
@@ -103,6 +119,9 @@ def prepare(campaign, pair, *, identity, packet, reason):
         grant['routes'] = binding['routes']
         grant['settings']['passes'] = 1
         grant['settings']['fact_checks'] = 1
+        if exception is not None:
+            grant['strict_evidence'] = True
+            grant['settings']['critic'].pop('pass_score', None)
         grant['inputs_sha256'] = pce._sha(pce._json(files))
         if len(pce._json(files)) + 100_000 > transport.max_prompt_chars(campaign):
             raise pce.Changed('complete successor evidence exceeds prompt allowance; no truncation')
