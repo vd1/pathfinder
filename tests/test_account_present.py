@@ -33,6 +33,11 @@ def test_one_guarded_cycle_preserves_history_and_acceptance(tmp_path,monkeypatch
     pd=paper.folder(v,'Q1P1');grant=json.loads((pd/'presentation-continuations/clarity-1/grant.json').read_text())
     assert grant['prior_files_sha256']==before
     assert grant['prior_state']['state']=='PAUSE-ON-PRESENT'
+    for call in calls:
+        assert args['reason'] in call.prompt
+        assert json.dumps(grant['prior_state']['reason'], ensure_ascii=False) in call.prompt
+        assert 'instructions narrow this correction' in call.prompt
+        assert 'preserve it verbatim' in call.prompt
     assert account_present.apply(c,'Q1P1',**args,resume=True)=='CLEARED'
     assert len(calls)==2
     assert account_release.release(c,'Q1P1',timestamp='20261019T210000Z')['status']=='RELEASED'

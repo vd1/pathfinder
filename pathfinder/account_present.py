@@ -160,6 +160,11 @@ def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, ac
         c._presentation_cycle_limit = grant['cycle_limit']
         c._preserve_presentation_history = True
         c._presentation_context = context
+        c._presentation_continuation_instructions = {
+            'id': grant['request']['id'],
+            'reason': grant['request']['reason'],
+            'prior_refusal': grant['prior_state'].get('reason'),
+        }
         c._presentation_residue_identifiers = tuple(
             item['identifier'] for item in context.get('residue_identifiers', []))
         if context.get("version") == 2:

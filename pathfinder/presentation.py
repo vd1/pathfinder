@@ -346,6 +346,18 @@ def _task(campaign, pair_id, name):
                  "sentences verbatim when adding definitions. If the retained evidence does not specify "
                  "a convention, explicitly identify the missing definition rather than remove or replace "
                  "the assumption. Do not invent an acronym expansion.\n")
+    continuation = getattr(campaign, "_presentation_continuation_instructions", None)
+    if continuation:
+        text += (
+            "\n\nBounded operator continuation instructions, from the immutable grant:\n"
+            + json.dumps(continuation, ensure_ascii=False)
+            + "\nThese instructions narrow this correction's scope; they are not scientific evidence "
+            "or permission to override any guard or gate. If an earlier checker offers removal as an "
+            "option but the bound instruction requires retaining that sentence, preserve it verbatim "
+            "and add the supported clarification. Do not repeat the change identified in the prior "
+            "guard refusal. Earlier refused manuscripts remain historical outputs, not the current "
+            "source to install. The ordinary guard and independent checker remain mandatory; an "
+            "unsupported scientific change must stop.\n")
     residue_identifiers = getattr(campaign, "_presentation_residue_identifiers", ())
     if residue_identifiers:
         text += ("\nExplicit source-bound residue-label allowance: " + ", ".join(residue_identifiers) +
