@@ -60,3 +60,22 @@ legacy editing. Existing runner, coordinator, collection and budget-group suites
 
 These are synthetic offline integration tests, not a validation of Atlas's six scientific manifests or
 overlays. Atlas should reproduce the path on its own copies before launch, as planned.
+
+## Frozen runtime
+
+Commit: `b18d4dd2db9c200e4c76a0908589afeb40db9149`.
+Runtime: `/private/tmp/pathfinder-research-only-b18d4dd`.
+Archive: `/private/tmp/pathfinder-research-only-b18d4dd.tar.gz`.
+Archive SHA256: `fc8c5d29a09047482244915ff696bc34f0dc9094b3f2f8937175706faee59f6a`.
+Manifest SHA256: `20e051751cb84f830458819c313278465a9e14d41ca0f4a3d36f7153ab113a69`.
+
+`frozen-handoff.json`, `frozen-verification.json` and `frozen-tests.xml` are the machine-readable proofs.
+The archive is a temporary transfer artifact; preserve it in the deployment's approved durable location
+before relying on it across reboot. The exact commit remains sufficient to regenerate a verified runtime.
+After extraction, with ENGINE set to the extracted runtime directory:
+
+```sh
+PYTHONPATH="$ENGINE" python -P -m pathfinder.cli verify-frozen "$ENGINE" --repo /Users/v/Code_2026/pathfinder
+```
+
+Final frozen-runtime result: 73 tests passed, zero failures or errors (72.18 seconds).
