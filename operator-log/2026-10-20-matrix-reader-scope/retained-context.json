@@ -1,0 +1,113 @@
+{
+  "fine_grained_exact_changes": [
+    {
+      "finding": "abbreviations",
+      "before": "a compatible patched EMLE model",
+      "after": "a compatible patched electrostatic machine learning embedding (EMLE) model"
+    },
+    {
+      "finding": "abbreviations",
+      "before": "combines geometry-dependent static electrostatics with induced atomic dipoles and develops bespoke training and patching.",
+      "after": "combines geometry-dependent static electrostatics with induced atomic dipoles and develops bespoke training and patching for hybrid machine learning/molecular mechanics (ML/MM)."
+    },
+    {
+      "finding": "abbreviations",
+      "before": "hydration RMSEs",
+      "after": "hydration root mean square errors (RMSEs)"
+    },
+    {
+      "finding": "abbreviations",
+      "before": "for OpenFF/TIP3P.",
+      "after": "for the OpenFF force field with the TIP3P water model."
+    },
+    {
+      "finding": "q-evaluation",
+      "before": "These calibration results do not identify the source of the remaining error. See \\url{https://doi.org/10.1021/acs.jctc.5c01464}, manuscript pp. 9, 13--18 and 24--28.",
+      "after": "These calibration results do not identify the source of the remaining error. See \\url{https://doi.org/10.1021/acs.jctc.5c01464}, manuscript pp. 9, 13--18 and 24--28.\n\nQ also tests unseen small drug-like fragments from FreeSolv that are chemically similar to its training molecules, using the patched model at inverse dielectric 0.6 without further refinement and retaining the simulation settings. On that molecular test, hydration RMSEs are 1.26, 1.38 and 1.06 kcal/mol with the MACE-OFF23(S), MACE-OFF24(M) and ANI-2x machine-learning potentials, respectively. The corresponding mechanical-embedding ML/MM values are 3.91, 3.77 and 3.33 kcal/mol, versus 3.87 kcal/mol for OpenFF/TIP3P. Q reports transfer across these chemically related molecules and potentials, while warning that chemically very different molecules are unlikely to be covered (Q pp. 30--32). This existing molecular held-out evaluation is distinct from the proposed descriptor-matched environment test at one fixed solute geometry: that test asks whether different solvent potentials with identical model descriptors can produce different electronic induction endpoints. It neither replaces nor negates Q's molecular evaluation."
+    },
+    {
+      "finding": "abbreviations",
+      "before": "Q's B3LYP/cc-pVTZ reference",
+      "after": "Q's B3LYP density-functional reference with the cc-pVTZ basis set"
+    },
+    {
+      "finding": "abbreviations",
+      "before": "classical TDDFT/dipole inputs",
+      "after": "classical time-dependent density-functional theory (TDDFT) and dipole inputs"
+    },
+    {
+      "finding": "references",
+      "before": "The following construction is inherited from the approved supplement, especially branch 1's response construction and branch 2's response derivation.",
+      "after": "The following construction is inherited from the supplement's frozen-configuration response derivations; detailed evidence locators are retained in the appendix."
+    },
+    {
+      "finding": "references",
+      "before": "The joint synthetic two-level control",
+      "after": "The synthetic two-level endpoint-cancellation control"
+    },
+    {
+      "finding": "references",
+      "before": "At a common geometry, potential and electronic reference, branch 3 separates the residual as",
+      "after": "At a common geometry, potential and electronic reference, the retained nonlinear/representation decomposition separates the residual as"
+    },
+    {
+      "finding": "references",
+      "before": "The joint work asks whether",
+      "after": "The spatial-descriptor test asks whether"
+    },
+    {
+      "finding": "references",
+      "before": "The new joint controls establish why",
+      "after": "The synthetic spatial-response controls establish why"
+    },
+    {
+      "finding": "references",
+      "before": "The later joint control instead translates",
+      "after": "The retained rigid-water geometric control instead translates"
+    },
+    {
+      "finding": "references",
+      "before": "The joint artificial ensemble at",
+      "after": "The artificial error-propagation ensemble at"
+    },
+    {
+      "finding": "references",
+      "before": "Branch 2 gives conditional curvature-error bounds.",
+      "after": "The retained response derivation gives conditional curvature-error bounds."
+    },
+    {
+      "finding": "references",
+      "before": "Branch 2's retained repository inspection identifies",
+      "after": "The retained molecular-input repository inspection identifies"
+    },
+    {
+      "finding": "references",
+      "before": "Branch 2's conditional scaling analysis shows",
+      "after": "The retained driving-field versus charge-scaling analysis shows"
+    },
+    {
+      "finding": "abbreviations",
+      "before": "classical PAD hydration RMSD of 0.12 kcal/mol against its own QM/MM reference.",
+      "after": "Huang and colleagues' classical atomic-field response model, labelled PAD in the retained source inspection, with a hydration root mean square deviation (RMSD) of 0.12 kcal/mol against its own quantum-mechanical/molecular-mechanical (QM/MM) reference. The retained diagnostic describes PAD as using atomic external fields; it supplies no verified expansion of the label. This descriptive identification avoids assigning it an unsupported full name."
+    }
+  ],
+  "scope": "Existing frozen external sources only; no retrieval or scientific execution",
+  "source_hashes": {
+    "sources/external/P.txt": "0aad7b9a6b5bdbcf2121d82a65d82142a8684ef3573004cd1b309c14cafd77fd",
+    "sources/external/Q.txt": "e096f148c529d3ec3679155f236c588af56629f8f5372f99454d54820d0c9e31",
+    "sources/external/research-supplement.md": "64eedf3cdf7b1a07e9896b61a06b06958605827d2bc0faad3bf22a5c69700d84"
+  },
+  "Q_evaluation_quote": "EMLE Models Are Transferable and Accurate\n\nUsing the patched EMLE model with \u03f5\u22121 = 0.6 from the previous sections, we evaluate\nits performance, without further refinement, on a set of small, drug-like fragments that are\nknown to challenge MM and ME ML/MM approaches. These molecules, extracted from the\nFreeSolv database, 27 exhibit chemistry similar to that of the training set shown in Figure 1B.\nTo ensure consistency, all simulation settings were retained from the previous calculations. In\naddition to employing the MACE-OFF23(S) MLP, for which the effective dielectric constant\nwas tuned, we also tested the EMLE patched model in combination with MACE-OFF24(M)\nand ANI-2x. The signed errors relative to experiment are presented in Figure 6.\n\n\n\n\n                                              30\n\fFigure 6: Signed errors in HFE predictions relative to experiment for molecules\nnot included in the training dataset.        The models evaluated include MM FFs\n(OpenFF/TIP3P), ME ML/MM models (MACE-OFF23(S)/MM, MACE-OFF24(M)/MM,\nand ANI-2x/MM), and EE patched EMLE models (MACE-OFF23(S)/EMLE/MM, MACE-\nOFF24(M)/EMLE/MM, and ANI-2x/EMLE/MM), scaled using an effective dielectric con-\nstant of \u03f5\u22121 = 0.6. The error bars denote the standard error of the MSE computed from\nthree replicates.\n\n\n   Although the effective dielectric constant was optimized for MACE-OFF23(S) (RMSE\n= 1.26 kcal/mol), both MACE-OFF24(M) (RMSE = 1.38 kcal/mol) and ANI-2x (RMSE\n= 1.06 kcal/mol) demonstrate comparably good performance, indicating transferability of\nthe models to the test dataset. The largest discrepancies between the MACE and ANI-\n2x models arise for polyhydroxy alkanes, where a critical interplay exists between intra-\nand intermolecular hydrogen bonding. This stresses the importance of the underlying MLP\nin determining simulation accuracy, particularly in capturing conformational preferences\nsuch as hydroxyl group orientation, which directly affect HFE values. 26 For rigid molecules\n(mobley_242480 and mobley_7378987), however, all EE models performs essentially equiv-\nalently. Overall, the improvement achieved by the EE models over both OpenFF/TIP3P\n(RMSE = 3.87 kcal/mol) and the ME ML/MM models (MACE-OFF23(S) RMSE = 3.91\nkcal/mol, MACE-OFF24(M) RMSE = 3.77 kcal/mol, ANI-2x RMSE = 3.33 kcal/mol) is\n\n\n                                            31\n\fsubstantial, underlining the importance of explicitly accounting for polarization.\n   The MLP-agnostic nature of the EMLE models is expected, as no MLP-specific infor-\nmation is used during training, i.e., only QM/MBIS and conformational data are provided.\nThis property supports transferability not only to chemically related molecules outside the\ntraining set but also across different MLPs. Furthermore, the strong agreement with exper-\niment observed for both EE ANI-2x and EE MACE-OFF24(M) without reoptimizing the\ndielectric constant suggests that the empirical scaling primarily compensates for deficiencies\nin the MM/ML interactions (e.g., LJ terms) rather than errors in the MLP itself. Finally, we\nnote that the EMLE models developed here are unlikely to generalize to molecules that are\nchemically very different from those in the training set. Developing a general EMLE model\ntrained on a larger, chemically diverse dataset, while incorporating the ideas presented in\nthis work, would therefore be a welcome next step.\n\n\n\n",
+  "PAD_retained_context": {
+    "source": "ada/field-null-diagnostic.json",
+    "sha256": "e3f30e91173bcc62893082012353453c7b80e4ba78254b0e804e70b47ee04a5f",
+    "quote": "      \"finding\": \"Huang et al. PAD uses atomic external fields and reproduces the reference QM/MM hydration free energies with RMSD 0.12 kcal/mol for twelve small molecules. This challenges practical significance of an adversarial field-null construction. It is not a comparison with Q experimental accuracy or its different electronic reference.\"",
+    "where": "\u201ca classical PAD hydration root mean square deviation\u201d"
+  },
+  "abbreviation_Q_quotes": [
+    "Hybrid ML/MM approaches that combine machine learning (ML) potentials with\n\n    molecular mechanics (MM) potentials offer a promising balance between computational\n\n    cost and accuracy. Most ML/MM simulations reported to date employ mechanical\n\n    embedding schemes, and rely on Lennard-Jones and Coulomb potentials to model in-\n\n    termolecular interactions between the ML and MM regions. A promising approach to\n\n    improving ML/MM schemes is to use electrostatic embedding, where polarization ef-\n\n    fects on the ML region by the MM region are explicitly incorporated. The electrostatic\n\n    machine learning embedding (EMLE) method has been developed for this purpose.\n\n    ",
+    "The idea behind QM/MM calculations is to model a small region of the system (typically\nO \u223c 101 \u2212102 atoms) using highly accurate but computationally expensive QM techniques,\n\n                                                2\n\fwhile the remainder of the system is described using less accurate but computationally\ninexpensive MM FFs. Current QM/MM studies mostly employ electrostatic embedding (EE)\nstrategies to describe the interactions between the QM and MM regions. In these approaches,\nthe MM point charge environment is explicitly included in the QM calculations, leading to\npolarized wavefunctions or electronic density. "
+  ],
+  "parent_candidate_sha256": "82f8161945a59dfe27999924da4aae9b4b56f36286c12bbb86da121449ea514b",
+  "critic_sha256": "ae0c27bb7cc60cc80c2fdf344ac863c4c675ef6a0f9aff84d253e417192518d4"
+}
