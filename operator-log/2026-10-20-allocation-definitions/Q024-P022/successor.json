@@ -1,0 +1,48 @@
+{
+  "parent_candidate_sha256": "076f0a47ef2ddab2195c2e34b93fe885cf05705bbae252962ce0dbadf5c61211",
+  "parent_acceptance_sha256": "b8b6f22d05fccd12335087eb41042b74c368a2af03ace03d5b955594988e249c",
+  "returned_findings_sha256": "eeed15a9116b2b5a1eebebcb20547e7736867bbc7927b029ee2c0d9bbf1077e2",
+  "changes": [
+    {
+      "finding": "P1",
+      "before": "The variance-optimal proportional rule instead uses \\(c_m\\sqrt{1-h_m^2}\\)",
+      "after": "The variance-optimal proportional rule is \\(S_m\\propto c_m\\sqrt{1-h_m^2}/\\sqrt{k_m}\\) for the same positive per-shot costs \\(k_m\\) and continuous fixed-cost relaxation"
+    },
+    {
+      "finding": "P2",
+      "before": "Joint entry 9 selects the largest point-MUE increase among 100 fixed-count trials at bounded SEM halfwidth 0.001 kcal/mol. Its increase is 0.0146809 kcal/mol. Under an author-model Gaussian floor of 0.4 kcal/mol,",
+      "after": "Joint entry 9 selects the largest point-MUE increase among 100 fixed-count trials. Each trial adds an independent uniform perturbation on \\([-0.001,+0.001]\\) kcal/mol to each undirected candidate edge's predicted SEM, sharing that perturbation across reverse directions; reciprocal scaling and its extrema are then recomputed. This is the independent-original-edge family, not the shared-prediction-signature family. Its selected point-MUE increase is 0.0146809 kcal/mol. Separately, the retained risk calculation uses zero-mean Gaussian errors on candidate-edge free energies with standard deviation 0.4 kcal/mol (variance 0.16 in squared kcal/mol units), the author hysteresis-floor model, not a floor on predicted SEMs or a calibrated MD uncertainty. These edge errors are independent across candidate edges; the shared-outcome comparison reuses the same errors in both graph estimators, whereas the independent-outcome comparison draws a separate error vector for the changed graph. Under this model,"
+    },
+    {
+      "finding": "P3",
+      "before": "Joint entries 8, 11 and 14 describe synthetic unoptimised compilations in a declared elementary basis, using the documented preparation implementation~\\cite{preparation}.",
+      "after": "Joint entries 8, 11 and 14 describe synthetic unoptimised compilations using the documented preparation implementation~\\cite{preparation}. The retained scripts recursively decompose preparations and controlled operations into RX, RY, RZ, PhaseShift, Hadamard, Pauli X, Pauli Z and CNOT operations, also retaining GlobalPhase as a primitive bookkeeping operation. The reported controlled-NOT counts are the CNOT entries in the resulting operation histogram for one circuit execution per shot, including the preparation and ancilla operations in that circuit. They are not total primitive-operation counts. No gate cancellation, routing, native scheduling or error correction is applied."
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "emmy/paired_graph_risk.py",
+        "sha256": "408d96595c31677d61b698218c49b8ae720864380566536e569694ef8816f873",
+        "purpose": "P2 Gaussian quantity and coupling"
+      },
+      {
+        "path": "branches/branch-3/emmy/check_fixed_budget_planning.py",
+        "sha256": "4653984c8fbf12a86b522c2a1ba6aa80abe52a74cdb70925c82d077a98b7a5c2",
+        "purpose": "P2 exact uniform perturbation interval and reverse-pair sharing"
+      },
+      {
+        "path": "ada/loading_cost_audit.py",
+        "sha256": "e77e1eaa30e161182c35557862987e2034a5098b22c6da9b508f55f55298a9b0",
+        "purpose": "P3 primitive basis and raw histogram convention"
+      },
+      {
+        "path": "ada/loading_cost_variants.py",
+        "sha256": "c305bbc39f2015498b9ad654f76408585f625b49985c0351693400ec0b7ab008",
+        "purpose": "P3 same convention for cheaper construction"
+      }
+    ]
+  }
+}
