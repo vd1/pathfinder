@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "contexts": [
+    {
+      "source": "branches/branch-3/ada/restraint_audit.md",
+      "sha256": "c267c196ce9310232811b1a7bc3eb2547898c012e88dd06c24280144ae3dbcc6",
+      "quote": "# Archived Q out-umbrella inputs\n\nRead-only repository: https://github.com/michellab/CypAcatalysis_input\nCommit: 7310aa36088e140f8197b626cd2998c740016eb3\nLocal clone: q-inputs-recovery. No imported code or simulation was executed.\n\nout_plumed_inventory.json stores decompressed PLUMED input text with original paths. out_plumed_summary.json records the complete window count: 24 WT windows, 23 mutant windows for each variant. Every mutant window and 23 WT windows have an F113 torsion restraint and a distance upper wall. WT plumed_0.dat.gz is the exception.\n\nRepresentative WT source: https://github.com/michellab/CypAcatalysis_input/blob/7310aa36088e140f8197b626cd2998c740016eb3/umbrella_sampling/Enzyme_F113out/WT%2BAAPF/US_omega/plumed_input/plumed_-0_25.dat.gz\n\nLine references apply to decompressed text. Lines 3-7 define the combined centre of mass of the F60/F113 phenyl-ring atoms and its distance to the proline-ring centre of mass. Lines 11-13 apply the omega umbrella, the F113 torsion restraint and the distance upper wall. The WT torsion coefficient is 200, target -1 rad. Mutants use 300 at the same target. All inspected distance walls use coefficient 300 and threshold 0.4; there are no UNITS overrides.\n\nOfficial PLUMED v2.3 manual https://www.plumed.org/doc-v2.3/user-doc/manual.pdf section 4.1 (PDF pp.55-56) gives default kJ/mol and nm units. Section 7.11 gives the upper-wall expression and defaults. With those conventions the distance bias is\n\n\\[\nV(d)=\\begin{cases}\n300\\left(\\dfrac{d-0.4\\,\\mathrm{nm}}{1\\,\\mathrm{nm}}\\right)^2\\,\\mathrm{kJ\\,mol^{-1}}, & d>0.4\\,\\mathrm{nm},\\\\\n0, & d\\leq0.4\\,\\mathrm{nm}.\n\\end{cases}\n\\]\n\nThe numeric wall coefficient is an energy constant with the default length rescaling in that expression. It is not a harmonic torsion coefficient and there is no one-half factor in this wall definition. The paper's radian units attached to distance are dimensionally inconsistent.\n\nAll inspected apo topology headers name charmm22star.ff. Seven in/out umbrella topology headers name amber99sb_modified.ff; WT out omega has no topology in its omega directory, though preparatory directories contain topologies. No actual forcefield directories are supplied in this clone, so include names do not recover the numerical modified forcefield.\n\nThese findings concern archived inputs. They do not map each window to the six published repeats or establish which auxiliary biases were removed in analysis. The exceptional WT zero window, missing mutant zero windows, actual build/version and input-to-profile mapping remain unresolved. Defining the physical reference ensemble requires that provenance before an electronic correction can be attached to Q's profiles.\n",
+      "where": "The reported audit of the frozen input archive found omega-only biases in enzyme in inputs, whereas most out inputs additionally restrain Phe113 and apply a pooled-ring distance wall."
+    },
+    {
+      "source": "branches/branch-3/emmy/reference_ensemble_update.md",
+      "sha256": "60a58f63b6cd7712892ab251e06ba065a5b90b222b16a07dc41d5898a5a33b1e",
+      "quote": "## Source audit\n\nThe repository is frozen at commit\n`7310aa36088e140f8197b626cd2998c740016eb3`.\n`in_plumed_inventory.json` records decompressed source lines and compressed-file\nSHA256 values for every archived in umbrella input. Counts in `US/plumed_input`\nare WT 24, ST 23, STCS 23 and STCSIV 23. STCS additionally has 23 files directly\nunder `US`, giving 46 archived files with 23 window names. These copies are not\nevidence for 46 independent windows or repeats.\n\nEvery enzyme in input biases only omega. None defines or prints Phe113 chi1,\nand none adds a chi1 restraint or centre-of-mass wall. WT/ST print omega,\nomega2 (the same atom quadruplet), the omega bias and four hydrogen-bond\ndistances. STCS/STCSIV print omega, omega2 and the omega bias only.\nRepresentative `plumed_1_5.dat.gz` declarations occur at decompressed lines\n12-14 for WT/ST and 8-9 for STCS/STCSIV.\n\n`Enzyme_F113in/AAPF` has 22 PLUMED files byte-identical to the corresponding\nsolvent AAPF files. It represents the free-substrate control. No archived\nCOLVAR, COLDIST, HILLS, XTC, TRR or XVG file was found. Coordinates and\ncheckpoints cannot supply rotamer occupancy throughout the umbrella windows.\n\nThe out audit in ledger entries 37, 38, 40 and 44 established additional chi1\nand combined-ring COM biases for most windows, with the WT zero exception.\nThus the archive establishes different input bias conventions, while mapping\nthese files to the published profiles remains unresolved.\n\n",
+      "where": "The reported audit of the frozen input archive found omega-only biases in enzyme in inputs, whereas most out inputs additionally restrain Phe113 and apply a pooled-ring distance wall."
+    },
+    {
+      "source": "branches/branch-3/ada/out_plumed_inventory.json",
+      "sha256": "3772757b5a2ba8f58e811e0ce9a05a0866f241d321a2676b2ad48c27d6c64a84",
+      "quote": "[\n  {\n    \"path\": \"ada/q-inputs-recovery/umbrella_sampling/Enzyme_F113out/ST+AAPF/US/plumed_input/plumed_-0_25.dat.gz\",\n    \"content\": \"WHOLEMOLECULES ENTITY0=1-2565\\nomega: TORSION ATOMS=2518,2524,2526,2536\\n#F60:(CG CD1 CE1 CZ CD2 CE2) F113:(CG CD1 CE1 CZ CD2 CE2)\\ncompro: COM ATOMS=901,902,904,906,908,910,1670,1671,1673,1675,1679,1677\\n#subpro:(N CD CA CB CG)\\ncomsub: COM ATOMS=2526,2527,2536,2533,2530\\nd1: DISTANCE ATOMS=compro,comsub\\nchi1F113: TORSION ATOMS=1663,1665,1667,1670\\nchi1T99: TORSION ATOMS=1480,1482,1484,1490\\n\\n\\nrestraint-omega: RESTRAINT ARG=omega KAPPA=500 AT=-0.25\\nuwall-d1: UPPER_WALLS ARG=d1 KAPPA=300 AT=+0.4\\nrestraint-chi1F113: RESTRAINT ARG=chi1F113 KAPPA=300 AT=-1.0\\n\\nPRINT STRIDE=10 ARG=omega,restraint-omega.bias FILE=COLVARK500-0.25\\nPRINT STRIDE=10 ARG=d1,uwall-d1.bias FILE=COLVARD\\nPRINT STRIDE=10 ARG=chi1F113,restraint-chi1F113.bias FILE=COLVARDIHE\\n\"\n  },",
+      "where": "The reported audit of the frozen input archive found omega-only biases in enzyme in inputs, whereas most out inputs additionally restrain Phe113 and apply a pooled-ring distance wall."
+    },
+    {
+      "source": "inputs/Q.txt",
+      "sha256": "deb1b1b7fc6aab49e5d8b50390fe7cbfd0bbd4b0b2fce95a0da671815696afd7",
+      "quote": "rings of Phe113 and Phe60 were restrained using a \ufb02at-bottom harmonic",
+      "where": "The reported audit of the frozen input archive found omega-only biases in enzyme in inputs, whereas most out inputs additionally restrain Phe113 and apply a pooled-ring distance wall."
+    }
+  ],
+  "residue_identifiers": [
+    {
+      "identifier": "Phe60",
+      "source": "inputs/Q.txt"
+    }
+  ]
+}
