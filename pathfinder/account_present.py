@@ -58,6 +58,30 @@ def _context(campaign, pair_id, pd, path):
     return context, pce._sha(evidence), {context['where']}
 
 
+def _completed_notation_pause(pd, state):
+    """Recognise the bounded notation check's terminal pause from its saved evidence."""
+    if not state.get('reason', '').startswith('reviewed notation cycle not cleared:'):
+        return False
+    try:
+        identity = json.loads((pd / 'presentation-continuation.json').read_text())['id']
+        if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', identity):
+            return False
+        root = pd / 'presentation-continuations' / identity
+        grant = json.loads((root / 'grant.json').read_text())
+        result = json.loads((root / 'result.json').read_text())
+        context = grant['request']['context']
+        if (context.get('version') != 2 or result.get('state') != 'PAUSE-ON-PRESENT'
+                or result.get('presentation') != state
+                or state.get('stage') != f"correct-{grant['cycle_limit']}"):
+            return False
+        from . import notation_continuation
+        notation_continuation.validate(pd, context)
+        source = pd / 'presentation' / state['stage'] / 'paper.tex'
+        return hashlib.sha256(source.read_bytes()).hexdigest() == context['target_sha256']
+    except (OSError, ValueError, KeyError, TypeError, pce.Changed):
+        return False
+
+
 def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, accept_change=None):
     pce_recovery.preflight(campaign, presentation=True)
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', identity or '') or not reason.strip():
@@ -92,7 +116,8 @@ def apply(campaign, pair_id, *, identity, context_path, reason, resume=False, ac
                     raise pce.Changed('resume the existing presentation continuation first')
             if (paper.status(c, pair_id).get('status') != 'ACCEPTED' or
                     state.get('state') != 'PAUSE-ON-PRESENT' or
-                    not state.get('reason', '').startswith(('not cleared at the cycle limit:', 'correction refused by the guard:'))):
+                    not (state.get('reason', '').startswith(('not cleared at the cycle limit:', 'correction refused by the guard:'))
+                         or _completed_notation_pause(pd, state))):
                 raise pce.Changed('a presentation continuation requires a cycle-limit or guarded correction pause')
             stage = state['stage']
             checked = json.loads((d / stage / 'check.json').read_text())

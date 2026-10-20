@@ -50,6 +50,32 @@ def test_exact_rename_projection_preserves_gas_constant_and_guard(tmp_path):
     assert not presentation.guard(SOURCE, n.projected_correction(SOURCE, target, "", p), SOURCE, "")
 
 
+@pytest.mark.parametrize("damage", [None, "source", "result", "context", "pointer"])
+def test_completed_notation_pause_requires_bound_terminal_evidence(tmp_path, damage):
+    from pathfinder.account_present import _completed_notation_pause
+    pd, context, target = fixture(tmp_path)
+    root = pd / "presentation-continuations" / "rename"
+    root.mkdir(parents=True)
+    stage = pd / "presentation" / "correct-3"
+    stage.mkdir()
+    (stage / "paper.tex").write_text(target)
+    state = {"state": "PAUSE-ON-PRESENT", "stage": "correct-3",
+             "reason": "reviewed notation cycle not cleared: unclear"}
+    result = {"state": "PAUSE-ON-PRESENT", "presentation": dict(state)}
+    if damage == "source":
+        (stage / "paper.tex").write_text(target + "\nUnrelated edit.")
+    elif damage == "result":
+        result["presentation"]["stage"] = "correct-4"
+    elif damage == "context":
+        context["review_sha256"] = "changed"
+    (root / "grant.json").write_text(json.dumps(
+        {"request": {"context": context}, "cycle_limit": 3}))
+    (root / "result.json").write_text(json.dumps(result))
+    (pd / "presentation-continuation.json").write_text(json.dumps(
+        {"id": "../rename" if damage == "pointer" else "rename"}))
+    assert _completed_notation_pause(pd, state) == (damage is None)
+
+
 @pytest.mark.parametrize("change", [
     lambda s: s + "\nAn unrelated result.",
     lambda s: s.replace("-RT", "+RT"),
