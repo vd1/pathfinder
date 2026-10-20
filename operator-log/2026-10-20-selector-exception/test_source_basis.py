@@ -19,6 +19,7 @@ def test_actual_selected_record_citation(tmp_path,monkeypatch,basis):
     def author(prompt):
         shown=json.loads(prompt.split('Allowed input files:\n',1)[1])
         assert source in shown
+        assert 'Classify support from them as research record' in shown['brief.md']
         value=json.loads(shown[source])
         assert len([p for p in value['selected'] if p.endswith('/counts')])==60
         return json.dumps({'files':{'claims/current.json':json.dumps([
@@ -27,6 +28,7 @@ def test_actual_selected_record_citation(tmp_path,monkeypatch,basis):
     def fact(prompt):
         shown=json.loads(prompt.split('Allowed input files:\n',1)[1])
         assert source in shown
+        assert 'Classify support from them as research record' in shown['brief.md']
         assert not any(n.startswith(('sources/internal/','reviews/','revisions/')) for n in shown)
         out=json.loads(stub.pce_reply(c,'fact-checker',prompt))
         for name,text in out['files'].items():
@@ -55,10 +57,12 @@ def test_actual_selected_record_citation(tmp_path,monkeypatch,basis):
         if call['role']=='archivist':
             shown=json.loads(call['prompt'].split('Allowed input files:\n',1)[1])
             assert 'selected-counts' in shown['claims/current.json']
+            assert 'not scientific claims' in shown['brief.md']
             assert not any(n.startswith('sources/') for n in shown)
         if call['role']=='critic':
             shown=json.loads(call['prompt'].split('Allowed input files:\n',1)[1])
             assert source in shown
+            assert 'retained campaign research records' in shown['brief.md']
             assert not any(n.startswith(('sources/internal/','reviews/','revisions/')) for n in shown)
     claims=json.loads((review/'claims/current.json').read_text())
     assert all('contract_sha256' not in r['text'] and 'approval_reference' not in r['text'] for r in claims)

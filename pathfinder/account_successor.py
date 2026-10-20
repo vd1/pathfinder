@@ -102,6 +102,11 @@ def prepare(campaign, pair, *, identity, packet, reason, approval=None):
             if any(name in files for name in documents):
                 raise pce.Changed('selected JSON addition conflicts with inherited evidence')
             files.update(documents)
+            files['brief.md'] += (
+                '\nFor the evidence-basis taxonomy, sources/external/selected-json-* files are '
+                'retained campaign research records, not independent papers. Classify support '
+                'from them as research record, or both when combined with Q/P. Source hashes '
+                'and visibility/custody metadata are provenance, not scientific claims.\n')
             request['selected_json_custody'] = custody
             request['history_exception'] = exception
         if additions:
