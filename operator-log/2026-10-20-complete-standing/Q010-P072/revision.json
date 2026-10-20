@@ -1,0 +1,23 @@
+{
+  "parent_candidate_sha256": "e277b635e7eb848719a7b530d76ae41ea85241bebc668ae325eecddcdf76cf66",
+  "changes": [
+    {
+      "finding": "amendment-16",
+      "before": "The retained dipole-dark oscillator control and Branch 1's inverse-gap omission analysis show that optical agreement need not establish spatial static response. They do not establish dark channels or small gaps in Q's molecules. Finite kicks in a P-style estimator insert $\\sin(\\lambda V)/\\lambda$; an arbitrary identity shift can alter their finite-kick response even when exact curvature is unchanged. For an energy operator, $\\lambda$ has inverse-energy units. Centre before exponentiation, test shift invariance and converge the kick, or use direct Pauli insertions. Centring alone does not prove convergence. Q does not use this estimator, so these controls do not explain its empirical attenuation.",
+      "after": "The retained dipole-dark oscillator control and Branch 1's inverse-gap omission analysis show that optical agreement need not establish spatial static response. They do not establish dark channels or small gaps in Q's molecules. Branch 3's retained finite-kick derivation and synthetic shift-invariance checks give the following estimator qualifications. Finite kicks in a P-style estimator insert $\\sin(\\lambda V)/\\lambda$; an arbitrary identity shift can alter their finite-kick response even when exact curvature is unchanged. For an energy operator, $\\lambda$ has inverse-energy units. Centre before exponentiation, test shift invariance and converge the kick, or use direct Pauli insertions. Centring alone does not prove convergence. Q does not use this estimator, so these controls do not explain its empirical attenuation."
+    },
+    {
+      "finding": "amendment-16",
+      "before": "The naive finite-kick estimator combines independently measured amplitude quadratures, so measurement precision must be budgeted separately from circuit-type counts. The retained audit does not identify the normalised operators, the norm or its assumed bound. No quantitative variance bound or numerical shot-budget example is asserted here without those conventions. A budget for one real or imaginary correlation component would not by itself be the budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space.",
+      "after": "Branch 1's retained measurement-precision audit treats the naive finite-kick estimator as combining independently measured amplitude quadratures, so measurement precision must be budgeted separately from circuit-type counts. That audit does not identify the normalised operators, the norm or its assumed bound. No quantitative variance bound or numerical shot-budget example is asserted here without those conventions. A budget for one real or imaginary correlation component would not by itself be the budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space."
+    }
+  ],
+  "findings": [
+    {
+      "id": "amendment-16",
+      "path": "reviews/current/fact-check.json",
+      "sha256": "a6f30d69cde84acfc5f4dbd4dd5d905eee3e8d3f0021a9e3ee8c2245c27b7d5f",
+      "quote": "Most content is supported, but the sine insertion and identity-shift/centring findings lack explicit Branch 3 attribution despite their entries being marked not cited by the joint ledger. This inherits the acceptance-relevant weaknesses in C071 and C072."
+    }
+  ]
+}

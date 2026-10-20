@@ -1,0 +1,176 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+\date{}
+\begin{document}
+\section{Spatial response beyond atomic-field embedding}
+
+For Julien, the useful next step is a classical test of whether atomic electric fields discard solvent information that matters for induction energies. P supplies an optional quantum correlation estimator once such a residual has been demonstrated. The approved research supplement establishes conditional response identities, synthetic counterexamples and a constrained rigid-water search construction. It reports no molecular endpoint comparison, hydration improvement or quantum advantage.
+
+I recommend \textbf{PAUSE} on quantum implementation pending the molecular test. This means that validated configurations, a compatible patched electrostatic machine learning embedding (EMLE) model and converged electronic calculations are still needed to make the decisive observation. Missing inputs do not disprove the physical hypothesis. The molecular extension of the synthetic construction remains a conjecture.
+
+\subsection{The modelling problem and the contribution from P}
+
+Q, Morado and colleagues' \emph{Enhancing Electrostatic Embedding for ML/MM Free Energy Calculations}, combines geometry-dependent static electrostatics with induced atomic dipoles and develops bespoke training and patching for hybrid machine learning/molecular mechanics (ML/MM). On its 20-molecule calibration set, the accepted manuscript reports hydration root mean square errors (RMSEs) of 1.63 kcal/mol for unscaled patched EMLE, 0.74 kcal/mol after empirical attenuation and 0.80 kcal/mol for the OpenFF force field with the TIP3P water model. At inverse dielectric 0.6, the patched predictions are statistically indistinguishable from OpenFF/TIP3P and mechanical-embedding ML/MM at the stated 95 percent confidence level. These calibration results do not identify the source of the remaining error. See \url{https://doi.org/10.1021/acs.jctc.5c01464}, manuscript pp. 9, 13--18 and 24--28.
+
+Q also tests unseen small drug-like fragments from FreeSolv that are chemically similar to its training molecules, using the patched model at inverse dielectric 0.6 without further refinement and retaining the simulation settings. On that molecular test, hydration RMSEs are 1.26, 1.38 and 1.06 kcal/mol with the MACE-OFF23(S), MACE-OFF24(M) and ANI-2x machine-learning potentials, respectively. The corresponding mechanical-embedding ML/MM values are 3.91, 3.77 and 3.33 kcal/mol, versus 3.87 kcal/mol for OpenFF/TIP3P. Q reports transfer across these chemically related molecules and potentials, while warning that chemically very different molecules are unlikely to be covered (Q pp. 30--32). This existing molecular held-out evaluation is distinct from the proposed descriptor-matched environment test at one fixed solute geometry: that test asks whether different solvent potentials with identical model descriptors can produce different electronic induction endpoints. It neither replaces nor negates Q's molecular evaluation.
+
+Against Q's B3LYP density-functional reference with the cc-pVTZ basis set, static electrostatic residuals dominate induction residuals; refining induction improves its predictions by only about 0.1--0.2 kcal/mol. Q attributes excessive hydration primarily to hypothesised double counting of induction through the retained Lennard-Jones parameters, while leaving electronic-method dependence open. These are competing explanations, not isolated causal findings. Improving the solute electronic response while retaining empirical attenuation and Lennard-Jones parameters need not improve experimental hydration. Q pp. 19--21 and 29--30 support this distinction.
+
+P, Lee and colleagues' \emph{Simulation of Condensed-Phase Spectroscopy with Near-Term Digital Quantum Computers}, uses McLachlan variational time propagation and general Hermitian-operator correlations, decomposed into Pauli-string transition amplitudes. Its spectroscopy examples use effective two-level chromophores, classical time-dependent density-functional theory (TDDFT) and dipole inputs and classical nuclear trajectories. Its full Hilbert space is full within that chromophore model. Agreement with numerical propagation of the same Hamiltonians tests the propagation approximation; it supplies no independent correlated-electron reference for Q. Actual-device testing remains future work in P. See \url{https://doi.org/10.1021/acs.jctc.1c00849}, pp. 7179--7185.
+
+The proposed transfer therefore requires a replacement electronic Hamiltonian, full spatial solvent-potential matrix elements and stationary electronic ground states. P's moving-bath optical correlation cannot simply be relabelled frozen electronic induction.
+
+\subsection{The exact observable and its classical comparator}
+
+The following construction draws on Branch 1's retained frozen-configuration response construction and Branch 2's retained response derivation; detailed evidence locators are retained in the appendix. At frozen solute and solvent coordinates $R$, define
+\begin{equation*}
+H_R(s)=H_{R,0}+sV_R,\qquad I_R=E_R(1)-E_R(0)-E_R'(0).
+\end{equation*}
+Here $s$ is dimensionless, $E_R(s)$ is the ground-state energy and $V_R$ is the complete spatial solvent electrostatic energy operator. Include its nuclear scalar consistently in both endpoint energies and the static derivative; it cancels from induction and connected response. Assume a fixed electronic Hilbert space and a smooth, nondegenerate ground state with a positive excitation gap throughout the path. Then
+\begin{equation*}
+I_R=-\int_0^1(1-s)\kappa_R(s)\,ds,\qquad \kappa_R(s)=-E_R''(s).
+\end{equation*}
+With $\delta V_R=V_R-\langle V_R\rangle_s I$ and $\Delta_{n,s}=E_{n,s}-E_{0,s}>0$, Branch 2's retained regulated-response derivation uses the correlation observable
+\begin{align*}
+C_{R,s}(t)&=\langle0_s|\delta V_R e^{-i(H_R(s)-E_R(s))t/\hbar}\delta V_R|0_s\rangle,\\
+\kappa_R(s)&=2\sum_{n>0}\frac{|\langle n_s|V_R|0_s\rangle|^2}{\Delta_{n,s}}\\
+&=-\frac{2}{\hbar}\lim_{\eta\to0^+}\int_0^\infty e^{-\eta t}\operatorname{Im}C_{R,s}(t)\,dt.
+\end{align*}
+This is an exponentially regulated \emph{real-time} integral of the imaginary part of the correlation. The infinite-time integration is taken at positive regulator before its removal. An undamped truncated integral need not converge. A vacuum correlation gives only $I_{\mathrm{quad}}=-\kappa_R(0)/2$; recovering nonlinear induction requires coupling-dependent ground states and response.
+
+Q's target is already an endpoint interaction energy minus static electrostatics. Direct electronic endpoint differences are therefore the primary comparator, with finite-field or analytic classical response supplying a separate consistency check. Self-consistent B3LYP must be compared with its own relaxed energy curvature, not a bare Kohn--Sham transition sum. Agreement between quantum estimation and exact diagonalisation in one active space validates the estimator within that space; basis, orbital relaxation and active-space convergence remain separate questions.
+
+The endpoint objection must be preserved. The synthetic two-level endpoint-cancellation control has susceptibility changing from 2.25 to 0.3840232, yet a fitted constant 1.6055513 reproduces the induction endpoint exactly. These are arbitrary-unit model quantities. Nonconstant curvature can cancel under the weighted integral, so a charging-curve discrepancy alone does not establish endpoint or hydration error.
+
+At a common geometry, potential and electronic reference, Branch 3's retained nonlinear-response and representation-error decomposition separates the residual as
+\begin{equation*}
+I_{\mathrm{ref}}-I_{\mathrm{EMLE}}=
+\underbrace{I_{\mathrm{ref}}-I_{\mathrm{quad}}}_{\delta_{\mathrm{nl}}}
++\underbrace{I_{\mathrm{quad}}-I_{\mathrm{EMLE}}}_{\delta_{\mathrm{repr}}}.
+\end{equation*}
+Use unscaled EMLE and consistent static subtraction first. This distinguishes nonlinear response from representation or fitting error within quadratic response. Changing the electronic reference requires an additional comparison.
+
+\subsection{A stronger endpoint discriminator}
+
+The spatial-descriptor test asks whether different spatial solvent potentials can be indistinguishable to an atomic-field induction model while producing different electronic induction endpoints. At fixed solute geometry and parameters, suppose the model depends on solvent input $q$ only through the actual driving fields $f=Dq$, including applicable smearing. For a stable linear dipole solve with response matrix $B$,
+\begin{equation*}
+I_B(q)=-\frac12(Dq)^TB(Dq).
+\end{equation*}
+This is a conditional model description, not a verification of Q's production implementation. Here $q$ is the vector of coefficients of a specified solvent-potential input basis, such as charge-site amplitudes, and $D$ maps that same input space to the driving fields. Define the electronic quadratic induction energy by $I_{\mathrm{quad}}(q)=-q^{\mathrm T}Kq/2$, with positive-semidefinite kernel $K$ on that input space. An unrestricted positive-semidefinite field-response representation exists precisely when
+\begin{equation*}
+\operatorname{ker}D\subseteq\operatorname{ker}K,\qquad K=D^TBD.
+\end{equation*}
+The supplement gives the sufficiency construction using the pseudoinverse of $D$. Restricted Thole parameterisations impose stronger requirements. Neither the criterion nor its elementary linear algebra is claimed novel.
+
+More generally, any induction predictor using only identical descriptors must assign identical predictions. If the reference endpoints differ by $\Delta$, its worst absolute error is at least $|\Delta|/2$, also the minimum equally weighted pair RMSE. With reference errors bounded by $b_1,b_2$, the certified floor is
+\begin{equation*}
+L=\frac12\max\{0,|\widehat\Delta|-b_1-b_2\}.
+\end{equation*}
+Static electrostatics must be subtracted independently for each environment. For approximately equal fields, one fixed quadratic model permits the allowance
+\begin{equation*}
+a_B=\frac12\Vert B\Vert\,\Vert f_1-f_2\Vert(\Vert f_1\Vert+\Vert f_2\Vert).
+\end{equation*}
+Account for this allowance, or calculate the actual model energy difference, before interpreting a paired residual. A finite field tolerance gives no universal bound over arbitrarily large refitted response matrices.
+
+The synthetic spatial-response controls establish why representation error need not require strong nonlinearity. Four charges, positive at opposite $x$ positions and negative at opposite $y$ positions, give zero potential and field at the origin but a nonzero potential Hessian. Separately, an ideal quadrupolar oscillator has
+\begin{equation*}
+H_s=\frac{p^2+r^2}{2}+\frac{sa}{2}(x^2-y^2),\qquad
+I=\frac{\sqrt{1+a}+\sqrt{1-a}-2}{2},\quad |a|<1.
+\end{equation*}
+At $a=0.01$, exact induction is $-1.2500391\times10^{-5}$ and the quadratic estimate is $-1.25\times10^{-5}$ in dimensionless oscillator units. Relative nonlinearity is approximately 0.00313 percent, while a single-site dipole model sees zero driving field. The oscillator is not the solved four-charge Coulomb Hamiltonian. Neither example is a molecular EMLE result.
+
+The correction sign is unresolved. An isolated missing attractive response could worsen Q's excessive hydration. Cross terms on a nonzero background can reverse the sign: the supplement's positive-semidefinite matrix control gives full energy $-0.18$ against a visible-field fit of $-0.5$. The retained control specifies $K=\left(\begin{smallmatrix}1&0.8\\0.8&1\end{smallmatrix}\right)$, the descriptor map $D=(1,0)$ and the input $q=(1,-0.8)^T$. The visible descriptor is $Dq=q_1$: its fitted energy is $E_{\rm vis}(q_1)=-q_1^2/2$, whereas the full model uses $E_{\rm full}(q)=-q^TKq/2$, retaining both input components and their cross term. The two reported numbers use this same numerical quadratic-control scale. The retained results file labels its synthetic checks dimensionless, with mass, angular frequency and $\hbar$ set to unity for the oscillator; it specifies no separate molecular energy unit or conversion for this matrix example. This supports a synthetic sign caution, not a prediction for Q.
+
+\subsection{What constrained rigid-water motion establishes}
+
+Arbitrary charge vectors need not correspond to physical water arrangements. The retained rigid-water geometric control instead translates rigid neutral waters. For translation coordinates $x$, field descriptors $f(x)$ and Jacobian $J$, full row rank at a regular point gives a local constant-field surface with tangent projector
+\begin{equation*}
+\Pi=I-J^T(JJ^T)^{-1}J.
+\end{equation*}
+A nonzero $\Pi\nabla I_{\mathrm{ref}}$ would imply nearby equal-field endpoints with different induction. All actual solvent-dependent induction descriptors must be preserved; a count of degrees of freedom alone establishes neither rank nor a varying induction target.
+
+The executed control used eight rigid waters around three synthetic sites, with a $9\times24$ field Jacobian numerically of full row rank. Its target was a potential-Hessian component, not electronic induction. Across the recorded corrected steps, field mismatch stayed below $1.4\times10^{-16}$ in elementary charge per square angstrom. For each corrected configuration, the translation statistic is the maximum Euclidean norm of the translation vector over its eight rigid waters, measured from the baseline configuration. The largest such statistic across the three recorded corrected configurations was 0.0259504 angstrom. At that same corrected configuration, the change from baseline in the $xx$ component of the potential Hessian at the first synthetic site was $2.4182008\times10^{-4}$ in elementary charge per cubic angstrom. The Coulomb prefactor was omitted. Separate potential finite differences recovered the Hessian changes within $5.4\times10^{-10}$ in the same Hessian units.
+
+This is floating-point geometric evidence, without interval-certified equality. It includes no molecular solute, electronic induction calculation, periodic liquid ensemble, EMLE execution or equilibrium probability. The researchers obtained the water parameters from the mutable OpenMM TIP3P XML; that does not identify Q's production version. The conjecture is that an analogous search on validated molecular environments could reveal an induction contrast of practical size. Molecular descriptor rank, endpoint contrast and statistical relevance remain untested.
+
+\subsection{Hydration and the limits of numerical certification}
+
+Define $u(R)$ as the proposed Hamiltonian minus the reference Hamiltonian at configuration $R$. Restrict this change to induction, with all other Hamiltonian terms fixed and $u(R)$ vanishing in vacuum. Under this restriction, the ultimate observable is
+\begin{equation*}
+\delta\Delta G_{\mathrm{hyd}}=-\beta^{-1}\log\langle e^{-\beta u(R)}\rangle_{0,\mathrm{solution}},\qquad \beta=(k_BT)^{-1}.
+\end{equation*}
+Here the expectation uses the reference solution equilibrium ensemble. A changed vacuum Hamiltonian requires the corresponding vacuum free-energy correction too. This configurational expectation is distinct from the electronic correlation above.
+
+For fixed exact normalised weights $p_i$, define $F_p[u]=-\beta^{-1}\log\sum_i p_i e^{-\beta u_i}$. Pointwise endpoint bounds $|u_i-\widehat u_i|\le b_i$ imply
+\begin{equation*}
+F_p[\widehat u-b]\le F_p[u]\le F_p[\widehat u+b].
+\end{equation*}
+The artificial error-propagation ensemble at $\beta=1$ gives interval $[-0.2152999,-0.1062595]$, containing its true correction $-0.1410919$, in arbitrary units. This checks error propagation for that ensemble, not molecular sampling coverage.
+
+The inherited rare-state example makes the distinction concrete: reference probability $10^{-6}$ and correction $-20$, with zero correction elsewhere, produce energy RMSE 0.02 but free-energy shift $-6.18655$ at $\beta=1$. It does not establish such a tail in Q. Adversarial descriptor-matched configurations are a discovery set. Independent configurations, overlap checks and uncertainty accounting for trajectory correlation are needed to assess prevalence and hydration impact; sampled endpoint accuracy alone cannot certify unseen support.
+
+\subsection{Estimator uncertainty and resource assumptions}
+
+The retained dipole-dark oscillator control and Branch 1's inverse-gap omission analysis show that optical agreement need not establish spatial static response. They do not establish dark channels or small gaps in Q's molecules. Branch 3's retained finite-kick derivation and synthetic shift-invariance checks give the following estimator qualifications. Finite kicks in a P-style estimator insert $\sin(\lambda V)/\lambda$; an arbitrary identity shift can alter their finite-kick response even when exact curvature is unchanged. For an energy operator, $\lambda$ has inverse-energy units. Centre before exponentiation, test shift invariance and converge the kick, or use direct Pauli insertions. Centring alone does not prove convergence. Q does not use this estimator, so these controls do not explain its empirical attenuation.
+
+Branch 2's retained response-error derivation gives conditional curvature-error bounds. Let $d_s>0$ bound the excitation gap below, $W_s=\operatorname{Var}_s(V)$, $\eta>0$ be the regulator, $T$ the propagation time and $e_s$ a uniform absolute correlator-error bound. Regulator bias, time-tail error and correlation error are bounded respectively by
+\begin{equation*}
+\frac{2W_s(\hbar\eta)^2}{d_s^3},\qquad
+\frac{2W_s e^{-\eta T}}{d_s},\qquad
+\frac{2e_s(1-e^{-\eta T})}{\hbar\eta}.
+\end{equation*}
+Integrate with weight $1-s$ and add coupling-quadrature error. Electronic-reference and ensemble-sampling uncertainties require separate treatment. Molecular gap and variance premises have not been supplied.
+
+P reports $O(N_p^2+N_pN_h)$ independent circuit settings per variational time step, where $N_p$ counts variational parameters and $N_h$ Hamiltonian Pauli terms. For $N_R$ configurations, $N_s$ coupling nodes, $N_t$ time steps and $L$ perturbation Pauli terms, the supplement's direct ungrouped adaptation counts
+\begin{equation*}
+O\left(N_RN_sN_t\left[L(N_p^2+N_pN_h)+L^2\right]\right)
+\end{equation*}
+in settings before shots, integral generation, state preparation and gate costs. This is conditional bookkeeping for one implementation, not a lower bound. No efficient preparation oracle is assumed.
+
+Branch 1's retained measurement-precision audit treats the naive finite-kick estimator as combining independently measured amplitude quadratures, so measurement precision must be budgeted separately from circuit-type counts. That audit does not identify the normalised operators, the norm or its assumed bound. No quantitative variance bound or numerical shot-budget example is asserted here without those conventions. A budget for one real or imaginary correlation component would not by itself be the budget for the complete complex correlator. P's logarithmic chromophore encoding cannot be transferred to a molecular electronic active space.
+
+Strong comparators are direct endpoint energies, finite-field or analytic classical response, a flexible field-response fit and richer spatial descriptors. The supplement's limited literature inspections report existing quantum static-response methods and Huang and colleagues' classical atomic-field response model, labelled PAD in the retained source inspection, with a hydration root mean square deviation (RMSD) of 0.12 kcal/mol against its own quantum-mechanical/molecular-mechanical (QM/MM) reference. The retained diagnostic describes PAD as using atomic external fields; it supplies no verified expansion of the label. This descriptive identification avoids assigning it an unsupported full name. That figure is not a comparison with Q or experiment. The relevant retained pointers include \url{https://arxiv.org/abs/2402.12186v1}, \url{https://doi.org/10.1021/acs.jctc.6b01125} and field-gradient work at \url{https://arxiv.org/abs/1707.02829v2}. No publication novelty follows from these bounded inspections.
+
+\subsection{Smallest useful experiment and falsifier}
+
+Obtain a documented aqueous configuration at one fixed methanol geometry, matching point charges and boundary conventions, the second-generation patched EMLE model, compatible evaluator and production revision. Methanol belongs to Q's training chemistry; frame-level fitting exclusions are necessary before describing environments as held out. Branch 2's retained molecular-input repository inspection identifies a benzene/water generation recipe and a named MAT model, but no validated frozen snapshot, decoded model parameters or historical attenuation implementation. Runtime probes document blockers in the researchers' accessible environments, not global software absence.
+
+First inspect the Jacobian and conditioning of all actual induction descriptors, including applicable smearing and cutoff dependence. Construct a small rigid-water displacement that preserves them without collisions or cutoff crossings. Calculate the original and perturbed induction endpoints classically at self-consistent B3LYP/cc-pVTZ, subtracting static electrostatics separately. Refine electronic convergence and quantify reference and descriptor-mismatch uncertainty. Compare unscaled patched EMLE first and report empirically attenuated induction separately.
+
+Branch 2's retained driving-field versus charge-scaling analysis shows that scaling only the dipole-driving field by $c$ while keeping charges in the energy contraction unchanged gives linear induction attenuation in the stated fixed model; scaling charges in both places gives quadratic attenuation. The historical implementation in Q remains unresolved. Current unpinned code inspection cannot settle it.
+
+An endpoint contrast exceeding the combined uncertainty and model-mismatch allowance would support local descriptor insufficiency. Compare with flexible classical response and richer descriptors, then evaluate sign and prevalence on independent aqueous configurations. Test basis, orbital relaxation, correlated-reference convergence and point-charge artefacts separately. Only a surviving useful effect warrants hydration reweighting or further sampling. If response structure motivates a P-style estimator, compare it with exact diagonalisation in the identical electronic space and include preparation, evolution, measurement and convergence costs.
+
+Predeclare an application tolerance; none is supplied here. A converged effect that is absent, negligible for the target observable or fails held-out validation stops the missing-response route within the tested domain. A useful effect captured cheaply by classical response stops or deprioritises the quantum branch while preserving the physical modelling study. A failed numerical closure test instead rejects the estimator or calculation until resolved. PAUSE therefore requests the missing molecular evidence, without treating another synthetic check as a substitute or selecting a cause for Q's hydration bias.
+
+\appendix
+\section{Evidence, provenance and revision handoff}
+
+\paragraph{Evidence boundary.}
+The scientific authorities for this draft are \texttt{sources/external/P.txt}, \texttt{sources/external/Q.txt} and the explicitly approved generated campaign artefact \texttt{sources/external/research-supplement.md}. Internal material is editorial context only. The supplement is bounded research evidence, not original literature or independent ground truth. Its retained scripts, numerical inputs, results and limitations support the conditional and synthetic statements attributed to it. Omitted dependencies and ledger entries remain unavailable; hashes do not expose their contents. Repeated readings of P are not independent corroboration.
+
+\paragraph{Stable reference convention.}
+Every nested path below is a key in the supplement's \texttt{files} mapping. Branch ledger paths are \texttt{branches/branch-1/ledger.jsonl}, \texttt{branches/branch-2/ledger.jsonl} and \texttt{branches/branch-3/ledger.jsonl}; the joint ledger path is \texttt{ledger.jsonl}. Numbers identify retained sequence entries, not line numbers. The ledger is partial: in particular, branch 2 entry 37 is not supplied.
+
+\begin{description}
+\item[Electronic target and inherited objections.] Branch 1 entries 3, 5--9, 13--14 and 17--18; \texttt{branches/branch-1/ada/response-construction.json}; \texttt{branches/branch-1/emmy/response-audit.md}; \texttt{branches/branch-1/emmy/endpoint-audit-results.json}. Branch 2 entries 6--7, 15--19; \texttt{branches/branch-2/emmy/response-derivation.json} and \texttt{branches/branch-2/emmy/response-check.json}. Branch 3 entry 24 records the nonlinear/representation decomposition.
+\item[Estimator controls and resources.] Branch 1 entry 9 and \texttt{branches/branch-1/emmy/response\_audit\_results.json}; branch 2 entries 17--19; branch 3 entries 5, 8, 16--17 and 23; \texttt{branches/branch-3/ada/response-estimator-note.md}, \texttt{branches/branch-3/ada/estimator-results.json} and \texttt{branches/branch-3/emmy/estimator-recheck.json}. The recheck is inherited researcher evidence, not an execution by this Author pass.
+\item[Joint representation and sign tests.] Joint entries 4, 6--10 and 14; \texttt{ada/field-null-diagnostic.json}, \texttt{ada/field\_null\_check.py} and \texttt{ada/field-null-results.json}. The script specifies the four-charge and oscillator inputs and their separate calculations. The matrix sign control is retained in the same result file.
+\item[Rigid-water geometry.] Joint entries 17--18; \texttt{emmy/rigid-water-endpoint-proposal.json}, \texttt{emmy/rigid\_water\_fields.py}, \texttt{emmy/rigid-water-fields-results.json}, \texttt{emmy/check\_rigid\_water\_fields.py} and \texttt{emmy/rigid-water-fields-verification.json}. The result fixes the coordinates, charges, water offsets and units; the separate checker uses potential finite differences. The recorded parameter source is \url{https://raw.githubusercontent.com/openmm/openmm/master/wrappers/python/openmm/app/data/tip3p.xml}, accessed by the researchers on 1 October 2026, not a pinned Q implementation.
+\item[Thermodynamic limitations.] Branch 2 entries 10, 13 and 23; \texttt{branches/branch-2/emmy/free\_energy\_bound.py} and \texttt{branches/branch-2/emmy/free\_energy\_bound.json}. Joint entries 5--7, 9, 11 and 14; \texttt{emmy/response-to-hydration.md}, \texttt{emmy/thermodynamic\_certificate.py}, \texttt{emmy/thermodynamic-certificate-results.json} and \texttt{ada/partner-cross-check.json}. The scripts specify the artificial ensembles; their intervals do not certify molecular coverage.
+\item[Inputs, implementation and comparators.] Branch 1 entries 23--26; branch 2 entries 31--36, 38--39 and 42--44; \texttt{branches/branch-2/ada/repository\_prerequisites.json}, \texttt{branches/branch-2/ada/molecular\_prerequisites.json} and \texttt{branches/branch-2/ada/prerequisites-2026-10-01.json}. Branch 3 entries 9 and 19, and joint entries 9 and 12, retain the limited classical and quantum prior-work inspections.
+\end{description}
+
+\paragraph{Reproduction boundary.}
+The supplement records execution of standard-library synthetic scripts with the researchers' available Xcode Python interpreter and retains the scripts and outputs named above. It also records source-input dependencies, some of which are not supplied as executable files in this transport. Those records support the reported calculations within their stated scope; they do not establish that this editorial pass reran them or that the whole archive is reproducible from this packet alone.
+
+\paragraph{Source manifestations.}
+P is represented here by publisher-PDF-derived text; Q by repository accepted-manuscript text with a cover sheet. The retained provenance records describe degraded mathematical extraction and no visual equation or figure audit, and no Q primary PDF is supplied. The equations used here are attributed to the supplement's explicit constructions, not repaired Q glyphs. P's printed publication date is 14 October 2021 and its download stamp is 7 September 2026; Q's cover stamp is 5 September 2026. These do not fill unspecified manifestation dates. Metadata records prior campaign exposure of P's abstract and earlier scanning and retention of Q; that does not establish prior investigation of this particular pair.
+
+\paragraph{Author declaration and revision summary.}
+This is an editorial response using the supplied text only. I have not run scientific scripts, a compiler or the prescribed artifact style gate in this tool-free context; their execution is not claimed. The present draft explicitly identifies the regulated integral as real time, retains a qualitative finite-kick precision caveat without a quantitative variance bound and excludes the absent branch 2 entry 37 from supporting ranges. Molecular extension remains labelled a conjecture, and process declarations are separated from source-supported findings. No assertion is made about changes to an unavailable prior draft or about completed archival custody.
+
+\paragraph{Handoff to Archivist.}
+Submit this complete draft and the accompanying claims register, together with the preceding revision summary, to Archivist for append-only custody before fresh review or acceptance. This paragraph specifies the required next handoff; it is not evidence that archival receipt has occurred.
+
+\end{document}
