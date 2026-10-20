@@ -1,0 +1,24 @@
+{
+  "scope": "Existing evidence only; no model/covariance/replication data added or calculation executed",
+  "joint_formula": "\\(D_R(W)=W_{5R}-W_{5B}-W_{3R}+W_{3B}\\).",
+  "joint_source": "ada/joint-account.txt",
+  "joint_source_sha256": "033a897dd923366a78ab56ebca2e6d35dd04fc1a9c6b47316e7833da366e066d",
+  "Q_equation4_quote": "The non-additivity level (NA) quantity in the isothermal-isobaric ensemble was\n\ndefined as follows:\n\n                \ud835\udc41\ud835\udc34 = \u2206\u2206\ud835\udc3a\ud835\udc4f\ud835\udc56\ud835\udc5b\ud835\udc51 (5R\u2032 \u2192 5R\u2032\u2032 ) \u2212 \u2206\u2206\ud835\udc3a\ud835\udc4f\ud835\udc56\ud835\udc5b\ud835\udc51 (3R\u2032 \u2192 3R\u2032\u2032 ) ,                             (4)\n\nwhere \u2206\u2206\ud835\udc3a\ud835\udc4f\ud835\udc56\ud835\udc5b\ud835\udc51 (5R\u2032 \u2192 5R\u2032\u2032 ) \u2212 and \u2206\u2206\ud835\udc3a\ud835\udc4f\ud835\udc56\ud835\udc5b\ud835\udc51 (3R\u2032 \u2192 3R\u2032\u2032 ) are the binding free energies of 5R\u2019\u2019\n\nand 3R\u2019\u2019 relative to 5R\u2019 and 3R\u2019 respectively. If NA equates zero then the nature of the group X\n\ndoes not influence the interactions of R\u2019 or R\u2019\u2019, otherwise NA quantifies the extent of positive or\n\nnegative coupling between the interactions of X and R\u2019/R\u2019\u2019.",
+  "branch_covariance_quote": [
+    "#11 [emmy, finding] [current; not cited by the joint ledger] A concrete cancellation counterexample sharpens the scan residual identity. In ligand order \\((5F,5B,3F,3B)\\), let old nonnegative score residuals be \\((2,2,2,2)\\), so \\(\\delta\\mathrm{NA}_{\\mathrm{opt}}=0\\). Strictly improve all individual residuals to \\((0.1,1.9,1.9,0.1)\\): their sum drops from 8 to 4 yet the signed cycle residual becomes \\(-3.6\\) score units. Therefore even strict per-ligand optimisation improvements need not improve the cycle. This is an algebraic example, not observed molecular performance. For uncertainty use the joint covariance, \\(\\mathrm{Var}(\\delta\\mathrm{NA}_{\\mathrm{opt}})=a^T\\Sigma a\\), \\(a=(1,-1,-1,1)^T\\), rather than independence by default. This is especially relevant if starts, receptor models, graph construction or calibration are shared.",
+    "#47 [emmy, finding] [corrected by #49; not cited by the joint ledger] V1-I3 concrete held-out protocol: exclude 3A,5A,3F,5F from training and hold out both A/B and F/B; exclude reference B from fit. Train a shared affine calibration on 3C,D,E,G,H,I,J,K and 5C,D,E,G,H,I,J,K only (16 rows). Ligand-level 5G training is allowed, but any matched cycles use 3G/5H and 3H/5I. For future graph scores freeze feature/domain rules first, train \\(g(S)=\\alpha S+\\beta\\) without held-out data, and report raw cycles, calibrated cycles with uncertainty and pose bounds #27/#34 separately. Full relative-affinity covariance and training/test cross-covariance are required for GLS and uncertainty: shared B contributes \\(\\operatorname{Var}(G_B)\\) to covariance even for independent absolute measurements; cycle variance is \\(a^T\\Sigma a\\). This matrix is not recovered, so current fit is descriptive unweighted OLS without confidence intervals. Sixteen dependent rows with sparse distinct score levels and series confounding cannot validate unrestricted curvature; no nonlinear calibration is fitted or interpreted. Details: emmy/verifier-response.txt."
+  ],
+  "external_hashes": {
+    "sources/external/P.txt": "7252dd738fe838de3ffd37bcc59a7bf1a375e3d5c09a17023cad1e219c5f931f",
+    "sources/external/Q.txt": "d38483c8cfbf26170e21aa59ccffa8c7df3078d4dd685df8966bb1e637cbf95e",
+    "sources/external/amendment-00-v2-rule.txt": "eb3632d5dbed148ad97bc7b8d0fa8bd81f36759c9fb00348527721b4b9435dfd",
+    "sources/external/amendment-01-v2_wl.py": "1fdd95295a6f3327187c7075c53ae3368e3d7e5d14a5f4cbb3e990d8e0668226",
+    "sources/external/amendment-03-polar_correction.py": "8eccb1b92ec429c1fdb332e17819e1351a52f9602c2042d073343339a51c529b",
+    "sources/external/amendment-04-audit.py": "a85860d83748acc38cfe8f5812787e6dbfb5324b885b00152902cfe99ba92cb3",
+    "sources/external/amendment-05-polar-correction-results.json": "af66e964c376ddc72de53b023ddb51abd92be13f654b61de06babe3065f523a7",
+    "sources/external/amendment-06-product_baseline.md": "72996065d0362cff25f901b4e35e69f4762ec33705679973ddc561d10f3d8a1e",
+    "sources/external/research-supplement.md": "a86f4165c13de559384cbbce0b9dba82aa844036d2342ec6f91874a012f805e8"
+  },
+  "critic_sha256": "834645c4cf5638f9b00ef22626bd70a7a3093e01f5a80f3fa1db3f5e0fc215dc",
+  "parent_candidate_sha256": "a8691a6eac2478c58bf36c643fde517b0dbea74e32eab2a725007323ff36f8cb"
+}

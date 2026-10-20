@@ -1,0 +1,29 @@
+{
+  "parent_candidate_sha256": "a8691a6eac2478c58bf36c643fde517b0dbea74e32eab2a725007323ff36f8cb",
+  "changes": [
+    {
+      "finding": "relative-affinity",
+      "before": "The predictive response \\(y_L\\) is experimental binding affinity relative to B in the same series.",
+      "after": "The predictive response is \\(y_L=\\Delta G_{\\mathrm{bind}}^{\\mathrm{exp}}(L)-\\Delta G_{\\mathrm{bind}}^{\\mathrm{exp}}(B_{s(L)})\\), the experimental binding free energy of ligand L minus that of B in its own series \\(s(L)\\), in \\(\\mathrm{kcal\\,mol^{-1}}\\). Negative \\(y_L\\) means more favourable binding than that series reference B."
+    },
+    {
+      "finding": "cycle-covariance",
+      "before": "For quartet coefficients \\(c=(1,-1,-1,1)^T\\), uncertainty requires",
+      "after": "Following the thermodynamic ordering in Q and the retained Branch 1 covariance convention, let \\(g_L\\) denote a calibrated binding-free-energy estimate in \\(\\mathrm{kcal\\,mol^{-1}}\\). In the retained cycle convention, define the ordered quartet \\(z=(g_{5R},g_{5B},g_{3R},g_{3B})^T\\), for \\(R=A\\) or F, and its calibrated cycle \\(C=g_{5R}-g_{5B}-g_{3R}+g_{3B}=c^Tz\\), with \\(c=(1,-1,-1,1)^T\\). This is the same ordering and sign as the native score cycle above and Q's B-relative thermodynamic contrast. Let \\(\\Sigma=\\operatorname{Cov}(z)\\) be the joint covariance of those calibrated affinity estimates, including shared-reference and calibration dependence rather than assuming independent entries. Then uncertainty requires"
+    }
+  ],
+  "findings": [
+    {
+      "id": "relative-affinity",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "834645c4cf5638f9b00ef22626bd70a7a3093e01f5a80f3fa1db3f5e0fc215dc",
+      "quote": "Define y_L explicitly as the experimental binding free energy of L minus that of B in its own series, with units and the negative-is-more-favourable convention."
+    },
+    {
+      "id": "cycle-covariance",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "834645c4cf5638f9b00ef22626bd70a7a3093e01f5a80f3fa1db3f5e0fc215dc",
+      "quote": "Before the variance equation, define C, give the ordered quartet vector to which c applies, and specify that Sigma is the joint covariance of those calibrated affinity estimates, including shared-reference and calibration dependence."
+    }
+  ]
+}

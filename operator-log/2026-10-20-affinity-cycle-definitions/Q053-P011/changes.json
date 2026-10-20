@@ -1,0 +1,57 @@
+{
+  "baseline_sha256": "615eca30f9490c63edfc736710880baf8f082b3fdbf2872586e630e59b698360",
+  "candidate_sha256": "759d7c0bb1b0306c6d38331b90045571c10243a741f43cdeda03da9fb191dbfd",
+  "changes": [
+    {
+      "after": "Donors are N/O with bonded H. Acceptors include every O, protein nitrogen of Amber ff99SB type \\texttt{NB}, and ligand nitrogen of GAFF types \\texttt{nb}, \\texttt{nc} and \\texttt{nd}, with case significant. An O bearing H can therefore be both donor and acceptor. These are the retained type-based v2 rules, not a claim of complete chemical coverage.\\rr{retained \\texttt{v2-rule.txt}; \\texttt{v2\\_wl.py}, \\texttt{features}}",
+      "before": "Donors are N/O with bonded H; acceptors include all O and specified N types.",
+      "finding": "P1"
+    },
+    {
+      "after": "Refitting without A/F targets gives marginal cycle ranges across shared-reference preparation scenarios that include experimental-scale magnitudes. This statement concerns the separate cycle ranges across scenarios; it does not establish simultaneous quantitative agreement for both cycles in one shared preparation.",
+      "before": "Refitting without A/F targets across shared-reference preparation scenarios reaches the experimental magnitude scale.",
+      "finding": "P2"
+    },
+    {
+      "after": "\\paragraph{Enumeration of preparation choices.}\nThe retained polar manifest enumerates the following usable endpoint sources. I means INITIAL (\\(\\lambda=0\\)); F means FINAL (\\(\\lambda=1\\)). Each archive edge identifies its endpoint reconstruction, with dummy atoms removed and coordinates unrelaxed.\n\\begin{center}\\begin{tabular}{llp{0.71\\linewidth}}\nEndpoint & Count & Archive edge and endpoint \\\\\n3A & 3 & 3D\\textasciitilde{}3A (F), 3G\\textasciitilde{}3A (F), 3H\\textasciitilde{}3A (F) \\\\\n5A & 4 & 5B\\textasciitilde{}5A (F), 5D\\textasciitilde{}5A (F), 5H\\textasciitilde{}5A (F), 5I\\textasciitilde{}5A (F) \\\\\n3B & 5 & 3C\\textasciitilde{}3B (F), 3D\\textasciitilde{}3B (F), 3I\\textasciitilde{}3B (F), 3J\\textasciitilde{}3B (F), 3K\\textasciitilde{}3B (F) \\\\\n5B & 5 & 5B\\textasciitilde{}5A (I), 5C\\textasciitilde{}5B (F), 5D\\textasciitilde{}5B (F), 5J\\textasciitilde{}5B (F), 5K\\textasciitilde{}5B (F) \\\\\n3F & 1 & 3F\\textasciitilde{}3C (I) \\\\\n5F & 2 & 5F\\textasciitilde{}5C (I), 5G\\textasciitilde{}5F (F) \\\\\n\\end{tabular}\\end{center}\nThe Cartesian product has \\(3\\times4\\times5\\times5\\times1\\times2=600\\) tuples per setting. The chosen 3B and 5B references are shared by both cycles within each tuple. The exact keys are retained under \\texttt{grid[*].snapshot\\_W\\_integer} in \\texttt{branches/branch-3/emmy/transfer-audit/polar-correction-results.json}; \\texttt{emmy/heldout/refit\\_fraction\\_check.py} enumerates those pools in the order 3A, 5A, 3B, 5B, 3F, 5F. Unavailable sources are excluded.\n\nFor v2, independently choose primary or alternate for 3A, 5A and 3B: 3A is 3B\\textasciitilde{}3A (F) or 3D\\textasciitilde{}3A (F); 5A is 5B\\textasciitilde{}5A (F) or 5D\\textasciitilde{}5A (F); 3B is 3B\\textasciitilde{}3A (I) or 3C\\textasciitilde{}3B (F). The fixed endpoints are 3F from 3F\\textasciitilde{}3C (I), 5F from 5F\\textasciitilde{}5C (I), and 5B from 5B\\textasciitilde{}5A (I). Thus \\(2\\times2\\times2=8\\) combinations are used per setting, with the same selected B references in both cycles. These are the \\texttt{PRIMARY}/\\texttt{ALT} choices in the retained \\texttt{v2\\_wl.py} and the saved \\texttt{alternate\\_source\\_scenarios} in \\texttt{v2-fold-results.json}. Repeated preparations are neither independent observations nor a probabilistic ensemble.\\rr{retained polar manifest, v2 rule, held-out refit and partner-check scripts}\n\n\\paragraph{Reference and numerical checks.}",
+      "before": "\\paragraph{Reference and numerical checks.}",
+      "finding": "P2"
+    },
+    {
+      "after": "The same branch specifies the minimisation objective\n\\[\n E(x)=-\\sum_{i=1}^N w_i x_i+\\kappa\\sum_{(i,j)\\in\\overline E,\\ i<j}x_ix_j,\\qquad x_i\\in\\{0,1\\}.\n\\]\nHere \\(w_i\\) are vertex weights, \\(\\kappa\\) is the declared penalty coefficient, and \\(\\overline E\\) lists incompatible unordered pairs once; set \\(M=|\\overline E|\\). For independent Bernoulli variables with selection probabilities \\(q_i\\in[0,1]\\),\n\\[\n \\mathbb E[E(x)]=-\\sum_iw_iq_i+\\kappa\\sum_{(i,j)\\in\\overline E,\\ i<j}q_iq_j.\n\\]\nEvaluation of this specified expectation takes \\(O(N+M)\\) arithmetic operations given the weights and pair list. This is an evaluation statement, not an optimisation guarantee or a claim that an unspecified penalty enforces a clique.\\rr{retained \\texttt{branches/branch-1/emmy/product\\_baseline.md}}",
+      "before": "The same branch derives an exact independent-Bernoulli expectation for a specified binary clique-penalty objective, evaluable in \\(O(N+M)\\) for \\(N\\) vertices and \\(M\\) incompatible pairs.",
+      "finding": "P3"
+    },
+    {
+      "after": "Branch 3 reports one acceptor, two donors and one hydrophobe. The retained \\texttt{fixed\\_receptor\\_features} record supplies atom indices and names: acceptor 3649 (O), donors 3674 (N) and 3314 (OG), and hydrophobe 3652 (CA), together with their coordinates. Residue assignments and Gly216 coverage remain unverified.",
+      "before": "Branch 3 reports one acceptor, two donors and one hydrophobe; their selected atom and residue identities are not supplied, leaving Gly216 coverage unverified.",
+      "finding": "C061"
+    },
+    {
+      "after": "Hydrophobes include chlorine and bromine atoms, protein sulphur and terminal methyl carbons;",
+      "before": "Hydrophobes include halogens, protein sulphur and terminal methyl carbons;",
+      "finding": "C066"
+    },
+    {
+      "after": "Each ligand retains a receptor feature when at least one of its constituent receptor atoms lies within 5~\\AA\\ of a ligand heavy atom. For an aromatic feature, the centroid need not itself meet that distance criterion.",
+      "before": "Each ligand selects receptor points within 5~\\AA\\ of its heavy atoms.",
+      "finding": "C067"
+    },
+    {
+      "after": "The enumerated source and second-model checks are complete.",
+      "before": "The thread ended at DRAFT, as specified by the brief. The enumerated source and second-model checks are complete.",
+      "finding": "operator-framing-1",
+      "remove": "The thread ended at DRAFT, as specified by the brief. "
+    },
+    {
+      "finding": "relative-affinity",
+      "before": "The predictive response \\(y_L\\) is experimental binding affinity relative to B in the same series.",
+      "after": "The predictive response is \\(y_L=\\Delta G_{\\mathrm{bind}}^{\\mathrm{exp}}(L)-\\Delta G_{\\mathrm{bind}}^{\\mathrm{exp}}(B_{s(L)})\\), the experimental binding free energy of ligand L minus that of B in its own series \\(s(L)\\), in \\(\\mathrm{kcal\\,mol^{-1}}\\). Negative \\(y_L\\) means more favourable binding than that series reference B."
+    },
+    {
+      "finding": "cycle-covariance",
+      "before": "For quartet coefficients \\(c=(1,-1,-1,1)^T\\), uncertainty requires",
+      "after": "Following the thermodynamic ordering in Q and the retained Branch 1 covariance convention, let \\(g_L\\) denote a calibrated binding-free-energy estimate in \\(\\mathrm{kcal\\,mol^{-1}}\\). In the retained cycle convention, define the ordered quartet \\(z=(g_{5R},g_{5B},g_{3R},g_{3B})^T\\), for \\(R=A\\) or F, and its calibrated cycle \\(C=g_{5R}-g_{5B}-g_{3R}+g_{3B}=c^Tz\\), with \\(c=(1,-1,-1,1)^T\\). This is the same ordering and sign as the native score cycle above and Q's B-relative thermodynamic contrast. Let \\(\\Sigma=\\operatorname{Cov}(z)\\) be the joint covariance of those calibrated affinity estimates, including shared-reference and calibration dependence rather than assuming independent entries. Then uncertainty requires"
+    }
+  ]
+}
