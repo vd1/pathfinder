@@ -85,7 +85,7 @@ def external_packet(path, expected_sha, previous):
 def prepare(campaign, pair_id, *, identity, grant_id, inputs, inputs_sha256, reason):
     routes = pce_recovery.preflight(campaign, presentation=True)
     root = account_amend._root(campaign, pair_id, identity)
-    selected = account_amend._read(root.parent.parent / 'account-amendment.json')
+    selected = account_amend._read(campaign.thread_dir(pair_id) / 'edited/account-amendment.json')
     if selected['id'] != identity or (root / 'acceptance.json').exists():
         raise pce.Changed('evidence repair requires the selected, unaccepted amendment')
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', grant_id or '') or not reason.strip():

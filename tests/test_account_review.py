@@ -141,3 +141,34 @@ def test_cli_grant_uses_stub_routes_and_retained_calls(tmp_path,monkeypatch):
     assert len(rows)==5
     assert all(json.loads(p.read_text())['receipt']['backend']=='stub' for p in rows)
     assert (root/'acceptance.json').exists()
+
+
+def test_evidence_repair_of_selected_child_preserves_identity_and_history(tmp_path,monkeypatch):
+    from test_account_revision import prepared
+    from pathfinder import account_revision
+    c,ed,parent,candidate,revision_args=prepared(tmp_path,monkeypatch)
+    script(monkeypatch,c,critic=['contaminated'])
+    assert 'review_required' in account_revision.run(c,'Q1P1',**revision_args,apply=True)
+    child=parent/'revisions'/revision_args['revision']
+    before=pce_recovery.hashes(ed)
+    pointer=(ed/'account-amendment.json').read_bytes()
+    frozen=json.loads((child/'review/frozen-inputs.json').read_text())
+    inputs=tmp_path/'clean-child-evidence.json'
+    inputs.write_text(json.dumps({'external':{
+        'P.txt':frozen['sources/external/P.txt'],
+        'Q.txt':frozen['sources/external/Q.txt'],
+        'research-supplement.md':json.dumps({'files':{'ada/proof.md':'An empty minimum is infinity.'}})}}))
+    args=dict(identity=revision_args['identity'],grant_id='clean-child-1',inputs=inputs,
+              inputs_sha256=pce._sha(inputs.read_text()),reason='Fresh evidence after contaminated child review')
+    calls=script(monkeypatch,c)
+    assert 'no calls' in account_review.apply(c,'Q1P1',**args)
+    assert not calls and (ed/'account-amendment.json').read_bytes()==pointer
+    assert account_review.workflow(child)==child/'review-grants/clean-child-1'
+    assert 'accepted;' in account_review.apply(c,'Q1P1',**args,resume=True)
+    assert len(calls)==5
+    assert (child/'candidate.tex').read_text()==candidate
+    assert (child/'build/paper.pdf').exists()
+    assert (ed/'account-amendment.json').read_bytes()==pointer
+    assert all(pce_recovery.hashes(ed)[k]==v for k,v in before.items())
+    assert 'accepted;' in account_review.apply(c,'Q1P1',**args,resume=True)
+    assert len(calls)==5
