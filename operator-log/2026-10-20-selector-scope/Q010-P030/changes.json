@@ -1,0 +1,41 @@
+{
+  "baseline_sha256": "8831368cf7c7e1fe20c448b660adf373f5b750dcde8493f3b53200357945e6b0",
+  "candidate_sha256": "662a75b7cb9cd739215ac3d99c6ef00736119e022ad8f58547cccc5eed5abab7",
+  "changes": [
+    {
+      "after": "Original P endpoint outputs were kept separate from a frequency-pooling extension. For each field \\(s\\in\\{0,1/2,1\\}\\), let \\(n_s(d)\\) be the last iteration's accepted count for determinant \\(d\\) in the 225-determinant target sector, and \\(N_s=\\sum_d n_s(d)\\). Each field first retained at most \\(R\\) positive-count determinants, ordered by decreasing count and then increasing stored determinant index. Over the union of those three retained sets, pooling ranked\n\\[\n w(d)=\\sum_{s\\in\\{0,1/2,1\\}}\\frac{n_s(d)}{N_s}.\n\\]\nThus the three fields enter with equal weight; the denominator includes all accepted target-sector counts, not only those of the retained set. The resulting common space is rediagonalised to evaluate \\(D_S\\) and \\(I_S\\) as defined above. The final pool contains at most \\(R\\) union members in decreasing \\(w(d)\\), breaking ties by increasing stored determinant index.\n\nThe practical classical comparator started with the same Hartree--Fock determinant. At each step it diagonalised each field Hamiltonian \\(H_s\\) in the current selected space \\(S\\), obtaining its lowest Ritz energy \\(E_s\\) and real, normalised Ritz vector \\(u_s\\), extended by zero outside \\(S\\). Each external determinant \\(d\\notin S\\) received the score\n\\[\n a(d)=\\sum_{s\\in\\{0,1/2,1\\}}\n \\frac{|(H_su_s)_d|^2}{\\max\\{|(H_s)_{dd}-E_s|,10^{-8}\\ \\mathrm{Hartree}\\}}.\n\\]\nFor an external determinant, \\((u_s)_d=0\\), so this numerator is the squared external residual component. All matrix entries and energies in the implementation are in Hartree. The algorithm added the external determinant with largest score, breaking ties by increasing stored index, and repeated the three diagonalizations until \\(|S|=R\\). It used no exact-ground-state coefficients. These are definitions of the retained implementation in Ada's \\texttt{adapt\\_qsci/run.py}, not an optimality claim.",
+      "before": "The extension instead collects final candidates across the three fields, ranks them using normalised postselected empirical frequencies and retains at most \\(R\\). The resulting common space is rediagonalised to evaluate \\(D_S\\) and \\(I_S\\) as defined above. The practical classical comparator starts from the same Hartree--Fock determinant and greedily selects external determinants using three-field residual contributions, without exact-ground-state probabilities.",
+      "finding": "P1"
+    },
+    {
+      "after": "Here B3LYP5 identifies the retained PySCF restricted Kohn--Sham calculation with \\texttt{xc=b3lyp5}: the VWN5 correlation convention, distinct from the default PySCF \\texttt{b3lyp} VWN-RPA/Gaussian variant. The retained Branch-3 reference audit used PySCF 2.14.0 with LibXC 7.0.0, spherical cc-pVTZ, a neutral singlet, unchanged geometry and retained point charges, grid level 4, an SCF energy tolerance of \\(10^{-11}\\) Hartree and at most 150 SCF cycles, without density fitting or frozen orbitals. Static interaction included the vacuum-density electronic contribution and the solute-nuclear/MM term; induction was embedded minus vacuum total energy minus that static interaction. The original ORCA version, grid and possible integral approximations were not recovered: this identifies the retained reproduction calculation, not an exact reconstruction of the original label-generation setup. The six-record reproduction was within the stated tolerance and does not certify physical accuracy.\\record{branch-3 Ada's V7 reference audit, reference\\_audit.py, runtime.json and reproduction.csv}\n\nThe completely solved compact water CAS differed from full-basis B3LYP5 on the same record",
+      "before": "The completely solved compact water CAS differed from full-basis B3LYP5 on the same record",
+      "finding": "P2"
+    },
+    {
+      "after": "They retained P's successive-energy stop and, for this retained comparison implementation, imposed a cap of 80 iterations. This cap is not asserted to be part of P's authors' original protocol.",
+      "before": "They retained P's successive-energy stop and an explicit iteration cap; the supplied approved findings do not specify the cap's numerical value.",
+      "finding": "C041"
+    },
+    {
+      "finding": "stop-attribution",
+      "before": "The brief records the administrative ending as PAUSE; the scientific result supports stopping this local advantage proposal while retaining a separate question about physical-reference adequacy.",
+      "after": "The scientific result supports stopping this local advantage proposal while retaining a separate question about physical-reference adequacy."
+    },
+    {
+      "finding": "stop-attribution",
+      "before": "The brief supplies the administrative status PAUSE. Scientifically, the approved research findings support stopping",
+      "after": "The approved research findings support stopping"
+    },
+    {
+      "finding": "reproduction-tolerance",
+      "before": "The six-record reproduction was within the stated tolerance and does not certify physical accuracy.",
+      "after": "All six retained records met the predeclared reproduction tolerance of 0.02 kcal/mol per component. This is distinct from the illustrative 0.1 kcal/mol selector tolerance and does not certify physical accuracy."
+    },
+    {
+      "finding": "record-selection",
+      "before": "The selector test used unchanged water record 1926, vacuum RHF/cc-pVTZ orbitals,",
+      "after": "The selector test used unchanged water record 1926. The retained Branch-3 audit deliberately selected this record as the water configuration nearest the first percentile of signed induction labels; it was not a random or representative configuration. The selector conclusion therefore remains limited to this selected strong-induction record. The test used vacuum RHF/cc-pVTZ orbitals,"
+    }
+  ]
+}
