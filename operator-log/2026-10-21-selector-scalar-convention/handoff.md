@@ -28,9 +28,9 @@ Canonical JSON contract SHA256: `552106d111ffec08816e853a6c4146bebf27d37c8b6c6bb
 The local endpoint paragraph uses K_s = H(s) - c_s I, with c_s = c_0 + s Δc and W = K_1 - K_0.
 Only the inactive-plus-nuclear scalar is removed; inactive-core interactions remain in the effective
 integrals. Electronic Ritz values ε_0 and ε_1 belong to the separately selected endpoint spaces.
-The implementation restores the scalar as D_ind = w_0ᵀ W u_0 + Δc and
+The implementation restores the scalar as D_ind = w_0ᵀ W w_0 + Δc and
 I_ind = ε_1 - ε_0 + Δc - D_ind. The equivalent total convention uses selected-space E_s^sel = ε_s + c_s and
-V = W + Δc I, hence D_ind = w_0ᵀ V u_0 and I_ind = E_1^sel - E_0^sel - D_ind, with no additional scalar.
+V = W + Δc I, hence D_ind = w_0ᵀ V w_0 and I_ind = E_1^sel - E_0^sel - D_ind, with no additional scalar.
 The early total/common-space equations remain unchanged; the local paragraph explains that common-space
 pooling uses the same scalar restoration with one space at both endpoints. No numerical result changes.
 
