@@ -21,7 +21,7 @@ The true new total is **26**, not 25. Every one of the prior 24 records remains 
 There is no consolidation, merged replacement, cap reset, new scientific identity or acceptance shortcut.
 
 Candidate SHA256: `606d1ac86468b4a0299d548ce3efaa0266de8a713aad3960018dac66c0e9715b`.
-Contract SHA256: `552106d111ffec08816e853a6c4146bebf27d37c8b6c6bb3abc6cdc929355212`.
+Canonical JSON contract SHA256: `552106d111ffec08816e853a6c4146bebf27d37c8b6c6bb3abc6cdc929355212`.
 
 ## Scientific clarification
 
@@ -92,3 +92,27 @@ guarantee. Production still checks every actual prompt and refuses oversize with
 The candidate's long source lines remain as required by exact-parent custody; artifact gates have zero
 errors, with line-length warnings. Numerical scripts, deployments, the paper pool, released accounts and
 `/private/tmp/julien-final-companions` remain untouched.
+
+## Final runtime and owner decision
+
+Runtime commit: `dea0665ac268edfaaa253e535c96734bc2e86489`.
+Frozen directory: `/private/tmp/pathfinder-scalar-convention-dea0665`.
+Archive: `/private/tmp/pathfinder-scalar-convention-dea0665.tar.gz`.
+Archive SHA256: `7e2602aede12f9f40f7c4d7fec83336f97140254037ec61414e64b5ae937e3d4`.
+Manifest SHA256: `8fb1e17ed49e790c550b8ff36c266fd2a683c9e0079b1c0ec3a5fd7bc94fae12`.
+
+The final notation consistently uses w_0 for the selected-space vacuum vector and E_s^sel for the total
+selected-space endpoint energies, avoiding the earlier exact-parent symbols. This remains within the
+scientific replacement; the visibility append is the other record. The count remains exactly 26.
+
+After reviewers rebind the final candidate and contract hashes above, request owner approval of that exact
+24-to-26 child and its proposed single strict five-role pass/fact-check. The old 24-record approval does not
+cover this new candidate, history exception, source addition or allowance. No approval is presumed.
+
+Only after that decision should the operator record a new approval artifact, independently verify the
+freeze and 14 live bindings, confirm idle ownership and use `action.json`'s exact prepare argv with
+`PYTHONPATH=/private/tmp/pathfinder-scalar-convention-dea0665` and the deployment Python interpreter's
+`-P -m pathfinder.cli`. Inspect the prepared child and source map before the separate apply argv.
+Do not replace an active engine. Save the archive durably before relying on it across reboot.
+
+Final frozen-runtime verification: 54 tests passed in 42.05 seconds, zero failures or errors.
