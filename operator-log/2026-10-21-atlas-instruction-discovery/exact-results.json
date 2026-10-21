@@ -1,0 +1,72 @@
+[
+  {
+    "mode": "exact",
+    "argv": [
+      "/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel/bin/codex",
+      "--cd",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "default_permissions=\"pathfinder\"",
+      "-c",
+      "permissions.pathfinder.filesystem={\":minimal\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work\" = \"write\", \"/private/tmp/pathfinder-research-only-b18d4dd/pathfinder\" = \"read\", \"/Library/Frameworks/Python.framework\" = \"read\", \"/usr/local\" = \"read\", \"/private/tmp\" = \"none\", \"/tmp\" = \"none\", \"/private/var/folders/n6/4btnnd5541q052qcdc1wk97r0000gn/T\" = \"none\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/inputs\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/branches\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/branch-runs\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/imported\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/consolidation\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/reviews\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/status.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/handoff.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/bundle.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/external-references.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/local-reference-links.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/reference-declarations.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/.transport-input\" = \"read\", \"/Users/v/.local/share/uv/python/cpython-3.13.0-macos-aarch64-none\" = \"read\", \"/Users/v/Code_2026/nobel/arxiv-cache\" = \"read\", \"/Users/v/Code_2026/nobel/campaign/sources\" = \"read\", \"/Users/v/Code_2026/nobel/paper-pool\" = \"write\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1010.4458.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1411.4028.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1507.00432.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1710.02581.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2207.08643.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2208.07544.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2301.03763.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2405.14765.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/inputs/pool-index.json\" = \"read\", \"/opt/homebrew\" = \"read\"}",
+      "-c",
+      "permissions.pathfinder.network.enabled=true",
+      "debug",
+      "prompt-input",
+      "OFFLINE_EXACT_ATLAS_PROBE"
+    ],
+    "exit": 1,
+    "stderr": "Error: failed to load AGENTS.md instructions for environment `local`: Operation not permitted (os error 1)\n",
+    "stdout_chars": 0
+  },
+  {
+    "mode": "no-project-discovery",
+    "argv": [
+      "/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel/bin/codex",
+      "--cd",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "default_permissions=\"pathfinder\"",
+      "-c",
+      "permissions.pathfinder.filesystem={\":minimal\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work\" = \"write\", \"/private/tmp/pathfinder-research-only-b18d4dd/pathfinder\" = \"read\", \"/Library/Frameworks/Python.framework\" = \"read\", \"/usr/local\" = \"read\", \"/private/tmp\" = \"none\", \"/tmp\" = \"none\", \"/private/var/folders/n6/4btnnd5541q052qcdc1wk97r0000gn/T\" = \"none\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/inputs\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/branches\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/branch-runs\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/imported\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/consolidation\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/reviews\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/status.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/handoff.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/bundle.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/external-references.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/local-reference-links.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/reference-declarations.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/.transport-input\" = \"read\", \"/Users/v/.local/share/uv/python/cpython-3.13.0-macos-aarch64-none\" = \"read\", \"/Users/v/Code_2026/nobel/arxiv-cache\" = \"read\", \"/Users/v/Code_2026/nobel/campaign/sources\" = \"read\", \"/Users/v/Code_2026/nobel/paper-pool\" = \"write\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1010.4458.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1411.4028.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1507.00432.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1710.02581.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2207.08643.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2208.07544.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2301.03763.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2405.14765.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/inputs/pool-index.json\" = \"read\", \"/opt/homebrew\" = \"read\"}",
+      "-c",
+      "permissions.pathfinder.network.enabled=true",
+      "-c",
+      "project_doc_max_bytes=0",
+      "-c",
+      "features.skip_host_skill_discovery=true",
+      "debug",
+      "prompt-input",
+      "OFFLINE_EXACT_ATLAS_PROBE"
+    ],
+    "exit": 0,
+    "stderr": "",
+    "stdout_chars": 16721
+  },
+  {
+    "mode": "explicit-agent-file",
+    "argv": [
+      "/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel/bin/codex",
+      "--cd",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work",
+      "-c",
+      "approval_policy=\"never\"",
+      "-c",
+      "default_permissions=\"pathfinder\"",
+      "-c",
+      "permissions.pathfinder.filesystem={\":minimal\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work\" = \"write\", \"/private/tmp/pathfinder-research-only-b18d4dd/pathfinder\" = \"read\", \"/Library/Frameworks/Python.framework\" = \"read\", \"/usr/local\" = \"read\", \"/private/tmp\" = \"none\", \"/tmp\" = \"none\", \"/private/var/folders/n6/4btnnd5541q052qcdc1wk97r0000gn/T\" = \"none\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/inputs\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/branches\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/branch-runs\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/imported\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/consolidation\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/reviews\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/status.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/handoff.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/bundle.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/external-references.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/local-reference-links.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/reference-declarations.json\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/operator/runtime-smoke/work/.transport-input\" = \"read\", \"/Users/v/.local/share/uv/python/cpython-3.13.0-macos-aarch64-none\" = \"read\", \"/Users/v/Code_2026/nobel/arxiv-cache\" = \"read\", \"/Users/v/Code_2026/nobel/campaign/sources\" = \"read\", \"/Users/v/Code_2026/nobel/paper-pool\" = \"write\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1010.4458.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1411.4028.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1507.00432.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/1710.02581.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2207.08643.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2208.07544.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2301.03763.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/pilot9-strong/sources/2405.14765.tex\" = \"read\", \"/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel\" = \"read\", \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-2/inputs/pool-index.json\" = \"read\", \"/opt/homebrew\" = \"read\", \"/Users/v/Code_2026/qap-atlas/AGENTS.md\" = \"read\"}",
+      "-c",
+      "permissions.pathfinder.network.enabled=true",
+      "debug",
+      "prompt-input",
+      "OFFLINE_EXACT_ATLAS_PROBE"
+    ],
+    "exit": 0,
+    "stderr": "",
+    "stdout_chars": 20289
+  }
+]
