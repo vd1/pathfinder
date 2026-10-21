@@ -32,6 +32,17 @@ falls back to PDF when LaTeX is unavailable. All new downloaded sources belong
 there, not in private peer caches. Preserve existing source bytes and record
 pool changes; appendable indices/alias/lock metadata are operational records.
 
+The canonical helper already accepts repeated `--also` arguments. For a logical
+pool spanning several roots, use the installed helper with `--cache` naming the
+writable canonical pool and one `--also` per additional read-only source root.
+An offline b18 CLI test found a source in the third root, returned its original
+path, and created no cache copy. `library._also` automatically adds only the
+child's `sources` directory; there is no arbitrary multi-root configuration key.
+Supply the complete helper invocation in the deployment overlay and a reference-only
+index of all allowed source paths. Lookup is not recursive, so the index remains
+necessary for nonstandard nested names. Keep canonical source targets readable
+and existing files unchanged; no mirrored source directory is required.
+
 For a scoped ordinary Codex reader, set `codex.filesystem_profile.read` to the
 full pool and necessary runtime/tool paths. Add canonical targets of pool symlinks
 explicitly: reading a symlink path does not establish access to its external

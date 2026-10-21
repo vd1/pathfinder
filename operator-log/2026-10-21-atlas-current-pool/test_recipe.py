@@ -122,3 +122,16 @@ def test_live_and_changed_note_refused(tmp_path,monkeypatch):
     with pytest.raises(pce.Changed):
         assessment.assess(c,'Q1P1',context,True)
     assert not transport.receipts(c)
+
+
+def test_repeated_also_cli_returns_original_no_copy(tmp_path):
+    import subprocess, os, sys
+    roots=[tmp_path/n for n in ('pool','legacy','arxiv')]
+    for root in roots: root.mkdir()
+    source=roots[2]/'2401.00001.tex'; source.write_text('Existing source')
+    helper=Path(research.__file__).with_name('paper_source.py')
+    cmd=[sys.executable,'-I',str(helper),'--cache',str(roots[0]),
+         '--also',str(roots[1]),'--also',str(roots[2]),'2401.00001']
+    result=subprocess.run(cmd,env={**os.environ,'PATHFINDER_OFFLINE':'1'},capture_output=True,text=True)
+    assert result.returncode==0 and str(source) in result.stdout
+    assert list(roots[0].iterdir())==[]
