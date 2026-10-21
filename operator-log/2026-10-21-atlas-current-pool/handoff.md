@@ -2,9 +2,8 @@
 
 Use the existing verified `b18d4dd2db9c200e4c76a0908589afeb40db9149`
 engine. No engine patch, deployment write, source download or live model call was
-made for this handoff. The separate `assess.py` is a deployment adapter built on
-that runtime's native ownership, provenance, transport and receipt APIs. It is
-not a new engine command and does not alter research or editorial states.
+made for this handoff. The separate `assess.py` is retained only as unused audit material. The owner
+has removed that assessment layer; use native verifier records for final reporting.
 
 ## Research configuration
 
@@ -14,9 +13,10 @@ represent this live-pool experiment by omitting or inventing dates.
 Keep `research_scheme` absent, max rounds 6 and the existing strong routes:
 Astra high for peer/ada and consolidation, Sol 6.1 medium for verification.
 Keep sequential coordinator `stages: ["research"]` and the 1B input/14M output
-shared budget manifest. Include every research and final-assessment call in that
-same budget group. Do not reset prior consumption if the intended group includes
-pilot 1; resolve the owner's budget scope in the manifest before launch.
+shared budget manifest. Include research and authorised infrastructure-smoke
+calls in that same budget group; no separate final-assessment calls are planned.
+The operator confirmed that this group covers Pilot 2 only. Preserve its recorded
+consumption and the exact configured limits.
 
 Supply each frozen full card through its Q/P corpus row's `text` path. The row ID
 should identify the card, not an arXiv article, so native input preparation loads
@@ -57,43 +57,21 @@ and pool paths/hashes before launch and retain subsequent source-use/download
 records. Missing source requests must not be satisfied by reading prior Nobel
 scientific accounts or stopped/replay evidence.
 
-## Final novelty-informed rating
+## Final reporting: native verifier only
 
-The engine's `novelty_stage` requires EVA/composable research; `rate-release`
-requires RELEASED artifacts. Neither is the correct command for these classic
-research-only accounts. Do not switch scheme or fabricate release state.
+The owner's latest instruction removes the separate final assessment layer.
+Correctness, significance and novelty remain the responsibility of the verifier
+inside the existing research loop. Report its terminal judgment, score and novelty
+uncertainty from the native records. Do not run six additional Sol assessments,
+perform operator-side literature searches or add an editorial/release stage.
+The active research model routes, rounds and pipeline remain unchanged.
 
-`assess.py` runs one Sol 6.1 medium assessment per terminal account. It accepts
-DRAFT and the native PAUSE terminal outcomes, requires the final note and verifier
-record, and creates a fixed `post-research-assessment` slot. It binds full note,
-verdict, status, literature context, adapter and prompt hashes. There are no tools,
-search, fallback models, automatic retries or additional researchers. Invalid,
-failed or uncertain attempts remain preserved and block another dispatch. A saved
-complete result can be read again without another call.
-
-Before preparation, the operator supplies a UTF-8 literature-context document
-with current search dates/queries, inspected references and source identifiers,
-exact observed prior-art findings, provenance/coverage and limitations. Bind its
-underlying documents in the operator evidence manifest. This adapter does not
-independently fetch or certify those references. The assessment explicitly judges
-novelty from supplied evidence and reports uncertainty. Its rating uses the Nobel
-rubric, where 5 is a solid specialist contribution. It does not change the research
-verdict or certify novelty, correctness, editorial acceptance or release.
-
-Using the operator's verified Python and exact runtime path:
-
-```sh
-PYTHONPATH="$ENGINE" python -P /path/to/assess.py --root "$CHILD" --pair "$PAIR" --context "$CONTEXT"
-PYTHONPATH="$ENGINE" python -P /path/to/assess.py --root "$CHILD" --pair "$PAIR" --context "$CONTEXT" --apply
-```
-
-Prepare is call-free. Apply must wait for the child ownership lock to be free and
-its research result to be terminal. The existing stop/provider/shared-seat/budget
-checks apply. Run sequentially once for each of the six selected pairs; this is
-six calls total, not two rating models per pair. Full prompt size is checked,
-not truncated. A failure needs a separately authorised recovery; there is no
-reset switch. Preserve the adapter bytes after preparation because its hash is
-part of the immutable binding.
+`assess.py` and its historical offline tests remain in this directory solely as
+unused handoff audit material. They are not authorised execution instructions for
+Atlas pilot 2. No live assessment call was made by the maintainer. The operator
+reported that no separate final assessment will be invoked. Earlier proposed
+wording that changed the adapter's literature context was superseded before
+publication by this instruction; published adapter bytes remain unchanged.
 
 ## Runtime prerequisite
 
@@ -114,7 +92,7 @@ symlink/runtime permission grants. Keep b18d4dd unchanged.
 
 ## Offline evidence
 
-`test_recipe.py` imports the exact existing b18d4dd frozen runtime and uses stub
+The historical `test_recipe.py` imports the exact existing b18d4dd frozen runtime and uses stub
 responses, not models. It checks full-card preparation without scanning, an
 existing pooled source without network, profile/helper pool configuration,
 once-only assessment/resume, immutable note/verdict/status, changed-input refusal,
