@@ -1,0 +1,48 @@
+{
+  "quotes": [
+    {
+      "source": "ada/adapt_qsci/build.py",
+      "sha256": "8430502977530ea0336ae513868d305f281a14f34873ec35929c5f42d75d5ef3",
+      "first_line": 17,
+      "last_line": 23,
+      "quote": "nc=6;ne=(4,4);nq=12;size=1<<nq\ncas=mcscf.CASCI(mf,nc,ne)\nh1,core=cas.get_h1eff(mo)\neri=ao2mo.restore(1,cas.get_h2eff(mo),nc)\nembedded=qmmm.mm_charge(scf.RHF(mol),r['xyz_mm'],r['charges_mm'],unit='Angstrom')\ncas1=mcscf.CASCI(embedded,nc,ne)\nh11,core1=cas1.get_h1eff(mo)\n"
+    },
+    {
+      "source": "ada/adapt_qsci/build.py",
+      "sha256": "8430502977530ea0336ae513868d305f281a14f34873ec35929c5f42d75d5ef3",
+      "first_line": 56,
+      "last_line": 57,
+      "quote": "H=matrix(h1,eri)\nV=matrix(h11-h1,np.zeros_like(eri))\n"
+    },
+    {
+      "source": "ada/adapt_qsci/build.py",
+      "sha256": "8430502977530ea0336ae513868d305f281a14f34873ec35929c5f42d75d5ef3",
+      "first_line": 70,
+      "last_line": 86,
+      "quote": "    one=h1+field*(h11-h1);c0=core+field*(core1-core)\n    effective=fci.direct_spin1.absorb_h1e(one,eri,nc,ne,.5)\n    dense=np.column_stack([np.asarray(fci.direct_spin1.contract_2e(effective,np.eye(225)[:,j].reshape(15,15),nc,ne)).ravel() for j in range(225)])\n    projected=(H+field*V)[bits][:,bits].toarray()\n    err=float(np.max(abs(projected-dense*ph[:,None]*ph[None,:])))\n    assert err<1e-10\n    vals,vecs=np.linalg.eigh(projected)\n    base=mf if field==0 else qmmm.mm_charge(scf.RHF(mol),r['xyz_mm'],np.array(r['charges_mm'])*field,unit='Angstrom')\n    check=mcscf.CASCI(base,nc,ne);check.fcisolver.conv_tol=1e-13\n    e=float(check.kernel(mo)[0])\n    assert abs(e-(vals[0]+c0))<1e-9\n    checks.append(dict(field=field,matrix_max_error=err,casci_energy=e,dense_energy=float(vals[0]+c0)))\n    parent.append(projected)\nsparse.save_npz(P/'H-active.npz',H);sparse.save_npz(P/'V-active.npz',V)\nnp.savez(P/'parent.npz',H=np.array(parent),bits=bits,phases=ph,core=core,delta_core=core1-core,h1=h1,eri=eri)\nmeta=dict(input_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),\n          basis='cc-pvtz',nqubits=12,active_orbitals=list(range(1,7)),inactive=[0],electrons=ne,\n"
+    },
+    {
+      "source": "ada/adapt_qsci/run.py",
+      "sha256": "81dda5997413b492dc0683d6438c7599520376fed83b4edd4375b63126bb03e3",
+      "first_line": 8,
+      "last_line": 11,
+      "quote": "dat=np.load(P/'parent.npz');parent=dat['H'];bits=dat['bits'];core=float(dat['core']);dc=float(dat['delta_core'])\nHs=sparse.load_npz(P/'H-active.npz');Vs=sparse.load_npz(P/'V-active.npz')\nn=12;size=1<<n;Rvalues=(16,32);seeds=range(10);shots=100000;cap=80;tol=1e-5\nfactor=2625.4996394799/4.184\n"
+    },
+    {
+      "source": "ada/adapt_qsci/run.py",
+      "sha256": "81dda5997413b492dc0683d6438c7599520376fed83b4edd4375b63126bb03e3",
+      "first_line": 28,
+      "last_line": 38,
+      "quote": "exacts=[np.linalg.eigh(h) for h in parent]\nv=parent[2]-parent[0]\nexactD=float(exacts[0][1][:,0]@v@exacts[0][1][:,0])+dc\nexactI=float(exacts[2][0][0]-exacts[0][0][0]+dc-exactD)\n\ndef component(space):\n    space=np.sort(np.asarray(space,dtype=int));es=[];cs=[]\n    for t in (0,2):\n        e,c=np.linalg.eigh(parent[t][np.ix_(space,space)])\n        u=np.zeros(225);u[space]=c[:,0];cs.append(u);es.append(float(e[0]))\n    D=float(cs[0]@v@cs[0])+dc;I=es[1]-es[0]+dc-D\n"
+    },
+    {
+      "source": "ada/adapt_qsci/run.py",
+      "sha256": "81dda5997413b492dc0683d6438c7599520376fed83b4edd4375b63126bb03e3",
+      "first_line": 154,
+      "last_line": 160,
+      "quote": "        # Independently selected endpoint version, using P outputs as obtained.\n        s0=group[0]['selected'];s1=group[2]['selected']\n        ev,cv=np.linalg.eigh(parent[0][np.ix_(s0,s0)]);ef=np.linalg.eigvalsh(parent[2][np.ix_(s1,s1)])[0]\n        u=np.zeros(225);u[s0]=cv[:,0];D=float(u@v@u)+dc\n        ed=(D-exactD)*factor;ei=(ef-ev[0]+dc-D-exactI)*factor\n        families.append(dict(R=R,seed=seed,method='ADAPT_independent_endpoints',e_D=ed,e_I=ei,e_total=ed+ei,\n                            e_screened=ed+.6*ei,e_induction_path=ed+.36*ei,e_all_charge=.6*ed+.36*ei))\n"
+    }
+  ],
+  "old_run_py_embedded_byte_identical": true,
+  "science_execution": false
+}

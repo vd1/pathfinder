@@ -1,0 +1,46 @@
+{
+  "parent_candidate_sha256": "3209015ccee81d39a79c617d8266e586da469f425d0307147894ab889079f520",
+  "changes": [
+    {
+      "finding": "scalar-convention",
+      "before": "Specifically, let \\(S_0\\) and \\(S_1\\) be the independently selected vacuum and full-field spaces. The implementation takes \\(E_0\\) and its normalised ground-state vector from \\(H_0|_{S_0}\\), and \\(E_1\\) from the lowest eigenvalue of \\(H_1|_{S_1}\\). It extends the vacuum vector by zero to a vector \\(u_0\\) in the common 225-determinant parent basis. With \\(V=H_1-H_0\\) and the retained inactive-plus-nuclear endpoint increment \\(\\Delta c\\), it evaluates \\(D_{\\mathrm{ind}}=u_0^{T}Vu_0+\\Delta c\\) and \\(I_{\\mathrm{ind}}=E_1-E_0+\\Delta c-D_{\\mathrm{ind}}\\). Thus the static expectation uses the vacuum state in \\(S_0\\), whereas the full-field energy uses \\(S_1\\). The reported component errors subtract the exact-parent static and induction components and use the retained Hartree-to-kcal/mol conversion. This is the independently selected endpoint implementation, distinct from the common-space pooled calculation.",
+      "after": "Specifically, let \\(S_0\\) and \\(S_1\\) be the independently selected vacuum and full-field spaces. To distinguish the implementation from the total Hamiltonians \\(H(s)\\) above, write its scalar-stripped parent matrices as \\(K_s=H(s)-c_s\\mathbf{1}\\), where the retained inactive-plus-nuclear scalar is \\(c_s=c_0+s\\Delta c\\), and set \\(W=K_1-K_0\\). Only the inactive-plus-nuclear scalar is removed; inactive-core interactions remain in the effective integrals. The implementation takes the lowest eigenvalue \\(\\varepsilon_0\\) and its normalised ground-state vector from \\(K_0|_{S_0}\\), and \\(\\varepsilon_1\\) from \\(K_1|_{S_1}\\). It extends the vacuum vector by zero to \\(w_0\\) in the common 225-determinant parent basis and evaluates \\(D_{\\mathrm{ind}}=w_0^{T}Ww_0+\\Delta c\\) and \\(I_{\\mathrm{ind}}=\\varepsilon_1-\\varepsilon_0+\\Delta c-D_{\\mathrm{ind}}\\). Thus the static expectation uses the vacuum state in \\(S_0\\), whereas the full-field energy uses \\(S_1\\). The scalar increment is restored once in the static component and once in the total endpoint difference from which that static component is subtracted. Equivalently, with total selected-space endpoint energies \\(E_s^{\\mathrm{sel}}=\\varepsilon_s+c_s\\) and the earlier total perturbation \\(V=W+\\Delta c\\mathbf{1}\\), the same definitions are \\(D_{\\mathrm{ind}}=w_0^{T}Vw_0\\) and \\(I_{\\mathrm{ind}}=E_1^{\\mathrm{sel}}-E_0^{\\mathrm{sel}}-D_{\\mathrm{ind}}\\), without any additional scalar increment. The common-space pooled calculation uses the same scalar restoration with one selected space at both endpoints. Reported component errors subtract the exact-parent static and induction components and use the retained Hartree-to-kcal/mol conversion."
+    },
+    {
+      "finding": "operator-evidence-visibility",
+      "before": "The supplied supplement embeds the selector implementation \\texttt{ada/adapt\\_qsci/run.py}, but not its numerical inputs \\texttt{parent.npz}, \\texttt{H-active.npz} and \\texttt{V-active.npz}, or the recorded build implementation \\texttt{ada/adapt\\_qsci/build.py} and its \\texttt{build-result.json}.",
+      "after": "The supplied supplement embeds the selector implementation \\texttt{ada/adapt\\_qsci/run.py}, but not its numerical inputs \\texttt{parent.npz}, \\texttt{H-active.npz} and \\texttt{V-active.npz}, or the recorded build implementation \\texttt{ada/adapt\\_qsci/build.py} and its \\texttt{build-result.json}. The complete retained \\texttt{ada/adapt\\_qsci/build.py} is now supplied separately as a research-record source, without changing that embedded supplement; this does not supply its numerical inputs, \\texttt{build-result.json} or the omitted trajectories and does not make the reported numerical checks independently reproducible."
+    }
+  ],
+  "findings": [
+    {
+      "id": "scalar-convention",
+      "path": "reviews/current/critic-computational-chemist.md",
+      "sha256": "901c1af833fd31f6111ad20bb6d579aafaaf16602bbda2d2fd46b94ac4372ac8",
+      "quote": "- Required revisions: Explicitly distinguish the scalar-stripped matrices used by the endpoint implementation from the total Hamiltonians defined earlier, and state how Δc restores their inactive-plus-nuclear contribution exactly once. Use distinct symbols or an explicit conversion to the earlier total-Hamiltonian convention so that the independent-endpoint and common-space component definitions are unambiguous. This is a presentation correction and requires no new calculation."
+    }
+  ],
+  "evidence_projection": {
+    "version": 1,
+    "exclude": [],
+    "include": [
+      {
+        "path": "ada/adapt_qsci/build.py",
+        "sha256": "8430502977530ea0336ae513868d305f281a14f34873ec35929c5f42d75d5ef3",
+        "purpose": "Complete retained scalar-stripped matrix construction and separate affine inactive-plus-nuclear scalar storage; read-only, no computation."
+      }
+    ]
+  },
+  "operator_evidence_visibility": {
+    "kind": "operator-evidence-visibility-v1",
+    "authority": "Explicit operator instruction to distinguish new separately supplied build.py from the unchanged supplement and preserve numerical omissions; subject to fresh owner approval of this exact contract.",
+    "parent_candidate_sha256": "3209015ccee81d39a79c617d8266e586da469f425d0307147894ab889079f520",
+    "source": "ada/adapt_qsci/build.py",
+    "change": {
+      "finding": "operator-evidence-visibility",
+      "before": "The supplied supplement embeds the selector implementation \\texttt{ada/adapt\\_qsci/run.py}, but not its numerical inputs \\texttt{parent.npz}, \\texttt{H-active.npz} and \\texttt{V-active.npz}, or the recorded build implementation \\texttt{ada/adapt\\_qsci/build.py} and its \\texttt{build-result.json}.",
+      "after": "The supplied supplement embeds the selector implementation \\texttt{ada/adapt\\_qsci/run.py}, but not its numerical inputs \\texttt{parent.npz}, \\texttt{H-active.npz} and \\texttt{V-active.npz}, or the recorded build implementation \\texttt{ada/adapt\\_qsci/build.py} and its \\texttt{build-result.json}. The complete retained \\texttt{ada/adapt\\_qsci/build.py} is now supplied separately as a research-record source, without changing that embedded supplement; this does not supply its numerical inputs, \\texttt{build-result.json} or the omitted trajectories and does not make the reported numerical checks independently reproducible."
+    },
+    "append": " The complete retained \\texttt{ada/adapt\\_qsci/build.py} is now supplied separately as a research-record source, without changing that embedded supplement; this does not supply its numerical inputs, \\texttt{build-result.json} or the omitted trajectories and does not make the reported numerical checks independently reproducible."
+  }
+}

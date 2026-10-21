@@ -84,6 +84,7 @@ def main(argv=None):
     av.add_argument("--packet", type=Path, required=True)
     av.add_argument("--reason", required=True)
     av.add_argument("--apply", action="store_true")
+    av.add_argument("--approval", type=Path, help="owner approval for an exact pending-successor history exception")
     successor = sub.add_parser("account-amend-successor", help="review an explicit successor to an accepted account returned by presentation")
     successor.add_argument("pair")
     successor.add_argument("--id", required=True)
@@ -373,7 +374,7 @@ def _dispatch(ns, c):
     elif ns.cmd == "account-amend-revise":
         from . import account_revision
         print(account_revision.run(c, ns.pair, identity=ns.id, revision=ns.revision, packet=ns.packet,
-                                   reason=ns.reason, apply=ns.apply, accept_change=ns.accept_change))
+                                   reason=ns.reason, approval=ns.approval, apply=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "account-present-continue":
         from . import account_present
         print(account_present.apply(c, ns.pair, identity=ns.id, context_path=ns.context,

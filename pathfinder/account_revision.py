@@ -47,7 +47,7 @@ def _operator_framing(campaign, pair, delta):
     return ids
 
 
-def prepare(campaign,pair,*,identity,revision,packet,reason):
+def prepare(campaign,pair,*,identity,revision,packet,reason,approval=None):
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}',revision or '') or not reason.strip():
         raise pce.Changed('revision needs an explicit ID and authority')
     routes=pce_recovery.preflight(campaign,presentation=True)
@@ -58,9 +58,18 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     changes=json.loads((packet/'changes.json').read_text())
     delta=json.loads((packet/'revision.json').read_text())
     candidate=(packet/'account-candidate.tex').read_text()
+    from . import account_revision_exception as exception_api, pce_evidence, transport
+    exception, projection = exception_api.authorize(packet, approval, pair, identity, revision, delta, changes, candidate)
+    if exception is None and delta.get('evidence_projection') is not None:
+        raise pce.Changed('revision evidence additions require an explicit supported contract')
+    _, additions = pce_evidence.validate(campaign, pair, projection or None)
     operator_ids=_operator_framing(campaign,pair,delta)
+    if exception is not None:
+        operator_ids.add(delta['operator_evidence_visibility']['change']['finding'])
     binding={'id':identity,'revision':revision,'reason':reason,'changes':changes,'revision_changes':delta,
              'candidate_sha256':pce._sha(candidate)}
+    if exception is not None:
+        binding['history_exception']=exception
     pointer=thread/'edited/account-amendment.json'
     selected=json.loads(pointer.read_text())
     successor_pointer=thread/'edited/account-successor.json'
@@ -91,8 +100,10 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
         grant=json.loads((root/'revision.json').read_text())
         if grant['binding']!=binding:
             raise pce.Changed('revision identity binds different inputs')
-        if operator_ids and json.loads((root/'operator-framing.json').read_text())!=delta['operator_framing']:
+        if delta.get('operator_framing') and json.loads((root/'operator-framing.json').read_text())!=delta['operator_framing']:
             raise pce.Changed('recorded operator framing scope changed')
+        if exception is not None and json.loads((root/'operator-evidence-visibility.json').read_text())!=delta['operator_evidence_visibility']:
+            raise pce.Changed('recorded operator evidence-visibility scope changed')
         active=pending if successor_mode else selected
         if (active.get('revision')!=revision
             and str(current_root().relative_to(thread))!=grant['parent']):
@@ -110,11 +121,15 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     if old_result.get('status')!='review_required':raise pce.Changed('previous review must be terminal review_required')
     old_request,old_candidate,bib=account_review.custody(campaign,pair,parent)
     original,_,_=account_release.source(campaign,pair)
+    replayed = (exception_api.replay(campaign, pair, exception, successor_mode=successor_mode,
+        selected=selected, pending=pending, parent=parent, review=review, history=_history(parent),
+        old_request=old_request, original=original, changes=changes, candidate=candidate)
+        if exception is not None else _apply(original,changes['changes']))
     if (delta['parent_candidate_sha256']!=pce._sha(old_candidate)
         or changes['baseline_sha256']!=pce._sha(original)
         or changes['candidate_sha256']!=pce._sha(candidate)
         or _apply(old_candidate,delta['changes'])!=candidate
-        or _apply(original,changes['changes'])!=candidate):
+        or replayed!=candidate):
         raise pce.Changed('candidate must match both original-baseline and previous-candidate exact changes')
     findings=delta.get('findings',[])
     if (not findings and not operator_ids) or len(findings)>20:raise pce.Changed('bind terminal reviewer findings or explicit operator framing')
@@ -143,18 +158,38 @@ def prepare(campaign,pair,*,identity,revision,packet,reason):
     files['sources/internal/changes.json']=pce._json(changes)
     settings=json.loads((review/'grant.json').read_text())
     settings['routes']={k:v for k,v in routes.items() if k.startswith('edit/')}
+    snapshots=json.loads((parent/'evidence-snapshots.json').read_text())
+    if exception is not None:
+        for name,text in additions.items():
+            if name in snapshots and snapshots[name]!=text:
+                raise pce.Changed('revision evidence conflicts with inherited snapshot')
+            key='sources/external/amendment-retained-'+pce._sha(name)[:16]+'.txt'
+            if key in files:raise pce.Changed('revision evidence key already exists')
+            snapshots[name]=text
+            files[key]='Retained research record: '+name+'\nRaw SHA-256: '+pce._sha(text)+'\nComplete raw file, no omissions.\n\n'+text
+        if settings.get('review_wire'):
+            raise pce.Changed('exceptional revision requires the existing ordinary lossless transport')
+        if len(pce._json(files))+100_000>transport.max_prompt_chars(campaign):
+            raise pce.Changed('complete revision evidence exceeds prompt allowance; no truncation')
+        settings['strict_evidence']=True
+        settings['settings']['critic'].pop('pass_score',None)
     settings['inputs_sha256']=pce._sha(pce._json(files))
     settings['settings']['passes']=1;settings['settings']['fact_checks']=1
     request={**old_request,'reason':reason,'changes':changes,'candidate_sha256':pce._sha(candidate)}
+    if exception is not None:
+        request['revision_history_exception']=exception
+        request['evidence_sha256']=pce._sha(pce._json(snapshots))
     record={'binding':binding,'parent':str(parent.relative_to(thread)),'parent_sha256':_history(parent)}
     target=root
     root=root.with_name('.'+revision+'.preparing')
     from . import account_register
     account_register.attach(root/'review',settings,files,original,changes['changes'],candidate)
     pce._write(root,'revision.json',pce._json(record),immutable=True)
-    if operator_ids:pce._write(root,'operator-framing.json',pce._json(delta['operator_framing']),immutable=True)
+    if delta.get('operator_framing'):pce._write(root,'operator-framing.json',pce._json(delta['operator_framing']),immutable=True)
+    if exception is not None:
+        pce._write(root,'operator-evidence-visibility.json',pce._json(delta['operator_evidence_visibility']),immutable=True)
     for name,text in [('request.json',pce._json(request)),('candidate.tex',candidate),
-                      ('evidence-snapshots.json',(parent/'evidence-snapshots.json').read_text()),
+                      ('evidence-snapshots.json',pce._json(snapshots) if exception is not None else (parent/'evidence-snapshots.json').read_text()),
                       ('returned-findings.json',(parent/'returned-findings.json').read_text())]:
         pce._write(root,name,text,immutable=True)
     pce._write(root/'review','frozen-inputs.json',pce._json(files),immutable=True)
