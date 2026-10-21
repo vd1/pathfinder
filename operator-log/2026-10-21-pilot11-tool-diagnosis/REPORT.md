@@ -1,6 +1,32 @@
 # Pilot 11 tool-host diagnosis
 
-## Status at 17:03 operator local time (15:03 UTC), 21 October 2026
+## Recovery update: verified alternate distribution
+
+This update supersedes the unresolved status and signature interpretation below.
+The original signature diagnostics were taken inside the workspace sandbox.
+Approved unsandboxed checks now verify both original and alternate hosts as valid
+on disk. Claims of invalid/corrupted package signatures are withdrawn. Original
+probe artifacts remain unchanged as historical evidence, with this correction.
+The original host's offline SIGKILL and Nobel's subsequently captured live
+handshake errors remain observed failures, without an established low-level cause.
+
+Nobel's official alternate Bazel build of Codex 0.163.0 passed its guarded live
+smoke: three shell commands, two web operations, no tool errors, including canonical
+pool helper resolution and a LaTeX source read. The maintainer independently
+verified all 41 package file hashes against the operator manifest, with no
+mismatches. This is Nobel's smoke, not a substitute for Atlas's actual-profile test.
+
+Executable:
+`/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel/bin/codex`.
+Keep the full package/resources together. Ordinary Pathfinder supports explicit
+`PATHFINDER_CODEX` selection; record the different build and preserve engine freeze,
+permissions, models and budget. Atlas was notified and still needs its profile smoke.
+
+The external message delivery failure did not prevent this read-only verification.
+Evidence bindings are in recovery-verification.json; Nobel's detailed source is
+`/Users/v/Code_2026/nobel/operator-log/question-pilot/pilot11/RUNTIME-RECOVERY.md`.
+
+## Historical status at 17:03 operator local time (15:03 UTC), 21 October 2026
 
 Pilot 11 preparation remains stopped after rejected novelty output. The operator
 reports no live campaign worker. Maintainer work was read-only on Nobel, with

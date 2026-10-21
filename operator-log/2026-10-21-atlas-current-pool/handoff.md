@@ -97,15 +97,20 @@ part of the immutable binding.
 
 ## Runtime prerequisite
 
-The installed Homebrew Codex 0.163.0 tool host currently fails offline launch with
-SIGKILL at both short and long TMPDIR lengths and fails signature verification.
-Nobel reports the same host hash in a fresh official same-version download, so
-reinstalling identical bytes is not a demonstrated repair. See
-`../2026-10-21-pilot11-tool-diagnosis/REPORT.md` for exact hashes and limitations.
-No workaround has been validated in this handoff. Do not launch tool-enabled
-Atlas research until the host owner verifies a supported working distribution
-and an authorised actual tool smoke check under the intended profile/cwd. Do not
-weaken sandbox or ad-hoc sign binaries. Keep the Pathfinder freeze unchanged.
+Nobel has verified the official alternate Bazel Codex 0.163.0 package at
+`/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel`.
+Its live smoke passed shell, web and canonical pool reads with five tool events
+and zero errors. The maintainer independently verified all 41 package hashes.
+Use the complete package, not an isolated copied binary, and record the build
+change explicitly. Ordinary classic mode supports selecting its `bin/codex` via
+`PATHFINDER_CODEX` without changing the Pathfinder engine or weakening permissions.
+
+The original Homebrew tool host had reproducible launch/handshake failures.
+Earlier invalid-signature diagnoses are withdrawn: unsandboxed signature checks
+pass on both hosts. See `../2026-10-21-pilot11-tool-diagnosis/REPORT.md` and its
+recovery update for evidence. Atlas must still run its authorised actual-profile
+shell/pool/tool smoke before research launch; Nobel's smoke does not prove Atlas's
+symlink/runtime permission grants. Keep b18d4dd unchanged.
 
 ## Offline evidence
 
