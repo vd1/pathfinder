@@ -170,7 +170,38 @@ def main(argv=None):
     r.add_argument("--retire-orphans", action="store_true",
                    help="only retire call records whose runner and child are dead; no thread is touched")
     sub.add_parser("repair-verdict", help="explicitly repair escaping in a saved terminal verifier reply; no model call").add_argument("pair")
+    life = sub.add_parser("lifecycle", help="file custody inventory, dry-run cleanup and verified archive/restore")
+    life.add_argument("action", choices=("inventory", "ignores", "cleanup", "archive", "verify", "restore"))
+    life.add_argument("--archive", type=Path)
+    life.add_argument("--dest", type=Path)
+    life.add_argument("--sha256", help="required external archive digest for restore")
     ns = ap.parse_args(argv)
+    if ns.cmd == "lifecycle":
+        from . import lifecycle
+        root = Path(ns.root)
+        try:
+            if ns.action == "inventory":
+                result = lifecycle.inventory(root)
+            elif ns.action == "ignores":
+                archived = lifecycle.verify_archive(ns.archive) if ns.archive else None
+                print(lifecycle.ignore_rules(lifecycle.inventory(root), archived), end=""); return 0
+            elif ns.action == "cleanup":
+                result = lifecycle.cleanup_plan(root)
+            elif ns.action == "archive":
+                if not ns.dest:
+                    raise ValueError("archive requires --dest outside the source tree")
+                result = lifecycle.archive(root, ns.dest)
+            elif ns.action == "verify":
+                if not ns.archive:
+                    raise ValueError("verify requires --archive")
+                result = lifecycle.verify_archive(ns.archive)
+            else:
+                if not (ns.archive and ns.dest and ns.sha256):
+                    raise ValueError("restore requires --archive, --dest and --sha256")
+                result = lifecycle.restore(ns.archive, ns.dest, ns.sha256)
+            print(json.dumps(result, indent=1)); return 0
+        except (ValueError, RuntimeError, OSError) as error:
+            print(f"lifecycle refused: {error}", file=sys.stderr); return 1
     if ns.cmd == "coordinate":
         from . import coordinator
         if ns.status:
