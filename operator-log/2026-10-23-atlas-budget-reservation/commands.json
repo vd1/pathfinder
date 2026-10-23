@@ -1,0 +1,34 @@
+{
+  "propose_argv": [
+    "/Users/v/Code_2026/pathfinder/.venv/bin/python3",
+    "-I",
+    "-c",
+    "import sys;sys.path.insert(0,sys.argv.pop(1));from pathfinder.cli import main;sys.exit(main())",
+    "/private/tmp/pathfinder-e8509d1",
+    "--root",
+    "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-5",
+    "budget-reservation",
+    "propose",
+    "--call-id",
+    "398ff543ec6e4b6bab6ae24d278f4d54",
+    "--input-tokens",
+    "14000560",
+    "--output-tokens",
+    "68920",
+    "--rationale",
+    "Owner decision pending: ten times the respective maximum input and output reported by 17 completed Pilot3 verifiers; heuristic policy margin, not a bound or measured usage. Actual aggregate compliance remains uncertified.",
+    "--out",
+    "/private/tmp/atlas-pilot3-reservation-proposal.json"
+  ],
+  "report_argv": [
+    "/Users/v/Code_2026/pathfinder/.venv/bin/python3",
+    "-I",
+    "-c",
+    "import sys;sys.path.insert(0,sys.argv.pop(1));from pathfinder.cli import main;sys.exit(main())",
+    "/private/tmp/pathfinder-e8509d1",
+    "--root",
+    "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-5",
+    "budget-reservation",
+    "report"
+  ]
+}
