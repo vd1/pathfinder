@@ -20,7 +20,7 @@ from contextlib import contextmanager
 
 VERSION = 'pathfinder-lifecycle-v1'
 RETAIN = {'threads', 'branches', 'branch-runs', 'reopened', 'replay', 'release',
-          'releases', 'publication', 'operator-log', 'receipts', 'active-calls',
+          'releases', 'publication', 'operator-log', 'receipts', 'active-calls', 'transport-evidence',
           'paper-pool', 'arxiv-cache', 'sources', 'inputs', 'library', 'pool'}
 
 

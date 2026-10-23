@@ -5,7 +5,7 @@ zero, never an estimate."""
 from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
-import hashlib, json, os, re, shlex, signal, subprocess, threading, time, uuid
+import hashlib, json, os, re, shlex, signal, subprocess, threading, time, uuid, random, math
 from pathlib import Path
 
 SESSION_GRACE = 60
@@ -71,11 +71,11 @@ def retry_policy(campaign) -> tuple[int, float]:
 
 def transient_backoffs(campaign, request, failure: dict) -> list[float]:
     """The waits before asking again a call the provider failed after it started: dropped (server), at capacity
-    (rate) or past its full deadline (timeout), from transient_backoff_seconds (default 60 then 300 s; nobel,
+    (rate) or past its full deadline (timeout), from transient_backoff_seconds (default 60 then 120 s; nobel,
     12 October 2026: a provider slowdown stopped three branches and the runner within an hour). A timeout is asked
     again once, since each attempt spends a whole deadline, and a peer's timeout at the allowance's remainder never:
     the turn is over (thread.residual_timeout)."""
-    waits = [float(w) for w in (campaign.raw or {}).get("transient_backoff_seconds", [60, 300])]
+    waits = [float(w) for w in (campaign.raw or {}).get("transient_backoff_seconds", [60, 120])]
     if failure.get("class") != "timeout":
         return waits
     allowances = getattr(campaign, "allowances", None) or {}
@@ -376,7 +376,7 @@ def _receipt(campaign, thread, stage, actor, model, r):
         rules, rules_error = failures.rules_for(campaign), None
     except Exception as error:                    # a broken deployment rule must not lose the receipt
         rules, rules_error = (), f"{type(error).__name__}: {error}"
-    failure = failures.classify(r.get("outcome"), r.get("error"), rules)
+    failure = failures.classify(r.get("outcome"), r.get("error"), rules, provider=r.get("provider_error"))
     r["failure"] = failure.record() if failure else None
     if failure is not None and failure.cls == "quota" and r.get("outcome") != "refused":   # the provider's limit: every campaign pauses
         from . import exhaustion
@@ -388,7 +388,8 @@ def _receipt(campaign, thread, stage, actor, model, r):
            **{k: r.get(k) for k in ("outcome", "seconds", "deadline_seconds", "usage", "input_tokens", "output_tokens", "cache_write",
                                      "cache_read", "prefix_read", "cost", "cost_basis", "exit_status", "terminal_event",
                                      "raw_events", "error", "failure", "prompt_chars", "tool_calls", "tool_errors",
-                                     "tool_error_samples", "source_limits")}}
+                                     "tool_error_samples", "source_limits", "provider_error", "provider_errors",
+                                     "usage_completeness", "usage_samples", "evidence_journal")}}
     if isinstance(row.get("raw_events"), list):   # commands and answers kept, long tool outputs shortened
         from . import gc
         row["raw_events"] = gc.compact_events(row["raw_events"])
@@ -406,21 +407,24 @@ def _receipt(campaign, thread, stage, actor, model, r):
                 input_tokens=r.get("input_tokens"), output_tokens=r.get("output_tokens"),
                 cache_read=r.get("cache_read"), tool_calls=r.get("tool_calls"), tool_errors=r.get("tool_errors"))
     failures.stop_for(campaign, failure, r.get("error"))
-    if failure is not None and failure.cls == "rate":
-        _cool_down(campaign, r.get("error"))
+    if failure is not None and failure.cls in ("rate", "server"):
+        _cool_down(campaign, r.get("error"), model, (r.get("provider_error") or {}).get("retry_after_seconds"))
     return failure
 
 
-def _cool_down(campaign, reason):
+def _cool_down(campaign, reason, model=None, retry_after=None):
     """Hold admission for the retry backoff after a rate limit; a later cooldown keeps the later end."""
     from .admission import _cooldown_roots
-    from . import health
+    from . import health, provider_cooldown
+    delay = max(retry_policy(campaign)[1], retry_after or 0.)
+    if provider_cooldown.extend(campaign, model or campaign.model, delay, reason):
+        return
     for root in _cooldown_roots(campaign):           # the arms of one parent share the account, so they cool together
         if not root.is_dir():                        # never create a missing parent
             print(f"cooldown not recorded at {root}: no such directory")
             continue
         path = root / "cooldown.json"
-        until = time.time() + retry_policy(campaign)[1]
+        until = time.time() + delay
         try:
             until = max(until, float(json.loads(path.read_text()).get("until", 0)))
         except (OSError, ValueError, TypeError, AttributeError):
@@ -431,19 +435,20 @@ def _cool_down(campaign, reason):
             print(f"cooldown not recorded at {root}: {error}")
 
 
-def _failed(campaign, thread, stage, actor, model, started, outcome, error, prompt_chars=None):
+def _failed(campaign, thread, stage, actor, model, started, outcome, error, prompt_chars=None, evidence=None):
     """A call that never reached a model session: a receipt with no usage and no cost."""
     r = {"text": "", "session": None, "seconds": round(time.time() - started, 1), "usage": None, "input_tokens": None,
          "output_tokens": None, "cache_write": None, "cache_read": None, "prefix_read": None, "cost": None,
          "cost_basis": None, "outcome": outcome, "error": error, "transport_failed": True,
-         "prompt_chars": prompt_chars, "tool_calls": None}
+         "prompt_chars": prompt_chars, "tool_calls": None, **(evidence or {})}
     _receipt(campaign, thread, stage, actor, model, r)
     return r
 
 
 RESULT_KEYS = ("text", "session", "seconds", "usage", "input_tokens", "output_tokens", "cache_write", "cache_read",
                "prefix_read", "cost", "cost_basis", "rates", "outcome", "error", "transport_failed", "exit_status",
-               "terminal_event", "raw_events", "failure", "prompt_chars", "tool_calls", "tool_errors", "tool_error_samples")
+               "terminal_event", "raw_events", "failure", "prompt_chars", "tool_calls", "tool_errors", "tool_error_samples",
+               "provider_error", "provider_errors", "usage_completeness", "usage_samples", "evidence_journal")
 
 
 def _extension_call(campaign, request, dispatcher):
@@ -484,6 +489,46 @@ def execute_batch(requests: list[ModelRequest], adapter):
     return [adapter(request) for request in requests]
 
 
+def _retry_deadline(campaign, request):
+    from . import provider_evidence
+    provider_evidence.validate_options(campaign.raw or {})
+    retries, backoff = retry_policy(campaign)
+    waits = transient_backoffs(campaign, request, {})
+    ceiling = request.timeout * (1 + max(0, retries) + len(waits)) + max(0, retries) * backoff + sum(waits)
+    seconds = float((campaign.raw or {}).get("retry_episode_seconds", ceiling))
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise ValueError("retry_episode_seconds must be finite and positive")
+    return time.monotonic() + seconds
+
+
+def _retry_delay(campaign, base, result):
+    fraction = float((campaign.raw or {}).get("retry_jitter_fraction", .5))
+    if not math.isfinite(base) or base < 0 or not 0 <= fraction <= 1:
+        raise ValueError("retry delays must be finite/nonnegative and jitter fraction in [0,1]")
+    hint = (result.get("provider_error") or {}).get("retry_after_seconds") or 0.
+    return max(random.uniform(base * (1 - fraction), base), hint)
+
+
+def _admitted_attempt(campaign, request, deadline):
+    from . import provider_cooldown, budget_group, admission
+    while True:
+        with provider_cooldown.gate(campaign, request, deadline) as lease:
+            try:
+                with budget_group.admission(campaign, request), admission.admission(
+                        campaign, request.stage, request.actor, thread=request.thread, model=request.model):
+                    provider_cooldown.check(campaign, request.model, lease)
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        admission._refuse(campaign, request.thread, request.stage, request.actor, request.model,
+                                          'retry episode exhausted before dispatch; no call started')
+                    bounded = dataclasses.replace(request, timeout=min(request.timeout, math.ceil(remaining)))
+                    result = _attempt(campaign, bounded)
+                    lease['successful'] = result.get('outcome') == 'completed'
+                    return result
+            except provider_cooldown.Deferred:
+                pass  # Release seats/group lock before returning to the shared wait.
+
+
 def execute(campaign, request: ModelRequest):
     """Refuse an oversized prompt, then admit the call, then record an active attempt before launching it,
     including abrupt-exit evidence. A refused call raises before any active-call record exists. A campaign
@@ -506,10 +551,9 @@ def execute(campaign, request: ModelRequest):
     from . import admission, budget_group
     retries, backoff = retry_policy(campaign)
     unserved_asked = transient_asked = 0
+    deadline = _retry_deadline(campaign, request)
     while True:
-        with budget_group.admission(campaign, request), admission.admission(
-                campaign, request.stage, request.actor, thread=request.thread, model=request.model):
-            result = _attempt(campaign, request)
+        result = _admitted_attempt(campaign, request, deadline)
         failure = result.get("failure") or {}
         wait = None
         if failure.get("scope") != "campaign" and failure.get("retry"):
@@ -521,6 +565,16 @@ def execute(campaign, request: ModelRequest):
                     wait, transient_asked = waits[transient_asked], transient_asked + 1
         if wait is None or _campaign_stopped(campaign):  # a launch streak may have just stopped the campaign
             break
+        wait = _retry_delay(campaign, wait, result)
+        from . import events, provider_cooldown
+        if time.monotonic() + wait >= deadline:
+            events.emit(campaign, "retry_deferred", unit=request.thread, stage=request.stage,
+                        reason="provider retry delay exceeds remaining retry episode", delay_seconds=wait)
+            break
+        provider_cooldown.extend(campaign, request.model, wait, result.get("error"))
+        events.emit(campaign, "retry_scheduled", unit=request.thread, stage=request.stage,
+                    attempt=unserved_asked + transient_asked, delay_seconds=wait,
+                    retry_after_seconds=(result.get("provider_error") or {}).get("retry_after_seconds"))
         if not _wait(campaign, wait):                  # outside admission; an operator's stop ends the wait
             break
     if (result.get("failure") or {}).get("class") == "refusal" and getattr(campaign, "route", {}).get("key") != "refusal_fallback":
@@ -568,9 +622,7 @@ def execute_routed(campaign, request: ModelRequest):
         request = dataclasses.replace(request, search=False)
     request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
-    with budget_group.admission(campaign, request), admission.admission(
-            campaign, request.stage, request.actor, thread=request.thread, model=request.model):
-        return _attempt(campaign, request)
+    return _admitted_attempt(campaign, request, _retry_deadline(campaign, request))
 
 
 def _attempt(campaign, request: ModelRequest):
@@ -630,17 +682,51 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         return _failed(campaign, thread, stage, actor, model, started, "launch failed", f"launch failed: {e}",
                        prompt_chars=len(prompt))
     from . import health
-    activity["child_pid"] = proc.pid
-    health.write(activity_path, activity)
+    from . import provider_evidence
+    journal = None
+    try:
+        activity["child_pid"] = proc.pid
+        health.write(activity_path, activity)
+        journal = provider_evidence.Journal(campaign, activity['attempt_id'])
+        activity['evidence_journal'] = {k: str(v) for k, v in journal.paths.items()}
+        health.write(activity_path, activity)
+    except BaseException:
+        _kill(proc)
+        if journal is not None:
+            journal.close()
+        raise
     lines, session_seen = [], threading.Event()
 
     def reader():
-        for line in proc.stdout:
-            lines.append(line)
-            if '"session_id"' in line or '"thread.started"' in line:
-                session_seen.set()
+        try:
+            for line in proc.stdout:
+                journal.append('events.jsonl', line)
+                lines.append(line)
+                if '"session_id"' in line or '"thread.started"' in line:
+                    session_seen.set()
+        except BaseException as error:
+            journal.error = repr(error)
+            _kill(proc)
+
+    def stderr_reader():
+        try:
+            while chunk := proc.stderr.read(4096):
+                journal.append('stderr.log', chunk)
+        except BaseException as error:
+            journal.error = repr(error)
+            _kill(proc)
 
     t = threading.Thread(target=reader, daemon=True); t.start()
+    stderr_thread = threading.Thread(target=stderr_reader, daemon=True); stderr_thread.start()
+
+    def finish_evidence(completed=False):
+        t.join(5); stderr_thread.join(5)
+        if t.is_alive() or stderr_thread.is_alive():
+            _kill(proc)
+            raise RuntimeError('provider output readers did not finish; active evidence retained')
+        journal.close()
+        return dict(**provider_evidence.inspect(lines, completed=completed), evidence_journal=journal.manifest())
+
     try:
         proc.stdin.write(prompt); proc.stdin.close()
     except BrokenPipeError:
@@ -650,19 +736,22 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
     while not session_seen.wait(min(0.1, max(0, deadline - time.monotonic()))):
         if proc.poll() is not None:
             t.join(1)
-            error = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode} before session"
+            evidence = finish_evidence()
+            parsed_error = _parse(campaign, model, lines)[4]
+            error = parsed_error or journal.stderr_tail.strip()[-500:] or f"exit {proc.returncode} before session"
             return _failed(campaign, thread, stage, actor, model, started, "launch failed", error,
-                           prompt_chars=len(prompt))
+                           prompt_chars=len(prompt), evidence=evidence)
         if time.monotonic() >= deadline:
             _kill(proc)
             return _failed(campaign, thread, stage, actor, model, started, "no session", "no session",
-                           prompt_chars=len(prompt))
+                           prompt_chars=len(prompt), evidence=finish_evidence())
     try:
         proc.wait(timeout=max(1, timeout - (time.time() - started)))
         error = None
     except subprocess.TimeoutExpired:
         _kill(proc); error = "timeout"
     t.join(5)
+    evidence = finish_evidence()
     text, session, usage, reported, err, prefix_read = _parse(campaign, model, lines)
     if campaign.backend != "claude" and not err and not error:
         events = []
@@ -676,8 +765,10 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         if "turn.completed" not in events:
             err = "CLI exited without a completed turn"
     if proc.returncode not in (0, None) and not error and not err:
-        err = (proc.stderr.read() or "").strip()[-500:] or f"exit {proc.returncode}"
-    counters = _counters(campaign.backend, usage)
+        err = journal.stderr_tail.strip()[-500:] or f"exit {proc.returncode}"
+    evidence.update(provider_evidence.inspect(lines, completed=not (error or err)))
+    # Keep raw reported usage, but only complete totals enter accounting counters.
+    counters = _counters(campaign.backend, usage if evidence['usage_completeness'] == 'complete' else None)
     cost, basis, rates = _cost(campaign, model, reported, counters)
     r = {"text": text, "session": session, "seconds": round(time.time() - started, 1), "deadline_seconds": timeout,
          "usage": usage, **counters,
@@ -688,7 +779,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
           "prompt_chars": len(prompt), "tool_calls": _tool_calls(lines),
           **dict(zip(("tool_errors", "tool_error_samples"), _tool_errors(lines))),
           "source_limits": _source_limits(lines) or None,
-          "raw_events": [line.rstrip("\n") for line in lines]}
+          "raw_events": [line.rstrip("\n") for line in lines], **evidence}
     _receipt(campaign, thread, stage, actor, model, r)
     return r
 

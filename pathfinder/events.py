@@ -8,7 +8,7 @@ inferring progress from a cut record."""
 from __future__ import annotations
 import json, sys, threading, time
 
-KINDS = frozenset({"run_started", "run_finished", "call_started", "call_finished", "status_changed", "stop_requested",
+KINDS = frozenset({"retry_scheduled", "retry_deferred", "run_started", "run_finished", "call_started", "call_finished", "status_changed", "stop_requested",
                    "context_built", "contract_repair", "contract_failed", "admission_deferred", "garbage_collected",
                    "call_abandoned", "presentation", "inputs_added"})
 _lock = threading.Lock()

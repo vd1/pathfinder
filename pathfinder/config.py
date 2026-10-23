@@ -56,6 +56,8 @@ def load(root: Path) -> Campaign:
         for block in ("branch", "joint"):
             if not isinstance(raw.get(block, {}), dict):
                 raise ValueError(f"{block} must be an object of campaign keys, got {raw[block]!r}")
+    from . import provider_evidence
+    provider_evidence.validate_options(raw)
     from . import budget, pce, routing
     budget.limits(raw)                               # a malformed budget fails here, not at the first admission
     from . import scan

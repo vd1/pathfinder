@@ -100,6 +100,8 @@ def test_killed_call_keeps_the_usage_that_was_reported(tmp_path, monkeypatch):
     row = rows(tmp_path)[0]
     assert row["outcome"] == "timeout" and row["usage"] == {"input_tokens": 4, "output_tokens": 1}
     assert row["cache_read"] is None                                   # not reported is not zero
+    assert row["usage_completeness"] == "partial"
+    assert row["input_tokens"] is None and row["output_tokens"] is None
 
 
 @pytest.mark.parametrize("backend", ["claude", "codex"])
@@ -352,7 +354,7 @@ def test_a_capacity_reply_after_the_session_started_is_asked_again_with_backoff(
     monkeypatch.setattr(transport, "_attempt", lambda campaign, request: served.pop(0))
     slept = _sleeps(monkeypatch)
     r = transport.execute(c, _peer())
-    assert r["outcome"] == "completed" and served == [] and sum(slept) == 360
+    assert r["outcome"] == "completed" and served == [] and 180 <= sum(slept) <= 360
 
 
 def test_a_full_deadline_timeout_is_asked_again_once(tmp_path, monkeypatch):
@@ -362,7 +364,7 @@ def test_a_full_deadline_timeout_is_asked_again_once(tmp_path, monkeypatch):
     monkeypatch.setattr(transport, "_attempt", lambda campaign, request: queue.pop(0))
     slept = _sleeps(monkeypatch)
     r = transport.execute(c, _peer(1230))
-    assert r["transport_failed"] and len(queue) == 1 and sum(slept) == 60   # a second full deadline is not spent again
+    assert r["transport_failed"] and len(queue) == 1 and 30 <= sum(slept) <= 60   # a second full deadline is not spent again
 
 
 def test_a_residual_deadline_timeout_is_not_asked_again(tmp_path, monkeypatch):

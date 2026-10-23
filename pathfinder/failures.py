@@ -47,7 +47,7 @@ class Failure:
         return {"class": self.cls, "scope": self.scope, "retry": self.retry, "reset_at": self.reset_at}
 
 
-def classify(outcome: str | None, error: str | None, extra_rules=()) -> Failure | None:
+def classify(outcome: str | None, error: str | None, extra_rules=(), provider=None) -> Failure | None:
     """The failure a receipt records, or None for a completed call or an ordinary admission refusal.
     extra_rules, a deployment's (class, compiled pattern) pairs, are tried before the built-in rules."""
     for name, _ in extra_rules:
@@ -56,6 +56,18 @@ def classify(outcome: str | None, error: str | None, extra_rules=()) -> Failure 
     message = error or ""
     if outcome in (None, "completed") and not message:
         return None
+    # Provider metadata takes precedence over a generic HTTP/message fallback.
+    if isinstance(provider, dict) and provider and outcome not in (None, "completed", "refused"):
+        from .provider_evidence import QUOTA_CODES
+        code, status = provider.get("code"), provider.get("status")
+        code = code if isinstance(code, str) else None
+        status = status if type(status) is int else None
+        cls = ("quota" if code in QUOTA_CODES else "auth" if status in (401, 403)
+               else "rate" if code in ("server_is_overloaded", "slow_down", "rate_limit_exceeded")
+               else "rate" if status in (429, 503) else "server" if status in (500, 502, 504) else None)
+        if cls:
+            scope, retry = SCOPES[cls]
+            return Failure(cls, scope, retry)
     rules = (*extra_rules, *RULES)
     if outcome == "refused":
         if not OVERSIZE.search(message):
