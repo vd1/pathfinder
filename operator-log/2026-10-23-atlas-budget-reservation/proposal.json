@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "policy": "served-capacity-reservation-v1",
+  "root": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-5",
+  "call_id": "398ff543ec6e4b6bab6ae24d278f4d54",
+  "receipt": {
+    "v": 3,
+    "call_id": "398ff543ec6e4b6bab6ae24d278f4d54",
+    "at": "2026-10-23T03:10:07Z",
+    "run_id": "bfbd530254534004b6ec8350bb7ee49c",
+    "thread": "Q001-P002",
+    "branch": null,
+    "stage": "verify",
+    "actor": "verifier",
+    "backend": "codex",
+    "model": "gpt-6.1-sol",
+    "outcome": "error",
+    "seconds": 46.5,
+    "deadline_seconds": 3600,
+    "usage": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_write": null,
+    "cache_read": null,
+    "prefix_read": null,
+    "cost": null,
+    "cost_basis": null,
+    "exit_status": 1,
+    "terminal_event": "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}",
+    "raw_events": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"01a166bc-073d-77d1-aab3-95b6fca78b98\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/v/.codex/config.toml.\"}}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"I’ll check the current round, the cited derivations and numerical evidence, and the recorded prior-art comparisons before deciding whether another round is warranted.\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_2\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"pwd; rg --files -g 'status.json' -g '*sector*' -g '*pool*' -g '*0108033*' -g '*08962*' -g 'AGENTS.md' -g '*.log'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"pwd; rg --files -g 'status.json' -g '*sector*' -g '*pool*' -g '*0108033*' -g '*08962*' -g 'AGENTS.md' -g '*.log'\\\"\",\"aggregated_output\":\"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-5/threads/Q001-P002\\nstatus.json\\nada/sector_normalized_sampling.md\\nada/logs/sector-filter-002.json\\nada/logs/style-gate-001.log\\nada/logs/sector-filter-002.stderr\\nada/logs/environment-001.log\\nada/logs/sector-filter-001.json\\nada/logs/sector-filter-001.stderr\\nada/check_sector_filter.py\\n\",\"exit_code\":0,\"status\":\"completed\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"cat status.json; nl -ba ada/sector_normalized_sampling.md | sed -n '1,245p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_3\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"cat status.json; nl -ba ada/sector_normalized_sampling.md | sed -n '1,245p'\\\"\", \"aggregated_output\": \"{\\n \\\"pair_id\\\": \\\"Q001-P002\\\",\\n \\\"round\\\": 1,\\n \\\"stage\\\": \\\"verify\\\",\\n \\\"status\\\": \\\"running\\\",\\n \\\"reason\\\": null,\\n \\\"started\\\": \\\"2026-10-23T02:52:44Z\\\",\\n \\\"updated\\\": \\\"2026-10-23T03:09:20Z\\\",\\n \\\"repair\\\": null\\n}     1\\t# Wor\\n[... 13235 characters dropped ...]\\n ratios in closed form. No black-box query speedup follows from\\n   241\\tthe explicit-data theorem.\\n   242\\t\\n   243\\t## 4. Comparisons under matching assumptions\\n   244\\t\\n   245\\t### Direct Q followed by P\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 13635}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_4\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/sector_normalized_sampling.md | sed -n '243,510p'; nl -ba ada/check_sector_filter.py | sed -n '1,205p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_4\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/sector_normalized_sampling.md | sed -n '243,510p'; nl -ba ada/check_sector_filter.py | sed -n '1,205p'\\\"\", \"aggregated_output\": \"   243\\t## 4. Comparisons under matching assumptions\\n   244\\t\\n   245\\t### Direct Q followed by P\\n   246\\t\\n   247\\tFor a general many-body dissipative A, Q supplies an approximation to\\n   248\\tT=exp(-tA) wit\\n[... 24224 characters dropped ...]\\n] for x in checks),\\n   163\\t                          max_exponential_error=max(x['exponential_error'] for x in checks)), indent=2))\\n   164\\t\\n   165\\t\\n   166\\tif __name__ == '__main__':\\n   167\\t    main()\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 24624}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_5\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"rg --files /Users/v/Code_2026/nobel/paper-pool | rg '(0108033|08962|0404180|19238|pool.*py|helper|README)'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_5\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"rg --files /Users/v/Code_2026/nobel/paper-pool | rg '(0108033|08962|0404180|19238|pool.*py|helper|README)'\\\"\",\"aggregated_output\":\"/Users/v/Code_2026/nobel/paper-pool/quant-ph_0404180v1.tex\\n/Users/v/Code_2026/nobel/paper-pool/quant-ph_0108033.tex\\n/Users/v/Code_2026/nobel/paper-pool/2502.08962.refs.json\\n/Users/v/Code_2026/nobel/paper-pool/2502.08962.tex\\n/Users/v/Code_2026/nobel/paper-pool/quant-ph_0404180.tex\\n/Users/v/Code_2026/nobel/paper-pool/quant-ph_0108033v1.tex\\n/Users/v/Code_2026/nobel/paper-pool/2508.19238.tex\\n\",\"exit_code\":0,\"status\":\"completed\"}}",
+      "{\"type\":\"error\",\"message\":\"Selected model is at capacity. Please try a different model.\"}",
+      "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}"
+    ],
+    "error": "Selected model is at capacity. Please try a different model.",
+    "failure": {
+      "class": "rate",
+      "scope": "call",
+      "retry": true,
+      "reset_at": null
+    },
+    "prompt_chars": 91843,
+    "tool_calls": 4,
+    "tool_errors": 0,
+    "tool_error_samples": [],
+    "source_limits": null,
+    "route": {
+      "key": "verify",
+      "backend": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  },
+  "receipt_line_sha256": "45448b3afcbeb59edbd8b1759e9e0542126c38568ee9ea78b67c9ac26e46d19f",
+  "parent_manifest": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/operator/budget-group-expanded.json",
+  "parent_sha256": "3652874527d555ad714c3cf331894229eeac425ed19f42e4607922a5204052d1",
+  "scope": {
+    "campaigns": [
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-1",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-2",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-3",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-4",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-5",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-3/runs/pair-6"
+    ],
+    "budget": {
+      "input_tokens": 1000000000,
+      "output_tokens": 14000000
+    }
+  },
+  "reservation": {
+    "input_tokens": 14000560,
+    "output_tokens": 68920
+  },
+  "rationale": "Owner decision pending: ten times the respective maximum input and output reported by 17 completed Pilot3 verifiers; heuristic policy margin, not a bound or measured usage. Actual aggregate compliance remains uncertified.",
+  "notice": "Actual usage remains unknown; actual aggregate cap compliance is not certified."
+}

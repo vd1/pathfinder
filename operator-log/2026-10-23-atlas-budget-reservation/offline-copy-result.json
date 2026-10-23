@@ -1,0 +1,68 @@
+{
+  "copy": "/private/tmp/atlas-reservation-copy-zm3v_vmk",
+  "status": "complete",
+  "stub_calls": [
+    [
+      "pair-5",
+      "verify"
+    ],
+    [
+      "pair-6",
+      "peer"
+    ],
+    [
+      "pair-6",
+      "consolidate"
+    ],
+    [
+      "pair-6",
+      "verify"
+    ]
+  ],
+  "pair5_preserved_files": 14,
+  "completed_prefix_receipts_unchanged": true,
+  "original_receipts_retained": true,
+  "accounting": {
+    "manifest": "/private/tmp/atlas-reservation-copy-zm3v_vmk/new-group.json",
+    "cap": {
+      "input_tokens": 1000000000,
+      "output_tokens": 14000000
+    },
+    "measured": {
+      "calls": 58,
+      "input_tokens": 76748164,
+      "output_tokens": 990692
+    },
+    "reserved": {
+      "input_tokens": 14000560,
+      "output_tokens": 68920
+    },
+    "admission_total": {
+      "calls": 58,
+      "input_tokens": 90748724,
+      "output_tokens": 1059612
+    },
+    "projected": {
+      "calls": 59,
+      "input_tokens": 92313357.1724138,
+      "output_tokens": 1077881.1724137932
+    },
+    "unknown_calls": [
+      {
+        "root": "/private/tmp/atlas-reservation-copy-zm3v_vmk/runs/pair-5",
+        "call_id": "398ff543ec6e4b6bab6ae24d278f4d54",
+        "fields": [
+          "input_tokens",
+          "output_tokens"
+        ],
+        "reserved": true
+      }
+    ],
+    "unresolved_active_roots": [],
+    "actual_total_certified": false,
+    "refusal": null,
+    "reservation_notice": "Actual usage remains unknown; actual aggregate cap compliance is not certified."
+  },
+  "live_calls": 0,
+  "original_live_receipt_sha256": "c38a771d027360da82e5ccdf8b0dbdaed335a7fcbf8544b6cc8c665d7142c94c"
+}

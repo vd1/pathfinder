@@ -23,7 +23,8 @@ def load(campaign):
     if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
         raise ValueError("budget group manifest hash differs")
     doc = json.loads(path.read_text())
-    if set(doc) != {"version", "campaigns", "budget"} or doc["version"] != 1:
+    expected = {"version", "campaigns", "budget"} | ({"reservations"} if doc.get("version") == 2 else set())
+    if set(doc) != expected or type(doc.get("version")) is not int or doc["version"] not in (1, 2):
         raise ValueError("unsupported budget group manifest")
     cap = budget.limits(doc)
     if not cap or not isinstance(doc["campaigns"], list) or not doc["campaigns"]:
@@ -33,34 +34,77 @@ def load(campaign):
         raise ValueError("budget group roots must be canonical, absolute and unique")
     if Path(campaign.root).resolve() not in roots:
         raise ValueError("campaign is not in its budget group")
+    from . import budget_reservation
+    budget_reservation.records(doc)
     return path, roots, cap
 
 
-def refusal(roots, cap):
+def accounting(roots, reservations=None):
+    """Keep measured usage, uncertain reservations and admission totals distinct."""
     from . import transport
+    reservations = reservations or {}
     used = dict.fromkeys(budget.FIELDS, 0)
+    reserved = dict.fromkeys(("input_tokens", "output_tokens"), 0)
+    unknown = []
+    unresolved = []
     for root in roots:
-        # An interrupted controller can leave a served call without its receipt.
-        # Do not guess its spend or resume another member around that evidence.
         if any((root / "active-calls").glob("*.json")):
-            return f"budget: shared group has unresolved active-call evidence in {root}"
+            unresolved.append(str(root))
         rows = transport.receipts(SimpleNamespace(root=root, path=lambda n, root=root: root / n))
         for row in rows:
             if row.get("outcome") in transport.UNCHARGED:
                 continue
             used["calls"] += 1
+            missing = []
+            estimate = reservations.get((str(root), row.get("call_id")), {})
             for key in ("input_tokens", "output_tokens"):
                 value = row.get(key)
                 if type(value) is not int or value < 0:
-                    return f"budget: shared group has unknown or invalid {key} in {root}"
-                used[key] += value
+                    missing.append(key)
+                    reserved[key] += estimate.get(key, 0)
+                else:
+                    used[key] += value
+            if missing:
+                unknown.append(dict(root=str(root), call_id=row.get("call_id"), fields=missing,
+                                    reserved=all(k in estimate for k in missing)))
+    effective = {k: v + reserved.get(k, 0) for k, v in used.items()}
     projected = {"calls": used["calls"] + 1}
     for key in ("input_tokens", "output_tokens"):
-        projected[key] = used[key] + (used[key] / used["calls"] if used["calls"] else 0)
+        projected[key] = effective[key] + (effective[key] / used["calls"] if used["calls"] else 0)
+    return dict(measured=used, reserved=reserved, admission_total=effective, projected=projected,
+                unknown_calls=unknown, unresolved_active_roots=unresolved,
+                actual_total_certified=not unknown and not unresolved)
+
+
+def refusal(roots, cap, reservations=None):
+    report = accounting(roots, reservations)
+    if report["unresolved_active_roots"]:
+        return f"budget: shared group has unresolved active-call evidence in {report['unresolved_active_roots'][0]}"
+    for row in report["unknown_calls"]:
+        if not row["reserved"]:
+            return f"budget: shared group has unknown or invalid {row['fields'][0]} in {row['root']}"
+    used, projected = report["admission_total"], report["projected"]
     exceeded = [key for key, value in cap.items() if used[key] >= value or projected[key] > value]
     return ("budget: shared group " + ", ".join(
-        f"{key} used {used[key]}, projected {projected[key]:g}, cap {cap[key]}" for key in exceeded)
+        f"{key} used/reserved {used[key]}, projected {projected[key]:g}, cap {cap[key]}" for key in exceeded)
             if exceeded else None)
+
+
+def _reservations(campaign, path):
+    from . import budget_reservation
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() != campaign.raw["budget_group"]["sha256"]:
+        raise ValueError("budget group manifest hash differs")
+    return budget_reservation.records(json.loads(data))
+
+
+def report(campaign):
+    from . import budget_reservation
+    path, roots, cap = load(campaign)
+    reservations = _reservations(campaign, path)
+    return dict(manifest=str(path), cap=cap, **accounting(roots, reservations),
+                refusal=refusal(roots, cap, reservations),
+                reservation_notice=budget_reservation.NOTICE if reservations else None)
 
 
 @contextmanager
@@ -84,7 +128,8 @@ def admission(campaign, request):
                 time.sleep(0.1)
         # Revalidate after waiting; a changed group is never silently accepted.
         load(campaign)
-        reason = refusal(roots, cap)
+        reservations = _reservations(campaign, path)
+        reason = refusal(roots, cap, reservations)
         if reason:
             runner.request_stop(campaign, reason)
             ordinary._refuse(campaign, request.thread, request.stage, request.actor, request.model, reason)

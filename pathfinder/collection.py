@@ -165,8 +165,10 @@ def inspect(campaign):
     if "budget_group" in campaign.raw:
         from . import budget_group
         path, roots, cap = budget_group.load(campaign)
+        accounting = budget_group.report(campaign)
         group = dict(manifest=str(path), campaigns=[str(p) for p in roots],
-                     limits=cap, refusal=budget_group.refusal(roots, cap),
+                     limits=cap, refusal=accounting["refusal"],
+                     accounting=accounting,
                      semantics="receipt-based projected admission; no hard in-flight token truncation")
     return dict(status="blocked" if group and group["refusal"] else "verified",
                 pair_id=data["pair_id"], cutoff_utc=data["cutoff_utc"],

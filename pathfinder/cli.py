@@ -15,6 +15,15 @@ def main(argv=None):
     ap.add_argument("--accept-change", metavar="REASON",
                     help="dispatch although the run record changed since the previous run; the reason is recorded")
     sub = ap.add_subparsers(dest="cmd", required=True)
+    br = sub.add_parser("budget-reservation", help="prepare or approve an immutable uncertain-usage reservation")
+    br.add_argument("action", choices=("propose", "manifest", "report"))
+    br.add_argument("--call-id")
+    br.add_argument("--input-tokens", type=int)
+    br.add_argument("--output-tokens", type=int)
+    br.add_argument("--rationale")
+    br.add_argument("--proposal", type=Path)
+    br.add_argument("--approval", type=Path)
+    br.add_argument("--out", type=Path)
     sub.add_parser("collection-check", help="read-only validation of a restricted collection and shared budget")
     f = sub.add_parser("fetch", help="fill Q.jsonl and P.jsonl from the arXiv API, or append older papers with --more")
     f.add_argument("--q"); f.add_argument("--p"); f.add_argument("--n", type=int, default=5)
@@ -202,6 +211,28 @@ def main(argv=None):
             print(json.dumps(result, indent=1)); return 0
         except (ValueError, RuntimeError, OSError) as error:
             print(f"lifecycle refused: {error}", file=sys.stderr); return 1
+    if ns.cmd == "budget-reservation":
+        from . import budget_reservation as br, budget_group
+        try:
+            if ns.action == "report":
+                value = budget_group.report(config.load(Path(ns.root)))
+            elif ns.action == "propose":
+                if not all((ns.call_id, ns.rationale, ns.out)):
+                    raise ValueError("propose requires call-id, token amounts, rationale and out")
+                value = br.propose(config.load(Path(ns.root)), ns.call_id, ns.input_tokens,
+                                   ns.output_tokens, ns.rationale)
+                br.write_new(ns.out, value)
+                value = dict(proposal=str(ns.out), proposal_sha256=br.digest(value), active=False)
+            else:
+                if not all((ns.proposal, ns.approval, ns.out)):
+                    raise ValueError("manifest requires proposal, approval and out")
+                value = br.approved_manifest(json.loads(ns.proposal.read_text()), json.loads(ns.approval.read_text()))
+                br.write_new(ns.out, value)
+                value = dict(manifest=str(ns.out), active=False,
+                             note="Not installed; repinning and resume require quiescent operator action.")
+            print(json.dumps(value, indent=2)); return 0
+        except (ValueError, OSError) as error:
+            print(f"budget reservation refused: {error}"); return 1
     if ns.cmd == "coordinate":
         from . import coordinator
         if ns.status:
