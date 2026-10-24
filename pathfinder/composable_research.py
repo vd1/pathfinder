@@ -173,6 +173,12 @@ def _apply_research_review(campaign, pair_id, saved, s):
         write_meta(campaign, pair_id, d)
 
 
+def _last_review_seq(ledger) -> int:
+    """The verifier's latest review: a peer's ready written before it does not answer the round it opened (an
+    ITERATE, or a direct-EVA request), so it does not end that round (nobel pilot 6, 24 October 2026)."""
+    return max((r["seq"] for r in ledger.read() if r["actor"] == "verifier" and r["kind"] == "review"), default=0)
+
+
 def next_requests(campaign, pair_id):
     """@planks("When Pathfinder prepares its first Vera review")
     @planks("When its peer research round finishes")
@@ -244,7 +250,8 @@ def next_requests(campaign, pair_id):
                 if s["stage"] == "peers":
                     calls = s.get("peer_call", 0) + 1
                     seconds = s.get("peer_seconds", 0) + max((item["result"]["seconds"] for item in pending), default=0)   # side by side: clock time
-                    more = (calls < campaign.allowances["peer_calls"] and not ledger.ready(list(campaign.peers))
+                    more = (calls < campaign.allowances["peer_calls"]
+                            and not ledger.ready(list(campaign.peers), after=_last_review_seq(ledger))
                             and campaign.allowances["peer_seconds"] - seconds >= _peer_floor(campaign))
                     if calls < campaign.allowances["peer_calls"] and campaign.allowances["peer_seconds"] - seconds < _peer_floor(campaign):
                         _set(campaign, pair_id, peer_seconds_exhausted=True)   # too little left for a useful call
