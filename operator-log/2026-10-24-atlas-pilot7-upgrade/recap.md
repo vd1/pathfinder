@@ -6,7 +6,7 @@ Pilot 7 was observed running pair 1 round 1 peers on 02ce103. Maintainer has not
 
 ### Totals
 
-Iteration 1: six scheduled pairs, one started and five queued at inspection. No maintainer model calls.
+Iteration 1. Scheduled pairs: 6. Started: 1. Queued: 5. No maintainer model calls.
 
 ### Blockers
 
