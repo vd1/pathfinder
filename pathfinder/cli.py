@@ -155,6 +155,12 @@ def main(argv=None):
     vr.add_argument("--reason", help="owner authority and purpose of the replay")
     vr.add_argument("--receipt", help="restore a completed verifier erased by an empty trailing event; no new call")
     vr.add_argument("--apply", action="store_true", help="apply the verifier replay or selected receipt restoration, then stop before further work")
+    rr = sub.add_parser("reopen-recover", help="inspect/apply a hash-bound unbriefed classic repair recovery; no model calls")
+    rr.add_argument("pair")
+    rr.add_argument("--snapshot", type=Path, required=True)
+    rr.add_argument("--reason", required=True)
+    rr.add_argument("--apply", action="store_true")
+    rr.add_argument("--expected-sha256")
     ro = sub.add_parser("reopen", help="give a finished thread one more step: a repair (PAUSE-ON-REVISE), a peer round "
                         "(PAUSE-ON-ITERATE, PAUSE) or an extend round toward a target (DRAFT); the next verdict ends it")
     ro.add_argument("pair"); ro.add_argument("--grant", choices=("repair", "round", "extend"), required=True)
@@ -486,6 +492,10 @@ def _dispatch(ns, c):
         from . import verify_replay
         print(json.dumps(verify_replay.run(c, ns.pair, origin=ns.origin, reason=ns.reason,
                                           apply=ns.apply, accept_change=ns.accept_change, receipt=ns.receipt), indent=2))
+    elif ns.cmd == "reopen-recover":
+        from . import reopen_recovery
+        print(json.dumps(reopen_recovery.recover(c, ns.pair, ns.snapshot, ns.reason,
+                         apply=ns.apply, expected=ns.expected_sha256), indent=2))
     elif ns.cmd == "reopen":
         from . import reopen
         try:

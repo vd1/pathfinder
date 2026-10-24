@@ -108,32 +108,91 @@ def report(campaign):
 
 
 @contextmanager
+def _ticket(path):
+    """FIFO tickets under a short registration lock; held file locks prove liveness.
+
+    The call lock remains the authority for budget serialization, including with
+    older engines. FIFO ordering applies among engines using this queue.
+    """
+    queue = Path(str(path) + ".queue")
+    queue.mkdir(exist_ok=True)
+    with open(queue / "sequence", "a+") as seq:
+        fcntl.flock(seq, fcntl.LOCK_EX)
+        seq.seek(0)
+        number = max(int(seq.read() or "0"),
+                     max((int(p.stem) for p in queue.glob("*.ticket")), default=0)) + 1
+        seq.seek(0); seq.truncate(); seq.write(str(number)); seq.flush()
+        marker = queue / f"{number:020d}.ticket"
+        fd = os.open(marker, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o600)
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        fcntl.flock(seq, fcntl.LOCK_UN)
+    try:
+        yield queue, marker
+    finally:
+        marker.unlink(missing_ok=True)
+        os.close(fd)
+
+
+def _first(queue, mine):
+    # Registration lock prevents pruning a just-created, not-yet-locked ticket.
+    with open(queue / "sequence", "a+") as seq:
+        fcntl.flock(seq, fcntl.LOCK_EX)
+        for marker in sorted(queue.glob("*.ticket")):
+            if marker == mine:
+                return True
+            try:
+                fd = os.open(marker, os.O_RDWR)
+            except FileNotFoundError:
+                continue
+            try:
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    return False
+                marker.unlink(missing_ok=True)   # owner exited; no PID-reuse inference
+            finally:
+                os.close(fd)
+    return False
+
+
+@contextmanager
 def admission(campaign, request):
     if "budget_group" not in campaign.raw:
         yield
         return
-    from . import admission as ordinary, runner
+    from . import admission as ordinary, events, runner
     path, roots, cap = load(campaign)
     # Never unlink this lock: all group members must address the same inode.
     fd = os.open(str(path) + ".lock", os.O_CREAT | os.O_RDWR, 0o600)
     try:
-        while True:
-            reason = ordinary._stop_marker(campaign)
+        with _ticket(path) as (queue, marker):
+            deferred = False
+            while True:
+                reason = ordinary._stop_marker(campaign)
+                if reason:
+                    ordinary._refuse(campaign, request.thread, request.stage, request.actor, request.model, reason)
+                if _first(queue, marker):
+                    try:
+                        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                        break
+                    except BlockingIOError:
+                        pass
+                if not deferred:
+                    deferred = True
+                    events.emit(campaign, "admission_deferred", unit=request.thread, stage=request.stage,
+                                actor=request.actor, reason="budget group: waiting for FIFO admission and call lock",
+                                ticket=marker.name)
+                time.sleep(0.1)
+            # Revalidate after waiting; the lock spans the call AND its receipt.
+            load(campaign)
+            reservations = _reservations(campaign, path)
+            reason = refusal(roots, cap, reservations)
             if reason:
+                runner.request_stop(campaign, reason)
                 ordinary._refuse(campaign, request.thread, request.stage, request.actor, request.model, reason)
             try:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                break
-            except BlockingIOError:
-                time.sleep(0.1)
-        # Revalidate after waiting; a changed group is never silently accepted.
-        load(campaign)
-        reservations = _reservations(campaign, path)
-        reason = refusal(roots, cap, reservations)
-        if reason:
-            runner.request_stop(campaign, reason)
-            ordinary._refuse(campaign, request.thread, request.stage, request.actor, request.model, reason)
-        yield
+                yield
+            finally:
+                fcntl.flock(fd, fcntl.LOCK_UN)
     finally:
-        fcntl.flock(fd, fcntl.LOCK_UN)
         os.close(fd)

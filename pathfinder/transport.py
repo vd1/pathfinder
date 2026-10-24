@@ -695,13 +695,15 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         if journal is not None:
             journal.close()
         raise
-    lines, session_seen = [], threading.Event()
+    lines, session_seen, final_seen = [], threading.Event(), threading.Event()
 
     def reader():
         try:
             for line in proc.stdout:
                 journal.append('events.jsonl', line)
                 lines.append(line)
+                if _final_event(campaign, [line]):
+                    final_seen.set()
                 if '"session_id"' in line or '"thread.started"' in line:
                     session_seen.set()
         except BaseException as error:
@@ -745,11 +747,21 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
             _kill(proc)
             return _failed(campaign, thread, stage, actor, model, started, "no session", "no session",
                            prompt_chars=len(prompt), evidence=finish_evidence())
-    try:
-        proc.wait(timeout=max(1, timeout - (time.time() - started)))
-        error = None
-    except subprocess.TimeoutExpired:
-        _kill(proc); error = "timeout"
+    error, final_at, ended = None, None, False
+    while True:                                   # to the deadline, or RESULT_GRACE past the final event
+        try:
+            proc.wait(timeout=0.5)
+            break
+        except subprocess.TimeoutExpired:
+            pass
+        if final_at is None and final_seen.is_set():
+            final_at = time.monotonic()
+        if final_at is None and time.time() - started >= timeout:
+            _kill(proc); error = "timeout"
+            break
+        if final_at is not None and time.monotonic() - final_at >= RESULT_GRACE:
+            _kill_tree(proc); ended = True       # a job the agent left running holds the CLI open (Atlas pilot 6)
+            break
     t.join(5)
     evidence = finish_evidence()
     text, session, usage, reported, err, prefix_read = _parse(campaign, model, lines)
@@ -764,7 +776,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
                 events.append(event.get("type"))
         if "turn.completed" not in events:
             err = "CLI exited without a completed turn"
-    if proc.returncode not in (0, None) and not error and not err:
+    if proc.returncode not in (0, None) and not error and not err and not ended:
         err = journal.stderr_tail.strip()[-500:] or f"exit {proc.returncode}"
     evidence.update(provider_evidence.inspect(lines, completed=not (error or err)))
     # Keep raw reported usage, but only complete totals enter accounting counters.
@@ -774,7 +786,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
          "usage": usage, **counters,
           "prefix_read": prefix_read, "cost": cost, "cost_basis": basis, "rates": rates,
           "outcome": "timeout" if error else "error" if err else "completed", "error": error or err,
-          "transport_failed": bool(error or err), "exit_status": proc.returncode,
+          "transport_failed": bool(error or err), "exit_status": proc.returncode, "ended_after_final_event": ended,
           "terminal_event": lines[-1].rstrip("\n") if lines else None,
           "prompt_chars": len(prompt), "tool_calls": _tool_calls(lines),
           **dict(zip(("tool_errors", "tool_error_samples"), _tool_errors(lines))),
@@ -792,6 +804,52 @@ def request(prompt, *, model, tools, search, cwd, timeout, thread, stage, actor,
 def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage, actor, schema=None, reads=False):
     return execute(campaign, request(prompt, model=model, tools=tools, search=search, cwd=cwd, timeout=timeout,
                                      thread=thread, stage=stage, actor=actor, schema=schema, reads=reads))
+
+
+RESULT_GRACE = 30                               # seconds a CLI may take to exit after its final event
+
+
+def _final_event(campaign, lines) -> bool:
+    """The CLI has emitted the event that ends its answer: Claude's result, Codex's turn.completed."""
+    wanted = "result" if campaign.backend == "claude" else "turn.completed"
+    for line in reversed(lines):
+        try:
+            event = json.loads(line)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if isinstance(event, dict) and event.get("type") == wanted:
+            return True
+    return False
+
+
+def _descendants(pid: int) -> list[int]:
+    """Every process below pid, by parent links (ps), including those that left its process group."""
+    try:
+        table = subprocess.run(["ps", "-A", "-o", "pid=,ppid="], capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.SubprocessError):
+        return []
+    children = {}
+    for row in table.split("\n"):
+        parts = row.split()
+        if len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit():
+            children.setdefault(int(parts[1]), []).append(int(parts[0]))
+    out, todo, seen = [], [pid], {pid}
+    while todo:
+        for child in children.get(todo.pop(), []):
+            if child not in seen:
+                seen.add(child); out.append(child); todo.append(child)
+    return out
+
+
+def _kill_tree(proc):
+    """End the CLI's process group and every descendant, which a job started in its own session escapes."""
+    below = _descendants(proc.pid)
+    for pid in reversed(below):
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+    _kill(proc)
 
 
 def _kill(proc):

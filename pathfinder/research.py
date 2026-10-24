@@ -52,7 +52,8 @@ def _peers(campaign, pair_id, stop):
     used = {}; lock = threading.Lock()                    # each peer's own seconds; the round's clock is the largest
 
     peers = list(campaign.peers)
-    review_seq = _iteration_review_seq(L)
+    grant = status(campaign, pair_id).get("grant") or {}
+    review_seq = max(_iteration_review_seq(L), grant.get("ready_after") or 0)   # a reopen asks for research too
     outlines = "".join(_outline(d / "inputs" / inp[side]) for side in "QP")
 
 
@@ -83,6 +84,12 @@ def _peers(campaign, pair_id, stop):
                         GAIN=row.get("gain", "?"), CONNEXION=row.get("connexion") or "none recorded.",
                         RATIONALE=row.get("rationale") or "none recorded.")
             p += pair_context(d)
+            if grant.get("review"):
+                p += "\n\nRetained verifier feedback for this bounded grant:\n" + json.dumps(grant["review"]) + "\n"
+            if grant.get("grant") == "extend":    # pathfinder.reopen: a DRAFT given one more round
+                p += ("\n\nThis thread ended DRAFT and the operator has granted one extend round: work toward the"
+                      f" target in the operator's ledger entry (seq {grant.get('ledger_seq')}). Keep the established"
+                      " results; the verifier's next verdict ends the thread.\n")
             from . import library
             p += library.reading(campaign, d)
             if not in_papers:
@@ -196,7 +203,7 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 _set(campaign, pair_id, stage="consolidate")
             elif s["stage"] == "consolidate":
                 _check(stop)
-                why = "" if L.ready(list(campaign.peers), after=_iteration_review_seq(L)) else " because the allowance ran out before every peer declared ready"
+                why = "" if L.ready(list(campaign.peers), after=max(_iteration_review_seq(L), (s.get("grant") or {}).get("ready_after") or 0)) else " because the allowance ran out before every peer declared ready"
                 repair = s.get("repair")
                 if repair:
                     prior = (f" This is a repair of the existing {note.name}, not new research. An independent verifier found"
@@ -275,6 +282,10 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                 verdicts.write_text(json.dumps(hist, indent=1))
                 write_meta(campaign, pair_id, d)                     # the state on the note follows the verdicts
                 repairs = s.get("repairs", 0)
+                if s.get("grant"):                   # a reopen's grant is one verdict: whatever it decides ends the thread
+                    final = {"ITERATE": "PAUSE-ON-ITERATE", "REVISE": "PAUSE-ON-REVISE"}.get(dec, dec)
+                    _set(campaign, pair_id, stage="done", status=final, reason=v.get("reason"), grant=None, repair=None)
+                    write_meta(campaign, pair_id, d); return final
                 if dec == "REVISE" and repairs < campaign.raw.get("repairs", 1):
                     L.add("verifier", "review", f"REVISE: {v.get('reason')} Corrections: {v.get('action')}")
                     _set(campaign, pair_id, stage="consolidate", repairs=repairs + 1, repair=v, reason=v.get("reason"))

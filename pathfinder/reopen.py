@@ -1,6 +1,6 @@
 """Reopen a finished thread with a bounded grant (nobel, 14 October 2026).
 
-`pathfinder reopen PAIR --grant repair|round --reason TEXT [--note TEXT]` gives an EVA thread (the joint thread
+`pathfinder reopen PAIR --grant repair|round --reason TEXT [--note TEXT]` gives a classic or EVA thread (including the joint thread
 of a composable campaign) one more step after it ended:
 
     PAUSE-ON-REVISE   repair   consolidate with the verifier's last corrections, then novelty, then verify
@@ -21,14 +21,14 @@ An extension (nobel, 15 October 2026) is how a DRAFT changes on purpose: its edi
 thread keeps them as prior_result. A new DRAFT is edited and may get a new paper; any other ending leaves the
 earlier DRAFT and its paper as the thread's result, which status, state and playbook show."""
 from __future__ import annotations
-import json, shutil
+import hashlib, json, shutil
 from . import paper, provenance, research
 from .ledger import Ledger
 
 GRANTS = {"PAUSE-ON-REVISE": "repair", "PAUSE-ON-ITERATE": "round", "PAUSE": "round", "DRAFT": "extend"}
 NEEDS_NOTE = ("PAUSE", "DRAFT")                  # a round with nothing new to go on needs the operator's input
 PAPER_RUNNING = ("writing", "reviewing")
-SCHEMES = ("eva", "composable")
+SCHEMES = (None, "eva", "composable")            # None: the classic scheme (research_scheme absent)
 
 
 def records(campaign, pair_id) -> list:
@@ -40,7 +40,8 @@ def reopen(campaign, pair_id: str, grant: str, reason: str, note: str | None = N
     """Record the grant and set the thread to run it; the runner (or `research --pairs PAIR`) runs it."""
     from .runner import Lock
     if (campaign.raw or {}).get("research_scheme") not in SCHEMES:
-        raise ValueError(f"reopen needs research_scheme {' or '.join(SCHEMES)}: it grants a verifier-decided step")
+        raise ValueError("reopen needs the classic scheme (research_scheme absent), eva or composable: it grants a "
+                         "verifier-decided step")
     if grant not in ("repair", "round", "extend"):
         raise ValueError(f"grant must be repair, round or extend, got {grant!r}")
     if not (isinstance(reason, str) and reason.strip()):
@@ -66,6 +67,13 @@ def reopen(campaign, pair_id: str, grant: str, reason: str, note: str | None = N
             raise ValueError(f"{pair_id} has a paper: reopening would leave it describing other research")
         if written.get("status") in PAPER_RUNNING:
             raise ValueError(f"{pair_id}'s paper is {written['status']}: let the paper stage finish or stop first")
+        classic = not campaign.raw.get("research_scheme") and not campaign.raw.get("research_bundles")
+        review = _last_verdict(d, pair_id) if classic else (s.get("latest_review") or {}).get("response")
+        if grant == "repair" and (not review or review.get("decision") != "REVISE" or not review.get("reason")):
+            raise ValueError("repair requires the retained REVISE verdict and corrections")
+        if classic and review and review.get("note_sha256"):
+            if hashlib.sha256((d / f"{pair_id}.tex").read_bytes()).hexdigest() != review["note_sha256"]:
+                raise ValueError("current note differs from the last judged note")
         n = len(records(campaign, pair_id)) + 1
         archive, moved = d / "reopened" / str(n), []
         names = ("edited", "actionability.json") + (("paper",) if grant == "extend" else ())
@@ -85,18 +93,28 @@ def reopen(campaign, pair_id: str, grant: str, reason: str, note: str | None = N
                  "engine": {k: engine.get(k) for k in ("kind", "commit", "ref", "runtime_sha256")}, "archived": moved,
                  **({"prior_result": prior} if prior else {})}
         (d / f"{pair_id}.reopen.json").write_text(json.dumps(records(campaign, pair_id) + [entry], indent=1))
-        update = {"status": "running", "reason": None, "failure": None, "grant": {"n": n, "grant": grant, "ledger_seq": seq}}
+        ready_after = Ledger(d / "ledger.jsonl").count()   # a peer's ready from before the reopen does not answer it
+        update = {"status": "running", "reason": None, "failure": None,
+                  "grant": {"n": n, "grant": grant, "ledger_seq": seq, "ready_after": ready_after, "review": review}}
         if prior:
             update["prior_result"] = prior
         if grant == "repair":
             update.update(stage="consolidate", repairs=s.get("repairs", 0) + 1,
-                          repair=(s.get("latest_review") or {}).get("response"))
+                          repair=review)
         else:
             update.update(stage="peers", round=s.get("round", 1) + 1, peer_call=0, peer_seconds=0,
                           peer_seconds_exhausted=False)
         research._set(campaign, pair_id, **update)
         _list(campaign, pair_id)
     return entry
+
+
+def _last_verdict(d, pair_id) -> dict | None:
+    """The classic scheme keeps no latest_review: its repair is briefed with the last recorded verdict."""
+    path = d / f"{pair_id}.verdict.json"
+    history = json.loads(path.read_text()) if path.is_file() else []
+    last = history[-1] if history else None
+    return last
 
 
 def _list(campaign, pair_id):

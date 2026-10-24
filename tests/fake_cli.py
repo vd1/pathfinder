@@ -3,7 +3,9 @@ FAKE_DELAY: seconds before the session line. FAKE_HANG=1: never print a session 
 FAKE_RUN: a shell command to run (in cwd) before replying, so tests can make it write files.
 FAKE_USAGE: JSON replacing the final usage object; "null" leaves usage out. FAKE_PARTIAL=1 (claude):
 report one turn's usage before FAKE_RUN, so a killed call has partial usage. FAKE_FAIL: codex only, emit
-turn.failed with this message and exit 1. FAKE_TOOLS: number of tool uses to emit before the reply."""
+turn.failed with this message and exit 1. FAKE_TOOLS: number of tool uses to emit before the reply. FAKE_LINGER: after
+the final event, start a child that sleeps this many seconds (its pid in FAKE_LINGER_PID) and wait for it, as the
+Claude CLI waited on a shell job its agent had left running (Atlas pilot 6, 24 October 2026)."""
 import json, os, subprocess, sys, time
 mode, reply = os.environ.get("FAKE_MODE", "claude"), os.environ.get("FAKE_REPLY", "ok")
 sys.stdin.read()
@@ -42,3 +44,11 @@ if mode == "claude":
 else:
     print(json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": reply}}))
     print(json.dumps({"type": "turn.completed", "usage": {"input_tokens": 100, "output_tokens": 10} if final == "default" else final}))
+for i in range(int(os.environ.get("FAKE_AFTER_FINAL_EVENTS", "0"))):
+    print(json.dumps({"type": "diagnostic", "n": i}))
+if os.environ.get("FAKE_LINGER"):
+    sys.stdout.flush()
+    child = subprocess.Popen(["sleep", os.environ["FAKE_LINGER"]], start_new_session=bool(os.environ.get("FAKE_LINGER_SETSID")))
+    if os.environ.get("FAKE_LINGER_PID"):
+        open(os.environ["FAKE_LINGER_PID"], "w").write(str(child.pid))
+    child.wait()
