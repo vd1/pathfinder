@@ -400,6 +400,10 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
     for f in pd.iterdir():
         if f.suffix in KEEP and f.name != "paper.pdf" or f.name == "pathfinder-meta.tex":
             shutil.copy(f, out / f.name)
+    # Re-render inherited source titles only in this new stage. The accepted
+    # metadata and archived failed attempt remain untouched.
+    from .thread import refresh_source_titles
+    refresh_source_titles(campaign, pair_id, out)
     tex, bib = (src / "paper.tex").read_text(errors="replace"), (src / "references.bib").read_text(errors="replace")
     sections = []
     if actor == "editor":

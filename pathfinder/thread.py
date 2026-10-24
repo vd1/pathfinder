@@ -170,8 +170,47 @@ def is_latex_document(text: str) -> bool:
     return "\\documentclass" in text and "\\begin{document}" in text
 
 
+# Metadata is literal source data, never executable TeX. Greek glyphs need an
+# explicit text-safe representation under the engine's pdflatex build path.
+_METADATA_GREEK = dict(zip(
+    "αβγδεζηθικλμνξπρστυφχψωΓΔΘΛΞΠΣΥΦΨΩϵϑϕϱς",
+    "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi pi rho sigma tau upsilon phi chi psi omega Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega varepsilon vartheta varphi varrho varsigma".split()))
+
+
 def _tex_escape(t: str) -> str:
-    return "".join({"&": "\\&", "%": "\\%", "$": "\\$", "#": "\\#", "_": "\\_", "{": "\\{", "}": "\\}", "~": "\\textasciitilde{}", "^": "\\textasciicircum{}"}.get(c, c) for c in t)
+    """Escape literal metadata in one pass, including backslashes and Greek glyphs."""
+    escaped = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#",
+               "_": r"\_", "{": r"\{", "}": r"\}", "~": r"\textasciitilde{}", "^": r"\textasciicircum{}"}
+    escaped.update({c: "\\ensuremath{\\" + name + "}" for c, name in _METADATA_GREEK.items()})
+    return "".join(escaped.get(c, c) for c in t)
+
+
+def refresh_source_titles(campaign, pair_id: str, where: Path) -> bool:
+    """Refresh only a generated source header in a fresh stage, never its parent.
+
+    Dates, protocol, status and other metadata stay byte-identical. Caller must
+    provide a new working stage; historical artifacts are not migration targets.
+    """
+    path = where / "pathfinder-meta.tex"
+    if not path.exists():
+        return False
+    original = path.read_bytes()
+    lines = original.decode().splitlines(keepends=True)
+    positions = [i for i, line in enumerate(lines) if line.startswith(r"\pathfinderpapers{")]
+    if not positions:
+        return False  # Metadata without a source header is intentionally supported.
+    if len(positions) != 1:
+        raise ValueError("generated metadata has multiple source-title headers")
+    i = positions[0]
+    ending = "\r\n" if lines[i].endswith("\r\n") else "\n" if lines[i].endswith("\n") else ""
+    m = paper_meta(campaign.thread_dir(pair_id))
+    lines[i] = (f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}"
+                f"{{{m['P_ID']}}}{{{m['P_TITLE']}}}" + ending)
+    updated = "".join(lines).encode()
+    if updated == original:
+        return False
+    path.write_bytes(updated)
+    return True
 
 
 ARXIV_ID = re.compile(r"(\d{4}\.\d{4,5}|[a-z-]+(\.[A-Z]{2})?/\d{7})(v\d+)?")
