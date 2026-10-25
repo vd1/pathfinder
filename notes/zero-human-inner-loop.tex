@@ -1,0 +1,55 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\setlist{itemsep=2pt,topsep=4pt}
+
+\title{Zero human in the inner loop}
+\author{Position note on why Pathfinder exists}
+\date{25 October 2026}
+
+\begin{document}
+\maketitle
+
+\section{The argument}
+
+Assume that AI agents built on the latest language models soon match or surpass humans at solving and checking
+most scientific and technical tasks, as is already the case in mathematics (Navier--Stokes). Then the scarce
+resource in research shifts from solving problems to formulating them, and idea generation is itself best done
+with these models. The human contribution therefore moves from producing ideas to designing the machines that
+produce them. Engineering agent systems that generate scientific ideas becomes the most important task in science,
+at least until agents can design such systems themselves.
+
+Pathfinder (\url{https://github.com/vd1/pathfinder}) is a bet on this trend rather than a description of today: in
+its first campaign (nobel) its ideas held up better than its solutions, which still fall short of human papers on
+the same question. It runs with no human intervention, because human clocks are much slower than machine ones and
+any human step in the loop becomes its bottleneck.
+
+\section{Three qualifications}
+
+\paragraph{Zero intervention means the inner loop.} No human acts during a run, but humans choose the corpus, the
+rater, its anchor scale and the prompts. In nobel, most of the real gains came from corrections at that level:
+reading sources as LaTeX instead of converted PDFs, validating the rater, adding a presentation pass. This is the
+``designing the machines'' role of the argument, and it means human time still matters, in the outer loop, which is
+where Pathfinder has improved so far. The principle is therefore no human in the inner loop, not no human at all.
+
+\paragraph{The bottleneck may be evaluation rather than generation.} Even with strong solvers, a system that
+generates ideas needs a judge of which ideas matter. Today that judge is a language model rater anchored to human
+taste. A rater that tracks current consensus will find good ideas near the frontier but is unlikely to reward the
+ideas that move it. A large part of ``agents engineering their own idea discovery systems'' is building a judge
+that is not anchored to people.
+
+\paragraph{Solving and generating may not separate cleanly.} Nobel's weakest result was execution: about
+2.5 points below the human papers realising the same idea, on the campaign's rating scale. Many good questions only
+appear while pushing on a hard problem, which is the intuition behind turning obstacles into subgoals in the growth
+solver. If generation and solving are coupled, generation cannot run far ahead of solving, and getting solving right
+remains part of the idea generation project rather than something to hand off.
+
+\section{Consequence for Pathfinder}
+
+None of the qualifications changes the conclusion. They change where to put the effort inside Pathfinder: the
+judge, and the path from solving back into question formation.
+
+\end{document}
