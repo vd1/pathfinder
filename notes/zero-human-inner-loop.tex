@@ -66,6 +66,62 @@ appear while pushing on a hard problem, which is the intuition behind turning ob
 solver. If generation and solving are coupled, generation cannot run far ahead of solving, and getting solving right
 remains part of the idea generation project rather than something to hand off.
 
+\section{Other ways to generate ideas}
+
+Pathfinder draws novelty from collision: two papers that do not cite each other, read together, yield a question
+neither asks. Other generators draw it from elsewhere.
+
+\paragraph{From the literature, beyond pairs.}
+\begin{itemize}
+  \item \emph{Gaps in a single paper.} Mine a strong paper's conjectures, open problems and ``it would be
+  interesting to'' sentences, and the hypotheses its proofs use but never question (can this one be dropped or
+  weakened?). Cheap, and the questions arrive with community relevance attached.
+  \item \emph{Analogy transfer.} Extract the abstract shape of a theorem or technique, then search for fields where
+  that shape has no counterpart yet. Pathfinder does this implicitly through pairs; here it is done on purpose.
+  \item \emph{Citation graph holes.} Find clusters that share objects or methods but do not cite each other. This
+  chooses which pairs to collide rather than scanning pairs.
+  \item \emph{Negative space.} Find the generalisation everyone would expect and check why it is missing: false,
+  hard, or overlooked. Each answer is a different kind of question.
+\end{itemize}
+
+\paragraph{From doing, not reading.}
+\begin{itemize}
+  \item \emph{Questions from failed proofs.} The growth solver intuition taken as the main source: attack a hard
+  known problem and record every obstacle as a candidate question. The ideas come motivated (they unblock
+  something), and the generator addresses the coupling of solving and generating directly.
+  \item \emph{Experiment first.} Compute many small cases (in the style of AlphaEvolve, FunSearch or the Ramanujan
+  Machine), look for unstated patterns, then conjecture. Limited to computable domains, but there the ideas rest on
+  evidence rather than plausibility.
+  \item \emph{Formal libraries.} A library at the scale of Mathlib exposes missing lemmas, definitions without an
+  interface, and statements that almost go through. A plain source, but every idea is precise.
+\end{itemize}
+
+\paragraph{From changing the frame.}
+\begin{itemize}
+  \item \emph{P\'olya operators applied mechanically.} Generalise, specialise, drop a hypothesis, swap quantifiers,
+  dualise, make the qualitative quantitative, make the existential constructive. Apply them to known theorems and
+  rate the variants. Pathfinder's question formation could use this as a second generator.
+  \item \emph{Reverse from goals.} Start from a flagship open problem or an application need, decompose it
+  backwards into intermediate statements, and keep the ones that are new and look reachable.
+  \item \emph{Outside demand.} Translate bottlenecks named by engineers, experimentalists or other sciences into
+  theory questions. This supplies relevance rather than novelty.
+\end{itemize}
+
+\paragraph{From the judge side.}
+\begin{itemize}
+  \item \emph{Generate wide, select hard.} Produce questions in bulk with any of the above and put the effort into
+  the judge: tournaments, predicted impact, the test ``would a top expert be surprised?''. Generation is cheap;
+  judging is the limit.
+  \item \emph{Open-ended archives.} Novelty search in the MAP-Elites style: keep questions in an archive over
+  descriptors (field, type, difficulty) and reward filling empty cells rather than raising the top score. This
+  counters the pull of a rater anchored to consensus.
+\end{itemize}
+
+Two of these complement Pathfinder best, and both are cheap to test with the nobel machinery: questions from
+failed proofs, which feeds the solving to generation path that nobel found weak, and generate wide with an archive,
+which targets the judge. Collision, P\'olya operators and gap mining could then feed one archive and one judge, and
+the comparison would show which generator yields the best ideas.
+
 \section{Consequence for Pathfinder}
 
 None of the qualifications changes the conclusion. They change where to put the effort inside Pathfinder: the
