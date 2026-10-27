@@ -175,6 +175,23 @@ def is_latex_document(text: str) -> bool:
     return "\\documentclass" in text and "\\begin{document}" in text
 
 
+def normalize_consolidation(text: str) -> str | None:
+    """Extract a new complete document, never reinterpret a retained response.
+
+    Inline mentions of documentclass are not document boundaries. Clean replies
+    retain their exact bytes; existing fenced-document extraction stays intact.
+    """
+    candidate = unfence(text)
+    start = re.search(r"(?m)^\\documentclass\b", candidate)
+    begin = candidate.find(r"\begin{document}", start.end()) if start else -1
+    end = candidate.rfind(r"\end{document}")
+    if start is None or begin < 0 or end < begin:
+        return None
+    if start.start() == 0:
+        return candidate
+    return candidate[start.start():end + len(r"\end{document}")] + "\n"
+
+
 # Metadata is literal source data, never executable TeX. Greek glyphs need an
 # explicit text-safe representation under the engine's pdflatex build path.
 _METADATA_GREEK = dict(zip(

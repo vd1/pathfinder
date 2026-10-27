@@ -18,6 +18,7 @@ from .admission import Refused
 from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row, pair_context, residual_timeout, peer_call_cap)
 from .review_evidence import (EvidenceUnavailable, EvidenceError, _external_citations, _declared_outputs, EVIDENCE_PATH, EVIDENCE_MAX_BYTES, _evidence_references, _assessment_evidence, _bundle_evidence, _review_material)
 from .composable_research import (_request_file, retain_response, _direct_requests, _review_contract, _apply_research_review, next_requests, export_outcome, _verdict_under_direct_eva, _repair_review, _finish_repairs, _run_composable)
+from .thread import normalize_consolidation
 
 
 def _outline(path) -> str:
@@ -232,17 +233,28 @@ def run_thread(campaign, pair_id: str, stop=lambda: False) -> str:
                     r = _stage_call(campaign, pair_id, "consolidate",
                                     _consolidate_prompt(campaign, d, inp, pair_id, why, note.name, prior),
                                     True, A["consolidate_seconds"])
-                    text = unfence(r["text"] or "")
-                    if not is_latex_document(text) and note.exists() and note.read_bytes() != before:
-                        text = note.read_text(errors="replace")      # it wrote the account to the file instead
-                    if r.get("error") or not text.strip():   # never re-verify the older account as if repaired
+                    raw_text = r["text"] or ""
+                    source, raw_document = "reply", raw_text
+                    text = normalize_consolidation(raw_document)
+                    if text is None and note.exists() and note.read_bytes() != before:
+                        source, raw_document = "written-note", note.read_text(errors="replace")
+                        text = normalize_consolidation(raw_document)
+                    if r.get("error") or not raw_document.strip():   # never re-verify the older account as if repaired
                         _set(campaign, pair_id, status="BLOCKED", reason=f"consolidate: {r.get('error') or 'no note'}"); return "BLOCKED"
-                    if not is_latex_document(text):                # e.g. a quota message returned as the reply
-                        (d / "consolidate-unreadable.txt").write_text(r["text"])     # keep the paid reply for inspection
+                    if text is None:                # e.g. a quota message or an inline command, not a document
+                        (d / "consolidate-unreadable.txt").write_text(raw_text)     # keep the paid reply for inspection
                         _set(campaign, pair_id, status="BLOCKED", reason="consolidate: reply is not a LaTeX document"); return "BLOCKED"
+                    audit = {}
+                    if text != raw_document:
+                        audit = {"raw_text": raw_text, "normalization": {
+                            "policy": "latex-document-v1", "source": source,
+                            "input_sha256": hashlib.sha256(raw_document.encode()).hexdigest(),
+                            "output_sha256": hashlib.sha256(text.encode()).hexdigest()}}
+                        if source == "written-note":
+                            audit["raw_note_text"] = raw_document
                     response.parent.mkdir(exist_ok=True)
                     _atomic_write(response, json.dumps({"text": text, "session": r.get("session"), "at": _now(),
-                                                       "run_id": getattr(campaign, "run_id", None)}).encode())
+                                                       "run_id": getattr(campaign, "run_id", None), **audit}).encode())
                 if note.exists():                                    # archive the account being replaced
                     previous = note.read_bytes()
                     version = d / "account-versions" / f"{hashlib.sha256(previous).hexdigest()}.tex"
