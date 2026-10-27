@@ -29,6 +29,7 @@ RULES = (
     ("refusal", re.compile(r"flagged for possible|safeguards flagged|content filter|usage polic", re.I)),
     ("server", re.compile(r"stream disconnected before completion|error occurred while processing your request|"
                           r"internal server error|bad gateway|gateway timeout", re.I)),
+    ("timeout", re.compile(r"\brequest timed out\b|\brequest timeout\b", re.I)),
 )
 OVERSIZE = RULES[2][1]
 LAUNCH_REPEAT = 3                 # consecutive launch failures that make a launch problem campaign-wide

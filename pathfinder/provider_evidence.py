@@ -11,6 +11,26 @@ QUOTA_CODES = {'insufficient_quota', 'credit_balance_exhausted', 'organization_s
                'project_spend_limit_exceeded', 'organization_usage_limit_exceeded'}
 
 
+def terminal_result_usage(lines):
+    """Claude's final result reports CLI totals even when its answer failed.
+
+    Never promote assistant-message usage, truncated streams or malformed totals.
+    Cache fields must be explicit so whole-input accounting cannot undercount.
+    """
+    last = next((line for line in reversed(lines) if line.strip()), None)
+    try:
+        event = json.loads(last)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(event, dict) or event.get('type') != 'result' or type(event.get('is_error')) is not bool:
+        return None
+    usage = event.get('usage')
+    fields = ('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens')
+    if not isinstance(usage, dict) or any(type(usage.get(k)) is not int or usage[k] < 0 for k in fields):
+        return None
+    return usage
+
+
 def retry_after(value, now=None):
     if value is None or isinstance(value, bool):
         return None
@@ -73,7 +93,8 @@ def inspect(lines, *, completed=False, now=None):
         hints = [e['retry_after_seconds'] for e in errors if e['retry_after_seconds'] is not None]
         chosen['retry_after_seconds'] = max(hints) if hints else None
     return dict(provider_error=chosen, provider_errors=errors,
-                usage_completeness='complete' if completed and samples and samples[-1]['origin'] in ('turn.completed', 'result')
+                usage_completeness='complete' if terminal_result_usage(lines) is not None
+                or completed and samples and samples[-1]['origin'] in ('turn.completed', 'result')
                 else 'partial' if samples else 'unknown', usage_samples=samples)
 
 

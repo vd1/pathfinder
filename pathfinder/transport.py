@@ -875,7 +875,8 @@ def receipts(campaign) -> list[dict]:
             if key in seen:
                 continue
             seen.add(key)
-        rows.append(_whole_input(row))
+        from . import usage_recovery
+        rows.append(_whole_input(usage_recovery.effective(campaign, row)))
     return rows
 
 
