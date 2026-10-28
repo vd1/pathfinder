@@ -20,7 +20,7 @@ surpass humans at solving and checking most scientific and technical tasks.
 Both in cost and speed of execution. Arguably, this is already the case in
 mathematics (Navier-Stokes). Then the scarce resource in research is no
 longer to solve problems but to formulate good ones. The main focus shifts
-from problem solving to idea generation. 
+from problem solving to idea generation.
 
 It is often said these days that humans cannot understand new math results at the speed agents produce them.
 Assume here that human understanding is valuable because it lends eventually to new ideas.
@@ -38,12 +38,15 @@ agents can design such systems themselves.
 
 [generating a problem even a difficult one is easy,
 just take large random instances of 3SAT near criticality; so here we want to generate ideas
-rather than meaningless problems] 
+rather than meaningless problems]
 
 
-Pathfinder (\url{https://github.com/vd1/pathfinder}) is a bet on this trend rather than a description of today: in
-its first campaign (nobel) its ideas held up better than its solutions, which still fall short of human papers on
-the same question. It runs with no human intervention, because human clocks are much slower than machine ones and
+Pathfinder (\url{https://github.com/vd1/pathfinder}) is an attempt in this direction. Its first full campaign
+(nobel, October 2026) turned 85 pairs of quantum computing papers into 83 released papers. The pipeline's own rater
+scored 32 of them at least 7 out of 10. A blind cross-check by a model from another family, calibrated on published
+papers, places those 32 at the level of good specialist journal papers (30 of them at or above the published
+specialist average), none at top venue level. These are model ratings, not refereed results. It runs with no human
+intervention, because human clocks are much slower than machine ones and
 any human step in the loop becomes its bottleneck.
 
 \section{Three qualifications}
@@ -60,8 +63,10 @@ taste. A rater that tracks current consensus will find good ideas near the front
 ideas that move it. A large part of ``agents engineering their own idea discovery systems'' is building a judge
 that is not anchored to people.
 
-\paragraph{Solving and generating may not separate cleanly.} Nobel's weakest result was execution: about
-2.5 points below the human papers realising the same idea, on the campaign's rating scale. Many good questions only
+\paragraph{Solving and generating may not separate cleanly.} In nobel's early pilots execution was the
+weak side: about 2.5 points below the human papers that later realised the same ideas. On the same rater (Opus), the
+production campaign's best papers average 4.3 against 5.1 for those human papers and 3.8 for published specialist
+papers in general: most of the gap is closed, though not all, and the pairs differ. Many good questions only
 appear while pushing on a hard problem, which is the intuition behind turning obstacles into subgoals in the growth
 solver. If generation and solving are coupled, generation cannot run far ahead of solving, and getting solving right
 remains part of the idea generation project rather than something to hand off.
@@ -71,15 +76,15 @@ Oct 28, 2026 note about the novelty check
 
 One can score the outputs of the qap-atlas pipeline in two ways:
 
-- Before the novelty check, we are measuring the quality of the process: 
+- Before the novelty check, we are measuring the quality of the process:
 did the combination
 step produce an important, correct idea? Rediscovering a valuable known
-result counts as a success for the pipeline. 
+result counts as a success for the pipeline.
 
 NB 1: this is modulo
 the leakage problem: a rediscovery shows the process works only if the agent didn't already know the answer]
 
-NB 2: one would expect the combinational machine to re-discover if one was sampling a nearly deterministic 
+NB 2: one would expect the combinational machine to re-discover if one was sampling a nearly deterministic
 process: pair of primitives $\to$ at most one combination of interest
 
 [NB 3: what we are doing is empirical epistemology from the pov of LMs]
