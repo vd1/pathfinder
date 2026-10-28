@@ -1,10 +1,10 @@
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{enumitem}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning}
+\usetikzlibrary{arrows.meta,calc}
 \usepackage[hidelinks]{hyperref}
 \setlist{itemsep=2pt,topsep=4pt}
 
@@ -17,9 +17,21 @@
 
 \section{Implications of LMs' current cognitive performance}
 
+\textbf{(A1)} language models will soon match humans at solving and checking
+most scientific and technical tasks; x10 cheaper and x10 faster. A possible
+x100 increase in the rate of knowledge unit production. 
 
-We consider a simple cyclic model of tech and science progress. Hereafter
-the ``inner loop''.
+[not accounting
+for the training costs; just assume you have LMs vs expert humans]
+
+Arguably, this is already the case in mathematics (Navier-Stokes). 
+
+The purpose of this note is to explore the likely consequences of this cognitive
+emergence in the tech and science progress.
+
+We consider a simple cyclic model of tech and science progress. 
+
+Hereafter the ``inner loop''.
 
 \begin{center}
 \begin{tikzpicture}[
@@ -27,36 +39,51 @@ the ``inner loop''.
     minimum height=1cm, font=\small},
   >={Stealth}, thick
 ]
-  \node[stage] (solving) {Problem solving};
-  \node[stage, right=2cm of solving] (publication) {Publication};
-  \node[stage, below=1.2cm of publication] (understanding) {Collective understanding};
-  \node[stage, below=1.2cm of solving] (ideas) {New idea formation};
-  \draw[->] (solving) -- (publication);
-  \draw[->] (publication) -- (understanding);
-  \draw[->] (understanding) -- (ideas);
-  \draw[->] (ideas) -- (solving);
+  \node[stage] (solving) at (150:2.8cm) {1. Problem solving};
+  \node[stage] (publication) at (30:2.8cm) {2. Publication and\\collective understanding};
+  \node[stage, dotted] (ideas) at (270:2.8cm) {3. New idea formation};
+  % Centers are 120 degrees apart; all arrows follow their circumcircle.
+  % Trim each circular arc at its intersection with the box border.
+  \draw[->] let \p1=(solving.north), \p2=(publication.north) in
+    ({180-asin(\y1/2.8cm)}:2.8cm)
+    arc[start angle={180-asin(\y1/2.8cm)},
+        end angle={asin(\y2/2.8cm)}, radius=2.8cm];
+  \draw[->] let \p1=(publication.south), \p2=(ideas.north) in
+    ({asin(\y1/2.8cm)}:2.8cm)
+    arc[start angle={asin(\y1/2.8cm)},
+        end angle={asin(\y2/2.8cm)}, radius=2.8cm];
+  \draw[->] let \p1=(ideas.north), \p2=(solving.south) in
+    ({180-asin(\y1/2.8cm)}:2.8cm)
+    arc[start angle={180-asin(\y1/2.8cm)},
+        end angle={180-asin(\y2/2.8cm)}, radius=2.8cm];
 \end{tikzpicture}
 \end{center}
 
-Assumption 1: AI agents built on the latest language models will soon match
-humans at solving and checking most scientific and technical tasks. At x10
-lower cost and x10 higher speed of execution. If you invest \$1 in an AI vs
-a human, you get x100 the rate of knowledge unit production (not accounting
-for the training costs; just assume you have LMs vs expert humans)
 
-Arguably, this is already the case in mathematics (Navier-Stokes). 
 
+\section{Conditions for the cycle to speed-up}
 It follows that -to the extent rate of knowledge production is the goal to
 maximise (as opposed eg to being a museum of pre-AI cognition
-capabilities)- the planner ought to fire all math-producing humans from
+capabilities)- the planner ought to replace human math-solving with AI math solving in
 math departments.
 
-Consequence 1: focus shifts from problem solving to idea generation; the
+However, the cycle also needs idea formation. It is not enough to solve quickly and efficiently,
+one has to replenish the idea tank. At the same speed. Or else no speed up of the cycle.
+
+Focus shifts from problem solving (step 1) to idea generation (step 3 and whatever
+replaces step 2 for LMs. \textbf{(A2)} Which we assume is trivial (ie LMs read and ingest fast).
+The
 scarce resource in research is no longer to solve problems but to formulate
 good ones. 
 
-Assumption 2:  human understanding is
-valuable because it lends eventually to new ideas.
+\textbf{(A3)} Step 2 is human understanding (T. Tao digestion process) or
+collective and continuous learnig process. For an LM it would be
+training/learning.\footnote{LMs don't locate knowledge so much as
+reconstruct it; maths is most re-constructible knowledge system, since
+there is nothing to measure} It is valuable because it leads to new ideas.
+[publication system is way to gatekeep for orginality and guarantee novelty
+(correctness too)]
+
 It is often said these days that humans cannot understand new math results
 at the speed agents produce them.   If human understanding is a necessary ingredient of the inner loop,
 then AI will not accelerate science. Because humans cannot produce new
@@ -189,5 +216,8 @@ the comparison would show which generator yields the best ideas.
 
 None of the qualifications changes the conclusion. They change where to put the effort inside Pathfinder: the
 judge, and the path from solving back into question formation.
+
+\section{add}
+Controversy about prix Goncourt; the novel was written using or by an LM? So what?
 
 \end{document}
