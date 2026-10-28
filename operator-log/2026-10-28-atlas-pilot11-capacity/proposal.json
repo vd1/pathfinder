@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "policy": "served-capacity-reservation-v1",
+  "root": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-5",
+  "call_id": "417a84f1b21c48be8c0beaf64580203f",
+  "receipt": {
+    "v": 3,
+    "call_id": "417a84f1b21c48be8c0beaf64580203f",
+    "at": "2026-10-28T17:58:01Z",
+    "run_id": "884c707825fe40ccae4bc6609e465030",
+    "thread": "Q001-P002",
+    "branch": null,
+    "stage": "verify",
+    "actor": "verifier",
+    "backend": "codex",
+    "model": "gpt-6.1-sol",
+    "outcome": "error",
+    "seconds": 88.1,
+    "deadline_seconds": 3600,
+    "usage": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_write": null,
+    "cache_read": null,
+    "prefix_read": null,
+    "cost": null,
+    "cost_basis": null,
+    "exit_status": 1,
+    "terminal_event": "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}",
+    "raw_events": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"01a183a8-15c5-7b62-9ec3-221d9351f0b0\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/v/.codex/config.toml.\"}}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"I\u2019ll check the proofs, cost comparisons and proposed continuations against the working files and permitted shared sources, then return the review as JSON.\\n\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_2\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"pwd; rg --files -g 'status.json' -g '*notes*' -g '*checkpoint*' -g '*pool*' -g 'AGENTS.md' -g 'Q001-P002.tex' -g 'ledger.jsonl'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_2\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"pwd; rg --files -g 'status.json' -g '*notes*' -g '*checkpoint*' -g '*pool*' -g 'AGENTS.md' -g 'Q001-P002.tex' -g 'ledger.jsonl'\\\"\",\"aggregated_output\":\"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-5/threads/Q001-P002\\nstatus.json\\nledger.jsonl\\nQ001-P002.tex\\nada/sim_checkpoint.py\\nada/notes.md\\nada/logs/run1_sim_checkpoint_seed1.log\\n\",\"exit_code\":0,\"status\":\"completed\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"cat status.json; nl -ba ada/notes.md | sed -n '1,180p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_3\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"cat status.json; nl -ba ada/notes.md | sed -n '1,180p'\\\"\", \"aggregated_output\": \"{\\n \\\"pair_id\\\": \\\"Q001-P002\\\",\\n \\\"round\\\": 1,\\n \\\"stage\\\": \\\"verify\\\",\\n \\\"status\\\": \\\"running\\\",\\n \\\"reason\\\": null,\\n \\\"started\\\": \\\"2026-10-28T17:44:10Z\\\",\\n \\\"updated\\\": \\\"2026-10-28T17:56:33Z\\\",\\n \\\"repair\\\": null\\n}     1\\t# Q =\\n[... 15463 characters dropped ...]\\n surveyed all quantum-Hamiltonian annealing estimators (e.g. Harrow-Wei SODA 2020 treats classical;\\n   166\\t  quantum-H versions may exist), so the novelty of the refinements in Prop 2 is unconfirmed.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 15863}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_4\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"rg --files /Users/v/Code_2026/nobel/paper-pool | head -65; sed -n '1,90p' /Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/inputs/pool-index.json; printenv HERDR_ENV\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_4\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"rg --files /Users/v/Code_2026/nobel/paper-pool | head -65; sed -n '1,90p' /Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/inputs/pool-index.json; printenv HERDR_ENV\\\"\", \"aggregated_output\": \"/Users/v/Code_2026/nobel/paper-pool/2310.07662.tex\\n/Users/v/Code_2026/nobel/paper-pool/1402.7359.tex\\n/Users/v/Code_2026/nobel/paper-pool/2606.12394.refs.json\\n/Users/v/Code_2026/nobel/paper-pool/2007.0\\n[... 6121 characters dropped ...]\\n\\\"sha256\\\": \\\"269d859e71da91ca064d610fd54b7f2970a07199c8d216378a33789c6744ef9f\\\",\\n      \\\"size\\\": 86508,\\n      \\\"format\\\": \\\".tex\\\",\\n      \\\"filename_version\\\": \\\"v1\\\"\\n    },\\n    {\\n      \\\"arxiv_id\\\": \\\"0706.0304\\\",\\n1\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 6521}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_5\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/sim_checkpoint.py | sed -n '1,240p'; nl -ba ada/logs/run1_sim_checkpoint_seed1.log | sed -n '1,140p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_5\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/sim_checkpoint.py | sed -n '1,240p'; nl -ba ada/logs/run1_sim_checkpoint_seed1.log | sed -n '1,140p'\\\"\", \"aggregated_output\": \"     1\\t\\\"\\\"\\\"Checkpointed bubbling of the imaginary-time network Z_s(beta) = Tr exp(-beta H_s).\\n     2\\t\\n     3\\tCompares the single-stage Arad-Landau / DQC1 cost (scale ratio R = 2^n / Z_s) with the\\n     \\n[... 13674 characters dropped ...]\\nrue fail=0.0105\\n    84\\t  temp-shift k=0.02 max_td=1.565e-02 bias=+1.1313e-01 |bias|<=bound(2.0500e-01):True\\n    85\\t  temp-shift k=0.10 max_td=7.481e-02 bias=+6.6023e-01 |bias|<=bound(1.4786e+00):True\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 14074}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_6\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"/Users/v/.local/bin/herdr-pane-title 'Review Gibbs checkpoint contraction'; rg --files /Users/v/Code_2026/nobel/paper-pool /Users/v/Code_2026/nobel/campaign/sources /Users/v/Code_2026/nobel/arxiv-cache | rg '/(0805\\\\\\\\.0040|2110\\\\\\\\.15466|2009\\\\\\\\.11270|0908\\\\\\\\.0512|1104\\\\\\\\.1410|1508\\\\\\\\.00570|2107\\\\\\\\.07365|2311\\\\\\\\.09207|1910\\\\\\\\.11842|2405\\\\\\\\.20322)(v[0-9]+)?\\\\\\\\.(tex|txt)\\\"'$'\\\"'; nl -ba Q001-P002.tex | sed -n '1,160p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_6\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"/Users/v/.local/bin/herdr-pane-title 'Review Gibbs checkpoint contraction'; rg --files /Users/v/Code_2026/nobel/paper-pool /Users/v/Code_2026/nobel/campaign/sources /Users/v/Code_2026/nobel/arxiv-cache | rg '/(0805\\\\\\\\.0040|2110\\\\\\\\.15466|2009\\\\\\\\.11270|0908\\\\\\\\.0512|1104\\\\\\\\.1410|1508\\\\\\\\.00570|2107\\\\\\\\.07365|2311\\\\\\\\.09207|1910\\\\\\\\.11842|2405\\\\\\\\.20322)(v[0-9]+)?\\\\\\\\.(tex|txt)\\\"'$'\\\"'; nl -ba Q001-P002.tex | sed -n '1,160p'\\\"\", \"aggregated_output\": \"error: failed to read from file `/Users/v/.local/bin/herdr-pane-title`: Operation not permitted (os error 1)\\n/Users/v/Code_2026/nobel/campaign/sources/2311.09207.tex\\n/Users/v/Code_2026/nobel/arxiv-cac\\n[... 13509 characters dropped ...]\\nand polynomial-time checkpoint oracles. Theorem~1 would then give a constant-factor approximation of $|V|$ in BQP, and hence\\n   158\\t\\\\[\\n   159\\t  \\\\mathsf P^{\\\\#\\\\mathsf P}\\\\subseteq\\\\mathsf{BQP}.\\n   160\\t\\\\]\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 13909}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_7\",\"type\":\"agent_message\",\"text\":\"The core estimator proof appears sound for ideal segment dilations. I found gaps in the compiled cost and error accounting, and the stated no-go conclusion is broader than its argument supports. I\u2019m checking the cited literature to assess novelty and the PEPS continuation.\\n\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_8\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/0908.0512.tex | sed -n '210,270p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/2110.15466.tex | sed -n '1390,1460p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/0805.0040v1.tex | sed -n '790,820p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/0805.0040v1.tex | sed -n '985,1008p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_8\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/0908.0512.tex | sed -n '210,270p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/2110.15466.tex | sed -n '1390,1460p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/0805.0040v1.tex | sed -n '790,820p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/0805.0040v1.tex | sed -n '985,1008p'\\\"\", \"aggregated_output\": \"   210\\t\\n   211\\tFreedman, Larsen, and Wang \\\\cite{FLW:two} established that the approximated\\n   212\\tquantity $|V(L,t)/(t^{1/2}+t^{-1/2})^{g-1}|^2$ in \\\\thm{th:ajl} is\\n   213\\tuniversal for quantum computa\\n[... 10070 characters dropped ...]\\nrcuit, we obtain a tensor network $T(G,\\\\CM)$, and it is a\\n  1007\\tstraightforward exercise to check that $T(G,\\\\CM) = \\\\bra{0^{\\\\otimes\\n  1008\\tn}}U\\\\ket{0^{\\\\otimes n}}$. Finally, when bubbling the network\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 10470}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_9\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"rg -n 'theorem|condition number|condition numbers|normaliz|norm|gap|rewind|injective|partition' /Users/v/Code_2026/nobel/paper-pool/1104.1410.tex | head -60; rg -n 'theorem|Theorem|normaliz|norm|gap|partition|condition number' /Users/v/Code_2026/nobel/paper-pool/1508.00570.tex | head -55; rg -n 'paired|quantum Hamiltonian|non-commut|noncommut|partition function|Huber|Chebyshev' /Users/v/Code_2026/nobel/paper-pool/2009.11270.tex | head -65; nl -ba Q001-P002.tex | sed -n '161,270p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_9\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"rg -n 'theorem|condition number|condition numbers|normaliz|norm|gap|rewind|injective|partition' /Users/v/Code_2026/nobel/paper-pool/1104.1410.tex | head -60; rg -n 'theorem|Theorem|normaliz|norm|gap|partition|condition number' /Users/v/Code_2026/nobel/paper-pool/1508.00570.tex | head -55; rg -n 'paired|quantum Hamiltonian|non-commut|noncommut|partition function|Huber|Chebyshev' /Users/v/Code_2026/nobel/paper-pool/2009.11270.tex | head -65; nl -ba Q001-P002.tex | sed -n '161,270p'\\\"\", \"aggregated_output\": \"20:\\\\newtheorem{theorem}{Theorem} %\\n21:\\\\newtheorem{lemma}[theorem]{Lemma}\\n22:\\\\newtheorem{prop}[theorem]{Proposition}\\n23:\\\\newtheorem{cor}[theorem]{Corollary}\\n24:\\\\newtheorem{definition}[theorem]{Definiti\\n[... 41038 characters dropped ...]\\n0, 2107.07365, 2405.20322.\\n   221\\t\\\\item Working files: \\\\url{ada/notes.md}, \\\\url{ada/sim_checkpoint.py}, \\\\url{ada/logs/run1_sim_checkpoint_seed1.log}.\\n   222\\t\\\\end{itemize}\\n   223\\t\\n   224\\t\\\\end{document}\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 41438}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_10\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/1104.1410.tex | sed -n '130,175p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/1104.1410.tex | sed -n '283,368p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/1508.00570.tex | sed -n '104,151p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/2009.11270.tex | sed -n '315,435p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_10\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/1104.1410.tex | sed -n '130,175p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/1104.1410.tex | sed -n '283,368p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/1508.00570.tex | sed -n '104,151p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/2009.11270.tex | sed -n '315,435p'\\\"\", \"aggregated_output\": \"   130\\t  with $U^{(v)}$ unitary and $A^{(v)} \\\\geq 0$.\\n   131\\t\\n   132\\t  A PEPS $\\\\ket{\\\\psi}$ is called \\\\emph{injective} \\\\cite{PVCW07},\\n   133\\t  if each PEPS projector $A^{(v)}$ has a left inverse.\\n   13\\n[... 21734 characters dropped ...]\\n $\\\\beta_0=\\\\beta_{\\\\min}$ and $\\\\beta_\\\\ell=\\\\beta_{\\\\max}$ satisfying the condition in~\\\\eqref{eq:promiseofsvvschedule} with equality and having length $\\\\ell$ bounded from above by:\\n   435\\t\\\\begin{equation}\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 22134}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_11\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/campaign/sources/0805.0040.tex | sed -n '785,815p'; nl -ba /Users/v/Code_2026/nobel/campaign/sources/0805.0040.tex | sed -n '985,1010p'; rg -n 'theorem|Theorem|beta|normaliz|jump|mixing|simulation time' /Users/v/Code_2026/nobel/paper-pool/2311.09207.tex | head -40; rg -n 'abstract|Gibbs|purification|reflection|detailed balance|discriminant' /Users/v/Code_2026/nobel/paper-pool/2107.07365.tex | head -22; rg -n 'arunachalam|Wocjan|Somma|annealing|partition' /Users/v/Code_2026/nobel/paper-pool/1910.11842.tex | head -30\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_11\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/campaign/sources/0805.0040.tex | sed -n '785,815p'; nl -ba /Users/v/Code_2026/nobel/campaign/sources/0805.0040.tex | sed -n '985,1010p'; rg -n 'theorem|Theorem|beta|normaliz|jump|mixing|simulation time' /Users/v/Code_2026/nobel/paper-pool/2311.09207.tex | head -40; rg -n 'abstract|Gibbs|purification|reflection|detailed balance|discriminant' /Users/v/Code_2026/nobel/paper-pool/2107.07365.tex | head -22; rg -n 'arunachalam|Wocjan|Somma|annealing|partition' /Users/v/Code_2026/nobel/paper-pool/1910.11842.tex | head -30\\\"\", \"aggregated_output\": \"   785\\t  therefore $(\\\\log m)$-local qubit operators.  The simulation of\\n   786\\t  unitary operators that act on $\\\\log m$ qubits is a standard\\n   787\\t  procedure in quantum computation based on the Solo\\n[... 29715 characters dropped ...]\\nes polynomially in $M$, which is expected due to the hardness of estimating partition functions.\\n913:of estimating partition functions within additive error is complete for the DQC1 complexity class.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 30115}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_12\",\"type\":\"agent_message\",\"text\":\"The cited cooling-schedule paper already contains the product-estimation bound behind the main statistical argument, so novelty needs a narrower claim. The PEPS paper is also in the shared pool: it proves polynomial preparation under condition-number and intermediate-gap promises and explicitly bounds norm ratios. That makes the proposed extension concrete, but its added contribution still needs testing.\\n\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_13\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/2009.11270.tex | sed -n '430,449p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/2107.07365.tex | sed -n '191,225p'; rg --files inputs; rg -n '\\\\\\\"name\\\\\\\"|\\\\\\\"promise\\\\\\\"|\\\\\\\"queries\\\\\\\"|\\\\\\\"ancillas\\\\\\\"|\\\\\\\"coherent_vs_measured\\\\\\\"|\\\\\\\"guarantee\\\\\\\"' inputs/Q.txt inputs/P.txt\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_13\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/2009.11270.tex | sed -n '430,449p'; nl -ba /Users/v/Code_2026/nobel/paper-pool/2107.07365.tex | sed -n '191,225p'; rg --files inputs; rg -n '\\\\\\\"name\\\\\\\"|\\\\\\\"promise\\\\\\\"|\\\\\\\"queries\\\\\\\"|\\\\\\\"ancillas\\\\\\\"|\\\\\\\"coherent_vs_measured\\\\\\\"|\\\\\\\"guarantee\\\\\\\"' inputs/Q.txt inputs/P.txt\\\"\", \"aggregated_output\": \"   430\\twhere $f(\\\\beta)=\\\\ln\\\\big(\\\\Zp(\\\\beta)\\\\big)$. It is important that $f(\\\\beta)$ is a strictly decreasing convex function, which is the case if the Hamiltonian is non-negative. \\n   431\\t\\n   432\\t\\\\begin{\\n[... 14259 characters dropped ...]\\nJarzynski) thermal state preparation\\\",\\ninputs/Q.txt:458:      \\\"name\\\": \\\"Probabilistic imaginary-time evolution (PITE)\\\",\\ninputs/Q.txt:468:      \\\"name\\\": \\\"Decoder-and-pilot thermal preparation via HDQI\\\",\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 14659}}",
+      "{\"type\":\"error\",\"message\":\"Selected model is at capacity. Please try a different model.\"}",
+      "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}"
+    ],
+    "error": "Selected model is at capacity. Please try a different model.",
+    "failure": {
+      "class": "rate",
+      "scope": "call",
+      "retry": true,
+      "reset_at": null
+    },
+    "prompt_chars": 73037,
+    "tool_calls": 10,
+    "tool_errors": 0,
+    "tool_error_samples": [],
+    "source_limits": null,
+    "provider_error": {
+      "event_index": 27,
+      "origin": "turn.failed",
+      "code": null,
+      "type": null,
+      "status": null,
+      "request_id": null,
+      "retry_after_raw": null,
+      "retry_after_seconds": null
+    },
+    "provider_errors": [
+      {
+        "event_index": 26,
+        "origin": "error",
+        "code": null,
+        "type": "error",
+        "status": null,
+        "request_id": null,
+        "retry_after_raw": null,
+        "retry_after_seconds": null
+      },
+      {
+        "event_index": 27,
+        "origin": "turn.failed",
+        "code": null,
+        "type": null,
+        "status": null,
+        "request_id": null,
+        "retry_after_raw": null,
+        "retry_after_seconds": null
+      }
+    ],
+    "usage_completeness": "unknown",
+    "usage_samples": [],
+    "evidence_journal": {
+      "events.jsonl": {
+        "path": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-5/transport-evidence/417a84f1b21c48be8c0beaf64580203f.events.jsonl",
+        "sha256": "776fae177c7925a99f770edfa8eae27fafe3cc7b732fdee0fdc24885945ce6fd",
+        "size": 186530
+      },
+      "stderr.log": {
+        "path": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-5/transport-evidence/417a84f1b21c48be8c0beaf64580203f.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "route": {
+      "key": "verify",
+      "backend": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  },
+  "receipt_line_sha256": "a93679fbaece1011e5841e0fc190916ea4b176f6a518cc189b0bcc43427f25f7",
+  "parent_manifest": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/operator/budget-group.json",
+  "parent_sha256": "17a1c25c24949b48ffa482bee24f5e3de1968d47f7d94278812a35a69e05661d",
+  "scope": {
+    "campaigns": [
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-1",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-2",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-3",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-4",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-5",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-11/runs/pair-6"
+    ],
+    "budget": {
+      "input_tokens": 1000000000,
+      "output_tokens": 14000000
+    }
+  },
+  "reservation": {
+    "input_tokens": 2500000,
+    "output_tokens": 25000
+  },
+  "rationale": "Heuristic reserve 2500000 input and 25000 output, rounded above twice the largest completed Pilot 11 verifier totals (1212395 input, 11374 output; 27 calls). Not measured usage or a proven upper bound. Actual aggregate cap compliance remains uncertified.",
+  "notice": "Actual usage remains unknown; actual aggregate cap compliance is not certified."
+}
