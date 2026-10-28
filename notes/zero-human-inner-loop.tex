@@ -3,6 +3,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 \usepackage[hidelinks]{hyperref}
 \setlist{itemsep=2pt,topsep=4pt}
 
@@ -13,21 +15,53 @@
 \begin{document}
 \maketitle
 
-\section{The argument}
+\section{Implications of LMs' current cognitive performance}
 
-Assume that AI agents built on the latest language models soon match or
-surpass humans at solving and checking most scientific and technical tasks.
-Both in cost and speed of execution. Arguably, this is already the case in
-mathematics (Navier-Stokes). Then the scarce resource in research is no
-longer to solve problems but to formulate good ones. The main focus shifts
-from problem solving to idea generation.
 
-It is often said these days that humans cannot understand new math results at the speed agents produce them.
-Assume here that human understanding is valuable because it lends eventually to new ideas.
-A solve $\to$ publish $\to$ understand $\to$ new-idea-formation cycle. Hereafter the ``inner loop''.
-If human understanding is a necessary ingredient of the inner loop, then AI will not accelerate science.
-Because humans cannot produce new ideas/questions at the speed agents solve them.
-Assume human understanding is not.
+We consider a simple cyclic model of tech and science progress. Hereafter
+the ``inner loop''.
+
+\begin{center}
+\begin{tikzpicture}[
+  stage/.style={draw, rounded corners, align=center, minimum width=3.8cm,
+    minimum height=1cm, font=\small},
+  >={Stealth}, thick
+]
+  \node[stage] (solving) {Problem solving};
+  \node[stage, right=2cm of solving] (publication) {Publication};
+  \node[stage, below=1.2cm of publication] (understanding) {Collective understanding};
+  \node[stage, below=1.2cm of solving] (ideas) {New idea formation};
+  \draw[->] (solving) -- (publication);
+  \draw[->] (publication) -- (understanding);
+  \draw[->] (understanding) -- (ideas);
+  \draw[->] (ideas) -- (solving);
+\end{tikzpicture}
+\end{center}
+
+Assumption 1: AI agents built on the latest language models will soon match
+humans at solving and checking most scientific and technical tasks. At x10
+lower cost and x10 higher speed of execution. If you invest \$1 in an AI vs
+a human, you get x100 the rate of knowledge unit production (not accounting
+for the training costs; just assume you have LMs vs expert humans)
+
+Arguably, this is already the case in mathematics (Navier-Stokes). 
+
+It follows that -to the extent rate of knowledge production is the goal to
+maximise (as opposed eg to being a museum of pre-AI cognition
+capabilities)- the planner ought to fire all math-producing humans from
+math departments.
+
+Consequence 1: focus shifts from problem solving to idea generation; the
+scarce resource in research is no longer to solve problems but to formulate
+good ones. 
+
+Assumption 2:  human understanding is
+valuable because it lends eventually to new ideas.
+It is often said these days that humans cannot understand new math results
+at the speed agents produce them.   If human understanding is a necessary ingredient of the inner loop,
+then AI will not accelerate science. Because humans cannot produce new
+ideas/questions at the speed agents solve them. Assume human understanding
+is not.
 
 [experiment: ask a strong AI agent if it understands a recent proof from the dump]
 
