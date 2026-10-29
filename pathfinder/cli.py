@@ -18,6 +18,8 @@ def main(argv=None):
     br = sub.add_parser("budget-reservation", help="prepare or approve an immutable uncertain-usage reservation")
     br.add_argument("action", choices=("propose", "manifest", "report"))
     br.add_argument("--call-id")
+    br.add_argument("--policy", choices=("served-capacity-reservation-v1", "claude-post-result-reservation-v1"),
+                    default="served-capacity-reservation-v1")
     br.add_argument("--input-tokens", type=int)
     br.add_argument("--output-tokens", type=int)
     br.add_argument("--rationale")
@@ -231,7 +233,7 @@ def main(argv=None):
                 if not all((ns.call_id, ns.rationale, ns.out)):
                     raise ValueError("propose requires call-id, token amounts, rationale and out")
                 value = br.propose(config.load(Path(ns.root)), ns.call_id, ns.input_tokens,
-                                   ns.output_tokens, ns.rationale)
+                                   ns.output_tokens, ns.rationale, policy=ns.policy)
                 br.write_new(ns.out, value)
                 value = dict(proposal=str(ns.out), proposal_sha256=br.digest(value), active=False)
             else:

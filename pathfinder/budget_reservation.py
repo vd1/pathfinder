@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 POLICY = 'served-capacity-reservation-v1'
+CLAUDE_TAIL_POLICY = 'claude-post-result-reservation-v1'
 NOTICE = 'Actual usage remains unknown; actual aggregate cap compliance is not certified.'
 TOKENS = ('input_tokens', 'output_tokens')
 
@@ -22,7 +23,7 @@ def _keys(value, keys):
         raise ValueError('reservation fields differ from contract')
 
 
-def _receipt(root, call_id):
+def _receipt(root, call_id, policy=POLICY):
     matches = []
     for line in (Path(root) / 'receipts.jsonl').read_bytes().splitlines(keepends=True):
         if not line.strip():
@@ -33,6 +34,10 @@ def _receipt(root, call_id):
     if len(matches) != 1:
         raise ValueError('reservation requires exactly one original receipt')
     row, sha = matches[0]
+    if policy == CLAUDE_TAIL_POLICY:
+        from .claude_tail import evidence
+        evidence(root, row)
+        return row, sha
     events = [json.loads(event) for event in row.get('raw_events') or []]
     message = 'Selected model is at capacity. Please try a different model.'
     if not (row.get('backend') == 'codex' and row.get('outcome') == 'error'
@@ -48,9 +53,10 @@ def _receipt(root, call_id):
 
 
 def _validate(proposal):
+    policy = proposal.get('policy')
     _keys(proposal, ('version', 'policy', 'root', 'call_id', 'receipt', 'receipt_line_sha256',
-                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice'))
-    if type(proposal['version']) is not int or proposal['version'] != 1 or proposal['policy'] != POLICY or proposal['notice'] != NOTICE:
+                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy == CLAUDE_TAIL_POLICY else ()))
+    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, CLAUDE_TAIL_POLICY) or proposal['notice'] != NOTICE:
         raise ValueError('unsupported reservation policy')
     root = Path(proposal['root'])
     if not root.is_absolute() or root != root.resolve():
@@ -73,21 +79,31 @@ def _validate(proposal):
             raise ValueError('reservation must be positive and within existing token caps')
     if not isinstance(proposal['rationale'], str) or not proposal['rationale'].strip():
         raise ValueError('reservation needs explicit estimate rationale')
-    row, sha = _receipt(root, proposal['call_id'])
+    row, sha = _receipt(root, proposal['call_id'], policy)
     if row != proposal['receipt'] or sha != proposal['receipt_line_sha256']:
         raise ValueError('original receipt or evidence changed')
+    if policy == CLAUDE_TAIL_POLICY:
+        from .claude_tail import evidence
+        basis = evidence(root, row)
+        if basis != proposal['claude_tail']:
+            raise ValueError('Claude completed/tail evidence changed')
+        if any(proposal['reservation'][k] < basis['completed_totals'][k] + max(1,basis['observed_tail_message_floor'][k]) for k in TOKENS):
+            raise ValueError('reservation must include completed totals plus an estimate covering observed tail samples')
 
 
-def propose(campaign, call_id, input_tokens, output_tokens, rationale):
+def propose(campaign, call_id, input_tokens, output_tokens, rationale, policy=POLICY):
     from . import budget_group
     path, roots, cap = budget_group.load(campaign)
-    row, sha = _receipt(campaign.root, call_id)
-    proposal = dict(version=1, policy=POLICY, root=str(campaign.root.resolve()), call_id=call_id,
+    row, sha = _receipt(campaign.root, call_id, policy)
+    proposal = dict(version=1, policy=policy, root=str(campaign.root.resolve()), call_id=call_id,
                     receipt=row, receipt_line_sha256=sha, parent_manifest=str(path),
                     parent_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                     scope={'campaigns': [str(p) for p in roots], 'budget': cap},
                     reservation=dict(input_tokens=input_tokens, output_tokens=output_tokens),
                     rationale=rationale, notice=NOTICE)
+    if policy == CLAUDE_TAIL_POLICY:
+        from .claude_tail import evidence
+        proposal['claude_tail'] = evidence(campaign.root, row)
     _validate(proposal)
     return proposal
 

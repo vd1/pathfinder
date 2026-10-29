@@ -94,7 +94,8 @@ def inspect(lines, *, completed=False, now=None):
         chosen['retry_after_seconds'] = max(hints) if hints else None
     return dict(provider_error=chosen, provider_errors=errors,
                 usage_completeness='complete' if terminal_result_usage(lines) is not None
-                or completed and samples and samples[-1]['origin'] in ('turn.completed', 'result')
+                or completed and samples and (samples[-1]['origin'] == 'turn.completed'
+                    or samples[-1]['origin'] == 'result' and samples[-1]['event_index'] == len(lines)-1)
                 else 'partial' if samples else 'unknown', usage_samples=samples)
 
 

@@ -1,7 +1,7 @@
 """A call ends at its final event (Atlas pilot 6, 24 October 2026): the Claude CLI emitted its result, then stayed
 alive 38 minutes waiting on a shell job its agent had started and abandoned, until the operator killed the job.
-Once the final event is in (Claude's result, Codex's turn.completed), the engine gives the CLI RESULT_GRACE seconds
-to exit, then ends its process group and any descendant that left it, and the call stands as completed."""
+Once Claude's result arrives, the engine ends its process group and discoverable descendants promptly.
+Codex retains RESULT_GRACE seconds to exit. Completed answers remain completed."""
 import os, sys, time
 from pathlib import Path
 import pytest

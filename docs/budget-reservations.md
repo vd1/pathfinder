@@ -59,3 +59,24 @@ are unchanged; use the shared-group report for the reservation-adjusted admissio
 
 An eventual provider measurement requires a separately supported reconciliation. This version does
 not release, overwrite or replace the reservation and does not authorise further exceptions.
+
+## Claude result followed by an interrupted background turn
+
+`budget-reservation propose --policy claude-post-result-reservation-v1` supports a narrowly evidenced
+completed Claude call with missing accounting: a successful result with explicit counters followed by
+same-session background notification, another init and partial assistant usage, then exit -15.
+The proposal binds the full retained journal hash and size, original receipt, first-result totals and
+partial follow-up samples. All evidence is revalidated during admission. Other stream shapes are refused.
+
+The proposed reservation covers the entire call: completed-turn totals plus an explicitly estimated
+remainder. It must cover at least the largest observed follow-up message counters, but those samples
+are neither a final total nor an upper bound. The completed turn is recorded separately in proposal
+metadata; the whole-call reservation is charged once. It is not silently installed as measured usage.
+The same explicit approval, unchanged caps, immutable manifest and idle migration rules apply.
+
+New Claude transports end the CLI group at the first result without the former 30-second exit grace,
+including discoverable detached descendants. Cleanup requires normal process-enumeration permission.
+Queued follow-up events can still race with cleanup; the full journal is retained, and any trailing
+activity prevents the earlier result from certifying whole-call usage. Codex exit grace is unchanged.
+No new permission rule or undocumented CLI environment setting is used. Background work is not promised
+to finish after the agent returns its result; required work must finish before the turn completes.

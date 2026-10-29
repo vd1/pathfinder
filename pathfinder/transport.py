@@ -748,9 +748,9 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
             return _failed(campaign, thread, stage, actor, model, started, "no session", "no session",
                            prompt_chars=len(prompt), evidence=finish_evidence())
     error, final_at, ended = None, None, False
-    while True:                                   # to the deadline, or RESULT_GRACE past the final event
+    while True:                                   # Claude ends at its result; Codex retains exit grace
         try:
-            proc.wait(timeout=0.5)
+            proc.wait(timeout=0.05 if campaign.backend == "claude" else 0.5)
             break
         except subprocess.TimeoutExpired:
             pass
@@ -759,8 +759,8 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
         if final_at is None and time.time() - started >= timeout:
             _kill(proc); error = "timeout"
             break
-        if final_at is not None and time.monotonic() - final_at >= RESULT_GRACE:
-            _kill_tree(proc); ended = True       # a job the agent left running holds the CLI open (Atlas pilot 6)
+        if final_at is not None and time.monotonic() - final_at >= (0 if campaign.backend == "claude" else RESULT_GRACE):
+            _kill_tree(proc, freeze=campaign.backend == "claude"); ended = True       # a job the agent left running holds the CLI open (Atlas pilot 6)
             break
     t.join(5)
     evidence = finish_evidence()
@@ -806,7 +806,7 @@ def call(prompt, *, campaign, model, tools, search, cwd, timeout, thread, stage,
                                      thread=thread, stage=stage, actor=actor, schema=schema, reads=reads))
 
 
-RESULT_GRACE = 30                               # seconds a CLI may take to exit after its final event
+RESULT_GRACE = 30                               # Codex exit grace; Claude must not start a background wake-up
 
 
 def _final_event(campaign, lines) -> bool:
@@ -841,15 +841,29 @@ def _descendants(pid: int) -> list[int]:
     return out
 
 
-def _kill_tree(proc):
+def _kill_tree(proc, *, freeze=False):
     """End the CLI's process group and every descendant, which a job started in its own session escapes."""
+    if freeze:
+        # Stop the group before enumerating it: a post-result child could otherwise
+        # spawn/setsid between the snapshot and termination and retain output pipes.
+        try:
+            os.killpg(proc.pid, signal.SIGSTOP)
+        except ProcessLookupError:
+            pass
     below = _descendants(proc.pid)
     for pid in reversed(below):
         try:
-            os.kill(pid, signal.SIGTERM)
+            os.kill(pid, signal.SIGKILL if freeze else signal.SIGTERM)
         except (ProcessLookupError, PermissionError):
             pass
-    _kill(proc)
+    if freeze:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait(5)
+    else:
+        _kill(proc)
 
 
 def _kill(proc):
