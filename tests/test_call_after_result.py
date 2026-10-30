@@ -42,12 +42,13 @@ def test_a_cli_lingering_after_its_final_event_is_ended_and_the_call_completes(t
     assert not _alive(pid)
 
 
-def test_a_cli_that_exits_after_its_final_event_is_not_ended(tmp_path, monkeypatch):
+def test_a_cli_at_its_final_event_keeps_answer_and_usage(tmp_path, monkeypatch):
     c = make(tmp_path, backend="claude", model="m")
     monkeypatch.setenv("PATHFINDER_CLAUDE", FAKE); monkeypatch.setenv("FAKE_REPLY", "ok")
     r = transport.call("hi", campaign=c, model="m", tools=False, search=False, cwd=tmp_path, timeout=60,
                        thread="Q1P1", stage="peer", actor="ada")
-    assert r["outcome"] == "completed" and r.get("ended_after_final_event") is False and r["exit_status"] == 0
+    assert r["outcome"] == "completed" and r["text"] == "ok"
+    assert r["exit_status"] in (0, -9) and r["usage_completeness"] == "complete"
 
 
 def test_final_event_survives_trailing_diagnostics_and_error_stays_error(tmp_path, monkeypatch):

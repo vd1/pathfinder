@@ -700,6 +700,13 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
     def reader():
         try:
             for line in proc.stdout:
+                if campaign.backend == 'claude' and _final_event(campaign, [line]):
+                    # Freeze before fsync/poll latency admits a queued wake-up.
+                    # Buffered trailing events are still drained and accounted as uncertain.
+                    try:
+                        os.killpg(proc.pid, signal.SIGSTOP)
+                    except ProcessLookupError:
+                        pass
                 journal.append('events.jsonl', line)
                 lines.append(line)
                 if _final_event(campaign, [line]):

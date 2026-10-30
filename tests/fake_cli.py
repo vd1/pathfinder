@@ -30,6 +30,10 @@ for i in range(int(os.environ.get("FAKE_TOOLS", "0"))):
         print(json.dumps({"type": "item.completed", "item": {"type": "command_execution", "command": f"cmd {i}",
                           "exit_code": 1 if failed else 0,
                           "aggregated_output": "No module named pathfinder.ledger" if failed else "ok"}}))
+if os.environ.get("FAKE_LINGER"):
+    child = subprocess.Popen(["sleep", os.environ["FAKE_LINGER"]], start_new_session=bool(os.environ.get("FAKE_LINGER_SETSID")))
+    if os.environ.get("FAKE_LINGER_PID"):
+        open(os.environ["FAKE_LINGER_PID"], "w").write(str(child.pid))
 final = json.loads(os.environ["FAKE_USAGE"]) if "FAKE_USAGE" in os.environ else "default"
 if os.environ.get("FAKE_PARTIAL"):
     print(json.dumps({"type": "assistant", "message": {"usage": {"input_tokens": 4, "output_tokens": 1}}}), flush=True)
@@ -48,7 +52,4 @@ for i in range(int(os.environ.get("FAKE_AFTER_FINAL_EVENTS", "0"))):
     print(json.dumps({"type": "diagnostic", "n": i}))
 if os.environ.get("FAKE_LINGER"):
     sys.stdout.flush()
-    child = subprocess.Popen(["sleep", os.environ["FAKE_LINGER"]], start_new_session=bool(os.environ.get("FAKE_LINGER_SETSID")))
-    if os.environ.get("FAKE_LINGER_PID"):
-        open(os.environ["FAKE_LINGER_PID"], "w").write(str(child.pid))
     child.wait()

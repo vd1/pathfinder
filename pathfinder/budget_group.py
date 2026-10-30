@@ -23,8 +23,8 @@ def load(campaign):
     if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
         raise ValueError("budget group manifest hash differs")
     doc = json.loads(path.read_text())
-    expected = {"version", "campaigns", "budget"} | ({"reservations"} if doc.get("version") == 2 else set())
-    if set(doc) != expected or type(doc.get("version")) is not int or doc["version"] not in (1, 2):
+    expected = {"version", "campaigns", "budget"} | ({"reservations"} if doc.get("version") in (2, 3) else set())
+    if set(doc) != expected or type(doc.get("version")) is not int or doc["version"] not in (1, 2, 3):
         raise ValueError("unsupported budget group manifest")
     cap = budget.limits(doc)
     if not cap or not isinstance(doc["campaigns"], list) or not doc["campaigns"]:

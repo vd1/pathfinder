@@ -9,6 +9,8 @@ from pathlib import Path
 
 POLICY = 'served-capacity-reservation-v1'
 CLAUDE_TAIL_POLICY = 'claude-post-result-reservation-v1'
+CLAUDE_INIT_POLICY = 'claude-init-tail-reservation-v1'
+TAIL_POLICIES = (CLAUDE_TAIL_POLICY, CLAUDE_INIT_POLICY)
 NOTICE = 'Actual usage remains unknown; actual aggregate cap compliance is not certified.'
 TOKENS = ('input_tokens', 'output_tokens')
 
@@ -34,9 +36,9 @@ def _receipt(root, call_id, policy=POLICY):
     if len(matches) != 1:
         raise ValueError('reservation requires exactly one original receipt')
     row, sha = matches[0]
-    if policy == CLAUDE_TAIL_POLICY:
+    if policy in TAIL_POLICIES:
         from .claude_tail import evidence
-        evidence(root, row)
+        evidence(root, row, init_only=policy == CLAUDE_INIT_POLICY)
         return row, sha
     events = [json.loads(event) for event in row.get('raw_events') or []]
     message = 'Selected model is at capacity. Please try a different model.'
@@ -55,8 +57,8 @@ def _receipt(root, call_id, policy=POLICY):
 def _validate(proposal):
     policy = proposal.get('policy')
     _keys(proposal, ('version', 'policy', 'root', 'call_id', 'receipt', 'receipt_line_sha256',
-                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy == CLAUDE_TAIL_POLICY else ()))
-    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, CLAUDE_TAIL_POLICY) or proposal['notice'] != NOTICE:
+                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy in TAIL_POLICIES else ()))
+    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
         raise ValueError('unsupported reservation policy')
     root = Path(proposal['root'])
     if not root.is_absolute() or root != root.resolve():
@@ -66,7 +68,13 @@ def _validate(proposal):
     if hashlib.sha256(data).hexdigest() != proposal['parent_sha256']:
         raise ValueError('parent manifest changed')
     old = json.loads(data)
-    if old.get('version') != 1 or set(old) != {'version', 'campaigns', 'budget'}:
+    if policy == CLAUDE_INIT_POLICY:
+        if old.get('version') != 2 or set(old) != {'version','campaigns','budget','reservations'}:
+            raise ValueError('init-tail extension requires an unchanged version 2 group')
+        previous = records(old)
+        if (str(root),proposal['call_id']) in previous:
+            raise ValueError('call already reserved')
+    elif old.get('version') != 1 or set(old) != {'version', 'campaigns', 'budget'}:
         raise ValueError('reservation requires an unchanged version 1 group')
     if proposal['scope'] != {'campaigns': old['campaigns'], 'budget': old['budget']}:
         raise ValueError('reservation changed group scope or caps')
@@ -82,9 +90,9 @@ def _validate(proposal):
     row, sha = _receipt(root, proposal['call_id'], policy)
     if row != proposal['receipt'] or sha != proposal['receipt_line_sha256']:
         raise ValueError('original receipt or evidence changed')
-    if policy == CLAUDE_TAIL_POLICY:
+    if policy in TAIL_POLICIES:
         from .claude_tail import evidence
-        basis = evidence(root, row)
+        basis = evidence(root, row, init_only=policy == CLAUDE_INIT_POLICY)
         if basis != proposal['claude_tail']:
             raise ValueError('Claude completed/tail evidence changed')
         if any(proposal['reservation'][k] < basis['completed_totals'][k] + max(1,basis['observed_tail_message_floor'][k]) for k in TOKENS):
@@ -101,9 +109,9 @@ def propose(campaign, call_id, input_tokens, output_tokens, rationale, policy=PO
                     scope={'campaigns': [str(p) for p in roots], 'budget': cap},
                     reservation=dict(input_tokens=input_tokens, output_tokens=output_tokens),
                     rationale=rationale, notice=NOTICE)
-    if policy == CLAUDE_TAIL_POLICY:
+    if policy in TAIL_POLICIES:
         from .claude_tail import evidence
-        proposal['claude_tail'] = evidence(campaign.root, row)
+        proposal['claude_tail'] = evidence(campaign.root, row, init_only=policy == CLAUDE_INIT_POLICY)
     _validate(proposal)
     return proposal
 
@@ -128,17 +136,32 @@ def validate_record(record, scope):
 def approved_manifest(proposal, approval):
     record = dict(proposal=proposal, approval=approval)
     validate_record(record, proposal['scope'])
+    if proposal['policy'] == CLAUDE_INIT_POLICY:
+        parent = json.loads(Path(proposal['parent_manifest']).read_text())
+        return dict(version=3, **proposal['scope'], reservations=[*parent['reservations'],record])
     return dict(version=2, **proposal['scope'], reservations=[record])
 
 
 def records(doc):
     if doc['version'] == 1:
         return {}
-    # Deliberately one explicitly approved exception, not an extensible waiver list.
-    if not isinstance(doc.get('reservations'), list) or len(doc['reservations']) != 1:
-        raise ValueError('version 2 requires exactly one approved reservation')
-    p = validate_record(doc['reservations'][0], {k: doc[k] for k in ('campaigns', 'budget')})
-    return {(p['root'], p['call_id']): p['reservation']}
+    scope = {k: doc[k] for k in ('campaigns','budget')}
+    saved = doc.get('reservations')
+    if doc['version'] == 2:
+        if not isinstance(saved,list) or len(saved) != 1 or saved[0]['proposal'].get('policy') == CLAUDE_INIT_POLICY:
+            raise ValueError('version 2 requires exactly one approved reservation')
+        p = validate_record(saved[0],scope)
+        return {(p['root'],p['call_id']):p['reservation']}
+    if doc['version'] != 3 or not isinstance(saved,list) or len(saved) != 2:
+        raise ValueError('version 3 requires an inherited reservation plus one init-tail exception')
+    if saved[1]['proposal'].get('policy') != CLAUDE_INIT_POLICY:
+        raise ValueError('version 3 requires init-tail extension')
+    p = validate_record(saved[1],scope)
+    parent = json.loads(Path(p['parent_manifest']).read_text())
+    if saved[:-1] != parent['reservations']:
+        raise ValueError('prior reservation or approval changed')
+    previous = records(parent)
+    return {**previous,(p['root'],p['call_id']):p['reservation']}
 
 
 def write_new(path, value):

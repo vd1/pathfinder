@@ -80,3 +80,22 @@ Queued follow-up events can still race with cleanup; the full journal is retaine
 activity prevents the earlier result from certifying whole-call usage. Codex exit grace is unchanged.
 No new permission rule or undocumented CLI environment setting is used. Background work is not promised
 to finish after the agent returns its result; required work must finish before the turn completes.
+
+## A later init-only tail in an already reserved group
+
+`claude-init-tail-reservation-v1` accepts only a successful Claude result followed by exactly one
+same-session system init, with no later events or usage, interrupted with exit -9. No assistant output
+was observed, but that does not prove no request was in flight. Exact whole-call recovery still requires
+usage the provider did not supply; an init is not treated as a zero-cost certificate.
+
+This policy extends an unchanged version 2 group to version 3 with exactly two records: the earlier
+reservation and approval, byte-equivalent as parsed data, followed by the newly approved exception.
+The new proposal binds the old manifest hash, unchanged scope/caps, original receipt, full raw journal,
+known result and init-only classification. Admission revalidates both records and their evidence. It
+refuses a changed prefix, duplicate call, another extension from version 3, or unapproved uncertainty.
+Original manifests and receipts must remain available. Old runtimes cannot read version 3.
+
+Claude's stream reader now stops its process group immediately on observing a result, before journal
+fsync and controller polling. Buffered trailing events are still drained and retained. An init already
+queued by the CLI can still be present; its usage remains uncertified. This narrows the race without
+concealing evidence or promising that it eliminates every provider-side in-flight request.
