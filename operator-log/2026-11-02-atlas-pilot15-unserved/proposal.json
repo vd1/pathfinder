@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "policy": "unserved-capacity-reservation-v1",
+  "root": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4",
+  "call_id": "12cb403b779c482db558ee8a5e78ec1c",
+  "receipt": {
+    "v": 3,
+    "call_id": "12cb403b779c482db558ee8a5e78ec1c",
+    "at": "2026-11-02T06:33:00Z",
+    "run_id": "33e3e90519eb40cab5696f9cbff92c4b",
+    "thread": "Q001-P002",
+    "branch": null,
+    "stage": "verify",
+    "actor": "verifier",
+    "backend": "codex",
+    "model": "gpt-6.1-sol",
+    "outcome": "error",
+    "seconds": 24.2,
+    "deadline_seconds": 3600,
+    "usage": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_write": null,
+    "cache_read": null,
+    "prefix_read": null,
+    "cost": null,
+    "cost_basis": null,
+    "exit_status": 1,
+    "terminal_event": "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}",
+    "raw_events": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"01a19af5-b776-7032-a0ba-e1c11c674687\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/v/.codex/config.toml.\"}}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"error\",\"message\":\"Selected model is at capacity. Please try a different model.\"}",
+      "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}"
+    ],
+    "error": "Selected model is at capacity. Please try a different model.",
+    "failure": {
+      "class": "rate",
+      "scope": "call",
+      "retry": true,
+      "reset_at": null
+    },
+    "prompt_chars": 82462,
+    "tool_calls": 0,
+    "tool_errors": 0,
+    "tool_error_samples": [],
+    "source_limits": null,
+    "provider_error": {
+      "event_index": 4,
+      "origin": "turn.failed",
+      "code": null,
+      "type": null,
+      "status": null,
+      "request_id": null,
+      "retry_after_raw": null,
+      "retry_after_seconds": null
+    },
+    "provider_errors": [
+      {
+        "event_index": 3,
+        "origin": "error",
+        "code": null,
+        "type": "error",
+        "status": null,
+        "request_id": null,
+        "retry_after_raw": null,
+        "retry_after_seconds": null
+      },
+      {
+        "event_index": 4,
+        "origin": "turn.failed",
+        "code": null,
+        "type": null,
+        "status": null,
+        "request_id": null,
+        "retry_after_raw": null,
+        "retry_after_seconds": null
+      }
+    ],
+    "usage_completeness": "unknown",
+    "usage_samples": [],
+    "evidence_journal": {
+      "events.jsonl": {
+        "path": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4/transport-evidence/12cb403b779c482db558ee8a5e78ec1c.events.jsonl",
+        "sha256": "fea8631fa288543efd3a641746f0597ca4e131f263a96f37ec3d6bd9131d91aa",
+        "size": 614
+      },
+      "stderr.log": {
+        "path": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4/transport-evidence/12cb403b779c482db558ee8a5e78ec1c.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "route": {
+      "key": "verify",
+      "backend": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    }
+  },
+  "receipt_line_sha256": "08ccfec2b8bb7b73882744828274f5690c9b43382fa4227d54827ebb192b195b",
+  "parent_manifest": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/operator/budget-group.json",
+  "parent_sha256": "27b011e9ee528c5ece9e664d3e8662461723b4940f5d4ebbaf5fdc23b9fc9288",
+  "scope": {
+    "campaigns": [
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-1",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-2",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-3",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-5",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-6"
+    ],
+    "budget": {
+      "input_tokens": 1000000000,
+      "output_tokens": 14000000
+    }
+  },
+  "reservation": {
+    "input_tokens": 100000,
+    "output_tokens": 1000
+  },
+  "rationale": "Explicit small uncertainty allowance of 100000 input / 1000 output for the retained capacity stream with no observed model-produced item. CLI warning is not model work; actual provider usage is unreported, not certified zero. Estimate is not a proven upper bound; actual cap compliance remains uncertified.",
+  "notice": "Actual usage remains unknown; actual aggregate cap compliance is not certified.",
+  "unserved_evidence": {
+    "journal_sha256": "fea8631fa288543efd3a641746f0597ca4e131f263a96f37ec3d6bd9131d91aa",
+    "journal_size": 614,
+    "event_count": 5,
+    "cli_warning_count": 1,
+    "observed_model_items": 0,
+    "semantics": "No model-produced item observed; actual provider usage remains unknown, not certified zero."
+  }
+}
