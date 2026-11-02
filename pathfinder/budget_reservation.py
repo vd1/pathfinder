@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 POLICY = 'served-capacity-reservation-v1'
+UNSERVED_POLICY = 'unserved-capacity-reservation-v1'
 CLAUDE_TAIL_POLICY = 'claude-post-result-reservation-v1'
 CLAUDE_INIT_POLICY = 'claude-init-tail-reservation-v1'
 TAIL_POLICIES = (CLAUDE_TAIL_POLICY, CLAUDE_INIT_POLICY)
@@ -40,6 +41,10 @@ def _receipt(root, call_id, policy=POLICY):
         from .claude_tail import evidence
         evidence(root, row, init_only=policy == CLAUDE_INIT_POLICY)
         return row, sha
+    if policy == UNSERVED_POLICY:
+        from .unserved_capacity import evidence
+        evidence(root,row)
+        return row,sha
     events = [json.loads(event) for event in row.get('raw_events') or []]
     message = 'Selected model is at capacity. Please try a different model.'
     if not (row.get('backend') == 'codex' and row.get('outcome') == 'error'
@@ -57,8 +62,8 @@ def _receipt(root, call_id, policy=POLICY):
 def _validate(proposal):
     policy = proposal.get('policy')
     _keys(proposal, ('version', 'policy', 'root', 'call_id', 'receipt', 'receipt_line_sha256',
-                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy in TAIL_POLICIES else ()))
-    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
+                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy in TAIL_POLICIES else ()) + (('unserved_evidence',) if policy == UNSERVED_POLICY else ()))
+    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, UNSERVED_POLICY, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
         raise ValueError('unsupported reservation policy')
     root = Path(proposal['root'])
     if not root.is_absolute() or root != root.resolve():
@@ -83,13 +88,17 @@ def _validate(proposal):
     _keys(proposal['reservation'], TOKENS)
     for key in TOKENS:
         n = proposal['reservation'][key]
-        if type(n) is not int or n <= 0 or n > old['budget'].get(key, -1):
-            raise ValueError('reservation must be positive and within existing token caps')
+        if type(n) is not int or n < (0 if policy == UNSERVED_POLICY else 1) or n > old['budget'].get(key, -1):
+            raise ValueError('reservation must satisfy its policy minimum and existing token caps')
     if not isinstance(proposal['rationale'], str) or not proposal['rationale'].strip():
         raise ValueError('reservation needs explicit estimate rationale')
     row, sha = _receipt(root, proposal['call_id'], policy)
     if row != proposal['receipt'] or sha != proposal['receipt_line_sha256']:
         raise ValueError('original receipt or evidence changed')
+    if policy == UNSERVED_POLICY:
+        from .unserved_capacity import evidence
+        if proposal['unserved_evidence'] != evidence(root,row):
+            raise ValueError('unserved evidence classification changed')
     if policy in TAIL_POLICIES:
         from .claude_tail import evidence
         basis = evidence(root, row, init_only=policy == CLAUDE_INIT_POLICY)
@@ -112,6 +121,9 @@ def propose(campaign, call_id, input_tokens, output_tokens, rationale, policy=PO
     if policy in TAIL_POLICIES:
         from .claude_tail import evidence
         proposal['claude_tail'] = evidence(campaign.root, row, init_only=policy == CLAUDE_INIT_POLICY)
+    if policy == UNSERVED_POLICY:
+        from .unserved_capacity import evidence
+        proposal['unserved_evidence'] = evidence(campaign.root,row)
     _validate(proposal)
     return proposal
 

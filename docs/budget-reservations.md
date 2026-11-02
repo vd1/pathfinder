@@ -99,3 +99,18 @@ Claude's stream reader now stops its process group immediately on observing a re
 fsync and controller polling. Buffered trailing events are still drained and retained. An init already
 queued by the CLI can still be present; its usage remains uncertified. This narrows the race without
 concealing evidence or promising that it eliminates every provider-side in-flight request.
+
+## Codex capacity failure without observed model activity
+
+`unserved-capacity-reservation-v1` supports a fresh version 1 group whose failed Codex receipt has
+unknown usage and an exact capacity failure. Its full retained journal must match the receipt hash,
+size, raw events and terminal event. Only thread.started, optional known skip_host_skill_discovery
+CLI warning items, turn.started, error capacity and turn.failed capacity are accepted, in that order.
+Any reasoning, agent message, tool item, usage, unknown event or unrecognised warning is refused.
+
+The name describes absence of observed service, not proof of zero provider billing. Actual usage stays
+unknown. Only this policy permits a zero reservation, and it still requires the same explicit approval
+of unknown usage and uncertified aggregate totals. A small positive estimate may be proposed instead.
+No value is selected automatically, and no reservation is activated by proposal preparation alone.
+Old policies retain their positive minimum. This policy does not change retries, caps, research or the
+existing immutable version 2 manifest/approval flow; additional unknown calls remain blocking.
