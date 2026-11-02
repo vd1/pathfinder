@@ -11,6 +11,7 @@ POLICY = 'served-capacity-reservation-v1'
 UNSERVED_POLICY = 'unserved-capacity-reservation-v1'
 CLAUDE_TAIL_POLICY = 'claude-post-result-reservation-v1'
 CLAUDE_INIT_POLICY = 'claude-init-tail-reservation-v1'
+SERVED_EXTENSION = 'served-capacity-extension-v1'
 ORPHAN_POLICY = 'reboot-orphan-reservation-v1'
 TAIL_POLICIES = (CLAUDE_TAIL_POLICY, CLAUDE_INIT_POLICY)
 NOTICE = 'Actual usage remains unknown; actual aggregate cap compliance is not certified.'
@@ -41,6 +42,10 @@ def _receipt(root, call_id, policy=POLICY):
     if len(matches) != 1:
         raise ValueError('reservation requires exactly one original receipt')
     row, sha = matches[0]
+    if policy == SERVED_EXTENSION:
+        from .served_capacity import evidence
+        evidence(root,row)
+        return row,sha
     if policy in TAIL_POLICIES:
         from .claude_tail import evidence
         evidence(root, row, init_only=policy == CLAUDE_INIT_POLICY)
@@ -63,11 +68,11 @@ def _receipt(root, call_id, policy=POLICY):
     return row, sha
 
 
-def _validate(proposal):
+def _validate(proposal, *, parent_validated=False):
     policy = proposal.get('policy')
     _keys(proposal, ('version', 'policy', 'root', 'call_id', 'receipt', 'receipt_line_sha256',
-                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy in TAIL_POLICIES else ()) + (('unserved_evidence',) if policy == UNSERVED_POLICY else ()))
-    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, UNSERVED_POLICY, ORPHAN_POLICY, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
+                     'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy in TAIL_POLICIES else ()) + (('unserved_evidence',) if policy == UNSERVED_POLICY else ()) + (('served_evidence',) if policy == SERVED_EXTENSION else ()))
+    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, UNSERVED_POLICY, ORPHAN_POLICY, SERVED_EXTENSION, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
         raise ValueError('unsupported reservation policy')
     root = Path(proposal['root'])
     if not root.is_absolute() or root != root.resolve():
@@ -77,7 +82,12 @@ def _validate(proposal):
     if hashlib.sha256(data).hexdigest() != proposal['parent_sha256']:
         raise ValueError('parent manifest changed')
     old = json.loads(data)
-    if policy in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
+    if policy == SERVED_EXTENSION:
+        if old.get('version') not in (2,3,4,5) or set(old)!={'version','campaigns','budget','reservations'}:
+            raise ValueError('served extension requires an approved reservation group')
+        if not parent_validated and (str(root),proposal['call_id']) in records(old):
+            raise ValueError('call already reserved')
+    elif policy in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
         if old.get('version') != 2 or set(old) != {'version','campaigns','budget','reservations'}:
             raise ValueError('extension requires an unchanged version 2 group')
         previous = records(old)
@@ -99,6 +109,9 @@ def _validate(proposal):
     row, sha = _receipt(root, proposal['call_id'], policy)
     if row != proposal['receipt'] or sha != proposal['receipt_line_sha256']:
         raise ValueError('original receipt or evidence changed')
+    if policy == SERVED_EXTENSION:
+        from .served_capacity import evidence
+        if proposal['served_evidence'] != evidence(root,row):raise ValueError('served evidence changed')
     if policy == UNSERVED_POLICY:
         from .unserved_capacity import evidence
         if proposal['unserved_evidence'] != evidence(root,row):
@@ -128,14 +141,17 @@ def propose(campaign, call_id, input_tokens, output_tokens, rationale, policy=PO
     if policy == UNSERVED_POLICY:
         from .unserved_capacity import evidence
         proposal['unserved_evidence'] = evidence(campaign.root,row)
+    if policy == SERVED_EXTENSION:
+        from .served_capacity import evidence
+        proposal['served_evidence']=evidence(campaign.root,row)
     _validate(proposal)
     return proposal
 
 
-def validate_record(record, scope):
+def validate_record(record, scope, *, parent_validated=False):
     _keys(record, ('proposal', 'approval'))
     proposal, approval = record['proposal'], record['approval']
-    _validate(proposal)
+    _validate(proposal,parent_validated=parent_validated)
     _keys(approval, ('proposal_sha256', 'approved', 'accept_unknown_usage',
                      'accept_uncertified_actual_total', 'approved_by', 'approved_at', 'authority'))
     if (approval['proposal_sha256'] != digest(proposal)
@@ -152,6 +168,9 @@ def validate_record(record, scope):
 def approved_manifest(proposal, approval):
     record = dict(proposal=proposal, approval=approval)
     validate_record(record, proposal['scope'])
+    if proposal['policy'] == SERVED_EXTENSION:
+        parent=json.loads(Path(proposal['parent_manifest']).read_text())
+        return dict(version=5, **proposal['scope'], reservations=[*parent['reservations'],record])
     if proposal['policy'] in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
         parent = json.loads(Path(proposal['parent_manifest']).read_text())
         return dict(version=4 if proposal['policy'] == ORPHAN_POLICY else 3, **proposal['scope'], reservations=[*parent['reservations'],record])
@@ -159,12 +178,34 @@ def approved_manifest(proposal, approval):
 
 
 def records(doc):
+    if doc.get('version') == 5:
+        # Walk the append-only chain once; no exponential revalidation on recurrence.
+        chain=[];seen=set();current=doc
+        while current.get('version') == 5:
+            _keys(current,('version','campaigns','budget','reservations'))
+            saved=current['reservations']
+            if not isinstance(saved,list) or not saved:raise ValueError('empty served extension')
+            record=saved[-1];p=record['proposal']
+            if p.get('policy')!=SERVED_EXTENSION:raise ValueError('version 5 requires served extension')
+            identity=(p['root'],p['call_id'])
+            if identity in seen:raise ValueError('call already reserved')
+            seen.add(identity)
+            parent=json.loads(Path(p['parent_manifest']).read_text())
+            if saved[:-1]!=parent.get('reservations'):raise ValueError('prior reservations changed')
+            chain.append((current,record));current=parent
+        previous=records(current)
+        for current,record in reversed(chain):
+            p=validate_record(record,{k:current[k] for k in ('campaigns','budget')},parent_validated=True)
+            identity=(p['root'],p['call_id'])
+            if identity in previous:raise ValueError('call already reserved')
+            previous[identity]=p['reservation']
+        return previous
     if doc['version'] == 1:
         return {}
     scope = {k: doc[k] for k in ('campaigns','budget')}
     saved = doc.get('reservations')
     if doc['version'] == 2:
-        if not isinstance(saved,list) or len(saved) != 1 or saved[0]['proposal'].get('policy') in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
+        if not isinstance(saved,list) or len(saved) != 1 or saved[0]['proposal'].get('policy') in (CLAUDE_INIT_POLICY, ORPHAN_POLICY, SERVED_EXTENSION):
             raise ValueError('version 2 requires exactly one approved reservation')
         p = validate_record(saved[0],scope)
         return {(p['root'],p['call_id']):p['reservation']}
