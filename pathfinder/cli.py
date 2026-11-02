@@ -18,7 +18,7 @@ def main(argv=None):
     br = sub.add_parser("budget-reservation", help="prepare or approve an immutable uncertain-usage reservation")
     br.add_argument("action", choices=("propose", "manifest", "report"))
     br.add_argument("--call-id")
-    br.add_argument("--policy", choices=("served-capacity-reservation-v1", "claude-post-result-reservation-v1", "claude-init-tail-reservation-v1", "unserved-capacity-reservation-v1"),
+    br.add_argument("--policy", choices=("served-capacity-reservation-v1", "claude-post-result-reservation-v1", "claude-init-tail-reservation-v1", "unserved-capacity-reservation-v1", "reboot-orphan-reservation-v1"),
                     default="served-capacity-reservation-v1")
     br.add_argument("--input-tokens", type=int)
     br.add_argument("--output-tokens", type=int)
@@ -157,6 +157,10 @@ def main(argv=None):
     vr.add_argument("--reason", help="owner authority and purpose of the replay")
     vr.add_argument("--receipt", help="restore a completed verifier erased by an empty trailing event; no new call")
     vr.add_argument("--apply", action="store_true", help="apply the verifier replay or selected receipt restoration, then stop before further work")
+    oc = sub.add_parser("recover-orphan", help="archive a proven reboot-interrupted peer and retain unknown accounting")
+    oc.add_argument("call_id")
+    oc.add_argument("--apply", action="store_true")
+    oc.add_argument("--expected-sha256")
     ur = sub.add_parser("recover-usage", help="inspect/apply evidence-bound final-result usage without rewriting receipts")
     ur.add_argument("call_id")
     ur.add_argument("--reason", required=True)
@@ -499,6 +503,9 @@ def _dispatch(ns, c):
         from . import verify_replay
         print(json.dumps(verify_replay.run(c, ns.pair, origin=ns.origin, reason=ns.reason,
                                           apply=ns.apply, accept_change=ns.accept_change, receipt=ns.receipt), indent=2))
+    elif ns.cmd == "recover-orphan":
+        from . import orphan_recovery
+        print(json.dumps(orphan_recovery.recover(c, ns.call_id, apply=ns.apply, expected=ns.expected_sha256), indent=2))
     elif ns.cmd == "recover-usage":
         from . import usage_recovery
         print(json.dumps(usage_recovery.recover(c, ns.call_id, ns.reason,

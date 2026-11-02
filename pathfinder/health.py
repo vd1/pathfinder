@@ -123,7 +123,12 @@ def retire_orphans(campaign, pairs=None) -> list[dict]:
     ids = {json.loads(line).get("call_id") for line in path_r.read_text().splitlines() if line.strip().startswith("{")} \
         if path_r.exists() else set()
     retired = []
-    for path, call in orphans(campaign, pairs):
+    candidates = orphans(campaign, pairs)
+    for path, call in candidates:
+        journal = campaign.path(f"transport-evidence/{call.get('attempt_id')}.events.jsonl")
+        if call.get("attempt_id") not in ids and journal.exists() and journal.stat().st_size:
+            raise ValueError("unreceipted orphan has execution evidence; use evidence-bound recover-orphan before retirement")
+    for path, call in candidates:
         events.emit(campaign, "call_abandoned", attempt_id=call.get("attempt_id"), unit=call.get("thread"),
                     stage=call.get("stage"), actor=call.get("actor"), call_run_id=call.get("run_id"),
                     pid=call.get("pid"), child_pid=call.get("child_pid"), started_at=call.get("started_at"),

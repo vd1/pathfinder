@@ -11,6 +11,7 @@ POLICY = 'served-capacity-reservation-v1'
 UNSERVED_POLICY = 'unserved-capacity-reservation-v1'
 CLAUDE_TAIL_POLICY = 'claude-post-result-reservation-v1'
 CLAUDE_INIT_POLICY = 'claude-init-tail-reservation-v1'
+ORPHAN_POLICY = 'reboot-orphan-reservation-v1'
 TAIL_POLICIES = (CLAUDE_TAIL_POLICY, CLAUDE_INIT_POLICY)
 NOTICE = 'Actual usage remains unknown; actual aggregate cap compliance is not certified.'
 TOKENS = ('input_tokens', 'output_tokens')
@@ -27,6 +28,9 @@ def _keys(value, keys):
 
 
 def _receipt(root, call_id, policy=POLICY):
+    if policy == ORPHAN_POLICY:
+        from . import config, orphan_recovery
+        return orphan_recovery.evidence_receipt(config.campaign_from(Path(root), json.loads((Path(root)/'campaign.json').read_text())), call_id)
     matches = []
     for line in (Path(root) / 'receipts.jsonl').read_bytes().splitlines(keepends=True):
         if not line.strip():
@@ -63,7 +67,7 @@ def _validate(proposal):
     policy = proposal.get('policy')
     _keys(proposal, ('version', 'policy', 'root', 'call_id', 'receipt', 'receipt_line_sha256',
                      'parent_manifest', 'parent_sha256', 'scope', 'reservation', 'rationale', 'notice') + (('claude_tail',) if policy in TAIL_POLICIES else ()) + (('unserved_evidence',) if policy == UNSERVED_POLICY else ()))
-    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, UNSERVED_POLICY, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
+    if type(proposal['version']) is not int or proposal['version'] != 1 or policy not in (POLICY, UNSERVED_POLICY, ORPHAN_POLICY, *TAIL_POLICIES) or proposal['notice'] != NOTICE:
         raise ValueError('unsupported reservation policy')
     root = Path(proposal['root'])
     if not root.is_absolute() or root != root.resolve():
@@ -73,9 +77,9 @@ def _validate(proposal):
     if hashlib.sha256(data).hexdigest() != proposal['parent_sha256']:
         raise ValueError('parent manifest changed')
     old = json.loads(data)
-    if policy == CLAUDE_INIT_POLICY:
+    if policy in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
         if old.get('version') != 2 or set(old) != {'version','campaigns','budget','reservations'}:
-            raise ValueError('init-tail extension requires an unchanged version 2 group')
+            raise ValueError('extension requires an unchanged version 2 group')
         previous = records(old)
         if (str(root),proposal['call_id']) in previous:
             raise ValueError('call already reserved')
@@ -148,9 +152,9 @@ def validate_record(record, scope):
 def approved_manifest(proposal, approval):
     record = dict(proposal=proposal, approval=approval)
     validate_record(record, proposal['scope'])
-    if proposal['policy'] == CLAUDE_INIT_POLICY:
+    if proposal['policy'] in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
         parent = json.loads(Path(proposal['parent_manifest']).read_text())
-        return dict(version=3, **proposal['scope'], reservations=[*parent['reservations'],record])
+        return dict(version=4 if proposal['policy'] == ORPHAN_POLICY else 3, **proposal['scope'], reservations=[*parent['reservations'],record])
     return dict(version=2, **proposal['scope'], reservations=[record])
 
 
@@ -160,14 +164,14 @@ def records(doc):
     scope = {k: doc[k] for k in ('campaigns','budget')}
     saved = doc.get('reservations')
     if doc['version'] == 2:
-        if not isinstance(saved,list) or len(saved) != 1 or saved[0]['proposal'].get('policy') == CLAUDE_INIT_POLICY:
+        if not isinstance(saved,list) or len(saved) != 1 or saved[0]['proposal'].get('policy') in (CLAUDE_INIT_POLICY, ORPHAN_POLICY):
             raise ValueError('version 2 requires exactly one approved reservation')
         p = validate_record(saved[0],scope)
         return {(p['root'],p['call_id']):p['reservation']}
-    if doc['version'] != 3 or not isinstance(saved,list) or len(saved) != 2:
-        raise ValueError('version 3 requires an inherited reservation plus one init-tail exception')
-    if saved[1]['proposal'].get('policy') != CLAUDE_INIT_POLICY:
-        raise ValueError('version 3 requires init-tail extension')
+    if doc['version'] not in (3, 4) or not isinstance(saved,list) or len(saved) != 2:
+        raise ValueError('extension requires an inherited reservation plus one approved exception')
+    if saved[1]['proposal'].get('policy') != (ORPHAN_POLICY if doc['version'] == 4 else CLAUDE_INIT_POLICY):
+        raise ValueError('reservation policy differs from group version')
     p = validate_record(saved[1],scope)
     parent = json.loads(Path(p['parent_manifest']).read_text())
     if saved[:-1] != parent['reservations']:

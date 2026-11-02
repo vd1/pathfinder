@@ -50,17 +50,19 @@ def _peers(campaign, pair_id, stop):
     A = campaign.allowances; inp = _inputs(d); row = _scan_row(campaign, pair_id)
     helper = install_helper(d)
     cap = peer_call_cap(campaign)
-    used = {}; lock = threading.Lock()                    # each peer's own seconds; the round's clock is the largest
+    lock = threading.Lock()                    # each peer's own seconds; the round's clock is the largest
 
     peers = list(campaign.peers)
     grant = status(campaign, pair_id).get("grant") or {}
     review_seq = max(_iteration_review_seq(L), grant.get("ready_after") or 0)   # a reopen asks for research too
+    from . import orphan_recovery
+    used, carried = orphan_recovery.peer_carry(campaign, pair_id, dict(round=status(campaign, pair_id)["round"], review_seq=review_seq))
     outlines = "".join(_outline(d / "inputs" / inp[side]) for side in "QP")
 
 
     def one(actor):
         others = [a for a in peers if a != actor]
-        for call_no in range(A["peer_calls"]):
+        for call_no in range(carried.get(actor, 0), A["peer_calls"]):
             with lock:
                 left = A["peer_seconds"] - max(used.values(), default=0.0)
             if left <= 0 or L.ready(peers, after=review_seq):
