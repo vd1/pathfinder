@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "policy": "reboot-orphan-reservation-v1",
+  "root": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4",
+  "call_id": "e7e55c64bf35432483adbf8803683cf3",
+  "receipt": {
+    "v": 3,
+    "call_id": "e7e55c64bf35432483adbf8803683cf3",
+    "at": "2026-11-02T10:57:11Z",
+    "run_id": "236c2befe7bd4b9995203412ce89eb0c",
+    "thread": "Q001-P002",
+    "stage": "peer",
+    "actor": "ada",
+    "backend": "codex",
+    "model": null,
+    "outcome": "interrupted",
+    "error": "Host reboot interrupted the peer; no provider final result or usage.",
+    "usage": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_read": null,
+    "cache_write": null,
+    "cost": null,
+    "usage_completeness": "unknown",
+    "seconds": 1568,
+    "host_recovery": {
+      "origin": "host-orphan-recovery-v1",
+      "snapshot_sha256": "fecea952db14c73493559c065c8f4c4178cd07a89f870a9b7af29df720b8828e",
+      "peer_phase": {
+        "round": 5,
+        "review_seq": 49
+      },
+      "prior_peer_ids": [],
+      "seconds_semantics": "Conservative elapsed upper bound to next host boot, not provider duration."
+    },
+    "evidence_journal": {
+      "events.jsonl": {
+        "sha256": "200853ca92cb638c8ab39a95be33269e02ccf74b0164d26c46112e5f84879214",
+        "size": 312790
+      }
+    }
+  },
+  "receipt_line_sha256": "39ab01585430f17c3871a03a7304e53f6b03219a6ca3bb858d2462bc586ab683",
+  "parent_manifest": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/operator/budget-group-unserved-reserved.json",
+  "parent_sha256": "7dcbf332d3b8979067badb7b79caecf283889da90b274df9245d8d43684e78bf",
+  "scope": {
+    "campaigns": [
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-1",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-2",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-3",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-5",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-6"
+    ],
+    "budget": {
+      "input_tokens": 1000000000,
+      "output_tokens": 14000000
+    }
+  },
+  "reservation": {
+    "input_tokens": 15000000,
+    "output_tokens": 150000
+  },
+  "rationale": "Explicit uncertain reservation of 15000000 input and 150000 output tokens. Among 19 completed Pilot 15 peer receipts the observed maxima were 7018735 input and 62714 output; each proposed amount exceeds twice that maximum, rounded upward. The interrupted call lasted at most 1568 seconds before boot, but usage is not reported. Historical comparisons are a heuristic, not a proven upper bound; actual aggregate cap compliance remains uncertified.",
+  "notice": "Actual usage remains unknown; actual aggregate cap compliance is not certified."
+}
