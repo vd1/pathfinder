@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "policy": "served-capacity-extension-v1",
+  "root": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4",
+  "call_id": "a19a17a5367243c195b33e398b52ecf0",
+  "receipt": {
+    "v": 3,
+    "call_id": "a19a17a5367243c195b33e398b52ecf0",
+    "at": "2026-11-02T13:29:46Z",
+    "run_id": "c9330d72cb4a45029c303ea7c864897f",
+    "thread": "Q001-P002",
+    "branch": null,
+    "stage": "consolidate",
+    "actor": "ada",
+    "backend": "codex",
+    "model": "gpt-6-astra",
+    "outcome": "error",
+    "seconds": 607.3,
+    "deadline_seconds": 3600,
+    "usage": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "cache_write": null,
+    "cache_read": null,
+    "prefix_read": null,
+    "cost": null,
+    "cost_basis": null,
+    "exit_status": 1,
+    "terminal_event": "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}",
+    "raw_events": [
+      "{\"type\":\"thread.started\",\"thread_id\":\"01a19c6a-61ce-7600-ada7-6441f6324671\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"error\",\"message\":\"Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in /Users/v/.codex/config.toml.\"}}",
+      "{\"type\":\"turn.started\"}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"I\u2019ll check the fifth-round proofs and resource accounting, preserve the earlier supported results, and incorporate the new copy bounds into the LaTeX account without adding research.\\n\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_2\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc 'pwd && rg --files ada | sort'\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_2\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc 'pwd && rg --files ada | sort'\", \"aggregated_output\": \"/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4/threads/Q001-P002\\nada/__pycache__/check_symmetry.cpython-313.pyc\\nada/check_carrier_reduction.py\\nada/check_coherent_recovery.py\\nada/check_\\n[... 950 characters dropped ...]\\na/logs/working-validation-round4-01.log\\nada/logs/working-validation-round4-02.log\\nada/logs/working-validation-round5-01.log\\nada/round2.md\\nada/round3.md\\nada/round4.md\\nada/round5.md\\nada/round5_twirl.md\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 1350}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_3\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round5_twirl.md | sed -n '1,260p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_3\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round5_twirl.md | sed -n '1,260p'\\\"\", \"aggregated_output\": \"     1\\t# Working continuation: coherent twirling removes the carrier-recovery loss\\n     2\\t\\n     3\\tAda, continuation of round 5 after ledger entry 55. This working derivation strengthens round5.md; it \\n[... 22622 characters dropped ...]\\nroot. Gate optimality, exact finite-copy carrier fidelity and high-probability reusable-learning tradeoffs also remain open. Gaussian/lossy extensions and general target optimization remain deferred.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 23022}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_4\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round5.md | sed -n '1,245p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_4\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round5.md | sed -n '1,245p'\\\"\", \"aggregated_output\": \"     1\\t# Working continuation: arbitrary encodings and coherent subsystem recovery\\n     2\\t\\n     3\\tAda, round 5, responding to verifier entry 49. This is working pipeline research, not a final paper. T\\n[... 29242 characters dropped ...]\\nesult can be assessed separately even if that extension is deferred. Broad priority searches, general target optimization, Gaussian/lossy sources and repeated finite optical examples remain deferred.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 29642}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_5\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round5_twirl.md | sed -n '159,205p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_5\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round5_twirl.md | sed -n '159,205p'\\\"\", \"aggregated_output\": \"   159\\t## 7. Attribution, verification, and remaining work\\n   160\\t\\n   161\\tThe full-copy lower theorem (E1) relies on the inspected fixed-weight retrieval/inversion result of 0903.0543 Secs. III-IV, no\\n[... 3128 characters dropped ...]\\nroot. Gate optimality, exact finite-copy carrier fidelity and high-probability reusable-learning tradeoffs also remain open. Gaussian/lossy extensions and general target optimization remain deferred.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 3528}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_6\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/derivation.md | sed -n '15,270p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_6\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/derivation.md | sed -n '15,270p'\\\"\", \"aggregated_output\": \"    15\\t## 1. Access model\\n    16\\t\\n    17\\tThere are N photons in distinct occupied input ports among m >= N ports. Photon i carries two finite-dimensional internal factors E_i and R_i. The interferomet\\n[... 29585 characters dropped ...]\\ndencies were installed through uv; the first environment probe failed because numpy was absent, and the second succeeded. Logs: ada/logs/environment-check-01.log and environment-check-02.log.\\n   270\\t\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 29985}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_7\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round5.md | sed -n '1,101p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_7\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round5.md | sed -n '1,101p'\\\"\", \"aggregated_output\": \"     1\\t# Working continuation: arbitrary encodings and coherent subsystem recovery\\n     2\\t\\n     3\\tAda, round 5, responding to verifier entry 49. This is working pipeline research, not a final paper. T\\n[... 11252 characters dropped ...]\\ndelity; its main diamond-norm estimation lower bound is not used here. The costed implementation from round4.md, Sec. 6, remains the explicit efficient comparator, with its confidence factor.\\n   101\\t\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 11652}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_8\",\"type\":\"agent_message\",\"text\":\"The fifth round derives a matching \u0398(t\u00b2/\u03b7) copy order for arbitrary unitary encodings with equal known marginals. Its key step converts carrier repair into full transfer using the same programs and a constant error loss. I\u2019ll include that derivation, remove the superseded copy-gap statements, and retain the recommendation for independent review of this newest result.\\n\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_9\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round2.md | sed -n '17,221p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_9\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round2.md | sed -n '17,221p'\\\"\", \"aggregated_output\": \"    17\\t## 2. Preparation-assisted alternatives and an exact limitation\\n    18\\t\\n    19\\tWrite the Schur decomposition of an invariant marginal as\\n    20\\t\\n    21\\t    H_E = direct_sum_lambda M_lambda tens\\n[... 27905 characters dropped ...]\\nssy extensions remain deferred. Without a concrete comparator or weaker-access application, additional broad literature search or more isolated examples is unlikely to establish greater significance.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 28305}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_10\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round3.md | sed -n '52,243p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_10\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round3.md | sed -n '52,243p'\\\"\", \"aggregated_output\": \"    52\\tFor the query lower bound choose a particular permitted oracle extension. In compact coordinates let\\n    53\\t\\n    54\\t    O_pi |i>|y> = |i>|y xor pi(i)>,\\n    55\\t    A_pi = (S_E inverse tensor con\\n[... 24375 characters dropped ...]\\n a comparison gap, and no novelty claim depends on it. The general singlet-fraction ingredient remains standard; the HOM consequence remains an application of the previously attributed optical bound.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 24775}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_11\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/round4.md | sed -n '20,229p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_11\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/round4.md | sed -n '20,229p'\\\"\", \"aggregated_output\": \"    20\\t## 2. A diagonal subfamily retaining the full program interface\\n    21\\t\\n    22\\tFor theta=(theta_1,...,theta_t) on the t-dimensional torus, set\\n    23\\t\\n    24\\t    U_theta |a,b> = exp(i b theta_a\\n[... 29414 characters dropped ...]\\ndence. This is a new complexity construction, not required for correctness of the existing results. General target optimization, Gaussian/lossy sources, and additional dense examples remain deferred.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 29814}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_12\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/twirl-recovery-check-02.log | sed -n '1,65p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_12\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/twirl-recovery-check-02.log | sed -n '1,65p'\\\"\", \"aggregated_output\": \"     1\\tseed=202611026\\n     2\\tControlled-label Clifford conventions: 336 Pauli labels passed\\n     3\\tExact uniform-POVM sphere moments and factorial bound: 192 cases passed\\n     4\\tCoherent twirl, comple\\n[... 1400 characters dropped ...]\\na=0.00 full_error=0.937340100397 average_reflection_error=1.88809542393 max_carrier_error=0.79937532633\\n    16\\tAll finite checks passed. No universal processor or asymptotic optimality was simulated.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 1800}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_13\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/coherent-recovery-check-01.log | sed -n '1,65p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_13\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/coherent-recovery-check-01.log | sed -n '1,65p'\\\"\", \"aggregated_output\": \"     1\\tseed=202611025\\n     2\\tGenerator, gradient, and Laplacian identities: 40 cases passed\\n     3\\tSU(2) fixed-weight retrieval vs Fisher lower bound: 201 cases passed\\n     4\\t  w=  0 F=0.250000000000 \\n[... 1259 characters dropped ...]\\nll_error=0.086457750 hybrid_sq=0.747665207 8k2eta=1.225947530 program_disturbance=0.058669073 retargets=2\\n    17\\tAll assertions passed. Finite algebra checks only; no universal processor implemented.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 1659}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/pool-check-round5-01.log | sed -n '1,15p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_14\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/pool-check-round5-01.log | sed -n '1,15p'\\\"\",\"aggregated_output\":\"     1\\t0903.0543 /Users/v/Code_2026/nobel/paper-pool/0903.0543.tex\\n     2\\t2109.08202 /Users/v/Code_2026/nobel/paper-pool/2109.08202.tex\\n     3\\t2302.14066 /Users/v/Code_2026/nobel/paper-pool/2302.14066.tex\\n\",\"exit_code\":0,\"status\":\"completed\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_15\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/working-validation-round5-01.log | sed -n '1,65p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_15\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/working-validation-round5-01.log | sed -n '1,65p'\\\"\", \"aggregated_output\": \"     1\\tada/round5.md: working-text scan and fence parity passed (3936 words)\\n     2\\tada/round5_twirl.md: working-text scan and fence parity passed (3024 words)\\n     3\\tada/check_coherent_recovery.py: P\\n[... 94 characters dropped ...]\\nonal block constants and error domains passed\\n     6\\tConfigured style skill/title helper inaccessible; these files are working pipeline material.\\n     7\\tNo final-paper or source-file edits performed.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 494}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_16\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/0903.0543.tex | sed -n '433,562p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_17\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/check_twirl_recovery.py | sed -n '110,285p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_17\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/check_twirl_recovery.py | sed -n '110,285p'\\\"\", \"aggregated_output\": \"   110\\t                assert np.linalg.norm(s @ zlast @ s.conj().T-pauli(a,b,k)) < 2e-12\\n   111\\t                count += 1\\n   112\\t    print(f\\\"Controlled-label Clifford conventions: {count} Pauli labe\\n[... 5339 characters dropped ...]\\nn (2, 4):\\n   220\\t        for _ in range(2):\\n   221\\t            run_case(d, 0, common=True)\\n   222\\t    print(\\\"All finite checks passed. No universal processor or asymptotic optimality was simulated.\\\")\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 5739}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_16\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba /Users/v/Code_2026/nobel/paper-pool/0903.0543.tex | sed -n '433,562p'\\\"\", \"aggregated_output\": \"   433\\t\\\\begin{theorem}[Optimal retrieving strategy]\\\\label{theo:OptRetr} The optimal retrieving of\\n   434\\t  $U$ from the memory state $|\\\\varphi_U \\\\>$ is\\n   435\\t  achieved by measuring the ancilla with \\n[... 10353 characters dropped ...]\\nimization of $f$ is equivalent to the maximization of the channel fidelity $F' = \\\\int_G \\\\bb\\n   562\\tU^\\\\dag| \\\\< \\\\varphi_U^*| R' |U^\\\\dag\\\\kk |\\\\varphi_U^*\\\\> \\\\d U$, which is the figure of merit for optimal\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 10753}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_18\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/carrier-reduction-check-01.log | sed -n '1,15p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_19\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/phase-program-check-01.log | sed -n '1,15p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_20\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/derivation.md | sed -n '62,111p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_18\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/carrier-reduction-check-01.log | sed -n '1,15p'\\\"\", \"aggregated_output\": \"     1\\tD=4: 192 directed adversary edges passed exact checks\\n     2\\tD=4: 96 worst-case inputs give exactly uniform independent (pi',i')\\n     3\\tD=4, w=0: exact learned-pair q=1/4\\n     4\\tD=4, w=1: exact\\n[... 207 characters dropped ...]\\n 9\\tD=4, w=6: exact learned-pair q=6101/8192\\n    10\\tD=4: 384 partial decoder extensions preserve complete pairs\\n    11\\tPASS: exact combinatorial checks only; asymptotic claims rely on round3.md proofs\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 607}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_20\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/derivation.md | sed -n '62,111p'\\\"\", \"aggregated_output\": \"    62\\t## 3. What an optimal protected-register repair can achieve\\n    63\\t\\n    64\\tFor this section let R_i be a copy of E_i, with matching permutation representations, and allow arbitrary R unitaries.\\n[... 4663 characters dropped ...]\\n 108\\t\\n   109\\tThe coefficient of a diagonal pair is sqrt(N-1)/N; that of each off-diagonal pair is -1/(N sqrt(N-1)). These values independently verify (3).\\n   110\\t\\n   111\\t### Repair guarantee and cost\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 5063}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_19\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/phase-program-check-01.log | sed -n '1,15p'\\\"\", \"aggregated_output\": \"     1\\tt=1: w=0..8 charge normalization, moments, shifts, and bounds passed\\n     2\\tt=2: w=0..8 charge normalization, moments, shifts, and bounds passed\\n     3\\tt=3: w=0..8 charge normalization, moments\\n[... 281 characters dropped ...]\\n exact rational binomial reciprocal identities passed\\n     8\\t2002 tableau ranks, inverse ranks, and GT embeddings passed\\n     9\\tPASS: 36 charge cases; analytical asymptotic claims remain in round4.md\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 681}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_21\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/symmetry-check-02.log | sed -n '1,85p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_21\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/symmetry-check-02.log | sed -n '1,85p'\\\"\", \"aggregated_output\": \"     1\\t{\\n     2\\t  \\\"seed\\\": 725019,\\n     3\\t  \\\"status\\\": \\\"all assertions passed\\\",\\n     4\\t  \\\"results\\\": [\\n     5\\t    {\\n     6\\t      \\\"n\\\": 3,\\n     7\\t      \\\"rank\\\": 2,\\n     8\\t      \\\"fidelity_after_polar_repair\\\"\\n[... 2946 characters dropped ...]\\n3,\\n    76\\t        \\\"overlap_rank\\\": 3,\\n    77\\t        \\\"fidelity_after_repair\\\": 0.9756249999999996,\\n    78\\t        \\\"tv_after_repair\\\": 0.008167183960543967\\n    79\\t      }\\n    80\\t    }\\n    81\\t  ]\\n    82\\t}\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 3346}}",
+      "{\"type\":\"item.started\",\"item\":{\"id\":\"item_22\",\"type\":\"command_execution\",\"command\":\"/bin/zsh -lc \\\"nl -ba ada/logs/schur-check-02.log | sed -n '80,105p'\\\"\",\"aggregated_output\":\"\",\"exit_code\":null,\"status\":\"in_progress\"}}",
+      "{\"type\": \"item.completed\", \"item\": {\"id\": \"item_22\", \"type\": \"command_execution\", \"command\": \"/bin/zsh -lc \\\"nl -ba ada/logs/schur-check-02.log | sed -n '80,105p'\\\"\", \"aggregated_output\": \"    80\\t  \\\"schmidt_tests\\\": [\\n    81\\t    {\\n    82\\t      \\\"schmidt_cap\\\": 1,\\n    83\\t      \\\"symmetric_weight\\\": 0.5022397544790839,\\n    84\\t      \\\"bound\\\": 0.5022397544790839,\\n    85\\t      \\\"marginal_error\\\": 1.\\n[... 354 characters dropped ...]\\nund\\\": 0.8048878076281358,\\n    97\\t      \\\"marginal_error\\\": 1.5881644842410305e-16\\n    98\\t    }\\n    99\\t  ]\\n   100\\t}\\n   101\\tAll checks passed. Dense finite checks only; no query-algorithm implementation.\\n\", \"exit_code\": 0, \"status\": \"completed\", \"output_chars\": 754}}",
+      "{\"type\":\"item.completed\",\"item\":{\"id\":\"item_23\",\"type\":\"agent_message\",\"text\":\"The source check confirms that 0903.0543 covers retrieval at fixed program weights, so the account will credit that result directly. The fifth-round addition is the reduction for the weaker carrier objective. I\u2019ll preserve the earlier constructions and costs, distinguish finite checks from proofs, and mark the latest review as preceding this extension. The style helper was sandbox-denied, so I cannot report a formal style-gate pass.\\n\"}}",
+      "{\"type\":\"error\",\"message\":\"Selected model is at capacity. Please try a different model.\"}",
+      "{\"type\":\"turn.failed\",\"error\":{\"message\":\"Selected model is at capacity. Please try a different model.\"}}"
+    ],
+    "error": "Selected model is at capacity. Please try a different model.",
+    "failure": {
+      "class": "rate",
+      "scope": "call",
+      "retry": true,
+      "reset_at": null
+    },
+    "prompt_chars": 195063,
+    "tool_calls": 20,
+    "tool_errors": 0,
+    "tool_error_samples": [],
+    "source_limits": null,
+    "provider_error": {
+      "event_index": 47,
+      "origin": "turn.failed",
+      "code": null,
+      "type": null,
+      "status": null,
+      "request_id": null,
+      "retry_after_raw": null,
+      "retry_after_seconds": null
+    },
+    "provider_errors": [
+      {
+        "event_index": 46,
+        "origin": "error",
+        "code": null,
+        "type": "error",
+        "status": null,
+        "request_id": null,
+        "retry_after_raw": null,
+        "retry_after_seconds": null
+      },
+      {
+        "event_index": 47,
+        "origin": "turn.failed",
+        "code": null,
+        "type": null,
+        "status": null,
+        "request_id": null,
+        "retry_after_raw": null,
+        "retry_after_seconds": null
+      }
+    ],
+    "usage_completeness": "unknown",
+    "usage_samples": [],
+    "evidence_journal": {
+      "events.jsonl": {
+        "path": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4/transport-evidence/a19a17a5367243c195b33e398b52ecf0.events.jsonl",
+        "sha256": "5c37125376694228a3903c0f877847e2938f641dd3485062cbfdd415241d1a49",
+        "size": 227903
+      },
+      "stderr.log": {
+        "path": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4/transport-evidence/a19a17a5367243c195b33e398b52ecf0.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      }
+    },
+    "route": {
+      "key": "consolidate",
+      "backend": "codex",
+      "model": "gpt-6-astra",
+      "effort": "high"
+    }
+  },
+  "receipt_line_sha256": "db067c3bff3b6dc8d673b7e758d52b25bce218201e231eea316fc1c5a8f158ee",
+  "parent_manifest": "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/operator/budget-group-reboot-reserved.json",
+  "parent_sha256": "a8fcd54fff7af1b0d95ce51bd7051aac8785e124a7bd5898a9b17286ffedb203",
+  "scope": {
+    "campaigns": [
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-1",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-2",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-3",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-4",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-5",
+      "/Users/v/Code_2026/qap-atlas/pilots/atlas-pilot-15/runs/pair-6"
+    ],
+    "budget": {
+      "input_tokens": 1000000000,
+      "output_tokens": 14000000
+    }
+  },
+  "reservation": {
+    "input_tokens": 2000000,
+    "output_tokens": 75000
+  },
+  "rationale": "Explicit uncertainty estimate: 2000000 input and 75000 output tokens, rounded above twice maxima among 19 completed Pilot 15 consolidation receipts (692362 input,24598 output). Failed call lasted607.3 seconds, versus completed maximum590.9. Historical usage is only a heuristic, not measured usage or a proven upper bound; actual aggregate cap compliance remains uncertified.",
+  "notice": "Actual usage remains unknown; actual aggregate cap compliance is not certified.",
+  "served_evidence": {
+    "journal_sha256": "5c37125376694228a3903c0f877847e2938f641dd3485062cbfdd415241d1a49",
+    "journal_size": 227903,
+    "event_count": 48,
+    "completed_model_items": 23,
+    "semantics": "Observed model service; actual usage unknown. Each call requires a separately approved reservation."
+  }
+}
