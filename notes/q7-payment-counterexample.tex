@@ -1,0 +1,302 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=24mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newcommand{\R}{\mathbb R}
+\title{A participation counterexample and a payment repair\\
+\large For the Q7 resource-allocation game}
+\author{}
+\date{4 November 2026}
+\begin{document}
+\maketitle
+\vspace{-2em}
+
+\paragraph{Scope.}
+Garjani, Shokri and Kebriaei~\cite{q7} propose a quadratic-payment
+mechanism and claim efficient Nash implementation, unique equilibrium,
+budget balance, individual rationality and stochastic learning convergence.
+This note gives separate counterexamples to participation and uniqueness
+for their explicit payment, and proves a static participation repair.
+It does not establish convergence of a learning algorithm
+or priority of the repaired mechanism.
+
+\section{The game and the payment}
+There are $N\ge2$ players and $K$ resources with capacity
+$c\in\R_+^K$. Player $n$ has a compact convex set
+$X_n\subset\R_+^K$ containing zero and a private valuation
+$V_n(x_n)=\mathbb E[\psi_n(x_n;\xi_n)]$, with $V_n(0)=0$.
+The planner's problem is
+\begin{equation}\label{planner}
+ \max_{x_n\in X_n}\sum_{n=1}^N V_n(x_n)
+ \quad\text{subject to}\quad \sum_nx_n\le c.
+\end{equation}
+Player $n$ submits a quantity and a nonnegative price vector,
+$s_n=(x_n,p_n)\in X_n\times\R_+^K$. The allocation is exactly $x_n$;
+shared capacity is not a constraint on unilateral messages.
+Utility is $U_n(s)=V_n(x_n)-t_n(s)$: positive tax is paid by the player,
+and negative tax is a subsidy. A player submits neither its valuation
+function nor a report of its type.
+
+\begin{definition}
+A profile $s^*$ is a Nash equilibrium if
+$U_n(s_n^*,s_{-n}^*)\ge U_n(s_n,s_{-n}^*)$ for every player and every
+admissible joint quantity--price deviation $s_n$.
+Individual rationality means $U_n(s^*)\ge V_n(0)=0$ for every player.
+Budget balance means $\sum_nt_n(s^*)=0$.
+\end{definition}
+
+Write the paper's payment scale as $\gamma>0$ (its notation is
+$\alpha$). Its explicit payment, regrouped algebraically, is
+\begin{align}
+t_n^{\rm orig}(s)={}&
+ \underbrace{\frac{\gamma}{2(N-1)}
+ \sum_{m\ne n}\|p_n-p_m\|^2}_{\text{price disagreement}}\notag\\
+&\underbrace{{}-\frac{\gamma}{N-1}p_n^\top
+ \left(\sum_mx_m-c\right)}_{\text{excess-demand signal}}
+ +\underbrace{\frac{\gamma N}{(N-1)^2}
+ \left(\sum_{m\ne n}p_m\right)^\top(x_n-c/N)}_{\text{quantity charge}}\notag\\
+&\underbrace{{}-\frac{\gamma}{(N-1)^2}
+ \sum_{m\ne n}p_m^\top(x_m-c/N)}_{\text{opponent-only adjustment}}.
+\label{original}
+\end{align}
+The first term alone makes the best price the others' average.
+The first two together, holding quantities fixed, give
+\[
+ p_n^{\rm BR}=\left[
+ \frac1{N-1}\sum_{m\ne n}p_m+
+ \frac{\sum_mx_m-c}{N-1}\right]_+,
+\]
+where projection onto the nonnegative orthant is coordinatewise.
+Excess demand therefore raises proposed prices. The second and third
+terms together give
+\[
+ \nabla_{x_n}t_n^{\rm orig}
+ =\gamma\left(-\frac{p_n}{N-1}
+ +\frac{N}{(N-1)^2}\sum_{m\ne n}p_m\right)
+ =\gamma p\quad\text{when all }p_m=p.
+\]
+The reference $c/N$ changes transfer levels, not marginal quantity
+incentives. The last term affects the recipient's utility but not its
+best response, since it depends only on opponents' messages.
+
+\section{A three-player, one-resource counterexample}
+\paragraph{The original proposition.}
+In the subsection entitled ``A feasible solution to linear matrix
+inequalities'', the proposition introducing the explicit payment
+(source label \texttt{prop2}) asserts the following, restated in this
+note's notation:
+\begin{quote}
+The payment $t_n^{\rm orig}$ in~\eqref{original} satisfies the paper's
+sufficient matrix conditions for P1--P4, and consequently the induced
+mechanism has: P1, an existing and unique Nash equilibrium; P2, an
+equilibrium allocation solving the welfare problem; P3, zero total
+equilibrium payments; and P4, nonnegative equilibrium utility for every
+player relative to the zero outside option.
+\end{quote}
+These are claims of the original paper, not assumptions of the
+counterexample below. Stochastic learning convergence is the separate
+property P5, treated subsequently in the paper.
+
+\begin{proposition}\label{counterexample}
+The explicit original payment need not be individually rational, even
+with smooth strongly concave deterministic valuations and an efficient,
+budget-balanced equilibrium.
+\end{proposition}
+\begin{proof}
+Set $N=3$, $K=1$, $c=\gamma=1$, $X_n=[0,2]$, and
+\[
+ V_1(x)=5x-\tfrac12x^2,\qquad
+ V_2(x)=V_3(x)=-x-\tfrac12x^2.
+\]
+These valuations are normalized and $1$-strongly concave. Deterministic
+losses satisfy the stochastic model as a special case. Consider
+\[
+ x^*=(1,0,0),\qquad p^*=(4,4,4).
+\]
+For every player the Hessian of its own utility in $(x_n,p_n)$ is
+\[
+ H=\begin{pmatrix}-1&1/2\\1/2&-1\end{pmatrix},
+ \qquad \operatorname{eig}(H)=\{-3/2,-1/2\}.
+\]
+Thus own utility is strictly concave. At this profile the own gradients
+are $(0,0)$ for player 1 and $(-5,0)$ for players 2 and 3.
+The latter players are at the lower quantity boundary. These conditions
+prove global best responses over $[0,2]\times\R_+$, hence a Nash
+equilibrium. The allocation also solves~\eqref{planner}: players 2 and
+3 have strictly decreasing valuations, while player 1's valuation is
+increasing throughout $[0,1]$.
+
+Direct substitution in~\eqref{original} gives
+\[
+\begin{array}{c|rrrr|rrr}
+ &t^{(1)}&t^{(2)}&t^{(3)}&t^{(4)}&t_n^{\rm orig}&V_n&U_n\\\hline
+ 1&0&0&4&2/3&14/3&9/2&-1/6\\
+ 2&0&0&-2&-1/3&-7/3&0&7/3\\
+ 3&0&0&-2&-1/3&-7/3&0&7/3
+\end{array}
+\]
+Transfers balance, but player 1's utility is negative. It would prefer
+the stipulated outside option of zero. This does not contradict its
+best response within the game: requesting zero is still subject to the
+payment rule, whereas opting out is the external participation benchmark.
+\end{proof}
+
+\paragraph{Exactly what this disproves.}
+The example directly contradicts \textbf{P4}: player 1 receives $-1/6$
+at a Nash equilibrium. Thus the original proposition's combined
+P1--P4 conclusion is false. This counterexample does not contradict
+\textbf{P1}, the claim of equilibrium existence and uniqueness.
+It satisfies \textbf{P2} and \textbf{P3}: allocation
+is optimal and transfers sum to zero. It therefore does not disprove
+either of those properties. Nor does a static example alone disprove
+the separate convergence claim P5. A player can have negative utility
+even if a learning process converges perfectly to this equilibrium.
+
+The claimed satisfaction of the sufficient conditions also fails
+directly. In the original parameterization, the linear-in-price
+part of the tax is $\sum_m p_m^\top a_m^n$. The paper's sufficient
+participation conditions include $\sum_m a_m^n\le0$.
+Collecting the capacity terms in~\eqref{original} instead gives
+\[
+ \sum_m a_m^n
+ =\frac{\gamma c}{N-1}-\frac{\gamma c}{N}
+ =\frac{\gamma c}{N(N-1)}.
+\]
+This is positive on every positive-capacity coordinate; in the example
+it is $1/6$. Hence the proposition's assertion that its explicit
+payment satisfies the sufficient participation conditions is false.
+This does not refute the separate conditional participation proposition
+for coefficients that actually satisfy those conditions.
+
+\section{A continuum of price equilibria}
+\begin{proposition}\label{nonunique}
+The original game can have infinitely many Nash equilibria, even with
+a unique efficient allocation and increasing, strongly concave valuations.
+\end{proposition}
+\begin{proof}
+Set $N=3$, $K=1$, $c=3$, $\gamma=1$, and, for every player,
+\[
+ X_n=[0,1],\qquad V_n(x)=2x-\tfrac12x^2.
+\]
+For every $q\in[0,1]$, consider the profile
+\[
+ x_1=x_2=x_3=1,\qquad p_1=p_2=p_3=q.
+\]
+At this profile, differentiation of the original utility gives
+\[
+ \partial_{x_n}U_n=1-q\ge0,\qquad
+ \partial_{p_n}U_n=0.
+\]
+Each quantity is at its upper boundary. The own utility Hessian,
+in $(x_n,p_n)$, is again
+\[
+ \begin{pmatrix}-1&1/2\\1/2&-1\end{pmatrix}\prec0.
+\]
+Thus the boundary first-order conditions suffice for global best
+responses, including at $q=0$. Every displayed profile is a Nash
+equilibrium. All four payment terms vanish: prices agree, total
+demand equals capacity, and $x_n=c/N=1$. Each player has utility
+$V_n(1)=3/2$.
+\end{proof}
+
+This example directly disproves the uniqueness conclusion in
+\textbf{P1} for the explicit payment. It preserves existence,
+efficiency (P2), budget balance (P3), and participation (P4).
+All equilibria displayed have the same allocation but different price
+messages. Strict concavity in each player's own strategy ensures a
+unique best response to fixed opponents, not a unique joint equilibrium.
+Deleting the opponent-only term preserves this continuum, so the
+participation repair below does not repair full-equilibrium uniqueness.
+The theorem proves uniqueness only of the allocation.
+
+\section{Deleting the opponent-only adjustment}
+Define the repaired payment by keeping just the first three terms:
+\begin{equation}\label{repair}
+ t_n^c(s)=t_n^{\rm orig}(s)
+ +\frac{\gamma}{(N-1)^2}
+ \sum_{m\ne n}p_m^\top(x_m-c/N).
+\end{equation}
+All unilateral utility differences are unchanged. Consequently the
+original and repaired games have exactly the same best responses and
+Nash equilibria; only utility levels and transfers change.
+
+\begin{theorem}[Static implementation and participation]\label{repair-theorem}
+Assume each $V_n$ is continuously differentiable and $m$-strongly concave
+on $X_n$, with $V_n(0)=0$, and $\gamma\le m(N-1)^2$.
+Assume the planner has a primal-dual optimum $(x^*,\lambda^*)$
+satisfying its KKT conditions. Then the repaired game has an equilibrium,
+and every equilibrium has the planner's unique optimal allocation,
+common prices, exact budget balance and individual rationality.
+Equilibrium prices need not be unique.
+\end{theorem}
+\begin{proof}
+Put $S=\sum_nx_n$. The negative own price gradient is
+\[
+ F_{p_n}=\nabla_{p_n}t_n^c
+ =\gamma\left[p_n-\frac1{N-1}\sum_{j\ne n}p_j
+ -\frac{S-c}{N-1}\right].
+\]
+At any equilibrium, orthant optimality gives
+$F_{p_n}\ge0$ and $p_n^\top F_{p_n}=0$.
+Summing the gradients yields
+$\sum_nF_{p_n}=\gamma N(c-S)/(N-1)$, hence $S\le c$.
+For $\bar p=N^{-1}\sum_np_n$ and $r=c-S\ge0$,
+summed complementarity reads
+\[
+ 0=\frac{\gamma N}{N-1}\sum_n\|p_n-\bar p\|^2
+ +\frac{\gamma}{N-1}\left(\sum_np_n\right)^\top r.
+\]
+Both terms are nonnegative. Therefore $p_n=p$ for all $n$ and
+$p^\top(c-S)=0$. Allocation optimality becomes
+\[
+ \langle-\nabla V_n(x_n)+\gamma p,z_n-x_n\rangle\ge0
+ \qquad(z_n\in X_n).
+\]
+Together these are precisely the planner KKT conditions with
+$\lambda=\gamma p$, so every equilibrium allocation is optimal and
+is unique by strong concavity.
+
+Conversely, set every price to $\lambda^*/\gamma$ at a planner
+primal-dual optimum. The displayed first-order conditions hold.
+They suffice for global best responses because each player's negative
+utility has own Hessian bounded below by
+\[
+ \begin{pmatrix}
+ mI&-\gamma I/(N-1)\\
+ -\gamma I/(N-1)&\gamma I
+ \end{pmatrix}\succeq0,
+\]
+by $\gamma\le m(N-1)^2$. For continuously differentiable strongly
+concave valuations the same conclusion follows by subtracting the
+strong-convexity quadratic, without requiring second derivatives.
+This establishes existence.
+
+At common prices the repaired transfer simplifies to
+\[
+ t_n^c=\gamma p^\top
+ \left(x_n-\frac1{N-1}\sum_{j\ne n}x_j\right),
+\]
+so summing gives zero. Player $n$ can deviate to $(0,p)$, whose tax is
+$-\gamma p^\top\sum_{j\ne n}x_j/(N-1)\le0$.
+Its utility from that deviation is nonnegative. Equilibrium optimality
+therefore gives $U_n^c(s^*)\ge0$.
+\end{proof}
+
+In the counterexample, repaired taxes are $(4,-2,-2)$ and utilities
+are $(1/2,2,2)$. The equilibrium is unchanged, transfers balance, and
+all players benefit from participation. These static results do not
+guarantee capacity feasibility away from equilibrium, truthful type
+revelation, incentives to follow a prescribed learning algorithm, or
+uniqueness of the complete quantity--price profile.
+
+\begin{thebibliography}{1}
+\bibitem{q7}
+S. Garjani, M. Shokri and H. Kebriaei.
+\emph{A Systematic Approach to Mechanism Design with Stochastic Dynamic Stability}.
+arXiv:2608.29130, 2026.
+\url{https://arxiv.org/abs/2608.29130}.
+\end{thebibliography}
+\end{document}
