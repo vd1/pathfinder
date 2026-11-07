@@ -9,9 +9,12 @@ Settings under "stub" in campaign.json: "verify" (the verifier's decision, defau
 returns the manuscript unchanged, a clear check and dismissed claims; and for PCE editing "pce_fact" (pass), "pce_critic" (pass)
 and "pce_editor" (accept)."""
 from __future__ import annotations
-import json, re
+import json, re, threading
 from pathlib import Path
 from .ledger import Ledger, SUBSTANTIVE
+
+PEER_TURN = threading.Lock()   # a stub peer's finding and its ready mark land together, so concurrent peers
+                               # never both see each other's finding in a first turn (the outcome must not depend on timing)
 
 NOTE = r"""\documentclass{article}
 \usepackage{pathfinder-note}
@@ -50,10 +53,11 @@ def reply(campaign, request) -> str:
     stage = request.stage
     if stage == "peer":
         ledger = Ledger(cwd / "ledger.jsonl")
-        if not any(r["actor"] == request.actor and r["kind"] in SUBSTANTIVE for r in ledger.read()):
-            ledger.add(request.actor, "finding", f"stub finding by {request.actor}")
-        latest = ledger.count()
-        ledger.add(request.actor, "ready", f"ready at #{latest}", seen=latest)
+        with PEER_TURN:
+            if not any(r["actor"] == request.actor and r["kind"] in SUBSTANTIVE for r in ledger.read()):
+                ledger.add(request.actor, "finding", f"stub finding by {request.actor}")
+            latest = ledger.count()
+            ledger.add(request.actor, "ready", f"ready at #{latest}", seen=latest)
         return "stub peer turn"
     if stage == "consolidate":
         return NOTE
