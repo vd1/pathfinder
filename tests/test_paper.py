@@ -1,7 +1,7 @@
 import json, shutil, subprocess, sys
 from pathlib import Path
 import pytest
-from pathfinder import paper, research, transport
+from pathfinder import paper, research, resources, transport
 from pathfinder.config import Campaign
 
 FAKE = f"{sys.executable} {Path(__file__).parent / 'fake_cli.py'}"
@@ -82,7 +82,8 @@ def test_review_only_round_on_hand_edited_paper(tmp_path, monkeypatch):
 
 def test_tex_env_exposes_the_style_files():
     env = paper.tex_env()
-    assert str(paper.STYLES) in env["TEXINPUTS"] and (paper.STYLES / "pathfinder-paper.sty").exists()
+    styles = resources.engine_styles()
+    assert str(styles) in env["TEXINPUTS"] and (styles / "pathfinder-paper.sty").exists()
 
 
 @pytest.mark.skipif(not shutil.which("latexmk"), reason="latexmk not installed")

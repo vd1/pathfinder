@@ -1,9 +1,9 @@
 """The research loop: seats, rolling admission, budget guard, stop as a drain, health flag."""
 from __future__ import annotations
-import copy, hashlib, json, os, signal, time, uuid
+import copy, hashlib, json, os, signal, time
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from pathlib import Path
-from . import research, transport
+from . import research
 from . import alerts, corpus, health
 from .admission import Refused
 
@@ -34,25 +34,6 @@ def result_provenance(campaign, pair_id: str) -> dict:
         "record_ids": [row["id"] for row in corpus.pair_rows(campaign, pair_id)],
         "snapshot_digests": [_digest(campaign.path(f"{side}.jsonl")) for side in ("Q", "P")],
     }
-
-
-def prepare_provider_stage(role: str, inputs: dict, *, input_limit: int, output_limit: int) -> dict:
-    frozen = copy.deepcopy(inputs)
-    request = {
-        "role": role,
-        "inputs": frozen,
-        "input_digests": {
-            name: hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
-            for name, value in frozen.items()
-        },
-        "input_tokens": sum(len(str(value).split()) for value in frozen.values()),
-        "output_token_limit": output_limit,
-        "tools": [],
-        "status": "ready",
-    }
-    if request["input_tokens"] > input_limit:
-        request["status"] = "blocked"
-    return request
 
 
 def _now():
@@ -418,7 +399,6 @@ def run_pair(campaign, pair_id: str, stages=("research", "edit", "paper"), inter
     """One shortlisted pair through the requested stages, resuming where it stands: research and edit as a
     bounded run, then, for a DRAFT, the paper under campaign ownership and the thread lock. Returns each
     stage's status and the research run's exit code."""
-    from . import edit, paper
     stages = tuple(stages)
     if stages not in STAGE_SETS:
         raise ValueError(f"stages must be one of {sorted(STAGE_SETS)}, got {stages}")

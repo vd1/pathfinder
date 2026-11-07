@@ -16,17 +16,9 @@ Optional, for conditional scans (repl, 11 October 2026):
 from __future__ import annotations
 import copy, hashlib, json, threading
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 from . import contracts, corpus, transport
-from .contracts import extract_json as parse_json   # kept for deployments that import it from here (proofTree)
+from .contracts import extract_json as parse_json  # noqa: F401  kept for deployments that import it from here (proofTree)
 from .admission import Refused
-
-
-def prompts_dir(campaign) -> Path:
-    """Kept for callers of the old directory-wide lookup; prompts now resolve per file (resources.prompt)."""
-    from . import resources
-    local = campaign.path("prompts")
-    return local if local.exists() else resources.engine_prompts()
 
 
 def context_of(campaign) -> dict | None:

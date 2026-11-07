@@ -8,7 +8,7 @@ from ledger text and declarations only, never mined from code."""
 from __future__ import annotations
 import re
 from . import corpus
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
@@ -129,7 +129,7 @@ def registered_sources(campaign, pair_id: str) -> dict:
 
 def __getattr__(name):
     if name == "EvidenceError":                 # defined beside EvidenceUnavailable, so every existing catch holds
-        from .research import EvidenceError
+        from .review_evidence import EvidenceError
         return EvidenceError
     raise AttributeError(name)
 

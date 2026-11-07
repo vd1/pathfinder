@@ -5,20 +5,19 @@ re-exports everything else under its old names: what every thread shares is in t
 composable review reads in review_evidence.py, and composable research (direct EVA, EVA over bundles) in
 composable_research.py."""
 from __future__ import annotations
-import hashlib, json, os, re, shutil, sys, tempfile, threading, time
+import hashlib, json, threading, time
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
-from urllib.parse import urlsplit
-from dataclasses import asdict
-from . import context, contracts, corpus, failures, transport
+from . import context, contracts, transport
 from .context import Section
 from .ledger import Ledger
-from .scan import prompts_dir
 from .admission import Refused
-from .thread import (PEERS, TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, _pair, HELPER_DIR, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, READING, evidence_by_reference, evidence_pointer, unfence, is_latex_document, _tex_escape, paper_meta, status_line, write_meta, _inputs, ROLE_BRIEFS, _prompt, role_brief, _check, _scan_row, pair_context, residual_timeout, peer_call_cap)
-from .review_evidence import (EvidenceUnavailable, EvidenceError, _external_citations, _declared_outputs, EVIDENCE_PATH, EVIDENCE_MAX_BYTES, _evidence_references, _assessment_evidence, _bundle_evidence, _review_material)
-from .composable_research import (_request_file, retain_response, _direct_requests, _review_contract, _apply_research_review, next_requests, export_outcome, _verdict_under_direct_eva, _repair_review, _finish_repairs, _run_composable)
-from .thread import normalize_consolidation
+from .thread import (TERMINAL, Stopped, _now, _atomic_write, status, OVERSIZE_FAILURE, _set, install_helper, prepare, thread_sections, _stage_attempts, judge_sections, _consolidate_prompt, evidence_pointer, is_latex_document, write_meta, _inputs, _prompt, _check, _scan_row, pair_context, residual_timeout, peer_call_cap, normalize_consolidation)
+from .composable_research import _run_composable
+# Re-exported under their old names for the modules, tests and deployments that still read them from here.
+from .thread import _pair, READING, unfence, paper_meta  # noqa: F401
+from .review_evidence import (EvidenceUnavailable, _external_citations, _evidence_references,  # noqa: F401
+                              _assessment_evidence, _review_material)
+from .composable_research import _request_file, retain_response, next_requests, export_outcome  # noqa: F401
 
 
 def _outline(path) -> str:

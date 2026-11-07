@@ -6,7 +6,6 @@ import shutil
 from pathlib import Path
 from . import config, context, contracts, health, pce, pce_recovery, provenance, research, resources, routing, runner, transport
 from .context import Section
-from .ledger import Ledger
 
 
 def prepare(campaign, pair, origin, reason, receipt=None):

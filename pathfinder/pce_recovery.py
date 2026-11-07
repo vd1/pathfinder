@@ -36,7 +36,6 @@ def active(campaign, pair_id):
 
 
 def action(campaign, pair_id):
-    root = pce.workflow(campaign, pair_id)
     out = pce.result(campaign, pair_id)
     if active(campaign, pair_id) and out["status"] == "none":
         return "resume PCE continuation"

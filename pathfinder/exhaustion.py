@@ -7,7 +7,7 @@ until_source, campaign}. Admission holds a call to a paused provider until `unti
 it waits; an expired pause is no pause. When the message names no reset time the pause lasts DEFAULT_HOLD and
 the next call tries again. `pathfinder pauses` lists the pauses; `--clear BACKEND` removes one."""
 from __future__ import annotations
-import json, os, re, time
+import json, os, re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 

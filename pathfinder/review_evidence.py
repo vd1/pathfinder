@@ -2,7 +2,7 @@
 bundles, and the evidence errors that block a review before any call. Split from research.py in the
 phase 9 sweep; research re-exports every name."""
 from __future__ import annotations
-import hashlib, json, re
+import hashlib, json
 from pathlib import Path
 from urllib.parse import urlsplit
 from . import context, projection
@@ -85,7 +85,6 @@ def _declared_outputs(d) -> set:
     return {(r["document"], r.get("ledger_seq"), r["path"]) for r in records if r.get("status") == "output"}
 
 
-EVIDENCE_PATH = re.compile(r"(?<![\w:/@.-])(?:[\w.-]+/)+[\w.-]+\.[A-Za-z0-9]+")
 EVIDENCE_MAX_BYTES = 300_000
 
 

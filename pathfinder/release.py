@@ -12,7 +12,6 @@ from __future__ import annotations
 import fcntl, hashlib, json, re, shutil, subprocess, unicodedata
 from datetime import datetime, timezone
 from . import paper, presentation
-from .research import _now
 
 PREAMBLE = r"""\documentclass[11pt]{article}
 \usepackage[a4paper,margin=30mm]{geometry}

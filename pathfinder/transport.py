@@ -548,7 +548,6 @@ def execute(campaign, request: ModelRequest):
             "cache_write": None, "cache_read": None, "prefix_read": None, "cost": None, "cost_basis": None,
             "error": error, "prompt_chars": size, "tool_calls": None})
         raise PromptTooLarge(error)
-    from . import admission, budget_group
     retries, backoff = retry_policy(campaign)
     unserved_asked = transient_asked = 0
     deadline = _retry_deadline(campaign, request)
@@ -616,7 +615,7 @@ JSON_ONLY_MARK = "(JSON only.)"
 
 def execute_routed(campaign, request: ModelRequest):
     """One call on an already routed campaign: admission, then the attempt (the refusal fallback's second try)."""
-    from . import admission, library, collection, budget_group
+    from . import library, collection
     if collection.enabled(campaign):
         collection.check_request(campaign, request)
         request = dataclasses.replace(request, search=False)

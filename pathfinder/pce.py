@@ -22,7 +22,7 @@ Not ported: retained-response imports, the length-framed editor packet, and the 
 command allowlist (the engine's note is a whole document, checked by its build and reference checks)."""
 from __future__ import annotations
 import difflib, fnmatch, hashlib, json, re, time
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from . import resources, transport
 from .contracts import extract_json
 from .thread import Stopped, _atomic_write, is_latex_document, unfence

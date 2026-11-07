@@ -10,7 +10,7 @@ pathfinder.paper_source with an arXiv id, a DOI, a URL or a title: a hit is retu
 once and added to the cache for everyone; calls with tools may write that one directory. `pathfinder prefetch`
 fills the cache for every shortlisted pair at once, before research."""
 from __future__ import annotations
-import json, os, re, shlex, shutil, sys, time
+import json, os, shlex, shutil, sys, time
 from pathlib import Path
 from . import paper_source, net
 

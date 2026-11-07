@@ -3,7 +3,6 @@ With "paper_reviewers": 2 or 3, each round has that many independent reviews, as
 is accepted only when every reviewer accepts, and otherwise the author answers all their findings."""
 from __future__ import annotations
 import hashlib, json, os, re, shlex, shutil, subprocess
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import context, contracts, corpus, research, transport
 from .context import Section
@@ -51,9 +50,6 @@ def _set(campaign, pair_id, **kw):
     from . import events
     events.transition(campaign, pair_id, "assessment", before, s)
     return s
-
-
-STYLES = Path(__file__).parent / "styles"
 
 
 def tex_env(where=None) -> dict:

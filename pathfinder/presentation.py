@@ -720,7 +720,7 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=(), resid
             continue                                   # restores the accepted wording
         ot, nt = _TOKEN.findall(" ".join(old)), _TOKEN.findall(" ".join(new))
         added = []
-        for t, k1, k2, l1, l2 in difflib.SequenceMatcher(None, ot, nt, autojunk=False).get_opcodes():
+        for t, _, _, l1, l2 in difflib.SequenceMatcher(None, ot, nt, autojunk=False).get_opcodes():
             if t in ("replace", "delete") and any(s in acc for s in old) and not may_reword(old):
                 out.append(f"changes accepted wording: {' '.join(old)[:160]}")
                 break

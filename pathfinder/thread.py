@@ -7,7 +7,6 @@ from . import context, corpus
 from .context import Section
 
 
-PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json
 TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"}
 
 

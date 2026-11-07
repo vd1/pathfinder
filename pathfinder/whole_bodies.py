@@ -35,7 +35,7 @@ def content_role(name):
 def _segments(files,role):
     if role not in ROLES or not isinstance(files,dict) or len(files)>4096 or any(not isinstance(k,str) or not isinstance(v,str) for k,v in files.items()):raise ValueError('scope')
     if sum(len(v) for v in files.values())>MAX_TOTAL:raise ValueError('expanded scope size')
-    roots=[];index={};records=[];raw=[];canonical={};aliases={}
+    roots=[];index={};records=[];raw=[];canonical={}
     stats=dict(probes=0,comparisons=0,indexed=0,segments=0,copied_chars=0,literal_chars=0)
     def literal(text,segs):
         i=len(roots);roots.append(text);raw.append(text)

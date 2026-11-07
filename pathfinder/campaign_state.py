@@ -4,7 +4,7 @@ Derived, never authoritative: status files say where each unit stands, receipts 
 when things happened. Research, editorial and assessment states stay separate, so "DRAFT" research with
 a blocked edit reads as both. A cut event stream makes progress "unknown" rather than inferred."""
 from __future__ import annotations
-import calendar, json, os, re, time
+import calendar, json, os, time
 from collections import Counter
 from pathlib import Path
 from . import actionability, budget, admission, corpus, edit, events, paper, presentation, reopen, research, transport

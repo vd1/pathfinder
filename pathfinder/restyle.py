@@ -5,7 +5,7 @@ artefacts: every verdict and review records the digest of the text it read, so t
 change. The restyled text exists only in the build's scratch directory; the PDF beside the source is
 replaced, and pathfinder-meta.tex beside it gives the title block its pair, papers, date and state."""
 from __future__ import annotations
-import json, re, shutil
+import json, re
 from pathlib import Path
 from . import edit, paper, research
 

@@ -1,6 +1,6 @@
 """Corpora: JSONL rows from the arXiv API, e-print sources flattened to one file."""
 from __future__ import annotations
-import gzip, io, json, re, shutil, subprocess, tarfile, time, urllib.error, urllib.parse, urllib.request
+import json, re, time, urllib.error, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from . import net
