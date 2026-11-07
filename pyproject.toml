@@ -25,3 +25,7 @@ packages = ["pathfinder"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "prompts" = "pathfinder/resources/prompts"
+
+# The engine suite. Handoff proofs under operator-log/ and agents' files under experiments/ are not collected.
+[tool.pytest.ini_options]
+testpaths = ["tests"]

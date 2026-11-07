@@ -693,7 +693,7 @@ def record_completed_provider_call(context):
         returncode = 0
         stdout = iter(line + "\n" for line in context.provider_lines)
         stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()
-        stderr = type("Stderr", (), {"read": lambda self: ""})()
+        stderr = type("Stderr", (), {"read": lambda self, size=-1: ""})()
 
         def wait(self, timeout=None):
             return self.returncode
@@ -741,7 +741,7 @@ def complete_without_parsed_account(context):
         returncode = 0
         stdout = iter(line + "\n" for line in context.provider_lines)
         stdin = type("Stdin", (), {"write": lambda self, value: None, "close": lambda self: None})()
-        stderr = type("Stderr", (), {"read": lambda self: ""})()
+        stderr = type("Stderr", (), {"read": lambda self, size=-1: ""})()
 
         def wait(self, timeout=None):
             return self.returncode
