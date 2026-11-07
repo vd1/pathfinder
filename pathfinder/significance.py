@@ -8,7 +8,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from . import admission, exhaustion, health, library, paper, pce, provenance, runner, transport
+from . import admission, exhaustion, health, paper, pce, provenance, runner, transport
 from .significance_rubric import RUBRIC
 
 MODELS = {'sol': 'gpt-6.1-sol', 'astra': 'gpt-6-astra'}
@@ -126,7 +126,7 @@ def run(campaign, pair, *, apply=False, accept_change=None):
                                             cwd=work, timeout=1800, thread=pair, stage=STAGE, actor=actor, schema=SCHEMA)
                     pce._write(d, 'dispatch.json', pce._json({'binding': bound, 'model': model,
                                'actor': actor, 'run_id': c.run_id,
-                               'effective_prompt_sha256': _hash((library.request_rule(c, req) + prompt).encode())}), immutable=True)
+                               'effective_prompt_sha256': _hash((transport.pool_rule(c, req) + prompt).encode())}), immutable=True)
                     try:
                         raw = transport.execute(c, req)
                     except (admission.Refused, transport.PromptTooLarge) as exc:

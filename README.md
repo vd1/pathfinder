@@ -362,7 +362,8 @@ your own campaign directory and edit the models and the budget.
 
 ### Papers before research
 
-Every agent receives the same paper-pool rule: check locally first; on a miss,
+Every agent with tools or file access receives the same paper-pool rule (a call
+with neither cannot open or fetch a paper, so it gets none): check locally first; on a miss,
 download LaTeX source into the pool if available; only when LaTeX is unavailable,
 download the PDF. The pool may convert that PDF with `pdftotext` once and retain
 both the original and the text for later requests. Agents use the helper instead

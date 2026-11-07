@@ -118,13 +118,15 @@ def test_default_pool_is_shared_across_campaigns(tmp_path, monkeypatch):
 
 @pytest.mark.parametrize("stage,tools,reads", [("peer", True, False), ("edit", True, False),
     ("author", True, False), ("verify", False, False), ("present_lookup", True, True), ("pce-critic", False, False)])
-def test_every_agent_gets_pool_rule_without_extra_permissions(tmp_path, monkeypatch, stage, tools, reads):
+def test_every_agent_that_can_read_gets_pool_rule_without_extra_permissions(tmp_path, monkeypatch, stage, tools, reads):
+    """A call with neither tools nor reads cannot open or fetch a paper, so it gets no pool rule (proofTree's
+    tool-less Carrie and scan calls, November 2026: the rule only added length)."""
     c = make(tmp_path)
     captured = []
     monkeypatch.setattr(transport, "_attempt", lambda campaign, request: captured.append(request) or {"text": "ok"})
     transport.call("Task", campaign=c, model=c.model, tools=tools, reads=reads, search=False, cwd=tmp_path,
                    timeout=1, thread="Q1P1", stage=stage, actor="agent")
     r = captured[0]
-    assert library.POOL_RULE in r.prompt and r.prompt.endswith("Task")
+    assert (library.POOL_RULE in r.prompt) == (tools or reads) and r.prompt.endswith("Task")
     assert (r.tools, r.reads) == (tools, reads)
     assert ("Run:" in r.prompt) == (tools and not reads)

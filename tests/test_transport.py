@@ -1,7 +1,7 @@
 import json, sys
 from pathlib import Path
 import pytest
-from pathfinder import library, transport
+from pathfinder import transport
 from pathfinder.config import Campaign
 
 FAKE = str(Path(__file__).parent / "fake_cli.py")
@@ -10,7 +10,7 @@ FAKE = str(Path(__file__).parent / "fake_cli.py")
 def pool_rule_size(c, tools=False):
     request = transport.request("", model="m", tools=tools, search=False, cwd=c.root,
                                 timeout=10, thread="T", stage="scan", actor="judge")
-    return len(library.request_rule(c, request))
+    return len(transport.pool_rule(c, request))
 
 
 def campaign(tmp_path, backend="claude"):

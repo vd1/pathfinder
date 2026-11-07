@@ -546,16 +546,25 @@ def _admitted_attempt(campaign, request, deadline):
                 pass  # Release seats/group lock before returning to the shared wait.
 
 
+def pool_rule(campaign, request) -> str:
+    """The paper-pool rule for this call. A call with neither tools nor reads cannot open or fetch a paper, so
+    it gets none outside an approved collection (proofTree's tool-less Carrie and scan calls, November 2026)."""
+    from . import library, collection
+    if not (request.tools or request.reads or collection.enabled(campaign)):
+        return ""
+    return library.request_rule(campaign, request)
+
+
 def execute(campaign, request: ModelRequest):
     """Refuse an oversized prompt, then admit the call, then record an active attempt before launching it,
     including abrupt-exit evidence. A refused call raises before any active-call record exists. A campaign
     route for the request's stage (pathfinder.routing) applies first, so every stage is routed alike."""
-    from . import routing, library, collection
+    from . import routing, collection
     campaign, request = routing.apply(campaign, request)
     if collection.enabled(campaign):
         collection.check_request(campaign, request)
         request = dataclasses.replace(request, search=False)
-    request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
+    request = dataclasses.replace(request, prompt=pool_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
     limit, size = max_prompt_chars(campaign), len(request.prompt)
     if size > limit:
@@ -632,11 +641,11 @@ JSON_ONLY_MARK = "(JSON only.)"
 
 def execute_routed(campaign, request: ModelRequest):
     """One call on an already routed campaign: admission, then the attempt (the refusal fallback's second try)."""
-    from . import library, collection
+    from . import collection
     if collection.enabled(campaign):
         collection.check_request(campaign, request)
         request = dataclasses.replace(request, search=False)
-    request = dataclasses.replace(request, prompt=library.request_rule(campaign, request) + request.prompt)
+    request = dataclasses.replace(request, prompt=pool_rule(campaign, request) + request.prompt)
     request = _json_only(campaign, request)
     return _admitted_attempt(campaign, request, _retry_deadline(campaign, request))
 
