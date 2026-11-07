@@ -1,0 +1,604 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{When Does a Contract Make Cooperation Optimal?}
+
+\begin{document}
+\maketitle
+
+Q develops mechanism design for agents with privately known preferences and capabilities, requiring incentives for truthful reporting and subsequent obedience. P studies self-negotiated contracts in CT-Bench, where resource-constrained LLM agents bargain, navigate, and sometimes refuse promised assistance.
+
+\paragraph{Connexion pursued and current assessment.}
+The productive connexion is to certify continuation incentives before interpreting contractual compliance as successful self-interested cooperation. Q supplies the discipline of checking compound deviations; P supplies sequential interaction and a restriction absent from Q's freely scalable reward constructions: budget-balanced transfers of at most \(20\) completion points. The question is whether continuation certificates distinguish profitable defection from failure to execute a beneficial agreement. \ledger{2,4,9}
+
+The surviving result is a conditional finite benchmark: games can have identical complete resource-word languages but different pure subgame-perfect equilibrium outcomes, and removing a movement option can eliminate a failure equilibrium without removing any complete resource word. Atomic exchanges and selective tile contracts also enable completion, so no expressive superiority of permissions has been established. The behavioral material remains thin: the latest presentation experiment produced no valid treatment decision. The preceding results are retained below with their restrictions; the response to the latest review, entry \(67\), is appended afterward. This account does not establish an explanation of P's representation gap or justify a paper from the present pair. \ledger{63,65,67,75,76}
+
+\paragraph{The initial objection.}
+\begin{objection}
+Natural-language agreements have not been shown to enable the capability counterfeiting excluded by Q.
+\end{objection}
+Q's verification order concerns which private-type claims an agent can substantiate, not ambiguity in interpreting an agreement. It permits complete report access. P's natural-language contracts trigger enforced transfers and are not merely unenforced promises. See \url{inputs/Q.tex}, lines 299--303. \ledger{1}
+
+P instead reports reduced residual trading and agents treating insufficient contracts as sufficient. Its judge audit found three errors among \(1{,}155\) approved moves, establishing an approved-move precision result without measuring all false negatives. Similar coverage counts do not establish equal pivotal coverage, timing, or feasible histories. P's representation comparison also changes confirmation and execution-time interpretation. These observations reject the counterfeiting account without identifying the behavioral mechanism. \ledger{1,9,67}
+
+With rewards, feasible histories, observations, enforcement, and beliefs matched exactly, presentation alone cannot change the optimization problem. A behavioral difference could reflect cognition, beliefs, or an unmeasured semantic difference; it would not by itself demonstrate counterfeiting. \ledger{1}
+
+\paragraph{A conditional obstruction without contracts.}
+\begin{claim}
+Under deterministic pure play, a terminating No-Contract Pay-for-Partner outcome with both players finishing and some voluntary coverage cannot be a Nash equilibrium under the conditions below.
+\end{claim}
+Payments must be separate and voluntary, without enforceable penalties or atomic reciprocal exchange. Chips spent after goal arrival must reduce terminal score. Players must be unable to block movement or confiscate inventories, and refusal must leave the giver's remaining own-funded route executable before termination. \ledger{5}
+
+Take the last actual coverage on the proposed path. Its giver can refuse, refuse further assistance, and execute its original remaining route. That route requires no subsequent received coverage, by the choice of the last payment. The giver still finishes with at least one additional chip, gaining at least \(5\) points. This is a profitable whole-strategy deviation regardless of whether retaliation is credible. Mutually dependent boards require coverage for both players to finish, so the argument applies under these assumptions. \ledger{5}
+
+This is a specialized last-transfer argument, not a new general impossibility theorem. A last payment in a stochastic run does not establish an ex ante profitable deviation. Mixed play, uncertainty about partners, and preferences beyond the prompted score remain outside it. \ledger{5,9}
+
+\paragraph{Bounded payments and controlled thresholds.}
+Let \(F_i\) indicate completion, \(r_i^0\) be base score, and \(q_i\) be the payment promised upon player \(i\)'s own completion. Interpreting transfers as payable to unfinished recipients,
+\[
+u_i=r_i^0-q_iF_i+q_jF_j,
+\qquad 0\leq q_i,q_j\leq20.
+\]
+At a controlled continuation where the giver's own completion and other score effects are fixed, spending one terminal chip costs \(5\). If coverage increases its partner's completion probability by \(\Delta p\),
+\[
+u_i(\mathrm{cover})-u_i(\mathrm{refuse})
+=q_j\Delta p-5.
+\]
+Pivotal deterministic coverage therefore breaks even at \(q_j=5\). No permitted payment strictly incentivizes coverage when \(\Delta p\leq1/4\); at equality the maximum payment permits only indifference. These comparisons do not classify P's observed refusals without controlling their other consequences. \ledger{3,4}
+
+If a finished player must supply \(k\) further chips to ensure its partner finishes, completing assistance rather than permanently stopping gives
+\[
+u_i(\mathrm{complete})-u_i(\mathrm{stop})
+=q_j-5k.
+\]
+Strict incentives require \(q_j>5k\). At \(k=4\), the cap permits only indifference; at \(k>4\), even weak incentives fail in this controlled comparison. \ledger{3,7}
+
+The initial synthetic continuation has Blue supply Red's two missing moves, then Red finish and decide whether to supply Blue's two missing moves. Each player has four own-funded moves, and refusal terminates the continuation. At Red's first decision,
+\[
+\begin{aligned}
+u_R(\mathrm{stop})&=80-q_R,\\
+u_R(\mathrm{help\ twice})&=70-q_R+q_B.
+\end{aligned}
+\]
+Thus the first assistance decision requires \(q_B>10\), although the final one requires only \(q_B>5\). When \(q_B>10\), Blue's eventual payoff satisfies
+\[
+70+q_R-q_B\geq50>0,
+\]
+so initiating cooperation is preferable to its zero outside option. At \(q_B=10\), favorable tie-breaking can support cooperation. Backward induction over all \(441\) integer contracts, with refusal at ties, confirms completion exactly when \(q_B>10\). \ledger{7}
+
+A geometric witness has rows
+\[
+\begin{pmatrix}
+G&R&R&B\\
+R&R&B&B\\
+B&B&B&R\\
+R&B&R&G
+\end{pmatrix}.
+\]
+Suitable routes are
+\[
+\begin{aligned}
+R:\;&(0,0)\to(0,1)\to(0,2)\to(0,3)\\
+   &\to(1,3)\to(2,3)\to(3,3),\\
+B:\;&(0,0)\to(1,0)\to(2,0)\to(2,1)\\
+   &\to(2,2)\to(2,3)\to(3,3).
+\end{aligned}
+\]
+Blue can wait while covering Red's blue tiles, then travel with Red covering its red tiles. Both goal-adjacent tiles are red. This realizes the prescribed order in P's stated board class, but does not establish membership in P's sampled boards or characterize unrestricted play. \ledger{8}
+
+\paragraph{The sequencing and geometry objections were consequential.}
+Checking all six orders of two gifts per player confirms that \(B,B,R,R\) requires \(q_B>10\), whereas \(B,R,B,R\) requires only \(q_B>5\), with refusal at ties. Consequently \((q_R,q_B)=(0,6)\) fails in the former and succeeds in the latter. The ten-point threshold is not an endogenous minimum. \ledger{11,13}
+
+Enumeration of all \(3{,}432\) balanced boards found \(204\) where both players require exactly two foreign chips. Every player has a six-move route attaining its minimum foreign-chip requirement. Of the \(396\) Red-independent, Blue-dependent boards, \(314\) require one red chip for Blue and \(82\) require two. Only four boards in the entire census have either player require three foreign chips. An unavoidable four-chip route obstruction therefore does not arise in P's selected classes, although chosen continuations can require more assistance. \ledger{8,14}
+
+\paragraph{The general continuation certificate.}
+Fix a finite continuation game, target strategy profile, transition laws, information, and beliefs. For history \(h\) and unilateral continuation deviation \(d_i\), let \(\Delta_{h,d_i}\) mean target expectation minus deviation expectation. Obedience requires
+\[
+\begin{split}
+\Delta_{h,d_i}\mathbb E[r_i^0]
+-q_i\Delta_{h,d_i}\Pr(F_i)
++q_j\Delta_{h,d_i}\Pr(F_j)
+\geq0.
+\end{split}
+\]
+With strategies and transition laws fixed, these are linear inequalities in bounded payments. Participation constraints are separate. Infeasibility excludes this target under this model and payment class; optimizing over targets is a further problem. \ledger{4}
+
+This transfers Q's joint-deviation discipline, not its single-agent cycle theorem, to P's sequential setting. Deviations must allow changed future actions. Positive margins require substantive comparisons excluding identity and payoff-identical deviations, and endogenous negotiation requires selection-stage incentives. \ledger{4,9}
+
+\paragraph{Reciprocal completion payments.}
+Replacing \((q_R,q_B)\) by \((q_R+t,q_B+t)\) changes player \(i\)'s payoff by
+\[
+u_i'-u_i=t(F_j-F_i).
+\]
+Every fixed both-finish trajectory retains its payoff; a sole finisher transfers an additional \(t\) to its unfinished partner. For \(q_B\geq q_R\), write \(q_R=c\), \(q_B=c+n\). Red's transfer is
+\[
+nF_B+c(F_B-F_R).
+\]
+The net successful-outcome transfer \(n\) and the common component \(c\) therefore have different strategic roles. P's net-payment summaries omit the latter without claiming strategic equivalence. The identity does not imply unchanged equilibrium routes or allocations. \ledger{15,17,22}
+
+\paragraph{The reconstructed monotone game.}
+The first endogenous solver allows right/down movement and waiting, with Red first and alternating turns. Own-color moves consume own chips; foreign-color moves request a chip from the other player, who may refuse. Requests require no prior promise. Finished players stop moving but can donate; terminal inventories determine scores, and completion transfers reach unfinished recipients. Contracts are fixed before play; fresh bargaining and detours are excluded. The game is finite because movement is monotone and inactivity bounded. It is not an audited replication of P's engine, whose repository and API returned HTTP \(403\). \ledger{16,17,18,19,22,23}
+
+The solver retains all pure subgame-perfect equilibrium outcomes, including ties. If \(E_a\) is the continuation equilibrium set after action \(a\) at a node controlled by \(i\), an outcome \(u\in E_a\) is supportable exactly when
+\[
+u_i\geq\max_{b\ne a}\min_{v\in E_b}v_i.
+\]
+Necessity follows from optimality against selected alternative continuations. For sufficiency, choose \(u\) after \(a\) and a minimizing equilibrium after every alternative. These choices are independent at distinct histories. A node with only one action retains its child's set. \ledger{16,22}
+
+All \(3{,}432\) boards and \(441\) integer payment pairs were covered. Within this monotone capped game, nine ordinal classes per payment suffice:
+\[
+\{0,1,5,6,10,11,15,16,20\}.
+\]
+Python and C++ agreed on \(324\) board/class cases and all \(441\) witness contracts. A consistency audit covered \(833{,}976\) board/class/protocol cases, checking ordering, encoding, score conservation, and the no-contract obstruction. These validate the declared computations rather than correspondence with P's implementation. \ledger{16,18,19,22}
+
+\paragraph{Protocol sensitivity and non-monotonicity.}
+I3 and I6 terminate after three and six inactive individual turns; R3 terminates after three complete inactive Red--Blue rounds. I6 can end after either actor, whereas R3 ends after Blue. Under monotone I3, \((6,6)\) makes every pure SPE complete on all \(3{,}432\) boards; at \((0,0)\), only the \(96\) independent boards have that guarantee. On the \(204\) two-chip mutual boards, \((0,6)\) supports completion everywhere but guarantees it on only \(105\); the same-net contract \((6,12)\) guarantees it everywhere. \ledger{16,18,19}
+
+Changing I3 to I6 changes \(241{,}586\) of \(277{,}992\) board/ordinal-contract outcome sets. The \((6,6)\) every-equilibrium guarantee falls to \(1{,}650\) boards overall. On the \(204\) two-chip mutual boards:
+\[
+\begin{array}{c|rrr}
+(q_R,q_B)&\mathrm{I3}&\mathrm{I6}&\mathrm{R3}\\ \hline
+(0,0)&0&0&0\\
+(6,6)&204&16&0\\
+(11,11)&204&32&95\\
+(16,16)&204&204&204\\
+(20,20)&204&204&204
+\end{array}
+\]
+Entries count boards where every pure SPE completes. Under R3, \((6,6)\) supports no completing pure SPE on this class. \ledger{18,20,21}
+
+Under R3, every board eligible for P's sampling scheme admits some capped guaranteeing contract; the \(193\) exceptions in the full census lie outside those classes. Under I6, \(386\) boards lack such a contract, including \(14\) Red-independent boards. At \((20,20)\), I6 supports completion everywhere but guarantees it on only \(2{,}646\) boards. \ledger{19,20}
+
+Outside P's cap, \((26,26)\) restores the guarantee throughout the census under both longer clocks. Yet \((21,21)\) loses even existence of a completing pure SPE on \(84\) I6 boards and \(42\) R3 boards, despite existence everywhere at \((20,20)\). This is not a monotone effect of raising payments. \ledger{19}
+
+A within-cap R3 witness is
+\[
+\begin{pmatrix}
+G&R&B&R\\
+R&B&R&R\\
+B&R&B&B\\
+R&B&B&G
+\end{pmatrix}.
+\]
+Its monotone pure-SPE outcomes are
+\[
+\begin{array}{c|c|l}
+(q_R,q_B)&(u_R,u_B)&\text{Completion}\\ \hline
+(10,10)&(10,75)&\text{Blue only}\\
+       &(65,75)&\text{Both}\\
+(11,11)&(11,74)&\text{Blue only}\\
+(16,16)&(70,70)&\text{Both}
+\end{array}
+\]
+All contracts have zero net transfer when both finish. Across the \(204\) boards, symmetric payments \(10,11,15,16\) support some completing pure SPE on \(188,95,204,204\) boards, respectively, and guarantee completion on \(0,95,95,204\). The loss from ten to eleven involves a tie, not a generic smooth comparative static. \ledger{21}
+
+Earlier I3 checks of \(9{,}849{,}840\) common shifts found no loss of completing-equilibrium existence within that checked domain, but \(33{,}996\) losses of the every-equilibrium guarantee. For example, the board with rows
+\[
+\begin{pmatrix}
+G&R&R&R\\
+R&R&B&R\\
+B&B&B&R\\
+B&B&B&G
+\end{pmatrix}
+\]
+has only the completing payoff \((65,75)\) at \((6,1)\), but the same-net contract \((10,5)\) additionally supports \((60,10)\), with Red alone finishing. \ledger{17}
+
+\paragraph{Nash support does not imply sequential credibility.}
+A cooperative pure Nash profile survives a common payment increase \(t\geq0\) if each target base payoff satisfies
+\[
+r_i^0>q_i+t.
+\]
+The target payoff is unchanged. Deviations yielding both or neither completion are unchanged; sole-own-completion deviations worsen. A sole-other-completion deviation pays \(q_j+t\), below the target because
+\[
+(r_i^0-q_i+q_j)-(q_j+t)=r_i^0-(q_i+t)>0.
+\]
+Off-path prescriptions may nevertheless cease to be credible, so the same profile need not remain subgame perfect. In the monotone capped game, \(r_i^0\geq45>20\) supplies the condition; detours invalidate that automatic bound. \ledger{22,60}
+
+Q explicitly studies partial implementation, requiring the target to be an equilibrium, and calls its framework ultimately static. See \url{inputs/Q.tex}, lines 426 and 2452. The distinction between existence and every-SPE completion therefore does not refute Q. Nor does reducing trajectories to actions automatically supply the missing sequential-credibility analysis. \ledger{22}
+
+\paragraph{The initial mechanism comparisons.}
+On a two-chip mutual board, an accepted atomic exchange of two red for two blue chips gives independent six-move completion and scores \((70,70)\). On a Red-independent board where Blue needs \(k\in\{1,2\}\) red chips, exchanging \(k\) red for \(k+1\) blue gives \((75,65)\), improving the outside options \((70,0)\). Atomic execution removes the final voluntary-gift problem, but these constructions do not solve bargaining over the exchange. \ledger{11,22}
+
+For enforced tile coverage, both players can follow Blue's shortest route: Red covers Blue's \(k\) red intermediate tiles and Blue covers Red's \(5-k\) blue tiles. The scores are
+\[
+(95-10k,\;45+10k),
+\]
+strictly improving both outside options for \(k\in\{1,2\}\). This is a feasible trajectory, not a route-deviation or negotiation equilibrium characterization. Identical natural-language terms with identical enforcement implement the same transfers. \ledger{1,11,22}
+
+P's asymmetric-board BBB averages, \(0.00\) without contracts in Pay-for-Partner and \(0.20\) in regular trading, are compatible with commitment differences but do not identify the reciprocal-payment mechanism. Neither its sample \(18/0\) contract, its \(39\%\) winner-takes-all frequency, nor bottleneck defection falling from \(0.30\) to \(0.21\) certifies continuation incentives. Unequal agreements need not be failures. \ledger{11,22,23}
+
+\paragraph{Retained response to review \(25\): a structural explanation.}
+Review \(25\) requested new behavioral evidence, an explanation of the board counts, and a closer antecedent check. Public searches found no verified implementation, but a local Ollama endpoint enabled a declared-game pilot. \ledger{25,26,27}
+
+For the monotone R3 two-chip mutual class, every route has two or three red intermediate tiles. A first-blue gateway is a blue tile Red can approach using only red tiles. Define
+\[
+\begin{aligned}
+K(v)&=1+\max_{p:v\to\mathrm{goal}}
+ \#\{\text{blue tiles after }v\text{ on }p\},\\
+K^*&=\min_{v\text{ a first-blue gateway}}K(v).
+\end{aligned}
+\]
+This measures the smallest worst-case Blue donation requirement to which Red can commit before its first donation. The census verifies
+\[
+q_{\min}=5K^*+1,
+\]
+where \(q_{\min}\) is the smallest symmetric integer payment guaranteeing completion in every pure SPE. There are \(95\) boards with \(K^*=2\) and \(109\) with \(K^*=3\). At \((11,11)\), every pure SPE completes on the former and none on the latter. \ledger{31,34,36}
+
+Equivalently, a successful board has a gateway with \(r+m=3\), where \(r\) counts preceding red tiles and \(m\) is the minimum red count on a suffix. This is a finite characterization, not a general proof. Its analogous extension errs on \(396\) of the \(2{,}544\) general mutual boards. Even the complete route-color language is insufficient: three such language classes contain both outcomes. \ledger{29,31,34}
+
+\paragraph{Matched route languages and a permission intervention.}
+Consider
+\[
+A=\begin{pmatrix}
+G&R&B&R\\
+R&B&R&R\\
+B&B&R&B\\
+B&R&B&G
+\end{pmatrix},
+\qquad
+B=\begin{pmatrix}
+G&R&B&R\\
+R&B&B&R\\
+B&R&R&B\\
+B&R&B&G
+\end{pmatrix}.
+\]
+Both have complete monotone intermediate-color language
+\[
+\{\mathrm{RBBRB},\mathrm{RBRRB}\}.
+\]
+Nevertheless, at \((11,11)\) under monotone R3, \(A\) has unique terminal payoff \((65,75)\), both finishing, whereas \(B\) has \((11,74)\), Blue alone. These are unique outcomes, not unique strategies. \ledger{30,34}
+
+Deleting only Red's edge \((0,2)\to(1,2)\) in \(B\) restores unique payoff \((65,75)\), preserving the complete monotone color language. Deleting the same edge only for Blue does not repair cooperation. At the relevant first request, both occupy \((0,1)\), and Red asks for entry to \((0,2)\). Blue gets \(70\) from honoring and \(74\) from refusing without the restriction; with it, both timing choices give \(75\) and eventual completion. That tied first decision cannot itself identify an optimization error. \ledger{31,34,39}
+
+The subsequently requested honored-branch trace confirms the interpretation. After forced coverage of \((0,2)\), Red goes down to \((1,2)\), right to \((1,3)\), down to \((2,3)\), then to the goal, using \(\mathrm{RBBRB}\) and three Blue donations. Blue follows \(\mathrm{RBRRB}\), receives three Red donations, and both obtain \(70\). The restriction forces the relevant Red continuation onto \(\mathrm{RBRRB}\), needing two Blue donations and producing \((65,75)\). The deterministic-policy solver agrees with the earlier correspondence at normal-turn states in a traversal containing \(19{,}205\) state/subdecision nodes; that total includes donor nodes generated by the same recursion. \ledger{42,44}
+
+A representation retaining only completed routes loses contingent choices and when they become binding. A sufficiently rich trajectory formulation of Q can retain them, so this is not a counterexample to Q's revelation result. \ledger{34,36,37}
+
+\paragraph{The controlled LLM pilot.}
+The pilot is a prescribed-donation game, separate from endogenous routing. Each player has already paid four own chips and has twelve remaining; each needs two donations to finish. Each donation costs its donor one chip, other remaining movement is automatic, and first refusal terminates play. Red is the model; Blue is an announced deterministic script supplying every scheduled donation. Transfers reach unfinished recipients. \ledger{27,29,35,36}
+
+The design crosses orders \(BBRR\) and \(BRBR\) with contracts \((0,6)\) and \((6,12)\). Both yield successful scores \((76,64)\). Under blocked order and \((0,6)\), Red's immediate refusal gives \(80\), making cooperation uniquely suboptimal; in the other cells, honoring throughout is uniquely optimal. A local rule checking only \(q_B>5\) misses the blocked low-payment condition. These are best responses to a script, not equilibrium predictions about two LLMs. \ledger{27,35,36}
+
+Local tags \texttt{qwen3:8b} and \texttt{qwen3.5:9b} identify recorded Q4\_K\_M endpoints with unchanged digests, not P's models. Temperature was \(1\), thinking disabled, with \(24\) seeded runs per cell and cells permuted within seed. An initial explanation-requesting smoke prompt hit its \(384\)-token cap. Before main collection, version two required action-only JSON, named the recipient explicitly, and used \(128\) tokens. Both smoke versions were excluded; the second had eight valid decisions and cooperation even in the unfavorable cell. Main responses were not selectively retried. \ledger{27,28,29,35,37}
+
+The unassisted completion counts were:
+\[
+\begin{array}{c|c|r|rr}
+\text{Order}&(q_R,q_B)&\text{Optimal}
+ &\text{Qwen3-8B}&\text{Qwen3.5-9B}\\ \hline
+BBRR&(0,6)&0&0&14\\
+BBRR&(6,12)&24&0&14\\
+BRBR&(0,6)&24&0&12\\
+BRBR&(6,12)&24&0&11
+\end{array}
+\]
+All denominators are \(24\). Qwen3-8B refused every initial blocked-order decision; it initially honored \(6/24\) in each interleaved cell but never completed both donations. Qwen3.5-9B barely responded to the treatments, with highly correlated paired-seed actions. \ledger{32,33,35}
+
+In last-donation controls at payments \(4\) and \(6\), Qwen3-8B honored \(0/24\) in both, and Qwen3.5-9B honored \(12/24\) in both. Elementary payoff sensitivity was already weak. The negative factorial result therefore does not isolate a compound-deviation reasoning failure. \ledger{33,35}
+
+\paragraph{Exploratory score certificates.}
+After those failures, an exploratory arm appended exact action values computed against the announced script, using optimal future Red choices:
+\[
+\begin{array}{c|c|rr}
+\text{Order}&(q_R,q_B)
+ &\text{Qwen3-8B}&\text{Qwen3.5-9B}\\ \hline
+BBRR&(0,6)&0&0\\
+BBRR&(6,12)&24&17\\
+BRBR&(0,6)&24&18\\
+BRBR&(6,12)&24&20
+\end{array}
+\]
+Qwen3-8B matches the optimal policy throughout. Qwen3.5-9B stops cooperating in the unfavorable cell and improves elsewhere. Its mean score regret in the interleaved cells falls from approximately \(34.88\) and \(38.29\) to \(0.25\) and \(1.17\). \ledger{35,36}
+
+The \(95\%\) Wilson intervals are \([0,0.138]\) at \(0/24\) and \([0.862,1]\) at \(24/24\). For the three favorable assisted Qwen3.5-9B cells they are
+\[
+[0.508,0.851],\quad
+[0.551,0.880],\quad
+[0.642,0.933].
+\]
+The summary also includes paired contrasts and Bonferroni-Wilson bounds on discordance probabilities because paired bootstrap intervals can degenerate without discordant observations. These quantify repeated calls to fixed prompts, not generalization across prompts, boards, or models. \ledger{35,36}
+
+There were \(384\) factorial games and \(96\) single-decision controls, totaling \(682\) valid decision calls, excluding smoke tests. The assistance arm was chosen after the negative results and supplies the correct values. It demonstrates improved execution with explicit incentive information, not autonomous continuation reasoning or discovery of a cooperative contract. \ledger{35,36,37}
+
+\paragraph{Retained response to review \(39\): held-out monotone structure.}
+Review \(39\) requested a structural holdout, the honored-branch trace, and routing behavior from a model passing elementary controls. The trace is given above. For larger boards, the declared monotone game gives each player
+\[
+C=2(2n-3)+4
+\]
+own-color chips and two green chips: fourteen at \(n=4\), eighteen at \(n=5\). This prevents shortages in the tested monotone games. With \(m=n-2\), the narrow class requires every complete route to have \(m\) or \(m+1\) red intermediate tiles, with both counts available. \ledger{39,42,43,54}
+
+Using seed \(395207\), sampling shuffled five-by-five boards with eleven red and twelve blue intermediate tiles, retaining \(128\) distinct narrow-class boards and a separate \(128\) general mutual boards without consulting equilibrium outputs. Symmetric integer payments \(0\) through \(36\) were tested. The unchanged formula \(q_{\min}=5K^*+1\) matches all narrow boards: \(31\) have \(K^*=3\), threshold \(16\); \(97\) have \(K^*=4\), threshold \(21\). This tests two index values across a dimension change, not an unrestricted theorem. \ledger{43,54,56}
+
+On the general holdout it matches only \(99/128\), with all \(29\) errors overpredicting the minimum. On the narrow holdout it matches none under I3, where all minima are \(6\), and \(97\) under I6. The class and clock restrictions are essential. \ledger{43,54}
+
+The capped non-diagonal grid establishes, on all \(204\) fitted and \(128\) held-out narrow boards,
+\[
+\begin{split}
+&\text{every pure SPE completes}\\
+&\qquad\Longleftrightarrow\quad q_R>5K^*,
+\end{split}
+\]
+independently of \(q_B\in\{0,\ldots,20\}\). These are \(89{,}964\) fitted and \(56{,}448\) held-out contracts. Reciprocity is sufficient but unnecessary: the decisive payment is Red's completion payment received by Blue. None of the \(97\) held-out \(K^*=4\) boards has a guaranteeing capped integer contract, although each has a capped contract supporting some completing pure SPE. On P's \(204\)-board class, \(K^*\leq3\), so \((16,16)\) already guarantees completion in the monotone game. \ledger{45,54}
+
+\paragraph{The monotone real-payment extension.}
+Under the declared inventory rule, a finisher's base score is at least \(45\): at most \(2(2n-3)\) own-color chips can be spent across the two monotone routes, leaving at least four own-color chips and one green. Thus within the cap,
+\[
+u_i\mid F_i=1\geq25,
+\qquad
+u_i\mid F_i=0\leq20.
+\]
+For outcomes with equal own-completion status, outgoing payments cancel and base scores lie on a five-point lattice. Rankings change only when incoming payments cross multiples of five, with equality points retained separately. The nine representatives therefore cover all real transfers in \([0,20]\). Backward induction preserves supportable terminal histories within each ordinal cell, although numerical payoffs vary. \ledger{49}
+
+This proves the continuum extension of the finite monotone grid, not the gateway formula on arbitrary graphs. It does not extend to arbitrarily large payments or inventory-depleting detours. \ledger{49,60}
+
+\paragraph{The retained larger monotone permission witness.}
+The held-out board
+\[
+\begin{pmatrix}
+G&R&R&B&R\\
+R&R&B&R&B\\
+R&B&R&R&B\\
+B&R&B&B&B\\
+B&B&R&B&G
+\end{pmatrix}
+\]
+has \(K^*=4\) and no guaranteeing real capped contract under monotone R3. At \((16,16)\), its unique pure-SPE payoff is \((16,84)\), Blue alone. Removing only Red's interior edge \((3,2)\to(3,3)\), while retaining its downward continuation, creates no dead end, lowers the index to three, and gives unique completing payoff \((75,85)\). \ledger{45,47,49,53}
+
+Its complete monotone intermediate-color language remains
+\[
+\left\{
+\begin{array}{l}
+\mathrm{RRBBBRB},\ \mathrm{RRBRBBB},\\
+\mathrm{RRBRBRB},\ \mathrm{RRBRRBB}
+\end{array}
+\right\}.
+\]
+An earlier boundary deletion \((1,4)\to(2,4)\) gives the same monotone repair and language preservation. Neither repair survives as a repair of the full-movement game below. \ledger{47,53,60}
+
+The candidate threshold follows a controlled comparison. If Blue uses \(m\) own blue chips on its route and donates \(K\) chips,
+\[
+\begin{aligned}
+&[20+5(C+1-m-K)+q_R-q_B]\\
+&\quad-[20+5(C+1-m)-q_B]\\
+&=q_R-5K.
+\end{aligned}
+\]
+At payment \(16\), four donations give Blue \(80\), versus \(84\) from sole completion; commitment to three raises its cooperative value to \(85\). Red's completion gain over receiving only Blue's payment is its base score minus \(q_R\), positive throughout the cap. The missing general proof is the dynamic reduction establishing credible routes and later choices, not this arithmetic. \ledger{45,54}
+
+Across all \(277{,}992\) four-by-four ordinal cases, monotone R2 and R4 have exactly R3's outcome correspondence. R1 changes \(12{,}136\) general cases but none on the \(204\)-board narrow class. All end after Blue, unlike individual-turn clocks. The generalized solver passed \(480\) comparisons against the old four-by-four solver and \(168\) symmetric plus \(48\) non-diagonal checks against a separate five-by-five recursion, totaling \(696\). \ledger{44,47,50,54}
+
+\paragraph{Larger-model controls and the invalid routing attempt.}
+The local \texttt{qwen3.8:27b} endpoint was tested at temperature \(1\), with four seeds at each last-donation payment and no supplied action values. The frozen gate required at least three correct responses per payment:
+\[
+\begin{array}{l|cc}
+\text{Interface}&q=4&q=6\\ \hline
+\text{Thinking disabled}&2/4&2/4\\
+\text{Thinking enabled}&4/4&4/4\\
+\text{Bounded reasoning}&4/4&2/4
+\end{array}
+\]
+All sixteen original responses were valid. Full deliberation used \(3{,}072\) tokens and passed; thinking disabled did not. The bounded interface was a separately labeled later exploration. These counts do not establish a population effect, but prevent treating thinking-disabled failures as general incentive insensitivity. \ledger{41,46,48,52}
+
+The routing design assigned Blue to the model and Red to a disclosed deterministic backward-induction policy, on \(A\), \(B\), and restricted \(B\), under monotone R3 and \((11,11)\). Individual regret would be evaluated against that policy, separately from equilibrium predictions. Before any routing response, runtime limits reduced collection to two seed blocks, six rollouts. An initial launch stopped at its gate while the final control was pending and made no routing call. \ledger{40,41,44,46}
+
+The first actual routing request exhausted \(3{,}072\) reasoning tokens after \(211\) seconds and returned empty final content. It is invalid, not refusal. The arm stopped during the next request; the interrupted prompt was reconstructed from the executor and labeled. A separately frozen \(512\)-token interface, followed when needed by a final-action request using the model's own partial reasoning, supplied no oracle values but failed the elementary gate at payment six. No bounded-interface routing trials ran. There is no valid routing treatment effect or interpretable null. \ledger{48,52,54}
+
+\paragraph{Retained response to review \(56\): unrestricted movement.}
+Review \(56\) prioritized the movement restriction and missing atomic and tile baselines over further gateway work. The new game permits all four orthogonal directions and waiting. Own-color movement consumes own stock; foreign-color movement requests a voluntary donation. Green chips are personal, including payment for returning to the start. Goal arrival is absorbing for movement but not donation. Inventories are scored at termination; fixed completion payments reach unfinished recipients. R3 and initial stocks remain as declared above. Fresh bargaining and mixed strategies remain excluded. \ledger{56,57,58,59,65}
+
+The state includes positions, stocks, personal green stocks, actor, and inactivity. Every successful move reduces total stock and sufficiently many inactive turns terminate play, so cycles do not make the game infinite. The set-valued backward-induction rule is unchanged. Independent recursions use explicit payoff tuples. \ledger{59,65}
+
+On the \(204\) eligible mutual boards:
+\[
+\begin{array}{c|rr}
+(q_R,q_B)&\text{Some SPE completes}&
+ \text{Every SPE completes}\\ \hline
+(11,11)&204&60\\
+(16,16)&204&72\\
+(20,20)&204&38
+\end{array}
+\]
+Thus the monotone gateway guarantee fails under P's stated movement directions. A retained diagnostic board preserves the guarantee with ten extra moves allowed but loses it with twelve, showing why shortest-path availability does not justify deleting costly continuation options. \ledger{59,65}
+
+On the larger witness, \(76\) of \(441\) integer payment pairs now guarantee completion, including \((11,11)\); \(416\) support some completing pure SPE. The cap obstruction disappears. At \((16,16)\), both proposed edge deletions leave the entire root outcome correspondence unchanged, with completing and failing equilibria. The former real-payment ordinal reduction cannot be reused because detours can destroy completion dominance. \ledger{60,65}
+
+The interior deletion also fails full-walk language preservation, with separating complete word
+\[
+\mathrm{RRBRRBRRBBBRBG}.
+\]
+The boundary deletion does preserve full-walk language, but still does not repair the failure. Language preservation alone is not sufficient for an incentive improvement. \ledger{63}
+
+\paragraph{The smaller permission result survives full movement.}
+For \(A\), \(B\), and restricted \(B\), retain R3 and \((11,11)\). Define
+\[
+\mathcal C=
+\{(25,75),(35,75),(45,75),(55,75),(65,75)\}.
+\]
+The exact pure-SPE payoff sets are
+\[
+\begin{array}{l|l}
+\text{Game}&\text{Payoff set}\\ \hline
+A&\mathcal C\\
+B&\mathcal C\cup\{(11,74)\}\\
+B\text{ with Red's edge removed}&\mathcal C
+\end{array}
+\]
+Every outcome in \(\mathcal C\) has both finishing; the additional outcome has Blue alone. The restriction removes the failure and retains all completing outcomes. Even the worst retained payoff strictly improves both players relative to the removed failure, but detours prevent a unique allocation or an efficiency guarantee. \ledger{58,63,65}
+
+The language statement now covers all complete four-neighbor walks, including repeated tiles and returns to the green start. Treat entered colors as transition labels, the start as initial state, and the absorbing goal as accepting. Subset-automaton comparison proves that \(A\) and \(B\), and \(B\) and restricted \(B\), accept the same complete words. The saved relations contain \(18\) and \(10\) reachable paired states, respectively; a separate checker verifies matching acceptance and all \(168\) component transitions. \ledger{63,65}
+
+This is a finite language-equivalence proof, not sampling of short routes. Equal words consume equal resources, so identical per-color resource bounds preserve the equivalence. It does not imply that those supplies are strategically forthcoming, that contingent strategies coincide, or that every word remains realizable by a simple physical path. The result is a conditional counterexample about sequential incentives, not an expressive separation from P's other mechanisms. \ledger{63,64,65}
+
+\paragraph{Atomic exchange and enforced tiles are effective alternatives.}
+The accepted-exchange benchmark solves independent movement after a fixed simultaneous inventory swap, enumerating simple four-neighbor paths. Cycles cannot improve a solitary player's score or resource feasibility, making this exact for the specified continuation. It does not solve unrestricted repeated bargaining, for which P does not supply a total horizon. \ledger{61,65}
+
+All \(204\) eligible mutual boards and \(396\) Red-independent boards admit a strictly beneficial accepted exchange attaining joint score \(140\). Across the full census, all \(3{,}336\) non-independent boards admit such an improvement, while the \(96\) independent boards do not. On the larger witness, exchanging four red for three blue chips gives \((75,85)\), matching the old permission repair. The enumeration includes colored exchanges and net green transfers. \ledger{61}
+
+The tile benchmark declares repeated-entry obligations: covered foreign-color moves automatically consume giver stock; uncovered ones remain voluntary. Without a default penalty, shortage merely blocks the covered move, and blanket coverage guarantees both finish on all \(204\) boards at zero point transfers. Interpreting P's zero-score consequence as irreversible forfeiture of the insolvent giver's base score while play continues reduces this to \(8/204\), although every board still supports some completing SPE. This is a declared penalty interpretation, not an engine finding. One-use obligations and actual insolvency handling remain unresolved. \ledger{64,65}
+
+Selective contracts do better. On \(B\), cover Blue's entries at red tiles \((0,1)\), \((1,3)\), and Red's entries at blue tiles \((0,2)\), \((2,3)\). This guarantees completion at zero point transfers without the edge restriction. It is the sole guaranteeing contract among the \(32\) subsets of the selected shared route's five intermediate tiles, not a global contract optimum. \ledger{64,65}
+
+On the larger witness, \(50\) of \(168\) tested six-entry contracts guarantee completion. One covers Blue at
+\[
+(0,1),\ (0,2),\ (0,4)
+\]
+and Red at
+\[
+(1,2),\ (3,2),\ (4,3).
+\]
+These candidates combine minimal foreign-color requirements from shortest routes; inefficient detour outcomes remain. No general instrument ordering or completion outcome uniquely available through permissions has been shown. \ledger{64,65}
+
+\paragraph{The welfare observation, with its corrected scope.}
+In regular trading, unrestricted inventory transfers make \(140\) a both-finish benchmark rather than the global feasible maximum. Concentrating all \(32\) chips in a player who spends six to finish gives
+\[
+20+5(32-6)=150,
+\]
+whereas two finishers consume at least twelve chips and obtain at most
+\[
+40+5(32-12)=140.
+\]
+Even requiring positive transfers in both directions, one red chip exchanged for fourteen blue and two green leaves the prospective finisher with \(31\) chips and score \(145\). On a mutual board, a legal one-point completion payment then gives
+\[
+(u_R,u_B)=(144,1)>(0,0)
+\]
+componentwise, despite only Red finishing. These are feasible accepted allocations and independent finishing continuations, not bargaining equilibria or observed runs. \ledger{62,70}
+
+The accounting difference is that the extra finishing bonus is \(20\), while six more movements cost \(30\) in valued inventory. Joint reward, strict baseline improvement, and both-finish therefore differ as objectives. The construction requires inventory transfers and does not challenge P's main Pay-for-Partner normalization; that correction is proved in the appended round below. \ledger{62,65,70}
+
+\paragraph{Verification retained from the movement round.}
+The movement solver passed \(104\) initial comparisons: \(60\) full-inventory small-board cases, eight bounded-detour cases, and \(36\) monotone checks. Three full-inventory four-by-four and two five-by-five witness comparisons bring the total to \(109\). The penalty solver passed eighteen separate-flag small-board checks and a full selective-contract witness check. \ledger{59,60,64,65}
+
+The final audit covered \(1{,}260\) movement/payment and no-penalty cases, \(237\) penalty-contract cases, \(168\) larger selective contracts, \(109\) movement crosschecks, \(19\) penalty crosschecks, \(3{,}433\) accepted-swap boards including the larger witness, and both language certificates. These checks validate the reconstructed games, not P's implementation. \ledger{65}
+
+\paragraph{Outside sources and novelty limits.}
+Christoffersen, Haupt, and Hadfield-Menell's \emph{Get It in Writing},
+\url{https://arxiv.org/abs/2208.10469},
+already establishes efficient SPE implementation with sufficiently rich transfers and studies restricted transfer expressiveness. The pooled LaTeX anchors are lines 293--409 and 473--476. The comparison with \emph{Do LLM Agents Negotiate Rationally?},
+\url{https://arxiv.org/abs/2608.14613},
+likewise limits novelty from merely distinguishing incentive compatibility from observed behavior. Neither generic verification nor a generic rationality gap is enough. \ledger{6}
+
+Primary abstracts for Admati and Perry's \emph{Joint Projects Without Commitment},
+\url{https://www.gsb.stanford.edu/faculty-research/publications/joint-projects-without-commitment},
+and Pitchford and Snyder's gradual-investment paper,
+\url{https://www.sciencedirect.com/science/article/pii/S0022053103001200},
+already address gradualism and hold-up. Earlier Colored Trails work computes subgame-perfect contract strategies:
+\url{https://u.cs.biu.ac.il/~sarit/data/articles/tark15-v3.pdf}
+and
+\url{https://doi.org/10.1016/j.artint.2017.01.003}.
+Pool requests failed through unavailable open PDFs or HTTP \(429\), so these comparisons use surfaced primary abstracts or author excerpts, not full theorem-level reviews. \ledger{23}
+
+Williamson's \emph{Credible Commitments: Using Hostages to Support Exchange} discusses reciprocal exposure, bonding, and expropriation risk. Surfaced excerpts came from
+\url{https://www.edegan.com/pdfs/Williamson%20%281983%29%20-%20Credible%20Commitments%20Using%20Hostages%20to%20Support%20Exchange.pdf}.
+Pool requests for that source and
+\url{https://www.jstor.org/stable/1816557}
+returned HTTP \(429\); no full-text comparison is claimed. \ledger{37}
+
+A surfaced primary excerpt from the foundational Colored Trails paper,
+\url{https://u.cs.biu.ac.il/~krauss/data/articles/ct-ijcai05.pdf},
+already describes path suggestions and binding versus non-binding agreements; its pool request also failed with HTTP \(429\). Searches included path commitments, performance bonds, reciprocal completion bonds, and counterfactual payoffs in LLM negotiation. They do not establish absence of prior work on the narrow witness. No novelty is claimed for commitment, paths, gradualism, bonds, equilibrium benchmarking, or the general possibility that restricting options helps cooperation. No new novelty search was conducted in the final round. \ledger{23,37,51,76}
+
+\paragraph{Appended round: response to the latest review \(67\).}
+Review \(67\) retained the conditional obstruction, controlled thresholds, reciprocal-payment identity, restricted monotone results, full-movement falsifications, language-certified witness, mechanism baselines, and qualified behavioral findings. It judged the result not ready for paper review: known commitment logic, unaudited engine semantics, no unique permission outcome, and no valid behavioral comparison remained. It requested a bounded presentation experiment, nearby-payment and clock checks for the witness, and correction of the welfare claim's scope. It specifically discouraged another broad census or gateway-proof attempt. \ledger{67}
+
+The response pursued those bounded checks. The authoritative final assessment is \url{ada/assessment_after_67.md}, lines 3--11 and 100--106. The clock audit modestly extends the surviving witness, while the presentation experiment fails measurement before yielding any treatment observation. \ledger{68,71,73,75,76}
+
+\paragraph{A frozen presentation-by-coverage-information experiment.}
+The new study targets P's regular-trading variant, where P also reports a natural-language gap. Atomic exchange removes beliefs about subsequent voluntary gifts, making this a narrower test than P's main Pay-for-Partner setting. Accepted tile terms are assigned, not negotiated. Eight boards were sampled from the eligible mutual class; each displayed six-move route needs two foreign chips. The contract covers one such tile per player, leaving an optional one-red-for-one-blue exchange to cover the remaining needs. Obligations execute identically and once per listed entry in every arm. \ledger{69,73,76}
+
+Treatments cross canonical JSON, exact concise natural language, and a synthetic accepted negotiation transcript with the presence or absence of a factual list of uncovered foreign tiles. The transcript contains the same obligations and acceptance, with no claim that they suffice. The information treatment supplies neither action values nor a recommended decision. There is no judge-enforced arm. This isolates display and coverage information within a deterministic reconstruction, not P's endogenous negotiations. See \url{ada/assessment_after_67.md}, lines 15--21. \ledger{69,76}
+
+Red's proposal decision and Blue's response to the specified offer are elicited separately at the same initial state. Their conjunction determines whether the atomic exchange occurs, after which a deterministic route executor computes completion. Thus both-finish is derived from the decisions, not an independent full-game rollout. Separate accounting checks confirm
+\[
+\begin{aligned}
+\text{Exchange}&\ \Longrightarrow\ (70,70),\\
+\text{No exchange}&\ \Longrightarrow\ (0,0).
+\end{aligned}
+\]
+These scores are not supplied to experimental agents. All eight sampled setups passed independent resource accounting and prompt checks. \ledger{73,76}
+
+Before experimental collection, a documented runtime-only amendment reduced the target to the first four boards and one paired seed: \(24\) treatment trials and \(48\) decisions. No treatment outcomes informed that amendment. Even successful collection at that size would be a feasibility pilot, not a practical-equivalence test. See \url{ada/assessment_after_67.md}, lines 23--27. \ledger{72,74,76}
+
+The frozen gate required valid output, correct beneficial-versus-costly atomic-exchange decisions, and sensitivity to last-donation payments four versus six. The first eligible endpoint would be used, with local \texttt{gemma4:26b} first and \texttt{qwen3.8:27b} as the prespecified fallback. Model digests, requests, code hashes, sampled boards, and executor records were retained. These endpoint labels are not P's model set. No score assistance or post-failure prompt repair was allowed. \ledger{69,72,74,75}
+
+\paragraph{The presentation study supplies no treatment comparison.}
+Gemma answered four atomic-exchange controls correctly, then exhausted its \(2{,}048\)-token budget on the first donation control and returned empty final content. It failed validity gating and never entered experimental collection. The fallback Qwen endpoint passed all twelve controls, including four atomic-exchange and eight donation decisions. \ledger{72,74,75}
+
+Its first experimental request used concise language plus uncovered-tile information on the first sampled board. It exhausted the same token budget after about \(144\) seconds and returned no final action. The frozen immediate-stop rule ended collection before Blue's acceptance probe. Consequently,
+\[
+\text{valid experimental decisions}=0,
+\qquad
+\text{completed paired trials}=0.
+\]
+There is no presentation-effect estimate, sufficiency-information effect, or interpretable null. An empty response is not a refusal to trade. \ledger{75,76}
+
+The elapsed-time ceiling was not reached; these were token-budget failures, not network timeouts or administrative stopping. No action was imputed from deliberation, and no forced-final rescue followed. Seventeen control attempts and the single experimental attempt are retained. The final audit confirms source-hash consistency, matching prompt/executor records, and unchanged model digests. See \url{ada/assessment_after_67.md}, lines 29--40. Passing elementary controls establishes eligibility, not that the experimental interface can measure the target behavior. \ledger{75,76}
+
+This failed measurement supports neither P's over-anchoring hypothesis nor the rejected counterfeiting account. Even a successful result would have concerned a fixed-route atomic setting and short synthetic transcript, not P's long endogenous negotiations or Pay-for-Partner dynamics. \ledger{75,76}
+
+\paragraph{The bounded clock audit narrows the surviving witness.}
+The new audit varies only inactivity clocks and nearby symmetric payments in the full-movement \(A\), \(B\), and restricted-\(B\) games. Let R\(k\) terminate after \(k\) complete inactive Red--Blue rounds and I\(k\) after \(k\) inactive individual turns. Terminal inventory scoring and post-goal donations remain unchanged. \ledger{71,73,76}
+
+Under each of R1, R2, R3, and R4, deleting Red's edge in \(B\):
+\[
+\begin{array}{c|l}
+\text{Payment}&\text{Effect}\\ \hline
+(11,11)&\text{removes only failure }(11,74)\\
+(12,12)&\text{removes only failure }(12,73)\\
+(10,10)&\text{changes no outcomes}
+\end{array}
+\]
+At payment ten, the Blue-only failure \((10,75)\) remains. At eleven and twelve, every retained pure SPE completes and no completing equilibrium outcome is removed. At eleven the retained set is exactly \(\mathcal C\) above, so completion still does not imply efficiency. \ledger{71,73,76}
+
+Under I3, all three games already guarantee completion at every tested payment, and the edge deletion changes none of \(B\)'s outcomes. Under I6, all three retain a Red-only failing outcome, and again the deletion changes none of \(B\)'s correspondence. Thus the repair survives the tested number of complete rounds but fails to provide a general benefit under individual-turn clocks. This is evidence of protocol sensitivity, not a theorem identifying the final actor as the sole determinant. \ledger{71,73,76}
+
+The audit covers \(54\) exact cases. Twelve small individual-clock cases and eight full-inventory witness cases independently match the separate Python recursion. See \url{ada/assessment_after_67.md}, lines 42--74. The complete-word certificates remain intact, but there is still no mixed-equilibrium or refinement guarantee and no validation of P's actual clock. \ledger{71,73,76}
+
+\paragraph{Pay-for-Partner retains the \(140\) maximum.}
+The \(150\)- and \(145\)-point constructions require inventory transfers and concern regular trading only. In pure Pay-for-Partner, coverage consumes the donor's chip directly, so no player's inventory exceeds its initial sixteen chips. With only one finisher, joint base score is at most
+\[
+20+5\cdot16=100.
+\]
+Personal-green restrictions can tighten this bound, which is already sufficient. With two finishers, at least twelve chips are consumed, so
+\[
+R\leq40+5(32-12)=140.
+\]
+Budget-balanced completion transfers do not change the sum. Cooperative six-step routes attain \(140\), validating P's main Pay-for-Partner normalization under the stated no-inventory-transfer interpretation. See \url{ada/assessment_after_67.md}, lines 76--92. \ledger{70,76}
+
+\paragraph{What is established and what remains open.}
+The review's nearby-payment and clock objection is resolved with a qualified result: the permission witness survives R1--R4 at payments eleven and twelve, but not as a repair under I3 or I6. The welfare objection is resolved by separating regular trading from Pay-for-Partner. The requested causal presentation comparison remains unresolved because measurement failed before any valid experimental decision. \ledger{67,70,71,73,75,76}
+
+The wider gateway and cap-separation claims remain false under unrestricted movement. Their monotone calculations and real-payment extension still stand within their declared action graph. Atomic exchanges and selective enforced tiles supply completion alternatives. The surviving language-preserving restriction is a precise finite example of commitment, not a new general implementation theorem or an expressive separation from P's instruments. \ledger{59,60,61,63,64,65,76}
+
+The empirical record is thin. Unassisted scripted pilots failed elementary payoff sensitivity; exploratory score tables improved choices while supplying action values; a larger deliberating model passed elementary controls but failed routing measurement; the final eligible model likewise failed presentation measurement. None demonstrates autonomous recognition of the permission repair, a routing null, or the cause of P's formal-versus-natural-language gap. \ledger{35,52,75,76}
+
+Open issues are P's timing and post-goal accounting, unfinished-recipient transfers, repeated-entry and insolvency semantics, mixed or refined equilibrium robustness, a valid presentation comparison, and a sufficiently narrow novelty review. Pure-SPE multiplicity also prevents labeling an unsuccessful stochastic rollout an optimization error without a fixed or estimated partner policy. The scripted pilot supplies that control only in its own small game. \ledger{22,23,35,65,76}
+
+\paragraph{The smallest next step and stopping judgment.}
+For applying any numerical result to P, the smallest decisive step remains an executable semantic trace: finish a donor, request further payments, inspect final inventory and completion transfers, distinguish individual-turn from complete-round termination, and test an insolvent repeated tile obligation. These checks would settle assumptions that materially changed the results; the present reconstructions do not settle them. \ledger{9,18,19,23,64,65}
+
+For the behavioral question, a separate future project would first need an interface that produces valid experimental actions while retaining elementary payoff sensitivity, then a genuinely paired comparison under identical accepted terms and enforcement. Another census, a proof attempt for the falsified unrestricted index, or interpreting token exhaustion as behavior would not supply the missing evidence. The preserved design can support such a project, but another extension round is not compulsory or presently recommended. The supported endpoint is a reusable conditional benchmark, a regular-trading welfare correction, and rejection of the original counterfeiting explanation, not a completed publication-level account of the pair. \ledger{67,75,76}
+
+\end{document}

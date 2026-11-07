@@ -1,0 +1,1974 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Participation Accounting and Learning Incentives in Comparison-Based Reward Shaping}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+Q develops mechanisms for agents with privately known preferences and
+capabilities, requiring incentives for truthful reporting and obedient
+action. P introduces MARS-RA, which aggregates an external multimodal
+model's pairwise comparisons into contribution scores and uses their
+potential differences to guide cooperative multi-agent learning with
+changing participation.
+
+The connexion investigated was whether Q could ground strategic
+robustness for P's comparison-based rewards. The investigation instead
+separated complete-return incentives from finite-time learning,
+identified a conditional participation-accounting problem, and
+constructed harmful learning updates under accurate comparisons and
+restricted critics. \ledger{1,2,8,20}
+
+This account retains the previous note's accounting results, backbone
+audit, critic-error decomposition, exact-credit constructions,
+effective-game experiments, projection characterization, selective
+guidance, neural tests, and query-noise analysis. It appends the fifth
+round's visual experiments, task-return audit, and additional
+prior-work limits. The latest verifier review is entry 46. It accepted
+the earlier calculations but returned ITERATE because their mathematics
+had close precedents, the selective example separated components by
+construction, and the neural experiments had limited critic training
+and unmatched input classes across some controls. It requested a
+visual intervention with matched inputs and a realistic critic budget,
+plus an audit that did not require harmful-component labels.
+\ledger{34,46}
+
+The new visual experiments do not reproduce the earlier delay collapse.
+They show possible transient guidance, substantial seed variation,
+and residuals often dominated by unpredictable query noise. The
+task-return audit identifies a local directional derivative when
+feedback suffices, but cannot certify useful guidance from absent
+task evidence. Additional prior work further narrows novelty.
+Evidence about P remains thin: no failure is established in MARS-RA,
+and the record does not support a publication-ready contribution.
+\ledger{48,51,53,56,57,58}
+
+\section{Results retained from the first round}
+
+\subsection{Statistical consistency does not establish incentives}
+
+P's acting agents do not submit contribution reports to its comparator:
+an external LMM evaluates egocentric images. Recovering that
+comparator's latent scores does not establish incentives for truthful
+disclosure or desirable actions. Q's peer-discipline construction
+instead requires separation of beliefs over co-player types,
+cancellation of reported intrinsic utility, and unrestricted rewards
+or prohibitions. Comparison accuracy supplies none of these
+conditions. The proposed direct justification of P through Q is
+therefore rejected. \ledger{2,8}
+
+Q's obedience condition compares prescribed behavior with every
+feasible unilateral deviation; see \url{inputs/Q.tex},
+lines 1568--1604. Its peer construction appears at lines 1648--1732.
+P's comparisons, score estimation, and shaping appear in
+\url{inputs/P.tex}, lines 285--349. Its Shapley interpretation assumes
+that the comparator's latent scores are Shapley values; statistical
+consistency does not establish that premise. See
+\url{ada/participation_shaping.md}, lines 7--13, and
+\url{ada/round3_effective_contests.md}, lines 17--23.
+\ledger{2,24,31,36}
+
+\subsection{Complete accounting preserves payoff comparisons}
+
+Fix a persistent player \(i\), horizon \(T\), discount
+\(\gamma\in(0,1]\), and shaping weight \(\rho\). Let
+\(\psi_{i,t}\) be the realized potential, with \(\psi_{i,T}=0\),
+and define
+\[
+F_{i,t}=\gamma\psi_{i,t+1}-\psi_{i,t}.
+\]
+Adjacent transitions must use the same cached realization of each
+potential.
+
+\begin{claim}
+If every transition's shaping reward enters the persistent player's
+discounted return, then
+\[
+\rho\sum_{t=0}^{T-1}\gamma^tF_{i,t}
+=\rho\bigl(-\psi_{i,0}+\gamma^T\psi_{i,T}\bigr)
+=-\rho\psi_{i,0}.
+\]
+A strategy-independent initial potential leaves every complete-return
+deviation gain unchanged.
+\end{claim}
+
+The proof is cancellation of adjacent discounted potentials. It
+requires no comparison-accuracy assumption and remains valid when
+later scores or membership depend on strategic choices. With
+information and feasible strategies held fixed, it preserves best
+responses and equilibria. This shaping layer alone cannot create
+Q-style alignment incentives, although it can change finite-time
+learning. This is established potential-based reward shaping, not a
+new theorem. The assumptions and argument appear in
+\url{ada/participation_shaping.md}, lines 15--43.
+\ledger{3,7}
+
+\subsection{Activity masking can create an entry charge}
+
+Suppose instead that the return recorder retains only
+\(m_{i,t}F_{i,t}\), where \(m_{i,t}\in\{0,1\}\) indicates current
+participation. Reindexing gives
+\[
+\begin{aligned}
+\sum_{t=0}^{T-1}\gamma^tm_{i,t}F_{i,t}
+={}&-m_{i,0}\psi_{i,0}\\
+&+\sum_{t=1}^{T-1}
+\gamma^t(m_{i,t-1}-m_{i,t})\psi_{i,t}.
+\end{aligned}
+\]
+Under the explicit convention that inactive agents have zero
+potential, exit terms vanish. Define
+\[
+E_i=\{t:1\leq t<T,\ m_{i,t-1}=0,\ m_{i,t}=1\}.
+\]
+Then
+\[
+\sum_{t=0}^{T-1}\gamma^tm_{i,t}F_{i,t}
+=-m_{i,0}\psi_{i,0}
+-\sum_{t\in E_i}\gamma^t\psi_{i,t}.
+\]
+
+For active agents, use P's softmax construction:
+\[
+\psi_{i,t}
+=\frac{\exp(c_{i,t})}
+{\sum_{j:m_{j,t}=1}\exp(c_{j,t})}.
+\]
+An empty coalition has zero potential; a singleton has potential one.
+These are completion conventions, not implementation details verified
+in P. An entering agent loses the incoming positive shaping payment
+but retains the subsequent debit. An additional entry at time \(e\),
+with potential \(q\), reverses an otherwise comparable base-return
+advantage \(\Delta\) whenever
+\[
+0<\Delta<\rho\gamma^eq.
+\]
+This is a conditional accounting result; see
+\url{ada/participation_shaping.md}, lines 45--67.
+\ledger{4,5}
+
+\subsection{An exact counterexample and correction}
+
+The constructed game has two agents, one always present. The focal
+agent chooses between staying active and resting for one step before
+returning. Rest supplies an additional base reward \(1/10\) at time
+two. All active comparisons are ties. Set \(\gamma=99/100\) and
+\(\rho=1\):
+\[
+\begin{array}{c|c|c}
+& (m_{i,0},m_{i,1},m_{i,2})
+&(\psi_{i,0},\psi_{i,1},\psi_{i,2},\psi_{i,3})\\ \hline
+\text{stay}&(1,1,1)&(1/2,1/2,1/2,0)\\
+\text{rest}&(1,0,1)&(1/2,0,1/2,0).
+\end{array}
+\]
+Complete accounting gives both paths shaping return \(-1/2\), so rest
+is preferred by \(0.09801\). Masking adds an entry charge of
+\(0.49005\), giving
+\[
+\begin{aligned}
+U_i^{\mathrm{masked}}(\text{stay})&=-0.5,\\
+U_i^{\mathrm{masked}}(\text{rest})&=-0.89204.
+\end{aligned}
+\]
+The agent rejects beneficial rest despite exact comparisons. This
+replaces P's battery mechanics with a controlled rest choice; it is
+not a reproduction of P's simulator. \ledger{5,6,10}
+
+Under zero inactive potentials, define
+\[
+\begin{aligned}
+\widehat F_{i,0}&=m_{i,0}F_{i,0},\\
+\widehat F_{i,t}
+&=m_{i,t}F_{i,t}
+ +(m_{i,t}-m_{i,t-1})\psi_{i,t},
+ \qquad 1\leq t<T.
+\end{aligned}
+\]
+The correction refunds the entry charge on the first outgoing active
+transition. Substitution yields
+\[
+\sum_{t=0}^{T-1}\gamma^t\widehat F_{i,t}
+=-m_{i,0}\psi_{i,0}.
+\]
+It restores the payoff comparison, assuming persistent preferences
+across absences and a common discount clock. \ledger{5,6}
+
+The construction and correction appear in
+\url{ada/participation_shaping.md}, lines 69--96.
+The checks in \url{ada/boundary-check-001.log}, lines 1--10,
+verify 254 zero-inactive presence paths and 32 additional paths for
+the general identity. Subsequent source review identifies the
+correction as an application of known episodic boundary effects,
+not independent mathematical novelty. \ledger{5,14}
+
+\subsection{Composition with Q's incentive margins}
+
+If a separate mechanism gives the target strategy base margin
+\(\delta_i(d)\) over deviation \(d\), and \(B_i\) is the discounted
+accounting residual, the new margin is
+\[
+\delta_i(d)
++\mathbb E[B_i\mid\text{target}]
+-\mathbb E[B_i\mid d].
+\]
+A strategy-independent residual preserves every margin. If its expected
+value varies across strategies by at most \(\varepsilon_i\), strict
+margins greater than \(\varepsilon_i\) survive, whereas weak
+implementation can fail under an arbitrarily small adverse change.
+This is a composition rule, not an implementation theorem for unknown
+preferences. See \url{ada/participation_shaping.md},
+lines 100--108. \ledger{8}
+
+\subsection{Information and initial-report qualifications}
+
+Revealing private evaluator information through observed rewards
+changes the information structure. Payoff telescoping alone then
+does not establish equilibrium equivalence. Likewise, a report chosen
+before the initial potential is set leaves the report-dependent
+payment
+\[
+-\rho\psi_{i,0}(\hat t_i,\hat t_{-i}).
+\]
+A score increasing in reported contribution can reward understatement.
+Including the reporting transition from a fixed initial potential,
+or compensating that boundary, removes this effect. P has no such
+reporting stage and uses comparisons during training; these
+qualifications concern extensions into online mechanisms. See
+\url{ada/participation_shaping.md}, lines 41 and 110--112.
+\ledger{7}
+
+\section{Results retained from the second round}
+
+\subsection{The public backbone audit weakens the masking hypothesis}
+
+The audit examined public XuanCe and standard MAPPO code, not
+MARS-RA's unavailable shaping implementation or a confirmed revision
+used by P. At XuanCe revision
+\url{63eca3216bd87055de55ff89e94fe64f31a80e3d},
+rewards, terminal flags, and activity masks are stored separately.
+Return and GAE recursions use rewards and terminal flags; activity
+masks are applied later to actor and critic losses. Temporary exit
+could cut returns if the environment adapter marks it terminal,
+but an activity mask alone does not do so. \ledger{12}
+
+The relevant files under
+\url{ada/audit_sources/agi-brain__xuance/} are
+\url{xuance/torch/agents/core/on_policy_marl.py},
+lines 143--149;
+\url{xuance/common/memory_tools_marl.py},
+lines 210--234; and
+\url{xuance/torch/learners/multi_agent_rl/mappo_learner.py},
+lines 59--110.
+The audit and immutable links appear in
+\url{ada/round2_findings.md}, lines 21--38.
+
+At standard MAPPO revision
+\url{de66d7a4b23fac2513f56f96f73b3f5cb96695ac},
+the shared SMAC runner separates individual activity masks from return
+masks, setting the latter to zero at whole-environment termination.
+SMAC is not a respawn environment, but this distinction again blocks
+the inference from inactive actor updates to deleted rewards.
+See \url{ada/round2_findings.md}, lines 40--48. \ledger{12}
+
+For the rest example, complete shaped rewards and persistent
+discounted returns are
+\[
+\begin{aligned}
+(\widetilde r_0,\widetilde r_1,\widetilde r_2)
+&=(-0.5,\ 0.495,\ -0.4),\\
+(R_0,R_1,R_2)
+&=(-0.40199,\ 0.099,\ -0.4).
+\end{aligned}
+\]
+Dropping the inactive actor update at time one does not remove its
+reward from \(R_0\). Marking exit terminal instead changes \(R_0\)
+to \(-0.5\), but also removes the future rest benefit from the
+unshaped objective. This is a different termination convention,
+not evidence of a shaping-specific entry charge.
+The scalar recursion is checked in
+\url{ada/learning-channels-001.log}, lines 34--35.
+No implementation-bug claim is established. \ledger{12,19}
+
+\subsection{Team sums remove comparison content}
+
+Embed active shares into the persistent population, assigning zero to
+inactive agents. Let \(z_t\) indicate a nonempty, nonterminal coalition.
+Then
+\[
+\sum_i\psi_{i,t}=z_t,
+\qquad
+\sum_iF_{i,t}=\gamma z_{t+1}-z_t.
+\]
+Comparison content cancels from complete team-sum shaping even when
+membership changes. With nonempty coalitions before termination, the
+sum is \(\gamma-1\) on nonterminal transitions and \(-1\) on the final
+transition. Its discounted total is \(-z_0\). \ledger{13}
+
+Current-active summation instead gives
+\[
+\sum_{i\in I_t}F_{i,t}
+=\gamma z_{t+1}-z_t
+-\gamma\sum_{i\in I_{t+1}\setminus I_t}\psi_{i,t+1}.
+\]
+A scalar critic trained on complete summed rewards receives no ranking
+content through that reward. Separate agent outputs can receive it
+through individual shaped rewards. Per-agent policy gradients need
+not cancel, because each agent multiplies its own advantage by its
+own policy score. Team-sum cancellation therefore does not establish
+that P's shaping is ineffective. See
+\url{ada/round2_findings.md}, lines 78--109.
+\ledger{13,19}
+
+\subsection{Separating accounting changes from critic mismatch}
+
+Consider \(H\) rollout transitions beginning at \(t\), with no
+intermediate termination, consistent cached potentials and discounts,
+and zero terminal potentials and values at an actual terminal state.
+Write
+\[
+\widetilde r_t-r_t
+=\rho(\gamma\psi_{t+1}-\psi_t)+b_t,
+\qquad
+e_t=\widetilde V_t-V_t+\rho\psi_t,
+\]
+where \(b_t\) is an accounting modification and the values are actual
+critic predictions. Subtracting temporal-difference residuals gives
+\[
+\widetilde\delta_t-\delta_t
+=b_t+\gamma e_{t+1}-e_t.
+\]
+Summing with generalized advantage estimation weights yields
+\[
+\begin{aligned}
+\widetilde A_t-A_t
+={}&\sum_{\ell=0}^{H-1}(\gamma\lambda)^\ell b_{t+\ell}-e_t\\
+&+\gamma(1-\lambda)
+  \sum_{\ell=1}^{H-1}(\gamma\lambda)^{\ell-1}e_{t+\ell}\\
+&+\gamma(\gamma\lambda)^{H-1}e_{t+H}.
+\end{aligned}
+\]
+Complete accounting and matched predictions
+\(\widetilde V=V-\rho\psi\) leave sample advantages identical for every
+\(\lambda\). For a complete terminal rollout with \(\lambda=1\), only
+the current prediction error remains. If that term is independent of
+the current action conditional on actor history, it contributes zero
+to the expected policy gradient; sample variance and clipped updates
+need not coincide. These are consequences of established GAE and
+shaping identities. See \url{ada/round2_findings.md},
+lines 111--144. \ledger{14,15,16,19}
+
+The rest calculation distinguishes return correction from
+learning-update correction. At \(\lambda=0.95\), its GAE advantage is
+\[
+\begin{array}{l|rr}
+\text{Accounting}
+&\text{Base critic}
+&\text{Exact recorded-return critic}\\ \hline
+\text{Complete}&0.073260&0.098010\\
+\text{Activity masked}&-0.3922875&-0.392040\\
+\text{Entry corrected}&0.049982625&0.098010
+\end{array}
+\]
+Here the base critic is used without a shaping adjustment. Refunding
+the boundary restores returns but re-times payments, so it need not
+restore GAE under unmatched critics. The masked exact-critic advantage
+crosses zero at undiscounted rest benefit \(0.5\), precisely the
+threshold \(\Delta=\rho\gamma^2/2\). The sweep appears in
+\url{ada/learning-channels-001.log}, lines 2--33; line 1 records
+1,000 successful randomized identity checks. \ledger{19}
+
+\subsection{Exact Shapley credit can induce harmful learning updates}
+
+Two cooperative agents choose \(x_i\in\{0,1\}\) at time zero.
+A common task reward is paid on the final transition, with no further
+decisions. Define
+\[
+\begin{aligned}
+v_x(\varnothing)&=0,\\
+v_x(\{i\})&=1+a x_i,\\
+G(x)=v_x(\{1,2\})&=2-d(x_1+x_2).
+\end{aligned}
+\]
+Take \(a=0.5\) and \(d=0.002\). The game is monotone in coalition
+inclusion, although not necessarily superadditive. Action \(1\)
+improves stand-alone production but reduces common reward by \(d\),
+representing resource congestion. \ledger{15}
+
+Its exact Shapley values satisfy
+\[
+\begin{aligned}
+c_i(x)
+&=1+\frac{a-d}{2}x_i-\frac{a+d}{2}x_j,\\
+c_i(x)-c_j(x)&=a(x_i-x_j).
+\end{aligned}
+\]
+Use an oracle comparator with Bradley--Terry probabilities generated
+by these values, equivalently the population estimation limit:
+\[
+q_i(x)=\sigma\bigl(a(x_i-x_j)\bigr),
+\qquad
+\sigma(u)=\frac{1}{1+\exp(-u)}.
+\]
+For two transitions, initial potential \(1/2\), and terminal zero,
+\[
+\widetilde r_{i,0}=\rho(\gamma q_i-1/2),
+\qquad
+\widetilde r_{i,1}=G-\rho q_i.
+\]
+Every complete shaped return equals \(\gamma G-\rho/2\).
+Action \(1\) remains strictly worse in the return game. See
+\url{ada/round2_findings.md}, lines 146--182. \ledger{15}
+
+Restrict the terminal-step critic to aggregate production \(G\),
+omitting individual rank information. Under independent actors with
+the same action probability \(p\),
+\[
+\mathbb E[q_i\mid G]=\frac12.
+\]
+The population-optimal squared-error predictors are
+\[
+V(G)=G,
+\qquad
+\widetilde V_i(G)=G-\frac{\rho}{2}.
+\]
+The base critic is exact, while the shaped critic cannot represent the
+individual offset despite being fully fitted within its feature class.
+Its mismatch is \(e_{i,1}=\rho(q_i-1/2)\). Additional optimization
+with the same features cannot remove it. \ledger{17,18}
+
+With an exact initial baseline, the expected GAE difference between
+action \(1\) and action \(0\) is
+\[
+\Delta A_i
+=\gamma\left[
+-d+\rho(1-\lambda)\bigl(\sigma(a)-1/2\bigr)
+\right].
+\]
+For a Bernoulli logit policy,
+\[
+\mathbb E[(x_i-p)\widehat A_i]
+=p(1-p)\Delta A_i.
+\]
+Thus the harmful action is reinforced exactly when
+\[
+0<d<\rho(1-\lambda)\bigl(\sigma(a)-1/2\bigr).
+\]
+At \(\rho=1\) and \(\lambda=0.95\), the upper bound is approximately
+\(0.006123\), exceeding \(d=0.002\). Both agents' gradients have the
+same sign, so parameter sharing does not cancel the effect.
+\ledger{15,17,18}
+
+Individual credit as a critic feature permits the predictor
+\(G-\rho q_i\), restoring base advantages. Setting \(\lambda=1\)
+also removes this expected bias in the complete-rollout example.
+A critic recovering fraction \(\alpha\) of the individual offset
+replaces the threshold by
+\[
+d<\rho(1-\alpha)(1-\lambda)
+       \bigl(\sigma(a)-1/2\bigr).
+\]
+This concerns expected updates under specified critic predictions,
+not a changed equilibrium of correctly shaped returns or an
+established feature of P. See
+\url{ada/round2_findings.md}, lines 184--228.
+\ledger{15,17,20,22}
+
+The population-regression experiment refits the critic at every
+enumerated expected-gradient update. Starting at \(p=1/2\), with
+\(\gamma=0.99\) and logit step size \(2\), 4,000 updates give
+\[
+\begin{array}{l|rr}
+\text{Condition}&p&\mathbb E[G]\\ \hline
+\text{Unshaped}&0.082538&1.999670\\
+\text{Shaped, aggregate critic}&0.963196&1.996147\\
+\text{Shaped, rank-conditioned critic}&0.082538&1.999670
+\end{array}
+\]
+The implementation is \url{ada/test_projected_critic.py},
+lines 19--68; results are in
+\url{ada/projected-critic-001.log}, lines 10--13.
+The small welfare difference deliberately isolates a small incentive
+margin. These numbers verify the construction, not performance on P's
+benchmark. \ledger{18}
+
+\subsection{Direct comparison payments and obedience}
+
+Paying \(Bq_i\) directly changes preferences. For two agents,
+\[
+\frac{\partial(Bq_i)}{\partial c_i}=Bq_i(1-q_i),
+\qquad
+\frac{\partial(Bq_i)}{\partial c_j}=-Bq_i(1-q_i).
+\]
+Increasing one's measured score and decreasing a rival's score have
+symmetric marginal rewards. Such payments alone cannot distinguish
+productive effort from sabotage or manipulation of visible evidence.
+A comparison-only contract also cannot distinguish actions preserving
+the entire distribution of comparison observations.
+
+If the target has intrinsic advantage \(\delta_i(d)\), obedience
+requires
+\[
+B\left(
+\mathbb E[q_i\mid d]-\mathbb E[q_i\mid\text{target}]
+\right)\leq\delta_i(d)
+\]
+for every deviation. In the congestion example,
+\[
+B\bigl(\sigma(a)-1/2\bigr)\leq d.
+\]
+The two-step approximate update has the same threshold with effective
+prize \(B=\rho(1-\alpha)(1-\lambda)\). This connects the calculation
+to Q's deviation inequalities without importing its unrestricted
+utility cancellation, state contracts, reports, or prohibitions.
+The direct-payment calculation is classical contest logic. See
+\url{ada/round2_findings.md}, lines 244--267.
+\ledger{19,20}
+
+\section{Results retained from the third round}
+
+\subsection{A delayed reward generates an effective contest}
+
+There are \(n\geq2\) agents choosing actions simultaneously at time
+zero, followed by no further decisions. A common reward \(G(x)\) is
+paid on transition \(H-1\), with \(H\geq2\). Set the initial potential
+to \(1/n\), each intermediate potential to
+\[
+q_i(x)=\frac{\exp(c_i(x))}{\sum_j\exp(c_j(x))},
+\]
+and terminal potential to zero. Complete accounting gives
+\[
+\widetilde R_i(x)=\gamma^{H-1}G(x)-\rho/n.
+\]
+Delay changes no complete-return ranking of action profiles.
+\ledger{25,31}
+
+Assume exact base intermediate predictions and shaped predictions
+\[
+\begin{aligned}
+V_{i,s}(x)&=\gamma^{H-1-s}G(x),\\
+\widetilde V_{i,s}(x)
+&=V_{i,s}(x)
+-\rho\left[\alpha q_i(x)+\frac{1-\alpha}{n}\right],
+\qquad 1\leq s<H.
+\end{aligned}
+\]
+Initial predictions differ by \(-\rho/n\), terminal values are zero,
+and \(\alpha\in[0,1]\) measures the represented individual offset.
+Fully fitted aggregate critics have \(\alpha=0\) when
+\[
+\mathbb E[q_i\mid\text{critic features}]=1/n.
+\]
+Identical independent policies and symmetric aggregate features provide
+this property. Rank-conditioned or explicitly shifted critics can
+attain \(\alpha=1\). \ledger{25,31}
+
+At intermediate times,
+\[
+e_{i,s}=\rho(1-\alpha)(q_i-1/n).
+\]
+The GAE identity gives
+\[
+\begin{aligned}
+\widetilde A_{i,0}-A_{i,0}
+={}&\rho(1-\alpha)\gamma(1-\lambda)\\
+&\quad{}\times
+\sum_{s=1}^{H-1}(\gamma\lambda)^{s-1}(q_i-1/n).
+\end{aligned}
+\]
+Up to the positive scale \(\gamma^{H-1}\) and action-independent
+baselines, the expected initial score-function update is the policy
+gradient of
+\[
+U_i^{\mathrm{eff}}(x)=G(x)+\beta_Hq_i(x),
+\]
+where
+\[
+\beta_H=
+\frac{\rho(1-\alpha)\gamma(1-\lambda)}
+     {\gamma^{H-1}}
+\sum_{s=1}^{H-1}(\gamma\lambda)^{s-1}.
+\]
+The finite sum avoids a singular geometric-series expression at
+boundary parameters. The prize vanishes for a matched critic or
+\(\lambda=1\). For \(\gamma=1\),
+\[
+\beta_H=\rho(1-\alpha)(1-\lambda^{H-1}).
+\]
+For \(\gamma<1\), delay can increase the prize relative to the
+discounted terminal objective. \ledger{25,26,31}
+
+This is a gradient representation with critic predictions held fixed,
+not an equilibrium-equivalence theorem for the original return game.
+The fitted aggregate prediction has this form along exchangeable
+policies; arbitrary asymmetric policies need not preserve it.
+Subsequent PPO steps with active clipping are not exactly gradients
+of this utility. See \url{ada/round3_effective_contests.md},
+lines 25--92. \ledger{31,32}
+
+\subsection{Obedience and information lost by normalization}
+
+Let \(x^\star\) maximize \(G\). For unilateral deviation \(y_i\), write
+\[
+\begin{aligned}
+\Delta G_i
+&=G(x^\star)-G(y_i,x_{-i}^\star),\\
+\Delta q_i
+&=q_i(y_i,x_{-i}^\star)-q_i(x^\star).
+\end{aligned}
+\]
+The target is an equilibrium of the effective game exactly when
+\[
+\Delta G_i\geq\beta_H\Delta q_i
+\quad\text{for every }i,y_i.
+\]
+It survives every nonnegative prize exactly when no unilateral
+deviation increases the acting agent's share. For finite actions,
+the admissible prize bound is the infimum of
+\(\Delta G_i/\Delta q_i\) over positive credit increments. At a
+smooth interior welfare optimum, a nonzero own-action derivative of
+credit can defeat every positive prize: the first-order credit gain
+dominates the second-order welfare loss. \ledger{26,31}
+
+Raw difference utility
+\[
+D_i(x)=G(x)-G(x_i^0,x_{-i})
+\]
+preserves unilateral welfare differences. Hence \(G+\beta D_i\)
+preserves welfare-maximizing profiles for \(\beta\geq0\).
+Softmax normalization need not preserve that property.
+For a two-player coalitional game with singleton values \(v_1,v_2\),
+grand-coalition value \(G\), Shapley values \(\phi_i\), and removal
+credits \(D_i=G-v_{-i}\),
+\[
+\phi_1-\phi_2=v_1-v_2=D_1-D_2.
+\]
+Normalized Shapley and normalized removal credits are identical and
+discard the grand-coalition value. Greater comparison accuracy cannot
+recover that discarded common component. \ledger{24,31}
+
+If a unilateral change raises the acting agent's share, singleton
+comparisons can be held fixed while choosing a compatible welfare
+function with an arbitrarily small loss from that deviation.
+Sufficiently large baseline production preserves coalition
+monotonicity. Thus any fixed positive prize can violate obedience in
+some compatible environment. Additional restrictions relating scores
+to welfare can prevent the failure; comparison accuracy alone cannot.
+Failures of normalized marginal-contribution utilities have close
+precedents, so this is not a new general impossibility theorem. See
+\url{ada/round3_effective_contests.md}, lines 94--130.
+\ledger{24,31,32}
+
+\subsection{A continuous exact-credit construction}
+
+Take \(x_i\in[-1,1]\), \(a,d>0\), and define
+\[
+\begin{aligned}
+G(x)&=nB-d\sum_i x_i^2,\\
+v_x(S)&=B|S|+a\sum_{i\in S}x_i,
+\qquad S\subsetneq N,\\
+v_x(N)&=G(x).
+\end{aligned}
+\]
+Choose \(B>(n-1)a+dn\). Coalition values are monotone, and the
+efficient action profile is zero. The exact credits are
+\[
+\begin{aligned}
+\phi_i(x)
+&=B+a x_i
+-\frac{d\sum_jx_j^2+a\sum_jx_j}{n},\\
+D_i(x)
+&=B-d\sum_jx_j^2-a\sum_{j\ne i}x_j.
+\end{aligned}
+\]
+Both therefore yield
+\[
+\operatorname{softmax}(\phi)_i
+=\operatorname{softmax}(D)_i
+=\frac{e^{a x_i}}{\sum_j e^{a x_j}}=q_i(x).
+\]
+At zero,
+\[
+\partial_{x_i}G=0,
+\qquad
+\partial_{x_i}q_i=\frac{a(n-1)}{n^2}>0.
+\]
+Every positive effective prize displaces the team optimum.
+\ledger{26}
+
+If
+\[
+\beta a^2<4d,
+\qquad
+\frac{\beta a(n-1)}{2dn^2}<1,
+\]
+the effective game has the unique equilibrium
+\[
+x_i^{\mathrm{eff}}
+=\frac{\beta a(n-1)}{2dn^2}.
+\]
+Own-action strict concavity reduces equilibrium, including boundaries,
+to the projected fixed-point equation
+\[
+x_i=
+\operatorname{proj}_{[-1,1]}
+\left(\frac{\beta a}{2d}q_i(x)(1-q_i(x))\right).
+\]
+The sum of absolute derivatives in each row of the unprojected map
+is bounded by
+\[
+\frac{\beta a^2}{d}q_i(1-q_i)|1-2q_i|
+\leq\frac{\beta a^2}{4d}<1.
+\]
+Projection is nonexpansive, so the map is a contraction. Symmetry and
+the interior bound identify its fixed point. The welfare loss is
+\[
+G(0)-G(x^{\mathrm{eff}})
+=\frac{\beta^2a^2(n-1)^2}{4dn^3}.
+\]
+This is an equilibrium calculation for the specified effective game,
+not a global convergence result for neural MAPPO or arbitrary
+projected-critic learning. \ledger{26,31}
+
+The construction and proof are in
+\url{ada/round3_effective_contests.md}, lines 133--202.
+The checks in \url{ada/effective-game-003.log}, lines 1--11,
+verify 360 GAE cases, 30 Shapley cases, and numerical equilibria for
+\(n=2,3,5,10\). These locations retain the corrections made in the
+previous note. \ledger{26,34}
+
+\subsection{Sampled clipped-PPO evidence}
+
+These experiments implement sampled trajectories, a shared Bernoulli
+actor, complete accounting, GAE, Adam, and clipped PPO. Centralized
+tabular critics solve Monte Carlo least-squares regressions on each
+rollout before advantage estimation. The aggregate critic sees time
+and total action count; the rank-conditioned critic also sees own
+action. An explicitly shifted control fits base returns and subtracts
+the realized potential. The initial baseline is exact.
+\ledger{27,31}
+
+Unless otherwise stated, the protocol uses 512 episodes per update,
+ten actor epochs, learning rate \(0.1\), clipping threshold \(0.2\),
+\(\gamma=0.99\), \(\lambda=0.95\), and \(\rho=1\), without entropy
+bonuses. This is custom fitted-tabular PPO, not reference MAPPO or
+MARS-RA. The protocol is in
+\url{ada/round3_effective_contests.md}, lines 208--210.
+\ledger{27,32,34}
+
+For the small-cost congestion example, ten seeds and 100 updates give
+mean harmful-action probability approximately \(0.99966\) with
+aggregate shaped critics, versus \(0.00031\) for unshaped,
+rank-conditioned, and shifted controls. A separate run reproduces
+the harmful direction with advantage normalization. Active clipping
+is recorded in \url{ada/clipped-mappo-002.log} and
+\url{ada/clipped-mappo-003.log}. \ledger{27}
+
+\paragraph{Delay reverses the direction.}
+Use \(a=0.5\) and \(d=0.02\). The predicted initial action-gap sign is
+\[
+-d+\beta_H\bigl(\sigma(0.5)-1/2\bigr).
+\]
+At \(H=2\), \(\beta_H=0.05\), and the credit term is approximately
+\(0.00612<d\). At \(H=8\), \(\beta_H\approx0.31160\), and the term
+is approximately \(0.03816>d\). Only the waiting period changes;
+the scores and team-optimal action are unchanged. \ledger{28,31}
+
+After 50 updates over ten seeds, mean harmful-action probability
+and standard error are
+\[
+\begin{array}{c|cc}
+H&\text{Unshaped}&\text{Aggregate shaped}\\ \hline
+2&0.000983\pm0.000034&0.001138\pm0.000040\\
+8&0.000983\pm0.000034&0.998462\pm0.000030
+\end{array}
+\]
+Rank-conditioned and shifted controls match the unshaped runs
+seed by seed. Aggregate-shaped clipped fractions average approximately
+\(1.20\%\) and \(0.98\%\), respectively. Source logs are
+\url{ada/clipped-mappo-008.log} and
+\url{ada/clipped-mappo-009.log}; summaries appear in
+\url{ada/round3-summary-001.log}, lines 9--17.
+\ledger{28,31}
+
+\paragraph{Removing the residual can remove useful guidance.}
+A six-agent sparse task pays one only if every agent chooses action
+one. Initial action probability is \(0.1\), giving success probability
+\(10^{-6}\). There are eight transitions and no later decisions.
+Progress scores \(c_i=x_i\) are exact Shapley values of
+\[
+v_x^{\mathrm{progress}}(S)=\sum_{i\in S}x_i.
+\]
+They are not Shapley values of the terminal unanimity reward.
+\ledger{29}
+
+After 100 updates over ten seeds, success probabilities are
+\[
+\begin{array}{l|r}
+\text{Condition}&\text{Mean}\ \pm\ \text{standard error}\\ \hline
+\text{Unshaped}&0.299759\pm0.152630\\
+\text{Progress shares, aggregate critic}&0.999568\pm0.000016\\
+\text{Progress shares, rank-conditioned}&0.299759\pm0.152630\\
+\text{Progress shares, shifted}&0.299759\pm0.152630
+\end{array}
+\]
+All aggregate-shaped seeds exceed \(80\%\) success at update seven;
+only three unshaped seeds reach that level during the run.
+With true Shapley values of the terminal unanimity game, shares are
+uniform on failure and success, and every condition matches the
+unshaped control. A separate threshold task with true Shapley credit
+showed only a very small benefit. \ledger{27,29}
+
+These examples establish useful and harmful residual effects, not
+their necessary inseparability. The progress task passes the effective
+obedience test; the congestion task fails it. Distinguishing them
+requires information relating credit to welfare. See
+\url{ada/round3_effective_contests.md}, lines 233--252,
+and \url{ada/round3-summary-001.log}, lines 1--8.
+\ledger{29,31,32}
+
+\paragraph{Numerical correction.}
+The first sparse-game run,
+\url{ada/clipped-mappo-004.log}, showed divergence between
+mathematically identical controls. Tiny cancellation errors interacted
+with clipping and rare successes. The corrected implementation uses
+the algebraically equivalent critic-residual expression, removes only
+residual roundoff below \(10^{-12}\), and checks agreement with direct
+TD arithmetic within \(10^{-11}\). Supported sparse-game results use
+\url{ada/clipped-mappo-007.log}; earlier logs remain preserved.
+This is a numerical correction, not a reward intervention.
+See \url{ada/round3_effective_contests.md}, lines 254--256.
+\ledger{30}
+
+\section{Results retained from the fourth round}
+
+\subsection{The critic residual is an unrepresented potential component}
+
+Fix a policy, finite horizon, complete accounting, cached predecision
+potentials, and terminal potential zero. If \(Y_t\) is the Monte Carlo
+return from time \(t\), then pathwise
+\[
+\widetilde Y_{i,t}=Y_t-\rho\psi_{i,t}.
+\]
+Fit both targets under the same trajectory distribution and in the
+same closed linear critic space \(\mathcal H_t\). Let \(\Pi_t\) be
+its weighted \(L^2\) orthogonal projection:
+\[
+\widehat V_t=\Pi_tY_t,
+\qquad
+\widehat{\widetilde V}_{i,t}=\Pi_t\widetilde Y_{i,t}.
+\]
+Linearity gives
+\[
+\begin{aligned}
+\widehat{\widetilde V}_{i,t}-\widehat V_t
+&=-\rho\Pi_t\psi_{i,t},\\
+e_{i,t}
+&=\widehat{\widetilde V}_{i,t}-\widehat V_t+\rho\psi_{i,t}\\
+&=\rho(I-\Pi_t)\psi_{i,t}.
+\end{aligned}
+\]
+Thus the residual is exactly the component of the potential that the
+critic cannot represent. \ledger{36}
+
+The identity also holds for empirical linear least squares with the
+same design matrix and weights, and for population regression over
+all functions of fixed features, where \(\Pi_t\) is conditional
+expectation. It requires neither an exact base value nor
+exchangeable policies nor the absence of later decisions.
+It does require a common projection problem. Finite nonlinear
+networks, TD or lambda-return fitting, and separately learned
+representations do not generally satisfy this exact projection
+identity. In those cases \(e\) must be measured from its definition.
+See \url{ada/round4_critic_information.md}, lines 25--53.
+\ledger{36,44}
+
+For a complete terminal rollout, the earlier GAE identity becomes
+\[
+\widetilde A_{i,t}-A_{i,t}
+=-e_{i,t}
++\gamma(1-\lambda)
+\sum_{k=1}^{T-t-1}(\gamma\lambda)^{k-1}e_{i,t+k}.
+\]
+Let
+\[
+S_{i,t}=\nabla\log\pi_i(a_{i,t}\mid h_{i,t}).
+\]
+With frozen critics and the current residual fixed before the current
+action, its expected score-function contribution vanishes under the
+predecision conditioning used by the policy. Hence
+\[
+\begin{aligned}
+&\mathbb E\!\left[
+S_{i,t}(\widetilde A_{i,t}-A_{i,t})
+\right]\\
+&\qquad=
+\gamma(1-\lambda)
+\sum_{k=1}^{T-t-1}(\gamma\lambda)^{k-1}
+\mathbb E[S_{i,t}e_{i,t+k}].
+\end{aligned}
+\]
+This extends the update analysis to repeated decisions and unequal
+policies under the stated conditioning. Future residual action
+covariance, rather than residual mean-squared error alone, determines
+the expected distortion. \ledger{36,37}
+
+At a frozen policy and critic, this contribution has the algebraic
+form of a short-horizon heuristic with reward
+\(\gamma(1-\lambda)e_{i,t+1}\) and discount \(\gamma\lambda\).
+It is generally not the gradient of a single policy-independent game:
+the projection distribution changes with the policy, actor occupancy
+weights need not match the shortened discount, and clipping changes
+later PPO steps. The earlier single-decision effective contest remains
+a special case. See \url{ada/round4_critic_information.md},
+lines 55--82. Exact enumeration with three decisions and unequal,
+time-varying policies gives error below \(8\times10^{-16}\) in
+\url{ada/projection-queries-001.log}, line 1.
+\ledger{36,37}
+
+\subsection{Which residual incentives can added features select?}
+
+Fix a base linear critic space \(\mathcal H_0\), policy distribution,
+and potential. Write
+\[
+z=(I-\Pi_0)\psi.
+\]
+
+\begin{claim}
+If arbitrary required features are available, an unscaled residual
+\(r\) can be obtained by enlarging the critic space
+\(\mathcal H\supseteq\mathcal H_0\) exactly when
+\[
+r\perp\mathcal H_0,
+\qquad
+\langle r,z-r\rangle=0.
+\]
+\end{claim}
+
+Necessity follows because a projection residual is orthogonal to both
+the original space and the captured component. For sufficiency choose
+\[
+\mathcal H=\mathcal H_0+\operatorname{span}\{z-r\}.
+\]
+The conditions make the projection of \(z\) onto the added span equal
+to \(z-r\), leaving residual \(r\). Equivalently,
+\[
+\|r-z/2\|^2=\|z\|^2/4
+\quad\text{within }\mathcal H_0^\perp.
+\]
+Consequently, fractional attenuation \(r=\alpha z\), with
+\(0<\alpha<1\), is not achievable by a subspace projection alone unless
+\(z=0\). Regularization, incomplete fitting, or changing \(\rho\) can
+produce attenuation through different mechanisms. \ledger{39,40}
+
+For multiple output potentials using one common feature space, put
+the residualized columns in \(Z\), desired residuals in \(R\), and
+positive state weights in \(W\). The necessary and sufficient
+conditions are
+\[
+R\perp\mathcal H_0,
+\qquad
+R^{\mathsf T}W(Z-R)=0.
+\]
+Every retained output must be orthogonal to every captured output;
+checking only diagonal inner products is insufficient. Adding the
+span of the columns of \(Z-R\) proves sufficiency. Under a common
+space, zero-sum centered potentials also retain zero-sum residuals.
+\ledger{40}
+
+Restricted feature access additionally constrains the captured columns
+to the available span. If the base value is not represented in
+\(\mathcal H_0\), enlargement can change the base critic as well,
+creating another update channel. These are instrument restrictions
+on critic-based design, not Q's unrestricted reward design.
+The argument is elementary projection geometry, not a new general
+mathematical theorem. See
+\url{ada/round4_critic_information.md}, lines 84--128.
+Two hundred reconstruction checks pass with error below
+\(6\times10^{-15}\) in \url{ada/projection-design-001.log},
+line 6. \ledger{39,40,44}
+
+\paragraph{Separation needs information and orthogonality.}
+If \(z=p+h\), where \(p\) is desired progress and \(h\) is harmful,
+retaining \(p\) exactly while capturing \(h\) requires \(p\perp h\)
+after residualizing against the base features. For multiple outputs
+the corresponding cross-Gram matrix must vanish. For unit-norm
+scalar components with correlation \(\kappa\), adding the harmful
+feature gives
+\[
+r=p-\kappa h,
+\qquad
+\langle p,r\rangle=1-\kappa^2.
+\]
+Capturing harm therefore removes correlated desired signal too.
+Independent components can be separated; identical components cannot.
+A policy change can alter the relevant correlation. \ledger{37,40}
+
+The designer must identify or estimate the harmful component, its
+action effects, and the feature distribution. Accurate comparisons
+alone provide none of these labels. The characterization does not
+overcome the earlier comparison-only indistinguishability limitation.
+See \url{ada/round4_critic_information.md}, lines 130--144,
+and \url{ada/projection-design-001.log}, lines 1--5.
+\ledger{37,40,44}
+
+\subsection{Selective guidance in a repeated mixed task}
+
+Six agents make productive choices \(p_{i,t}\) and harmful display
+choices \(h_{i,t}\), both binary, at three decision dates. A stage
+succeeds only if every productive choice equals one. Terminal welfare
+is average stage success minus \(0.006\) times the display count per
+stage, followed by eight additional waiting transitions before
+payment. At each stage the oracle supplies
+\[
+q_{i,t}
+=\tfrac12\operatorname{softmax}(p_t)_i
++\tfrac12\operatorname{softmax}(h_t)_i.
+\]
+These positive shares are exactly representable by Bradley--Terry
+scores \(\log q_{i,t}\). They deliberately mix productive progress
+and harmful display; they are not terminal-task Shapley values.
+The potential accumulates share deviations from uniform, remains
+fixed during the delay, and is zero at termination, preserving
+complete-return preferences. \ledger{37,41}
+
+The base value is exact. Projected critics absorb neither component,
+both components, only display, or only progress. Exchangeable
+independent policies and permutation-invariant aggregate progress
+features permit the intended separation. The productive and display
+channels are independent by construction. These assumptions establish
+the possibility of separation with supplied knowledge, not a general
+method for discovering it. \ledger{37,41,46}
+
+Sampled clipped PPO uses separate progress and display logits,
+three actual decisions, 512 episodes per update, ten actor epochs,
+Adam, 120 updates, and five seeds. Mean final probabilities and
+standard errors are
+\[
+\begin{array}{l|cc}
+\text{Captured component}
+&\text{Stage success}&\text{Harmful choice}\\ \hline
+\text{Neither}
+&0.999350\pm0.000014&0.998539\pm0.000167\\
+\text{Display only}
+&0.999352\pm0.000014&0.004145\pm0.000730\\
+\text{Both}
+&0.598587\pm0.244373&0.000527\pm0.000079\\
+\text{Progress only}
+&0.599596\pm0.244784&0.999037\pm0.000045
+\end{array}
+\]
+Corresponding mean welfare is \(0.963402\), \(0.999203\),
+\(0.598568\), and \(0.563630\), respectively.
+With only display absorbed, all five seeds exceed \(80\%\) success
+at update nine. With both components absorbed, two seeds never reach
+that level during the run. \ledger{41}
+
+This establishes that guidance and harm need not be removed together.
+Its critics are exact projections, not neural fits. Protocol and
+results are in \url{ada/round4_critic_information.md},
+lines 146--172; the summary is in
+\url{ada/round4-summary-001.log}, lines 12--15.
+Exact conditional-projection and action-covariance checks appear in
+\url{ada/projection-queries-001.log}, line 2.
+The initial selective-run dependency failure supplies no result.
+\ledger{37,41,44}
+
+\subsection{Neural tests with repeated decisions and nonshared actors}
+
+The neural probe has three agents and three genuine decisions.
+Choosing one increments the agent's cumulative display count \(x_i\).
+The terminal reward and nonterminal potential are
+\[
+G=1-0.02\sum_i x_i,
+\qquad
+\psi_i=\operatorname{softmax}(0.5x)_i.
+\]
+The team-optimal policy always chooses zero. This deterministic score
+oracle has no comparison noise. The probe does not define a coalition
+game or claim terminal-task Shapley values; the earlier exact-Shapley
+construction is a separate result. \ledger{38,42}
+
+Each agent has its own two-layer tanh actor, observes time and its own
+count, and starts at a different action probability. The shared
+two-layer critic receives either time and total count, those features
+plus own count, or global ordered counts plus agent identity. An
+additional diagnostic supplies the realized oracle share. Actors have
+width 16; critics have width 32.
+
+The custom centralized-critic PPO uses rollout GAE, clipped actor
+updates, and squared-error lambda-return fitting. It uses 512 episodes
+per update, 120 updates, eight actor and critic epochs, Adam learning
+rate \(0.003\), \(\gamma=0.99\), \(\lambda=0.95\), and clip ratio
+\(0.2\). These are eight full-batch critic steps per update. By
+comparison, P's batch size 10240, minibatch size 512, and ten epochs
+imply approximately 200 minibatch steps. The neural probe's unshaped
+and explicitly shifted controls used global features, including when
+the ordinary shaped condition had aggregate features. The later
+visual round addresses both limitations. \ledger{42,46,52}
+
+The neural probe omits recurrence, entropy bonuses, value clipping,
+environment randomization, and minibatch shuffling. Membership is
+fixed. Main runs omit advantage normalization; follow-ups add it.
+This is neither reference MAPPO nor MARS-RA. See
+\url{ada/round4_critic_information.md}, lines 174--201,
+and \url{ada/round5_visual_audit.md}, lines 75--85.
+\ledger{38,42,44,46}
+
+Dynamic programming computes the exact current-policy base value
+only for diagnostics:
+\[
+e^{\mathrm{true}}_{i,t}
+=\widehat{\widetilde V}_{i,t}-V^\pi_t+\rho\psi_{i,t}.
+\]
+This includes all shaped-critic error, not just a projection residual.
+Every rollout is checked for telescoping and the GAE decomposition.
+Logged action covariances use Bernoulli logit scores and represent
+an interpretable component of the neural update, not its whole
+parameter-gradient vector. \ledger{38,42}
+
+Across three seeds, mean harmful-action frequency over the last
+20 updates, with standard error, is
+\[
+\begin{array}{l|cc}
+\text{Critic}&\text{No added delay}&\text{Eight waiting steps}\\ \hline
+\text{Unshaped, global}
+&0.000698\pm0.000058&0.000600\pm0.000050\\
+\text{Shaped, aggregate}
+&0.001107\pm0.000157&0.999045\pm0.000060\\
+\text{Shaped, own count}
+&0.000720\pm0.000056&0.001396\pm0.000264\\
+\text{Shaped, global and identity}
+&0.001031\pm0.000154&0.998933\pm0.000044
+\end{array}
+\]
+Explicitly shifted controls match unshaped controls seed by seed.
+For the delayed aggregate critic, mean residual action covariance is
+\(4.16\times10^{-5}\), exceeding the oppositely signed exact-base
+covariance \(-1.74\times10^{-5}\). With own-count inputs, the residual
+covariance is approximately \(2.39\times10^{-7}\), much smaller than
+the negative task term. These signs support the mechanism, without
+proving equilibrium or convergence. See
+\url{ada/round4_critic_information.md}, lines 203--217,
+and \url{ada/round4-summary-001.log}, lines 1--11.
+\ledger{42}
+
+\paragraph{Absorption limits the failure.}
+The global-plus-identity network has sufficient information in
+principle but must learn the interaction between identity and count.
+Its failure at the original budget is therefore an optimization or
+coverage limitation, not a missing-information theorem.
+Single-seed delayed diagnostics give harmful frequency approximately
+\(0.00505\) after adding the share input and \(0.00133\) after
+increasing critic epochs from eight to forty. Monte Carlo targets
+with eight epochs do not repair that seed, giving \(0.99889\);
+forty epochs with Monte Carlo targets give \(0.00137\).
+\ledger{38,42}
+
+Across three seeds, advantage normalization preserves the contrast:
+delayed aggregate frequency is \(0.999884\pm0.000022\), versus
+\(0.000101\pm0.000070\) with own-count inputs. Aligning initial shaped
+predictions with the uniform potential also preserves it:
+\(0.999226\pm0.000057\) versus \(0.000940\pm0.000098\).
+Aligned global-plus-identity networks remain near \(0.998998\).
+Thus the omitted initial constant adjustment does not explain the
+main contrast. See \url{ada/round4_critic_information.md},
+lines 219--234, and \url{ada/round4-followups-001.log},
+lines 1--13. \ledger{42}
+
+A sufficiently trained informative critic can absorb the comparative
+signal. These finite runs establish neither persistence under unlimited
+training nor an error in P's architecture. The initial neural
+shape-error run was corrected before the successful experiments and
+does not supply evidence. \ledger{38,42,44}
+
+\subsection{Query count changes noise, and sometimes the mean}
+
+For two agents with \(K\) independent binary comparisons, write
+\(W\sim\operatorname{Binomial}(K,p)\). When both outcomes occur,
+the normalized unregularized Bradley--Terry MLE is
+\[
+\widehat q_1=W/K.
+\]
+On a sweep the score difference diverges, although its normalized
+limit remains zero or one. With this explicit boundary convention,
+\[
+\mathbb E[\widehat q_1]=p,
+\qquad
+\operatorname{Var}(\widehat q_1)=\frac{p(1-p)}{K}.
+\]
+More queries leave the conditional mean effective prize unchanged
+while reducing sampling noise. Under independent query batches, the
+query contribution to update variance scales as \(\rho^2/K\), with
+temporal weights supplied by the GAE identity. It can reduce
+uncertainty around harmful as well as useful updates. \ledger{43}
+
+For \(p_0=1/2\), \(p_1=\sigma(0.5)\), action cost \(0.02\), and
+effective prize \(\beta\), the tested mean score update is
+\[
+\tfrac14[-0.02+\beta(p_1-p_0)].
+\]
+It is negative for \(\beta=0.05\) and positive for
+\(\beta=0.3116\) at every tested query count from 1 to 64.
+Only the query variance shrinks. Exact enumeration is recorded in
+\url{ada/projection-queries-001.log}, lines 3--14.
+\ledger{43}
+
+Connected comparisons alone do not guarantee a finite score MLE.
+At equal two-agent scores, the sweep probability is \(2^{1-K}\);
+with two binary comparisons it is one half despite connectivity.
+P's proof mentions regularization, but its displayed estimator does
+not specify it. Gauge choice, score-range control, and the treatment
+of divergent estimates matter for its recovery claim. This is the
+ordinary separation problem, not a new theorem or a verified
+implementation defect. \ledger{34,43}
+
+A symmetric pseudocount \(\delta>0\) instead gives
+\[
+\mathbb E[\widehat q_1]
+=\frac{Kp+\delta}{K+2\delta},
+\]
+so count changes shrinkage as well as variance.
+For three agents the fitted share is nonlinear. Exact enumeration
+with half-win pseudocounts and true scores \((0.5,0,-0.5)\)
+gives top-agent mean share \(0.41730\) at one query per pair and
+\(0.49696\) at sixteen, approaching the true \(0.50648\).
+The mean fitted share differs from fitting the mean counts.
+In this smoothed example, top-share variance rises slightly from
+one to two queries before declining. See
+\url{ada/three-agent-queries-001.log}, lines 1--5.
+\ledger{43}
+
+These are estimator and variance channels; they do not explain P's
+empirical accuracy-query tradeoff or predict an optimal \(\rho\),
+including its reported favorable range \(\{0.1,0.5,1\}\).
+Such a prediction needs P's actual estimator, critic learning,
+and the relationship between visual credit and task progress.
+The general explanation sought by the verifier was not obtained.
+See \url{ada/round4_critic_information.md}, lines 236--272.
+\ledger{43,44}
+
+\section{Appended findings from the fifth round}
+
+\subsection{An explicitly shifted critic is an exact intervention}
+
+Fix actor information, cached predecision potentials, terminal-zero
+complete accounting, the discount, and a base critic parameterization.
+Define
+\[
+\widetilde V_\phi(h_t)=V_\phi(h_t)-\rho\psi_t.
+\]
+Substitution into the TD residual cancels the potential samplewise.
+Therefore GAE advantages are identical for every trace parameter,
+including after identical advantage normalization. Their lambda-return
+targets satisfy
+\[
+\widetilde A_t+\widetilde V_\phi(h_t)
+=A_t+V_\phi(h_t)-\rho\psi_t.
+\]
+Consequently the squared-error critic loss also agrees:
+\[
+\begin{aligned}
+&\left[
+\widetilde V_\phi(h_t)
+-\bigl(\widetilde A_t+\widetilde V_{\mathrm{old}}(h_t)\bigr)
+\right]^2\\
+&\qquad=
+\left[
+V_\phi(h_t)-\bigl(A_t+V_{\mathrm{old}}(h_t)\bigr)
+\right]^2,
+\end{aligned}
+\]
+where both target predictions use the corresponding fixed rollout
+parameters and the same potential shift. \ledger{47,57}
+
+With identical initialization, optimizer state, minibatches, and actor
+inputs, and no gradient through the potential, the coupled
+parameterizations have identical actor and critic parameter paths.
+This does not require exact values or linear critics. It is an
+intervention imposed on the parameterization, not a claim that
+independently fitted neural critics will discover the relation.
+Different normalization rules, actor information, or gradients through
+the comparator can invalidate the coupling. See
+\url{ada/round5_visual_audit.md}, lines 13--46.
+\ledger{48,57}
+
+For ordinary shaped critics, the comparison residual is measured
+against a shadow base critic fitted on the same policy's rollouts:
+\[
+e_{i,t}
+=\widehat{\widetilde V}_{i,t}
+-\widehat V_{i,t}+\rho\psi_{i,t}.
+\]
+It is not formed by subtracting critics from separate runs with
+different policies. The shadow critic is diagnostic; the ordinary
+condition's actor uses its ordinary shaped GAE. The equivalent
+residual expression is checked against direct shaped TD arithmetic.
+This separates a pathwise identity from cross-run intervention
+evidence. \ledger{53,56,57}
+
+\subsection{Visual task, comparisons, and matched controls}
+
+The new task is a custom \(5\times5\) visual gridworld with two robots,
+a central wall with a single opening, and separate goals on the far
+side. Simultaneous collisions and swaps block moves. There are
+20 decision dates and five actions: stay, up, down, left, and right.
+A shared sparse reward of one is paid at the fixed terminal date if
+both robots reach their goals. The delay condition adds eight
+no-action transitions before paying the same reward. Membership is
+fixed. \ledger{47,50,57}
+
+Actors are separate small CNNs. Each observes symbolic image planes
+for walls, itself, its teammate, and both goals, plus time.
+These are fully observed symbolic pixels, not photorealistic or
+egocentric observations. The shared critic receives the state image
+in own-relative coordinates, time, and agent identity. A second
+input class also receives the cached own comparison share.
+Within each input class, the study compares unshaped learning,
+explicitly shifted shaping, and ordinary shaping. Thus critic input
+access is matched across controls. This is custom visual CTDE PPO,
+not XuanCe, reference MAPPO, or MARS-RA. See
+\url{ada/round5_visual_audit.md}, lines 48--85.
+\ledger{50,57}
+
+The synthetic comparator uses static shortest-path distance to the
+agent's goal, ignoring the other robot. Its correct label is win,
+loss, or tie. It returns the correct label with probability \(a\)
+and each other label with probability \((1-a)/2\).
+The primary accuracies are \(a=0.43\) and \(a=0.83\).
+They span P's reported numerical range but do not model its LMM
+errors, contribution semantics, partial observations, or correlated
+judgments. \ledger{50}
+
+At each state, four independent comparisons are cached. A win counts
+one, a tie one half, and a loss zero. If their sum is \(W_t\),
+\[
+\widehat q_{1,t}=\frac{W_t+1/2}{K+1},
+\qquad
+\widehat q_{2,t}=1-\widehat q_{1,t},
+\qquad K=4.
+\]
+This is an explicitly smoothed two-agent Bradley--Terry share, not a
+claim about P's unspecified optimizer. Initial shares are \(1/2\)
+and terminal potentials are zero. Query noise and action sampling
+use separate random streams. Across diverging policies, controls
+share the state-conditional generator and random draws; their visited
+states, and hence realized judgments, need not remain identical.
+\ledger{50,57}
+
+\paragraph{Budget and protocol corrections.}
+The main protocol uses 128 full episodes per update, 80 updates,
+ten shuffled epochs, minibatch size 256, Adam at \(0.001\),
+discount \(0.99\), GAE \(0.95\), clipping ratio \(0.2\), entropy
+coefficient \(0.01\), and gradient norm clipping at \(0.5\).
+At zero delay, the critic sees 5120 agent transitions and takes
+200 minibatch steps per update; each actor participates in 100
+joint-minibatch steps. Delay increases critic steps to 280 while
+actor steps remain 100. The isolated low-critic-budget condition
+uses two critic epochs, or 40 steps, while retaining ten actor epochs.
+\ledger{52,54,57}
+
+The main critic step count matches the count implied by P's
+hyperparameter table, but minibatches contain half as many samples,
+and the network and task are much smaller. This is not equal total
+compute. Delay also increases critic fitting, so the delay experiment
+does not hold that count constant. The implementation omits
+recurrence, value clipping, value normalization, adaptive learning
+rates, action repeat, dynamic participants, and LMM inference.
+See \url{ada/round5_visual_audit.md}, lines 75--85.
+\ledger{52,57}
+
+Initial binary-label runs made accuracy \(0.43\) below chance and
+therefore were not comparable to P's three-way accuracy. They remain
+sensitivity checks; the primary runs use three labels.
+Earlier low-budget runs changed actor and critic epochs together.
+Their failures cannot isolate critic fitting. The corrected
+critic-budget comparison changes only critic epochs.
+Neither correction overwrites the earlier logs.
+\ledger{50,52,54}
+
+\subsection{Visual results and negative generalization evidence}
+
+The primary protocol comprises 66 runs: 36 main, 18 delayed, and
+12 isolated critic-budget runs. Another 78 runs remain binary-label
+or combined-budget sensitivity checks. Noise-decomposition repetitions
+are not extra independent seeds. All available explicit-shift controls
+match their unshaped controls on logged metrics, including critic
+losses and learning summaries. Complete-return and GAE checks passed.
+See \url{ada/visual-summary-final-001.log}, line 49, and
+\url{ada/round5_visual_audit.md}, lines 190--217.
+\ledger{57}
+
+The following table reports training success averaged over the
+80-update learning curve, with standard errors across three seeds.
+Here P denotes pixel inputs and S denotes pixels plus the comparison
+share. The shifted control equals the input-matched base exactly.
+\[
+\begin{array}{llc|cc}
+\text{Condition}&a&\text{Input}
+&\text{Base/shifted}&\text{Ordinary}\\ \hline
+\text{Main}&0.43&\mathrm P
+&0.7303\pm0.0130&0.4439\pm0.2278\\
+\text{Main}&0.43&\mathrm S
+&0.8299\pm0.0287&0.5279\pm0.2653\\
+\text{Main}&0.83&\mathrm P
+&0.7303\pm0.0130&0.4267\pm0.2402\\
+\text{Main}&0.83&\mathrm S
+&0.8322\pm0.0261&0.8523\pm0.0081\\
+\text{Delay}&0.83&\mathrm P
+&0.7481\pm0.0104&0.6762\pm0.1159\\
+\text{Delay}&0.83&\mathrm S
+&0.8410\pm0.0244&0.8951\pm0.0024\\
+\text{Low critic}&0.83&\mathrm P
+&0.7414\pm0.0051&0.6975\pm0.0455\\
+\text{Low critic}&0.83&\mathrm S
+&0.8344\pm0.0233&0.8390\pm0.0172
+\end{array}
+\]
+For ordinary shaping, final success averaged over the last ten
+training updates and late residual RMS are
+\[
+\begin{array}{llc|cc}
+\text{Condition}&a&\text{Input}
+&\text{Final success}&\text{Residual RMS}\\ \hline
+\text{Main}&0.43&\mathrm P&0.6643\pm0.3322&0.1562\\
+\text{Main}&0.43&\mathrm S&0.6656\pm0.3328&0.0073\\
+\text{Main}&0.83&\mathrm P&0.6625\pm0.3313&0.1060\\
+\text{Main}&0.83&\mathrm S&0.9987\pm0.0009&0.0053\\
+\text{Delay}&0.83&\mathrm P&0.9961\pm0.0012&0.0963\\
+\text{Delay}&0.83&\mathrm S&0.9990\pm0.0007&0.0048\\
+\text{Low critic}&0.83&\mathrm P&0.9938\pm0.0024&0.1035\\
+\text{Low critic}&0.83&\mathrm S&0.9945\pm0.0008&0.0077
+\end{array}
+\]
+All base/shifted final success means exceed \(0.997\).
+These are training-rollout measurements, not held-out deployment
+evaluations or layout-generalization tests. The table is supported by
+\url{ada/round5_visual_audit.md}, lines 194--205, and
+\url{ada/visual-final-table-001.log}, lines 1--24.
+\ledger{54,56,57}
+
+The main ordinary pixel-only condition has a zero-success seed at
+each accuracy, producing large uncertainty. Higher comparison accuracy
+does not monotonically improve its mean learning average in this
+sample. With share inputs, high-accuracy ordinary shaping succeeds
+in all seeds and has a modest positive mean difference from its
+input-matched base. The delayed share-input condition also has a
+positive mean difference. These observations support possible transient
+guidance, not a benchmark-wide benefit. \ledger{55,57}
+
+Comparison features help the unshaped critic too: its zero-delay
+learning average rises from approximately \(0.73\) with pixels to
+\(0.83\) with share inputs. Input matching is therefore necessary to
+separate critic information from reward shaping. Ordinary share-input
+critics absorb almost all the potential offset late in training;
+small residuals and changed early trajectories can still accompany
+different learning curves. \ledger{57}
+
+Most importantly, the visual task does not reproduce the earlier
+delay collapse. All delayed high-accuracy ordinary conditions learn,
+with or without share inputs. All isolated low-critic-budget
+high-accuracy conditions also learn. The earlier failures under a
+combined actor-and-critic budget reduction are not evidence that low
+critic budget alone causes failure. These outcomes limit extrapolation
+from the constructed congestion examples without invalidating them.
+\ledger{52,54,56,57}
+
+\subsection{Query noise need not create a mean rank contest}
+
+For a critic without comparison outputs, decompose the potential as
+\[
+\psi_t=\mu(s_t)+\varepsilon_t,
+\qquad
+\mathbb E[\varepsilon_t\mid s_t]=0.
+\]
+In this visual protocol the actor does not observe query output,
+the comparator does not choose environment actions, and query draws
+are independent across time conditional on visited states. If the
+base value and conditional-mean shaped value are fitted exactly,
+then \(e_t=\rho\varepsilon_t\). Iterated conditioning yields
+\[
+\mathbb E[S_{i,t}e_{i,t+k}]=0.
+\]
+Thus a nonzero residual RMS can coexist with zero expected initial
+score-function distortion. It can still increase finite-sample
+variance and alter clipping, normalization, and subsequent learning.
+See \url{ada/round5_visual_audit.md}, lines 93--117.
+\ledger{53}
+
+The synthetic generator permits a separate measurement of
+\[
+\begin{aligned}
+e_t^{\mathrm{mean}}
+&=\widehat{\widetilde V}_t-\widehat V_t+\rho\mu(s_t),\\
+e_t^{\mathrm{noise}}
+&=\rho\bigl(\psi_t-\mu(s_t)\bigr).
+\end{aligned}
+\]
+For the three high-accuracy pixel-only seeds, late total residual RMS
+is approximately \(0.103,0.103,0.113\); query-noise RMS alone is
+\(0.100,0.099,0.112\), and mean-signal fitting error is
+\(0.021,0.026,0.014\). Much of the measured residual is therefore
+unpredictable query noise. These are diagnostic repetitions of the
+same primary seeds, not new trials. See
+\url{ada/round5-audit-and-noise-summary-001.log},
+lines 13--15. \ledger{53,55}
+
+The failing seed has essentially no task-gradient signal because
+successful feedback is absent. A raw RMS threshold would conflate
+query noise, fitting error, and behavioral consequences. For a critic
+that receives the realized share, predictions also depend on the
+query draw, so this simple state-only decomposition is not applied.
+No persistent mean rank contest is established in the visual task.
+\ledger{53,55,58}
+
+\subsection{A task-return audit identifies only a local effect}
+
+Let \(J(\theta)\) be the discounted task objective,
+\(g=\nabla J(\theta)\), and \(d\) a fixed proposed auxiliary direction
+selected before drawing an independent validation batch. With a
+preaction baseline, an unbiased trajectory estimate is
+\[
+\widehat g(\tau)=
+\sum_{i,t}\gamma^t
+\nabla_\theta\log\pi_i(a_{i,t}\mid h_{i,t})
+\bigl(Y_t-b_{i,t}\bigr).
+\]
+The sample mean of
+\[
+X(\tau)=d^{\mathsf T}\widehat g(\tau)
+\]
+estimates \(g^{\mathsf T}d\) without labels identifying harmful
+comparison components. Selection on the same data requires additional
+correction; optimizer preconditioning also requires testing the
+direction actually applied. \ledger{49,51}
+
+Comparing shaped GAE with Monte Carlo returns detects total critic
+and GAE bias. To isolate comparative shaping, compare shaped and base
+GAE on common rollouts, or subtract the base-GAE discrepancy.
+Otherwise ordinary critic bias is attributed to comparisons.
+\ledger{49,51}
+
+A negative \(g^{\mathsf T}d\) means that the auxiliary component
+opposes immediate task improvement. It does not imply that the
+combined update is harmful. For an ordinary gradient step on \(g+d\),
+first-order improvement requires
+\[
+\|g\|^2+g^{\mathsf T}d>0.
+\]
+Finite steps require curvature control or direct evaluation.
+At a stationary point the first-order statistic can be zero even
+when every nonzero nearby step lowers the objective. This audit
+does not establish Q's global deviation inequalities. See
+\url{ada/round5_visual_audit.md}, lines 119--139.
+\ledger{49,51}
+
+\paragraph{Sparse feedback imposes an information limit.}
+Consider two environments with identical action and observation
+processes and identical comparisons. An independent informative reward
+event occurs with probability \(p\) per episode. On that event, one
+environment rewards action one and the other rewards action zero;
+outside it both pay zero. Their task gradients have opposite signs.
+
+Couple actions, queries, and event indicators. Unless an informative
+event occurs, the entire audit data agree in both environments.
+For \(N\) episodes this event has probability \((1-p)^N\).
+Every binary sign test therefore has worst-case error at least
+\[
+\frac12(1-p)^N.
+\]
+At \(p=0.001\) and \(N=128\), the bound is approximately \(0.4399\).
+Abstention avoids unwarranted certification but supplies no missing
+information. More comparisons cannot reduce this bound because their
+distribution is identical in both environments. This is an elementary
+indistinguishability argument, not a new statistical theorem.
+See \url{ada/round5_visual_audit.md}, lines 141--151.
+\ledger{49,51}
+
+\subsection{Correlated-component audit and confidence correction}
+
+The audit simulation uses binary productive and display choices
+\((P,H)\), marginal probabilities \(1/2\), and correlations
+\(\kappa\in\{0,0.6,0.95\}\). A passive peer gets the complementary
+share. The acting agent's comparison share and task reward are
+\[
+q=\sigma(P+2H),
+\qquad
+R=Z(P-cH),
+\]
+where \(Z\) is an independent event indicator, and
+\(c\in\{0.25,2\}\). Thus productive and harmful components can be
+strongly correlated, unlike the constructed selective-guidance task.
+For the four-category policy with probabilities \(\mu_j\), the
+comparative direction is supplied exactly as
+\[
+d_j=\beta\mu_j\bigl(q_j-\mathbb E[q]\bigr),
+\qquad \beta=0.05.
+\]
+Exact enumeration verifies the true directional derivative.
+Independent return-only estimates use validation sizes
+128, 1024, and 8192, with 3000 trials per configuration.
+This is a fixed-policy diagnostic, not an online learning algorithm.
+\ledger{49,51}
+
+The final confidence calculation uses the two-sided empirical
+Bernstein bound of Maurer and Pontil, rescaled to
+\(X\in[-M,M]\). With sample variance \(s^2\),
+\(L=\log(4/\delta)\), and \(N>1\), its radius is
+\[
+\sqrt{\frac{2s^2L}{N}}
++\frac{14ML}{3(N-1)}.
+\]
+The corrected calculation is in \url{ada/return-audit-002.log}.
+Log 001 is superseded for certification rates but remains preserved.
+This bound applies to each fixed independent validation experiment,
+not repeated adaptive monitoring without correction.
+See \url{ada/round5_visual_audit.md}, lines 153--176.
+\ledger{51}
+
+At cost \(2\) with dense feedback, the conservative audit identifies
+the harmful direction in all 3000 trials with \(N=128\), at both
+correlation zero and \(0.95\). At event probability \(0.001\) and
+\(N=128\), approximately \(88\%\) of batches contain no informative
+event and no trial certifies harm. Even at \(N=8192\), the tested
+rare-feedback configurations do not certify harm, although the
+unqualified sign estimate is correct in approximately \(99.8\%\)
+of trials at correlation zero and \(98.5\%\) at \(0.95\).
+The certificate's conservatism is distinct from the information
+limit applying to every test. Summary evidence appears in
+\url{ada/round5-audit-and-noise-summary-001.log}, lines 1--12.
+\ledger{51}
+
+No adaptive audit was trained to gate the visual PPO updates.
+Visual diagnostics include categorical-score covariance and, every
+fifth update, discounted CNN parameter-gradient calculations.
+A split-rollout inner product removes same-sample inner-product bias
+at a fixed policy with frozen critics. These remain noisy raw
+score-function diagnostics. PPO normalizes advantages, omits the
+extra discounted-occupancy factor in its training surrogate, clips
+later ratios, and uses Adam; its eventual displacement is different.
+\ledger{51,56}
+
+The time-averaged alignment diagnostic does not order visual learning
+performance. It is positive in the main pixel-only conditions despite
+their worse learning averages, and slightly negative in the main
+high-accuracy share-input condition despite its positive mean learning
+difference. This does not refute the directional-derivative identity.
+It rules out treating the measured statistic as an established
+learning-curve predictor or safety certificate. See
+\url{ada/round5_visual_audit.md}, lines 87--91 and 213--215.
+\ledger{56,57}
+
+\section{Objections and their current status}
+
+\begin{objection}
+The participation correction establishes a novel defect in P.
+\end{objection}
+
+The identity and counterexample remain valid conditionally, but
+neither novelty nor attribution follows. Public backbones distinguish
+return accounting from loss masking, P's adapter remains unverified,
+and episodic boundary effects are prior work. No implementation-bug
+claim survives. \ledger{10,12,14,19,22,34}
+
+\begin{objection}
+Accurate comparisons and complete-return invariance prevent harmful
+learning incentives.
+\end{objection}
+
+They preserve the specified complete-return preferences, not all
+approximate updates. Exact Shapley scores can produce a residual
+contest under a fully fitted critic missing individual-credit
+information. Sampled clipping and custom neural repeated-decision
+tests preserve a delay-dependent harmful direction. The neural probe
+uses a separate deterministic oracle and does not itself establish
+terminal Shapley attribution. None of these results changes the
+equilibrium of the correctly shaped return game or establishes a
+failure of P. \ledger{15,17,18,28,34,42}
+
+\begin{objection}
+The analysis applies only to exchangeable actors making one decision.
+\end{objection}
+
+That restriction remains relevant to the particular fitted-aggregate
+effective-game formula. The projection and covariance identities
+extend to repeated decisions and unequal policies under their common
+regression and conditioning assumptions. The neural probe also uses
+repeated decisions and nonshared actors. Neither extension supplies
+a policy-independent effective game for arbitrary evolving critics
+and policies. \ledger{31,36,37,42}
+
+\begin{objection}
+A rank-conditioned critic solves the problem, or removing harm must
+remove useful guidance.
+\end{objection}
+
+Complete absorption removes the demonstrated update distortion and
+can remove useful progress guidance. Selective absorption retains
+guidance in the constructed mixed task, but requires the supplied
+decomposition and orthogonality. The feature characterization explains
+why arbitrary corrections cannot be implemented through critic
+features alone. The later return audit avoids decomposition labels
+only for a local diagnostic, with sufficient task feedback.
+\ledger{29,37,40,41,49,51}
+
+\begin{objection}
+The neural and visual residuals establish a permanent rank contest.
+\end{objection}
+
+The aggregate neural critic has an explicit information restriction.
+Global inputs plus identity are sufficient in principle, and more
+fitting or direct share inputs repair the tested seed. The visual
+experiment further limits the interpretation: delayed and isolated
+low-critic-budget high-accuracy runs succeed, and pixel-only residual
+RMS is largely explained by query noise. These outcomes preserve the
+conditional counterexamples but do not establish a persistent mean
+contest in P. \ledger{38,42,53,54,55,56,57}
+
+\begin{objection}
+The visual experiment confirms that delay generally makes comparative
+shaping harmful.
+\end{objection}
+
+It does not. The requested delay intervention was performed and
+failed to reproduce that prediction in the visual task. Delay also
+increased critic minibatch steps. The result supports task- and
+optimizer-dependent finite-training effects, not a general delay
+failure. \ledger{56,57}
+
+\begin{objection}
+A return-gradient audit supplies a new label-free safety mechanism.
+\end{objection}
+
+The fixed-direction estimator is a local diagnostic grounded in known
+policy-gradient and gradient-alignment ideas. Sparse feedback forces
+abstention, first-order tests cannot certify arbitrary finite steps,
+and the measured raw gradient need not be the optimizer displacement.
+No online safety algorithm or Q-style implementation result was
+established. \ledger{48,49,51,56}
+
+\begin{objection}
+The contribution may only combine known shaping bias, projection
+geometry, normalization failure, and contests.
+\end{objection}
+
+This remains a decisive limitation. The constructions and interventions
+make the question precise, but HuRL, Difference Advantage Estimation,
+normalized utility design, BARFI, gradient-similarity learning, and
+decision-aware actor-critic work substantially narrow novelty.
+The visual study adds evidence and negative generalization results;
+it does not resolve the publication bar. \ledger{16,24,32,36,46,48,58}
+
+\section{Outside sources and novelty limits}
+
+The research used the shared paper pool, requesting LaTeX source
+before PDFs and using cached PDF text only when source was unavailable.
+No separate paper copies were downloaded into the agent folder.
+Initial access failures were recorded rather than treated as completed
+source comparisons. \ledger{6,14,19,32,36,48}
+
+\begin{itemize}
+\item Wiewiora (2003), \emph{Potential-Based Shaping and Q-Value
+Initialization are Equivalent},
+\url{https://arxiv.org/abs/1106.5267}, supplies the tabular connection
+between fixed shaping and shifted initialization. The helper used
+cached PDF text after finding LaTeX unavailable. Fixed-initialization
+equivalence does not justify an unrestricted extension to dynamic
+potentials. \ledger{14}
+
+\item Devlin and Kudenko (2012), \emph{Dynamic Potential-Based Reward
+Shaping},
+\url{https://www.ifaamas.org/Proceedings/aamas2012/papers/2C_3.pdf},
+provides the dynamic policy and equilibrium invariance baseline.
+Initial requests failed with HTTP 429; later retrieval succeeded.
+\ledger{6,14}
+
+\item Grzes (2017), \emph{Reward Shaping in Episodic Reinforcement
+Learning},
+\url{https://aamas.csc.liv.ac.uk/Proceedings/aamas2017/pdfs/p565.pdf},
+derives initial and final boundary effects, including multi-agent
+equilibrium distortion. The entry refund applies this principle to
+active segments. \ledger{14}
+
+\item Schulman et al., \emph{High-Dimensional Continuous Control Using
+Generalized Advantage Estimation},
+\url{https://arxiv.org/abs/1506.02438}, interprets GAE through reward
+shaping and additional discounting. The pooled LaTeX source,
+lines 516--579, was used for comparison. The general GAE
+decomposition is not a novelty claim. \ledger{14,16}
+
+\item Li, Xie and Lu (2022), \emph{Difference Advantage Estimation for
+Multi-Agent Policy Gradients},
+\url{https://proceedings.mlr.press/v162/li22w.html}, studies
+shaping-induced credit assignment and policy bias and introduces an
+estimator combining with GAE. Its abstract and indexed excerpts
+establish close prior work, not a demonstrated novelty gap.
+Full text remains unavailable through the recorded pool requests.
+\ledger{16,19,32,36,58}
+
+\item Cheng, Kolobov and Swaminathan (2021),
+\emph{Heuristic-Guided Reinforcement Learning},
+\url{https://arxiv.org/abs/2106.02757}, is pooled as
+\url{sources/2106.02757.tex}.
+Source lines 425 onward introduce a future heuristic and shortened
+discount; lines 469--487 distinguish policy invariance from learning
+speed and horizon-based bias. The frozen residual has the same
+algebraic short-horizon form. Neither that form nor the broad
+guidance-bias tradeoff is new here. See
+\url{ada/round4_critic_information.md}, lines 274--282.
+\ledger{36,44}
+
+\item Marden and Wierman's distributed welfare games analyze
+marginal-contribution utilities, Shapley allocation, and normalization
+failures. The available indexed manuscript includes a normalized
+wonderful-life example without a pure equilibrium:
+\url{https://users.cms.caltech.edu/~adamw/papers/DWG.pdf}.
+The journal record is
+\url{https://authors.library.caltech.edu/records/bc67q-z0253}.
+Normalization failure itself is not a defensible novelty claim.
+Full comparison remains incomplete. \ledger{24,32}
+
+\item Lazear and Rosen (1981),
+\url{https://doi.org/10.1086/261010}, supplies the rank-order
+tournament baseline. Lazear (1989),
+\url{https://doi.org/10.1086/261616}, addresses detrimental
+uncooperative behavior under relative comparisons according to its
+publisher abstract; full text was not obtained. Primary records for
+Skaperdas and the Tullock contest tradition were also checked without
+successful full-text retrieval. The softmax reparameterization as a
+proportional contest is a direct calculation, not a novelty claim.
+\ledger{19,32}
+
+\item Gupta et al. (2023), \emph{Behavior Alignment via Reward Function
+Optimization},
+\url{https://arxiv.org/abs/2310.19007}, explicitly discusses
+Monte Carlo potential shaping leaving expected policy-gradient
+updates unchanged while possibly increasing variance. Its auxiliary
+reward optimization evaluates behavior under the primary objective.
+The pooled source, \url{sources/2310.19007.tex},
+lines 396--416, limits novelty of the cancellation framing and
+behavioral audit motivation. \ledger{48}
+
+\item Du et al., \emph{Adapting Auxiliary Losses Using Gradient
+Similarity},
+\url{https://arxiv.org/abs/1812.02224}, gives cosine-based gating of
+auxiliary update fields. The pooled source, lines 749--775, covers
+the gating rule; lines 831 and 919 discuss noisy estimates, and
+lines 949 onward treat reinforcement learning. A simple alignment
+audit is an application of established ideas. \ledger{48}
+
+\item Vaswani et al., \emph{Decision-Aware Actor-Critic with Function
+Approximation and Theoretical Guarantees},
+\url{https://arxiv.org/abs/2305.15249}, couples critic error with
+permissible policy movement and improvement guarantees. The pooled
+source, lines 837--895, is a close precedent for controlling actor
+error through critics, though not itself an analysis of P's normalized
+comparison potential. \ledger{51}
+
+\item Maurer and Pontil, \emph{Empirical Bernstein Bounds and Sample
+Variance Penalization},
+\url{https://arxiv.org/abs/0907.3740}, supplies the audit confidence
+bound through Theorem 4, at pooled source lines 203--213.
+No new concentration result is claimed. \ledger{51}
+
+\item Thomas, Theocharous and Ghavamzadeh,
+\emph{High Confidence Policy Improvement},
+\url{https://proceedings.mlr.press/v37/thomas15.html}, is an existing
+program for return-based policy guarantees. Only its primary abstract
+page was used; no detailed theorem comparison is claimed.
+See \url{ada/round5_visual_audit.md}, lines 178--188.
+\ledger{51,58}
+\end{itemize}
+
+Successful early shaping-source retrievals are recorded in
+\url{ada/prior-fetch-003.log}, lines 1--3.
+The final network DAE request failed with HTTP 429 in
+\url{ada/prior-fetch-012.log}, line 1; the HuRL retrieval is recorded
+on line 2. Earlier failures remain in
+\url{ada/prior-fetch-008.log},
+\url{ada/prior-fetch-009.log}, and
+\url{ada/prior-fetch-011.log}.
+The fifth round made no further network retry. Its offline-only
+check found no newly cached DAE copy; see
+\url{ada/round5-offline-dae-check-001.log}, line 1.
+The full-text comparison remains open. \ledger{32,36,44,58}
+
+Public implementation sources were XuanCe and
+\url{https://github.com/marlbenchmark/on-policy}, at the revisions
+specified above. Earlier searches, including inspection of
+\url{https://aclanthology.org/2026.acl-long.1349/}, found no
+MARS-RA code link. This is a recorded search result, not proof that
+public code does not exist. \ledger{8,12}
+
+\section{What remains open and the smallest next step}
+
+The original strategic-robustness justification remains rejected.
+The accounting results are conditional applications of established
+principles. The strongest surviving question is critic-dependent
+comparative guidance: whether its benefit comes from information
+supplied to the critic, useful transient advantage distortion, or
+changed sampling variance. Q contributes the requirement to check
+behavioral incentives; no new Q-style implementation theorem follows.
+\ledger{20,44,58}
+
+The previous note's proposed visual intervention has now been
+performed in a small custom gridworld. It should not be presented
+as unattempted. It found exact cancellation under deliberately shifted
+critics, possible transient guidance under ordinary critics, and
+negative evidence against generalizing the toy delay failure.
+It also showed why residual RMS and averaged raw gradient alignment
+do not identify a persistent mean conflict. The task-return audit
+was explored with correlated components and sparse feedback, but
+was not developed into an online intervention. \ledger{51,53,56,57}
+
+P's actual critic inputs, return and termination conventions,
+persistent-identity handling, score regularization, query processing,
+and potential caching remain unknown. The visual study has fixed
+membership, symbolic full observations, synthetic comparisons, and
+three seeds per condition. It does not validate a mechanism on
+MARS-Bench or a substantive public embodied benchmark. Full-text DAE
+and utility-design comparisons are also incomplete.
+The material remains insufficient for a publication-ready novelty
+claim. \ledger{44,46,57,58}
+
+The smallest next step toward practical relevance is a matched
+intervention in one substantive task using P's implementation if
+available, otherwise a validated reference stack. Hold actor
+information, task objective, comparator generator, and accounting
+fixed; compare input-matched unshaped, ordinary shaped, and explicitly
+shifted critics. Measure the residual on common-policy rollouts and
+separate predictable comparison signal from query noise, alongside
+task performance and critic fitting. This would test whether the
+information, transient-guidance, or variance distinction matters
+outside the custom examples. It would not by itself settle novelty,
+which still requires the unresolved source comparison.
+Further variations of the same synthetic games are unlikely to
+resolve either issue. See \url{ada/round5_visual_audit.md},
+lines 219--225. \ledger{57,58}
+
+\end{document}

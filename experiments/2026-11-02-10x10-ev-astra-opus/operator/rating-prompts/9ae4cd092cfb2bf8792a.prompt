@@ -1,0 +1,2492 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Coalition Context in Pairwise Credit Assignment}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q, \emph{Competitive Market Behavior of LLMs}, evaluates LLM traders in a continuous double auction, finding incomplete equilibrium convergence and heterogeneous trading behavior. P, \emph{MARS-RA}, uses multimodal pairwise judgments, Bradley--Terry aggregation, and potential-based reward shaping to support cooperative multi-agent learning with changing active membership.
+
+\section{The connexion pursued}
+
+The connexion concerns whether pairwise judgments recover
+coalition-dependent contribution, rather than merely a consistent preference
+among agents. Q supplies a market structure with exactly calculable gains
+from trade; P supplies an aggregation mechanism whose statistical target is
+the judge's latent preference. P's Shapley interpretation additionally
+assumes that this preference already represents Shapley contribution.
+The proposed audit tests that semantic premise. \ledger{6, 8, 9}
+
+This direction superseded an investigation of membership-dependent
+shaping boundaries. A possible connexion through urgency language was not
+established: Q studies traders, not contribution judges, and its reasoning
+analysis does not establish causal mechanisms. See
+\url{ada/research_note.md}, lines 3--13 and 102--113.
+
+The earlier conditional results are retained below. The first extension
+responded to the verifier's request for classical attribution and evidence
+beyond a selected reversal. The extension beginning in
+Section~\ref{sec:actual-pipeline} addresses the objection that the
+static-score bound did not cover P's per-state refitting pipeline.
+It establishes a sharp small-team obstruction but also shows
+that refitting recovers most rankings on the audited reachable market
+families. These conclusions must be read together.
+\ledger{11, 21, 25, 26, 29}
+
+The extension beginning in Section~\ref{sec:family-extension}
+responds to review 31. It adds the exact
+dropout-family error formula, constructive context repairs, social-choice
+attribution, and a comparator shared across all reachable active counts.
+It preserves the correction in entry 38.
+The empirical material remains thin, and novelty of the exact family
+formula has not been established. \ledger{31, 34, 36, 38, 39}
+
+The appended Section~\ref{sec:general-extension} responds to the latest
+review, entry 41. It retains the preceding results and adds an
+arbitrary-game projection on the linear win-score scale, a constructive
+local-order result, and a participation-model lower bound.
+These additions do not supply empirical judge measurements or establish
+publication readiness. \ledger{41, 43, 46, 47, 50}
+
+\section{An exact contribution reversal}
+
+Choose an explicit cooperative evaluation game on traders:
+\[
+W(C)=
+\max_{\substack{M\text{ a matching}\\\text{within }C}}
+\sum_{(b,s)\in M}(v_b-c_s).
+\]
+The empty matching is permitted. This is maximum feasible surplus,
+not realized individual profit or a trajectory-level causal contribution.
+It is an evaluation target imposed for the audit, not an assertion that
+Q's competitive agents pursue a cooperative objective.
+It is a homogeneous-good special case of the Shapley--Shubik assignment
+game. \ledger{3, 6, 9, 17}
+
+For identical buyers with value \(3\) and identical sellers with cost \(1\),
+\[
+W(C)=2\min\{b(C),s(C)\},
+\]
+where \(b(C)\) and \(s(C)\) count buyers and sellers.
+This is the classical glove market, scaled by two, rather than a new
+game-theoretic construction. Hold the local features of a focal buyer
+\(B_1\) and seller \(S_1\) fixed and compare
+\[
+I_A=\{B_1,B_2,S_1\},
+\qquad
+I_B=\{B_1,S_1,S_2\}.
+\]
+Both coalitions have three members and surplus \(2\). Their Shapley
+credits are
+\[
+\begin{aligned}
+(\varphi_{B_1},\varphi_{B_2},\varphi_{S_1})(I_A)
+   &= (1/3,1/3,4/3),\\
+(\varphi_{B_1},\varphi_{S_1},\varphi_{S_2})(I_B)
+   &= (4/3,1/3,1/3).
+\end{aligned}
+\]
+In \(I_A\), the sole seller adds surplus \(2\) whenever at least one
+buyer precedes it in a uniformly random ordering, an event of probability
+\(2/3\). A particular buyer adds \(2\) only when the
+seller precedes it and the other buyer follows it, with probability
+\(1/6\). Interchanging roles gives \(I_B\). Thus the focal
+buyer-minus-seller credit gap reverses from \(-1\) to \(+1\).
+\ledger{6, 11, 17}
+
+The derivation and exact permutation checks are recorded in
+\url{ada/research_note.md}, lines 15--49 and 115--118;
+the original numerical record is
+\url{ada/run_002_coalition_credit.log}.
+
+\section{Why consistent aggregation can miss the reversal}
+
+\begin{claim}
+Under the controlled pair-local, role-exchangeable comparison model
+below, population Bradley--Terry aggregation cannot recover both focal
+Shapley orderings, even when every pair is compared.
+\end{claim}
+
+Assume each query contains only the compared agents' local features,
+neutral labels, and fixed task text. The inputs do not reveal the
+additional teammate. Impose exchangeability within each role and
+symmetrize presentation order. Let a buyer beat a seller with probability
+\(q\), where \(0<q<1\); same-role comparisons have expected score \(1/2\).
+These are stress-test assumptions, not observations about P's actual
+prompts. \ledger{6, 8}
+
+All these comparisons have an exact Bradley--Terry representation:
+\[
+c_B=d,\qquad c_S=0,\qquad
+d=\log\frac{q}{1-q}.
+\]
+For each edge, these scores reproduce its comparison probability.
+On the complete graph with interior probabilities, the population
+likelihood identifies the score differences uniquely. Centering the
+scores removes the translation ambiguity. Consequently,
+\[
+\begin{aligned}
+\widehat c_{B_1}(I_A)-\widehat c_{S_1}(I_A)&=d,\\
+\widehat c_{B_1}(I_B)-\widehat c_{S_1}(I_B)&=d.
+\end{aligned}
+\]
+Softmax preserves the ordering. No fixed \(d\) matches both strict
+oracle rankings. If score gaps are evaluated on the stipulated Shapley
+scale, their mean squared error across the two contexts is
+\[
+\frac{(d+1)^2+(d-1)^2}{2}=d^2+1\geq 1.
+\]
+Additional comparisons can improve estimation of the fixed preference
+without making it a contribution preference. \ledger{6, 8, 9}
+
+See \url{ada/research_note.md}, lines 51--80.
+The recorded checks verify exact probability fits and zero likelihood
+gradients at \(q\in\{0.25,0.5,0.75\}\).
+This is an analytic construction, not an LLM experiment.
+Population preferences can be perfectly consistent while the contribution
+ranking is wrong; no zero empirical cycle rate is claimed.
+
+\section{Objections and scope corrections}
+
+\begin{objection}
+The asymmetric coalitions are not states demonstrated in Q's experiment.
+\end{objection}
+
+Q starts with balanced buyer and seller counts, and execution removes
+one of each. The duplicate-role triplets are therefore a controlled
+extension, not a reported Q trajectory. \ledger{7}
+
+Balanced examples with distinct values on Q's price grid also reverse
+the focal ranking. Keeping focal buyer value \(3\) and seller cost \(1\),
+both following markets have surplus \(2\):
+\[
+\begin{array}{c|c|c}
+\text{Buyer values}&\text{Seller costs}&
+\varphi_{B_1}-\varphi_{S_1}\\ \hline
+(3,\,2.75)&(1,\,3.25)&-7/8\\
+(3,\,0.75)&(1,\,1.25)&+7/8
+\end{array}
+\]
+These establish semantic reversal despite equal headcounts. They do
+not establish the all-pairs obstruction for arbitrary inconsistent
+comparison rules: comparisons involving other traders could change the
+fitted focal gap. That stronger conclusion requires a
+context-independent scalar Bradley--Terry comparator.
+See \url{ada/research_note.md}, lines 82--88. \ledger{7}
+
+\begin{objection}
+The whole comparison graph can reveal coalition composition.
+\end{objection}
+
+Correct. A coalition-aware aggregator could exploit role multiplicities.
+The result concerns standard Bradley--Terry fitting when the local
+probabilities already admit an exact fit. Bradley--Terry does not require
+scores to remain fixed over time: P estimates a new vector at each step.
+The invariance above follows from the constructed input distributions,
+not a general restriction on contextual ranking. \ledger{8, 17}
+
+\begin{objection}
+The construction refutes P's Shapley interpretation or its policy
+invariance claim.
+\end{objection}
+
+Neither follows. P's Shapley proposition assumes the semantic agreement
+that this audit investigates. A poorly aligned potential also need not
+change optimal policies when potential-based shaping retains the
+required boundary terms. Its effects on finite-budget learning remain
+unmeasured. \ledger{2, 9, 19}
+
+A separate transfer-invariance audit remains available: changing
+transaction price changes individual rents but not a fixed match's
+surplus \(v-c\); the two-player surplus game assigns each party
+\((v-c)/2\). This could distinguish rent capture from contribution,
+but no judge experiment tested it. \ledger{3}
+
+\section{Secondary finding: membership boundaries}
+
+P's active-agent score vector needs a fixed-identity interpretation
+before potentials at successive times can be subtracted. Embed each
+agent's potential as zero while inactive and at the global terminal
+state. Membership-dependent normalization alone then does not prevent
+telescoping. \ledger{1, 2}
+
+For one agent, write
+\(F_t=\gamma\Phi_{t+1}-\Phi_t\), let \(m_t\) be the retained shaping
+weight, and assume \(\Phi_T=0\). Reindexing gives
+\[
+\begin{aligned}
+\sum_{t=0}^{T-1}\gamma^t m_tF_t
+={}&-m_0\Phi_0\\
+&+\sum_{t=1}^{T-1}
+\gamma^t(m_{t-1}-m_t)\Phi_t.
+\end{aligned}
+\]
+With all weights equal to one, only the initial term remains.
+Changing masks can introduce intermediate boundary terms.
+Under zero inactive potentials, pre-transition activity masks preserve
+absorbing exits but omit entry credits on respawn; post-transition
+masks can omit exit debits. \ledger{4}
+
+The four-agent equal-score example has total shaping return
+\(-1\) whether agents trade or wait. Omitting only the departing agents'
+exit-transition shaping changes the trade return to \(-1/2\), while
+global terminal terms remain included. The identity was checked on
+\(2{,}048\) rational cases. See
+\url{ada/research_note.md}, lines 102--118, and the recorded checks in
+\url{ada/run_001_membership_shaping.log}. \ledger{4}
+
+This is a conditional implementation audit. P's actual return masks and
+bootstrapping were not inspected, and a loss mask alone does not imply
+reward masking. The boundary mechanism is established literature,
+so it was not retained as the main novelty claim. \ledger{5, 9}
+
+\section{The initial audit proposal}
+
+The first round proposed frozen-state comparisons using the two triplets,
+holding the judge, focal observations, and Bradley--Terry fitter fixed.
+The information arms were pair-only inputs, pair inputs plus active-agent
+count, and pair inputs plus coalition capabilities. Both triplets have
+three agents, so count-only information cannot identify changed scarcity.
+Aliases and presentation order would be randomized, with repetitions
+varied independently of context and both fixed-query and matched-token
+budgets reported. \ledger{9}
+
+The primary outcome was recovery of the focal ordering reversal.
+Extra repetitions improving consistency without recovering the reversal,
+followed by recovery with capability context, would support the diagnosis.
+Finding that P's actual inputs already reveal the needed context would
+limit its applicability. This remains a valid control experiment;
+the next round added a broader structural test before any judge calls.
+See \url{ada/research_note.md}, lines 90--100. \ledger{11, 19}
+
+\section{Extension after ITERATE: Q's actual schedule}
+
+The verifier judged the original conditional example insufficient for
+paper review. The extension therefore enumerated all \(705{,}431\)
+nonempty balanced subsets of Q's actual eleven-by-eleven reservation grid,
+with separate filters for removals through nonnegative-surplus and
+strictly positive-surplus trades. These are possible active sets,
+not measured frequencies in Q's simulations. \ledger{11, 13}
+
+\subsection{Exact credits and reachability}
+
+For an active set \(I\), restrict the previously defined game to
+coalitions \(C\subseteq I\). At price threshold \(p\), write
+\[
+\begin{aligned}
+B_C(p)&=|\{b\in C:v_b>p\}|,\\
+S_C(p)&=|\{s\in C:c_s<p\}|.
+\end{aligned}
+\]
+Then
+\[
+W_I(C)=\int_{0.75}^{3.25}
+       \min\{B_C(p),S_C(p)\}\,dp.
+\]
+To verify this, sort buyer values descending and seller costs ascending.
+The optimal surplus sums positive differences between corresponding
+entries. At each threshold, the number of these intervals containing
+\(p\) is the smaller eligible count.
+
+Each integrand is a glove game, with ineligible traders as dummies.
+For \(a\) eligible buyers and \(b\) eligible sellers, an eligible buyer's
+unit-surplus Shapley credit is
+\[
+g_B(a,b)=
+\sum_{k=0}^{a-1}\sum_{\ell=k+1}^{b}
+\frac{\binom{a-1}{k}\binom{b}{\ell}}
+     {(a+b)\binom{a+b-1}{k+\ell}}.
+\]
+The buyer contributes one precisely when more sellers than other buyers
+precede it in a random ordering. Also \(g_S(a,b)=g_B(b,a)\).
+Shapley linearity reduces the grid calculation to ten intervals of width
+\(1/4\). This is a computational use of classical glove games.
+See \url{ada/iterate_11_extension.md}, lines 11--46. \ledger{13, 17}
+
+For removed buyer and seller lists sorted in increasing order, strict
+profitable-removal reachability is equivalent to
+\[
+v_{R_B,k}>c_{R_S,k}\qquad\text{for every }k.
+\]
+The weak inequality gives the nonnegative-surplus version.
+The ordered matching condition is necessary; matching corresponding
+entries supplies sufficiency. Each intended pair can trade at a price
+between its cost and value by posting an ask and then a crossing bid.
+This establishes mechanism reachability within Q's iteration cap,
+not that its prompted agents choose these sequences.
+See \url{ada/iterate_11_extension.md}, lines 48--58.
+\ledger{13, 18}
+
+\subsection{Best context-free scores}
+
+Assign an arbitrary real score \(x_i\) to each trader identity,
+generously refitting the scores separately for each active count \(m\).
+Such scores can depend on role and reservation price, but cannot change
+when only the remaining teammates change. For the reachable family
+\(\mathcal F_m\), define
+\[
+\begin{aligned}
+\Delta_{ij}(I)&=\varphi_i(I)-\varphi_j(I),\\
+E_m&=\min_x
+\frac{\displaystyle
+ \sum_{I\in\mathcal F_m}\sum_{\{i,j\}\subset I}
+ \bigl(x_i-x_j-\Delta_{ij}(I)\bigr)^2}
+ {|\mathcal F_m|\binom{2m}{2}}.
+\end{aligned}
+\]
+States and pairs within states receive uniform weight.
+Using gaps removes the common-offset ambiguity.
+The normal equations form a weighted co-occurrence graph Laplacian;
+the peer computation solved them in rational arithmetic after fixing
+a gauge. See \url{ada/iterate_11_extension.md}, lines 60--85.
+\ledger{13}
+
+After five strictly profitable removals, \(19{,}404\) active sets have
+six buyers and six sellers. The exact optimum gives
+\[
+\sqrt{E_6}=0.1528465548,
+\]
+in reservation-price currency units, leaving \(11.6096\%\) of squared
+oracle pair gaps unexplained. This is an optimal approximation bound,
+not a fitted judge's performance.
+See \url{ada/run_006_q_schedule.log}, line 7. \ledger{13}
+
+A separate optimistic ranking bound lets each buyer--seller identity
+pair choose its fixed direction independently. If that pair has
+\(N_+\) positive and \(N_-\) negative oracle gaps across states,
+it must make at least \(\min(N_+,N_-)\) errors.
+Summing gives \(59{,}882\) errors among \(622{,}936\) strict comparisons,
+or \(9.6129\%\). A coherent scalar ranking cannot improve this relaxed
+bound; attainment by a scalar ranking was not established.
+Oracle ties are excluded, with predicted ties scored as half-errors.
+\ledger{13}
+
+The effect is concentrated near ties. Recomputing the bound after
+filtering by oracle gap gives
+\[
+\begin{array}{c|r|r|r}
+\text{Minimum gap}&\text{Comparisons}&\text{Errors}&
+ \text{Rate}\\ \hline
+\text{Any strict gap}&622936&59882&9.61\%\\
+0.10&415820&23739&5.71\%\\
+0.25&301946&9259&3.07\%\\
+0.50&176258&1617&0.917\%
+\end{array}
+\]
+See \url{ada/run_009_q_margins.log}, line 2.
+The structural loss is measurable, but these numbers do not establish
+that context-free ranking is generally ineffective. \ledger{15}
+
+\subsection{A reachable reversal and cases without ranking loss}
+
+Let reservation index \(k\) denote \(0.75+0.25k\).
+Consider active index sets
+\[
+\begin{aligned}
+B&=\{0,1,2,3,4,5\},\\
+S&=\{0,1,2,4,5,10\}.
+\end{aligned}
+\]
+Remove buyer \(1\) and seller \(0\) through a strictly profitable trade.
+For the unchanged focal buyer \(4\) and seller \(2\), the Shapley gap
+changes from
+\[
+\varphi_{B_4}-\varphi_{S_2}=\frac{2}{15}
+\quad\text{to}\quad
+\varphi_{B_4}-\varphi_{S_2}=-\frac{9}{80}.
+\]
+Both states are reachable from Q's initial market through strictly
+profitable removals. This supplies a reversal along a feasible sequence.
+Keeping focal cards unchanged is an audit intervention; Q's actual
+public history changes. See
+\url{ada/iterate_11_extension.md}, lines 105--115. \ledger{15}
+
+The negative cases matter. A final buyer--seller pair has equal Shapley
+credits, so constant scores represent its gap exactly.
+Reflection-symmetric active markets admit fixed intrinsic-strength
+rankings without strictly reversed comparisons, although exact ties
+among dummy traders require care.
+The \(55\) four-trader states reachable after nine strictly profitable
+removals have no strict cross-role reversals. Thus the strongest
+actual-grid result concerns larger residual teams, not direct evidence
+against P's two-to-four-agent embodied tasks. \ledger{18}
+
+More generally, exact context-free gap representation requires pair
+gaps to agree across their observed contexts and sum to zero around
+cycles of the co-occurrence graph. Fixed strict rankings require the
+union of required strict inequalities to be acyclic, after contracting
+any equalities required to hold exactly.
+See \url{ada/iterate_11_extension.md}, lines 117--125.
+
+\begin{objection}
+The exhaustive bound establishes a limitation of every pair-local
+implementation of P.
+\end{objection}
+
+It does not. An inconsistent local comparator can produce different
+population BT fits on different active subsets. P refits at each step.
+The exhaustive bound measures the inadequacy of a context-free latent
+target, whereas the original all-edges obstruction applies only to the
+controlled, exactly BT-consistent comparator.
+A capability histogram is sufficient context for this market oracle;
+whether real judges use it remains untested. \ledger{17, 19}
+
+The threshold formula was checked against independent subset
+enumeration on \(263\) small markets. Further checks covered eight
+twelve-agent markets, the nested reversal, and \(100\) exhaustive
+small matching tests. These are recorded computational checks,
+not replications of Q or P. \ledger{13, 18}
+
+\section{Extension: finite-query BT existence}
+
+P specifies one query per ordered pair, fractional tie counts,
+an unregularized likelihood objective, and softmax of its maximizer.
+Its proposition assumes a connected comparison graph, while its proof
+sketch invokes regularized MLE without specifying a regularizer in the
+algorithm. See \url{ada/iterate_11_extension.md}, lines 127--161.
+\ledger{16}
+
+For a finite, unique unregularized BT estimate up to translation,
+the directed positive-win graph must be strongly connected.
+Connectedness of the undirected queried design is insufficient.
+This is the classical Ford condition, not a new result. \ledger{16, 17}
+
+With two agents and two independent, tie-free queries, let \(p\) be
+the probability of preferring the same focal agent after accounting for
+presentation order. The estimate is finite only if the decisions split:
+\[
+\Pr(\text{no finite MLE})=p^2+(1-p)^2\geq\frac12.
+\]
+With \(r\) independent queries per order and independent tie probability
+\(\tau\), where \(p\) is conditional on a non-tie, this becomes
+\[
+(1-\tau)^{2r}
+\bigl[p^{2r}+(1-p)^{2r}\bigr].
+\]
+
+Exhaustive support-graph enumeration gives the following probabilities
+with one independent, tie-free query per order:
+\[
+\begin{array}{c|r|r}
+\text{Agents}&\text{Equal scores}&
+ \text{Adjacent preference }0.9\\ \hline
+2&50.000\%&82.000\%\\
+3&28.125\%&94.093\%\\
+4&11.914\%&98.132\%
+\end{array}
+\]
+The last column uses equally spaced log-scores, so nonadjacent
+preferences are more decisive. These are analytic sampling probabilities,
+not observed LLM failure rates. See
+\url{ada/run_007_bt_existence.log}, lines 1--11.
+Direct enumeration of binary samples independently checked the results.
+\ledger{16, 18}
+
+For the complete comparison design, a non-strongly-connected outcome
+graph has ordered strongly connected components. Along the extended
+likelihood limit, softmax mass concentrates on the top component.
+For two agents with unanimous outcomes, the limit is one-hot.
+Numerical stopping rules, clipping, or a prior can therefore affect
+reported potentials. Ties and dependencies change the probabilities
+above; no actual fitter failure in P was observed. \ledger{16}
+
+If P's connectivity premise means undirected design connectivity,
+the two-agent equal-strength example also exceeds its permitted
+failure probability: nonexistence has probability \(1/2\), whereas
+\(n^{-2}=1/4\). If strong connectivity of the realized directed graph
+was intended, these samples violate that premise instead; the issue is
+then an unstated and unensured condition.
+A specified regularized or bounded estimator and appropriate assumptions
+would require a revised analysis. This does not refute P's conditional
+Shapley interpretation or its reported learning curves.
+\ledger{17}
+
+\section{Outside sources and novelty limits}
+
+The earlier account used the following sources, retrieved through
+the shared pool and read in relevant slices, as recorded in
+\url{ada/research_note.md}, lines 115--124:
+\begin{itemize}
+\item Devlin and Kudenko (2012), on dynamic-potential invariance:
+\url{https://www.ifaamas.org/Proceedings/aamas2012/papers/2C_3.pdf}.
+\ledger{5}
+\item Grzes (2017), on episodic shaping boundaries:
+\url{https://kar.kent.ac.uk/60614/}. \ledger{5}
+\item Li et al., \emph{Shapley Counterfactual Credits for Multi-Agent
+Reinforcement Learning}:
+\url{https://arxiv.org/abs/2106.00285}.
+The recorded pooled-LaTeX reading, lines 187--198 and 297--328,
+establishes existing coalition-aware attribution through a centralized
+critic and counterfactual marginal contributions. \ledger{9}
+\end{itemize}
+
+The first ITERATE round corrected the missing classical attribution and
+expanded the novelty check:
+\begin{itemize}
+\item Shapley and Shubik's glove-market antecedent (1969):
+\url{https://doi.org/10.1016/0022-0531(69)90008-8};
+their assignment game (1971):
+\url{https://doi.org/10.1007/BF01753437}.
+Repeated pool requests for the latter's full text were rate-limited.
+Its abstract was available, but its full proof was not read.
+The calculations here are explicit independent derivations.
+\ledger{11, 17}
+\item Seshadri, Peysakhovich, and Ugander (2019),
+\emph{Discovering Context Effects from Raw Choice Data}:
+\url{https://arxiv.org/abs/1902.03266}.
+Recorded pooled-LaTeX reading at lines 145--165, 180--258, and
+303--334 establishes contextual choice modeling as prior work.
+\ledger{17}
+\item Newman (2023),
+\emph{Efficient Computation of Rankings from Pairwise Comparisons}:
+\url{https://arxiv.org/abs/2207.00076}.
+Recorded pooled-LaTeX reading at lines 119--126 and 242--269
+covers nonexistence and priors. Ford's original criterion is associated
+with \url{https://doi.org/10.1080/00029890.1957.11989117}.
+The calculated sparse-query probabilities are not a new existence
+theorem. \ledger{16, 17}
+\end{itemize}
+
+The extension also records an abstract-level check of Bower and Balzano,
+\emph{Preference Modeling with Context-Dependent Salient Features},
+\url{https://arxiv.org/abs/2002.09615}.
+Its flattened source retained unresolved subfile commands; technical
+details were not verified and no PDF extraction was used.
+See \url{ada/iterate_11_extension.md}, lines 163--169.
+
+Neither context sensitivity, coalition-aware attribution, nor the
+glove-game reversal is new. The prospective contribution is a controlled,
+oracle-grounded benchmark and intervention study. The novelty review
+was not exhaustive. \ledger{17, 19}
+
+\section{Open questions and next step at the first extension}
+
+The empirical material remains thin. No real judge calls, MARL training,
+implementation audit of P, or replication of Q were performed.
+The peer environment had no configured inference credentials or exposed
+model-inference endpoint; this limitation was recorded without printing
+secrets in \url{ada/run_004_environment.log}, line 2.
+The numerical evidence is an exact structural audit under an explicit
+state distribution, not evidence about how frequently real agents
+encounter the problem. \ledger{14, 19}
+
+Open questions were whether P's actual images and prompts already reveal
+coalition capabilities, whether its estimator uses regularization,
+whether real judges approximate a context-free target, and how Q's
+trajectory distribution weights the problematic states.
+Transfer to small embodied teams and effects on finite-budget learning
+remained untested. The margin analysis left open whether the observed
+structural disagreement has substantial practical consequences.
+\ledger{15, 18, 19}
+
+The proposed next step was the frozen-state judge audit, using
+reachable actual-grid states as the primary test and the classical
+triplets as controls. Hold the judge, rendering, and explicitly
+prior-controlled BT fitter fixed. Compare pair-only, pair-plus-count,
+and pair-plus-capability-histogram inputs. Randomize labels and order;
+measure exchangeability rather than assuming it. Vary repetition
+independently of information, reporting fixed-query and matched-token
+budgets. \ledger{19}
+
+Measure raw comparison probabilities as well as fitted scores, since
+aggregation itself can introduce context dependence.
+Report margin-stratified oracle ranking errors, score-gap errors,
+directed-graph separation frequencies, and potential entropy.
+These measurements separate semantic error from finite-query estimator
+behavior. See \url{ada/iterate_11_extension.md}, lines 173--181.
+
+A capability-context improvement that survives these controls would
+support the proposed intervention. Finding that existing observations
+or contextual aggregation already recover the oracle would limit the
+diagnosis. If disagreements remain near ties without learning impact,
+the claim should shrink. The following extension changes which fixture
+should be tested first, while retaining these controls.
+\ledger{19, 29}
+
+\section{Extension after ITERATE 21: the actual refitting pipeline}
+\label{sec:actual-pipeline}
+
+The verifier accepted the previous exact audit under its
+conditions but judged it insufficient for paper review. Its central
+objection was substantive: a fixed scalar score is not the class P uses,
+because P refits BT on each active set. The requested extension therefore
+allowed arbitrary identity-specific pair probabilities and retained
+per-state population BT fitting. It also asked for small-team results,
+certificates, cardinal-error analysis, and further literature checks.
+No real-judge experiment was requested again without inference access.
+\ledger{21, 22}
+
+This extension removes the earlier exchangeability and scalar-consistency
+assumptions. It still freezes the pair-visible inputs: changing unseen
+teammates must not change a pair's outcome distribution. P's actual images
+or task text may violate that restriction by revealing teammates.
+Thus the result covers a specified comparison-and-refit class, not every
+possible implementation of P.
+See \url{ada/iterate_21_pipeline.md}, lines 9--21.
+\ledger{23, 29}
+
+\subsection{Population BT order is win-score order}
+
+After equally weighting the two presentation orders and assigning half a
+win to ties, write the effective probabilities as
+\[
+p_{ij}+p_{ji}=1,
+\qquad
+a_{ij}=p_{ij}-\frac12=-a_{ji}.
+\]
+Allow every pair its own probability, with no assumed transitivity.
+Assume interior probabilities so the population estimate is finite.
+For active set \(I\), define centered expected wins
+\[
+r_i(I)=\sum_{j\in I\setminus\{i\}}a_{ij}.
+\]
+With \(\sigma(z)=(1+e^{-z})^{-1}\), population BT stationarity gives
+\[
+\sum_{j\in I\setminus\{i\}}\sigma(c_i-c_j)
+=
+\sum_{j\in I\setminus\{i\}}p_{ij}.
+\]
+
+Subtract the equations for \(i\) and \(j\). If \(c_i>c_j\), the mutual
+comparison contributes positively, and every common-opponent term
+\(\sigma(c_i-c_k)-\sigma(c_j-c_k)\) is positive.
+Equality or reversal of the fitted scores gives equality or reversal of
+the win-score difference. Hence
+\[
+\operatorname{sign}(c_i-c_j)
+=
+\operatorname{sign}\bigl(r_i(I)-r_j(I)\bigr),
+\]
+where
+\[
+r_i(I)-r_j(I)
+=
+2a_{ij}
++\sum_{k\in I\setminus\{i,j\}}(a_{ik}-a_{jk}).
+\]
+The active comparison graph can therefore supply context even when
+each edge probability is fixed. The BT/Borda order equivalence is
+established prior work, not a new ranking theorem.
+See \url{ada/iterate_21_pipeline.md}, lines 23--52.
+\ledger{23, 29}
+
+For a finite family of required strict oracle orders, collect the signed
+integer coefficient rows into a matrix \(A\), and the independent entries
+of \(a\) into \(x\). Exact rank representation is equivalent to
+\(Ax>0\). By homogeneity, this is equivalent to \(Ax\geq\mathbf1\);
+a finite feasible direction can subsequently be scaled to give interior
+probabilities. Infeasibility is certified by
+\[
+\lambda\geq0,\qquad
+\lambda\ne0,\qquad
+A^\mathsf{T}\lambda=0.
+\]
+These rational certificates make the obstruction independently checkable.
+They do not require treating a numerical solver's failure as a proof.
+See \url{ada/iterate_21_pipeline.md}, line 54.
+\ledger{23, 27}
+
+\subsection{A sharp small-team obstruction}
+
+\begin{claim}
+Take two buyers and two sellers, with every buyer able to trade
+profitably with every seller. Across the four active triples obtained
+by deleting one trader, any fixed reciprocal pair comparator followed
+by population BT refitting has cross-role ranking error at least
+\(25\%\), with uniform weighting and predicted ties counted as
+half-errors. The bound is attainable.
+\end{claim}
+
+Label buyers \(1,2\) and sellers \(3,4\).
+The assignment-game oracle ranks the sole member of the scarce role
+strictly above either opposite-role trader in each triple.
+For example, if \(v_1\leq v_2\) and seller \(3\) has cost \(c<v_1\),
+\[
+\begin{aligned}
+\varphi_1&=\frac{v_1-c}{6},\\
+\varphi_2&=\frac{v_1-c}{6}+\frac{v_2-v_1}{2},\\
+\varphi_3&=\frac{2(v_1-c)}{3}+\frac{v_2-v_1}{2}.
+\end{aligned}
+\]
+The seller's gaps over buyers \(1\) and \(2\) are
+\((v_2-c)/2\) and \((v_1-c)/2\), respectively.
+The one-buyer case is symmetric.
+These credits use the classical assignment game.
+\ledger{24, 25}
+
+Let \(g^I_{ij}=r_i(I)-r_j(I)\).
+The desired positive gaps are
+\[
+\begin{array}{c|c}
+I&\text{Required positive gaps}\\ \hline
+123&g^{123}_{31},\ g^{123}_{32}\\
+124&g^{124}_{41},\ g^{124}_{42}\\
+134&g^{134}_{13},\ g^{134}_{14}\\
+234&g^{234}_{23},\ g^{234}_{24}
+\end{array}
+\]
+For every antisymmetric comparator matrix, direct cancellation gives
+two disjoint identities:
+\[
+g^{123}_{31}+g^{124}_{42}
++g^{134}_{13}+g^{234}_{24}=0,
+\]
+\[
+g^{123}_{32}+g^{124}_{41}
++g^{134}_{14}+g^{234}_{23}=0.
+\]
+Each identity forces a negative gap unless all its gaps are zero when
+none is negative. A negative gap costs one error; four zero gaps cost
+two errors under half-credit tie scoring.
+Each circuit therefore costs at least one error, for a total of at least
+\(2/8=25\%\). The BT/win-score equivalence transfers this conclusion
+to fitted BT orderings. \ledger{25}
+
+The bound is attained. In edge order
+\((12,13,14,23,24,34)\), choose
+\[
+a=\frac1{10}(0,1,0,-3,-1,0).
+\]
+All corresponding probabilities are between \(0.2\) and \(0.8\).
+In the row order above, the eight desired win-score gaps are
+\[
+\frac1{10}(1,5,1,2,2,1,-7,-5),
+\]
+so exactly two are wrong. The construction does not require
+exchangeability or a globally BT-consistent comparator.
+See \url{ada/iterate_21_pipeline.md}, lines 56--103.
+\ledger{25}
+
+The fixture also works with distinct reservations from Q's grid:
+\[
+(v_1,v_2)=(3.00,3.25),
+\qquad
+(c_3,c_4)=(0.75,1.00).
+\]
+Every desired oracle gap is then at least one currency unit.
+This obstruction is not confined to near ties.
+Giving the comparator only total active count cannot resolve it,
+because all four states have three agents.
+\ledger{25, 29}
+
+The exact circuits, attaining comparator, and tie cases are saved in
+\url{ada/small_pipeline_exact.json}.
+The check in \url{ada/run_024_small_exact.log} covers all \(157\)
+sign patterns with fewer than two errors.
+Independent evaluation of the actual BT fits found exactly two errors
+with stationarity residual approximately \(3.33\times10^{-16}\);
+see \url{ada/run_033_saved_certificate_check.log}, lines 14--15.
+\ledger{25, 29}
+
+\begin{objection}
+This small-team result is a failure observed in Q or P.
+\end{objection}
+
+It is neither. Q removes a buyer and seller together, so these
+unbalanced triples are not generated by its balanced trade-removal
+dynamics. They are an exogenous-dropout fixture using Q's valuation
+domain and welfare oracle, motivated by P's changing membership.
+P's actual observations might reveal the missing agent or its
+capabilities, which would invalidate the fixed-input restriction.
+The theorem establishes a capacity boundary under controlled
+information, not measured LLM behavior. \ledger{25, 29}
+
+\subsection{Exact calibrated recovery on every active subset}
+
+The notes also characterize a stronger requirement than correct
+ranking: reproducing every Shapley \emph{gap on its stipulated numerical
+scale}. Let \(W(\emptyset)=0\) be a fixed cooperative game on \(N\).
+Require a single fixed comparator, followed by population BT refitting,
+to recover the restricted-game Shapley gaps for every active subset of
+size at least two.
+
+\begin{claim}
+Such exact calibrated recovery is possible if and only if
+\[
+W(S)=\sum_{i\in S}u_i+h(|S|),
+\qquad h(0)=h(1)=0.
+\]
+\end{claim}
+
+Set \(u_i=W(\{i\})\).
+On a two-player restriction, Shapley divides the interaction equally,
+so the gap is \(u_i-u_j\).
+A two-player BT fit then forces
+\[
+p_{ij}=\sigma(u_i-u_j).
+\]
+These probabilities are already exactly BT-consistent.
+Every subsequent population refit therefore retains gaps \(u_i-u_j\).
+
+To characterize games with those restricted Shapley gaps, write their
+Harsanyi dividends as \(d_T\). The restricted credit is
+\[
+\varphi_i(I)=
+\sum_{\substack{T\subseteq I\\i\in T}}\frac{d_T}{|T|}.
+\]
+All interaction contributions must be equal across active players.
+On triples this forces the pair dividends to be equal.
+Inductively, suppose dividends of orders below \(k\) depend only on
+their order. On a \((k+1)\)-player set \(I\), the difference of the
+interaction shares of \(i\) and \(j\) reduces to
+\[
+\frac{d_{I\setminus\{j\}}-d_{I\setminus\{i\}}}{k}=0.
+\]
+Any two \(k\)-subsets can be connected by single-element exchanges;
+thus their dividends are equal. The grand-coalition dividend is
+unrestricted and already a cardinality term. Consequently the
+interaction game depends only on coalition size.
+Conversely, an anonymous term \(h(|I|)\) gives every active player
+\(h(|I|)/|I|\), and the stated comparator recovers all gaps.
+\ledger{28}
+
+This is an all-subsets, calibrated-gap characterization.
+It is not an ordinal characterization, nor a characterization for only
+one active count or Q's reachable families.
+Exact linear-algebra checks through six players gave the predicted
+dimension \(2|N|-1\).
+The derivation uses classical dividend calculus, and novelty of this
+particular representation statement has not been established.
+See \url{ada/iterate_21_pipeline.md}, lines 105--131.
+\ledger{28, 29}
+
+General two-additive graph games do not provide an ordinal no-loss
+class. Consider
+\[
+W(S)=
+\mathbf1_{\{1,2\}\subseteq S}
++\mathbf1_{\{3,4\}\subseteq S}.
+\]
+In each active triple, the intact productive pair has credit \(1/2\)
+per player, and the isolated player has zero.
+Its eight desired inequalities are the negatives of the dropout
+fixture's inequalities, so the same circuits give a sharp \(25\%\)
+error floor. A symmetric pair-synergy representation would instead
+recover the credits by allocating half of each incident dividend.
+That is existing interaction-based attribution, not a new Shapley
+formula. It illustrates the distinction between representing cooperation
+through pair contributions and representing it through pairwise wins.
+See \url{ada/iterate_21_pipeline.md}, lines 133--139.
+\ledger{28}
+
+\subsection{Certified results on Q's reachable families}
+
+The larger comparison-and-refit class performs substantially better
+on Q's reachable grid than the old static-score analysis might suggest.
+Retain the earlier strict-profitable-removal criterion and uniform
+state weighting. Fit an arbitrary fixed comparator separately for each
+remaining count \(m\), then refit population BT within every state.
+The certified cross-role error counts are
+\[
+\begin{array}{c|r|r|r|r}
+m&\text{States}&\text{Comparisons}&\text{Lower}&\text{Upper}\\ \hline
+2&55&20&0&0\\
+3&825&3270&0&0\\
+4&4950&55220&1&323\\
+6&19404&622936&16&9548
+\end{array}
+\]
+Oracle ties are excluded.
+The constructive upper rates at four and six per side are
+\(0.585\%\) and \(1.533\%\), respectively.
+The zero-error optima at two and three per side are exact for this
+metric; the other intervals are loose bounds, not exact optima.
+The upper constructions also make no errors on strict same-role
+comparisons and have no predicted ties on the evaluated strict pairs.
+\ledger{26, 27}
+
+For four per side, the global infeasibility certificate contains
+\(186\) positive rational weights; the six-per-side certificate
+contains \(188\). Their signed constraint rows sum to zero exactly.
+At six per side, \(16\) additional certificates use disjoint focal
+pairs, yielding the stronger count lower bound.
+At four per side, each individual focal-pair relaxation is feasible,
+although a shared comparator cannot satisfy every pair simultaneously.
+\ledger{27}
+
+Upper counts were independently verified with integer constraint rows
+and rounded integer comparator directions. Scaling these directions
+into \((-1/2,1/2)\) produces valid interior probabilities without
+changing ranks. They establish capacity of the pipeline, not that a
+real judge learns those probabilities.
+See \url{ada/iterate_21_pipeline.md}, lines 141--158,
+and \url{ada/pipeline_extension_verified.json}.
+The saved rational null certificates were independently reconstructed
+in \url{ada/run_033_saved_certificate_check.log}, lines 1--12.
+\ledger{27, 29}
+
+For the same fitted upper comparator at each count, the
+margin-stratified results are
+\[
+\begin{array}{c|r|r}
+\text{Minimum gap}
+&\text{Four per side}
+&\text{Six per side}\\ \hline
+\text{Any strict gap}&323/55220&9548/622936\\
+0.05&80/44620&3144/472456\\
+0.10&66/39664&1274/415820\\
+0.25&2/26774&28/301946\\
+0.50&0/12710&0/176258
+\end{array}
+\]
+Each entry is errors divided by evaluated comparisons.
+Separate comparators fitted specifically to the margin-restricted
+objective attain zero cross-role errors for \emph{every} oracle gap
+at least \(0.10\), at both four and six per side.
+Integer feasibility checks certify those constructions.
+They do not establish simultaneous correctness on omitted small gaps
+or same-role orders; the same-role result belongs to the separate
+all-pair constructions.
+See \url{ada/iterate_21_pipeline.md}, lines 160--170.
+\ledger{27, 29}
+
+This resolves review 21's principal objection in a way that
+limits the proposed critique. The static-score lower bounds of
+\(12.10\%\) at four per side and \(9.61\%\) at six per side are
+\emph{not} lower bounds for P's refitting class.
+Changing graph composition supplies useful context.
+The remaining ranking obstruction on these reachable families is small
+under the explicit weighting and concentrated near ties.
+The sharp dropout theorem concerns a different family where the
+representational obstruction is large. \ledger{26, 27, 29}
+
+\subsection{Cardinal BT error is distinct from win-score error}
+
+The order equivalence does not equate win-score gaps with BT log-score
+gaps. The notes therefore fit these separately.
+A cardinal construction fits fixed pair probabilities to the expected
+wins implied by the oracle Shapley log-scores, then solves population
+BT stationarity on every active state.
+The resulting probabilities are interior without clipping.
+\ledger{29}
+
+The reported gap RMSE values are
+\[
+\begin{array}{c|r|r|r}
+m&\text{Linear win gap}&\text{BT upper}&\text{Estimated BT lower}\\
+\hline
+2&0.02975&0.02975&0.02972\\
+3&0.10753&0.10641&0.10269\\
+4&0.11829&0.11702&0.11063\\
+6&0.09769&0.09607&0.08911
+\end{array}
+\]
+The metric averages squared errors over all unordered active pairs,
+using the stipulated Shapley scale in currency units.
+These cardinal constructions differ from the rank-optimized
+comparators. The nonlinear stationarity residuals were below
+\(1.2\times10^{-13}\); global optimality of the cardinal construction
+was not established.
+See \url{ada/iterate_21_pipeline.md}, lines 174--185.
+\ledger{29}
+
+The last column is a numerical estimate of a mathematical lower bound,
+not an interval-certified endpoint.
+For an active set of \(n\) agents, define
+\[
+f_i(c)=
+\sum_{j\ne i}
+\left[\sigma(c_i-c_j)-\frac12\right].
+\]
+Its Jacobian is a complete-graph Laplacian with edge weights at most
+\(1/4\), hence spectral norm at most \(n/4\).
+Consequently, the BT gap RMSE is at least \(4/n\) times the best linear
+fit's RMSE to the oracle moment gaps
+\[
+f_i(\varphi)-f_j(\varphi).
+\]
+The inequality is mathematical; the sigmoid targets and least-squares
+computations producing the tabulated lower estimates use floating-point
+arithmetic. No interval-arithmetic certificates were supplied.
+See \url{ada/iterate_21_pipeline.md}, lines 187--193,
+and \url{ada/run_028_population_bt_gaps.log}.
+\ledger{29}
+
+\section{Additional sources and implementation search}
+
+The extension checked the following antecedents, as recorded in
+\url{ada/iterate_21_pipeline.md}, lines 195--206:
+\begin{itemize}
+\item Stern and Tettenhorst:
+\url{https://arxiv.org/abs/1709.08318}.
+The pooled LaTeX reading at lines 443--500 concerns Hodge decomposition
+on the coalition hypercube and its relation to Shapley values.
+That graph differs from P's graph of individual agents.
+A general connexion between Hodge methods and Shapley values is
+therefore prior work.
+\item Jiang et al.:
+\url{https://arxiv.org/abs/0811.1067}.
+Pooled LaTeX lines 1546--1561 and 2030--2045 relate complete-graph
+least-squares ranking to Borda scores and analyze cyclic edge components.
+The present linear feasibility audit uses fixed antisymmetric edge
+flows on changing subsets; it does not introduce a new Hodge
+decomposition.
+\item Anderson et al.,
+\emph{Relationships between Borda Voting and Zermelo Ranking}:
+\url{https://pmc.ncbi.nlm.nih.gov/articles/PMC5830124/}.
+The primary HTML was inspected for the order equivalence.
+Pool retrieval by title and URL returned HTTP 429; no separate PDF
+was downloaded.
+\item Grabisch,
+\emph{k-order Additive Discrete Fuzzy Measures and Their Representation}:
+\url{https://doi.org/10.1016/S0165-0114(97)00168-1}.
+The publisher abstract and author's bibliography were accessible,
+but full-text pool retrieval twice returned HTTP 429.
+Its full text remains unchecked.
+The dividend arguments above are supplied explicitly rather than
+attributed to an unread theorem.
+\end{itemize}
+\ledger{29}
+
+These searches did not identify a source
+establishing the exact dropout fixture or calibrated representation
+characterization. This is a limited search record, not proof of novelty.
+Classical glove markets, assignment games, dividend calculus,
+context-sensitive choice, and coalition-aware attribution remain
+essential attribution. The subsequent social-choice check below further
+narrows the prospective novelty. \ledger{17, 28, 29, 36}
+
+No matching public P repository was found through exact-title,
+author, and implementation searches. The supplied source and the checked
+ACL landing page,
+\url{https://aclanthology.org/2026.acl-long.1349/},
+provided no repository link. Similarly named repositories were unrelated.
+This does not prove that P has no public code.
+Actual query context, regularization, reward masks, and comparison
+samples remain uninspected.
+See \url{ada/iterate_21_pipeline.md}, line 206.
+\ledger{29}
+
+\section{Open questions retained from the preceding round}
+
+The preceding account established a representational boundary between
+pairwise ranking and coalition-sensitive credit. The dropout fixture
+has an exact \(25\%\) population error floor for the stated fixed-input
+class, while permissive comparators recover almost all strict
+rankings on the separately audited reachable Q families.
+The calibrated all-subsets characterization provides a separate
+structural result. Neither establishes publication readiness;
+novelty of the representation statements remained unconfirmed.
+\ledger{25, 27, 28, 29}
+
+The empirical material was still thin. No inference endpoint appeared,
+no real judge was measured, and neither paper's trading or learning
+results were replicated. The constructed optimal or feasible
+comparators are not simulated LLM measurements.
+See \url{ada/iterate_21_pipeline.md}, lines 208--218.
+\ledger{14, 29}
+
+Unresolved questions concerned whether P's actual observations already
+supply equivalent coalition context; whether its implemented estimator
+uses a prior or bounds; how frequently relevant states occur; and
+whether improving semantic credit improves finite-budget learning.
+Correct potential-based shaping can preserve the objective despite an
+uninformative potential, so semantic rank error alone does not establish
+changed optimal policies. P's conditional Shapley proposition and its
+reported learning curves are not refuted.
+\ledger{21, 29}
+
+\section{The preceding next-step proposal}
+
+The preceding evidence made the four dropout triples the first
+discriminating judge test, with reachable Q-grid families as a contrast.
+Freeze pair-visible trader cards, randomize aliases and presentation
+order, and compare pair-only inputs, total-count inputs, and
+coalition-capability context. Hold the judge and an explicitly specified
+regularized BT fitter fixed. Vary repetition separately from information,
+reporting both fixed-query and matched-token budgets.
+See \url{ada/iterate_21_pipeline.md}, line 214.
+\ledger{29}
+
+Estimate raw pair probabilities as well as fitted rankings, and check
+whether the first two arms actually preserve the fixed-comparator
+condition. Their population floor is known for the dropout fixture.
+Capability context removes that restriction; the ideal contextual
+comparator
+\[
+p_{ij}(I)=
+\sigma\bigl(\varphi_i(I)-\varphi_j(I)\bigr)
+\]
+recovers all population gaps, providing an exact attainable target.
+Finite-query graph separation and potential entropy should remain
+controls, rather than being conflated with semantic error.
+\ledger{25, 29}
+
+Recovery with capability context, persisting under the budget controls,
+would support the proposed intervention. If existing observations
+already reveal the required context, the diagnosis becomes a restriction
+on artificial pair-only inputs. If semantic improvements fail to help
+learning, the contribution remains an attribution benchmark rather than
+a demonstrated MARL improvement.
+The ideal comparator above assumes the oracle answer; review 31
+correctly required a constructive repair that does not make that
+assumption. The following extension supplies it for the homogeneous
+family. \ledger{29, 31, 37}
+
+\section{Appended extension after ITERATE 31}
+\label{sec:family-extension}
+
+The verifier re-derived the small-team circuits, attaining
+comparator, dividend characterization, and moment bound, but again judged
+the account insufficient for paper review. The material objections were
+that the subset-ranking framework had not been checked against Saari's
+social-choice literature, that the cardinal characterization was narrow,
+and that the favorable grid results used oracle-fitted comparators
+separately for each active count. The small late-round families also
+contained many oracle ties. \ledger{31}
+
+The requested extension therefore pursued family-level error bounds,
+minimal context and query order, and a shared comparator across all
+reachable counts. No judge request was repeated: no inference endpoint
+appeared, and no new implementation evidence about P became available.
+The resulting account is
+\url{ada/iterate_31_context_order.md}, lines 5--35.
+\ledger{32, 39}
+
+\subsection{The ordinal framework is classical}
+
+The general feasibility question is the Borda-dictionary question:
+which rankings over candidate subsets can arise from a common preference
+profile? Saari's dictionary work already studies this question.
+Permitting arbitrary pair probabilities does not create a new ordinal
+capacity class. \ledger{36}
+
+For a rational skew margin direction, a classical McGarvey two-voter
+edge construction changes one selected pair's margin while cancelling
+all other margins. Combining such blocks realizes a positive common
+multiple of the desired rational direction. Dividing by electorate size
+uniformly scales the matrix and preserves every subset row-sum ranking.
+Conversely, every preference profile yields a skew margin matrix.
+Thus the present strict-order feasibility problem belongs to the
+established Borda-dictionary framework. The linear inequalities,
+positive circuit certificates, and Borda/BT reduction are tools used
+here, not new representation machinery.
+See \url{ada/iterate_31_context_order.md}, lines 19--25.
+\ledger{36}
+
+The remaining candidate contribution is the quantitative distance of a
+specified coalition-credit target family from that class, together with
+constructive repairs. Whether its exact formula already appears in the
+older literature remains unresolved. \ledger{36, 39}
+
+\subsection{The homogeneous dropout family}
+
+Let \(N=B\cup S\) contain \(m\) identical buyers and \(m\) identical
+sellers, and use the classical game
+\[
+W(C)=\nu\min\{b(C),s(C)\},
+\qquad \nu>0.
+\]
+For \(1\leq d<m\), let \(\mathcal F_{m,d}\) contain every state obtained
+by deleting exactly \(d\) buyers or exactly \(d\) sellers. It contains
+\(2\binom md\) states, each with \(2m-d\) active agents and
+\(m(m-d)\) cross-role comparisons. Weight states and their cross-role
+pairs uniformly. \ledger{33, 34}
+
+Within each state, members of the scarce role have strictly larger
+restricted-game Shapley credit. Same-role members are equal.
+The notes justify this through the Shapley pair-difference formula:
+for a focal buyer and seller, the difference of their marginal
+contributions to a predecessor set with \(x\) other buyers and \(y\)
+other sellers is
+\[
+\nu\,\operatorname{sign}(y-x).
+\]
+The pair-difference weights admit a common Bernoulli-inclusion mixture.
+Coupling equal-sized buyer and seller parts symmetrically, then adding
+the excess role's Bernoulli variables, gives a strict advantage to
+the scarce focal role. Exact rational checks cover counts one through
+ten per role. See \url{ada/iterate_31_context_order.md},
+lines 55--67, and
+\url{ada/run_041_dropout_context_verify.log}, line 1.
+\ledger{37, 39}
+
+\begin{claim}
+For every \(m\geq2\) and \(1\leq d<m\), the exact minimum cross-role
+ranking error over \(\mathcal F_{m,d}\), among arbitrary fixed reciprocal
+comparators followed by complete, equally weighted population BT
+refitting, is
+\[
+\frac{1}{2(d+1)}.
+\]
+Probabilities are interior, oracle comparisons are strict, and predicted
+ties count as half-errors.
+\end{claim}
+
+This permits arbitrary identity-specific probabilities and
+inconsistencies. It does not assume role exchangeability.
+The theorem concerns frozen pair-input distributions, not P's measured
+judgments. \ledger{34, 39}
+
+\subsection{Circuit proof of the lower bound}
+
+Choose \(U\subseteq B\) and \(V\subseteq S\), each of size \(d+1\),
+and a bijection \(\pi:U\to V\). Set
+\[
+H=N\setminus(U\cup V).
+\]
+For \(i\in U\) and \(j=\pi(i)\), define
+\[
+I_i=H\cup\{i\}\cup V,
+\qquad
+J_j=H\cup U\cup\{j\}.
+\]
+Both are in \(\mathcal F_{m,d}\). Buyer \(i\) is in the scarce role
+in \(I_i\), and seller \(j\) is in the scarce role in \(J_j\).
+Using the previously defined win-score gap \(g^I_{ij}\), every term in
+\[
+\sum_{i\in U}
+\left(
+g^{I_i}_{i,\pi(i)}
++
+g^{J_{\pi(i)}}_{\pi(i),i}
+\right)=0
+\]
+should be positive. The identity nevertheless holds for every skew
+matrix. Contributions from \(H\) cancel pair by pair, cross-role totals
+cancel across the bijection, and within-role totals vanish by
+antisymmetry. \ledger{34, 39}
+
+Each circuit contains \(2(d+1)\) desired inequalities and costs at least
+one error. A negative gap costs one; if no gap is negative, all must
+be zero, costing \(d+1\) half-tie errors. The number of circuits and
+the number containing any fixed desired inequality are respectively
+\[
+C=\binom{m}{d+1}^{2}(d+1)!,
+\qquad
+L=\binom{m-1}{d}d!.
+\]
+Double counting therefore gives
+\[
+\begin{aligned}
+\text{total ranking loss}&\geq C/L,\\
+\frac{\text{total ranking loss}}
+     {2\binom md\,m(m-d)}
+&\geq\frac{1}{2(d+1)}.
+\end{aligned}
+\]
+The \(m=2,d=1\) case recovers the two small-team circuits.
+See \url{ada/iterate_31_context_order.md}, lines 69--106.
+\ledger{34, 39}
+
+\subsection{An explicit attaining comparator}
+
+Index sellers by \(j=0,\ldots,m-1\). Define
+\[
+\begin{aligned}
+b_{jk}
+&=\operatorname{sign}(j-k)
+  (m+1)^{\max\{j,k\}+1},
+\qquad b_{jj}=0,\\
+X_j&=1+\sum_k b_{jk}.
+\end{aligned}
+\]
+Construct an integer skew direction \(A\) by setting buyer--buyer entries
+to zero, every buyer's margin against seller \(j\) to \(X_j\), and
+\[
+A_{S_j,S_k}=(2m-d)b_{jk}-X_j+X_k.
+\]
+Normalize by
+\[
+a_{ij}=\frac{A_{ij}}{4\max_{u,v}|A_{uv}|},
+\qquad p_{ij}=\frac12+a_{ij}.
+\]
+These probabilities lie in \([1/4,3/4]\); scaling preserves signs.
+\ledger{34, 39}
+
+Before scaling, every desired buyer--seller gap in a buyer-dropout
+state equals \(2m-d>0\). In a seller-dropout state with deleted set
+\(D\), the desired gap of remaining seller \(j\) over any buyer is
+\[
+-(2m-d)\left(1+\sum_{k\in D}b_{jk}\right).
+\]
+For each \((d+1)\)-seller set \(T=D\cup\{j\}\), exactly its
+largest-index member has a positive row sum against the others.
+Every other member has a row sum below \(-1\), because its negative
+edge to the largest index dominates its smaller positive edges.
+Consequently, exactly one choice of remaining seller in each such
+set is wrong. The seller-dropout half has error \(1/(d+1)\);
+the buyer-dropout half has zero error. The combined error is
+\(1/[2(d+1)]\). \ledger{34, 39}
+
+The construction is a capacity witness, not a proposed judge.
+Its normalized margins can become small as the population grows.
+Population attainability therefore does not imply good finite-query
+performance. A separate polynomial-sized construction for \(d=1\)
+is recorded in \url{ada/verify_dropout_context.py}.
+See \url{ada/iterate_31_context_order.md}, lines 108--135.
+\ledger{39}
+
+Exact construction checks cover every \(2\leq m\leq10\) and
+\(1\leq d<m\); all circuits and incidence counts were exhaustively
+checked through \(m=5\).
+The saved checks are
+\url{ada/general_dropout_verified.json} and
+\url{ada/run_045_general_dropout_verify.log}, lines 1--45.
+Earlier MIP searches supplied witnesses rather than proofs; the analytic
+construction supersedes the timed-out search.
+\ledger{39}
+
+For one departure, the floor is \(25\%\) at every population size.
+For fixed \(d\), it persists as \(m\) grows. For \(d=m-1\), it is
+\(1/(2m)\), so it vanishes as the dropout count grows with the
+population. A blanket \(25\%\) claim for multiple departures would
+therefore be false. \ledger{33, 34}
+
+The notes also give a lower bound for symmetric mixed-departure strata.
+When both orientations of unequal residual counts \(b,s\) are included,
+averaging embedded balanced pools gives a conditional lower bound
+\(1/[2(|b-s|+1)]\). This is not an exact optimum across arbitrary
+mixtures: simultaneous attainment across count strata was not proved.
+Balanced strata contain only cross-role oracle ties and are excluded
+from the strict-order metric.
+See \url{ada/iterate_31_context_order.md}, line 137.
+\ledger{39}
+
+\subsection{Minimal global context for this family}
+
+The homogeneous family admits a repair that does not assume numerical
+Shapley values. Let
+\[
+z=\operatorname{sign}(s-b)
+\]
+identify the scarce role, and choose \(0<\epsilon<1/2\). Use
+\[
+\begin{aligned}
+p_{B_i,S_j}&=\frac12+\epsilon z,\\
+p_{B_i,B_k}&=p_{S_j,S_\ell}=\frac12.
+\end{aligned}
+\]
+A buyer has centered win score \(s\epsilon z\), and a seller has
+centered win score \(-b\epsilon z\). Their gap has the correct scarce-role
+sign, so population BT ranks every cross-role pair correctly.
+\ledger{37}
+
+Within \(\mathcal F_{m,d}\), \(z\) has two possible values.
+One global bit therefore suffices. A context alphabet with one value
+reduces to the fixed-comparator class, which has positive error by the
+theorem. Thus one bit is minimal within this specified global-context
+protocol. Including balanced states requires a third symbol if exact
+cross-role ties are also required.
+See \url{ada/iterate_31_context_order.md}, lines 139--151.
+\ledger{37, 39}
+
+This is not an information lower bound for arbitrary aggregators.
+An aggregator supplied the roster and role labels can count roles
+itself, replace BT, and recover the ranking without any LMM call.
+Total active count alone cannot distinguish the two regimes here:
+every state has \(2m-d\) members.
+Role counts suffice for the homogeneous game, not the heterogeneous
+assignment game in general. \ledger{37, 39}
+
+\subsection{A third observation can replace the global summary}
+
+For a buyer--seller query, sample a third active agent uniformly.
+Use the fixed local rule that favors the role appearing once in the
+triple: give centered margin \(+\epsilon\) when the witness is a seller
+and \(-\epsilon\) when it is a buyer. Same-role comparisons tie.
+Averaging the witness gives
+\[
+a_{B_i,S_j}(I)
+=\epsilon\,\frac{s-b}{b+s-2}.
+\]
+Population BT consequently has the correct scarce-role ordering
+for every coalition with at least three active agents. A two-agent
+buyer--seller coalition returns a tie.
+This rule uses roles and a witness, not an oracle credit.
+\ledger{37}
+
+An equivalent deterministic construction sums local scores over active
+triples. Give \(2\) to the scarce-role member and \(-1\) to each of the
+other two; give zero on all-same-role triples.
+The total scores are
+\[
+\begin{aligned}
+t_B&=2\binom{s}{2}-(b-1)s=s(s-b),\\
+t_S&=2\binom{b}{2}-(s-1)b=b(b-s),\\
+t_B-t_S&=(b+s)(s-b).
+\end{aligned}
+\]
+These scores recover the Shapley ordering, not its numerical values.
+Thus two-agent information is insufficient for zero error on the
+adverse family within the frozen-input BT protocol, while
+three-agent information suffices.
+See \url{ada/iterate_31_context_order.md}, lines 153--171.
+\ledger{37, 39}
+
+\subsection{Costs and the direct-attribution baseline}
+
+For \(n\) active agents, P-style ordered pair comparisons use
+\(n(n-1)\) calls per repetition. Adding a scarcity bit preserves
+this call count but requires a role census.
+Adding one sampled witness also preserves call count, while increasing
+each call from two observations to three. Exhaustive triple outputs
+require \(\binom n3\) calls, or \(6\binom n3\) if all presentation
+orders are queried. In the latter comparison, the call-count ratio to
+ordered pairs is \(n-2\). \ledger{39}
+
+A sampled witness gives the correct population target but adds
+sampling noise. Near balance, its expected margin is of order \(1/n\).
+At fixed local confidence, an elementary uniform Hoeffding bound for
+independent pair estimates gives a conservative sufficient repetition
+count of order
+\[
+n^2\log(n/\delta)
+\]
+for failure probability \(\delta\).
+This is not an optimal sample-complexity theorem or an observation
+about real multimodal accuracy. The inputs and token budgets must be
+counted alongside calls.
+See \url{ada/iterate_31_context_order.md}, lines 173--183.
+\ledger{39}
+
+For a known symbolic glove game, directly reading and counting the
+\(n\) role labels is cheaper and gives exact ordinal credit without pair
+calls. Exact cardinal credits follow from the glove formula.
+The bit and witness constructions establish representational sufficiency;
+they are not competitive algorithms for an already known symbolic
+market. \ledger{37, 39}
+
+For Q's heterogeneous opportunity game, role counts alone are
+insufficient: the earlier balanced examples have identical counts and
+focal features but opposite credit gaps.
+A histogram of buyer values and seller costs is sufficient.
+The threshold decomposition already derived gives a computable,
+non-oracular route: obtain eligible counts at each threshold, look up
+the corresponding glove credit, and integrate over thresholds for
+which each trader qualifies. On Q's grid, ten threshold count pairs
+suffice. With a precomputed glove table, a sorted sweep and prefix sums
+evaluate all credits.
+Histogram sufficiency is established; its minimality is not.
+Giving these private values to Q's traders would change Q's experiment,
+so the proposed use is offline evaluation or diagnostic judge context.
+See \url{ada/iterate_31_context_order.md}, lines 185--203.
+\ledger{39}
+
+For an arbitrary game accessible only through coalition-value queries,
+exhaustive evaluation is a generic \(2^n\)-query baseline, with
+permutation sampling as an approximate alternative.
+For a known \(k\)-additive game, values on coalitions of size at most
+\(k\), followed by classical M\"obius inversion and dividend sharing,
+recover the credits. These are existing attribution constructions.
+\ledger{39}
+
+Required observation order does not simply equal Harsanyi interaction
+order. The two-additive disjoint-pairs game fails the antisymmetric
+pair-win protocol, although symmetric pair-value queries recover its
+credits. Conversely, the glove game has higher-order dividends,
+yet the triple rule recovers its ordinal ranking.
+Query semantics, the known game class, and aggregation matter as well
+as interaction order.
+See \url{ada/iterate_31_context_order.md}, lines 205--209.
+\ledger{39}
+
+\subsection{One comparator shared across every reachable Q count}
+
+The scope gap in the earlier grid fits is now closed constructively.
+One skew matrix on the same 22 trader identities was fitted jointly
+across every active count from one through eleven per side, then
+used unchanged in every per-state population BT refit.
+The strictly profitable-removal family contains \(58{,}786\) states.
+The fitting objective pools strict comparisons; these are structural
+enumeration weights, not observed Q visitation frequencies.
+See \url{ada/iterate_31_context_order.md}, lines 211--243.
+\ledger{35, 39}
+
+The integer-verified construction gives:
+\[
+\begin{array}{r|r|r|r|r}
+m&\text{States}&\text{Strict cross-role}&
+\text{Oracle ties}&\text{Errors}\\ \hline
+1&1&0&1&0\\
+2&55&20&200&0\\
+3&825&3270&4155&68\\
+4&4950&55220&23980&956\\
+5&13860&285500&61000&4726\\
+6&19404&622936&75608&9522\\
+7&13860&632982&46158&8610\\
+8&4950&302190&14610&3148\\
+9&825&64452&2373&388\\
+10&55&5304&196&18\\
+11&1&110&11&0
+\end{array}
+\]
+The pooled strict cross-role error is
+\[
+\frac{27436}{1971984}\approx1.3913\%.
+\]
+There are no predicted ties on these strict cross-role comparisons.
+This is a feasible upper bound, not an optimum or measured judge
+performance. The optimizer stopped at its 350-iteration cap; integer
+verification makes the construction valid independently of convergence.
+The saved matrix is in \url{ada/shared_count_fit.json}.
+\ledger{35, 39}
+
+The shared fit has two same-role errors, both at three agents per side.
+Entry 35's initial assertion of no same-role errors was incorrect and
+was explicitly corrected in entry 38. The saved results already contained
+the correct count. Independent matrix-row reconstruction confirmed the
+correction; see \url{ada/run_050_shared_independent_check.log},
+lines 18--24. The earlier separately fitted comparators and their
+zero same-role error statements remain distinct results.
+\ledger{27, 38, 39}
+
+The small-family caveat is substantial. At two per side, only \(20\) of
+\(220\) cross-role comparisons are strict; at three per side, only
+\(3{,}270\) of \(7{,}425\) are strict. Many traders are dummies in these
+low-surplus residual markets. The shared fit also no longer achieves
+zero error at three per side.
+These facts prevent interpreting the earlier exact zero-error results
+as evidence of broad judge competence. \ledger{31, 35, 39}
+
+For the newly emphasized remaining counts, the same shared comparator
+has the following wrong-comparison counts after filtering by oracle
+gap:
+\[
+\begin{array}{c|r|r}
+m&|\Delta|\geq0.10&|\Delta|\geq0.25\\ \hline
+5&952&58\\
+6&1332&36\\
+7&594&0\\
+8&106&0\\
+9&8&0
+\end{array}
+\]
+These are counts, not percentages; full denominators and other thresholds
+are retained in \url{ada/shared_count_fit.json}.
+Independent reconstruction checked every state and every saved margin
+table. See \url{ada/iterate_31_context_order.md}, lines 231--243,
+and \url{ada/run_050_shared_independent_check.log}.
+\ledger{39}
+
+The older rational infeasibility certificates remain lower bounds on
+their corresponding subfamilies. They are still loose.
+The shared upper construction establishes that the permissive
+fixed-comparator class can express most strict oracle rankings on this
+grid. It was fitted directly to those oracle rankings and has no
+demonstrated generalization to new identities or schedules.
+It neither predicts LLM performance nor weakens the exact theorem for
+the different, unbalanced dropout family. \ledger{35, 39}
+
+\section{Sources added in the family-extension round}
+
+The shared pool helper was used for the new paper requests.
+Saari's 2022 source and CASI were available as pooled LaTeX and read
+in bounded slices; no PDF-to-text extraction was used for them.
+The retrieval record and limitations are in
+\url{ada/iterate_31_context_order.md}, lines 245--257.
+\ledger{36, 39}
+
+\begin{itemize}
+\item Saari, \emph{A Dictionary for Voting Paradoxes} (1989):
+\url{https://doi.org/10.1016/0022-0531(89)90037-9}.
+The indexed publisher abstract describes coordinated outcomes over
+subsets. Full-text retrieval returned HTTP 429.
+
+\item Saari, \emph{The Borda Dictionary} (1990):
+\url{https://www.jstor.org/stable/41105961}.
+The indexed discussion-paper copy is
+\url{https://www.kellogg.northwestern.edu/research/math/papers/821.pdf}.
+Bibliographic information and abstract-level scope were checked.
+The helper returned HTTP 429, and the old author URL returned 404.
+Full text remains missing.
+
+\item Saari, \emph{Mathematical Structure of Voting Paradoxes I} (2000):
+\url{https://doi.org/10.1007/s001990050001}.
+The author's indexed abstract,
+\url{https://ssrn.com/abstract=195743},
+covers candidate additions and deletions.
+Full-text retrieval returned HTTP 429.
+
+\item McGarvey (1953):
+\url{https://doi.org/10.2307/1907926}.
+Primary journal metadata was located, but pool resolution found no open
+PDF. The edge-gadget argument is described above; the original proof
+was not inspected.
+
+\item Debord (1987):
+\url{https://www.numdam.org/item/MSH_1987__97__5_0/}.
+The primary bibliographic page was checked; full-text retrieval returned
+HTTP 429. Its theorem wording was not verified.
+
+\item Saari (2022):
+\url{https://arxiv.org/abs/2204.13230}.
+Pooled LaTeX lines 217--253 establish the skew-margin row-sum and
+Borda correspondence; lines 871--885 identify older references.
+This supports the attribution, not novelty of the exact error formula.
+
+\item CASI:
+\url{https://arxiv.org/abs/2610.20293}.
+Pooled LaTeX lines 552--575 and 928--973 describe fixed-snapshot
+coalition evaluation and distinguish set optimization from
+coalition-dependent attribution. They also establish that singleton,
+leave-one-out, and full-set values do not determine arbitrary Shapley
+allocations. Its query model differs from the fixed-comparator audit,
+but direct coalition attribution is an existing baseline.
+\end{itemize}
+\ledger{36, 39}
+
+The search found the relevant classical framework and related attribution
+work. It did not yield a checked source containing the exact
+\(1/[2(d+1)]\) formula. This is a retrieval limitation and search record,
+not a novelty clearance. Even if the formula is new, its proof is
+elementary; publication significance would require a carefully positioned
+theory or benchmark contribution.
+\ledger{36, 39}
+
+\section{Open questions retained after the family extension}
+
+The strongest established result at that stage was a family-level capacity
+theorem: the specified pair-only comparison-and-refit protocol has exact
+cross-role error \(1/[2(d+1)]\) on homogeneous one-role dropout families.
+One scarcity bit or a sampled third-agent rule removes population
+ordinal error in that family. A capability histogram gives exact
+computable credits for the heterogeneous assignment oracle.
+These are conditional mathematical and computational results.
+\ledger{34, 37, 39}
+
+The countervailing result is equally important: a single arbitrary
+comparator shared across every Q-reachable count makes only
+\(1.3913\%\) strict cross-role errors under the pooled enumeration metric.
+There is no broad impossibility result saying that pair-local refitting
+cannot approximate Q's contribution rankings. The strongest adverse
+family uses independently changing participation, while Q's actual
+trade removals remain balanced. \ledger{35, 39}
+
+The material is empirically thin. No real judge, MARL run, or Q trajectory
+was measured. No inference endpoint appeared, and P's actual query
+context, regularization, and reward implementation remain uninspected.
+Population witnesses may require many samples when their margins are
+small. The sampled-witness repair has no measured finite-query behavior
+with LMMs, and none of the semantic improvements has a demonstrated
+learning benefit. \ledger{14, 29, 39}
+
+The exact formula still needs comparison with the unavailable
+social-choice full texts. There was no general structural ordinal
+classification of arbitrary cooperative games and active-set families
+beyond the classical linear feasibility criterion and the special
+families analyzed here. Minimal capability context for heterogeneous
+markets, optimal mixed-dropout error, and empirical state weighting
+remained unresolved. The calibrated characterization retained its strong
+all-subsets cardinal requirement.
+\ledger{28, 31, 36, 39}
+
+Neither P's conditional Shapley proposition nor either paper's reported
+trading or learning results is refuted. A poor potential can preserve
+the optimal objective under valid potential-based shaping.
+The mask identity and Ford-condition probabilities remain useful
+secondary controls, with their stated assumptions.
+\ledger{19, 29, 39}
+
+\section{The next step proposed after the family extension}
+
+For novelty, the smallest remaining documentary step was to obtain and
+compare the older Borda-dictionary and margin-realizability texts against
+the explicit dropout circuits and error formula. That would settle
+whether the prospective theorem is already known; the retrieval
+record did not. \ledger{36, 39}
+
+For empirical relevance, once inference access exists, use the four
+dropout triples as the smallest discriminating experiment.
+Freeze focal cards and task text, randomize aliases and presentation
+order, and compare pair-only inputs, total-count inputs, a scarce-role
+bit, and a sampled third-agent observation. Use the same judge and
+explicitly regularized BT estimator. Vary repetitions independently
+of information, and report both fixed-call and matched-token budgets.
+Include direct symbolic role counting as the baseline.
+\ledger{29, 37, 39}
+
+Estimate raw pair probabilities before interpreting aggregate rankings.
+If the pair-only distribution changes with unseen teammates, the
+fixed-comparator premise does not describe that implementation.
+If it remains fixed, the population floor provides a calibrated target;
+the context and witness arms test whether actual judges can realize the
+constructive repairs. Separation frequency and potential entropy should
+remain finite-query controls. \ledger{29, 39}
+
+This test would settle the immediate question of whether supplying
+coalition information produces the predicted semantic separation in real
+judges. It would not establish embodied transfer or improved learning.
+Those would require a subsequent implementation and training study.
+The supported account at that stage was an exact conditional boundary and
+an oracle-grounded benchmark proposal, with a favorable reachable-grid
+capacity result preserved alongside it. \ledger{39}
+
+\section{Appended extension after ITERATE 41}
+\label{sec:general-extension}
+
+The latest verifier accepted the dropout-family formula, its attaining
+construction, the context repairs, and the contrasting grid fit under
+their stated conditions. It nevertheless judged the account not ready
+for paper review, scoring it \([rating withheld]\). Its material concerns were
+unconfirmed novelty inside a classical framework, reliance on a special
+glove family, lack of a general game account, and absence of measured
+judges. It proposed a bounded exploratory round using balanced
+contributions, membership dependence, local query order, and independent
+participation. \ledger{41, 42}
+
+The resulting work is recorded in
+\url{ada/iterate_41_general_games.md}, lines 1--397.
+It strengthens the general mathematical account but does not settle
+novelty or empirical relevance. No inference endpoint appeared, no judge
+measurement was invented, and no grid fitting was repeated.
+The preceding claims and qualifications remain in force.
+\ledger{43, 46, 47, 49, 50}
+
+\subsection{Balanced contributions and antisymmetric wins}
+
+Let \(N\) contain \(n\geq2\) identities and let \(W(\emptyset)=0\).
+Write the game's Harsanyi dividends as \(d_T\):
+\[
+W(I)=\sum_{T\subseteq I}d_T,
+\qquad
+\varphi_i(I)=
+\sum_{\substack{T\subseteq I\\i\in T}}\frac{d_T}{|T|}.
+\]
+The classical cooperative potential is
+\[
+\Psi(I)=
+\sum_{\emptyset\ne T\subseteq I}\frac{d_T}{|T|},
+\qquad
+\varphi_i(I)=\Psi(I)-\Psi(I\setminus\{i\}).
+\]
+Its mixed differences commute, giving balanced contributions:
+\[
+\begin{aligned}
+\varphi_i(I)-\varphi_i(I\setminus\{j\})
+&=\sum_{\substack{T\subseteq I\\i,j\in T}}\frac{d_T}{|T|}\\
+&=\varphi_j(I)-\varphi_j(I\setminus\{i\}).
+\end{aligned}
+\]
+These are established cooperative-game identities associated with
+Myerson and Hart and Mas-Colell. The set potential \(\Psi\) is not
+P's temporal reward-shaping potential. \ledger{49, 50}
+
+A fixed reciprocal comparator instead gives
+\[
+r_i(I)=\sum_{j\in I\setminus\{i\}}a_{ij},
+\qquad
+r_i(I)-r_i(I\setminus\{j\})=a_{ij}=-a_{ji}.
+\]
+Shared cooperative contributions and pairwise wins therefore have
+different membership increments. This observation alone proves no
+general gap or ranking impossibility: a score vector can be translated
+separately in each coalition, and positive rescaling preserves rankings.
+The following results explicitly distinguish those freedoms.
+See \url{ada/iterate_41_general_games.md}, lines 39--80.
+\ledger{43, 49, 50}
+
+\subsection{Decomposing arbitrary-game win-gap loss}
+
+Fix a focal pair \(i,j\), and let \(x_k\) indicate participation of each
+other agent. The restricted-game Shapley gap is the multilinear polynomial
+\[
+h_{ij}(x)=
+\sum_{S\subseteq N\setminus\{i,j\}}
+\frac{d_{S\cup\{i\}}-d_{S\cup\{j\}}}{|S|+1}
+\prod_{k\in S}x_k.
+\]
+Dividends containing both focal agents cancel. A fixed-comparator
+win gap has the more restrictive form
+\[
+g_{ij}(x)=2a_{ij}
++\sum_{k\ne i,j}(a_{ik}-a_{jk})x_k.
+\]
+Thus polynomial degree is not the only restriction: the linear
+coefficients must arise from one common skew matrix. \ledger{43, 50}
+
+Suppose agents participate independently with common probability
+\(p\in(0,1)\). Conditional on the focal pair being present, define
+\[
+\mathcal L_p(a)=
+\sum_{i<j}\mathbb E\!\left[
+  \bigl(h_{ij}(X)-g_{ij}(X)\bigr)^2
+  \,\middle|\, i,j\text{ present}\right].
+\]
+The unconditional expected sum over active pairs is
+\(p^2\mathcal L_p(a)\). Dividing by \(\binom n2\) gives the pooled
+pair mean squared error. This differs from weighting every state equally
+regardless of its number of pairs. \ledger{43, 50}
+
+Put \(v=p(1-p)\). Expanding around \(x_k=p\), define, for
+\(U\subseteq N\setminus\{i,j\}\),
+\[
+H_{ij,U}=
+\sum_{\substack{S\subseteq N\setminus\{i,j\}\\S\supseteq U}}
+\frac{d_{S\cup\{i\}}-d_{S\cup\{j\}}}{|S|+1}
+p^{|S|-|U|}.
+\]
+The products of centered independent indicators are orthogonal.
+Writing \(R_i=\sum_{j\ne i}a_{ij}\), the loss is exactly
+\[
+\begin{aligned}
+\mathcal L_p(a)
+={}&\sum_{i<j}
+ \bigl[H_{ij,\emptyset}
+       -2(1-p)a_{ij}-p(R_i-R_j)\bigr]^2\\
+&+v\sum_{i<j}\sum_{k\ne i,j}
+ \bigl[H_{ij,\{k\}}-a_{ik}+a_{jk}\bigr]^2\\
+&+\sum_{i<j}
+  \sum_{\substack{U\subseteq N\setminus\{i,j\}\\|U|\geq2}}
+  v^{|U|}H_{ij,U}^{\,2}.
+\end{aligned}
+\]
+The last line is irreducible higher-order membership energy.
+The first two lines retain compatibility restrictions even when the
+target is affine. A two-additive game has no last-line contribution,
+but its shared pair dividends can still be incompatible with skew
+win interactions. See \url{ada/iterate_41_general_games.md},
+lines 82--128. \ledger{43, 50}
+
+\subsection{Closed-form projection and residual}
+
+The optimization here allows unrestricted real skew directions.
+It is a relaxation of fixed-scale probability margins constrained to
+\([-1/2,1/2]\), and therefore gives a lower bound for that constrained
+cardinal model. It is exact for linear win scores with a freely chosen
+global calibration scale: a finite direction can be scaled into
+interior probabilities and its scores rescaled. No such calibration
+is silently inserted into P's BT log-scores. \ledger{43, 50}
+
+Define
+\[
+\begin{aligned}
+\alpha&=2+(n-2)p,\\
+\lambda&=\alpha^2+(n-2)p(1-p),\\
+z_i&=\sum_{T\ni i}\frac{d_T}{|T|}p^{|T|-1}
+       \bigl[\alpha+(|T|-1)(1-p)\bigr].
+\end{aligned}
+\]
+
+\begin{claim}
+For every game \(W\) and common participation rate \(0<p<1\),
+the unique unrestricted skew minimizer is
+\[
+a^\star_{ij}=\frac{z_i-z_j}{\lambda}.
+\]
+In particular, its triangle circulations vanish.
+\end{claim}
+
+Thus cyclic comparator components cannot improve this particular
+cardinal objective. This does not contradict their usefulness for
+ordinal fitting on selected active families, demonstrated by the
+earlier grid audit. \ledger{43, 50}
+
+For the derivation, use the edge norm
+\[
+\|a\|_E^2=\sum_{i<j}a_{ij}^2
+\]
+and decompose skew matrices into gradients \(a_{ij}=u_i-u_j\),
+with \(\sum_i u_i=0\), and divergence-free cycles \(R_i=0\).
+The constant-coefficient map is
+\[
+(L_0a)_{ij}=2(1-p)a_{ij}+p(R_i-R_j).
+\]
+It multiplies gradients by \(\alpha\) and cycles by \(2(1-p)\).
+For the linear-coefficient map,
+\[
+\begin{aligned}
+\|L_1a\|^2
+&=\sum_{i<j}\sum_{k\ne i,j}(a_{ik}-a_{jk})^2\\
+&=2(n-1)\|a\|_E^2-\sum_iR_i^2.
+\end{aligned}
+\]
+The normal operator consequently has eigenvalue \(\lambda\) on gradients
+and
+\[
+\lambda_C=4(1-p)^2+2(n-1)p(1-p)>0
+\]
+on cycles.
+
+For a single dividend \(d_T\), with \(t=|T|\), the constant target is
+the gradient
+\[
+\frac{d_T}{t}p^{t-1}
+\bigl(\mathbf1_{i\in T}-\mathbf1_{j\in T}\bigr).
+\]
+The linear-target adjoint is also a gradient, with coefficient
+\((t-1)d_Tp^{t-2}/t\) for \(t\geq2\), and zero for \(t=1\).
+Combining the constant and linear terms makes the normal-equation
+right-hand side \(z_i-z_j\), with no cycle component.
+Inverting the two eigenspaces proves the claim.
+See \url{ada/iterate_41_general_games.md}, lines 130--188.
+\ledger{43, 50}
+
+The coefficient also has a participation interpretation. Let
+\[
+\mu_i(p)=\mathbb E[\varphi_i(I)\mid i\in I].
+\]
+Then
+\[
+z_i=\alpha\mu_i(p)+p(1-p)\mu_i'(p).
+\]
+The projection contrasts mean restricted credit and its sensitivity to
+participation. This is a dividend-weighted score, not a claimed new
+axiomatic cooperative value. \ledger{50}
+
+For a fully explicit residual, let \(T,U\ne\emptyset\), and put
+\(t=|T|\), \(u=|U|\), \(c=|T\cap U|\). Define
+\[
+\begin{aligned}
+K_p(T,U)={}&
+ \frac{c(n-t-u+c)}{tu}\,p^{t+u-c-1}\\
+&-\frac{(t-c)(u-c)}{tu}\,p^{t+u-c-2}.
+\end{aligned}
+\]
+Terms with zero integer coefficient are interpreted as zero, including
+any formally negative power in such a term. With
+\[
+E_p=\sum_{T,U\ne\emptyset}d_Td_UK_p(T,U),
+\qquad
+\bar z=\frac1n\sum_i z_i,
+\]
+the minimum is
+\[
+\min_a\mathcal L_p(a)
+=E_p-\frac{n}{\lambda}\sum_i(z_i-\bar z)^2.
+\]
+To obtain \(K_p\), count pair products of two dividend gap terms.
+A focal pair with one member in \(T\cap U\) and the other outside
+\(T\cup U\) contributes positively; there are
+\(c(n-t-u+c)\) such pairs. A pair with one member in each set difference
+contributes negatively; there are \((t-c)(u-c)\).
+The respective remaining-membership counts give the displayed powers.
+The gradient norm identity supplies the projected energy.
+See \url{ada/iterate_41_general_games.md}, lines 190--218.
+\ledger{43, 50}
+
+In a homogeneous glove game with equally many original buyers and
+sellers, game automorphisms make every \(z_i\) equal. The optimal
+linear predictor is therefore zero. This is a warning about metrics,
+not a claim that ranking is impossible: the earlier constructions
+achieve better-than-chance ordinal accuracy by concentrating errors.
+\ledger{43, 50}
+
+\subsection{The linear zero-loss class and the corrected sign}
+
+\begin{claim}
+On unrestricted linear win-score units, exact recovery of every
+restricted Shapley gap on every active subset is possible precisely for
+games
+\[
+W(I)=|I|\sum_{i\in I}u_i+h(|I|),
+\qquad h(0)=h(1)=0,
+\]
+where \(u_i=W(\{i\})\).
+\end{claim}
+
+Two-agent restrictions force
+\[
+2a_{ij}=u_i-u_j.
+\]
+The coefficient of a third agent's membership then forces
+\[
+d_{\{i,k\}}-d_{\{j,k\}}=u_i-u_j,
+\]
+so the pair dividends have the form
+\[
+d_{\{i,j\}}=u_i+u_j+c.
+\]
+The sign is positive under this singleton-value convention.
+The tentative negative-sum expression in review 41 is not correct with
+these parameters. Exact checks of the positive construction give zero
+residual, whereas the tested negative-sum counterparts give positive
+residual. \ledger{44}
+
+For each dividend order from three through \(n-1\), vanishing
+higher-order membership coefficients forces equal dividends on subsets
+differing by one element, hence equality across that order.
+The grand-coalition dividend is unrestricted and already anonymous.
+Summing these conditions yields the displayed game class.
+Conversely, its Shapley gaps are
+\[
+\varphi_i(I)-\varphi_j(I)
+=\frac{|I|}{2}(u_i-u_j),
+\]
+which \(a_{ij}=(u_i-u_j)/2\) represents exactly.
+See \url{ada/iterate_41_general_games.md}, lines 220--245.
+\ledger{44, 50}
+
+This differs from the earlier exact BT-log-score class
+\[
+W(I)=\sum_{i\in I}u_i+h(|I|).
+\]
+Both are calibrated all-subsets statements. Neither characterizes
+strict ordinal representation, and neither characterizes only the
+Q-reachable family. Fixed probability bounds would impose further
+scale restrictions on the linear statement. \ledger{44, 50}
+
+\subsection{A specified local-query protocol}
+
+To discuss query order, the notes define an additive local-output
+protocol rather than all algorithms that happen to ingest \(k\) images.
+For every identity subset \(U\) with \(|U|\leq k\), a frozen local
+evaluator supplies scores \(q_i^U\) satisfying
+\[
+\sum_{i\in U}q_i^U=0.
+\]
+The state score is
+\[
+R_i(I)=
+\sum_{\substack{U\subseteq I,\ i\in U\\|U|\leq k}}q_i^U.
+\]
+Binary reciprocal comparisons are the \(k=2\) case.
+Every fixed-pair gap has membership degree at most \(k-1\), but
+its coefficients must also come from common locally zero-sum blocks.
+\ledger{46, 50}
+
+Each block has a within-context skew-margin realization:
+\[
+a_{ij}^U=\frac{q_i^U-q_j^U}{|U|},
+\qquad
+\sum_{j\in U\setminus\{i\}}a_{ij}^U=q_i^U.
+\]
+Summing these margins over active local subsets and scaling them into
+interior probabilities yields a complete population BT fit with the
+same ordering as \(R\). This extends P's protocol; it is not a
+description of P's implemented pair-only rule. \ledger{46}
+
+A uniformly sampled context of exactly \(k\) agents requires a
+normalization qualification. Multiplication by the common positive
+factor
+\[
+\binom{|I|-2}{k-2}
+\]
+turns each effective pair-margin average into its additive local sum,
+when such contexts exist. The raw average may be rational in active
+count, while its sign has a degree-at-most-\(k-1\) representation.
+Mixing context sizes without the corresponding weights need not
+preserve this form.
+See \url{ada/iterate_41_general_games.md}, lines 247--279.
+\ledger{50}
+
+The glove ordering shows why threshold degree alone is insufficient.
+Its desired cross-role direction is the sign of the linear function
+\(s-b\). Binary win gaps are also linear, but their shared skew
+coefficients cannot realize all these signs on the dropout family.
+The ternary rule instead produces a gap proportional to
+\((b+s)(s-b)\), with the same sign.
+It resolves a coefficient-compatibility restriction even though the
+target itself has threshold degree one. \ledger{46, 50}
+
+\subsection{A constructive repair for every bounded-order game}
+
+\begin{claim}
+If \(d_T=0\) whenever \(|T|>d\), frozen zero-sum local outputs on
+at most \(\min(d+1,n)\) agents can recover every restricted-game
+Shapley ordering and tie.
+\end{claim}
+
+For each nonzero dividend \(d_T\) and every outside witness
+\(k\notin T\), create a block on \(U=T\cup\{k\}\):
+\[
+q_i^{T,k}=\frac{d_T}{|T|}
+\quad(i\in T),
+\qquad
+q_k^{T,k}=-d_T.
+\]
+Combine blocks with the same \(U\).
+They are locally zero-sum. On active set \(I\), a player in
+\(T\subseteq I\) receives
+\((|I|-|T|)d_T/|T|\) from this dividend, while a player outside
+\(T\) receives \(-d_T\). Therefore
+\[
+R_i(I)=|I|\varphi_i(I)-W(I).
+\]
+Every score gap is \(|I|\) times its Shapley gap, preserving orders
+and ties. A dividend on the entire active population contributes equally
+to all players and needs no outside witness for ordinal recovery.
+\ledger{45, 46, 50}
+
+For a two-additive game, singleton dividends give pair blocks
+\(u_i-u_j\) and \(u_j-u_i\). The triple block is
+\[
+q_i^{\{i,j,k\}}
+=\frac{d_{\{i,j\}}+d_{\{i,k\}}}{2}-d_{\{j,k\}}.
+\]
+Thus pair and triple outputs suffice for every two-additive game.
+The earlier disjoint-productive-pairs fixture proves that binary
+wins alone can fail even under strict-only ranking loss.
+See \url{ada/iterate_41_general_games.md}, lines 281--311.
+\ledger{28, 46, 50}
+
+This construction starts from dividends rather than assuming an oracle
+Shapley comparator. Knowing or estimating those dividends is nevertheless
+a substantive input requirement. Nothing here proves that an LMM can
+infer them from a small collection of egocentric images. \ledger{46, 50}
+
+The order bound is worst-case necessary when oracle ties must be
+preserved. Consider a unanimity game on \(d\) productive agents in a pool
+of \(d+1\). Every proper active subset has all members tied:
+the productive set alone shares its value equally, and every other
+proper restriction has zero value. The full pool ranks the productive
+agents above the outsider. A locally zero-sum protocol preserving all
+proper-set ties must have \(R(I)=0\) on every proper subset.
+M\"obius inversion forces every proper local block to vanish.
+A full-set block is therefore necessary. \ledger{46}
+
+If oracle ties are ignored, this argument gives no lower bound:
+fixed scores favoring productive identities recover its only strict
+rankings. The separate strict-only binary/ternary counterexample remains
+necessary for that metric. \ledger{46, 50}
+
+For exact cardinal recovery of centered Shapley allocations, the local
+coefficients are uniquely determined:
+\[
+\begin{aligned}
+q_i^U
+={}&\sum_{J\subseteq U\setminus\{i\}}
+ (-1)^{|U|-1-|J|}\\
+&\quad\cdot\left[
+ \varphi_i(J\cup\{i\})
+ -\frac{W(J\cup\{i\})}{|J|+1}
+ \right].
+\end{aligned}
+\]
+Their maximum nonzero order characterizes this specific additive
+representation. It need not equal dividend order. Even a heterogeneous
+additive game can require high-order blocks after centering, although
+binary BT comparisons recover its ordering and log-score gaps.
+Positive state-dependent rescaling can greatly reduce the local order
+needed for ordinal recovery.
+See \url{ada/iterate_41_general_games.md}, lines 313--337.
+\ledger{50}
+
+\subsection{Costs and the stronger direct baseline}
+
+For a known \(d\)-additive game supplied through coalition-value queries,
+all dividends can be obtained from
+\[
+\sum_{t=1}^{d}\binom nt
+\]
+values and M\"obius inversion. Direct dividend sharing then computes
+restricted Shapley credits without pair aggregation.
+A literal local-output implementation may evaluate up to
+\[
+\sum_{t=2}^{\min(d+1,n)}\binom nt
+\]
+local outputs, or form
+\[
+\sum_{t=1}^{d}(n-t)\binom nt
+\]
+dividend-witness blocks before combining them.
+It is not cheaper than direct attribution in this exact symbolic model.
+The result establishes representation sufficiency, not computational
+advantage. \ledger{46, 50}
+
+In embodied tasks, visual comparisons and counterfactual coalition
+values can differ in cost and observability. An empirical comparison
+must measure those differences. The specialized scarcity-bit and
+sampled-witness glove repairs remain available, and their required
+order does not track the glove game's higher-order dividends.
+See \url{ada/iterate_41_general_games.md}, lines 339--348.
+\ledger{50}
+
+\subsection{Independent participation and a logarithmic lower bound}
+
+Consider the homogeneous glove game with \(m\) buyers and \(m\)
+sellers, each independently active with common probability
+\(p\in(0,1)\). Pool active cross-role comparisons across states,
+exclude oracle ties, and charge predicted ties half an error.
+This is an analytic participation model, not a documented law for
+P's battery process. It is also different from Q's paired trade exits.
+\ledger{47, 50}
+
+The conditional circuit bound must combine the count strata
+\((b,s)\) and \((s,b)\). A claim for one orientation alone would be
+false: a comparator always favoring buyers succeeds whenever buyers
+are always the scarce role. Equal-rate independent participation
+weights the swapped strata equally. Averaging balanced subpools and
+their pure-dropout circuits gives
+\[
+\text{conditional error}\geq
+\frac{1}{2(|b-s|+1)}
+\]
+for their combined unequal-count stratum. \ledger{47}
+
+Let \(B,S\) be independent \(\operatorname{Bin}(m,p)\) counts.
+Pair weighting yields the lower bound
+\[
+L_{m,p}=
+\frac{
+\mathbb E\!\left[
+ \dfrac{BS\,\mathbf1_{B\ne S}}{2(|B-S|+1)}
+\right]}
+{\mathbb E[BS\,\mathbf1_{B\ne S}]}.
+\]
+Size-biasing by the active focal pair simplifies it. For independent
+\(X,Y\sim\operatorname{Bin}(m-1,p)\),
+\[
+L_{m,p}=
+\frac{\displaystyle
+ \sum_{d=1}^{m-1}\frac{\Pr(X-Y=d)}{d+1}}
+{\Pr(X\ne Y)}.
+\]
+The bound applies to every fixed comparator with per-state population
+BT refitting under the stated design. \ledger{47, 50}
+
+At \(p=1/2\), the recorded exact calculations give
+\[
+\begin{array}{c|c|r}
+m&L_{m,1/2}&\text{Decimal}\\ \hline
+2&1/4&0.250000\\
+3&7/30&0.233333\\
+4&39/176&0.221591\\
+5&593/2790&0.212545\\
+10&11057031/59786720&0.184941\\
+20&671161684400251/4234937130785920&0.158482
+\end{array}
+\]
+For \(m=2\), the earlier comparator attains \(1/4\) for every
+interior \(p\), since all strict states are the four equally weighted
+triples. For larger populations, a single comparator attaining the
+stratum bounds simultaneously has not been established.
+See \url{ada/iterate_41_general_games.md}, lines 350--377, and
+\url{ada/run_056_bernoulli_summary.log}, line 1.
+\ledger{47, 50}
+
+For fixed interior \(p\), the asymptotic lower bound is
+\[
+L_{m,p}\sim
+\frac{\log m}{4\sqrt{\pi m p(1-p)}}.
+\]
+Indeed, \(X-Y\) has variance \(2(m-1)p(1-p)\).
+For near-balanced differences, its local central-limit mass is
+approximately
+\[
+\frac{1}{2\sqrt{\pi m p(1-p)}}.
+\]
+Summing \(1/(d+1)\) up to differences of order \(\sqrt m\)
+contributes \((\log m)/2\). Differences above a fixed multiple
+of \(\sqrt m\) contribute only \(O(m^{-1/2})\), and
+\(\Pr(X\ne Y)\) tends to one.
+At \(p=1/2\), the same argument follows from
+\[
+\Pr(X-Y=d)
+=4^{-(m-1)}\binom{2m-2}{m-1+d}
+\]
+and Stirling's formula. \ledger{47, 50}
+
+This is the decay rate of a lower bound, not the proved decay rate
+of the optimum. It does not establish simultaneous attainment or
+show that the obstruction disappears in large populations.
+It must not be transferred to heterogeneous assignment games, where
+scarcity alone does not determine every focal ordering.
+The Q-grid capacity construction remains the contrasting evidence
+for that family. \ledger{47, 50}
+
+\subsection{Verification of the latest results}
+
+The projection was checked on \(15\) rational random-game instances
+through six players, at participation rates
+\(1/4,1/2,3/4\).
+Direct exact normal equations vanish; exact residuals agree with the
+dividend kernel and an independently implemented centered-indicator
+expansion. An unrestricted numerical least-squares solve agrees to
+floating-point precision.
+Positive-pair-sum zero-loss constructions, negative-sum counterparts,
+and symmetric glove projections were checked separately.
+See \url{ada/run_054_win_gap_projection.log}, lines 1--16,
+and \url{ada/win_gap_projection_verified.json}.
+\ledger{43, 44, 50}
+
+The dividend-witness construction was checked on \(27\) random
+bounded-order games through seven players, covering \(1{,}509\)
+nonempty active subsets. The checks include within-context skew
+realization and unanimity examples of orders one through six.
+Entry 46's initial total of \(1{,}477\) was corrected in entry 48;
+\url{ada/run_056_bernoulli_summary.log}, line 2, records the
+correct total. The details are in
+\url{ada/local_order_bernoulli_verified.json} and
+\url{ada/run_055_local_order_bernoulli.log}.
+\ledger{46, 48, 50}
+
+Exact size-biased Bernoulli sums agree with independently weighted
+original-count sums. Numerical convolution checks extend to
+\(m=100000\); those checks support the calculation but are not its
+asymptotic proof. These are mathematical and computational validations,
+not LMM, trading, or MARL experiments.
+See \url{ada/iterate_41_general_games.md}, lines 379--389.
+\ledger{47, 50}
+
+\section{Sources added in the latest round}
+
+The latest attribution work precedes interpretation of the new formulas.
+The shared-pool retrieval limitations are explicit:
+\begin{itemize}
+\item Myerson (1980), on balanced contributions:
+\url{https://doi.org/10.1007/BF01781371}.
+Original full-text resolution returned HTTP 429.
+A later primary research article explicitly states the standard
+efficiency-plus-balanced-contributions characterization:
+\url{https://doi.org/10.1007/s00182-021-00791-z}.
+Its publisher text was inspected. Myerson's original theorem wording
+was not checked.
+
+\item Hart and Mas-Colell (1989), on the cooperative potential:
+\url{https://doi.org/10.2307/1911054}.
+The author's institutional abstract was checked at
+\url{https://cris.huji.ac.il/en/publications/potential-value-and-consistency/}.
+The pool helper could not retrieve the author PDF,
+\url{https://math1.math.huji.ac.il/~hart/papers/pot.pdf},
+because resolution returned HTTP 429.
+The dividend formula used here is independently derived.
+
+\item Young (1974), on Borda axioms:
+\url{https://doi.org/10.1016/0022-0531(74)90073-8}.
+Original full text was not obtained.
+Pooled LaTeX of Bubboloni and Gori,
+\url{https://arxiv.org/abs/2211.06626},
+discusses net outdegree at lines 145--225 and reproduces Young's
+characterization at lines 2054--2056.
+
+\item Stern and Tettenhorst,
+\url{https://arxiv.org/abs/1709.08318},
+already give a Shapley least-squares/Hodge treatment.
+The recorded pooled-LaTeX slices, lines 88--115 and 561--581,
+project marginal-contribution fields on the coalition hypercube.
+The current projection instead fits restricted-game pair gaps with
+a fixed skew matrix on agent identities.
+The difference in objects does not itself establish novelty.
+\end{itemize}
+\ledger{49, 50}
+
+Saari's dictionary, the BT/Borda equivalence, classical dividend
+calculus, and the glove and assignment-game antecedents remain
+credited. Source attempts and searches are recorded in
+\url{ada/iterate_41_general_games.md}, lines 17--29,
+with logs
+\url{ada/run_051_balanced_sources.log} and
+\url{ada/run_053_balanced_direct_sources.log}.
+No PDF extraction was used when pooled LaTeX was available.
+The searches did not establish that the latest formulas are new.
+\ledger{49, 50}
+
+\section{Objections resolved and unresolved in the latest round}
+
+\begin{objection}
+The general projection proves a universal failure of P's BT credit.
+\end{objection}
+
+It does not. It optimizes calibrated \emph{linear win-gap} error over
+an unrestricted skew matrix under common-rate independent participation.
+BT order agrees with win order, but BT log-score gaps do not equal
+win gaps. Cardinal residuals do not automatically yield ordinal
+lower bounds. Actual inputs may also reveal coalition context, violating
+the fixed-comparator premise. \ledger{43, 50}
+
+\begin{objection}
+Higher dividend order alone determines the necessary observation order.
+\end{objection}
+
+It does not. The explicit \(d+1\) construction is a sufficient
+worst-case bound for a defined additive zero-sum protocol and is
+worst-case sharp when ties must be preserved.
+The strict-only metric has different requirements.
+Glove ordering has a linear threshold description yet violates binary
+skew compatibility; a ternary rule resolves that violation.
+Conversely, symmetric pair-dividend attribution can solve a
+two-additive game without expressing it through pair wins.
+\ledger{39, 46, 50}
+
+\begin{objection}
+The dividend repair is a practical replacement for P.
+\end{objection}
+
+No such result was obtained. Dividends are additional information,
+and direct attribution is cheaper when exact coalition values are
+already available. Whether visual local queries estimate the needed
+blocks accurately and economically is unmeasured.
+The construction answers a representation question. \ledger{46, 50}
+
+\begin{objection}
+The Bernoulli calculation gives the exact optimal error.
+\end{objection}
+
+Only for the four-agent case is attainment established for every
+interior participation rate. The general expression averages valid
+swapped-stratum lower bounds. Their simultaneous attainment, and the
+asymptotic optimum, remain unresolved. No independent battery-process
+assumption is attributed to P. \ledger{47, 50}
+
+\section{What remains open}
+
+The record now supports a general mathematical account in addition
+to the selected market fixtures. A fixed pair-win model has coupled
+membership coefficients; an arbitrary-game cardinal projection
+separates higher-order dependence from incompatible low-order terms.
+A dividend-plus-witness construction supplies exact ordinal recovery
+for bounded-order games in a specified richer protocol.
+The sharp dropout theorem supplies a strict-ranking stress test.
+The favorable shared Q-grid fit prevents interpreting these statements
+as broad failure of pair-local aggregation. \ledger{43, 46, 47, 50}
+
+The material remains empirically thin. No real judge, MARL training,
+Q trajectory, or matching P implementation was measured.
+The work does not establish that P's observations omit relevant
+context, that its judgments form a fixed comparator, or that
+semantic improvements would accelerate learning.
+Neither paper's conditional theorem, reported learning curves,
+or trading data is refuted. \ledger{14, 29, 50}
+
+Exact novelty remains unresolved, especially against the unavailable
+social-choice originals and existing cooperative-game approximation
+work. General strict-only ordinal representability is still not
+characterized. Fixed-scale probability-constrained fitting and
+nonlinear BT cardinal projection remain distinct open problems.
+Heterogeneous or correlated participation, minimal heterogeneous-market
+context, and joint-stratum Bernoulli attainment are also unresolved.
+The latest work does not replace the original conditional claims with
+an acceptance claim. \ledger{41, 49, 50}
+
+\section{The smallest next step}
+
+For theoretical novelty, compare the explicit projection, local-block
+construction, and dropout formula with the missing original
+Borda-dictionary texts and specialist work on cooperative-game
+approximation. The existing retrieval record is insufficient to settle
+that question. \ledger{49, 50}
+
+For relevance to P, the smallest discriminating experiment remains
+the frozen four-dropout-triple audit once inference access exists.
+Compare repetitions, a scarcity summary, and a third-agent observation
+at matched call and token budgets, using the same judge and a specified
+regularized BT estimator. Measure raw pair probabilities before fitted
+orders, and include direct symbolic attribution.
+This tests whether the fixed-input premise holds and whether the
+constructive context repair produces the predicted separation.
+\ledger{39, 50}
+
+A successful frozen-state test would establish a semantic effect for
+the measured judge and inputs. It would still require a later
+implementation and training study to establish embodied relevance
+or learning benefit. Until then, the supported outcome is a conditional
+theory-and-benchmark research line, with exact derivations, reproducible
+structural checks, and explicit limits. \ledger{50}
+
+\end{document}

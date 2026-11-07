@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Pair Q and P: Incentives and Rank Aggregation}
+\author{Ada}
+\date{}
+
+\begin{document}
+\sloppy
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies mechanism design for AI agents with private alignment and capability, including truthful type elicitation through peer scoring and obedience through transfers. P studies cooperative multi-agent credit assignment by having an external multimodal model compare egocentric observations, fitting a Bradley--Terry ranking, and using the resulting scores for potential-based reward shaping.
+
+\section*{Connexion pursued}
+The initial question was whether Q's revelation and peer-scoring results explain strategic robustness in P.  Both peers rejected that direct connexion because P elicits no reports from acting agents, while Q scores type reports against correlated reports by other agents (entries 2, 11, and 17).  They then pursued a pair-specific alternative: replace P's trusted comparator with privately informed peer comparators, induce truthful reports with a Q-style score, and aggregate those reports with P's estimator (entries 12, 19, and 23).
+
+\section*{What was found}
+Two claims are supported.  First, P's shaping term does not itself implement truthful or obedient behavior.  For
+\[
+ F_t=\gamma\psi_{t+1}-\psi_t,
+\]
+with terminal value $\psi_T=0$, its discounted sum is
+\[
+ \sum_{t=0}^{T-1}\gamma^t F_t
+ =-\psi_0+\gamma^T\psi_T=-\psi_0.
+\]
+Thus, when the initial boundary term is common across the alternatives, shaping preserves return differences and cannot repair an existing incentive-compatibility violation (entries 4, 5, 11, and 15).  A report-dependent $\psi_0$ is an explicit boundary transfer and is therefore an important exception (entry 7).
+
+Second, the proposed decentralized composition is not established by either paper.  Q's quadratic peer score can support truthful finite type reports when the designer knows separated conditional belief maps and transfers dominate gains from lying (entries 5, 13, and 17).  P's estimator converges under a common Bradley--Terry latent vector and graph connectedness, but only to the comparator's stable preference; equality with true contribution is assumed rather than recovered (entries 3, 13, and 18).  Consequently, truthful heterogeneous partial-view reports need not identify a common contribution ranking.  The missing result is an interface theorem specifying a calibrated peer-signal model, proving identification, and bounding estimation error from approximate incentives, misspecification, connectivity, and churn (entries 14, 18, 19, and 23).
+
+This round supplies a conditional identification result for that interface.  For a comparison edge $e=(i,j)$, let one realized latent comparison $X_e\in\{-1,+1\}$ be shared by all observers, with
+\[
+ \Pr(X_e=+1)=\sigma(c_i-c_j).
+\]
+Observer $r$ reports $Y_{er}\in\{-1,+1\}$ through conditionally independent symmetric noise satisfying
+\[
+ \mathrm{E}[Y_{er}\mid X_e]=a_rX_e,\qquad a_r>0.
+\]
+Then, for distinct observers $r,s$ judging the same draw,
+\[
+ q_{rs}:=\mathrm{E}[Y_{er}Y_{es}]=a_ra_s.
+\]
+An overlapping triple $r,s,u$ therefore identifies reliability without a truth label:
+\[
+ a_r=\sqrt{\frac{q_{rs}q_{ru}}{q_{su}}}.
+\]
+Positivity fixes the sign ambiguity, and connected observer overlap propagates the calibration.  Writing $m_e=\mathrm{E}[X_e]$, the first moment obeys $\mathrm{E}[Y_{er}]=a_rm_e$, so calibration identifies $m_e$, hence $p_e=(1+m_e)/2$.  Finally,
+\[
+ \operatorname{logit}(p_e)=c_i-c_j,
+\]
+and a connected agent-comparison graph identifies $c$ up to an additive constant (entries 27, 29, 32, 37, 38, and 41).  This rank-one moment argument is the nontrivial bridge absent from Q and P.
+
+The associated error rate is not yet proved.  The notes only sketch that Hoeffding bounds for empirical moments, Lipschitz inversion away from $a_r=0$ and $p_e\in\{0,1\}$, and inversion of the comparison Laplacian should yield separate ranking, calibration, and unilateral approximate-response terms.  A valid theorem must track minimum samples and distinct condition numbers for the observer-overlap and agent-comparison graphs (entries 27, 29, 34, and 37).  The material is therefore thin on finite-sample robustness even though the population identification argument is complete.
+
+\section*{Objections and disposition}
+The early concern that agents could gain by choosing visually legible actions was narrowed: valid terminal-zero potential shaping cannot change finite-episode returns, so such effects concern training, nonstationarity, or an invalid potential rather than equilibrium manipulation (entries 3, 4, and 11).  The direct use of Q for arbitrary comparison labels was also rejected because Q elicits epistemic types under known and distinct conditional peer-report distributions (entries 14 and 17).  Remaining objections are unresolved: Q does not supply unique equilibrium selection or rule out collusion; its belief maps and large penalties may be impractical; heterogeneous observers may violate Bradley--Terry; and agent churn may remove peers or disconnect the comparison graph (entries 13, 18, and 24).  Q is static, so its theorem does not directly cover within-episode entry and exit (entry 8).
+
+The new identification result resolves the earlier objection only under restrictive assumptions.  The reports must concern the same latent draw: independent Bradley--Terry redraws instead give $\mathrm{E}[Y_{er}Y_{es}]=a_ra_sm_e^2$, which does not separate reliability from edge strength (entries 29 and 33).  Correlated errors or unrestricted edge-dependent and asymmetric confusion also defeat the factorization (entries 28 and 38).  The approximate-response argument is only unilateral with peers held truthful, so it does not resolve coordinated deviations (entries 33 and 37).  Finally, there is a bootstrap circularity: Q requires the peer-report law $\beta$ in advance, while the proposed calibration learns relevant laws from reports whose truthfulness the score is meant to induce.  Cross-fitting alone supplies no truthful seed; anchors, trusted initialization, or a joint mechanism-learning theorem may be required (entry 41).
+
+\section*{Outside sources}
+No source outside Q and P was used in the ledger or peer note.
+
+\section*{What remains open}
+Population identification is now settled for shared draws, conditionally independent symmetric noise, positive connected observer overlap, and a connected comparison graph (entries 37, 38, and 41).  What remains open is whether those restrictions hold in MARS-Bench, how to bootstrap Q's belief map without trusted truth, how to select truth over collusive equilibria, how to obtain a constant-tracked finite-sample and misspecification bound with both graph condition numbers, and how to extend incentive compatibility through churn (entries 39, 41, and 42).  The material is thin beyond the conditional population theorem and does not establish a practical composition.
+
+\section*{Smallest next step}
+Collect repeated peer judgments of identical realized comparison items and test whether the cross-peer moment matrices are edge-invariant and rank one, as $q_{rs}=a_ra_s$ requires (entries 35, 38, and 42).  Passing is the smallest evidence needed to justify formalizing the two-graph finite-sample theorem; failure settles that the present label-free interface is unsuitable and calls for anchors or a correlated or asymmetric observation model.
+
+\end{document}

@@ -1,0 +1,1258 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Mechanism Guarantees and Funding Limits in Carbon Redispatch}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+Q proposes quadratic payments for welfare-maximizing resource
+allocation, claiming budget balance, individual rationality, and
+stochastic learning stability.
+P combines nodal carbon-intensity forecasting with spatial and temporal
+scheduling of mobile storage and distributed data centers.
+
+The proposed connexion was to use Q's incentives to implement P's
+coordinated dispatch among strategic resource owners. The investigation
+instead established a correction of Q and a conditional procurement
+analysis: carbon objectives, continued-service outside options, and
+strategic participation in clearing cannot be identified with the
+guarantees of a centralized optimizer or a prescribed learning rule.
+\ledger{1,5,9,10,31,42}
+
+This account consolidates the accepted results rather than presenting
+another mechanism extension. Review 54 rechecked the principal algebra
+and bounds but rejected unrestricted continuous-clock perfection.
+That claim is restricted below and the correction is recorded in
+entry 55. The auction ingredients are largely classical; theoretical
+novelty remains uncertified, and the operational evidence is thin.
+\ledger{44,52,54,55}
+
+\section{The correction of Q}
+
+\subsection{The advertised strict certificate is infeasible}
+
+\begin{claim}
+Q's conditions P1(ii) and P2(i) cannot hold simultaneously.
+\end{claim}
+
+For a nonzero resource-price perturbation \(q\), set every agent's
+perturbation to \(v_n=(0,q)\). Condition P2(i) requires
+\[
+\sum_m A_{nm}^{n}=0.
+\]
+Consequently, Q's displayed matrix satisfies
+\[
+v^\top\Psi v
+=-\sum_n q^\top\left(\sum_m A_{nm}^{n}\right)q=0.
+\]
+Thus \(v^\top(\Psi+\Psi^\top)v=0\), whereas P1(ii) requires
+\[
+v^\top(\Psi+\Psi^\top)v
+\leq-\upsilon N\|q\|^2<0.
+\]
+The contradiction is independent of the allocation-price blocks.
+It invalidates the simultaneous certificate, including the assertion
+that Eq.~(40) satisfies it. It does not establish impossibility of
+equilibrium implementation.
+See \url{ada/analysis.md}, lines 31--49.
+\ledger{2,8,13,23,54}
+
+\subsection{The explicit payment violates participation}
+
+At a feasible, complementary consensus-price profile, direct
+simplification of Q's Eq.~(40) gives
+\[
+\lambda=\alpha p,\qquad
+t_n=\beta_N\lambda^\top(x_n-c/N),\qquad
+\beta_N=\frac{N^2-N+1}{(N-1)^2}>1.
+\]
+Its own allocation derivative is only \(\lambda\).
+The equilibrium payment can therefore exceed the owner's surplus.
+
+Take
+\[
+N=3,\quad K=1,\quad \alpha=c=1,\quad
+\mathcal X_n=[0,2],
+\]
+\[
+V_1(x)=11x-\frac{x^2}{2},\qquad
+V_2(x)=V_3(x)=-\frac{x^2}{2}.
+\]
+The welfare optimum and an actual Nash equilibrium are
+\[
+x=(1,0,0),\qquad p=(10,10,10).
+\]
+Each own negative-utility Hessian is
+\[
+\begin{pmatrix}1&-1/2\\-1/2&1\end{pmatrix}\succ0.
+\]
+The allocation derivatives of utility are \((0,-10,-10)\), and
+the price derivatives vanish. These conditions prove optimality
+including the allocation lower bounds, without invoking Q's certificate.
+Nevertheless,
+\[
+(t_1,t_2,t_3)
+=\left(\frac{35}{3},-\frac{35}{6},-\frac{35}{6}\right),
+\qquad
+U_1=\frac{21}{2}-\frac{35}{3}=-\frac76.
+\]
+Budget balance holds while individual rationality fails.
+See \url{ada/analysis.md}, lines 51--93, and
+\url{ada/check_mechanism_001.log}, lines 1--9.
+\ledger{3,8,13,54}
+
+An opponents-only correction preserves every unilateral incentive:
+\[
+\Delta t_n=
+\frac{\alpha(\beta_N-1)}{N-1}\bar p_{-n}^{\top}
+\left(\bar x_{-n}-\frac{N-1}{N}c\right).
+\]
+At a complementary consensus equilibrium,
+\[
+t_n+\Delta t_n=\lambda^\top(x_n-c/N).
+\]
+Complementarity gives budget balance. If \(0\in\mathcal X_n\),
+concavity and welfare stationarity imply
+\[
+V_n(x_n)\geq\nabla V_n(x_n)^\top x_n
+\geq\lambda^\top x_n,
+\]
+so corrected utility is at least \(\lambda^\top c/N\).
+This repairs participation relative to zero consumption, conditional
+on the equilibrium characterization; it does not repair the strict LMI
+or establish participation relative to continued profitable operation.
+See \url{ada/analysis.md}, lines 95--120.
+\ledger{4,8,10}
+
+For completeness, the uncapped equilibrium characterization follows
+directly. For each resource write
+\(r=\sum_nx_n-c\) and \(P=\sum_np_n\). Then
+\[
+F_{p_n}=\frac{\alpha}{N-1}(Np_n-P-r),\qquad
+0\leq p_n\perp F_{p_n}\geq0.
+\]
+Summation gives \(r\leq0\). If \(r<0\), a positive maximum price
+would require \(Np_{\max}-P=r<0\), which is impossible.
+If \(r=0\), the nonnegative derivatives sum to zero and force
+consensus. Allocation stationarity becomes welfare stationarity.
+For \(N\geq3\), own strict concavity supplies sufficiency.
+Existence requires a welfare multiplier; unique allocation does not
+imply unique price.
+See \url{ada/analysis.md}, lines 122--130.
+\ledger{8,11,13}
+
+\subsection{A feasible replacement certificate and economic design}
+
+The accepted repair concerns a broader affine-resource problem:
+\[
+\min_{x_n\in X_n}\sum_nf_n(x_n)
+\quad\text{subject to}\quad
+\sum_nq_n\leq c,\qquad q_n=A_nx_n+e_n.
+\]
+Assume compact convex \(X_n\), differentiable
+\(\alpha\)-strongly convex costs with Lipschitz gradients, and a
+primal-dual solution. Signed contributions are permitted.
+Set \(M=\max_n\|A_n\|\), and choose
+\[
+d=\frac{\gamma+b}{N-1},\qquad
+w=\frac{\gamma}{Nb},\qquad a,b,\gamma>0,
+\]
+\[
+\alpha\frac{a\gamma}{b(N-1)}
+>\frac{(b+d)^2M^2}{4}.
+\tag{1}
+\]
+With \(P_{-n}=\sum_{m\ne n}p_m\) and
+\(Q_{-n}=\sum_{m\ne n}q_m\), use
+\[
+\begin{aligned}
+t_n^{\rm core}={}&
+\frac a2\|p_n\|^2-\frac a{N-1}p_n^\top P_{-n}\\
+&-bp_n^\top(q_n+Q_{-n}-c)
++dP_{-n}^\top q_n.
+\end{aligned}
+\]
+For public entitlements \(h_n\), independent of the owner's report,
+add
+\[
+\begin{aligned}
+r_n={}&\frac a{2(N-1)}\sum_{m\ne n}\|p_m\|^2\\
+&+\frac b{N-1}P_{-n}^\top(Q_{-n}-c)
+-\frac\gamma{N-1}P_{-n}^\top h_n.
+\end{aligned}
+\]
+The own operator is
+\[
+\begin{aligned}
+F_{x_n}&=\nabla f_n(x_n)+A_n^\top(-bp_n+dP_{-n}),\\
+F_{p_n}&=\frac a{N-1}(Np_n-P)
+-b\left(\sum_mq_m-c\right).
+\end{aligned}
+\tag{2}
+\]
+The price argument above gives feasibility, consensus and
+complementarity. Condition (1) implies own strict convexity.
+Thus equilibria implement the unique welfare allocation with
+\(\lambda=\gamma p\), and primal-dual solutions supply equilibria.
+Prices may remain nonunique.
+\ledger{15,17,23}
+
+At consensus the total tax reduces to
+\[
+t_n^*=\lambda^\top(q_n^*-h_n).
+\]
+For local baseline \(x_n^0\), let \(q_n^0=A_nx_n^0+e_n\).
+Convexity and stationarity give
+\[
+f_n(x_n^0)-f_n(x_n^*)-t_n^*
+\geq\lambda^\top(h_n-q_n^0),
+\]
+\[
+\sum_nt_n^*
+=\lambda^\top\left(c-\sum_nh_n\right).
+\tag{3}
+\]
+Hence \(h_n\geq q_n^0\) guarantees baseline participation.
+If the baseline is globally feasible, entitlements can also sum to
+\(c\), yielding budget balance. A baseline violating a new carbon
+target need not allow both conditions.
+See \url{ada/extension.md}, lines 7--105.
+\ledger{17,23}
+
+Q's printed P2--P4 are themselves compatible. In its original
+resource setting, replace \(r_n\) by
+\[
+\begin{aligned}
+r_n^{\rm diag}={}&
+\frac a{2(N-1)}\sum_{m\ne n}\|p_m\|^2
+-\frac b{N-1}\sum_{m\ne n}p_m^\top x_m\\
+&-\frac\gamma{N(N-1)}P_{-n}^\top c.
+\end{aligned}
+\]
+P2 holds with \(\theta^n=b\mathbf1\) and
+\(\zeta^n=\gamma\mathbf1\); P3 follows from the diagonal sums.
+P4 holds when \(\gamma\geq Nb\), because its quadratic sum vanishes,
+foreign-demand coefficients are nonpositive, and
+\[
+\sum_ma_m^n=(b-\gamma/N)c\leq0.
+\]
+Increasing \(a\) then ensures (1) for every \(N\geq2\).
+The equilibrium tax is
+\[
+t_n^*=
+\left(1+\frac{Nb}{\gamma(N-1)}\right)
+\lambda^\top(x_n^*-c/N).
+\]
+Q instead chooses \(a=\alpha\), \(b=\alpha/(N-1)\),
+\(\gamma=\alpha\), so its linear sum is positive for nonzero \(c\);
+Eq.~(40) fails P4(ii).
+The entitlement repair belongs to Q's broad quadratic basis but
+generally violates its narrower P3(ii) restriction.
+See \url{ada/extension.md}, lines 107--135.
+\ledger{15,17,54}
+
+Let \(A=\operatorname{diag}(A_n)\),
+\(\Pi=(I-\mathbf1\mathbf1^\top/N)\otimes I_K\), and
+\(W=\operatorname{diag}(I,wI)\). The symmetric derivative of \(WF\)
+is bounded below by
+\[
+\begin{pmatrix}
+\alpha I&-(b+d)A^\top\Pi/2\\
+-(b+d)\Pi A/2&waN\Pi/(N-1)
+\end{pmatrix}.
+\tag{4}
+\]
+The common-price cross term cancels because \(wNb=\gamma\).
+Condition (1) controls allocations and price disagreement, leaving
+a common-price nullspace. Common price must remain in the dynamics.
+
+For \(z=W^{1/2}s\) and \(G(z)=W^{1/2}F(W^{-1/2}z)\), put
+\[
+D_p=\frac{aN}{N-1},\qquad
+\ell=\frac{(b+d)M}{2\sqrt w},\qquad
+m=\frac{\alpha+D_p-\sqrt{(\alpha-D_p)^2+4\ell^2}}2>0.
+\]
+Then
+\[
+\begin{aligned}
+\langle G(z)-G(z'),z-z'\rangle
+\geq m\bigl(&\|x-x'\|^2\\
+&+\|\Pi(z_p-z_p')\|^2\bigr).
+\end{aligned}
+\tag{5}
+\]
+Comparing two variational-inequality solutions proves that a common
+componentwise price cap containing one uncapped equilibrium creates
+no spurious equilibria: allocations agree, prices are consensual,
+and slack resources still have zero price.
+This does not identify a sufficient public cap without cost bounds.
+See \url{ada/extension.md}, lines 137--167.
+\ledger{17,21,23}
+
+For Q's original rule, the analogous weight is
+\(\operatorname{diag}(I,(N-1)I/N)\). Its consensus block is
+\(\operatorname{diag}(\alpha,0)\), and each disagreement block is
+\[
+\alpha
+\begin{pmatrix}
+1&-\dfrac{2N-1}{2(N-1)^2}\\
+-\dfrac{2N-1}{2(N-1)^2}&1
+\end{pmatrix},
+\]
+positive definite for \(N\geq3\).
+This surviving monotonicity does not validate Q's printed
+VS-PBR representation or Euclidean nonexpansiveness assertion.
+See \url{ada/analysis.md}, lines 132--162.
+\ledger{7,8,17}
+
+\subsection{Conditional stochastic clearing}
+
+The repaired operator admits a standard two-batch extragradient bound:
+\[
+\begin{aligned}
+y_t&=\operatorname{proj}_Z
+\bigl(z_t-h[G(z_t)+\epsilon_t]\bigr),\\
+z_{t+1}&=\operatorname{proj}_Z
+\bigl(z_t-h[G(y_t)+\eta_t]\bigr).
+\end{aligned}
+\]
+Assume conditionally unbiased fresh errors, each with conditional
+second moment at most \(\sigma^2/B_t\), and
+\(h\leq1/(\sqrt8L)\), where \(L\) is a Lipschitz constant of \(G\).
+These assumptions are stronger than Q's variance statement alone.
+Define
+\[
+E_T=D_0^2+8h^2\sigma^2\sum_{t<T}B_t^{-1},
+\qquad D_0^2=\|z_0-z^*\|^2.
+\]
+For the average predictor allocation and exact natural residual,
+\[
+\mathbb E\|\bar x_T-x^*\|^2\leq\frac{E_T}{2hmT},
+\]
+\[
+\begin{aligned}
+\frac1T\sum_{t<T}\mathbb E\|\mathcal R_h(z_t)\|^2
+\leq\frac{4D_0^2}{h^2T}
++\frac{34\sigma^2}{T}\sum_{t<T}B_t^{-1},\\
+\mathcal R_h(z)=
+\frac{z-\operatorname{proj}_Z(z-hG(z))}{h}.
+\end{aligned}
+\tag{6}
+\]
+Projection optimality and Young's inequality give a one-step decrease
+with terms
+\[
+-\tfrac12\|z_t-y_t\|^2
+-\tfrac12\|z_{t+1}-y_t\|^2
+-2hmD_t^2+\frac{8h^2\sigma^2}{B_t},
+\]
+in expectation, where \(D_t^2\) is predictor allocation error plus
+price-disagreement error. Freshness cancels the second-batch cross
+terms. Telescoping yields (6).
+See \url{ada/extension.md}, lines 169--237.
+\ledger{17,23,54}
+
+Taking \(B_t=T\) uses \(2T^2\) samples per owner and \(2T\)
+aggregate broadcasts, with squared allocation error of order
+\(T^{-1}\). Summable inverse batch sizes give asymptotic mean-square
+allocation convergence, without unique multiplier convergence.
+For an \(L_R\)-Lipschitz certified saving function and a tightened
+target \(R+\rho\),
+\[
+\mathbb P\{\underline R(\bar x_T)<R\}
+\leq\frac{L_R^2E_T}{2hmT\rho^2}.
+\tag{7}
+\]
+This is neither exact deadline feasibility nor a finite-time
+settlement guarantee. It assumes compliant oracles and updates;
+convergence is not a strategic-compliance theorem.
+See \url{ada/extension.md}, lines 239--249.
+\ledger{17,21,31}
+
+\section{What the connexion to P requires}
+
+\subsection{Participation and causal carbon accounting}
+
+Let \(C_n(x_n)\) be private operating cost and \(x_n^0\) continued
+baseline operation. Baseline participation requires
+\[
+C_n(x_n)+t_n\leq C_n(x_n^0).
+\]
+Writing
+\[
+\Delta C(x)=\sum_n[C_n(x_n)-C_n(x_n^0)],
+\]
+budget balance requires \(\Delta C(x)\leq0\).
+Nonnegative external net funding must satisfy
+\[
+S\geq[\Delta C(x)]_+.
+\tag{8}
+\]
+For known costs and unrestricted transfers this bound is attainable.
+It is a transfer-feasibility statement, not private-information
+implementation. Q's zero-consumption outside option is different;
+continued operation and private migration costs are explicit
+assumptions of the extension, not primitives established by P.
+\ledger{5,9,10,17}
+
+P's frozen average nodal carbon intensities do not identify the
+causal effect of redispatch. The notes give a counterexample:
+region A initially supplies nine zero-carbon units and one coal unit,
+with coal marginal; region B supplies eight coal units and two gas
+units, with gas marginal. Coal has emission factor \(1\), gas \(2/5\).
+For separated or transfer-constrained regions, moving one demand unit
+from B to A changes the average-intensity objective by
+\[
+\frac1{10}-\frac{22}{25}=-\frac{39}{50},
+\]
+but increases actual emissions by \(1-2/5=3/5\).
+This is not a reanalysis of P's network.
+See \url{ada/analysis.md}, lines 233--241.
+\ledger{6,11,13}
+
+If a valid finite-shift causal response satisfies
+\[
+|m_j-\widehat m_j|\leq\delta_j,
+\]
+then net demand change \(d(x)\) has certified saving
+\[
+\underline R(x)
+=-\widehat m^\top d(x)-\sum_j\delta_j|d_j(x)|.
+\]
+The complete-information funding frontier is
+\[
+S_{\rm FI}(R)=
+\max\left\{0,\
+\min_{\substack{x\in\mathcal F\\\underline R(x)\geq R}}
+\Delta C(x)\right\},
+\tag{9}
+\]
+with infeasible targets assigned \(+\infty\).
+An interval for average NCI does not justify the causal assumption.
+P's binary storage routes also fall outside the convex repair.
+Its \(33.86\%\) comparison changes spatial dispatch capability between
+Cases 2 and 3; it does not isolate one-hour forecast latency.
+See \url{inputs/P.txt}, lines 885--935 and 1287--1292.
+\ledger{8,9,10,11}
+
+\subsection{Static funding attainment and its information boundary}
+
+For directed scalar shifts \(z_i\in[0,u_i]\), let certified saving
+be \(g_iz_i\), \(g_i>0\), and cost
+\[
+C_i(z_i)=k_iz_i+\frac{h_i}{2}z_i^2,\qquad k_i\geq0.
+\]
+Let \(V(R)\) minimize total cost subject to
+\(\sum_ig_iz_i\geq R\). The target binds.
+The repaired game with \(q_i=-g_iz_i\) and zero entitlements pays
+\(\lambda g_iz_i\), so uniform funding is \(\lambda R\).
+At differentiability points \(\lambda=V'(R)\); generally
+\(\lambda\in\partial V(R)\), and its rent is \(V^*(\lambda)\).
+\ledger{16,18}
+
+The opponents-only tax
+\[
+\chi_i=
+\frac{\underline h_i}{2g_i^2}
+\left(R-\sum_{j\ne i}g_jz_j\right)^2
+\]
+preserves the game and learning operator. With true curvature
+\(h_i\geq\underline h_i\) and upper-capacity multiplier \(\nu_i\),
+\[
+S-V(R)
+=\sum_i\frac{h_i-\underline h_i}{2}z_i^2
++\sum_i\nu_i z_i.
+\tag{10}
+\]
+Known curvature and no positive capacity multiplier give exact
+reimbursement and weak baseline participation at the static Nash
+equilibrium. With private curvature the first term is bounded by
+\(\frac12\sum_i(\overline h_i-\underline h_i)u_i^2\).
+Fixed positive supplements give strict participation at arbitrarily
+small additional funding, without proving entry or withdrawal
+robustness.
+\ledger{18,21,23}
+
+This gap is sharp for settlement observing only the same allocation,
+price and public bounds. The alternative type
+\[
+\widetilde h_i=\underline h_i,\qquad
+\widetilde k_i=\lambda g_i-\underline h_i z_i
+\]
+has the same equilibrium messages and cost
+\[
+\widetilde C_i(z_i)
+=\lambda g_i z_i-\frac{\underline h_i}{2}z_i^2.
+\]
+Participation for that indistinguishable type forces the payment
+used in (10). The argument needs a slope domain containing the
+alternative type; richer messages, histories or price encodings
+are outside it.
+See \url{ada/extension.md}, lines 321--343.
+\ledger{18,21}
+
+Two structural restrictions were also established.
+First, Q's original payment basis is affine in allocations at fixed
+price. With \(g_i=h_i=1\), \(R=2\),
+\[
+z^*=(v,2-v),\quad
+(k_1,k_2)=(4-v,2+v),\quad \lambda=4,
+\]
+exact reimbursement requires \(4v-v^2/2\) for owner 1.
+No fixed-coefficient affine settlement matches this throughout
+\(v\in(1/2,3/2)\).
+
+Second, for vector savings \(G_iz_i\), public curvature \(H_i\),
+interior optima and binding constraints, a public left inverse of
+\(G_i\) reconstructs
+\[
+z_i=L_i\left(R-\sum_{j\ne i}G_jz_j\right).
+\]
+Its quadratic rent can then be removed by an opponents-only term.
+If a nonzero kernel direction admits an open private-type family,
+opponents' messages remain fixed while the required quadratic
+extraction varies. Exact opponents-only extraction is impossible
+along that family. A full multidimensional DDC schedule generally
+lacks the required rank under one carbon target.
+See \url{ada/extension.md}, lines 345--375.
+\ledger{19,20}
+
+These are complete-information Nash statements, with costs unknown
+to the designer but treated as known among owners. They are not
+dominant-strategy or Bayesian truthfulness. At an interior equilibrium,
+known curvature and observed allocation and price even reveal
+\(k_i=\lambda g_i-h_iz_i\); no formal privacy follows.
+\ledger{21,23,31}
+
+\section{Strategic clearing changes the funding comparison}
+
+\subsection{Restricted reports and the larger oracle domain}
+
+Normalize saving to \(y_i=g_iz_i\), with cost
+\(a_iy_i+b_iy_i^2/2\), target \(\sum_i y_i=R\), and capacity \(v_i\).
+Consider terminal payment
+\[
+\pi_i^\theta=\lambda y_i-\frac{\theta b_i}{2}y_i^2,
+\qquad 0\leq\theta\leq1.
+\tag{11}
+\]
+If reports change only the intercept, clearing gives
+\(y_i=[(\lambda-\widetilde a_i)/b_i]_0^{v_i}\).
+At an interior allocation, full subtraction pays reported cost,
+and true profit is \((\widetilde a_i-a_i)y_i\).
+Thus static exact reimbursement is not truthful clearing:
+a changed oracle changes opponents' terminal messages.
+\ledger{23,25,30}
+
+Without binding capacities, on an active set \(A\), define
+\[
+T_A=\sum_{j\in A}b_j^{-1},\qquad
+d_i^\theta=(1+\theta)b_i+(T_A-b_i^{-1})^{-1}.
+\]
+Regular intercept equilibria satisfy
+\[
+\lambda_\theta=
+\frac{R+\sum_{i\in A}a_i/d_i^\theta}
+{\sum_{i\in A}1/d_i^\theta},
+\quad
+y_i^\theta=\frac{\lambda_\theta-a_i}{d_i^\theta},
+\quad
+\widetilde a_i^\theta=\lambda_\theta-b_i y_i^\theta.
+\]
+Inactive owners need \(a_i\geq\lambda_\theta\).
+The residual-price payoff is strictly concave across entry thresholds,
+giving global best responses in this domain.
+Capacities require comparison of stationary points and endpoints
+on every activation/saturation segment; the notes provide a finite
+test, not a general equilibrium-existence theorem.
+\ledger{25,30,33}
+
+For identical owners,
+\[
+S_\theta
+=aR+\frac{bR^2}{N-1}+\frac{\theta bR^2}{2N}.
+\tag{12}
+\]
+Static rent subtraction raises strategic funding in this example.
+It is not a universal ranking. With common curvature and all owners
+active, writing \(A_2=\sum_i(a_i-\bar a)^2\) and
+\(d_1=b(2N-1)/(N-1)\),
+\[
+S_1-S_0=\frac b2\left(\frac{R^2}{N}-\frac{A_2}{d_1^2}\right).
+\]
+The notes exhibit a six-owner reversal and inactive/capacity cases.
+For interior efficient and report allocations, excess true cost is
+\(\frac12\sum_i b_i(y_i^\theta-y_i^*)^2\).
+See \url{ada/reporting.md}, lines 68--181.
+\ledger{25,30,31}
+
+For two independent \(a_i\sim U[0,1]\), \(b_i=1\), \(R=2\),
+and unbounded nonnegative intercept reports, Bayesian equilibria are
+\[
+\widetilde a_U(a)=\frac76+\frac{2a}{3},
+\qquad
+\widetilde a_E(a)=\frac94+\frac a2.
+\]
+Expected funding is \(5\) and \(575/96\), respectively, and true cost
+is \(53/27\) and \(63/32\). If reports are instead restricted to
+\([0,1]\), both games admit pooling at report \(1\), with funding
+\(4\) and \(3\) and expected true cost \(2\).
+These are intercept-domain results. Unenforced gradient interfaces
+allow curve and curvature deviations, so they do not establish
+equilibrium on that larger domain.
+See \url{ada/reporting.md}, lines 183--221.
+\ledger{26,29,33,35}
+
+\subsection{A full-oracle counterexample and multiplicity}
+
+Allow continuous nonnegative nondecreasing marginal-cost offers,
+while keeping the public-curvature payment (11).
+Against affine opposing offers with slopes \(s_j>0\), residual price
+on an active segment is
+\[
+\lambda(y)=L_i-\frac{y}{H_{-i}},
+\qquad H_{-i}=\sum_{j\ne i}s_j^{-1}.
+\]
+Writing \(B_i=(1+\theta)b_i\), true payoff is
+\[
+U_i(y)=(L_i-a_i)y-
+\left(H_{-i}^{-1}+\frac{B_i}{2}\right)y^2.
+\tag{13}
+\]
+Without binding upper capacities, residual-price concavity makes
+the stationary quantity globally optimal against arbitrary monotone
+offer deviations. An affine ex-post family therefore satisfies
+\[
+s_i=B_i+\left(\sum_{j\ne i}s_j^{-1}\right)^{-1}.
+\]
+There is no positive finite-slope solution for two owners.
+For \(N\geq3\) and common curvature,
+\[
+s_\theta=(1+\theta)b\frac{N-1}{N-2}.
+\tag{14}
+\]
+This excludes neither two-owner fixed-state equilibria nor nonlinear
+or other equilibrium concepts.
+\ledger{35,36,37}
+
+For \(N=3\), \(R=3\), \(b_i=1\), \(v_i>3\), and independent
+\(a_i\sim U[0,1]\), offers \(a_i+2y\) under uniform payment and
+\(a_i+4y\) under subtraction are ex-post equilibria on the full
+monotone-oracle domain. All owners remain active. Exact expectations
+are
+\[
+\begin{array}{l|c|c}
+\text{Benchmark}&\mathbb ES&\mathbb E C\\ \hline
+\text{Known costs}&35/12&35/12\\
+\text{Efficient BIC minimum}&17/4&35/12\\
+\text{Truthful uniform, not IC}&9/2&35/12\\
+\text{Clarke-pivot VCG}&127/24&35/12\\
+\text{Uniform oracle equilibrium}&15/2&47/16\\
+\text{Subtraction oracle equilibrium}&2303/192&569/192
+\end{array}
+\tag{15}
+\]
+Every row saves \(3\). These values follow by substituting
+\(y_i=R/N+(\bar a-a_i)/s_\theta\) and using
+\(\mathbb E\sum_i(a_i-\bar a)^2=1/6\).
+This repairs the earlier action-domain error without claiming
+uniqueness or a universal settlement ranking.
+\ledger{37,40,54}
+
+At one fixed state with identical costs and \(q=R/N\), symmetric
+affine equilibria instead permit
+\[
+t=a+\left(B-s\frac{N-2}{N-1}\right)q\geq0,
+\qquad
+\lambda=a+\left(B+\frac{s}{N-1}\right)q.
+\]
+For two owners, \(t=a+Bq\) works for every \(s>0\), giving
+unbounded equilibrium funding. This does not contradict the
+ex-post-family restriction.
+\ledger{35,36}
+
+The notes extend unbounded funding to every \(N\geq2\), despite
+capacities exceeding the entire target. For \(0<e<q\), \(K>0\), use
+\[
+m(x)=a+Bq+\frac K{R-(N-1)x},
+\qquad
+0\leq x\leq\frac{R-e}{N-1},
+\]
+then its tangent extension. These offers are finite, nonnegative,
+continuously differentiable and strictly increasing on compact
+domains. Residual price gives, for \(e\leq y\leq R\),
+\[
+U_i(y)=K+\frac{Bq^2}{2}-\frac B2(y-q)^2.
+\]
+The tangent extension yields the same upper bound below \(e\);
+zero quantity gives zero profit. Hence \(q\) is a global best response,
+with funding
+\[
+S_\theta
+=aR+\left(1+\frac\theta2\right)\frac{bR^2}{N}+NK.
+\tag{16}
+\]
+Per-report smoothness does not bound this family uniformly.
+Common offer restrictions or a price ceiling change the conclusion.
+This is equilibrium multiplicity, not nonexistence.
+See \url{ada/oracle_frontier.md}, lines 31--175.
+\ledger{36,40,54}
+
+Payment (11) is not general pay-as-bid, which integrates the entire
+reported curve. For a regular strictly increasing pay-as-bid offer,
+raising an interior portion below the allocated endpoint can leave
+allocation and endpoint price unchanged while increasing payment.
+That argument excludes the stated smooth interior form, not flat,
+mixed or tie-dependent equilibria. The funding reversal above
+therefore does not contradict uncertain-demand discriminatory-auction
+rankings.
+\ledger{28,41}
+
+\section{Truthful benchmarks, uncertainty and deadlines}
+
+\subsection{The bounded-type funding frontier}
+
+For independent slopes on finite public supports, let
+\(y^*(a)\) be efficient and
+\(X_i(a_i)=\mathbb E_{-i}y_i^*(a_i,a_{-i})\).
+The Bayesian incentive envelope gives
+\[
+U_i(a_i)=U_i(\overline a_i)
++\int_{a_i}^{\overline a_i}X_i(s)\,ds.
+\]
+Interim participation and Fubini imply
+\[
+\mathbb ES\geq
+\mathbb EW(a)+
+\sum_i\int_{\underline a_i}^{\overline a_i}F_i(s)X_i(s)\,ds.
+\tag{17}
+\]
+This is attained by endpoint-normalized Groves payments
+\[
+\pi_i^*(a)=
+W(\overline a_i,a_{-i})
+-\sum_{j\ne i}C_j(y_j^*(a);a_j).
+\tag{18}
+\]
+They are DSIC on the specified domain and ex-post individually
+rational, with zero utility for the top type.
+Thus (17) is the efficient BIC, interim-IR minimum, not a minimum
+over inefficient mechanisms. It equals \(23/8\) in the two-owner
+uniform-type example and \(17/4\) in (15).
+It differs from removal-based VCG when the highest type still supplies.
+Correlated types require a different analysis; correlation alone
+does not justify surplus extraction.
+\ledger{26,30,38}
+
+For committed bounded scalar reports, only \(N+1\) clearing calls
+are needed for (18). If every feasible approximate clearing has
+objective error in \([0,\epsilon]\), pay
+\[
+\pi_i^{\rm alg}
+=W_{\rm alg}(\overline a_i,a_{-i})
+-\sum_{j\ne i}C_j(y_j^{\rm alg};a_j)+\epsilon.
+\]
+A deviation cannot produce true aggregate cost below \(W(a)\);
+truthful cost is at most \(W(a)+\epsilon\).
+This proves \(\epsilon\)-DSIC and ex-post IR. With actual and
+counterfactual errors \(\delta_0,\delta_i\),
+\[
+S_{\rm alg}-S^*
+=\sum_i\delta_i-(N-1)\delta_0+N\epsilon
+\in[\epsilon,2N\epsilon].
+\tag{19}
+\]
+Expected-error versions yield expected incentive and participation
+bounds, not realized IR.
+\ledger{38,40,54}
+
+For public quadratic curvatures and capacities, aggregate-price
+bisection on
+\[
+[0,P],\qquad
+P=\max_i(\overline a_i+b_iv_i),\qquad H=\sum_i b_i^{-1},
+\]
+followed by interpolation of bracket allocations gives exact total
+feasibility and objective error at most \(HP^2\,4^{-L}\).
+The count is \((N+1)(L+2)\) aggregate supply evaluations and one
+aggregate objective evaluation per clearing.
+This requires commitment or verifiable execution; secure aggregation
+alone does not enforce truthful subsequent computations.
+
+Conditionally, a trusted feasible-output optimizer with allocation
+error \(K/T\) and \(M_C\)-Lipschitz objective needs
+\(T\geq KM_C^2/\epsilon^2\). The earlier batch schedule then uses
+\(2(N+1)T^2\) samples per owner and \(2(N+1)T\) broadcasts,
+plus feasibility repair and objective evaluation.
+See \url{ada/oracle_frontier.md}, lines 192--277.
+\ledger{38,40,42}
+
+\subsection{Pivotality is interface-dependent}
+
+With unbounded intercept reports, a hard target and no outside
+supplier, owner \(i\) is pivotal if
+\[
+r_i=R-\sum_{j\ne i}v_j>0.
+\]
+At a sufficiently large report, rivals saturate and
+\[
+U_i^\theta
+=(\widetilde a_i-a_i)r_i
++\frac{1-\theta}{2}b_i r_i^2\longrightarrow\infty.
+\]
+There is no finite pure report equilibrium, even while centralized
+dispatch is feasible. Robust coefficients \(g_i=\widehat g_i-\delta_i\)
+and a deadline buffer can create this condition before total
+capacity is exhausted. Nonpivotality is necessary for avoiding this
+obstruction, not sufficient for general equilibrium existence.
+\ledger{27,30}
+
+If a uniform shortfall bound is \(K/T\), the Markov buffer
+\(\rho_T=\sqrt{K/(\varepsilon T)}\) stays within the nonpivotal margin
+\[
+M_{\rm cap}=\min_i\sum_{j\ne i}g_iu_i-R
+\]
+when
+\[
+T\geq\frac{K}{\varepsilon M_{\rm cap}^2}.
+\tag{20}
+\]
+Here the sum is over \(j\ne i\), so equivalently
+\(M_{\rm cap}=\min_i\sum_{j\ne i}g_ju_j-R\).
+The latter expression specifies the intended margin.
+This is a sufficient compatibility test requiring uniform \(K\),
+not a universal minimum deadline or strategic guarantee for
+unbounded reports.
+\ledger{30,31}
+
+Bounded-type truthful procurement remains finite through pivotality.
+For two independent \(a_i\sim U[0,A]\), physical costs
+\(a_iz_i+hz_i^2/2\), capacity \(u\), and
+\[
+D=\frac{R+\rho}{g-\delta}\in[0,2u],
+\qquad
+w_0=\min\{h\min(D,2u-D),A\},
+\]
+define
+\[
+M_1=\frac{Aw_0}{3}-\frac{w_0^3}{3A}
++\frac{w_0^4}{6A^2},
+\qquad
+M_2=w_0^2-\frac{4w_0^3}{3A}
++\frac{w_0^4}{2A^2}.
+\]
+Clipping the efficient difference allocation and integrating the
+triangular type-difference distribution gives
+\[
+\begin{aligned}
+\mathbb EW(D)&=\frac{AD}{2}+\frac{hD^2}{4}
+-\frac{M_1}{2h}+\frac{M_2}{4h},\\
+\mathcal B(D)&=AD+\frac{hD^2}{4}
+-\frac{M_1}{h}+\frac{M_2}{4h}.
+\end{aligned}
+\tag{21}
+\]
+The second expression is the efficient BIC funding minimum.
+When \(h\min(D,2u-D)\geq A\),
+\[
+\mathcal B(D)=AD+\frac{hD^2}{4}-\frac{A^2}{8h}.
+\]
+For \(A=h=1,u=2\), it is \(23/8\) at \(D=2\),
+\(63/16\) at \(D=5/2\), and \(8\) at full capacity.
+It is finite and continuous through pivotality, though a kink can
+occur at \(D=u\) when \(hu<A\).
+Substituting the chosen deadline buffer gives a policy-dependent
+funding curve, not an optimal deadline theorem.
+A certified residual backstop of marginal cost \(p_0\) can instead
+bound clearing price and owner funding by \(p_0R\), while changing
+dispatch. No optimal backstop or elastic-target policy was derived.
+See \url{ada/oracle_frontier.md}, lines 279--338.
+\ledger{39,40,42,54}
+
+\section{The restricted normalized-clock benchmark}
+
+\subsection{One observed path and the corrected incentive claim}
+
+For costs
+\[
+C_i(y)=a_iy+\frac{b_i}{2}y^2,\qquad
+a_i\in[\underline a_i,A_i],\quad 0\leq y\leq u_i,
+\]
+procure feasible total \(D\). Public bounds, curvature and capacities
+define
+\[
+S_i(p)=\left[\frac{p-a_i}{b_i}\right]_0^{u_i},
+\qquad
+\bar S_i(p)=\left[\frac{p-A_i}{b_i}\right]_0^{u_i}.
+\]
+A fixed descending clock starts at
+\(P=\max_i(A_i+b_iu_i)\).
+Continuous bids cannot increase with time, must remain between the
+public top- and lower-type supplies, and cannot relinquish clinched
+quantity; reaching that boundary clears the auction.
+Delivery and these action restrictions must be enforceable.
+\ledger{45,46,48}
+
+Let \(\lambda\) be actual clearing, and let
+\[
+\bar S_i(\lambda_i^+)+s_{-i}(\lambda_i^+)=D,
+\qquad y_i^+=\bar S_i(\lambda_i^+).
+\]
+Use the highest clearing price on a plateau. The pointwise floor
+implies \(\lambda\leq\lambda_i^+\), so the necessary rival segments
+have already been observed. Monotonicity alone does not ensure this:
+the notes give an early-stopping counterexample.
+Pay
+\[
+\pi_i=\bar C_i(y_i^+)
++\int_\lambda^{\lambda_i^+}p\,d s_{-i}(p),
+\qquad
+\bar C_i(y)=A_iy+\frac{b_i}{2}y^2.
+\tag{22}
+\]
+Against sincere rivals, the integral is their cost change, hence
+\[
+\pi_i=W(A_i,a_{-i})-\sum_{j\ne i}C_j(y_j).
+\]
+Thus one observed path computes the normalized Groves payment,
+including for pivotal owners, without deleting capacity or running
+counterfactual auctions.
+See \url{ada/clock.md}, lines 7--72.
+\ledger{46,48}
+
+Ordinary clinching pays increments of
+\(q_i(p)=[D-s_{-i}(p)]_+\) at the current price, including an initial
+mandatory tranche at \(P\). Equation (22) subtracts its top-type rent
+\[
+K_i=A_i^{\rm clk}(y_i^+)-\bar C_i(y_i^+).
+\]
+Against sincere rival paths, marginal payment is the decreasing
+residual inverse-supply price. Increasing true marginal cost selects
+the sincere quantity. The supply floor ensures that the top-type
+threshold is reached before any permitted stopping, making \(K_i\)
+independent of the owner's deviation. This supports sincere bidding
+as an ex-post equilibrium from the prescribed initial state.
+\ledger{48,54,55}
+
+\begin{objection}
+The earlier claim of ex-post perfection at every legal continuous-clock
+history prescribed an inadmissible continuation.
+\end{objection}
+
+A legal history can leave an owner's current bid above true supply.
+Truncating sincere supply by historical upper and clinched lower
+bounds then requires an immediate downward jump, whereas the stated
+continuous game forbids jumps. Ausubel's discrete formulation permits
+drops and does not resolve this mismatch.
+
+The continuation/perfection statement is therefore restricted to
+histories where every owner's current bid is at most its true supply,
+so the truncated sincere path is continuous and admissible.
+At these histories, rival continuations depend on price and fixed
+historical bounds; the normalization is either already fixed or is
+reached on that continuation before permitted stopping.
+Histories with a bid above true supply are not covered.
+Allowing downward jumps would require an assignment rule for jumps
+crossing the target and a proof; neither is claimed.
+This correction overrides the broader wording in
+\url{ada/clock.md}, lines 74--82.
+\ledger{54,55}
+
+On the sincere path, (22) gives ex-post IR and the efficient Bayesian
+funding minimum. Expected funding in (15) is \(17/4\), compared with
+ordinary nonpivotal clinching's \(127/24\).
+For the two-owner example in (21), normalized funding remains finite
+at \(23/8\), \(63/16\), and \(8\).
+These are bounded-type normalizations, not a new general auction
+principle or dominant strategies against arbitrary responsive rivals.
+\ledger{47,48,50,55}
+
+\subsection{Finite-grid and noisy-response guarantees}
+
+Use a descending grid of width at most \(\Delta\), including
+\(0,P,A_i,A_i+b_iu_i\). Interpolate bid vectors and settle at the
+interpolated exact-total clearing point. Public top-type curves are
+then exact between grid points, preserving counterfactual coverage.
+
+Integrating the inverse of sincere interpolated supply defines a
+synthetic cost \(\widetilde C_i\). The hinge representation of
+quadratic supply gives
+\[
+\sup_y|\widetilde C_i(y)-C_i(y)|
+\leq E_i=\frac{\Delta^2}{4b_i}.
+\tag{23}
+\]
+Each hinge contributes at most \(\Delta^2/8\) of interpolation area;
+the inverse-area identity yields the cost bound.
+Against sincere rivals, (22) is Groves payment for their synthetic
+costs. Replacing the owner's synthetic cost by its true cost changes
+each candidate objective by at most \(E_i\), so any admissible
+adaptive path gains at most \(2E_i\).
+Adding the fixed supplement \(E_i\) gives ex-post IR.
+This is approximate ex-post equilibrium from the initial state,
+not finite-grid perfection or exact DSIC.
+\ledger{49,50,54}
+
+With \(E=\sum_iE_i\), supplemented funding \(S_\Delta\), and exact
+normalized funding \(S^*\),
+\[
+C(y_\Delta;a)-W(a)\leq2E,
+\qquad
+|S_\Delta-S^*-E|\leq2(N-1)E.
+\tag{24}
+\]
+These follow by comparing actual and top-type synthetic objectives.
+Funding can fall below the exact efficient benchmark because
+allocation is only approximately efficient.
+The simultaneous round count is at most
+\[
+J=\left\lceil\frac P\Delta\right\rceil+2N+1.
+\]
+Taking \(\Delta\leq\min_i\sqrt{2b_i\epsilon}\) gives regret at most
+\(\epsilon\). One path is not uniformly faster than committed
+bisection's logarithmic precision dependence; no wall-clock advantage
+was demonstrated.
+See \url{ada/clock.md}, lines 88--133.
+\ledger{49,52}
+
+For the additional stochastic model, suppose unbiased sub-Gaussian
+intercept estimates have variance proxy \(\sigma_i^2\).
+Supply error at most \(e_i\) is preserved by clipping to the public
+envelope and the running minimum. On a simultaneous accuracy event,
+replace (23) by
+\[
+E_i=Pe_i+\frac{\Delta^2}{4b_i}.
+\]
+Independent batches of size
+\[
+B_i\geq
+\frac{2\sigma_i^2}{b_i^2e_i^2}
+\log\frac{2NJ}{\delta}
+\tag{25}
+\]
+make that event have probability at least \(1-\delta\).
+All potential grid batches are indexed in advance, making the
+event uniform over adaptive stopping. Counts are at most \(JB_i\)
+samples per owner and \(J\) rounds.
+Expected regret is bounded by \(2E_i+2Pu_i\delta\);
+a further fixed \(Pu_i\delta\) supplement gives expected participation,
+not realized IR on every bad sample path.
+These oracle-quality assumptions are not supplied by P's data or Q's
+variance assumption and do not enforce sampler compliance.
+See \url{ada/clock.md}, lines 136--157.
+\ledger{49,50,54}
+
+Only prices and aggregate supply need be broadcast, but settlement
+and activity enforcement need owner-level bid histories. An interior
+sincere bid reveals \(a_i=p-b_iS_i(p)\) to its observer.
+There is no formal privacy guarantee, withdrawal right, coalition
+guarantee, baseline-integrity result, or extension to arbitrary
+multidimensional or binary schedules.
+See \url{ada/clock.md}, lines 159--165.
+\ledger{50,52}
+
+\section{Evidence, sources and attribution}
+
+The numerical checks supplement the proofs, rather than establish
+generality or operational validity. The retained logs cover exact
+Q counterexamples and repaired parameters; stochastic clearing trials;
+indistinguishable-type funding bounds; intercept best responses with
+entry and capacities; 540 full-oracle rational profiles; 42 smooth
+high-funding constructions; 60 approximate-Groves cases; and 12
+robustness-frontier quadratures.
+The clock log covers 36 exact grid profiles, 480 monotone deviations,
+the exact funding expectations, pivotal targets, and 100 bounded-noise
+activity repairs. See
+\url{ada/check_extension_001.log},
+\url{ada/check_funding_interface_001.log},
+\url{ada/check_reporting_002.log},
+\url{ada/check_oracle_frontier_002.log}, and
+\url{ada/check_clock_001.log}.
+The earlier printed count of 84 smooth constructions was corrected
+to 42. No check reproduces P's IEEE-33 application.
+\ledger{8,18,21,30,40,50}
+
+Outside sources were obtained or attempted through the shared paper
+pool, preferring LaTeX where available. The following comparisons
+constrain the contribution.
+
+\begin{itemize}
+\item
+Lu et al., \emph{A Market-Clearing-based Sensitivity Model for
+Locational Marginal and Average Carbon Emission},
+\url{https://arxiv.org/abs/2401.13182}, already distinguish average
+attribution and marginal response and are cited by P.
+The average-versus-causal objection is not independently novel.
+\ledger{6,11}
+
+\item
+\url{https://arxiv.org/abs/2308.08195} already studies joint
+electricity-carbon pricing with welfare, budget and participation
+guarantees. Its inspected outside option is no trade.
+Muthirayan et al.,
+\url{https://arxiv.org/abs/1901.02923}, address baseline reporting;
+only the abstract and introduction were audited.
+\ledger{6,11}
+
+\item
+Wei and Anastasopoulos,
+\url{https://arxiv.org/abs/2012.00952}, already combine Nash
+implementation, budget balance, participation and learning.
+Hsieh et al.,
+\url{https://arxiv.org/abs/2003.10162}, discuss increasing-batch
+stochastic extragradient. The repaired learning argument is a
+specialization of established projection methods.
+\ledger{21}
+
+\item
+Chen,
+\url{https://yanchen.people.si.umich.edu/published/Chen_ET_2002.pdf},
+Healy--Mathevet,
+\url{https://doi.org/10.3982/TE898},
+and Duggan--Roberts,
+\url{https://www.sas.rochester.edu/psc/duggan/papers/pollution3.pdf},
+supply precedents for informed-agent Nash mechanisms, stable
+price-quantity designs, and distinct complete-information and
+Bayesian pollution mechanisms. Inspected results do not justify
+zero-rent independent-private-type procurement.
+\ledger{28,31}
+
+\item
+Vanelli--Como--Fagnani,
+\url{https://arxiv.org/abs/2504.13920}, contain the same unit-curvature
+activation-price payoff as the full-subtraction intercept game,
+distinguish whole-path discriminatory payment, and restrict offer
+spaces. The report-game reduction is not a new auction concept.
+Johari--Tsitsiklis, Baldick--Grant--Kahn, Holmberg and Genc were
+screened through primary records or abstracts; failed full-text
+retrievals prevent theorem-level comparisons.
+\ledger{28,41}
+
+\item
+Ausubel, \emph{An Efficient Ascending-Bid Auction for Multiple Objects},
+\url{https://doi.org/10.1257/0002828043052330}, was retrieved and
+checked for divisible goods, activity, sincere continuation and
+Theorem 1. The pooled text is identified by
+\url{sources/other/3229bbf22d505f7c9cb7}.
+Ordinary clinching is classical. Its discrete activity formulation
+does not prove the rejected all-history continuous claim.
+The bounded normalization and grid estimates are derived in the notes.
+See \url{ada/clock.md}, lines 167--185.
+\ledger{47,51,54,55}
+
+\item
+Klemperer--Meyer,
+\url{https://doi.org/10.2307/1913707},
+Green,
+\url{https://doi.org/10.2307/2950646},
+Wilson,
+\url{https://doi.org/10.2307/1884475},
+and Back--Zender,
+\url{https://doi.org/10.1093/rfs/6.4.733},
+are essential supply-function and divisible-auction predecessors.
+Krishna--Perry's \emph{Efficient Mechanism Design},
+\url{https://ratio.huji.ac.il/files/dp133.pdf},
+and Nisan--Ronen,
+\url{https://doi.org/10.1006/game.1999.0790},
+respectively anticipate efficient-payment normalization and strategic
+manipulation of computation.
+These comparisons were limited by failed full-text retrievals.
+The title-only Krishna--Perry request returned an unrelated 2025
+paper and was explicitly excluded from the audit.
+\ledger{51}
+
+\item
+Montero,
+\url{https://doi.org/10.1257/aer.98.1.496},
+already uses environmental-auction paybacks. Only the publisher
+abstract was checked; repeated pool failures blocked the full
+comparison. Other attempted classical retrievals, including
+Myerson, Cremer--McLean, Moore--Repullo, Kwerel, Varian and Walker,
+were not treated as unseen theorem evidence.
+\ledger{28,31,41,51}
+\end{itemize}
+
+Retrieval limits and searches are preserved in
+\url{ada/source_fetch_004.log} through
+\url{ada/source_fetch_015.log}.
+The exact independent-type funding envelope was derived directly;
+neither it nor the supply-function examples establish a new general
+mechanism theory. The theorem-level attribution audit remains open.
+\ledger{31,41,51,54}
+
+\section{What remains open and the smallest decisive step}
+
+The strongest supported result is Q's infeasible strict certificate
+and explicit negative-utility equilibrium, together with a feasible
+economic design and a weaker weighted stability certificate.
+The broader audit shows that static Nash implementation and compliant
+learning convergence do not establish strategic validity of an
+interactive procurement service. The restricted normalized clock
+provides a constructive benchmark, not an unrestricted-oracle solution.
+\ledger{42,52,54}
+
+The continuous-clock guarantee retained here is from-start ex-post
+equilibrium. Continuation optimality, or perfection restricted to the
+specified histories, requires every current bid to be no greater than
+true supply. Histories above true supply remain uncovered, and no
+target-crossing jump rule has been proved. Finite-grid guarantees
+remain from-start approximate ex-post equilibrium.
+The correction is recorded in entry 55; it does not retract the
+payment identities, funding comparisons or grid bounds.
+\ledger{49,54,55}
+
+The application material is thin. No causal carbon coefficient,
+private-cost support or baseline has been calibrated for P's network;
+no IEEE-33 reduction or latency advantage has been reproduced.
+Authenticated delivery, baseline and entry integrity, formal privacy,
+and multidimensional or integer feasibility remain unresolved.
+The scalar results cannot be promoted to those guarantees.
+\ledger{21,31,42,50,52}
+
+No further abstract extension is needed to settle the identified
+overclaim. The correction of Q can proceed to independent paper review
+using its displayed formula, the consensus-direction contradiction and
+the exact \(U_1=-7/6\) equilibrium. Any stronger novelty claim first
+needs the blocked theorem-level comparison with classical
+supply-function, efficient-payment and clinching results.
+\ledger{54,55}
+
+For the connexion to P, the smallest decisive operational test remains
+a baseline-controlled scalar DDC shift with fixed storage routes.
+Validate the finite-shift causal coefficient, capacities, type bounds
+and incremental costs; then compare committed clearing and normalized
+clock procurement at equal service, certified saving and deadline.
+Measure paired actual generation emissions, real cost, funding,
+owner utility and delivery feasibility.
+That test would establish whether the proven interface distinctions
+matter in P's setting. Its absence leaves a focused correction and
+conditional theoretical audit, rather than a validated carbon
+procurement application.
+\ledger{9,10,31,42,49,52,54}
+
+\end{document}

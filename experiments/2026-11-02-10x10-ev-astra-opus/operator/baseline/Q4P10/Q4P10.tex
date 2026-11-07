@@ -1,0 +1,50 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Q and P: Resource-Constrained Peer Discipline}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q develops mechanisms for unknown AI preferences and capabilities, including a peer-scoring construction that can support truthful reports and obedient actions under correlated private types.  P studies LLM agents in an Energy Society where communication consumes energy, energy sustains activity, and discussion can aid coordination while carrying self-serving recommendations (Ledger entries 1, 4, and 12).
+
+\section*{The connexion pursued}
+The notes pursue ``resource-constrained peer discipline'': use P as a modified testbed for Q when peer rewards must be funded from the survival resource whose allocation they are meant to improve.  This is a proposed connexion, not a result already tested by either paper (Ledger entries 2, 3, 5, and 12).
+
+\section*{What was found}
+For Q's particular quadratic peer score, let $\delta>0$ be the minimum squared separation between the peer-belief distributions induced by distinct reports.  If $M$ is the largest residual gain from a supported false report and $\Lambda$ is the score multiplier, the truthful report loses $\Lambda\delta$ in score.  Therefore Q's construction is guaranteed to deter such a report when
+\begin{equation}
+  \Lambda\delta \geq M,
+  \qquad\text{equivalently}\qquad
+  \Lambda \geq \frac{M}{\delta}.
+\end{equation}
+This is the derivation extracted from Q's proof, not a lower bound for every possible bounded mechanism (Ledger entries 4, 5, 6, and 16).
+
+Truthful reporting and obedience must be separated.  Q enforces obedience with off-path rewards of minus infinity, an instrument unavailable under P's limited-liability survival economy (Ledger entries 4, 7, and 12).  At a fixed history $h$, signal or type, and prescribed action, let $D(h)$ be the best continuation-inclusive gain from disobedience and let $B(h)$ be the largest feasible difference in continuation-inclusive transfers across outcomes under the specified funding rule.  Any incentive inequality for obedience requires
+\begin{equation}
+  B(h) \geq D(h);
+\end{equation}
+hence obedience is impossible at that history when $D(h)>B(h)$.  This is a necessary one-shot inequality, not yet a dynamic impossibility theorem (Ledger entries 9, 14, and 16).
+
+The funding rule determines $B(h)$.  Self-escrow ties it to the agent's current energy, pooled escrow ties it to group wealth and contribution or withdrawal rules, and externally minted scores need not face either cap.  Communication cost affects report incentives only when cost varies with the report, although every communication cost still enters net welfare (Ledger entries 9, 14, and 16).  P motivates the question because discussion reduces collisions but costs energy, while competitive agents sometimes make selfish recommendations; it does not supply evidence for peer scoring itself (Ledger entries 3, 6, and 12).
+
+\section*{Objections and resolutions}
+The first objection was that current P logs do not test Q: P elicits public, non-binding recommendations rather than private type reports, and its answer tasks can provide ex post ground truth.  The proposed resolution is a new experiment with planted correlated private signals, probabilistic reports, and known truth, rather than presenting existing P results as a falsification (Ledger entries 3, 6, and 10).
+
+The second objection was that budget balance alone does not cap a reporter's score scale by that reporter's wealth, because peers or pooled escrow may fund positive prizes.  The resolution was to define the feasible spread $B(h)$ relative to an exact funding rule and to compare self-funded, pooled, and externally minted rewards (Ledger entries 14 and 16).
+
+The remaining objection is unresolved: Q establishes existence of an equilibrium, not equilibrium selection or robustness to coordinated or pooling reports.  An oracle-score control and explicit audits for pooling and collusion can reveal the problem but do not solve it theoretically (Ledger entries 3, 7, 10, and 12).
+
+\section*{Sources outside Q and P}
+None were used.  The available synthesis consists of the ledger and Emmy's peer note; no separate Ada note was present beyond Ada's ledger entries.  The material is therefore thin, especially as evidence for the proposed experiment.
+
+\section*{What remains open}
+Open tasks are to define a precise dynamic, budget-balanced, limited-liability mechanism; estimate or identify $\delta$, $M$, and $D(h)$; determine the constrained implementation region; and separate private signal type from model identity, capability, and preference.  It also remains unknown whether planted signals represent natural LLM behavior and whether pooling, collusion, or equilibrium selection defeats the threshold prediction (Ledger entries 6, 12, and 16).
+
+\section*{Smallest next step}
+Specify a one-round self-escrow mechanism with its score normalization, then run a paired pilot with planted correlated signals at two wealth levels and a sweep of $\Lambda$, alongside an externally minted-score control.  Measuring truthful reports and obedience around $\Lambda=M/\delta$ would settle the narrowest open question: whether Q's construction-specific threshold appears when the reward spread is feasible and disappears when self-escrow makes it infeasible (Ledger entries 10, 12, and 16).
+
+\end{document}

@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T21:46:51Z",
+  "note_sha256": "e21a603b4bb39dab135d907571d997671859d3fc75adf4e314b6b043aedb329d",
+  "decision": "ITERATE",
+  "reason": "The note accurately traces a promising identifiability boundary, but the ledger contains only analysis and an experimental proposal, not evidence that DynaMAC\u2019s threshold fails consequentially under compliant attachment. A controlled simulation can resolve this with the available models and code.",
+  "action": "Run the proposed rigid-to-compliant simulation ablation with fixed grasp control, explicitly define attachment ground truth, and compare binary DynaMAC with an oracle attachment gate on transfer success and link-label calibration."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T21:49:03Z",
+  "note_sha256": "a21ab3f9bceea72c5b47a1665b8917e7c26ce491887de3177a2867690a75d356",
+  "decision": "PAUSE",
+  "reason": "The note accurately presents a plausible identifiability hypothesis, but the ledger contains no evidence of threshold disagreement or consequential transfer failure. A previous ITERATE requested the decisive ablation, and the peers could not perform it because the supplied workspace lacks the codebases, demonstrations, assets, and integrated Aero\u2013DynaBench environment. Resuming requires those inputs plus an explicit attachment-label definition.",
+  "action": null
+ }
+]

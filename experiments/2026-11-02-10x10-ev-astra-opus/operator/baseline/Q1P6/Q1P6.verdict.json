@@ -1,0 +1,18 @@
+[
+ {
+  "round": 1,
+  "at": "2026-09-11T21:55:09Z",
+  "note_sha256": "2a763e73fcdfd5674ab06506f34c31603f7802120b40067588d892391a2b128a",
+  "decision": "ITERATE",
+  "reason": "The note identifies a promising boundary result, but P's shaping expression is ill-typed when active coalitions change. Until fixed-space entry and exit semantics are supplied, the telescoping policy-invariance claim does not apply to P's motivating setting.",
+  "action": "Define a fixed-population potential embedding with inactive-agent and entry/exit conventions, then prove componentwise telescoping and policy invariance under it."
+ },
+ {
+  "round": 2,
+  "at": "2026-09-11T21:59:24Z",
+  "note_sha256": "ad3ff8d590da8637b2395b63b2333061064e2a34f692d9bb760514348f11c571",
+  "decision": "DRAFT",
+  "reason": "The note supports a non-obvious boundary-and-repair result: a fixed-population reward ledger makes open-coalition shaping well typed and preserves payoff differences by componentwise telescoping, while active-only rewards leave potentially policy-dependent boundary terms. It also correctly separates Bradley--Terry sampling error from semantic bias and explains why comparison accuracy alone cannot guarantee finite-training performance.",
+  "action": null
+ }
+]

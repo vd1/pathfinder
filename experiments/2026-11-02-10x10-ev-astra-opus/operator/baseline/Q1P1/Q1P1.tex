@@ -1,0 +1,581 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\emergencystretch=2em
+\newcommand{\E}{\mathbf{E}}
+\newcommand{\CVaR}{\operatorname{CVaR}}
+
+\title{Where finite-sample error enters zeroth-order CVaR:\\
+a correction to P, a lifted method, and Q as a lens}
+\author{ada\\[2pt]
+\small Consolidated note for pair Q1P1, ledger entries \#1 to \#28}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Both peers derived independently that the $e_s/\delta_{\min}$ term in P's
+limiting CVaR gap comes from one loose inequality in P's proof. P's own
+surrogate identity and a uniform bias bound give $O(\delta_{\max}+e_s)$,
+and atomic instances attain that order. The same step applies, in
+expectation, to two earlier papers in the same line. Lifting the
+Rockafellar--Uryasev threshold into each agent's decision gives a
+distributed method with P's communication pattern, a limit of
+$O(L\delta)$ at one sample per query, and exact convergence under a
+diminishing radius. The part that uses Q is a consistency and robustness
+contract for a predicted baseline in the estimator's zero-mean channel,
+with robustness from aggregation over candidates that include P's own
+estimator. The device is prior art, and Q contributes vocabulary and proof
+obligations, not a theorem. emmy did not check ada's entries \#26 and
+\#27 before the peer phase ended, and no verifier has reviewed the
+material.
+\end{abstract}
+
+\section{The pair}
+
+Q (Zhao, Tang, Chen, Ye, Zhu, Yin and Deng, \emph{Learning-Augmented
+Algorithms: Guarantees, Construction Mechanisms, and System-Level
+Implications}, arXiv 2609.04787) surveys algorithms that use fallible
+predictions while keeping formal guarantees, classifies constructions by
+five non-exclusive mechanisms P1--P5 (labels unrelated to the paper P) and
+theorems by whether an upper bound is matched by a lower bound in the same
+model (E1) or not (E0), and treats prediction cost and composition. P
+(Wang, Huang, Xu and Johansson, \emph{Distributed risk-averse optimization
+via CVaR}, arXiv 2609.04460) lets agents on a time-varying network minimise
+the average of local CVaRs with a zeroth-order method built on one-point
+gradient estimates of empirical CVaRs, and bounds the limiting expected gap
+by $O(\delta_{\max}+e_s/\delta_{\min})$, where $\delta_i$ are smoothing
+radii and $e_s$ measures the per-query sample size.
+
+\section{The connexion pursued}
+
+Both peers asked whether Q-style predictions can enter P with a
+consistency and robustness pair. emmy proposed a predicted VaR threshold in
+the Rockafellar--Uryasev (RU) representation (\#1). ada split P's
+one-point estimator into a bias channel (smoothing and finite-sample CVaR
+error) and a variance channel ($\|g\|\le dU/\delta$), and proposed to check
+whether P overstates the bias and, if it does, to enter a prediction as a
+baseline in the variance channel only (\#3). That check became the main
+result, and it concerns P alone (Section~\ref{sec:f1}). The lines that
+followed are a lifted method grown from the RU threshold (\#2, \#7;
+Section~\ref{sec:lift}), the baseline contract
+(Section~\ref{sec:baseline}), and a reading of P's objective through Q's
+composition proposition (Section~\ref{sec:comp}). Both peers judge that Q
+supplies discipline here (the Axis~B rule for comparing bounds, the P4
+checklist, the composition condition) and no theorem. emmy calls the pair
+``weak but real'' (\#11), and ada agrees (\#26). Line numbers refer to the
+source texts of P and Q supplied with the pair.
+
+\section{What was found}
+
+\paragraph{Notation.} Agent $i$ has loss $J^i(x,\xi)$, convex and
+$L_i$-Lipschitz in $x\in\mathcal X\subset\mathbf R^d$ for every $\xi$, with
+$|J^i|\le U_i$ (P.tex:496--501). Write $C^i(x)=\CVaR_{\alpha_i}[J^i(x,\xi)]$,
+$C=\frac1m\sum_iC^i$ and $C^*=\min_{\mathcal X}C$. $\mathcal X$ contains a
+ball of radius $r$ and has diameter $D_x$, and $\mathcal X_\delta$ is P's
+shrunk set, on which queries at radius $\delta$ stay feasible. $\hat C_s$
+is the empirical CVaR from $s$ fresh samples, and P's estimator is
+$g=(d/\delta)\hat C_s(y+\delta u)u$ with $u$ uniform on the unit sphere and
+independent of the batch. P's sampling condition (8) is
+$\frac1m\sum_i(s_k^i)^{-1/2}\le e_s$ (P.tex:424--427).
+
+\subsection{F1: the finite-sample term is $O(e_s)$, not
+$O(e_s/\delta_{\min})$}\label{sec:f1}
+
+emmy posted this as a correction to P (\#2), with the derivation in
+\texttt{emmy/\allowbreak F1\_\allowbreak bias\_\allowbreak artifact.md}.
+ada reports deriving it before reading \#2, agrees with every step, and
+gives the derivation in section F1 of
+\texttt{ada/\allowbreak derivations.md} (\#4). Let $\bar C_s=\E_\xi\hat C_s$, $\tilde C_s(x)=\E_\nu\bar C_s(x+\delta\nu)$
+and $C_\delta(x)=\E_\nu C(x+\delta\nu)$, with $\nu$ uniform in the unit
+ball. The argument uses only P's own ingredients.
+\begin{enumerate}
+\item The batch is fresh and independent of $u$, so
+$\E[g\mid\mathcal F_k]=\nabla\tilde C_s(y)$. P states this identity in the
+proof of its Theorem~2 (P.tex:876--878).
+\item $\tilde C_s$ is convex, since the empirical CVaR is convex for every
+sample realization (P.tex:875).
+\item P's CVaR estimation lemma and the DKW inequality give the uniform
+bound $\beta_s:=\sup_x|\bar C_s(x)-C(x)|\le(U/\alpha)\sqrt{2\pi/s}$.
+Because $\hat C_s$ is a minimum over $\tau$ of a sample average,
+$\E\hat C_s\le C$, so $\tilde C_s-C_\delta$ takes values in
+$[-\beta_s,0]$ (ada \#4). emmy used the two-sided $2\beta_s$ in \#2 and
+accepted the one-sided version in \#8.
+\end{enumerate}
+P bounds the bias part of $\E\langle g,y-z\rangle$ by
+$D_x\E\|e\|\le D_x(d/\delta)\beta_s$, which is where the factor
+$dD_x/\delta$ enters. Items 1 to 3 give instead
+\begin{equation*}
+\E[\langle g,y-z\rangle\mid\mathcal F_k]
+=\langle\nabla\tilde C_s(y),y-z\rangle
+\ \ge\ \tilde C_s(y)-\tilde C_s(z)
+\ \ge\ C_\delta(y)-C_\delta(z)-\beta_s .
+\end{equation*}
+The rest of P's proofs (the iterate relation, Theorem~1, the liminf
+proposition, Theorem~2 and the centralized corollaries) is unchanged
+(\#2). In P's constant
+\begin{equation*}
+D_1=2L_{\max}\delta_{\max}
++\sqrt{2\pi}\,dD_x\max_i\frac{U_i}{\alpha_i\delta_i}\,e_s
+\qquad\text{(P.tex:581)}
+\end{equation*}
+the finite-sample part becomes $\sqrt{2\pi}\max_i(U_i/\alpha_i)\,e_s$,
+smaller by a factor of at least $dD_x/\delta_{\max}\ge2d$, and $D_2$
+(P.tex:667) inherits the change. For P's simulation ($d=10$,
+$D_x\approx63$, $\delta=0.4$), \#2 puts the factor near $790$ with the
+two-sided bound. For Theorem~2 a value route suffices: the limit point
+$\bar x_\infty$ minimises $\tilde C_s$ over $\mathcal X_\delta$, so
+$C_\delta(\bar x_\infty)-C_\delta(z_\delta)\le\tilde C_s(\bar x_\infty)
++\beta_s-\tilde C_s(z_\delta)\le\beta_s$. The limiting gap is
+$O(\delta_{\max}+e_s)$. The transient $\rho_\beta(T)/\delta_{\min}^2$
+(P.tex:763) comes from $\|g\|\le dU/\delta$ and is unchanged.
+
+\paragraph{The order is attained by P's algorithm.} This is tightness for
+the algorithm on P's instance class, not a minimax bound (\#2, \#11). Take
+$\mathcal X=[-1,1]$ and $J=\frac{1-x}2A+\frac{1+x}2h$ with
+$A\sim\mathrm{Bernoulli}(\alpha)$. The empirical CVaR of $A$ is biased
+down by $c_s=\E(1-N/(\alpha s))_+\approx\sqrt{(1-\alpha)/(2\pi\alpha s)}$,
+$N\sim\mathrm{Bin}(s,\alpha)$, so with $h=1-c_s/2$ the true objective is
+minimised at $x=1$, the surrogate at $x=-1$, and the true excess is
+$c_s/2=\Theta(s^{-1/2})$. The loss $C(x)=\max(ax,-a'x)$ with $0<a<a'$
+gives a $\Theta(\delta)$ excess (\#2). In emmy's run ($\alpha=0.1$,
+$s=16$, $\delta=0.3$; \#5, \texttt{emmy/check\_tau\_lift.py}) P's
+estimator reached $x=-0.697$ in 200 of 200 runs, with true gap $0.1311$
+against a predicted $0.1313$. In ada's illustration (\#4,
+\texttt{ada/check\_bias.py}, $s=4$) the true gap at the surrogate
+minimiser falls from $0.043$ to $0.0016$ as $\delta$ goes from $0.4$ to
+$0.01$, while P's finite-sample term rises from $38$ to $1504$. ada notes
+that such instances illustrate the argument but cannot test an upper
+bound.
+
+\paragraph{Consequences for P.} P's remark that a diminishing $\delta_k$
+forces $s_k^i$ to grow (P.tex:795) is not supported: at fixed $s$ the
+limit is $O(e_s)$ as $\delta_k\to0$ (\#2; the growing sets
+$\mathcal X_{\delta_k}$ need care, F1 step~4). For accuracy $\varepsilon$
+with $\delta\sim\varepsilon$, the per-query sample size drops from
+$\varepsilon^{-4}$ to $\varepsilon^{-2}$ (\#16). P's abstract says the
+distributed bound ``matches the parameter dependence of the centralized
+benchmark'' (P.tex:230). Both are achieved bounds that carry the same
+removable factor, so in Q's Axis~B vocabulary (Q.tex:606) the comparison
+is E0 against E0 (\#2, \#11).
+
+\subsection{How far F1 reaches}\label{sec:reach}
+
+Both peers read these proofs from text extracted from the arXiv sources
+(emmy \#19(d); ada \#21(1) and (2)).
+\begin{itemize}
+\item arXiv 2203.08957 (Wang, Shen and Zavlanos, ICML 2022), Algorithm~1.
+Fresh samples $n_t\propto(T-t+1)^a$ are drawn after $u$. Lemma~5 routes
+the CVaR error as $(d_i/\delta)D_xB_1$ with $B_1$ of order
+$(1/\alpha)T^{1-a/2}$, and Theorem~1 gives regret $\tilde O(T^{1-a/4})$.
+With F1 that term is $O(T^{1-a/2}/\alpha)$, free of $d$, $D_x$ and
+$1/\delta$, so $\delta\sim T^{-1/4}$ and $\eta\sim T^{-3/4}$ give expected
+regret $O(T^{3/4}+T^{1-a/2}/\alpha)$, whose exponent is below $1-a/4$ for
+every $a\in(0,1)$. At $a=1/2$ this is $T^{3/4}$ against their $T^{7/8}$,
+and the samples needed for $T^{3/4}$ fall from about $T^2$ to about
+$T^{3/2}$. ada adds that their eqs.~(21)--(23) put a high-probability
+bound inside an expectation, so their ``with probability at least
+$1-\gamma$'' is, as written, an expectation argument (\#21(1)).
+\item arXiv 2512.22986 (Wang, Wang and Johansson, varying risk levels),
+read in the formula alt-text of its HTML version, routes the error the
+same way. Its Theorem~2 gives $\tilde O(T^{1-a/4}V_T^{1/5})$ for
+$a\le4/5$ and $\tilde O(T^{4/5}V_T^{1/5})$ above. With F1 the bound is
+$\tilde O(T^{4/5}V_T^{1/5}+T^{1-a/2}/\alpha_{\min})$ for every $a$, so the
+$T^{4/5}$ regime starts at $a=2/5$, about $T^{7/5}$ samples instead of
+$T^{9/5}$. The interval partition was not traced (\#21(2)).
+\item arXiv 2409.16866 (Wang, Wang, Hirche and Johansson, delayed
+feedback) has the same routing in its term $R_{22}$. emmy expects F1 to
+carry over but did not check the delay and path-length terms (\#19).
+\end{itemize}
+Both peers conclude that F1 is a lemma for this line of work and the
+strongest publishable piece of the pair (\#19, \#21, \#26).
+
+\subsection{Lifting the threshold: a method without the $e_s$
+floor}\label{sec:lift}
+
+Let $\phi_i(x,\tau,\xi)=\tau+\alpha_i^{-1}(J^i(x,\xi)-\tau)_+$, which is
+jointly convex, with $C^i(x)=\min_\tau\E_\xi\phi_i$. Each agent keeps a
+private $\tau_i\in T_i=[-U_i,U_i]$ and only $x$ is mixed, so P's
+communication pattern is unchanged (\#7).
+
+\paragraph{What failed.} Smoothing $x$ and $\tau$ jointly (emmy \#7) pays
+an $O(L\delta/\alpha)$ bias in $\tau$ on atomic losses. At $\alpha=0.1$
+and $\delta=0.3$ emmy's run stalled at $x=-0.104$, with 0 of 200 runs on
+the correct side, because $\phi(x,\cdot)$ has slope $1-1/\alpha$ below the
+lower atom and smoothing in $\tau$ penalises large $x$ (\#8,
+\texttt{emmy/check\_tau\_joint.py}). A hybrid with an exact
+$\tau$-subgradient at the sphere point reached the edge in every run, but
+its two components are gradients of different smoothings, so the
+recursion has no convex potential (ada \#15(b)).
+
+\paragraph{Exact estimators.} ada gave two estimators that are unbiased
+for the gradient of one jointly convex function
+$F_i(x,\tau)=\E_\nu\E_\xi\phi_i(x+\delta\nu,\tau,\xi)$, which smooths $x$
+only (\#15): Gaussian smoothing, which needs truncation, and ``ball2'',
+which takes the $x$-part at a sphere point and the $\tau$-part
+$1-\alpha^{-1}\mathbf 1\{J(y+\delta\nu',\xi')>\tau\}$ at an independent
+point uniform in the ball. emmy added a one-query version (\#19(b)): with
+$v$ drawn from $p(v)\propto(1-|v|^2)^k$ on the unit ball, $k\ge2$,
+\begin{equation*}
+g_x=\frac{2k}{\delta}\,\frac{\phi(y+\delta v,\tau,\xi)-b}{1-|v|^2}\,v,
+\qquad
+g_\tau=1-\frac1\alpha\,\mathbf 1\{J(y+\delta v,\xi)>\tau\}.
+\end{equation*}
+This is the likelihood-ratio identity with a compactly supported kernel.
+Queries stay in the $\delta$-ball, any baseline $b$ stays valid, and
+$\E|\nabla\log p|^2=kd(d+2k)/(k-1)$ against $d^2$ for the sphere, with a
+finite third moment if and only if $k>2$ (Monte Carlo within 1.5 percent
+in \#19; closed form in \#21(5)). emmy ran no prior-work search on it and
+makes no novelty claim.
+
+\paragraph{Bias.} Let $\nu$ be uniform in the ball or drawn from $p$.
+Then
+\begin{equation*}
+C^i\ \le\ C^i_\delta\ \le\ G_i\ \le\ C^i+L_i\delta_i,
+\qquad\text{where }G_i(x):=\min_{\tau\in T_i}F_i(x,\tau)
+\end{equation*}
+(emmy \#19(a), ada \#21(3)). Jensen's inequality gives the first
+inequality and $\min_\tau\E_\nu\ge\E_\nu\min_\tau$ the second. The third
+holds because $G_i(x)$ is the CVaR of the mixture law of
+$J^i(x+\delta\nu,\xi)$, each loss moves by at most $L_i\delta_i$
+(P.tex:497), and CVaR is monotone and translation equivariant. The
+plug-in surrogate lies in $[C_\delta-\beta_s,C_\delta]$ and the lifted one
+in $[C_\delta,C+L\delta]$, so the two methods bracket $C_\delta$ from
+opposite sides.
+
+\paragraph{Rates.} Centralized (ada \#21(4)): for any
+$\mathcal F_k$-measurable $b$ the estimators' conditional mean is a joint
+subgradient of $F$, and projected SGD on $\mathcal X_\delta\times[-U,U]$
+gives
+\begin{equation*}
+\E C(\bar x_K)-C^*\le L\delta\Bigl(1+\frac{D_x}r\Bigr)
++\frac{D_x^2+4U^2+(G_x^2+G_\tau^2)\sum_k\eta_k^2}{2\sum_k\eta_k},
+\end{equation*}
+with $G_\tau\le\max(1,1/\alpha-1)$ and
+$G_x^2\le(d/\delta)^2U^2(1+2/\alpha)^2$ at $b=0$. Distributed (emmy \#23,
+\texttt{emmy/F6\_distributed\_lift.md}, checked step by step by ada in
+\#26(a)), with P's mixing of $x$, private $\tau_i$ and any baseline:
+\begin{multline*}
+\E[C(\hat x_T)-C^*]\le\frac1m\sum_iL_i\delta_i
++\frac{L_{\max}\delta_{\max}\|x^*\|}r\\
++\frac{D_x^2+4U_{\max}^2+\bar S^2\sum_k\eta_k^2
++2(L/\alpha)_{\max}\frac1m\sum_k\eta_k\E\sum_j\|\bar x_k-x_k^j\|}
+{2\sum_k\eta_k}.
+\end{multline*}
+The proof is P's recursion (P.tex:575--580) with $D_1$ removed, since the
+bias now sits in the objective; with $(L/\alpha)_{\max}$ in place of
+$L_{\max}$ in the disagreement term, since $F_i(\cdot,\tau)$ is
+$(L_i/\alpha_i)$-Lipschitz; and with conditional second moments $S_i$ in
+place of $G_i$, $\bar S^2$ being the average of $S_i^2$. P's disagreement
+lemma (P.tex:529--536) is linear in $\eta_l\|g_l\|$, so it holds with
+$\E\|g_x^j\|$ in place of $G_j$, pathwise for ball2 and in expectation for
+the kernel. The limit has no $e_s$, no $1/\alpha$ and no sampling
+condition, and holds at $s=1$. The factor $1/\alpha$ enters only the
+transient.
+
+\paragraph{Diminishing radius (ada \#26(b); checked by ada only).} With
+$\delta_k$ nonincreasing, a moving comparator $z_k=(1-\delta_k/r)x^*$ and
+a fixed $t_i=\mathrm{VaR}_\alpha(J^i(x^*))$, the recursion telescopes
+distances, so the drifting surrogate does no harm, and
+$\E C(\hat x_T)\to C^*$ with one sample per query whenever
+$\delta_k\to0$, $\sum_k\eta_k=\infty$ and
+$\sum_{k<T}\eta_k^2/\delta_k^2=o(\sum_{k<T}\eta_k)$, for example
+$\eta_k=(k+1)^{-p}$ and $\delta_k=(k+1)^{-q}$ with $0<2q<p\le1$. ada
+reads P's remark at P.tex:795 as a property of the plug-in estimator, not
+of zeroth-order CVaR.
+
+\paragraph{Sample complexity (ada \#26(c); checked by ada only).} For
+accuracy $\varepsilon$ all variants need $T\sim\varepsilon^{-4}$
+iterations, which is also the number of communication rounds
+($\delta\sim\varepsilon$, $\eta\sim\varepsilon^3$). Total samples are
+$\varepsilon^{-8}$ under P's stated bound, $\varepsilon^{-6}$ for P's
+algorithm under F1, and $\varepsilon^{-4}$ for the lifted method. Batching
+cannot shorten the plug-in transient, whose variance comes from $u$.
+
+\paragraph{Numerics.} On the atomic instance of Section~\ref{sec:f1}
+($\alpha=0.1$), ball2 and the kernel with $k=3$ reach the edge of
+$\mathcal X_\delta$ in 200 of 200 runs at $\delta=0.3$ and $0.1$. There
+$\min_\tau F=C$ on $\mathcal X_\delta$, so the upward bias is not probed
+(\#19(c)). The distributed instance (\#24,
+\texttt{emmy/check\_dist\_lift.py}) adds tilts $\kappa_ix$, with
+$\kappa=(0.3,-0.3,0.1,-0.1)$, on a ring of $m=4$ agents. The tilts cancel
+in the network objective and put the agents' own minimisers at opposite
+ends. There were 100 runs of $2\cdot10^5$ iterations with residual
+baselines. Surrogate minimisers come from quadrature, and the kernel uses
+$k=3$.
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccc}
+\hline
+method & $\delta$ & $\bar x$ & surrogate min. & true gap & edge gap\\
+\hline
+P plug-in, $s=16$ & 0.3 & $-0.699$ & left end & 0.1312 & 0.0232\\
+ & 0.1 & $-0.890$ & left end & 0.1459 & 0.0077\\
+lifted ball2, $s=1$ & 0.3 & $+0.631$ & $+0.655$ & 0.0285 & 0.0232\\
+ & 0.1 & $+0.869$ & $+0.887$ & 0.0101 & 0.0077\\
+lifted kernel, $s=1$ & 0.3 & $+0.690$ & $+0.700$ & 0.0239 & 0.0232\\
+ & 0.1 & $+0.889$ & $+0.900$ & 0.0085 & 0.0077\\
+\hline
+\end{tabular}
+\end{center}
+The plug-in method ends at the wrong end in every run, and its gap grows
+as $\delta$ shrinks because $\mathcal X_\delta$ widens toward the
+surrogate minimiser (\#26(a)). Every lifted run ends on the correct side,
+with final disagreement at most $0.001$. Part of ball2's excess over the
+edge gap is the upward bias $G>C$, since its surrogate minimiser moves
+inside $\mathcal X_\delta$, and the rest is transient. The kernel's
+minimiser stays at the edge (\#24, and ada's correction \#27). The largest
+upward bias is $0.0128$, far below $L\delta$, so whether $L\delta$ is
+tight is untested, and no bound ranks the two surrogates (\#27).
+
+\subsection{A predicted baseline in the zero-mean
+channel}\label{sec:baseline}
+
+This is the part that uses Q (ada \#3, \#6, \#17; emmy \#5, \#13). Let
+$g^b=(d/\delta)(\hat C_s(y+\delta u)-b)u$ with $b$ fixed before $u$ and the
+batch are drawn.
+\begin{itemize}
+\item \emph{Bias.} $\E u=0$ gives $\E[g^b\mid\mathcal F_k]=\nabla\tilde
+C_s(y)$ for every $b$, so the F1 bound holds whatever the prediction
+(\#6).
+\item \emph{Variance.} $\|g^b\|^2=(d/\delta)^2(\hat C_s-b)^2$, and with
+$\zeta=|C(y)-b|$,
+$\E\|g^b\|^2\le3d^2\bigl(L^2+\zeta^2/\delta^2+4U^2/(\alpha^2s\delta^2)
+\bigr)$ against P's $d^2U^2/\delta^2$ (\#6). This is quadratic in
+$\zeta/\delta$, and at $\zeta=0$ it depends on $\delta$ only through
+$s\delta^2$.
+\item \emph{Robustness.} Clipping $b$ to $[-U,U]$ costs at most a factor
+of four against P's worst case, but ada noted that P's realized variance
+is small when $|C|\ll U$ (\#6), and the sensor run below shows a clipped
+wrong baseline to be catastrophic there (\#10). emmy's resolution (\#13),
+with constants from ada (\#17), is to aggregate over candidates that
+include $b=0$; clipping only keeps the losses bounded. With non-increasing
+weights $w_k=\eta_k^2(d/\delta)^2$ the weighted squared loss is
+exp-concave with parameter at least $1/(8U^2w_0)$, and the exponentially
+weighted forecaster's regret against the best of $M$ candidates is at most
+$8(d/\delta)^2\eta_0^2U^2\ln M$, paid once.
+\item \emph{Exact P4 reduction.} Q's P4 paragraph warns that a portfolio
+bound also needs ``a reduction from $\ell_t$ to algorithm cost, a
+compatible state or migration rule'' (Q.tex:595). Here the proof uses only
+$\sum_k\eta_k^2\|g_k\|^2$ along the realized iterates, and
+$(\hat C_k-b_j)^2$ is observed for every candidate after one query, so
+there is full information, no counterfactual state and nothing to migrate
+(\#6, \#5(3)).
+\end{itemize}
+The contract (\#13, accepted in \#17): consistency is the transient with an
+accurate baseline; robustness is P's realized transient plus
+$O((dU/\delta)^2\eta_0^2\log M)$; and the limit is $O(\delta+e_s)$ for
+every prediction, or $O(L\delta)$ after lifting (\#23).
+
+\paragraph{Sensor problem} (\#10, \texttt{ada/sim\_baseline.py}). P's
+setup: $m=16$, $d=10$, an Erd\H{o}s--R\'enyi graph with $p=0.4$ and
+Metropolis weights, $s=64$, $\alpha=0.5$, $\delta=0.4$,
+$\eta_k=c_1(k+1)^{-0.55}$ and $K=3000$. There were 3 seeds, $x^*$ is
+approximated by the true parameter, $c_0$ is a constant added to every
+loss, and $c_1=0.004$ is P's step. Entries are the final
+$\|\bar x-x^*\|^2$.
+\begin{center}\small
+\begin{tabular}{lcccc}
+\hline
+ & \multicolumn{2}{c}{$c_0=0$} & \multicolumn{2}{c}{$c_0=100$}\\
+baseline $b$ & $c_1=0.004$ & $c_1=0.02$ & $c_1=0.004$ & $c_1=0.02$\\
+\hline
+none (P) & 0.33 & 0.0004 & 17.2 & 59\\
+residual (own previous value) & 0.038 & 0.0001 & 0.11 & 0.0001\\
+oracle $C(y)$ & 0.048 & 0.0003 & 0.048 & 0.0003\\
+oracle plus noise, sd 1 & 0.039 & 0.0007 & 0.039 & 0.0007\\
+oracle plus noise, sd 10 & 0.055 & 0.038 & 0.055 & 0.038\\
+$\mathrm{clip}(10C+100,0,U)$ & 76 & 53 & 84 & 58\\
+FTL over none, residual, clip & 0.038 & 0.0001 & 0.19 & 0.0001\\
+\hline
+\end{tabular}
+\end{center}
+At P's step size the baseline lowers the final error about eightfold,
+mostly in the early transient. An offset of $100$, which leaves the
+minimiser unchanged, breaks P's estimator, which is not translation
+invariant, while the baseline variants are invariant up to the residual's
+first step (\#6(4), \#10). \#10 reads FTL as recovering the best candidate
+in every setting. In the table it matches the best of its pool in three
+settings and is within a factor of two in the fourth. The regret bound
+above is for exponential weighting, not FTL. With 3 seeds on one instance
+the numbers are qualitative (\#10).
+
+\paragraph{Prior art.} Subtracting the previous observed value is residual
+feedback (Zhang, Zhou, Ji and Zavlanos, Automatica 2022; \#5). Wang, Shen
+and Zavlanos use it for zeroth-order CVaR in their eq.~(15), and P cites
+that paper without using the device (\#10). A distributed version exists
+(\#5). Inside Q the nearest relative is the paragraph on convex
+optimization with predictable structure, whose optimistic bounds depend on
+the cumulative hint error $\sum_t\|g_t-\hat g_t\|_*^2$ (Q.tex:793--796);
+emmy reads it as already giving the property that a bad hint costs at
+most a constant factor (\#5(1)). Q calls its mechanisms ``non-exclusive and
+incomplete'' (Q.tex:208), and the baseline fits none of P1--P5, but both
+peers rest the claim on the contract and the exact P4 reduction, not on
+the device (\#5(1), \#6, \#16).
+
+\subsection{Composition: P's objective and network tail
+risk}\label{sec:comp}
+
+This is emmy's F3 (\#9, \texttt{emmy/F3\_composition.md}), which ada
+checked by hand (\#15(a)). P motivates CVaR by system-level tails (``a
+localized power surge can cascade into a grid-wide blackout'',
+P.tex:264) but minimises $A(x)=\frac1m\sum_i\CVaR_\alpha[J^i]$. For a
+common $\alpha$, the system risk $S(x)=\CVaR_\alpha[\frac1m\sum_iJ^i]$
+satisfies $S\le A$, so P's output carries the one-sided certificate
+$S(x_P)\le\min A+O(\delta+e_s)$. Q's additive-composition proposition
+needs $\mathrm{OPT}_{\mathrm{sys}}\ge\beta\sum_i\mathrm{OPT}_i$ with
+$\beta\in(0,1]$ (Q.tex:1035--1049), and here $\beta$ can be $0$. Let
+$\xi=\pm1$ with equal probability, $\alpha\le1/2$, $a\in(0,1)$,
+$x\in[0,1]$, $J^1=(1-x)a+x\xi$ and $J^2=(1-x)a-x\xi$. Then
+$A(x)=(1-x)a+x$ is minimised at $x=0$ and $S(x)=(1-x)a$ at $x=1$, so P's
+decision has system risk $a$ against an optimum of $0$. P's objective
+cannot see hedging across agents.
+
+P's appendix says that equality in subadditivity holds ``if and only if''
+the $J_i$ ``are positively correlated and move entirely in tandem''
+(P.tex:1283). The ``only if'' fails. With four equally likely states,
+$X=(0,1,0,5)$, $Y=(1,0,0,5)$ and $\alpha=1/4$, one has
+$\CVaR(X)=\CVaR(Y)=5$ and $\CVaR(X+Y)=10$, yet $X$ and $Y$ are not
+comonotone. Equality needs a common $\alpha$-tail scenario set. P's
+reading of the gap as ``the cost the system incurs to enable distributed
+computation'' (P.tex:1284) conflates two objectives (\#9). Minimising $S$
+distributedly, the question that needs both papers, is open. It needs
+synchronised scenarios and a scalar consensus per scenario, for which a
+shared lifted $\tau$ is the natural variable, but nothing has been
+analysed (\#9, \#16).
+
+\subsection{Checks made for this note}\label{sec:checks}
+
+All eight scripts in \texttt{ada/} and \texttt{emmy/} were rerun on
+11 September 2026 in a separate Python environment. The five that have
+stored outputs (\texttt{ada/sim\_baseline\_out.txt} and the four
+\texttt{.out} files in \texttt{emmy/}) reproduce them exactly, and
+\texttt{ada/check\_bias.py} and \texttt{emmy/check\_tau\_lift.py}
+reproduce the values quoted in \#4, \#5 and \#7, with one qualification.
+The Bernoulli bias matches its approximation within 1.5 percent at $s=16$
+($0.0982$ against $0.0997$) and to three digits only from $s=256$, which
+is slightly weaker than \#4 states. \texttt{emmy/check\_f1.py} also prints
+a short run on an $\alpha=0.5$ instance whose ergodic iterate is still far
+from the surrogate minimiser. No entry cites it, and this note does not
+use it. Rechecked by hand: the predicted gap $0.1313$ of \#5, which is
+$0.85\,c_s/2$ with the exact $c_s=0.3088$; the examples of \#9; the
+exponents of \#19 and \#21; and the orders of \#26(c). The P and Q
+passages quoted were read against the sources. The claims about arXiv
+2203.08957, 2409.16866 and 2512.22986 rest on the peers' reading and were
+not rechecked.
+
+\section{Objections and their status}
+
+\begin{itemize}
+\item \textbf{The baseline device is prior art} (emmy \#5(1)). Accepted
+(\#6, \#16), and the claim is limited to the contract. Resolved.
+\item \textbf{The disagreement term is pathwise in $G$} (emmy \#5(2)).
+Accepted (\#16) and redone in expectation for the lifted method with any
+baseline (\#23, checked in \#26(a)). Not written separately for the
+plug-in estimator with a baseline.
+\item \textbf{Clipping protects only against P's worst case} (ada \#6,
+\#10). Resolved by aggregation over a set containing $b=0$ (\#13, \#17).
+\item \textbf{Joint $\tau$-smoothing pays $O(L\delta/\alpha)$} (emmy \#8,
+on \#7). Accepted, resolved by $x$-only smoothing (\#15, \#19(b)), and
+confirmed numerically (\#19(c), \#24).
+\item \textbf{The hybrid has no convex potential} (ada \#15(b)). Not
+contested. The hybrid was superseded, and its good numerics have no proof
+(\#8, \#11).
+\item \textbf{One-sided bias} (ada \#4, on \#2). Accepted (\#8).
+\item \textbf{What ball2's excess consists of} (ada \#27, correcting
+\#26(a) after \#24). Resolved: part upward bias, part transient.
+\item \textbf{The high-probability claim of 2203.08957} (ada \#21(1)).
+This is ada's reading of extracted text. emmy did not contest it, and
+nobody else has checked it.
+\item \textbf{Tightness is specific to the algorithm} (\#2, \#11). Stands.
+There is no minimax lower bound.
+\item \textbf{The empirical support for the baseline is thin} (\#10,
+\#11). Stands. The sensor run used 3 seeds on a single instance and FTL
+in place of exponential weighting, and the lifted method was not run on
+P's sensor problem (\#16).
+\item \textbf{Whether Q contributes more than a lens} (emmy \#11). Both
+peers answer in substance that it does not (\#11, \#26).
+\end{itemize}
+
+\section{Sources from outside Q and P}
+
+\begin{itemize}
+\item Wang, Shen and Zavlanos (ICML 2022), arXiv 2203.08957, which P
+cites as \texttt{wang2022risk}. Used: Algorithm~1, Lemma~5, eq.~(21) of
+Appendix~A.4, and eq.~(15) (\#10, \#19, \#21), in
+Section~\ref{sec:reach}.
+\item Wang, Wang and Johansson, arXiv 2512.22986, read in its HTML
+source (\#21), in Section~\ref{sec:reach}.
+\item Wang, Wang, Hirche and Johansson, arXiv 2409.16866: proof structure
+only (\#7, \#19).
+\item Residual feedback, for positioning only: Zhang, Zhou, Ji and
+Zavlanos, Automatica 136:110006 (2022), arXiv 2010.07378 (\#5); arXiv
+2006.10820, listed by ada (\texttt{ada/derivations.md}); a distributed
+version in a Springer chapter linked in \#5; and Shen, Zhang, Nivison,
+Bell and Zavlanos, CDC 2021, cited through arXiv 2409.15680
+(\texttt{ada/derivations.md}).
+\item Standard tools: the DKW inequality and the RU representation, as
+used in P; Sundhar Ram et al., Lemma~4.1, through P; the exponentially
+weighted forecaster for exp-concave losses (\#17); and the
+likelihood-ratio identity (\#19(b)). REINFORCE baselines and
+prediction-powered inference are named as analogies only (\#3).
+\end{itemize}
+Searches are recorded in \#7, where a query for a joint $\tau$-lift
+returned P and the three papers above and nothing joint, and in
+\texttt{ada/derivations.md}. None was run for the kernel estimator or for
+earlier uses of the F1 step. These are search records, not novelty
+claims.
+
+\section{What remains open}
+
+The material on P is substantial but unreviewed: a short correction that
+both peers derived independently, its transfer in expectation to two
+published analyses, and a derived alternative method, supported
+numerically only by one-dimensional atomic instances and a 3-seed sensor
+run. The material on the pair is thin. Q enters as vocabulary (Axis~B), a
+checklist (P4) and a condition (additive composition), and nothing here is
+a result about Q.
+\begin{enumerate}
+\item \emph{High probability.} The theorems of 2203.08957 and 2512.22986
+are stated with probability $1-\gamma$. The F1 redo, and every bound for
+the lifted method, is in expectation (\#19, \#21, \#26).
+\item \emph{Reach.} 2409.16866 through its delay terms, the interval
+partition of 2512.22986, and Algorithms~2 and~3 of 2203.08957 (\#19,
+\#21).
+\item \emph{Last iterate} for the lifted method (\#23, \#26).
+\item \emph{Lower bounds.} None for either method; tightness of
+$L\delta$; a ranking of the ball and kernel surrogates (\#24, \#27).
+\item \emph{Unwritten details.} The plug-in method with fixed $s$ and
+$\delta_k\to0$ (F1 step~4); the distributed plug-in method with a
+baseline (\#5(2)); constants in $d$, $U$ and $\alpha$ (\#26(c)).
+\item \emph{Experiments.} More seeds for \#10, and the lifted method on
+P's sensor problem (\#16).
+\item \emph{System risk.} A distributed method for $S$ (\#9, \#16).
+\item \emph{Coverage.} The peer phase ended when the allowance ran out.
+emmy's last ready (\#25) covers entries up to \#24, so \#26(b), \#26(c)
+and \#27 have only ada's check, and no verifier round took place.
+\end{enumerate}
+
+\section{The smallest next step}\label{sec:next}
+
+For P, F1 is as settled as a written argument can be before review. Two
+readers derived it independently from P's own identities, and the plug-in
+fixed point lands where it predicts. Its weight beyond P rests on the claim
+that it improves published theorems (\#19, \#21, \#26). Two of those are
+stated with probability $1-\gamma$, and the peers redid only the
+expectation version. The smallest step that settles this is a written
+high-probability version of the F1 step for Algorithm~1 of 2203.08957.
+The per-step inequality holds in conditional expectation. What is missing
+is a concentration bound for the martingale
+$\sum_t\langle\hat g_t-\E_t\hat g_t,x_t-x^*\rangle$, whose increments are
+bounded because $\|\hat g_t\|\le dU/\delta$ and the domain is bounded, and
+the question is whether its deviation stays within the corrected rate when
+$\delta\sim T^{-1/4}$. If it does, F1 improves that theorem as stated,
+supplies the concentration step that ada found missing from its proof
+(\#21(1)), and transfers to 2512.22986. If it does not, the reach of F1
+beyond P holds in expectation only. The step is about a page of
+derivation and needs no computation. It leaves the lower bounds,
+2409.16866 and the system-risk question as listed above.
+
+\end{document}

@@ -1,0 +1,378 @@
+"""What every research thread shares: its status, inputs, helper, prompts and the sections its calls read.
+Split from research.py in the phase 9 sweep; research re-exports every name."""
+from __future__ import annotations
+import json, os, re, shutil, sys, tempfile, time
+from pathlib import Path
+from . import context, corpus
+from .context import Section
+
+
+PEERS = ("ada", "emmy")                      # the default; a campaign may name more in campaign.json
+TERMINAL = {"DRAFT", "PAUSE", "PAUSE-ON-ITERATE", "PAUSE-ON-REVISE"}
+
+
+class Stopped(Exception):
+    pass
+
+
+def _now():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def _atomic_write(path: Path, data: bytes):
+    """Publish a complete file; an interrupted replacement preserves the previous version."""
+    fd, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(name, path)
+    finally:
+        Path(name).unlink(missing_ok=True)
+
+
+def status(campaign, pair_id) -> dict:
+    p = campaign.thread_dir(pair_id) / "status.json"
+    return json.loads(p.read_text()) if p.exists() else {"pair_id": pair_id, "round": 0, "stage": "peers", "status": "new"}
+
+
+OVERSIZE_FAILURE = {"class": "input_too_large", "scope": "call", "retry": False, "reset_at": None}
+
+
+def _set(campaign, pair_id, **kw):
+    s = status(campaign, pair_id); before = dict(s); s.update(kw, updated=_now())
+    _atomic_write(campaign.thread_dir(pair_id) / "status.json", json.dumps(s, indent=1).encode())
+    from . import events
+    events.transition(campaign, pair_id, "research", before, s)
+    return s
+
+
+def _pair(campaign, pair_id):
+    return corpus.pair_rows(campaign, pair_id)
+
+
+HELPER_DIR = ".pathfinder"
+
+
+def install_helper(d: Path) -> str:
+    """Copy the ledger helper into the thread: agents run it as a script, because their sandbox may not
+    reach the environment that imports pathfinder (seen in J2, statarb and proofTree). Returns the command."""
+    from . import ledger as ledger_module
+    target = d / HELPER_DIR / "ledger.py"
+    source = Path(ledger_module.__file__).read_bytes()
+    if not target.is_file() or target.read_bytes() != source:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        _atomic_write(target, source)                  # an agent may be running the old copy right now
+    executable = (Path(sys.executable).resolve()
+                  if (d / "inputs/restricted-collection.json").exists() else sys.executable)
+    return f"{executable} {HELPER_DIR}/ledger.py --root ."
+
+
+def prepare(campaign, pair_id: str) -> Path:
+    """@planks("When the standard research entry point opens the investigation")"""
+    from . import collection
+    if collection.enabled(campaign):
+        return collection.prepare(campaign, pair_id, _pair(campaign, pair_id))
+    d = campaign.thread_dir(pair_id)
+    if (d / "status.json").exists():
+        install_helper(d)
+        return d
+    (d / "inputs").mkdir(parents=True, exist_ok=True)
+    from . import library
+    rows = _pair(campaign, pair_id)
+    for side, row in zip("QP", rows):
+        src = library.paper_text(campaign, row)     # fetched before any agent starts, outside every allowance
+        if src and src.exists():
+            shutil.copy(src, d / "inputs" / f"{side}{src.suffix}")
+            row = {**row, "text": corpus.stored(campaign, src)}   # this thread's copy; the corpus file is not rewritten
+        else:
+            (d / "inputs" / f"{side}.txt").write_text(f"Title: {row['title']}\n\nAbstract: {row['abstract']}\n")
+        (d / "inputs" / f"{side}.json").write_text(json.dumps(row, indent=1))
+    library.write(d, library.build(campaign, pair_id, rows))
+    from . import scan
+    row = _scan_row(campaign, pair_id)
+    known = scan.archived(campaign, row.get("context_sha256"))
+    if known and known.get("entry"):                  # what the scan's context said of this pair, frozen here
+        (d / "inputs" / PAIR_CONTEXT).write_text(
+            f"# What is known about this pair ({pair_id}, revision {known['revision']})\n\n{known['entry'].rstrip()}\n")
+    for a in campaign.peers:
+        (d / a).mkdir(exist_ok=True)
+    imported = campaign.raw.get("research_scheme") == "direct_eva" and campaign.raw.get("imported_research", False)
+    _set(campaign, pair_id, round=0 if imported else 1,
+         stage="ledger_review" if imported else "peers", status="running", reason=None, started=_now())
+    install_helper(d)
+    return d
+
+
+def thread_sections(d, inp, papers: bool = True, ledger: bool = True) -> list[Section]:
+    """The static head of a call in a thread: the two papers, then the ledger as it stands, each optional,
+    as file sections for the context builder. The same bytes for every caller that gets them, and across
+    calls a prefix of the previous call's, since the ledger only grows; a prompt cache serves everything
+    but what the ledger gained since. Whatever differs between callers goes after them."""
+    out = [Section(name, path=d / "inputs" / name) for name in (inp["Q"], inp["P"])] if papers else []
+    if ledger:
+        from .projection import ledger as project
+        out.append(Section("ledger.jsonl", path=d / "ledger.jsonl", project=project) if (d / "ledger.jsonl").exists()
+                   else Section("ledger.jsonl", text=""))
+    return out
+
+
+def _stage_attempts(campaign):
+    """@planks("Given a campaign sets \"stage_attempts\" to 1")
+    @planks("Given a campaign omits \"stage_attempts\"")
+    @planks("Then configuration validation fails before any provider call")
+    """
+    attempts = campaign.raw.get("stage_attempts", 2)
+    if type(attempts) is not int or attempts < 1:
+        raise ValueError("stage_attempts must be a positive integer")
+    return attempts
+
+
+def judge_sections(d, inp, note_name: str) -> list[Section]:
+    """The thread sections plus the note, for the verifier and the paper reviewer."""
+    return thread_sections(d, inp) + [Section(note_name, path=d / note_name)]
+
+
+def _consolidate_prompt(campaign, d, inp, pair_id, why, note_name, prior, extra=()) -> str:
+    """@planks("When the research workflow prepares its consolidation and verification requests")"""
+    sections = thread_sections(d, inp)
+    if (d / note_name).exists():                    # the account a repair or a next round must keep
+        sections.append(Section(note_name, path=d / note_name))
+    task = ("## your task\n\n" + _prompt(campaign, "consolidate", ACTOR=campaign.peers[0], WHY=why, NOTE=note_name, NOTE_STEM=pair_id,
+                                          PRIOR=prior, MATERIAL="Q, P and the ledger are above.")
+            + "\n\n" + evidence_pointer(campaign)
+            + "\n\nReturn the complete research account, the LaTeX document itself, in your response; do not write it to a file.\n")
+    return context.build(campaign, "consolidate", sections + list(extra) + [Section("", text=task, keep=True)],
+                         tools=True, cwd=d, unit=pair_id)
+
+
+READING = ("Files listed by path, size and sha256 are in your working directory, not pasted here. Read them in "
+           "slices with your tools (a line range or a search, not the whole file) as far as the task needs, read each "
+           "file once, and quote by path and line.")
+
+
+def evidence_by_reference(campaign) -> bool:
+    return not (campaign.raw or {}).get("inline_evidence", False)
+
+
+def evidence_pointer(campaign) -> str:
+    """Where the evidence is: consolidator and verifier read it with their own file tools."""
+    dirs = ", ".join(f"{a}/" for a in campaign.peers)
+    return (f"The peers' working files are in {dirs} beside you, and every path the ledger cites is relative to your "
+            "working directory: read whatever you need to check a claim. " + READING)
+
+
+def unfence(text: str) -> str:
+    """The LaTeX document inside a reply that wrapped it in a Markdown code block; other text unchanged."""
+    if text.lstrip().startswith("\\documentclass"):
+        return text
+    m = re.search(r"```[A-Za-z]*[ \t]*\n(.*?\\end\{document\})\s*\n```", text, re.S)
+    return m.group(1).strip() + "\n" if m and "\\documentclass" in m.group(1) else text
+
+
+def is_latex_document(text: str) -> bool:
+    return "\\documentclass" in text and "\\begin{document}" in text
+
+
+def normalize_consolidation(text: str) -> str | None:
+    """Extract a new complete document, never reinterpret a retained response.
+
+    Inline mentions of documentclass are not document boundaries. Clean replies
+    retain their exact bytes; existing fenced-document extraction stays intact.
+    """
+    candidate = unfence(text)
+    start = re.search(r"(?m)^\\documentclass\b", candidate)
+    begin = candidate.find(r"\begin{document}", start.end()) if start else -1
+    end = candidate.rfind(r"\end{document}")
+    if start is None or begin < 0 or end < begin:
+        return None
+    if start.start() == 0:
+        return candidate
+    return candidate[start.start():end + len(r"\end{document}")] + "\n"
+
+
+# Metadata is literal source data, never executable TeX. Greek glyphs need an
+# explicit text-safe representation under the engine's pdflatex build path.
+_METADATA_GREEK = dict(zip(
+    "αβγδεζηθικλμνξπρστυφχψωΓΔΘΛΞΠΣΥΦΨΩϵϑϕϱς",
+    "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi pi rho sigma tau upsilon phi chi psi omega Gamma Delta Theta Lambda Xi Pi Sigma Upsilon Phi Psi Omega varepsilon vartheta varphi varrho varsigma".split()))
+
+
+def _tex_escape(t: str) -> str:
+    """Escape literal metadata in one pass, including backslashes and Greek glyphs."""
+    escaped = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#",
+               "_": r"\_", "{": r"\{", "}": r"\}", "~": r"\textasciitilde{}", "^": r"\textasciicircum{}"}
+    escaped.update({c: "\\ensuremath{\\" + name + "}" for c, name in _METADATA_GREEK.items()})
+    return "".join(escaped.get(c, c) for c in t)
+
+
+def refresh_source_titles(campaign, pair_id: str, where: Path) -> bool:
+    """Refresh only a generated source header in a fresh stage, never its parent.
+
+    Dates, protocol, status and other metadata stay byte-identical. Caller must
+    provide a new working stage; historical artifacts are not migration targets.
+    """
+    path = where / "pathfinder-meta.tex"
+    if not path.exists():
+        return False
+    original = path.read_bytes()
+    lines = original.decode().splitlines(keepends=True)
+    positions = [i for i, line in enumerate(lines) if line.startswith(r"\pathfinderpapers{")]
+    if not positions:
+        return False  # Metadata without a source header is intentionally supported.
+    if len(positions) != 1:
+        raise ValueError("generated metadata has multiple source-title headers")
+    i = positions[0]
+    ending = "\r\n" if lines[i].endswith("\r\n") else "\n" if lines[i].endswith("\n") else ""
+    m = paper_meta(campaign.thread_dir(pair_id))
+    lines[i] = (f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}"
+                f"{{{m['P_ID']}}}{{{m['P_TITLE']}}}" + ending)
+    updated = "".join(lines).encode()
+    if updated == original:
+        return False
+    path.write_bytes(updated)
+    return True
+
+
+ARXIV_ID = re.compile(r"(\d{4}\.\d{4,5}|[a-z-]+(\.[A-Z]{2})?/\d{7})(v\d+)?")
+SOURCE_KINDS = {"github": "GitHub", "gitlab": "GitLab", "zenodo": "Zenodo", "doi": "DOI", "local": "local"}
+
+
+def paper_source(row: dict) -> tuple[str, str]:
+    """(link, label) for a paper in a document's header: an arXiv record links to its abstract; any other source
+    to its own url (none when it has none), labelled by its kind. No arXiv identifier is ever invented."""
+    pid = str(row.get("id", ""))
+    if ARXIV_ID.fullmatch(pid) and row.get("source_type") in (None, "arxiv"):
+        return f"https://arxiv.org/abs/{pid}", f"arXiv:{pid}"
+    kind = row.get("source_type")
+    label = f"{SOURCE_KINDS.get(kind, kind)}: {pid}" if kind else pid
+    return str(row.get("url") or ""), label
+
+
+def paper_meta(d: Path) -> dict:
+    """Q_ID, Q_TITLE, P_ID, P_TITLE from the thread's inputs, TeX-escaped, for the document prompts:
+    every document opens with the two titles linked to their sources (paper_source)."""
+    out = {}
+    for side in "QP":
+        m = json.loads((d / "inputs" / f"{side}.json").read_text())
+        out[f"{side}_ID"] = m.get("id", ""); out[f"{side}_TITLE"] = _tex_escape(m.get("title", ""))
+        url, label = paper_source(m)
+        out[f"{side}_URL"] = url.replace("\\", "/").replace("%", "\\%").replace("#", "\\#")
+        out[f"{side}_LABEL"] = _tex_escape(label)
+        out[f"{side}_ARXIV"] = label.startswith("arXiv:")
+    return out
+
+
+def status_line(campaign, pair_id: str) -> str:
+    """Where the thread stands, for the title block: ending or round, and how many ITERATE and REVISE so far."""
+    d = campaign.thread_dir(pair_id); s = status(campaign, pair_id)
+    v = json.loads((d / f"{pair_id}.verdict.json").read_text()) if (d / f"{pair_id}.verdict.json").exists() else []
+    it, rv = sum(x.get("decision") == "ITERATE" for x in v), sum(x.get("decision") == "REVISE" for x in v)
+    st = s.get("status", "new"); rnd = s.get("round", 1)
+    rounds = f"{rnd} round{'s' if rnd != 1 else ''}"
+    where = f"{st} after {rounds}" if st in TERMINAL else f"round {rnd}, verification pending"
+    return f"Research phase: {where}, {it} ITERATE, {rv} REVISE"
+
+
+def write_meta(campaign, pair_id: str, where: Path, extra: str = "", date: str | None = None,
+               protocol: bool = False, produced: str | None = None) -> Path:
+    """pathfinder-meta.tex beside a document: the style reads it, so every document opens with the pair,
+    the two papers linked to their sources, the date of production and the thread's state, none of it typed by an agent."""
+    m = paper_meta(campaign.thread_dir(pair_id)); line = status_line(campaign, pair_id) + (f". Edit phase: {extra}" if extra else "")
+    t = (f"\\pathfinderpair{{{pair_id}}}\n\\date{{{date or time.strftime('%Y-%m-%d')}}}\n"
+         f"\\pathfinderpapers{{{m['Q_ID']}}}{{{m['Q_TITLE']}}}{{{m['P_ID']}}}{{{m['P_TITLE']}}}\n"
+         f"\\pathfinderstatus{{{_tex_escape(line)}}}\n")
+    if not (m["Q_ARXIV"] and m["P_ARXIV"]):          # a source that is not arXiv names its own link and kind
+        t += f"\\pathfindersources{{{m['Q_URL']}}}{{{m['Q_LABEL']}}}{{{m['P_URL']}}}{{{m['P_LABEL']}}}\n"
+    if campaign.raw.get("pair_kind") == "paper-strategy":
+        # The strategy dossier is not an arXiv paper. Its provenance belongs
+        # in the introduction and bibliography, not a fabricated arXiv link.
+        t = "\n".join(line for line in t.splitlines()
+                      if not line.startswith("\\pathfinderpapers")) + "\n"
+    from . import protocol as section
+    if protocol and section.enabled(campaign):      # shared documents end with how they were produced
+        t += f"\\pathfinderprotocol{{{_tex_escape(section.describe(campaign, pair_id, produced))}}}\n"
+    where.mkdir(exist_ok=True); (where / "pathfinder-meta.tex").write_text(t); return where / "pathfinder-meta.tex"
+
+
+PEER_CALL_CAP = 1200             # one peer call's longest deadline by default, plus 30 s of grace
+
+
+def peer_call_cap(campaign) -> int:
+    """allowances.peer_call_seconds: one peer call's longest deadline (default 1200 s), whatever peer_seconds
+    leaves; nobel's single EV loop runs long single calls."""
+    v = (campaign.allowances or {}).get("peer_call_seconds", PEER_CALL_CAP)
+    if type(v) is not int or v < 1:
+        raise ValueError(f"allowances.peer_call_seconds must be a positive integer of seconds, got {v!r}")
+    return v
+
+
+def residual_timeout(campaign, timeout, failure) -> bool:
+    """A peer call that timed out at a deadline cut short by the allowance's remainder: the allowance is spent,
+    which is the end of the peers' turn, not a transport failure. A timeout at the full deadline still is one."""
+    full = min(float(campaign.allowances["peer_seconds"]), peer_call_cap(campaign))
+    return (failure or {}).get("class") == "timeout" and float(timeout or 0) - 30 < full
+
+
+PAIR_CONTEXT = "pair-context.md"
+
+
+def pair_context(d: Path) -> str:
+    """For a peer's prompt: the pair's frozen entry from the scan context (prior work, the open part), or ""."""
+    path = Path(d) / "inputs" / PAIR_CONTEXT
+    if not path.is_file():
+        return ""
+    return ("\n\n" + path.read_text().rstrip() + "\n\nThe scan judged this pair with that in view. Start from what "
+            "it leaves open and build on the prior work it names rather than redoing it; cite that work where you use "
+            f"it. The text is in inputs/{PAIR_CONTEXT}.\n")
+
+
+def _inputs(d: Path) -> dict:
+    """The file each side is read from: the full text added later (inputs/added.json) when there is one, else
+    the side's own file, a source before a text."""
+    added = d / "inputs" / "added.json"
+    chosen = json.loads(added.read_text()).get("inputs", {}) if added.is_file() else {}
+    rank = {".tex": 0, ".txt": 2}
+    return {s: chosen.get(s) or min((p for p in (d / "inputs").iterdir() if p.stem == s and p.suffix != ".json"),
+                                    key=lambda p: rank.get(p.suffix, 1)).name for s in "QP"}
+
+
+ROLE_BRIEFS = {"peer", "consolidate", "verify"}      # the roles a composable branch or joint thread briefs
+
+
+def _prompt(campaign, name, **vars):
+    from . import resources
+    vars.setdefault("DATE", time.strftime("%Y-%m-%d"))          # every document bears its date of production
+    text = resources.prompt(campaign, name, **vars)
+    if name in ROLE_BRIEFS and role_brief(campaign):
+        text += "\n\n" + role_brief(campaign)
+    budget = ((campaign.raw or {}).get("tool_call_budgets") or {}).get(name)
+    if budget:          # every turn of a session resends its whole context: fewer, better-aimed reads cost far less
+        text += (f"\n\nPlan for about {budget} tool calls in this call. Each turn resends everything read so "
+                 "far, so read in slices (a line range or a search), never a whole file you only need part of, "
+                 "do not reread what you have, and write your entry as soon as you can. Bound what you print: "
+                 "never print a whole file or an unbounded search, and cap output with head, sed -n or cut -c, "
+                 "since one long line of a data file can hold most of the file.")
+    return text
+
+
+def role_brief(campaign) -> str:
+    """A composable view's brief (prompts/branch.md or prompts/joint.md), or "" for an ordinary thread."""
+    from . import resources
+    raw = campaign.raw or {}
+    role = raw.get("composable_role") or ("joint" if raw.get("research_bundles") else None)   # any joint thread
+    return resources.prompt(campaign, role).strip() if role in ("branch", "joint") else ""
+
+
+def _check(stop):
+    if stop():
+        raise Stopped()
+
+
+def _scan_row(campaign, pair_id) -> dict:
+    from . import collection
+    if collection.enabled(campaign):
+        return {}
+    from . import scan
+    return next((r for r in scan.current(campaign) if r["pair_id"] == pair_id), {})   # a rescanned pair's latest score

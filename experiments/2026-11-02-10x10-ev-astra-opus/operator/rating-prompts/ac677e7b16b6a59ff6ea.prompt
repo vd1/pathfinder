@@ -1,0 +1,244 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+\title{When Room-Guided Detection Needs Visibility Evidence}
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+Q surveys learning-augmented algorithms and distinguishes component guarantees from the observation, cost, and interface assumptions required for system-level reasoning. P develops asynchronous room and door agents that construct a persistent scene graph, using estimated room walls to constrain door detection. \ledger{1, 7}
+
+The connexion pursued is narrower than applying learning-augmented analysis to perception: when a room hypothesis excludes evidence before door detection, what justifies concluding that no connection was omitted? Explaining every detected candidate establishes neither complete candidate generation nor complete topology. P's first filter rejects returns farther than \(0.15\,\mathrm m\) from estimated walls, and its final wall-containment test also depends on the room hypothesis. This makes registration, detection, and visibility separate proof obligations. \ledger{1, 3, 14}
+
+The recommendation is to pause the publication proposal. Review 10 requested a bounded investigation of certificates, silent failures, meaningful audit costs, and synthetic detector behavior. That round produced conditional certificates, an occlusion example, and diagnostic experiments, but no new learning-augmented algorithm or demonstrated performance advantage. The material is thin as a publication contribution. The standing arguments are retained below, followed by the additional investigation and its limitations. \ledger{10, 15, 16, 17}
+
+\section{Standing results and their limits}
+
+\subsection{A margin protects the first filter}
+
+Let \(W^*\) denote the true wall set and \(\widehat W\) the estimated set. Define directed discrepancy by
+\[
+\eta=\sup_{x\in W^*}\operatorname{dist}(x,\widehat W).
+\]
+If a supplied jamb sample has true position \(x\in W^*\), measured position \(p\), and error \(\lVert p-x\rVert\leq\varepsilon\), then
+\[
+\operatorname{dist}(p,\widehat W)
+\leq \lVert p-x\rVert+\operatorname{dist}(x,\widehat W)
+\leq\varepsilon+\eta.
+\]
+Consequently, P's first filter retains every such sample whenever
+\[
+\eta+\varepsilon\leq\delta,
+\qquad \delta=0.15\,\mathrm m.
+\]
+This rules out the blanket claim that arbitrarily small room error necessarily destroys recall. Discontinuity occurs at the gate margin: an arbitrarily small displacement can reject a sample already at the threshold. Neither the retention bound nor small mean fitting error establishes correctness of derivative thresholding, pairing, wall containment, or visibility. \ledger{3}
+
+\subsection{An abstract audit bound}
+
+Suppose there are \(N\) excluded regions, each containing an independently possible hidden witness. Only a unit-cost audit of a region reveals its witness bit; all-zero and singleton-positive instances are admissible. Require termination with an enumeration and prohibit reporting an unaudited witness. An always-correct procedure must inspect all \(N\) regions on the all-zero instance: changing an uninspected bit preserves its transcript while falsifying completeness. \ledger{2, 8}
+
+For a randomized procedure, let \(Q_j\) be the event that region \(j\) is inspected on the all-zero instance. Couple this run with the singleton-positive instance using the same random seed. The transcripts agree until region \(j\) is inspected. Singleton discovery probability at least \(1-\alpha\) therefore requires
+\[
+\Pr(Q_j)\geq1-\alpha,
+\qquad
+\mathbb E[A_0]
+=\sum_{j=1}^{N}\Pr(Q_j)
+\geq(1-\alpha)N.
+\]
+This is an elementary certificate argument, not a novelty claim. The derivation and its assumptions appear in \url{ada/analysis.md}, lines 52--84. \ledger{2, 7, 8}
+
+That note also records the corresponding sampling calculation: uniformly inspecting \(m\) regions discovers a singleton with probability \(m/N\). If a hidden door has witnesses in \(r\) distinct inspectable regions, its miss probability is
+\[
+\frac{\binom{N-r}{m}}{\binom{N}{m}},
+\]
+with zero numerator when \(m>N-r\). Redundant witnesses are an additional assumption, not a consequence of predictor confidence.
+
+\begin{objection}
+The audit model is not P's computational model. P already reads raw points to apply its filter, and its rectangular-room promise permits at most one door per wall. Neither independent hidden regions nor unit-cost information acquisition follows from those facts.
+\end{objection}
+
+This objection remains decisive. A soundly identified door can saturate the permitted degree of its wall. Cheap raw-data diagnostics may expose other omissions. Moreover, an always-correct certification comparator also pays mandatory information costs: the bound excludes audit savings on its declared family, not finite competitiveness. No geometric realization of arbitrary independent audits under all P's promises was obtained. \ledger{8, 10, 15}
+
+\subsection{Certificates may authorize pruning}
+
+The constructive proposal separates a fallible point estimate from a justified feasible set \(\mathcal V\) containing \(W^*\). Retain a sample whenever
+\[
+\inf_{W\in\mathcal V}\operatorname{dist}(p,W)\leq\varepsilon.
+\]
+Every supplied true jamb sample satisfying the noise bound survives. A valid directed-error cap \(\bar\eta\) gives the simpler conservative radius \(\bar\eta+\varepsilon\) around \(\widehat W\); without such a cap, retain the raw evidence. This protects information retention, not downstream detection. \ledger{6}
+
+The justification may use the same raw scan through sound set-membership reasoning; it need not use a statistically independent dataset. What fails is treating agreement among retained features as evidence that discarded features cannot matter. This distinction is developed in \url{ada/analysis.md}, lines 86--102. \ledger{6, 7}
+
+\subsection{A robust explorer does not repair missing adjacency}
+
+Eberle et al.'s graph-exploration model reveals all incident edges, their costs, and endpoint identities when a vertex is first visited. P obtains adjacency through fallible door detection and identities through room matching and loop closure. Replacing its mission monitor by that robust explorer therefore does not establish physical exploration robustness. Complete door detection would repair only part of the interface; sound validation, correct identities, and the prescribed movement-cost information remain necessary. \ledger{4, 5}
+
+\section{Additional findings from the bounded round}
+
+\subsection{Matched corners give a conditional gate certificate}
+
+For correctly matched true endpoints \(a,b\) and estimated endpoints \(\widehat a,\widehat b\), compare corresponding convex combinations:
+\[
+\begin{aligned}
+\operatorname{dist}((1-t)a+tb,[\widehat a,\widehat b])
+&\leq
+\left\|(1-t)(a-\widehat a)+t(b-\widehat b)\right\|\\
+&\leq
+(1-t)\lVert a-\widehat a\rVert
++t\lVert b-\widehat b\rVert\\
+&\leq
+\max\{\lVert a-\widehat a\rVert,\lVert b-\widehat b\rVert\}.
+\end{aligned}
+\]
+Thus a certified maximum matched-corner error \(B\) bounds directed discrepancy for matched rectangles, and \(B+\varepsilon\leq\delta\) certifies first-filter retention. This is the refinement requested in review 10. \ledger{10, 12}
+
+A cheap implementation exists under extra promises: known wall orientation and sensor pose, correct return-to-wall labels, and bounded measurement error. For wall normal \(n_j\), its offset \(c_j\) lies in
+\[
+I_j=
+\bigcap_k
+[n_j^Tp_{jk}-\varepsilon,\,
+ n_j^Tp_{jk}+\varepsilon].
+\]
+For nonempty bounded intervals, define
+\[
+\beta_j=
+\max\{|\widehat c_j-\inf I_j|,
+       |\widehat c_j-\sup I_j|\}.
+\]
+Two orthogonal walls give corner error at most
+\(\sqrt{\beta_j^2+\beta_k^2}\). The intersections require linear work in the number of returns. \ledger{12, 15}
+
+The unresolved premise is trusted association. Screen returns mislabeled as wall returns produce a narrow interval around the wrong offset. False corners, an incorrect rectangle, uncertain pose, or an L-shaped room invalidate the corresponding premises; small accepted-feature residuals do not restore them. P explicitly acknowledges incorrect accepted models and missing revision mechanisms. No certificate for its actual initialization and localization loop was obtained. See \url{ada/round2.md}, lines 11--54, and \url{ada/check-certificates-20261102-01.log}, lines 1--8. \ledger{12, 15, 17}
+
+\subsection{Solid contacts can certify absence}
+
+Consider a known wall, with open doorways of minimum width \(w_{\min}\). Suppose observed contacts are certified to lie on solid wall, their projected positions have error at most \(e\), and the largest consecutive estimated gap, including wall endpoints as boundary markers, is \(g\). Then
+\[
+g+2e<w_{\min}
+\]
+rules out an unseen opening: such an opening contains no solid contact and would require a true contact gap at least its width. P uses \(w_{\min}=0.5\,\mathrm m\). An already validated door separately activates its at-most-one-door-per-wall promise. \ledger{12, 15}
+
+This is a conditional negative certificate, not a coverage percentage. A door-width gap can occupy an arbitrarily small fraction of a long wall. Nearby clutter cannot be counted as genuine wall contact, and a closed flush door need not be identifiable from range data alone. The supporting argument is in \url{ada/round2.md}, lines 58--74. \ledger{12, 13}
+
+\subsection{A silent occlusion family}
+
+Take the room \([-4,4]\times[-3,3]\), with a doorway at
+\(x=4\), \(y\in(-0.4,0.4)\), and an opaque screen at
+\(x=3.9\), \(y\in[-1,1]\). From the origin, the screen blocks every ray through the doorway. Replacing the doorway by solid wall leaves the full scan identical, even with an exact room estimate. \ledger{13}
+
+In the noiseless synthetic case, every \(0.1\,\mathrm m\) wall bin has nearby support and accepted-point wall-distance RMS is approximately \(0.0283\,\mathrm m\). The coverage heuristic remains satisfied while all detector variants omit the door. These are synthetic point residuals, not P's optimizer residuals. The sound contact certificate is unaffected because screen returns violate its premise. \ledger{13, 16}
+
+\begin{objection}
+This is not evidence that prediction gating silently destroys information: the missing door is unobservable even in the ungated scan.
+\end{objection}
+
+Correct. The example establishes an observation requirement, not a gate-induced failure. With the screen at \(x=3\), the diagnostic instead detects an approximately \(2.669\,\mathrm m\) unsupported interval, but reprocessing still cannot recover the door. The synthetic L-shaped case has a \(4\,\mathrm m\) unsupported predicted-wall interval and is detected by the diagnostic. No silent gate-only failure under a sound visibility certificate was demonstrated. See \url{ada/round2.md}, lines 76--90. \ledger{13, 14, 16}
+
+\subsection{A concrete sensing cost}
+
+In an uncluttered convex rectangle, every boundary point is visible from an interior viewpoint. Sufficient range and sampling density therefore allow a panoramic scan to inspect all walls; the abstract audit bound does not establish extra computational or movement cost there. \ledger{15}
+
+Occlusion gives a different result. Put the screen at \(x=a=3\), with half-height \(h=1\), before the doorway at \(x=b=4\), with half-width \(d=0.4\). A ray from \((x,y)\), \(x<a\), to doorway coordinate \(z\in(-d,d)\) intersects the screen plane at
+\[
+y_s=\frac{(b-a)y+(a-x)z}{b-x}.
+\]
+Every doorway ray remains blocked while
+\[
+|y|\leq h+(a-x)\frac{h-d}{b-a}=2.8-0.6x.
+\]
+The nearest visibility boundary has coordinates
+\[
+(x_0,y_0)=
+\left(
+\frac{2.8(0.6)}{1+0.6^2},
+\frac{2.8}{1+0.6^2}
+\right),
+\]
+at distance
+\[
+D=\frac{2.8}{\sqrt{1+0.6^2}}
+\approx2.401\,\mathrm m.
+\]
+This point lies inside the room before the screen; reaching the screen plane already costs at least \(3\,\mathrm m\). Before travel distance \(D\), door and solid-wall worlds have identical observations along every path. An always-correct distinction therefore requires at least \(D\), even at zero room-prediction error. \ledger{15, 16}
+
+The threshold is an infimum for ideal continuous sensing. Finite resolution and noise require additional margin. This is elementary point-sensor visibility geometry, not a safe-motion or competitive theorem for P's robot. General upper bounds require accessible viewpoints and collision-free routes; several intervals may share one viewpoint. The derivation appears in \url{ada/round2.md}, lines 105--137; numerical checks appear in \url{ada/check-certificates-20261102-01.log}, lines 12--17. \ledger{15, 16}
+
+\section{Synthetic evidence and unresolved detector semantics}
+
+The final run contains \(120\) scan/estimate cases and \(960\) evaluations, with \(7200\) rays per scan, translations and rotations across the gate margin, bounded radial noise, central and near-corner doors, occluders, an L-shaped room, and a narrow adjoining room. Artifacts, including a source snapshot, are in \url{ada/synthetic-run-20261102-05/}. This is a reimplementation from P's description, not a reproduction of its software or robot system. \ledger{16}
+
+Algorithm 2 leaves filtered angular gaps, derivative sign, and numerical wall containment underspecified. A literal positive-radial-difference interpretation misses even the exact-room control. A separately reported modified interpretation uses two-sided spatial gaps, strict width bounds of \(0.5\) and \(1.3\,\mathrm m\), and a chosen \(0.15\,\mathrm m\) final wall tolerance. The choices are explicit in \url{ada/round2.md}, lines 139--155. \ledger{11, 14, 16}
+
+The table preserves the modified interpretation's missed-door counts. ``First off'' removes only the initial filter; ``Both off'' removes both geometry-dependent tests; ``Diagnostic'' invokes that latter control when an unexplained support interval can contain a door.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrrr}
+\hline
+Family & Cases & Gated & First off & Both off & Diagnostic\\
+\hline
+Translation & 42 & 18 & 22 & 0 & 0\\
+Rotation, central & 36 & 0 & 0 & 0 & 0\\
+Rotation, near corner & 36 & 6 & 6 & 0 & 0\\
+Occlusion & 4 & 4 & 4 & 4 & 4\\
+L-shaped & 1 & 1 & 1 & 0 & 0\\
+Narrow adjoining & 1 & 0 & 1 & 1 & 0\\
+\hline
+\end{tabular}
+\end{center}
+
+Removing the first filter is insufficient because wall containment still uses the prior. Removing both tests is not a complete fallback: continuous jamb ranges in the narrow adjoining room defeat the unguided detector, while filtering creates a detectable gap. Rotation also produces false-positive pairs, and no physical candidate-validation stage is simulated. The reachability measure is only a two-node proxy based on endpoint matching, not independent navigation evidence. \ledger{14, 16, 17}
+
+No computational advantage emerged. Translation-family median Python/NumPy times were approximately \(1.50\,\mathrm{ms}\) for gating, \(0.145\,\mathrm{ms}\) with both tests removed, and \(3.72\,\mathrm{ms}\) with diagnostics. These exclude ray casting and do not measure P's platform. The table and saved source were checked against the records; the prior note's delimiter and environment checks passed without compilation, as recorded in \url{ada/note-check-20261102-01.log}, lines 1--9. \ledger{16, 17}
+
+\section{External sources and novelty limits}
+
+The peers obtained the following primary sources through the shared paper pool:
+
+\begin{itemize}
+\item Erlebach et al., \emph{Learning-Augmented Query Policies},
+\url{https://arxiv.org/abs/2011.07385}, already distinguish trustworthy uncertainty from fallible predictions and study correctness-certified querying. The feasible-set separation is therefore not new. \ledger{4, 7, 10}
+
+\item Eberle et al., \emph{Robustification of Online Graph Exploration Methods},
+\url{https://arxiv.org/abs/2112.05422}, supply the exact edge-revelation, cost, and identity premises used in the transfer objection. The peer record identifies pooled source lines 183--193. \ledger{4, 5}
+
+\item Kulich et al., \emph{An Integrated Approach to Goal Selection in Mobile Robot Exploration},
+\url{https://arxiv.org/abs/2007.10085}, combine frontier visibility coverage with routes through covering viewpoints. This is close precedent for interpreting audits as observation motion. \ledger{15}
+
+\item Gu\'edon et al., \emph{SCONE: Surface Coverage Optimization in Unknown Environments by Volumetric Integration},
+\url{https://arxiv.org/abs/2208.10449}, use predicted geometry and visibility gain for next-view selection. This supplies active-perception context, not an arbitrary-prediction guarantee for P. \ledger{15}
+\end{itemize}
+
+Source locations and search limitations are recorded in \url{ada/analysis.md}, lines 104--128, and \url{ada/round2.md}, lines 180--200. Other pool-resolution attempts failed; the account does not rely on those full texts. The search was bounded, so no absence-of-prior-work claim follows. \ledger{7, 16}
+
+\section{What remains open and the smallest next step}
+
+The unresolved work is substantial: trusted surface association for P's actual scans, precise detector semantics, completeness under a declared observation model, and a prediction-sensitive sensing policy with a meaningful comparator and measured benefit. The conditional certificates do not solve association, the occlusion example is elementary, and the abstract audit bound has not become a geometric competitive result. P's successful reported tests are not refuted by these synthetic stress tests. \ledger{7, 8, 16, 17}
+
+The smallest next step is the fixed-scan replay already proposed in the first-round note, restricted to P's actual implementation. Use a verified rectangular-room scan containing a visible doorway; perturb the supplied room estimate across the gate margin; compare the existing detector, removal of both geometry-dependent tests, and the existing raw-data diagnostics. Record missed doors, false positives, residuals, and processing time before changing navigation. This would settle the immediate empirical uncertainty: whether P itself has a useful gating failure that its current diagnostics miss, or whether the synthetic behavior is an artifact of the reconstructed detector. \ledger{7, 10, 17}
+
+If the real implementation already exposes omissions cheaply, or certification costs exceed any benefit, the present motivation weakens. A reproducible failure would justify a narrowly scoped association or sensing investigation, not by itself a publication claim. Until that evidence exists, retain the distinctions and conditional derivations, but pause the publication proposal. \ledger{16, 17}
+
+\end{document}

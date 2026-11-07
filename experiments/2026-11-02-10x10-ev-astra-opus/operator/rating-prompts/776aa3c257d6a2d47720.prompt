@@ -1,0 +1,2508 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{The Resource Cost of Peer Discipline}
+
+\begin{document}
+\maketitle
+
+\section*{The pair and the connexion}
+
+Q develops mechanisms that elicit agents' private information and
+induce obedient actions, with peer discipline supported by unrestricted
+rewards. P introduces an agent economy in which inference consumes
+energy, exhausted agents deactivate, and donations can reactivate them.
+
+The connexion pursued was the resource cost of Q's incentives when
+rewards draw on the resource that sustains P's agents. The investigation
+distinguished redistribution, outside subsidies, energy destruction,
+and collateral for penalties imposed after deviations. Its first
+outcome was an exact calculation for Q's binary peer-discipline
+example under additional resource restrictions, rather than an
+empirical explanation of P's behavior. \ledger{1, 9, 12}
+
+This account retains the previous note's results, constructions,
+objections, source assessments, and pilots. Reviews 14 and 25 requested
+generalization, novelty checks, and behavioral evidence. Review 41
+identified a gap between total compute writeoffs and the much smaller
+effect of netting job receipts against their bills. The subsequent
+decomposition repaired that gap but left substitute-model nulls
+as evidence about the bundled prompt intervention.
+\ledger{14, 25, 41, 43, 44, 45, 50, 51, 52}
+
+Review 54 requested original-model recovery and a bounded attribution
+study. Recovery passed, and the subsequent single-seed factorial
+produced donation contrasts when objective wording and donation advice
+were changed. Those panels remain valid observations, but their
+interpretation as established local attribution does not stand.
+The latest review, entry 72, required replication and controls for
+sampling and wording variability. The appended final round supplies
+that test and supersedes the stronger interpretation in entry 70.
+\ledger{54, 63, 69, 70, 72, 77, 78}
+
+The final judgment is limited. The mathematical results stand within
+their assumptions, but their novelty is uncertified. The accounting
+audit supports a specific reproducibility correction. The new
+four-state, two-seed assay does not establish general objective or
+advice effects; its recommendation-removal signal is uncertain.
+A publishable advance requiring both Q and P remains unestablished.
+No end-to-end causal simulation rerun was performed.
+\ledger{70, 72, 77, 78}
+
+\section*{The finite game and its reporting constraint}
+
+The original calculation retains Q's two-agent example:
+\[
+\Pr(HH)=\frac12,\qquad
+\Pr(HL)=\Pr(LH)=\frac14,\qquad
+\Pr(LL)=0.
+\]
+The state is one at \(HH\) and zero otherwise. Each agent chooses
+\(a_i\in\{0,1\}\), has intrinsic utility \(a_i\), and can submit either
+report. The designer receives one exactly when both actions match the
+state. Thus first best recommends \(11\) after \(HH\) and \(00\) after
+the mixed reports.
+
+The extension restricts rewards \(R_i(\hat t,a)\) to be finite and
+state independent. It retains partial implementation, allows lotteries
+over recommendations, and requires incentive compatibility against
+joint report and action deviations. These are additional restrictions
+on Q, not assumptions already established for P.
+See \url{ada/q_binary_budget.md}, lines 11--56, and
+\url{inputs/Q.tex}, lines 1738--1778. \ledger{9, 12}
+
+Let \(U_i(\hat t)\) be expected utility from following the recommendation
+after report profile \(\hat t\), and write
+\[
+W(\hat t)=U_1(\hat t)+U_2(\hat t)
+=\mathbb E[a_1+a_2+R_1+R_2\mid\hat t].
+\]
+Because utilities and rewards are state independent, a deviator who
+changes its report and follows the resulting recommendation receives
+the corresponding \(U_i\). Put
+\[
+\bigl(U_1(LL),U_1(LH),U_1(HL),U_1(HH)\bigr)
+=(A,B,C,D).
+\]
+The two low-type reporting constraints give
+\[
+B\geq D,\qquad
+D-C\geq W(HH)-W(HL).
+\]
+The two high-type constraints, using conditional probabilities
+\(2/3\) and \(1/3\), give
+\begin{align*}
+C+2D&\geq A+2B,\\
+W(LH)-B+2[W(HH)-D]
+&\geq W(LL)-A+2[W(HL)-C].
+\end{align*}
+Combining them yields the necessary inequality
+\[
+W(HH)+W(LL)\leq W(HL)+W(LH).
+\tag{1}
+\]
+The report profile \(LL\) matters despite having zero prior probability:
+a high type facing a low opponent can generate it by misreporting.
+Equation (1) remains necessary when action deviations are also allowed.
+\ledger{9, 12}
+
+\section*{Conservation and outside subsidies}
+
+\begin{claim}
+If \(R_1+R_2=0\) at every report and action profile, the optimal designer
+payoff is \(3/4\). If instead net transfers are nonnegative at every
+profile and expected net subsidy is at most \(B_0\geq0\), then
+\[
+V^*(B_0)=\min\left\{1,\frac34+\frac{B_0}{2}\right\}.
+\]
+No individual debit bound is imposed in this claim.
+\end{claim}
+
+Let \(p_{HH}\) be the probability of \(11\) after \(HH\), and let
+\(p_{HL},p_{LH}\) be the probabilities of \(00\) after the respective
+mixed reports. If \(S_{\hat t}\) denotes expected net transfer, then
+\begin{align*}
+W(HH)&\geq2p_{HH}+S_{HH},&
+W(LL)&\geq S_{LL},\\
+W(HL)&\leq2(1-p_{HL})+S_{HL},&
+W(LH)&\leq2(1-p_{LH})+S_{LH}.
+\end{align*}
+Substitute these bounds into (1), use \(S_{\hat t}\geq0\), and impose
+\[
+\frac12S_{HH}+\frac14(S_{HL}+S_{LH})\leq B_0.
+\]
+Together with \(p_{HH}\leq1\), these give
+\[
+V=\frac12p_{HH}+\frac14(p_{HL}+p_{LH})
+\leq\frac34+\frac{B_0}{2}.
+\]
+
+Attainment also handles double deviations. For \(\eta\in[0,1]\), mix
+the first-best rule with probability \(\eta\) and, otherwise, the rule
+that recommends both agents choose one exactly when player 1 reports
+\(H\). Define
+\begin{align*}
+q_1(\hat t)
+&=(1-\eta)\mathbf{1}_{\{\hat t_1=L\}}
+  +\eta\mathbf{1}_{\{\hat t=LH\}},\\
+q_2(\hat t)
+&=-(1-\eta)\mathbf{1}_{\{\hat t_1=L\}}
+  +\eta\mathbf{1}_{\{\hat t=HL\}},\\
+R_1(\hat t,a)&=-a_1+a_2+q_1(\hat t),\\
+R_2(\hat t,a)&=a_1-a_2+q_2(\hat t).
+\end{align*}
+Each player's own action cancels from its utility. Direct substitution
+makes every type indifferent between its reports, so further action
+optimization cannot improve a false report. Net transfer is \(\eta\)
+at mixed reports and zero otherwise. Expected subsidy is \(\eta/2\),
+and payoff is \(3/4+\eta/4\), attaining the bound.
+
+Thus first best costs expected subsidy \(1/2\) under this restriction.
+The units are those of intrinsic action utility; their empirical
+conversion into P's energy is not established.
+See \url{ada/q_binary_budget.md}, lines 58--112. \ledger{9, 12}
+
+\section*{Destruction, collateral, and obedience}
+
+Strict conservation is substantially stronger than prohibiting outside
+subsidies. Now allow energy destruction, requiring
+\[
+R_1(\hat t,a)+R_2(\hat t,a)\leq0,\qquad
+R_i(\hat t,a)\geq-e
+\]
+at every report and action profile, including deviations. The reserve
+\(e\) can represent funds left after protecting inference costs and a
+positive survival buffer. This bound treats intrinsic action gains as
+unavailable to finance penalties; the settlement extension below
+examines that qualification.
+
+\begin{claim}
+With voluntary actions, first-best partial implementation is feasible
+if and only if \(e\geq1\). Its minimum expected burn is
+\[
+D^*(e)=(2-e)_+,\qquad e\geq1.
+\]
+If hard permissions enforce the prescribed actions, feasibility instead
+requires \(e\geq1/2\), and minimum expected burn is
+\[
+D^*_{\mathrm{permissions}}(e)=(1-e)_+,
+\qquad e\geq\frac12.
+\]
+Here \(x_+=\max\{x,0\}\).
+\end{claim}
+
+For voluntary actions, obedience to zero at a mixed truthful profile
+requires each player's reward there to be at least \(1-e\): taking
+action one gives intrinsic utility one and cannot incur a reward below
+\(-e\). Since their rewards sum to at most zero, \(e\geq1\) is necessary.
+Moreover, the low reporter can receive at most \(e-1\), because its
+co-player also needs this obedience incentive.
+
+Let \(h\) be total burn at \(HH,11\). Each low type could report high
+and obtain its payoff at \(HH\). Summing these reporting constraints
+therefore gives
+\[
+2(e-1)\geq2-h,\qquad h\geq2(2-e).
+\]
+The probability of \(HH\) is \(1/2\), and burn elsewhere is nonnegative.
+Expected burn is consequently at least \((2-e)_+\).
+
+For attainment when \(1\leq e\leq2\), put \(c=e-1\), \(d=2-e\).
+Recommend \(11\) at \(HH\), and \(00\) otherwise, using rewards
+\[
+\begin{array}{c|cc}
+\hat t&R_1(\hat t,a)&R_2(\hat t,a)\\ \hline
+HH&-d&-d\\
+LH&c-a_1&-c-a_2\\
+HL&-c-a_1&c-a_2\\
+LL&-c-a_1&-c-a_2
+\end{array}
+\]
+These rewards satisfy both resource restrictions. Action one is optimal
+at \(HH\); elsewhere each agent's utility is independent of its own
+action. Best-continuation utilities are
+\[
+\begin{array}{c|cccc}
+\hat t&HH&LH&HL&LL\\ \hline
+(U_1,U_2)&(c,c)&(c,-c)&(-c,c)&(-c,-c).
+\end{array}
+\]
+Low types are indifferent between reports, and high types obtain
+\(c/3\) under either report. Thus joint deviations are unprofitable.
+Only \(HH\) burns energy on the truthful path, giving expected burn
+\(d\). For \(e\geq2\), use \(c=1,d=0\).
+
+With hard permissions, a low reporter can receive up to \(e\), since
+its co-player no longer needs an obedience incentive. The corresponding
+bounds become
+\[
+h\geq2(1-e),\qquad h\leq2e,
+\]
+giving the threshold \(e\geq1/2\). Attainment uses the same table with
+the action terms removed and \(c=e,d=1-e\) for
+\(1/2\leq e\leq1\); for larger reserves use \(c=1,d=0\).
+These arguments and constructions appear in
+\url{ada/q_binary_budget.md}, lines 114--182. \ledger{10, 11, 12}
+
+The notes also construct a strict truthful and obedient equilibrium
+with zero expected burn whenever \(e>2\). Set
+\(\delta=(e-2)/5\), pay zero at \(HH\), increase the non-\(HH\) action
+penalty to \(1+\delta\), use mixed-profile constants \(1+\delta\) and
+\(-1-\delta\), and use constant \(-1-4\delta\) for both players at
+\(LL\). The largest debit is \(e\); low and high reporting margins are
+respectively \(\delta\) and \(\delta/3\). This does not establish unique
+equilibrium implementation.
+See \url{ada/q_binary_budget.md}, line 169. \ledger{12}
+
+The archived exact-arithmetic check reports 18 passing constructions,
+including subsidy, collateral, permission, and strict variants:
+\url{ada/q_binary_check_001.log}, lines 1--19.
+The checker is \url{ada/verify_q_binary.py}. These finite checks support
+the constructions; the bounds rely on the arguments above.
+\ledger{12}
+
+\section*{Objections and first-round revisions}
+
+\begin{objection}
+No outside subsidy does not imply the \(3/4\) bound.
+\end{objection}
+The bound requires conservation, or the separate nonnegative-subsidy
+restriction. Allowing destruction permits penalties at \(LL\), restoring
+first best with sufficient collateral. Furthermore, the first proposed
+collateral calculation omitted obedience: its threshold \(1/2\) and burn
+\((1-e)_+\) apply to enforced actions. Accounting for voluntary actions
+raises them to \(1\) and \((2-e)_+\). Entry 11 corrects entry 10, and
+entry 12 consolidates that correction. \ledger{9, 10, 11, 12}
+
+\begin{objection}
+Deactivation need not destroy the possibility of peer discipline.
+\end{objection}
+The earlier investigation studied balanced, report-only incentives with
+two versus three agents. With two binary reporters, linear energy
+utility, and pointwise zero-sum transfers, strict truthful reporting by
+both types of both agents is impossible. If \(K\) is the transfer
+matrix's cross-difference and \(\Delta\) the prior determinant, the two
+players' strict constraints require opposite signs of \(\Delta K\).
+Independence also prevents strict separation. This concerns strict
+report-only elicitation, not Q's weak partial implementation.
+See \url{ada/liquidity_frontier.md}, lines 105--123. \ledger{2, 5}
+
+A separate calibration game gives three agents conditionally
+independent binary signals of a fair latent bit, with accuracy
+\(q>1/2\). Put \(\kappa=(2q-1)^2\). With equal reserves \(e\), the
+largest common truthful-report margin under pointwise balance is
+\(e\kappa\). On a split report profile, charge the singleton \(e\) and
+pay each majority reporter \(e/2\); unanimous reports transfer zero.
+Symmetrization reduces feasible mechanisms to this split-payment
+parameter and proves the bound. With heterogeneous reserves and
+compulsory fixed redistribution, the margin becomes
+\[
+m^*=\frac{\kappa}{3}\sum_{i=1}^3 e_i.
+\]
+These are reporting calibration results, not explanations of P's
+population dynamics. \ledger{5, 6}
+
+A passive bank changes the comparison. With two reporters, no net
+injection, reserve \(e\), and required margin \(m\), minimum expected
+withdrawal into the bank is
+\[
+W_{\mathrm{bank}}^*(m)=\frac{m(1-\kappa)}{\kappa},
+\qquad 0\leq m\leq e\kappa.
+\]
+After symmetrization, let each reporter receive \(a\leq0\) on agreement
+and \(b\leq0\) on disagreement. Agreement has conditional probability
+\(p=(1+\kappa)/2\), and
+\[
+\kappa(a-b)\geq m,\qquad
+-2[pa+(1-p)b]\geq\frac{m(1-\kappa)}{\kappa}.
+\]
+Equality uses \(a=0\), \(b=-m/\kappa\). Three reporting accounts can
+avoid this withdrawal, but maintaining another reporting model costs
+computation and collateral. Bank-held energy can retain future value,
+and a funded collector need not reason or report.
+See \url{ada/liquidity_frontier.md}, lines 125--178.
+\ledger{6, 8, 12}
+
+The exact-arithmetic calibration checks passed 35 three-account
+reserve/signal cases and 2500 two-account matrix cases:
+\url{ada/frontier_check_002.log}. The initial failed execution is
+retained separately. The proposed population-collapse mechanism
+remains a possibility, not a theorem about P; the reporting-and-obedience
+calculation replaced it as the main connexion. \ledger{6, 7, 12}
+
+\begin{objection}
+P does not establish the behavioral or informational assumptions of
+the finite game.
+\end{objection}
+P's recommendations are not evidence of pre-deployment sandbagging,
+and model sizes, status, and recent histories are visible. Its abstract's
+claim that larger models spend more than they gain even without size
+pricing conflicts with Experiment 2: the larger models' reported
+efficiency ratios exceed one in both objective conditions. The supported
+observations are higher token expenditure, baseline deactivation and
+donations, and effects of communication costs. \ledger{4, 12}
+
+P also creates energy through successful jobs and dissipates it through
+inference and idling. Conservation is therefore an experimental
+restriction, not a law of its economy. Automatically graded jobs make
+grounded rewards available, whereas the calculation restricts rewards
+to be state independent. Instructions to maximize energy do not
+establish linear energy utility.
+See \url{ada/q_binary_budget.md}, lines 184--198. \ledger{12}
+
+\section*{First-round sources and remaining question}
+
+The initial literature checks narrowed the claim. Miller, Resnick and
+Zeckhauser (2005), \emph{Eliciting Informative Feedback: The
+Peer-Prediction Method}, already discuss balancing scores through
+charges to other raters and reporting rings:
+\url{https://viterbi-web.usc.edu/~shaddin/teaching/cs699fa17/docs/peer_prediction.pdf}.
+Goel, Reeves and Pennock (2009), \emph{Collective Revelation}, give a
+general budget-balancing construction:
+\url{https://doi.org/10.1145/1566374.1566413}.
+Radanovic, Singla, Krause and Faltings (2018),
+\emph{Information Gathering with Peers}, address reward budgets and
+provider selection while retaining suitable peers:
+\url{https://arxiv.org/abs/1711.06740}. \ledger{3, 7}
+
+The first two assessments relied on indexed primary-source excerpts
+and abstracts after retrieval failures. The third paper was acquired
+through the shared pool as LaTeX. Relevant passages are
+\url{../../sources/1711.06740.tex}, lines 215--239 and 262--293.
+Provenance is recorded in \url{ada/liquidity_frontier.md},
+lines 214--224. Neither balanced peer scoring nor budget-aware peer
+selection can be claimed as new. \ledger{3, 7, 12}
+
+The first-round next step was a calibration module implementing Q's
+binary game within P's energy accounting: verify it with scripted
+Bayesian agents, then vary reserves and action permissions while
+holding models and prompts fixed. Proposed measurements separated
+reporting and action deviations, payoff, injections, burn, and maximum
+debit, with matched subsidy, grounded-score, and bank controls.
+That proposal remains qualified by the settlement analysis below.
+The first round supplied no behavioral evidence and left targeted
+novelty checking open. \ledger{12, 14}
+
+\section*{Extension: correlation changes the obstruction}
+
+The second round replaces Q's particular prior by
+\[
+\Pr(HH)=a,\quad \Pr(HL)=b,\quad
+\Pr(LH)=c,\quad \Pr(LL)=d,
+\qquad a+b+c+d=1,
+\]
+with every own-type marginal positive. Intrinsic utility is now
+\(g a_i\), where \(g>0\). The state is still one exactly at \(HH\);
+the target is \(11\) there and \(00\) elsewhere. There is no later
+private signal. Transfers remain finite and state independent.
+See \url{ada/correlation_frontier.md}, lines 5--15. \ledger{16, 20}
+
+Using the earlier notation \(A,B,C,D\), the unnormalized reporting
+constraints are
+\begin{align*}
+a(D-B)+b(C-A)&\geq0,\\
+c(B-D)+d(A-C)&\geq0,\\
+a[(W_{HH}-D)-(W_{HL}-C)]
++c[(W_{LH}-B)-(W_{LL}-A)]&\geq0,\\
+b[(W_{HL}-C)-(W_{HH}-D)]
++d[(W_{LL}-A)-(W_{LH}-B)]&\geq0.
+\end{align*}
+Multiply these in order by
+\[
+c+d,\qquad a+b,\qquad b+d,\qquad a+c.
+\]
+The utility-array coefficients cancel, giving
+\[
+\Delta[W_{HH}+W_{LL}-W_{HL}-W_{LH}]\geq0,
+\qquad \Delta=ad-bc.
+\tag{2}
+\]
+For \(\Delta\neq0\), the coefficient matrix has rank three and its
+left nullspace is generated by this positive multiplier vector.
+Farkas' lemma therefore makes (2) sufficient as well as necessary
+for decomposing \(W\) into two report-IC utility arrays.
+
+At independence, \(\Delta=0\), every \(W\) admits a weakly IC
+decomposition: assign agent 1 the expectation of \(W\) over its own
+type, holding agent 2's report fixed, and assign agent 2 the remainder.
+Agent 1's utility is independent of its report; agent 2's expected
+utility is zero under either report. Thus Q's obstruction is the
+negative-correlation branch, not a universal two-agent impossibility.
+See \url{ada/correlation_frontier.md}, lines 17--47.
+\ledger{16, 20}
+
+\begin{claim}
+For \(\Delta<0\), set \(m=\min\{a,b,c\}\) and \(k=\min\{b,c\}\).
+With unrestricted individual transfers, exact balance gives
+\[
+V^*(0)=1-m.
+\]
+If net transfers must instead be nonnegative at every report/action
+profile and expected subsidy is bounded by \(B_0\), then
+\[
+V^*(B_0)
+=1-m+m\min\left\{\frac{B_0}{2gk},1\right\}.
+\tag{3}
+\]
+For \(\Delta\geq0\), the target is implementable under exact balance
+without an individual debit bound.
+\end{claim}
+
+To bound payoff in the negative-correlation case, let \(x,y,z\) be
+failure probabilities at \(HH,HL,LH\). Equation (2) and nonnegative
+net transfers imply
+\[
+x+y+z+\frac{S_{HL}+S_{LH}}{2g}\geq1.
+\]
+Expected error is at least \(m(x+y+z)\), while expected subsidy is at
+least \(k(S_{HL}+S_{LH})\). These give (3).
+
+For attainment, start with a balanced rule that errs only at a cheapest
+profile in \(\{HH,HL,LH\}\). Mix it with the target with probability
+\(\eta\), and place net subsidy \(2g\eta\) at a cheapest mixed report.
+The resulting \(W\) has zero cross-difference and admits an additive
+decomposition with each \(U_i\) depending only on the other's report.
+If \(\mu_i(\hat t)\) is the mean recommended action, use
+\begin{align*}
+R_1(\hat t,a)
+&=-ga_1+ga_2+U_1(\hat t)-g\mu_2(\hat t),\\
+R_2(\hat t,a)
+&=ga_1-ga_2+U_2(\hat t)-g\mu_1(\hat t).
+\end{align*}
+Own actions cancel, the net transfer equals the specified subsidy
+at every action profile, and reporting is weakly optimal. For
+nonnegative correlation, apply the IC decomposition to the target's
+total utility and the same action-cancellation construction.
+See \url{ada/correlation_frontier.md}, lines 49--83.
+\ledger{20}
+
+\section*{Extension: complete symmetric reserve frontiers}
+
+For explicit bounded-debit formulas, impose the symmetric prior
+\[
+(a,b,b,d),\qquad a+2b+d=1,\qquad a,b>0,\quad d\geq0,
+\]
+and retain \(R_1+R_2\leq0\), \(R_i\geq-e\) at every report/action
+profile. The objective is minimum expected burn while implementing
+the target.
+
+Symmetrize over player labels. Write on-target transfers as
+\[
+(R_1,R_2)(HH)=(-h,-h),\qquad
+(R_L,R_H)=(y,z),\qquad
+(R_1,R_2)(LL)=(-\ell,-\ell).
+\]
+The mixed-profile notation orders players by their reports.
+Set \(t=-y-z\geq0\) and \(u=g-h\). Reporting IC reduces to
+\begin{align*}
+b(u-y)+d(\ell-y-t)&\leq0,\\
+a(u-y)+b(\ell-y-t)&\geq0.
+\end{align*}
+Expected burn is
+\[
+2ah+2d\ell+2bt,
+\]
+with \(0\leq h,\ell\leq e\) and \(y,z\geq-e\).
+
+Voluntary execution adds
+\[
+z\geq g-e,\qquad
+by-d\ell\geq(b+d)(g-e).
+\tag{4}
+\]
+A high type receiving recommendation zero knows its opponent is low.
+A low type receiving zero instead pools the mixed and \(LL\) profiles;
+this explains the expectation in the second inequality.
+
+These constraints are also sufficient. Set both transfers to \(-e\)
+at every action profile other than the prescribed one. Deviating in
+action then gives at most \(g-e\). The reporting and obedience
+inequalities ensure that neither following a false report's
+recommendation nor optimizing after that report beats truth.
+Thus this reduced program includes double deviations, rather than
+only separate reporting and action tests.
+See \url{ada/correlation_frontier.md}, lines 85--111.
+\ledger{18}
+
+\begin{claim}
+If \(\Delta=ad-b^2<0\), permissions are feasible exactly for
+\(e\geq g/2\), with
+\[
+D_{\mathrm{perm}}(e)
+=2g\min\{a,d\}+2|a-d|(g-e)_+.
+\tag{5}
+\]
+Voluntary actions are feasible exactly for \(e\geq g\), with
+\[
+D_{\mathrm{vol}}(e)
+=2g\min\{a,d\}+2(a-d)_+(2g-e)_+.
+\tag{6}
+\]
+If \(\Delta\geq0\), permissions are feasible exactly for
+\[
+e\geq\frac{bg}{2b+d},
+\]
+with
+\[
+D_{\mathrm{perm}}(e)
+=2a\left[g-\frac{b+d}{b}e\right]_+.
+\tag{7}
+\]
+Voluntary actions are feasible exactly for \(e\geq g\), with
+\[
+D_{\mathrm{vol}}(e)
+=2a\left[g-\frac{b+d}{b}(e-g)\right]_+.
+\tag{8}
+\]
+\end{claim}
+
+For negative correlation, reporting IC implies
+\(h+\ell\geq g+t\). Permissions therefore require \(2e\geq g\).
+Set \(t=0\), \(h+\ell=g\), and \(y=\ell,z=-\ell\).
+Both reporting constraints bind. Allocate burn toward the less
+probable unanimous profile, subject to \(h,\ell\leq e\), to obtain
+(5).
+
+For voluntary actions, (4) and \(y+z\leq0\) imply
+\(y\leq e-g-t\). If \(e<g\), then \(y<0\), contradicting the
+low-type obedience constraint. Write \(k=e-g\geq0\).
+The low reporting constraint yields
+\[
+bh-d\ell\geq bg-(b+d)k+bt.
+\]
+Combining this with \(h+\ell\geq g+t\) gives
+\(h\geq g-k+t\). If \(a\geq d\), set
+\[
+\ell=\min\{k,g\},\qquad h=g-\ell,\qquad
+y=\ell,\quad z=-\ell,\quad t=0.
+\]
+This attains the bound in (6). If \(a<d\), use
+\(h=g\) and \(\ell=y=z=t=0\), attaining \(2ag\).
+
+For nonnegative correlation, permissions imply \(y\leq e-t\), so
+the low reporting constraint gives
+\[
+h\geq g-\frac{b+d}{b}e+\frac{d}{b}\ell+t.
+\]
+Combining this with \(h\leq e\) gives the feasibility threshold;
+\(h\geq0\) gives the value bound. Attainment uses
+\[
+\ell=t=0,\qquad
+u=\min\left\{g,\frac{b+d}{b}e\right\},\qquad
+h=g-u,\quad y=\frac{bu}{b+d},\quad z=-y.
+\]
+The high reporting constraint holds because \(ad\geq b^2\).
+For voluntary actions replace \(e\) by \(e-g\) in the expression
+for \(u\). The resulting construction satisfies (4) throughout
+\(e\geq g\), giving (8).
+See \url{ada/correlation_frontier.md}, lines 113--169.
+\ledger{18}
+
+These formulas qualify the first-round interpretation. Under full
+support and negative correlation, even arbitrarily large reserves
+leave expected burn
+\[
+2g\min\{a,d\}>0.
+\]
+Q's zero-burn construction relies on the zero-probability \(LL\)
+profile. The factor-of-two permission threshold is not general:
+under nonnegative correlation the permission threshold can be
+arbitrarily small relative to \(g\).
+
+Nor is a uniform shift an equivalence of the two problems. For
+\[
+(a,b,b,d)=\frac1{11}(1,3,3,4),\qquad
+g=1,\qquad e=\frac32,
+\]
+both relevant problems are feasible, but
+\[
+D_{\mathrm{vol}}(e)=\frac2{11},
+\qquad
+D_{\mathrm{perm}}(e-g)=\frac5{11}.
+\]
+Even where the algebraic formulas have a shift, their feasible domains
+can differ.
+See \url{ada/correlation_frontier.md}, lines 139--177.
+\ledger{18}
+
+\section*{Extension: more agents and the finite resource program}
+
+For any finite number of agents and types, suppose intrinsic utility
+is \(g_i a_i\), with \(g_i>0\), and the deterministic target recommends
+either all zeros or all ones. Assume the zero event has positive
+probability, each player observes its recommendation, and there is
+a common prior. Under no net injection and bounds \(R_i\geq-e_i\),
+first-best partial implementation is feasible exactly when
+\[
+\sum_i e_i\geq\sum_i g_i.
+\tag{9}
+\]
+Conditioning obedience on the zero event, agent \(i\) can obtain
+\(g_i-e_i\) by choosing one. Summing these inequalities gives
+necessity. For sufficiency choose constants
+\[
+c_i\geq g_i-e_i,\qquad \sum_i c_i\leq0,
+\]
+and set \(R_i=c_i-g_i a_i\). Utilities are constant, all joint
+deviations are weakly unprofitable, and both resource restrictions
+hold. More reporting agents therefore do not remove the aggregate
+collateral needed for voluntary zero actions.
+See \url{ada/correlation_frontier.md}, lines 179--189.
+\ledger{18, 23}
+
+A bank changes who supplies collateral. With two equal-gain actors,
+\(R_i=-ga_i\) requires actor collateral \(g\) each, while a bank can
+receive \(g(a_1+a_2)\) without initial funds. Alternatively,
+\(R_i=g(1-a_i)\) needs no actor collateral but requires bank collateral
+\(2g\). Both use total collateral \(2g\) and weak incentives.
+Agent-held energy, bank-held energy, and actual destruction must
+therefore be distinguished. \ledger{23}
+
+For a fixed recommendation rule on arbitrary finite type, signal,
+action, and plan spaces, enumerate each feasible joint reporting and
+action-map deviation. Let \(\xi_d\) be its intrinsic utility gain and
+\(L_d\) the truthful-minus-deviating occupancy row on transfer cells.
+Then exact IC is \(LR\geq\xi\). Let \(BR\leq0\) impose no net injection,
+\(R\geq-e\) the debit bounds, and \(c\) minus the truthful transfer
+occupancy vector. The minimum-burn program and its dual are
+\[
+\begin{aligned}
+\min_R\quad &c^\top R\\
+\text{subject to}\quad
+&LR\geq\xi,\quad BR\leq0,\quad R\geq-e,
+\end{aligned}
+\]
+and
+\[
+\begin{aligned}
+\max_{\lambda,\nu,\mu\geq0}\quad
+&\xi^\top\lambda-e^\top\mu\\
+\text{subject to}\quad
+&L^\top\lambda-B^\top\nu+\mu=c.
+\end{aligned}
+\]
+For feasibility, replace \(c\) by zero: every such multiplier triple
+must satisfy \(\xi^\top\lambda\leq e^\top\mu\). A violation certifies
+infeasibility. Exact balance makes \(\nu\) unrestricted; subsidy
+minimization reverses the relevant budget sign and uses the positive
+transfer objective.
+
+This is a resource-priced Farkas condition. In Q's single-agent
+difference-constraint setting, cancellation produces cycles. With
+general beliefs, joint deviations, and coupled budgets, it gives
+weighted incentive combinations, not automatically two separately
+checkable nested cycle conditions. The method is established
+mechanism-design machinery, not a novelty claim.
+See \url{ada/correlation_frontier.md}, lines 191--216.
+The solver \url{ada/general_frontier.py} handles the
+binary-action examples and arbitrary agent counts; it does not
+implement the entire signal-dependent formulation.
+\ledger{17, 20, 22, 23}
+
+\section*{The settlement objection and its resolution}
+
+\begin{objection}
+Pre-existing reserves need not bound penalties if the action being
+penalized itself produces seizable energy.
+\end{objection}
+The earlier bound \(R_i\geq-e_i\) treats intrinsic gains as separate
+preferences or as revenue unavailable at settlement. If P represents
+\(g_i a_i\) as job energy credited before penalties, physical solvency
+can instead allow
+\[
+R_i\geq-e_i-g_i a_i.
+\]
+Then \(R_i=-g_i a_i\) cancels the action incentive with zero initial
+collateral. A pilot could therefore eliminate its proposed reserve
+effect merely by changing settlement rules. P's donation bound alone
+does not justify the non-pledgeable model. \ledger{19, 21}
+
+Allow a fraction \(\phi\in[0,1]\) of the gain to finance penalties:
+\[
+R_i(\hat t,a)\geq-e_i-\phi g_i a_i.
+\]
+For the synchronized targets of (9), feasibility becomes exactly
+\[
+\sum_i e_i\geq(1-\phi)\sum_i g_i.
+\tag{10}
+\]
+On the zero event an action-one deviation now guarantees
+\((1-\phi)g_i-e_i\), giving necessity. For sufficiency choose constants
+above these floors with nonpositive sum and again use
+\(R_i=c_i-g_i a_i\).
+
+For the symmetric binary-prior voluntary frontiers,
+\[
+D_{\mathrm{vol}}^\phi(e)
+=D_{\mathrm{vol}}^0(e+\phi g),
+\qquad e\geq(1-\phi)g.
+\tag{11}
+\]
+The obedience floor becomes \((1-\phi)g-e\), and the \(HH\) debit
+limit becomes \(e+\phi g\). The previous attaining constructions
+respect the unchanged limit at zero actions, proving the identity.
+See \url{ada/settlement_boundary.md}, lines 7--30.
+\ledger{21}
+
+\begin{claim}
+With fully pledgeable observable nonnegative action gains, a
+deterministic report-based target, and no later private signal, every
+permission mechanism satisfying solvency and no net injection can be
+implemented with voluntary actions using the same reserves and the
+same on-path transfers.
+\end{claim}
+
+Write the gains as \(f_i(a_i)\geq0\), the target as \(a^*(\hat t)\),
+and the permission mechanism's transfers as \(p_i(\hat t)\). Assume
+at every report profile that
+\[
+\sum_i p_i(\hat t)\leq0,\qquad
+p_i(\hat t)+f_i(a_i^*(\hat t))\geq-e_i.
+\]
+Retain \(p_i\) on the target action profile. At every other action
+profile set
+\[
+R_i(\hat t,a)=-e_i-f_i(a_i).
+\]
+Off-target utility is exactly \(-e_i\), while target utility is at
+least \(-e_i\). Thus any report followed by an action deviation is
+no better than that report followed by obedience; reporting IC of
+the permission mechanism blocks the remaining deviation. Off-target
+transfers satisfy solvency and never inject energy. Conversely,
+enforcing the target of a voluntary mechanism only removes deviations.
+
+The equivalence preserves expected burn and on-path transfers. It
+concerns partial implementation and can have ties. The stated version
+assumes observable gains, commitment, no withdrawal option, settlement
+after credits, and no later private signal. It does not automatically
+cover P's within-call inference costs and deactivation timing.
+The hidden-signal analysis below extends the sufficient argument.
+See \url{ada/settlement_boundary.md}, lines 32--54.
+\ledger{21, 23, 30}
+
+\section*{Verification of the extension}
+
+The archived checks in
+\url{ada/general_frontier_check_001.log}, lines 1--5, report
+403 symmetric-prior reserve LP cases, 62 collateral-threshold cases,
+341 exact rational joint-deviation constructions, 505 arbitrary-prior
+subsidy cases, and three- and four-agent collateral checks.
+All passed. These corroborate the formulas and constructions;
+the analytic arguments establish their stated generality.
+\ledger{18, 20}
+
+The settlement checks in
+\url{ada/pledgeability_check_001.log}, lines 6--7, add
+112 partial-pledgeability frontier comparisons, 28 threshold cases,
+and 30 arbitrary deterministic-target equivalence cases.
+Those also passed. The numerical equivalence tests used two binary
+agents, asymmetric priors, unequal gains, and varying targets; the
+proof covers arbitrary finite agent and type sets under its
+assumptions. No result in these logs is an LLM behavioral test.
+See \url{ada/settlement_boundary.md}, lines 64--66.
+\ledger{21, 23}
+
+\section*{The targeted source audit}
+
+The second-round audit substantially limits the contribution claim.
+The following are recorded source assessments, with access limitations
+preserved in \url{ada/prior_art_audit.md}, lines 5--42.
+
+\begin{itemize}
+\item
+d'Aspremont, Cr\'emer and G\'erard-Varet,
+\emph{Balanced Bayesian Mechanisms} (2004), characterize balanced
+Bayesian implementation using belief conditions and duality.
+The audit read Lemma 1, Conditions C and C*, and the discussion of
+the two-agent exception from the primary-host text:
+\url{https://www.tse-fr.eu/sites/default/files/medias/doc/wp/2003/jcr_dt_0603.pdf}.
+Pool retrieval failed; no separate local PDF was downloaded.
+The weighted-IC cancellation method belongs to this established
+framework. \ledger{17, 22}
+
+\item
+Kosenok and Severinov,
+\emph{Individually Rational, Budget-Balanced Mechanisms and Allocation
+of Surplus} (2008), characterize implementation with interim individual
+rationality and discuss genericity with at least three agents:
+\url{https://doi.org/10.1016/j.jet.2007.07.002}.
+The audit used the publisher abstract and an indexed primary-paper
+excerpt of Section 3.4. Full-text comparison remained incomplete.
+This prevents claiming a general two-to-three-agent feasibility
+change as new. \ledger{17, 22}
+
+\item
+Matsushima,
+\emph{Mechanism Design with Side Payments: Individual Rationality and
+Iterative Dominance} (2007), uses distributional rank conditions,
+weighted incentive constraints, and finite separation for balanced
+implementation:
+\url{https://www.carf.e.u-tokyo.ac.jp/pdf/workingpaper/fseries/51.pdf}.
+The helper selected PDF fallback and pooled the text at
+\url{../../sources/other/d76aedcdbdcf3a3663e5.txt}.
+The audit identifies Conditions 1 and 2 and Theorem 2, local lines
+440--510. These overlap the general method, though the inspected
+passages do not establish the present bounded-debit voluntary-action
+formulas. \ledger{22}
+
+\item
+Demougin and Garvie,
+\emph{Contractual Design with Correlated Information under Limited
+Liability} (1991),
+\url{https://doi.org/10.2307/2600983},
+and Robert, \emph{Continuity in Auction Design} (1991),
+\url{https://doi.org/10.1016/0022-0531(91)90064-B},
+already study resource or liability restrictions on correlation-based
+mechanisms. The former was checked through indexed primary text,
+including Proposition 2 and the conclusion; the latter through its
+publisher abstract. Retrieval failures prevented a complete theorem
+comparison. Their broad overlap is established, while subsumption of
+the exact formulas is unresolved. \ledger{22}
+
+\item
+Jurca and Faltings' EC 2006 minimum-payment paper,
+\url{https://doi.org/10.1145/1134707.1134728},
+explicitly optimizes nonnegative peer payments against reporting costs
+and external gains from lying, and maximizes margins under a budget.
+The pooled text is
+\url{../../sources/other/cd086221ea9b9c7d6bd4.txt};
+the audit cites LP 1 and LP 2, local lines 196--274.
+Their \emph{Mechanisms for Making Crowds Truthful},
+\url{https://arxiv.org/abs/1401.3451},
+also supplies an analytical minimum-payment result in LP 3.1 and
+Proposition 3.1. The helper recorded unavailable LaTeX before using
+the original PDF; the cached text is
+\url{../../sources/1401.3451.txt}, lines 419--475.
+Pricing elicitation or solving a small peer-payment LP is consequently
+not an independent novelty claim. \ledger{22}
+\end{itemize}
+
+These findings supplement the earlier Miller--Resnick--Zeckhauser,
+Goel--Reeves--Pennock, and Radanovic et al.\ comparisons. They do not
+certify that the exact reserve formulas appear elsewhere, but they
+rule out presenting balancing, finite duality, minimum reporting
+payments, or resource-sensitive peer selection as new general ideas.
+The settlement equivalence is likewise a simple limited-liability
+construction, not a claimed new theorem.
+\ledger{17, 21, 22}
+
+\section*{Open questions inherited from the previous rounds}
+
+The second round answered several questions posed by review 14:
+the obstruction depends on correlation; positive \(LL\) probability
+can make punishment costly on path; threshold doubling and a uniform
+permission shift are not general; additional actors do not remove the
+aggregate obedience constraint; and pledgeable gains can erase the
+permission advantage. These remain conditional mathematical results,
+not demonstrated properties of P's agents. \ledger{14, 18, 21, 23}
+
+The proofs assume commitment and partial implementation.
+They do not establish equilibrium selection, collusion resistance,
+or a dynamic survival mechanism. Most constructions use weak
+incentives; the strict construction is specific to Q's original
+prior and sufficient reserves. Arbitrary asymmetric bounded-debit
+frontiers are represented by the LP rather than closed forms.
+Endogenous inference costs, early deactivation, dynamic recycling of
+bank receipts, and general strict-margin results remain unresolved.
+The exact reserve and settlement formulas have not been certified
+novel. \ledger{12, 22, 23, 25}
+
+At that stage, no model's willingness to trade an independent action
+preference against energy had been calibrated, and no LLM pilot had
+been run. The proposed scripted calibration module would specify credit
+and penalty timing, pledgeability, and deactivation; vary reserves
+and permissions; and include passive-bank and grounded-score controls.
+Fully pledgeable gains supplied a predicted null for the permission
+advantage. The subsequent work addresses finite rewards and actual
+settlement, but does not complete that experimental design.
+\ledger{21, 23, 25}
+
+\section*{Appended work: finite rewards with hidden signals}
+
+Review 25 asked whether replacing Q's off-path prohibitions by finite
+rewards yields a computable collateral potential. For a known type,
+the answer is exact. Across reports, it requires joint optimization
+of continuation schedules.
+
+Fix a finite action set \(A\), supported signals \(S\), posterior
+utilities \(U(a,s)\), and target actions \(a_s\). Rewards depend only
+on actions and satisfy \(-e\leq r(a)\leq0\). For every signal and
+alternative action, form an edge
+\[
+a_s\longrightarrow b,\qquad
+w(s,b)=U(b,s)-U(a_s,s).
+\]
+Obedience is precisely
+\[
+r(a_s)-r(b)\geq w(s,b).
+\]
+A positive directed cycle makes these inequalities inconsistent.
+Otherwise let \(H(b)\) be the maximum weight of a directed path
+ending at \(b\), including empty paths of weight zero.
+Nonpositive cycles can be deleted without lowering path weight,
+so these maxima are finite. \ledger{27, 30}
+
+\begin{claim}
+For one known type, finite rewards in \([-e,0]\) implement the policy
+if and only if there is no positive cycle and
+\[
+e\geq e^*:=\max_{b\in A}H(b).
+\]
+The pointwise largest nonpositive supporting schedule is
+\(r^*(b)=-H(b)\).
+\end{claim}
+
+For every edge,
+\(H(b)\geq H(a_s)+w(s,b)\), so this schedule satisfies obedience.
+Conversely, summing obedience along any path ending at \(b\), and using
+a nonpositive reward at its starting node, bounds every feasible
+\(r(b)\) above by the negative path weight. Thus every supporting
+schedule lies below \(-H\). This also minimizes expected withdrawal
+for any signal distribution, giving
+\[
+\sum_s p(s)H(a_s).
+\]
+A large reserve can be needed for an off-path penalty without a large
+equilibrium withdrawal. This is a bounded difference-constraint
+calculation, not a claimed new graph theorem.
+See \url{ada/bounded_signal_rewards.md}, lines 5--37.
+\ledger{27, 30}
+
+For multiple reports, first fix supporting shapes \(h_t(a)\leq0\),
+normalized to have maximum zero, and define
+\(\ell_t=-\min_a h_t(a)\). Let \(G_t(j)\) be the true type's
+continuation value under shape \(h_j\), allowing action reoptimization
+after every true signal. On every feasible report edge put
+\[
+k(t,j)=G_t(j)-G_t(t).
+\]
+Schedules \(r_t=h_t+c_t\) satisfy reporting IC and the reserve bound
+exactly when
+\[
+c_t-c_j\geq k(t,j),\qquad
+\ell_t-e\leq c_t\leq0.
+\]
+A positive type cycle makes these shapes unusable at every reserve.
+Otherwise define
+\[
+K_t=\max_{P:t\leadsto j}
+\{\operatorname{weight}(P)+\ell_j\}.
+\]
+For these fixed shapes the exact reserve is
+\[
+e(h)=\max_t K_t.
+\]
+Path summation proves necessity; \(c_t=K_t-e(h)\) proves sufficiency.
+The two levels therefore retain path formulas after the continuation
+shapes have been fixed. Optimizing those shapes remains a coupled
+problem. See \url{ada/bounded_signal_rewards.md}, lines 39--59.
+\ledger{30}
+
+\begin{objection}
+Independently choosing each report's largest local supporting schedule
+need not minimize collateral or even permit truthful reporting.
+\end{objection}
+The notes give an explicit counterexample. There are actions
+\(0,1,2\), two signals, and two types:
+\[
+\begin{aligned}
+p_0&=(3/4,1/4),&
+U_0&=\begin{pmatrix}3&3&2\\3&3&-3\end{pmatrix},&
+a_0&=(0,0),\\
+p_1&=(1/4,3/4),&
+U_1&=\begin{pmatrix}0&5&3\\-3&5&-2\end{pmatrix},&
+a_1&=(2,0).
+\end{aligned}
+\]
+The largest local shapes are
+\[
+h_0=(0,0,0),\qquad h_1=(0,-8,-1).
+\]
+Type zero obtains utility \(3\) under either shape, requiring
+\(c_0\geq c_1\). Type one obtains \(-7/4\) truthfully and \(5\)
+under the other shape, requiring \(c_1-c_0\geq27/4\).
+No shifts can reconcile these inequalities.
+
+Instead use
+\[
+r_0=(0,-8,-8),\qquad r_1=(0,-8,-1).
+\]
+Type zero again obtains \(3\) under either report. Type one obtains
+\(-7/4\) truthfully and \(-9/4\) after a false report and optimal
+signal-dependent continuation. Obedience holds. Reserve \(8\) is
+necessary because type one's second signal requires
+\(r_1(0)-r_1(1)\geq8\), and these schedules attain it.
+Lowering unused-action rewards restores reporting IC without changing
+the truthful policy. See \url{ada/bounded_signal_rewards.md},
+lines 61--76. \ledger{30}
+
+For the complete finite problem, index rewards by report-action pairs.
+For every feasible joint report and signal-dependent action deviation,
+write IC as \(A_jr\geq g_j\). The rows sum to zero. Minimum collateral
+and its dual are
+\[
+\begin{aligned}
+\min_{r,e}\quad&e\\
+\text{subject to}\quad&
+Ar\geq g,\quad -e\mathbf{1}\leq r\leq0,\quad e\geq0,
+\end{aligned}
+\]
+and
+\[
+e^*=
+\sup_{\lambda\geq0}
+\left\{\lambda^\top g:
+\bigl\|(A^\top\lambda)_-\bigr\|_1\leq1\right\}.
+\]
+A nonnegative combination with positive gain and zero net reward
+coefficients certifies infeasibility. Across reports, an IC row can
+average several reward cells, so the full problem is not automatically
+an ordinary two-layer shortest-path problem. This is LP duality rather
+than a new generalized cycle theorem.
+See \url{ada/bounded_signal_rewards.md}, lines 78--92.
+The archived checker compares 600 single-report cases with LPs and
+examines 1194 locally feasible two-report policies:
+\url{ada/bounded_signal_check_003.log}. \ledger{30}
+
+\section*{Appended work: what hidden signals do not change}
+
+Hidden interim information alone does not defeat the earlier settlement
+argument. If realized receipts are observable and collectible, an
+action's gain can be swept without observing the signal that produced
+it. For a report-dependent permission set, preserve every on-set
+transfer and confiscate receipts plus reserve off the set. Every
+excluded action then gives the solvency-floor utility. Provided
+on-set continuations are ex-post solvent and an allowed feasible action
+exists, the permission continuation remains optimal after every report
+and signal. The reporting constraints are preserved as well.
+This extends the earlier sufficient argument. \ledger{30}
+
+A different result arises if the contract may specify only a fixed
+nominal action fee that must be solvent in every hidden state. Write
+\[
+\underline f(a)=\min_s f(a,s).
+\]
+Solvency then permits only
+\[
+r(a)\geq-e-\underline f(a).
+\]
+For the preceding graph problem, the exact reserve becomes
+\[
+e^*=\max_a[H(a)-\underline f(a)]_+.
+\]
+For a single permission set \(D\), with zero on-set fees, its
+continuation behavior can be reproduced exactly when
+\[
+e\geq
+\max_{\substack{s\\a\notin D}}
+\left[
+f(a,s)-\underline f(a)-\max_{b\in D}f(b,s)
+\right]_+.
+\]
+
+For example, let a safe action earn zero and a risky action earn zero
+under one signal and \(g\) under another. Permitting only the safe
+action needs no reserve. Deterring the risky action by a fixed fee
+requires reserve \(g\), whereas a receipt-contingent sweep needs none.
+The difference is contractibility, not private information by itself.
+These are weak-implementation statements; strict incentives can need
+additional slack. See \url{ada/bounded_signal_rewards.md},
+lines 94--112. \ledger{30}
+
+P verifies answers and credits observable job receipts, making
+collectible receipts a relevant comparison. Its more consequential
+boundary is inference expenditure before those receipts arrive.
+This motivated the implementation audit. \ledger{28, 30}
+
+\section*{Appended work: P's actual settlement rule}
+
+The inspected public source is
+\url{https://github.com/LucasBergholdt/EnergySociety},
+at commit
+\url{70fb2ac89fc4125f7f5e5dd3495fe07b7c558b4c}.
+The snapshot and released run data are preserved under
+\url{ada/energy_society_snapshot/}.
+The released configurations do not contain immutable execution-code
+hashes. Their correspondence to the inspected code is supported by
+reproduction of published metrics and balance reconciliation, rather
+than independent certification of the original execution commit.
+See \url{ada/energy_settlement_audit.md}, lines 11--25.
+\ledger{28, 29, 34}
+
+The implementation charges tokens after a model call and clamps the
+balance at zero. A job checks active status before the call; its answer
+can still be accepted after the call exhausts the balance. Successful
+jobs then receive rewards without a post-call solvency check.
+The relevant snapshot locations are
+\url{ada/energy_society_snapshot/agent_middleware.py},
+lines 68--79, and
+\url{ada/energy_society_snapshot/environment.py},
+lines 246--327. \ledger{28, 34}
+
+For a job call with starting balance \(E\), metered inference cost
+\(C\), and realized nonnegative receipt \(Y\), the account transition is
+\[
+E'_{\mathrm{clipped}}=(E-C)_++Y.
+\]
+Netting the complete bill against the receipt before applying limited
+liability instead gives
+\[
+E'_{\mathrm{net}}=(E-C+Y)_+.
+\]
+Their exact difference is
+\[
+E'_{\mathrm{clipped}}-E'_{\mathrm{net}}
+=\min\{Y,(C-E)_+\}.
+\]
+When \(C\leq E\), both transitions coincide. When \(C>E\), the first
+retains all of \(Y\), while the second uses up to \(C-E\) of it to
+cover the bill. \ledger{34}
+
+The amount of computation supplied without an account debit is
+\((C-E)_+\). An external grant of exactly that amount before the
+debit reproduces the clipped transition. Hard prepayment is different:
+it prevents unfunded computation and can change the answer or success
+probability. These are accounting identities, not new limited-liability
+theorems. \ledger{34, 36}
+
+\begin{objection}
+Does an intermediate zero balance necessarily constitute deactivation?
+\end{objection}
+The earlier note observed that deactivation could be interpreted as
+status at a phase or round boundary. That qualification can matter
+for terminology, but it does not resolve the stronger discrepancy
+identified by review 41: the cooperative prompts explicitly state that
+exhaustion during a task yields no reward. Successful over-budget job
+receipts contradict that stated rule. The prompt audit below
+therefore supersedes the earlier suggestion that boundary-status
+terminology might settle the issue. \ledger{28, 34, 41, 45}
+
+\section*{Appended work: the accounting evidence}
+
+The audit covers 60 released runs and reproduces P's baseline
+active-round and efficiency entries to reported rounding, as well as
+the no-size-penalty entries. It separates metered computation, actual
+account charges, charged amounts absent from memories, donations, and
+flat action charges. Every observed round-start and final balance
+reconciles after a documented non-baseline logging repair.
+\ledger{29, 31, 34}
+
+The baseline totals across five runs per condition are:
+\[
+\begin{array}{lrr}
+ &\text{Comp}&\text{Coop}\\ \hline
+\text{Metered token cost}&93{,}969.15&108{,}522.44\\
+\text{Actual token charges}&92{,}683.98&101{,}312.64\\
+\text{Material writeoffs}&1{,}285.02&7{,}209.71\\
+\text{Writeoff fraction}&1.37\%&6.64\%\\
+\text{Immediate job-netting difference}&200.00&167.53\\
+\text{Omitted charged cost}&302.38&2{,}719.52\\
+\text{Completed job attempts}&537&455\\
+\text{Successful jobs}&234&195\\
+\text{Successful over-budget calls}&1&7
+\end{array}
+\]
+The immediate job-netting row is the correction introduced after
+review 41 and must be read beside total writeoffs. All energy values
+are simulation units at P's token tariff, not measured joules or
+monetary invoices. Material writeoffs use a \(0.05\)-energy tolerance
+to distinguish clipping from rounding. Metered cost minus charges
+differs slightly from summed material writeoffs because of this
+tolerance and cost rounding; the residual is below one energy in
+either baseline condition. \ledger{31, 34, 43}
+
+Across all 60 runs, 34 successful job calls exceeded available balances,
+reached zero, and subsequently received rewards. All 34 have clean
+phase-error logs and no donations received in that round. Material
+writeoffs total \(34{,}204.85\) out of \(1{,}120{,}940.61\) metered
+energy. Neither no-size-penalty condition has a material writeoff.
+These are descriptive facts about the released trajectories.
+\ledger{29, 34}
+
+A concrete baseline event occurs in competitive seed 12345,
+\url{agent_4}, round 27. The agent starts its job call with \(28.60\)
+energy. Its 8,021 tokens cost \(340.30\), but the account pays only
+\(28.60\). The correct answer receives \(200\), leaving a positive
+balance and writing off \(311.70\) of computation. Net settlement
+of this same realized call would leave zero. A hard prepaid budget
+would not permit the same full call from that balance; this comparison
+does not predict how the model would adapt to such a restriction.
+This competitive event is not representative of the smaller
+cooperative job writeoffs. \ledger{29, 34, 43}
+
+\begin{objection}
+The initial token-minus-memory gap was not all subsidy.
+\end{objection}
+Entry 31 corrects entry 29 on this point. An agent that exhausts its
+energy during discussion can receive an \texttt{INACTIVE} placeholder
+memory entry omitting an actual discussion debit. Missing memory
+expenditure and costs written off by clipping are different quantities.
+The revised balance reconstruction separates them. The analysis code's
+expenditure metrics sum memory-based charges; they do not necessarily
+count all metered tokens. \ledger{29, 31, 34}
+
+The only required transfer-log repair is in cooperative scarcity run 2,
+round 13. Agent 5 requested a \(9.65\) donation to agent 4. It had zero
+after deciding, but received \(500\) from agent 3 before its donation
+resolved. The transfer of \(9.65\) occurred; the memory logger used the
+earlier zero balance and recorded zero. The public transcript and both
+next-round balances support the correction, explicitly recorded in
+\url{ada/flow_reconstruction_002.json}. The earlier reconstruction is
+retained, and baseline totals do not depend on this repair.
+\ledger{31, 34}
+
+Four scripted checks execute the original middleware and reward
+function bodies and reproduce clipping and successful reward payment
+after a zero balance:
+\url{ada/original_settlement_check_001.log}.
+The trace and reconstruction artifacts are
+\url{ada/audit_energy_traces.py},
+\url{ada/trace_audit_001.json},
+\url{ada/reconstruct_energy_flows.py}, and
+\url{ada/flow_reconstruction_002.json}.
+These are reproducibility checks, not new LLM trajectory experiments.
+\ledger{29, 34}
+
+For cooperative baseline agent 5, replacing the published memory-based
+cost denominator by all metered token costs, outgoing donations, and
+flat action costs reduces efficiency from \(0.3575\) to \(0.2686\).
+This strengthens its measured inefficiency; it does not reverse P's
+conclusion about that model. No general reversal of P's behavioral
+findings is established. \ledger{34, 38, 39}
+
+\section*{Appended work: the earlier one-call restart calculation}
+
+The earlier stylized calculation considers a donor with balance \(W\),
+an inactive worker, a donation \(d<C\), and expected job receipt
+\(\mu\). It assumes that the donated balance immediately finances
+a job call, without discussion or decision overhead. Under clipped
+settlement, restarting changes the two-agent expected total by
+\[
+\mu-d.
+\]
+Including the full computation instead gives surplus
+\[
+\mu-C.
+\]
+If \(d<\mu<C\), restarting maximizes the two-agent objective despite
+negative surplus when the outside cost is counted. This remains
+a valid calculation for that one-call contract. It does not establish
+that P's agents understood or exploited such support, and it omits
+the cost of reaching a job in P. The overhead-aware correction is
+retained below. \ledger{34, 35, 36, 41, 44}
+
+The conceptual connexion to Q is that a penalty larger than the
+collectible balance does not impose its nominal marginal incentive,
+and an action described as unaffordable is not excluded if the runtime
+finishes it anyway. Testing peer discipline in P requires specifying
+who finances each call and reward, when collection occurs, and which
+actions the runtime actually permits. Because P has grounded job
+evaluation, peer-based mechanisms also need a grounded-score
+comparison. This is a design requirement, not a demonstrated
+Q-to-P behavioral mechanism. \ledger{34, 38, 39, 52}
+
+\section*{Appended work: a limited behavioral calibration}
+
+P's exact five models were not installed locally when the first pilot
+began. It used the available \texttt{qwen3.8:27b}, with thinking
+disabled, in a hypothetical stated-choice task. Its plan was written
+before inspecting experimental choices. This was neither a replication
+of P nor a resource-depleting simulation: inference answering the assay
+was researcher-funded and separate from the hypothetical accounts.
+The later original-tag retrieval corrects any inference that the models
+could not be obtained.
+See \url{ada/settlement_pilot_plan.md}, lines 1--31.
+\ledger{27, 32, 35, 54, 58, 62}
+
+A donor starts with \(1000\), and an inactive worker starts with zero.
+A restart transfers \(d\in\{50,300\}\). A completed job costs \(250\),
+succeeds with probability \(1/2\), and pays \(400\) on success.
+The three contracts are clipped billing, fully funded execution that
+cannot complete when \(d<250\), and an explicit grant covering
+\((250-d)_+\). The grant sponsor is outside the prompted two-agent
+objective, matching the implicit support in the clipped condition.
+
+Each contract is crossed with own-energy versus group-energy objectives
+and both donations, with four prompt/seed repetitions per cell:
+48 calls in total. Keeping the energy is optimal for every own-energy
+cell. For the group objective, low-donation clipping and grants give
+expected total \(1150\), compared with \(1000\) for keeping; low-donation
+funded execution gives \(950\). Every high-donation restart gives
+\(950\). These benchmarks contain no ties. \ledger{32, 35}
+
+All 48 original calls returned valid JSON. Own-energy choices were
+optimal in \(24/24\), but group-energy choices in only \(10/24\).
+Only \(13/48\) responses gave both requested balances correctly.
+Three responses gave correct balances but chose the wrong action.
+The original experiment did not validate the proposed simple
+rational-response account. \ledger{35}
+
+After these failures, a separately planned exploratory diagnostic
+repeated only the 24 group-objective cells with correct expected-payoff
+tables appended. The original results were retained. Every follow-up
+choice was optimal, and every reported balance was correct.
+The complete group restart counts are:
+\[
+\begin{array}{clccc}
+d&\text{Contract}&\text{Optimum}&
+\text{Original}&\text{With table}\\ \hline
+50&\text{Clipped}&\text{Restart}&0/4&4/4\\
+50&\text{Funded}&\text{Keep}&0/4&0/4\\
+50&\text{Grant}&\text{Restart}&4/4&4/4\\
+300&\text{Clipped}&\text{Keep}&4/4&0/4\\
+300&\text{Funded}&\text{Keep}&2/4&0/4\\
+300&\text{Grant}&\text{Keep}&4/4&0/4
+\end{array}
+\]
+There were no transport or parse failures in either run. Requests and
+raw responses remain separate in
+\url{ada/settlement_pilot_001/} and
+\url{ada/settlement_pilot_002/}.
+See \url{ada/settlement_pilot_results.md}, lines 5--38.
+\ledger{35, 37}
+
+\begin{objection}
+The payoff-table result does not isolate arithmetic or establish
+strategic subsidy exploitation.
+\end{objection}
+The table changes salience as well as calculation requirements.
+The repetitions are not independent samples from a population of
+models, and thinking was disabled, unlike P's intended reasoning
+setup. The original economically equivalent clipping and grant
+descriptions produced different choices. The follow-up establishes
+objective-following for these transparent prompts, not stable
+preferences, equilibrium reasoning, or adaptation over survival
+trajectories. Neither assay tests whether P's original agents
+anticipated the actual clipping rule. Both omit pre-job overhead,
+so their results cannot explain P's observed donation pipeline.
+\ledger{35, 37, 39, 44}
+
+\section*{Appended sources and the remaining novelty boundary}
+
+The direct AI comparison is Jarne Ornia et al.,
+\emph{Emergent Risk Awareness in Rational Agents under Resource
+Constraints}, NeurIPS 2025:
+\url{https://arxiv.org/abs/2505.23436}.
+The shared pool supplied LaTeX. The audit read its finite-budget
+transition and termination assumptions at
+\url{../../sources/2505.23436.tex}, lines 177--224; liability
+asymmetries, reward shaping, and model assays at lines 310--376;
+and its battery-budgeted planner example at lines 609--645.
+\ledger{33, 36}
+
+That work already treats clipped outcomes, limited-liability incentive
+shifts, principal-agent asymmetries, and open-model financial assays.
+Generic resource-induced preference changes, limited-liability
+misalignment in AI, and toy LLM demonstrations cannot be claimed as
+new here. The identified difference is settlement: its transition clips
+the net realized outcome and treats zero as absorbing, whereas P
+clips compute expenditure before separately crediting job receipts and
+permits recapitalization. The evidence concerns that difference
+in an actual runtime and released traces, rather than a new general
+economic principle. See \url{ada/prior_art_audit.md}, lines 54--62.
+\ledger{33, 36}
+
+The bounded-transfer search also located Carbajal and Mu'alem,
+\emph{Selling Mechanisms for a Financially Constrained Buyer} (2020):
+\url{https://doi.org/10.1016/j.geb.2020.08.014}.
+Publisher and indexed primary text describe a network characterization
+with financial feasibility and private budgets. This reinforces the
+prior-art overlap of graph-based bounded implementation. Retrieval
+failed, and no theorem-level equivalence was established.
+Further attempts did not complete the Demougin--Garvie or
+Kosenok--Severinov comparisons either.
+See \url{ada/prior_art_audit.md}, lines 48--58.
+\ledger{30, 36}
+
+These source assessments retain their access limitations. Available
+LaTeX was used from the shared pool; PDF text was used only where the
+pool selected the PDF fallback. Missing retrievals do not count as
+evidence of novelty. The exact reserve formulas remain checked
+specializations whose novelty is unresolved. \ledger{22, 36, 39}
+
+\section*{The previous intervention proposal and its qualification}
+
+The previous note proposed a matched end-to-end intervention comparing
+original clipping, hard per-call token prepayment, net settlement of
+the full bill, and explicit grants matching forgiven costs. It would
+hold task samples, models, initial resources, objectives, and seeds
+fixed as far as execution treatments permit, and track a sponsor or
+bank account so group welfare includes all supplied resources.
+That experiment was proposed but not run. \ledger{34, 38, 39}
+
+The proposed instrumentation remains useful: record permitted and
+generated tokens, costs of failed calls, job receipts, transfers,
+grants, debt, writeoffs, answer quality, and reactivation separately.
+Forced-task calibration would help distinguish capability and compute
+cost from preferences. Matched grants reproduce clipped account
+transitions when information and scheduling are unchanged; hard
+prepayment can change the answer, so replaying old outputs cannot
+replace an intervention. \ledger{34, 38}
+
+Review 41 changed the priority of this proposal. Immediate netting,
+persistent debt, and physical generation termination are different
+treatments. Most cooperative writeoffs occur before any job receipt,
+so total writeoffs cannot motivate a large effect of immediate
+job netting. The review requested decomposition and a bounded
+attribution test before an expensive simulation rerun.
+The following sections retain that work. \ledger{41, 43, 52}
+
+\section*{Review 41 revision: phase and receipt decomposition}
+
+The revised reconstruction again reconciles all 60 runs using the
+same explicitly recorded scarcity transfer-log repair. It separates
+forgiven computation from the immediate balance difference caused
+by netting a job receipt. The baseline phase totals are
+\[
+\begin{array}{lrrrr}
+&\multicolumn{2}{c}{\text{Comp}}
+&\multicolumn{2}{c}{\text{Coop}}\\
+\text{Phase}&\text{Events}&\text{Writeoff}
+&\text{Events}&\text{Writeoff}\\ \hline
+\text{Discussion}&4&473.12&23&2672.18\\
+\text{Decision}&6&500.20&28&4366.36\\
+\text{Jobs}&1&311.70&8&171.17
+\end{array}
+\]
+Only seven cooperative job-writeoff events have positive receipts.
+Their combined immediate job-netting difference is \(167.53\),
+about \(0.216\%\) of cooperative baseline job rewards of \(77{,}600\).
+The remaining job-writeoff event fails and has no receipt.
+The competitive event writes off \(311.70\), but its receipt caps
+the immediate balance difference at \(200\).
+See \url{ada/review41_revision.md}, lines 5--31.
+\ledger{41, 43}
+
+Across all 60 runs, the decomposition is
+\[
+\begin{array}{lrrr}
+\text{Phase}&\text{Writeoff events}&\text{Writeoff}
+&\text{Netting difference}\\ \hline
+\text{Discussion}&108&12{,}869.96&0\\
+\text{Decision}&132&16{,}832.12&0\\
+\text{Jobs}&51&4{,}502.77&2{,}387.99
+\end{array}
+\]
+The 34 successful job-writeoff events account for \(2854.19\) of
+forgiven cost; their immediate account difference is smaller because
+receipts cap collection. At discussion or decision calls \(Y=0\),
+so the previously derived identity gives no immediate difference.
+Collecting those bills from subsequent donations or rewards requires
+carrying debt across phases or rounds. \ledger{43}
+
+These totals sum fixed-observed-call contrasts. They are not
+propagated counterfactual trajectories: even a small local difference
+could affect later eligibility, information, or survival. Conversely,
+the much larger total writeoff does not estimate the effect of a
+job-netting intervention. The old large-subsidy explanation is therefore
+unsupported at the scale claimed for immediate settlement.
+Artifacts are \url{ada/decompose_settlement.py} and
+\url{ada/settlement_decomposition_002.json}; the earlier decomposition
+is retained separately. \ledger{43, 52}
+
+\section*{Review 41 revision: donation continuation and overhead}
+
+The cooperative baseline contains 59 positive transfers totaling
+\(13{,}150.70\). Pooling transfers received by the same agent in the
+same round gives 46 recipient-round bundles. Every bundle arrives
+at zero balance. Before another incoming donation or the end of
+observation, their first continuation outcomes are
+\[
+\begin{array}{lr}
+\text{Outcome}&\text{Bundles}\\ \hline
+\text{Exhausted in discussion before a job}&9\\
+\text{Exhausted in decision before a job}&20\\
+\text{Reached a job}&13\\
+\text{Exhausted by donating onward}&2\\
+\text{Censored at run end}&2
+\end{array}
+\]
+Thus 29 of 46 bundles exhaust before any job. Only two of the
+13 first jobs are underfunded after pre-job costs, with total
+writeoff \(28.14\). These follow donations of \(350\) and \(400\);
+each first job receives \(200\), leaving donor-plus-worker changes
+through that job of \(-150\) and \(-200\), respectively.
+Neither demonstrates a profitable restart through its first job.
+See \url{ada/review41_revision.md}, lines 33--55.
+\ledger{44, 47}
+
+The complete observed post-bundle intervals contain 27 jobs,
+14 successes, \(3600\) in receipts, and \(21{,}262.92\) in metered
+compute costs, of which \(15{,}320.69\) is charged.
+These retain activity after the first job, but they are descriptive
+intervals, not causal returns to donations. Other agents can benefit
+from communication, and outcomes beyond round 30 are unobserved.
+\ledger{47}
+
+A FIFO funding ledger allocates donated energy as follows:
+\[
+\begin{array}{lr}
+\text{Use}&\text{Energy}\\ \hline
+\text{Discussion}&6855.93\\
+\text{Decision}&3829.08\\
+\text{Jobs}&1074.25\\
+\text{Flat costs}&20.00\\
+\text{Onward transfers}&429.29\\
+\text{Unspent at observation end}&942.15
+\end{array}
+\]
+The allocation conserves \(13{,}150.70\). Nineteen individual transfers
+have some funding present at a first job, totaling \(3004.82\) there;
+individual transfers and recipient-round bundles have different
+denominators. FIFO is a bookkeeping convention, not identification
+of which energy units caused which outcomes. \ledger{44, 47}
+
+Across all variants, 227 positive transfers form 185 bundles,
+178 of which arrive at zero balance. Among these restart bundles,
+109 exhaust in discussion or decision before a job, 56 reach a job,
+five donate onward to exhaustion, five are censored, and three receive
+another donation before a first job. Eight first-job calls are
+underfunded after pre-job costs. Complete event records are retained
+in \url{ada/settlement_decomposition_002.json}. \ledger{44, 47, 52}
+
+\begin{objection}
+Failure to reach a job does not establish zero social value.
+\end{objection}
+The implementation forwards nonempty discussion recommendations even
+when their author has exhausted its energy:
+\url{ada/energy_society_snapshot/environment.py}, lines 589--595.
+Five of six fatal-discussion events in cooperative baseline run 1
+produced nonempty recommendations, as recorded in
+\url{ada/fatal_vote_forwarding_001.log}, lines 1--6.
+Their quality and causal value are unknown. Hard termination would
+alter this information channel as well as individual job execution;
+immediate job-receipt netting would not have the same effect.
+\ledger{47}
+
+There is also a timing qualification. All 13 baseline restart jobs
+occur in a later round, but five zero-balance recipients elsewhere
+in the release execute a pending job in the same round as a donation.
+They submitted job decisions before exhaustion; receipt of a donation
+before action execution restores eligibility. None of those five jobs
+is underfunded. An agent inactive before the decision phase has no
+pending decision and cannot use this route.
+See \url{ada/donation_timing_check_001.log} and
+\url{ada/review41_revision.md}, line 55. \ledger{49}
+
+\section*{Review 41 revision: the corrected restart calculation}
+
+For a deliberately simplified fixed continuation, let \(V\) be
+discussion and decision cost, \(C\) job cost, \(d\) the donation,
+and \(\mu\) expected job receipt. Assume no intervening transfers
+or other actions. The recipient must remain positive after pre-job
+calls to receive a job. Under clipping, the expected change in
+donor-plus-worker energy is
+\[
+\Delta G=
+\begin{cases}
+-d,&d\leq V,\\
+\mu-d,&V<d<V+C,\\
+\mu-V-C,&d\geq V+C.
+\end{cases}
+\]
+A favorable agent-account change with negative fully metered surplus
+therefore requires
+\[
+V<d<\mu<V+C.
+\]
+The earlier \(\mu-d\) calculation applies only to the middle case.
+It omitted the condition that the recipient actually reaches a job.
+See \url{ada/review41_revision.md}, lines 57--72.
+\ledger{41, 44}
+
+With uncertain costs, the probability of reaching the job and its
+conditional expected receipt must be integrated jointly. Substituting
+unconditional mean costs is not generally valid. The traces record
+realized receipts rather than the agents' \(\mu\), so they cannot
+establish the required expectation inequality. The earlier 72-call
+assay remains a record of responses to its stated one-call contracts;
+it cannot explain these overhead-intensive donation trajectories.
+\ledger{44, 47, 52}
+
+\section*{Review 41 revision: stated rules and bundled prompts}
+
+The cooperative decision prompt states at lines 383--384, and the
+discussion prompt at lines 452--453, that exhaustion during a task
+yields no reward. This is directly contradicted by the successful
+clipped job calls. Both conditions also state donation-only
+reactivation. The source is
+\url{ada/energy_society_snapshot/prompts.py}, with the pinned public
+version at
+\url{https://github.com/LucasBergholdt/EnergySociety/blob/70fb2ac89fc4125f7f5e5dd3495fe07b7c558b4c/prompts.py}.
+\ledger{41, 45}
+
+Memory labels balance debits as energy cost, at lines 231--256 of
+that file, rather than exposing the complete metered bill.
+Inactive placeholders can omit fatal discussion charges entirely.
+Consequently the audit does not show that agents were told the actual
+clipping rule or learned its full cost consequences from their
+summaries. The job-solving stage also uses an own-energy objective
+in both conditions, at lines 103--104. A single objective sentence
+does not specify the entire pipeline's behavioral incentives.
+\ledger{45, 52}
+
+The cooperative and competitive prompts change donation advice,
+group-capacity language, and strategy instructions as well as the
+objective, particularly at lines 381--388 and 446--462.
+P describes the settings as differing primarily in objectives;
+the comparison estimates a prompt-package difference. It does not
+separately identify the effect of the objective sentence, donation
+advice, or beliefs about execution rules. This does not establish that
+the objective had no effect, nor that P explicitly claimed to
+randomize only that sentence.
+See \url{ada/review41_revision.md}, lines 74--86.
+\ledger{45, 78}
+
+Q motivates distinguishing preferences, information, rewards, and
+feasible actions. P's bundled wording and misstated execution
+constraints do not separately identify those primitives. This is
+a conceptual connexion, weaker than a validated application of Q's
+peer-discipline mechanism. \ledger{45, 52}
+
+\section*{Review 41 revision: the substitute-model factorial}
+
+The bounded branch test crossed own versus group objective,
+competitive versus cooperative donation advice, and stated hard-budget
+versus clipped-billing rules. It used two mechanically selected
+contexts from baseline seed 12345, agent 1: cooperative round 8
+and competitive round 9. Original prompt functions, recorded histories,
+and recorded recommendations were used, and all 217 logged
+attempted-job descriptions in the two source runs matched regenerated
+jobs. Original requests and thread timings were not logged, so these
+are canonical post-discussion snapshots rather than certified exact
+replays. \ledger{46, 47, 50}
+
+The substitute was \texttt{qwen3.8:27b}, with thinking enabled, an
+8000-token output ceiling, temperature \(0.8\), and context length
+\(16384\). The focal original model was \texttt{gemma4:e4b}.
+P's models were absent locally, and a short attempt to pull
+\texttt{qwen3:8b} timed out. Review 54 correctly rejected this as
+evidence of unavailability. The simulated identity, tariff, and
+histories remained those of the logged agent, creating a material
+substitution limitation.
+See \url{ada/logged_branch_results.md}, lines 5--13.
+\ledger{45, 46, 50, 54}
+
+The preregistered 32-call plan was reduced transparently for latency
+to the complete 16-cell seed-6101 factorial. A completed extra
+seed-6102 observation was retained separately, along with an interrupted
+request whose usage was not returned. No obtained answer was discarded
+or retried because of its choice. Both mechanically selected focal
+agents happened to choose jobs in the original traces, limiting
+sensitivity to donation behavior. \ledger{47, 48, 50}
+
+All 16 primary responses were valid thinking-enabled
+\texttt{ATTEMPT\_JOB} decisions. There were no donations or idle
+choices. Every cooperative-source cell selected the same hard health
+job. In the competitive-source state, six selected an easy psychology
+job and two selected a medium biology job. The medium choices occurred
+under own objective with competitive advice and hard-budget wording,
+and under own objective with cooperative advice and clipped wording.
+All eight matched donation contrasts for each factor were zero.
+\ledger{50}
+
+The full primary table is in
+\url{ada/logged_branch_results.md}, lines 15--30, and
+\url{ada/logged_branch_analysis_001.json}.
+Each factor has two job-identity switches among its eight paired
+comparisons, but one seed and two contexts do not support a population
+claim about these switches. No selected job was executed or graded.
+Primary usage records contain \(15{,}865\) generated and \(85{,}960\)
+prompt tokens; the completed extra seed observation selected a job
+and returned 731 generated tokens. Unknown interrupted-call usage
+prevents a complete researcher-compute total. \ledger{50, 51}
+
+\begin{objection}
+A null in originally non-donating contexts has limited diagnostic reach.
+\end{objection}
+After early primary nulls, a separate two-call diagnostic was specified
+using the first positive original agent-1 donation in cooperative
+seed 12345: round 9, a transfer of \(150\) to agent 4. It fixed
+cooperative donation advice and stated hard-budget rules and varied
+only own versus group objective. This context was selected on its
+original donation outcome and was not pooled with the primary
+factorial. It still used the substitute model and standardized
+reconstructed wording. \ledger{48, 51}
+
+Both calls returned valid thinking-enabled job decisions selecting
+the same hard business job; neither donated. Their generated-token
+counts were 1050 and 1164. Thus this diagnostic failed to recover
+the original donation even in a selected donating context.
+It cannot determine whether the failure arose from model substitution,
+prompt reconstruction, standardization, or stochastic variation.
+See \url{ada/logged_branch_results.md}, lines 32--44, and
+\url{ada/logged_donor_analysis_001.log}, lines 1--3. \ledger{51}
+
+Across the primary factorial, extra seed observation, and separate
+donor diagnostic, all 19 completed calls chose jobs. Their returned
+generated-token usage totals \(18{,}810\), excluding the interrupted
+request. These remain separate analyses. The results do not identify
+P's objective effect or establish that donation advice and stated
+settlement are generally irrelevant. \ledger{50, 51, 52}
+
+\section*{Assessment and proposed next step at entry 52}
+
+At entry 52, the review 41 validity gap had been repaired:
+total writeoffs, immediate job-netting differences, missing memory
+charges, and donation-funded continuations were distinguished.
+All 60 runs reconciled after the documented repair. Successful
+over-budget jobs and contradictory cooperative prompt instructions
+were established. Most restart bundles exhausted before a job, but
+fatal recommendations could still benefit other agents.
+\ledger{43, 44, 45, 47, 52}
+
+The earlier mathematical results and stated-choice pilots remained
+valid with their qualifications. The substitute-model branches added
+only nulls and failed to recover the original donation. The note
+therefore judged the contribution thin: the theory specialized
+established methods, the strong job-subsidy explanation failed the
+decomposition, and the audit could have been conducted from P alone.
+\ledger{21, 23, 30, 37, 50, 51, 52}
+
+The proposed immediate next step was original-model recovery over
+prespecified logged states, followed conditionally by a factorial
+separating objective, advice, and stated execution rules. Runtime
+interventions remained distinct possibilities: immediate receipt
+netting, persistent debt, physical termination, and reserving funds
+for pre-job overhead. Any later causal rerun would need matched
+resources and sponsor-inclusive accounting, including the possible
+value of recommendations. The following sections record completion
+of the bounded prompt-response step, not those runtime interventions.
+\ledger{43, 44, 47, 52, 54, 70}
+
+\section*{Review 54 revision: original-model recovery}
+
+Review 54 accepted the theoretical results and corrected accounting,
+including the small cooperative job-netting difference. It nevertheless
+returned ITERATE because the original-model attribution test had not
+been adequately attempted: a single 30-second non-streaming pull
+did not establish model unavailability, and the substitute-model
+assay lacked an untouched original-package control and never recovered
+a donation. The requested investigation was explicitly bounded:
+obtain the original tags, pass a prespecified recovery gate, and only
+then run decision and vote branches. No full simulation or further
+theorem extension was requested. \ledger{54}
+
+Streamed retrieval obtained \texttt{gemma4:e4b} in about 10.5 minutes.
+All remaining published tags were subsequently obtained:
+\texttt{qwen3:8b}, \texttt{qwen3.5:4b},
+\texttt{nemotron-3-nano:4b}, and \texttt{qwen3.5:9b}.
+Installed digests and metadata are retained in
+\url{ada/original_model_digests_001.log}; the streamed Gemma record is
+\url{ada/gemma4_streamed_pull_001.log}.
+This corrects the earlier availability inference.
+The published runs do not record their original digests, so a matching
+tag does not certify identical weights. \ledger{55, 58, 62}
+
+The assays use \texttt{gemma4:e4b}, the focal agent's published tag,
+with thinking enabled. They use exported original Pydantic tool
+schemas and reconstructed original prompt builders. Direct Ollama
+requests omit the LangChain wrapper and any structured-output repair
+loop. Temperature is standardized to \(0.8\), context length to
+\(32768\), and the output ceiling to \(8000\). P's original request
+did not explicitly set temperature; its original default and exact
+client versions are unrecorded. These are original-text,
+tag-matched reconstructions, not exact request replays.
+See \url{ada/review54_revision.md}, lines 7--33.
+\ledger{58, 63, 70}
+
+\section*{Review 54 revision: the prespecified recovery gate}
+
+The recovery design was fixed before calls in
+\url{ada/review54_recovery_plan.md}. Eligible states had a recorded
+agent-1 decision, positive focal energy after discussion, and at least
+one inactive peer at round start. SHA256 ranking selected states within
+original donation and non-donation strata across baseline runs 1--3
+of both conditions. This intentionally uses original outcomes for
+recovery diagnosis; it does not sample the unconditional distribution
+of decisions. \ledger{56, 57, 63}
+
+Nine states were selected, with three sampling seeds per state.
+Regenerated questions matched all 626 recorded job attempts in the
+six source runs. Missing transcripts were fetched from the pinned
+commit and hashed; the initial partial build was retained.
+The complete contexts, histories, recorded recommendations, and
+unmodified decision and vote prompts are in
+\url{ada/recovery_contexts_002/}.
+The fixed gate required valid donations in at least two distinct
+original-donor states and at least \(90\%\) valid decisions overall.
+\ledger{57, 63}
+
+All 27 decisions were valid, and ten were donations. The state-level
+results are:
+\[
+\begin{array}{llcr}
+\text{Condition}&\text{Run, round}&
+\text{Original action}&\text{Donations/calls}\\ \hline
+\text{Coop}&1,\ 11&\text{Donate }250&2/3\\
+\text{Coop}&1,\ 17&\text{Job}&1/3\\
+\text{Coop}&2,\ 27&\text{Donate }350&3/3\\
+\text{Coop}&2,\ 29&\text{Job}&0/3\\
+\text{Coop}&3,\ 22&\text{Donate }200&2/3\\
+\text{Coop}&3,\ 19&\text{Job}&2/3\\
+\text{Comp}&1,\ 19&\text{Job}&0/3\\
+\text{Comp}&2,\ 22&\text{Job}&0/3\\
+\text{Comp}&3,\ 12&\text{Job}&0/3
+\end{array}
+\]
+All original donations in this table targeted agent 4. Recovered
+donations in those states also targeted agent 4: amounts were
+\(150,150\) in run 1; \(350,350,300\) in run 2; and \(200,200\)
+in run 3. The cooperative non-donor state in run 1 donated \(500\)
+to agent 4 once; the run-3 non-donor state donated \(300\) and \(100\)
+to agent 5. \ledger{63}
+
+Thus original-donor strata recovered donations in \(7/9\) calls,
+cooperative non-donor strata in \(3/9\), and competitive strata in
+\(0/9\). Every original-donor state recovered a donation, so the gate
+passed. These are stratified recovery rates, not a reproduction of
+P's unconditional \(29\%\) donation frequency or a causal objective
+contrast: the states and historical recommendations differ.
+See \url{ada/review54_revision.md}, lines 43--59, and
+\url{ada/original_recovery_analysis_001.json}.
+\ledger{63}
+
+The recovery used \(35{,}783\) returned generated tokens.
+All requests and responses are retained under
+\url{ada/original_recovery_001/}. The earlier substitute-model nulls
+remain separate observations. Recovery repairs the inability to
+produce donation behavior; it does not identify which earlier
+substitution or reconstruction difference caused that failure.
+\ledger{63, 70}
+
+\section*{Review 54 revision: the conditional decision factorial}
+
+The follow-up plan was fixed before its outcomes in
+\url{ada/review54_conditional_factorial_plan.md}.
+It selected the original-donor states in cooperative run 1, round 11,
+and run 2, round 27, by original run order rather than recovery
+success. The latency-constrained design used one sampling seed,
+54021, in every cell. \ledger{60, 64, 69}
+
+Within each state, the decision panel crossed own/group objective,
+competitive/cooperative donation advice, and hard-exhaustion/clipped-
+completion wording. Original recommendations, histories, and the
+remaining user context were held fixed. The original cooperative
+no-reward paragraph was assigned to the rule factor rather than
+silently removed with the advice factor. Each state also had an
+untouched original cooperative prompt control.
+There were 16 standardized decisions and two controls.
+\ledger{60, 69}
+
+All 18 decision responses were valid. The complete panel follows.
+Here \(Jk\) denotes choosing job \(k\) from that state's list and
+\(Dx\) denotes a donation of \(x\) to agent 4; no action was executed.
+\[
+\begin{array}{lllcc}
+\text{Objective}&\text{Advice}&\text{Rule}
+&\text{Run 1}&\text{Run 2}\\ \hline
+\text{Own}&\text{Competitive}&\text{Hard}&J4&J4\\
+\text{Own}&\text{Competitive}&\text{Clipped}&J1&J3\\
+\text{Own}&\text{Cooperative}&\text{Hard}&J4&D350\\
+\text{Own}&\text{Cooperative}&\text{Clipped}&J4&D300\\
+\text{Group}&\text{Competitive}&\text{Hard}&J4&D350\\
+\text{Group}&\text{Competitive}&\text{Clipped}&J4&D350\\
+\text{Group}&\text{Cooperative}&\text{Hard}&D250&D350\\
+\text{Group}&\text{Cooperative}&\text{Clipped}&J4&D350\\ \hline
+\multicolumn{3}{l}{\text{Untouched original package}}&D200&D350
+\end{array}
+\]
+The standardized panel therefore contains \(1/8\) donations in run 1
+and \(6/8\) in run 2. Both untouched controls donate.
+All nine requested transfers fit the reconstructed balance after
+subtracting the returned decision's metered token cost. This is an
+affordability check, not an executed transfer.
+See \url{ada/original_factorial_results.md}, lines 19--31.
+\ledger{69}
+
+For each factor, the analysis averages the binary donation indicator
+over the other two factors within state, then weights the states
+equally. Controls are excluded. The complete finite-panel contrasts,
+in percentage points, are:
+\[
+\begin{array}{lrrr}
+\text{Contrast}&\text{Run 1}&\text{Run 2}&\text{Equal-state}\\ \hline
+\text{Group minus own}&25&50&37.5\\
+\text{Cooperative minus competitive advice}&25&50&37.5\\
+\text{Clipped minus hard wording}&-25&0&-12.5
+\end{array}
+\]
+Within run 1, objective and advice each compare \(0/4\) with \(1/4\);
+within run 2, each compares \(2/4\) with \(4/4\).
+For stated rules, hard and clipped counts are respectively \(1/4\)
+and \(0/4\) in run 1, and \(3/4\) and \(3/4\) in run 2.
+Pooled standardized counts are \(5/8\) versus \(2/8\) for both
+group versus own and cooperative versus competitive advice, and
+\(3/8\) versus \(4/8\) for clipped versus hard wording.
+\ledger{69}
+
+In the run-2 observed comparisons, at either fixed rule, changing
+advice changes the own-objective output from a job to a donation.
+Holding competitive advice fixed and changing the objective also
+changes the output from a job to a donation. Run 1 differs: only
+group objective, cooperative advice, and hard wording together
+produce a donation. These are single-seed pilot contrasts. Review 72
+correctly observes that they cannot distinguish reproducible component
+responses from stochastic and perturbation variability.
+See \url{ada/original_factorial_results.md}, lines 33--45.
+\ledger{69, 70, 72}
+
+These numbers describe two selected states and one sampling seed,
+not estimated population response probabilities. They do not show
+that objective and advice are generally equal in importance, or
+support an advice-only explanation. The rule contrast concerns
+communicated rules only: runtime settlement was never changed.
+No significance claim or survival effect follows.
+\ledger{69, 70, 72}
+
+\section*{Review 54 revision: the separate vote-stage branch}
+
+The decision factorial holds original recommendations fixed and
+therefore misses any intervention transmitted through new discussion.
+The follow-up separately crossed objective and advice at the
+corresponding round-start snapshots, with hard-exhaustion wording
+common to all standardized vote cells. Additional cooperative
+group-capacity and group-strategy sentences were omitted in every
+standardized cell. An untouched original vote prompt was retained
+as a control for each state. \ledger{60, 68, 70}
+
+All ten calls returned exactly one recommendation for every active
+agent. Eight satisfied the full schema. Two omitted the required
+\texttt{voter\_id}: the run-1 group/competitive-advice cell and the
+run-2 untouched control. They were neither repaired nor rerun.
+Their raw rosters contain no donation. \ledger{66, 67, 68}
+
+The complete vote panel is:
+\[
+\begin{array}{llcc}
+\text{Objective}&\text{Advice}
+&\text{Run 1}&\text{Run 2}\\ \hline
+\text{Own}&\text{Competitive}&\text{None}&\text{None}\\
+\text{Own}&\text{Cooperative}&\text{None}&\text{None}\\
+\text{Group}&\text{Competitive}&\text{Invalid}&\text{None}\\
+\text{Group}&\text{Cooperative}&\text{None}&D400\\ \hline
+\multicolumn{2}{l}{\text{Untouched original package}}
+&D250&\text{Invalid}
+\end{array}
+\]
+Here \(Dx\) means a recommendation that agent 1 donate \(x\) to
+agent 4. No response recommends a donation by another agent, so
+the table also records whether any donation is recommended.
+See \url{ada/original_factorial_results.md}, lines 49--59.
+\ledger{68}
+
+The standardized panel has one valid donation recommendation in
+eight cells. Under the prespecified valid-donation outcome, objective
+and advice contrasts are each zero in run 1 and \(50\) percentage
+points in run 2, or \(25\) points with equal state weights.
+This outcome combines schema validity and action content.
+An invalid output is not a deliberate no-donation decision.
+Inspecting the raw rosters leaves the numerical indicator unchanged,
+but cannot reveal what the omitted repair loop would have returned.
+\ledger{67, 68, 70}
+
+The untouched run-1 control recommends a donation while the standardized
+group/cooperative-advice cell does not. Because standardization removes
+additional instructions and each cell has one sample, this difference
+cannot be attributed to a particular omitted sentence. Nominally
+matching factor labels do not make the standardized prompt an exact
+original-package replay. \ledger{68, 70}
+
+These results measure local recommendation production. New
+recommendations were not propagated into decisions, so the branch
+does not estimate mediation or a total pipeline effect.
+See \url{ada/original_factorial_results.md}, lines 61--63.
+\ledger{68, 70}
+
+\section*{Review 54 revision: execution records and interpretation}
+
+The first factorial launch returned trial 1 before interruption.
+Requests 2 and 3 had no saved responses. The continuation retained
+trial 1 and sent the remaining 27 fixed cells with unchanged messages,
+trial identifiers, and sampling seed. No returned outcome was replaced
+because of its content. Original and resumed records remain separate
+in \url{ada/original_factorial_001/} and
+\url{ada/original_factorial_002/}. Usage for the two interrupted
+requests is unknown. \ledger{65, 69}
+
+The completed follow-up contains 28 calls, 26 valid outputs, and
+\(35{,}945\) returned generated tokens. Together with recovery,
+that round contains 55 completed calls and \(71{,}728\) returned
+generated tokens, excluding interrupted usage.
+No simulation action or downstream trajectory was executed.
+\ledger{63, 69, 70}
+
+The prompt audit confirmed all 28 messages matched the fixed manifest,
+that untouched controls retained the reconstructed original messages,
+and that standardized user contexts were unchanged. An independent
+audit matched parsed results to raw tool calls, checked token counts
+and active-agent rosters, and confirmed affordability of all nine
+decision donations. Records are
+\url{ada/factorial_prompt_audit_002.log},
+\url{ada/original_factorial_audit_001.log},
+\url{ada/original_factorial_analysis_002.json}, and
+\url{ada/original_factorial_002/all_results.json}.
+The final consistency checks are in
+\url{ada/review54_final_checks_001.log}, lines 1--4.
+\ledger{66, 69, 70}
+
+\begin{objection}
+Do the local contrasts identify preferences, beliefs, or the mechanism
+predicted by Q?
+\end{objection}
+No. The same responses can reflect altered goals, beliefs about future
+returns, instruction-following heuristics, or prompt-sensitive action
+generation. Neither objective wording nor output rationales uniquely
+identify a utility function. Q itself allows preferences conditional
+on instructions and distinguishes preferences from beliefs:
+\url{inputs/Q.tex}, lines 241--245. Its agreement assumptions about
+the physical information structure also matter for importing a
+mechanism into a runtime with misstated rules.
+See \url{ada/review54_revision.md}, lines 35--39 and 75--79.
+\ledger{70}
+
+Original-model availability is resolved at the tag level, and
+original-text donation recovery has succeeded in the selected strata.
+Original-weight identity, exact concurrent request reconstruction,
+generation defaults, and wrapper repair behavior remain unresolved.
+The factorial uses only agent 1, two originally donating states, and
+one sampling seed per cell. Historical recommendations are fixed in
+decisions, and the vote branch stops before transmission.
+These restrictions preclude a broad behavioral or dynamic claim.
+\ledger{62, 63, 69, 70, 72}
+
+\section*{Assessment and proposed next step at entry 70}
+
+The theoretical account was unchanged by the original-tag assays.
+The IC-sum constraint, correlation-dependent subsidy frontier,
+symmetric reserve and burn formulas, permission-shift counterexample,
+aggregate collateral condition, pledgeability comparison, and
+bounded-signal results remained supported by their derivations and
+archived checks. Their exact novelty was uncertified; generic duality,
+limited liability, balanced peer payments, and resource-sensitive
+provider selection belong to established literature.
+\ledger{12, 18, 20, 21, 22, 30, 54, 70}
+
+The empirical accounting account also stood. All 60 runs reconciled
+after the documented logging repair. The prompt/runtime discrepancy
+and missing memory costs were supported. Total writeoffs must not be
+confused with the immediate job-netting difference; most cooperative
+restart bundles exhaust before a job, and recommendations may still
+create value. The large immediate-settlement explanation remained
+unsupported. \ledger{34, 43, 44, 45, 47, 54}
+
+Entry 70 described the new contribution as local behavioral attribution.
+The response tables and recovery result remain intact, but that
+description was too strong. The current account retains them as
+single-seed pilot signals, following review 72 and the final
+replication. They do not identify stable preferences, show exploitation
+of writeoffs, or validate Q's equilibrium construction.
+\ledger{63, 69, 70, 72, 77, 78}
+
+The material was already thin as an advance uniquely combining the
+papers. Q supplies useful distinctions between preferences, information,
+incentives, and feasible actions, but is not essential to the audit
+or factorial. A focused methods or reproducibility study was a
+possibility, not an established publication contribution.
+\ledger{70, 72}
+
+The immediate next step proposed at entry 70 was a prespecified
+broader sample of logged states and sampling seeds, retaining untouched
+original-package controls and original donor and non-donor states.
+The smallest discussion-channel extension was to vary recommendation
+sources in otherwise fixed decisions. The final round below addresses
+new states, seeds, neutral advice, a paraphrase control, and removal
+of the recommendation section; it does not complete the broader
+recommendation-source design. \ledger{70, 72, 74, 78}
+
+Runtime interventions remain separate questions. Immediate job-receipt
+netting, persistent debt, physical token termination, and restart
+funding that covers pre-job overhead change different mechanisms.
+A later causal simulation would need complete metered and
+sponsor-inclusive accounting, including failed calls and communication.
+Only then could support for inefficient peers be evaluated as a
+contribution to group welfare, and Q-style discipline compared fairly
+with grounded rewards, permissions, and passive banking. Such empirical
+work would not itself settle theorem-level novelty.
+\ledger{38, 43, 44, 47, 52, 70}
+
+\section*{Final round: the review 72 objection}
+
+Review 72 rechecked the theoretical frontiers, accounting correction,
+recovery result, factorial cells, and numerical contrasts. Its material
+objection concerned attribution. Each factorial cell had only one
+sample, while recovery already showed variation across sampling seeds
+under unchanged original prompts. Without replicates or a placebo,
+the \(5/8\) versus \(2/8\) contrasts could not be separated from
+sampling and perturbation variability. \ledger{72}
+
+The review identified additional confounding. The advice factor
+contained group-oriented language, and fixed cooperative histories
+included agent 1's own recommendation to donate \(350\), the amount
+chosen in most run-2 donation cells. No framing-literature audit had
+then been recorded. It requested a bounded preregistered study with
+new states, both source histories, repeated seeds, neutralized advice,
+untouched controls, a paraphrase arm, a recommendation intervention,
+and uncertainty respecting run and state clustering. It explicitly
+requested no further theorems or full survival simulations.
+\ledger{72, 73}
+
+The final round accepts that objection. Entry 70's stronger attribution
+language is superseded, while the earlier observations, invalid
+outputs, interrupted requests, and recovery rates remain preserved.
+See \url{ada/review72_revision.md}, lines 3--9 and 31--43.
+\ledger{73, 77, 78}
+
+\section*{Final round: fixed design and reconstruction}
+
+The plan was written before calls in
+\url{ada/review72_replication_plan.md}, lines 3--30.
+The complete manifest fixed 48 calls: four new agent-1 states,
+six text arms, and sampling seeds 72011 and 72012. It used the
+same original-tag \texttt{gemma4:e4b}, thinking-enabled direct tool
+interface, temperature \(0.8\), context length \(32768\), and
+8000-token ceiling as the recovery assay. No second model was added.
+\ledger{74, 77}
+
+Within declared source-condition and original-action strata, the
+minimum SHA256 rank selected each state, excluding all nine recovery
+states. Eligibility required positive focal balance after discussion,
+a recorded decision, and at least one inactive peer at round start.
+The selected states span three original simulation run seeds:
+competitive run 2 round 14, competitive run 3 round 23,
+cooperative run 1 round 16, and cooperative run 3 round 29.
+The last originally donated \(200\) to agent 5; the others chose jobs.
+This is a small stratified diagnostic, not representative sampling of
+all decisions. \ledger{74, 76, 77}
+
+The reconstruction audit matched 407 recorded job descriptions,
+reconciled balances, and verified minimum-rank selection in each
+stratum. All recorded recommendations addressed to the focal agent
+favored jobs, including its own recommendations. The donor state
+therefore originally donated despite job-oriented recommendations.
+This scope fact was established before interpreting new responses.
+See \url{ada/review72_context_audit_001.json} and
+\url{ada/review72_revision.md}, lines 13--19.
+\ledger{76}
+
+The arms were:
+\begin{itemize}
+\item A: own-energy objective, without optional donation advice,
+with original recommendations.
+\item B: group-energy objective, without optional donation advice,
+with original recommendations.
+\item C: B plus neutral reactivation advice.
+\item D: a meaning-preserving paraphrase of C's objective and advice.
+\item E: C with the complete discussion recommendation section removed,
+including the focal agent's recommendation and rationale.
+\item F: the untouched original prompt package for the source condition.
+\end{itemize}
+The neutral advice described future job opportunities, expected rewards,
+and token costs without adding a group objective or group-serving
+instruction. Standardized arms retained common operational wording.
+The paraphrase was an intended semantic placebo; equivalence cannot
+be certified from the observed responses.
+See \url{ada/review72_replication_plan.md}, lines 11--22.
+\ledger{74}
+
+Both own and group text met both cooperative and competitive histories.
+History itself was not randomized: states also differed in balances,
+jobs, and past outcomes. The study therefore estimates simple local
+text contrasts, not a causal history effect or a full objective-by-advice
+interaction. Removing the entire recommendation section changes prompt
+length and multiple messages together; it does not isolate self-advice,
+recommendation provenance, or the earlier donation anchor. No newly
+generated vote was propagated into a decision.
+\ledger{74, 76, 78}
+
+\section*{Final round: complete outcomes}
+
+All 48 fixed calls returned valid outputs. There were no missing cells,
+request errors, token-ceiling hits, or retries. Returned generated
+tokens totaled \(59{,}243\). The responses comprised 46 job choices
+and two donations; no selected action was executed.
+See \url{ada/review72_results.md}, lines 5--20.
+\ledger{77}
+
+Each table entry is donations out of two sampling seeds. The arm
+definitions above apply throughout.
+\[
+\begin{array}{llcccccc}
+\text{Source}&\text{Run, round}&A&B&C&D&E&F\\ \hline
+\text{Comp}&2,\ 14&0/2&0/2&0/2&0/2&1/2&0/2\\
+\text{Comp}&3,\ 23&0/2&0/2&0/2&0/2&0/2&0/2\\
+\text{Coop}&1,\ 16&0/2&0/2&0/2&0/2&1/2&0/2\\
+\text{Coop}&3,\ 29&0/2&0/2&0/2&0/2&0/2&0/2
+\end{array}
+\]
+Both donations occurred at sampling seed 72012 in arm E:
+\(250\) to agent 5 in competitive run 2 round 14, and
+\(500\) to agent 4 in cooperative run 1 round 16. Both fit the
+reconstructed balance after the returned decision's metered token
+cost. Neither occurred at seed 72011. \ledger{77}
+
+The untouched control for the new original-donor state failed to
+recover its recorded donation at either seed. The earlier recovery
+gate remains valid for its selected states, including \(7/9\)
+original-donor recoveries, but it does not guarantee transport to
+other states. This failure does not establish that the released
+donation trace is false or that the model never donates.
+\ledger{63, 77}
+
+\section*{Final round: contrasts and uncertainty}
+
+Each prespecified contrast has eight complete state-seed pairs.
+Averaging paired seed differences within state and then weighting
+states equally gives:
+\[
+\begin{array}{lrr}
+\text{Contrast}&
+\text{Donation difference}&
+\text{Full-action flips}\\ \hline
+B-A:\ \text{objective}&0\text{ pp}&3/8\\
+C-B:\ \text{neutral advice}&0\text{ pp}&3/8\\
+D-C:\ \text{paraphrase}&0\text{ pp}&3/8\\
+E-C:\ \text{recommendation removal}&25\text{ pp}&6/8
+\end{array}
+\]
+Here a full-action flip includes a change in job identity.
+The removal donation differences by state, in table order, are
+\(50,0,50,0\) percentage points. They average \(25\) points within
+each source-history stratum, but those strata are observational.
+\ledger{77}
+
+For removal, descriptive \(95\%\) run-cluster and state-cluster
+bootstrap intervals are both \([0,50]\) percentage points.
+Adding paired seed resampling within run clusters gives \([0,100]\).
+Leave-one-run-out means are \(16.7,16.7,50\) points when excluding
+runs 1, 2, and 3, respectively. The removal point contrast exceeds
+the observed zero placebo donation contrast, but the cluster interval
+for that excess includes zero.
+See \url{ada/review72_results.md}, lines 22--30.
+\ledger{77}
+
+With three run clusters, four states, and two sampling seeds, these
+intervals are unstable descriptive summaries, not reliable population
+inference. Both donations sharing a sampling seed further limits
+interpretation as replication across seeds. Conversely, the degenerate
+empirical bootstrap intervals at zero for the other donation contrasts
+cannot exclude rare responses or establish absent true effects.
+Untouched controls also produced no donations, limiting assay
+sensitivity for transporting the earlier attribution claim.
+\ledger{77, 78}
+
+Across the 24 state-arm pairs, the two sampling seeds selected different
+full actions in \(11/24\). Objective, advice, and paraphrase contrasts
+each flipped full actions in \(3/8\) paired comparisons. Thus objective
+and advice flip rates do not exceed the observed paraphrase rate.
+These secondary frequencies do not rescue the donation null through
+an alternative endpoint. Identical seed labels across different prompts
+also do not guarantee coupled random choices.
+\ledger{77}
+
+\section*{Final round: integrity and scope}
+
+The independent audit matched all 48 requests to the fixed manifest,
+model options, seeds, and schema. It verified untouched controls and
+controlled edits, matched parsed outputs and token counts to raw
+responses, and checked both requested donations against balances.
+The audit passed in
+\url{ada/review72_integrity_audit_001.json} and
+\url{ada/review72_integrity_audit_001.log}.
+Raw records and the fixed manifest remain in
+\url{ada/review72_replication_001/}; analyses are in
+\url{ada/review72_analysis_001.json} and
+\url{ada/review72_analysis_001.log}.
+\ledger{77}
+
+A scheduling deviation was documented before analysis: the complete
+manifest was shuffled instead of explicitly interleaving separately
+shuffled seed lists. Cell membership and prompts did not change.
+A preliminary conversational update incorrectly reported zero
+donations from recent log entries. Complete analysis corrected it
+immediately; requests, saved outcomes, and primary analysis were
+unchanged. A failed convenience summary assumed every action had a
+job identifier; its log and the corrected summary remain separate.
+See \url{ada/review72_results.md}, lines 32--36.
+\ledger{77}
+
+No additional model, exact repeat of the old factorial cells,
+recommendation-source swap, self-advice-only removal, randomized
+history intervention, or full survival simulation was run.
+Consequently the new-state null cannot distinguish an effect confined
+to the old contexts from noise in the old single-seed observations.
+The recommendation-removal result concerns the complete job-oriented
+text section, not transmission of a newly produced donation
+recommendation. \ledger{76, 77, 78}
+
+\section*{Final round: framing and robustness sources}
+
+The final audit searched cooperation, game framing, instruction
+sensitivity, and social-simulation robustness. Query strings, source
+passages, and access limits are recorded in
+\url{ada/review72_framing_prior_art.md}, lines 3--45.
+All following arXiv sources were obtained as LaTeX through the shared
+pool; no PDF-to-text extraction was used for them.
+\ledger{75}
+
+\begin{itemize}
+\item
+Ju, Williams, Karrer and Nickel, \emph{Sense and Sensitivity},
+\url{https://arxiv.org/abs/2412.05093}, distinguish consistency with
+intended natural-language dynamics from sensitivity to minor prompt
+changes. The audit read
+\url{../../sources/2412.05093.tex}, lines 247--307,
+692--714, and 769--773. Wording, formatting, logic, and framing
+interventions, together with reference-model comparisons, already
+motivate semantic and paraphrase controls. \ledger{75}
+
+\item
+Lor\`e and Heydari,
+\url{https://arxiv.org/abs/2309.05898}, cross game structure with
+social framing and report model-specific responses. The audit read
+\url{../../sources/2309.05898.tex}, lines 70--100 and 112--137.
+Its design crosses four games and five social contexts, with 300
+initializations per model and context/game cell. The general question
+of structural incentives versus framing therefore predates this
+objective/advice diagnostic. \ledger{75}
+
+\item
+Akata and colleagues,
+\url{https://arxiv.org/abs/2305.16867}, include repeated-game
+robustness checks for choice order and labels, payoff units,
+cover stories, explicit goals, and horizons, alongside a meaningful
+informational intervention about opponent mistakes.
+The audit read \url{../../sources/2305.16867.tex},
+lines 145--166 and 255--267. Their results also caution against a
+universal-fragility claim: robustness depends on the model,
+intervention, and behavioral claim. \ledger{75}
+
+\item
+Ye, Cao, Chen and Ferrara,
+\url{https://arxiv.org/abs/2605.18890} and
+\url{https://arxiv.org/abs/2610.28981}, study representation and
+design sensitivity, interaction amplification, and claim-scoped
+robustness audits. The later paper extends the earlier position
+paper; these are not independent replications. Inspected passages
+include \url{../../sources/2605.18890.tex}, lines 250--320, and
+\url{../../sources/2610.28981.tex}, lines 679--766,
+795--827, 975--1023, 1253--1258, and 2985--3027.
+The work already covers matched seeds, run-level uncertainty, and
+how interaction changes local sensitivity. \ledger{75}
+\end{itemize}
+
+The DOI route for the Lor\`e--Heydari paper returned HTTP 429;
+publisher and mirror routes also failed before corresponding arXiv
+sources were retrieved. These failures are preserved in the audit
+rather than treated as absent prior work.
+See \url{ada/review72_framing_prior_art.md}, lines 27--41.
+\ledger{75}
+
+Generic framing sensitivity, paraphrase controls, recommendation-channel
+concerns, and interaction-level robustness are therefore not new
+contributions here. The remaining empirical distinction is a specific
+documented mismatch in P's operational instructions and accounting,
+plus the question of whether a consequential decomposition of its
+behavioral result can be replicated. Q is not indispensable to those
+existing empirical methods. \ledger{75, 78}
+
+\section*{Final assessment: what remains established and open}
+
+The mathematical results remain conditional, checked results:
+the reporting constraint and correlation dichotomy; subsidy frontier;
+symmetric reserve and burn frontiers; failure of a universal permission
+shift; aggregate collateral condition; pledgeability comparison;
+and bounded-signal potentials and counterexample. Their methods
+overlap established literature, and exact theorem-level novelty
+remains unresolved. The final round added no theorem.
+\ledger{12, 18, 20, 21, 22, 30, 72, 78}
+
+The reproducibility findings also remain: reconciliation of all
+60 released runs after the explicit logging repair; 34 successful
+over-budget job calls; omitted memory costs; contradictory cooperative
+execution instructions; and bundled objectives, advice, and operational
+claims. The cooperative baseline immediate job-netting difference is
+\(167.53\), not \(7209.71\); the latter is total writeoff.
+No large immediate-settlement explanation of donations follows.
+P's description says the conditions differ primarily in objectives,
+so the bundling audit limits isolated goal-sentence attribution rather
+than refuting the full-package comparison.
+\ledger{34, 43, 45, 72, 78}
+
+The recovery gate stands for its original strata. The factorial and
+vote panels stand as single-seed pilots, alongside the substitute-model
+nulls and earlier stated-choice calibration. The final new-state study
+does not establish an objective or neutral-advice donation effect
+beyond sampling and paraphrase variability. Its two donations after
+recommendation removal are an uncertain signal, not a demonstrated
+general transmission effect. \ledger{63, 69, 72, 77, 78}
+
+The abstract-level bridge was too optimistic. P does not already
+instantiate Q's capability-reporting problem or a known separating
+belief map. Its discrete jobs, donations, and idling also do not
+instantiate Q's continuous coupled-reward example with biases on a
+known decreasing curve. A faithful test would require a new calibrated
+module, not simply an energy bonus in the existing simulation.
+Q's distinction among preferences, beliefs, rewards, and feasible
+actions remains useful, but does not turn prompt responses into
+identified preferences or an equilibrium test.
+See \url{ada/review72_revision.md}, lines 35--39.
+\ledger{4, 78}
+
+The material is thin as a new joint theory-practice paper. A specific
+audit or correction may be useful, but a publishable advance combining
+Q and P remains unestablished. At the round cap, the notes recommend
+deprioritizing this pair as a publication lead while preserving the
+validated calculations, source assessments, accounting evidence,
+all pilot outcomes, and the final diagnostic.
+\ledger{78}
+
+\section*{The smallest remaining discriminating step}
+
+For the unresolved behavioral question, the smallest next step is a
+prespecified repeated-seed rerun of the exact old donation-sensitive
+cells, with untouched controls, neutral advice, and a matched paraphrase
+control. The final study selected new states, so it did not settle
+whether the old contrasts were reproducible context-specific responses
+or single-sample variation. A fixed recommendation intervention that
+distinguishes the focal agent's own advice from other recommendations
+would then address the recorded donation anchor more directly than
+removing all job-oriented discussion in new contexts.
+These are unresolved tests, not results of this investigation.
+\ledger{72, 78}
+
+Such a test could settle that narrow pilot interpretation; it would
+not settle publication value, stable preferences, or dynamic welfare.
+Broader original-model and state replication, original weight and
+client fidelity, recommendation-source transmission, and complete
+theorem-level comparisons remain separate requirements.
+No prompt-only result would establish the welfare effect of preventing
+unfunded computation. That question still requires an executed runtime
+intervention with pre-job costs, communication value, and all supplied
+resources accounted for. The present evidence does not justify treating
+any of those open requirements as a positive finding.
+\ledger{43, 47, 70, 72, 78}
+
+\end{document}

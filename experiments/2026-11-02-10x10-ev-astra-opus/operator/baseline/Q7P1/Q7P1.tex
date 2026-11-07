@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Consolidation of the Pair Q and P}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies a quadratic-payment mechanism for stochastic resource allocation and a variable-sample proximal best-response iteration intended to reach its unique Nash equilibrium. P studies distributed CVaR minimization for a shared decision using projected consensus descent and one-point estimates of a smoothed empirical CVaR objective.
+
+\section*{The connexion pursued}
+The proposed connexion was to use P's risk-averse oracle as the learning component of Q's mechanism. This is not a literal substitution: Q's update solves a sample-average proximal best-response problem, while P supplies a gradient estimate inside a projected consensus update (entries 1 and 2). The defensible connexion is instead a robustness statement comparing P's fixed empirical-smoothed surrogate with the true CVaR objective (entries 20, 25, and 26).
+
+\section*{What was found}
+For agent $n$, let
+\[
+C_n(x)=\operatorname{CVaR}_{\alpha_n}(J_n(x,\xi)),\qquad
+\widetilde C_n(x)=\operatorname{E}_{\nu,\mathrm{batch}}
+[\widehat C_{n,s_n}(x+\delta_n\nu)].
+\]
+Under P's boundedness and Lipschitz assumptions, set
+\[
+b_n=L_n\delta_n+\frac{U_n}{\alpha_n}\sqrt{\frac{2\pi}{s_n}}.
+\]
+For each fixed $z$, CVaR stability, bounded support, and the integrated DKW bound give
+\[
+\operatorname{E}_{\mathrm{batch}}|\widehat C_{n,s_n}(z)-C_n(z)|
+\leq \frac{U_n}{\alpha_n}\sqrt{\frac{2\pi}{s_n}}.
+\]
+The right-hand side is independent of $z$. Jensen's inequality and P's smoothing bound therefore prove
+\[
+\sup_{x\in X_\delta}|\widetilde C_n(x)-C_n(x)|\leq b_n. \tag{1}
+\]
+This is a uniform bound for the deterministic expected surrogate, not for a single empirical objective (entries 25 and 26).
+
+Let $B=\sum_n b_n$. If $x^*$ and $\widetilde x$ minimize the true and surrogate total costs on the same feasible set, applying (1) at those two points and using their respective optimality gives
+\[
+\sum_n C_n(\widetilde x)-\sum_n C_n(x^*)\leq 2B.
+\]
+If the true total cost is $\rho$-strongly convex, then
+\[
+\|\widetilde x-x^*\|\leq 2\sqrt{\frac{B}{\rho}}
+\]
+(entries 25 and 26). These are cost-level bounds. For Q's normalized valuations
+\[
+V_n(x)=-C_n(x)+C_n(0),\qquad
+\widetilde V_n(x)=-\widetilde C_n(x)+\widetilde C_n(0),
+\]
+the uniform valuation error is at most $2b_n$, not $b_n$. Nevertheless, if a feasible surrogate mechanism makes the deviation-to-zero argument available, only the realized normalized valuation must be transferred between the games, so the true individual-rationality deficit is at most $2b_n$ (entry 27). Exact budget balance at the surrogate equilibrium is likewise only conditional on the surrogate KKT construction and a feasible common LMI (entries 19, 22, 27, and 30).
+
+There is a related structural observation, but not a completed mechanism theorem. If every sample loss is $\rho_n$-strongly convex, the CVaR risk-envelope representation makes $C_n$ $\rho_n$-strongly convex and $V_n$ $\rho_n$-strongly concave, possibly nonsmooth (entries 3, 9, and 22). Extending Q's differentiable mechanism proof through subgradient KKT conditions or a strongly monotone variational inequality, and proving common-LMI feasibility, remain open (entries 22 and 30).
+
+\section*{Objections and their status}
+The plug-in interpretation was rejected because the algorithms have different update types (entries 2 and 6). Claims of exact true individual rationality at a surrogate equilibrium were corrected to the $2b_n$ deficit above (entries 16, 19, and 27). The verifier's objection that the surrogate-error bound lacked a proof (entry 24) was resolved by the fixed-$z$ stability and integrated DKW argument in entries 25 and 26. The later verifier objection was also accepted: the nonsmooth extension of Q is unproved, and using the normalized error $2b_n$ inside a generic welfare argument would give $4B$, whereas the sharper proved welfare bound $2B$ follows directly from the unnormalized costs (entry 30).
+
+Q's convergence proof separately applies global nonexpansiveness componentwise, which its assumption does not justify (entries 7, 13, and 20). Its residual-to-iterate inference is omitted but repairable on a compact domain with a continuous map and a unique fixed point (entries 11 and 13). Thus the recorded proof is incomplete, not shown false.
+
+\section*{Outside sources}
+No sources outside Q and P were used. The CVaR stability and DKW calculation used in (1) were taken from P's argument as recorded in entries 25 and 26.
+
+\section*{What remains open}
+The material is thin. It does not establish the nonsmooth Q mechanism, common-LMI feasibility, or a player-wise oracle and outer-loop complexity theorem (entries 22 and 30). P works on the shrunken set $X_\delta$, so the welfare and allocation bounds compare with Q's optimizer on $X$ only if $x^*\in X_\delta$; otherwise a domain-shrinkage error is still required (entries 25, 26, and 30). Exact convergence to the true CVaR equilibrium would also require vanishing smoothing, growing batches, summable inexactness, and repair of Q's fixed-point proof (entries 6, 12, and 22).
+
+\section*{Smallest next step}
+Settle the existing domain caveat: either verify $x^*\in X_\delta$ or derive the missing domain-shrinkage error. That would determine whether the proved surrogate bounds apply to Q's original feasible set; it would not by itself prove the open nonsmooth mechanism extension (entries 25, 26, and 30).
+
+\end{document}

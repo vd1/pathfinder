@@ -1,0 +1,902 @@
+{
+ "generated_at": "2026-11-02T23:48:29Z",
+ "panels": [],
+ "scan": {
+  "done": 100,
+  "total": 100,
+  "errors": 1,
+  "same_corpus": false,
+  "rate_per_minute": null,
+  "eta_seconds": null,
+  "first_call": null,
+  "last_call": null,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "selected": 14,
+  "cut": null,
+  "min_score": 1500.0,
+  "per_paper": null,
+  "default_cut": 1,
+  "version": "101120.1789151288523498441/1975.1789152163521564445/-/15919.1789150420885946533/16283.1789150445607039520/-/-"
+ },
+ "campaign": {
+  "name": "2026-11-02-10x10-ev-astra-opus",
+  "title": null,
+  "description": null,
+  "backend": "codex",
+  "model": "gpt-6.1-sol",
+  "seats": 4,
+  "rounds": 6,
+  "allowances": {
+   "peer_calls": 2,
+   "peer_seconds": 3600,
+   "consolidate_seconds": 3600,
+   "verify_seconds": 3600,
+   "edit_seconds": 900,
+   "paper_seconds": 1800,
+   "review_seconds": 900,
+   "peer_call_seconds": 3600
+  },
+  "research_scheme": "eva",
+  "account": {
+   "name": "codex-subscription",
+   "seats": 6,
+   "in_use": 1
+  },
+  "budget": {
+   "calls": 202,
+   "input_tokens": 408801367,
+   "output_tokens": 3811982,
+   "cache_read": 385018779,
+   "interrupted": {
+    "calls": 1,
+    "input_tokens": 0,
+    "output_tokens": 0
+   },
+   "limits": {
+    "input_tokens": 1000000000,
+    "output_tokens": 14000000
+   }
+  },
+  "execution_id": "6081d9394d3ff4dda4c57a083963049219d75b4143c39f8c0fd643af9d166ede",
+  "stop": null
+ },
+ "progress": {
+  "cooldown_seconds": 0.0,
+  "status": "recent",
+  "last_event_at": "2026-11-02T23:48:29Z",
+  "events_truncated": false,
+  "events_corrupt": 0
+ },
+ "runner": {
+  "status": "finished",
+  "pid_alive": true,
+  "heartbeat_age_seconds": 0.0,
+  "active_pairs": []
+ },
+ "stages": {
+  "research": {
+   "PAUSE": 10,
+   "DRAFT": 4
+  },
+  "edit": {
+   "queued": 14
+  },
+  "paper": {}
+ },
+ "pipeline": [
+  {
+   "title": "Selected",
+   "count": 0,
+   "states": [
+    {
+     "key": "waiting",
+     "label": "Waiting",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "title": "Research",
+   "count": 0,
+   "states": [
+    {
+     "key": "researching",
+     "label": "In progress",
+     "count": 0
+    },
+    {
+     "key": "stopped",
+     "label": "Stopped",
+     "count": 0
+    },
+    {
+     "key": "orphaned",
+     "label": "Orphaned",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "title": "Outcome",
+   "count": 14,
+   "states": [
+    {
+     "key": "draft",
+     "label": "DRAFT",
+     "count": 4
+    },
+    {
+     "key": "pause",
+     "label": "Paused",
+     "count": 10
+    },
+    {
+     "key": "handoff",
+     "label": "Handed off",
+     "count": 0
+    },
+    {
+     "key": "blocked",
+     "label": "Blocked",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "title": "Readable note",
+   "count": 0,
+   "states": [
+    {
+     "key": "editing",
+     "label": "Editing",
+     "count": 0
+    },
+    {
+     "key": "noted",
+     "label": "Note ready",
+     "count": 0
+    },
+    {
+     "key": "note-blocked",
+     "label": "Note blocked",
+     "count": 0
+    }
+   ]
+  },
+  {
+   "title": "Paper",
+   "count": 0,
+   "states": [
+    {
+     "key": "writing",
+     "label": "Writing",
+     "count": 0
+    },
+    {
+     "key": "accepted",
+     "label": "Accepted",
+     "count": 0
+    },
+    {
+     "key": "amend",
+     "label": "Amendments asked",
+     "count": 0
+    },
+    {
+     "key": "paper-blocked",
+     "label": "Paper blocked",
+     "count": 0
+    },
+    {
+     "key": "cleared",
+     "label": "Cleared",
+     "count": 0
+    },
+    {
+     "key": "released",
+     "label": "Released",
+     "count": 0
+    }
+   ]
+  }
+ ],
+ "usage": {
+  "calls": 202,
+  "completed": 200,
+  "calls_with_usage": 200,
+  "input_tokens": 408801367,
+  "cache_read": 385018779,
+  "output_tokens": 3811982,
+  "seconds": 131785.0
+ },
+ "blocks": [],
+ "units": [
+  {
+   "unit": "Q4P10",
+   "score": 3575,
+   "feasibility": 65,
+   "gain": 55,
+   "connexion": "Q's mechanism-design proposals (peer scoring for discipline, reward coupling to induce competition, and a formal sandbagging model of concealed capability) could be implemented as incentive interventions inside P's open-source Energy Society testbed and tested against its existing baseline of self-serving/competitive LLM agent behavior.",
+   "q": {
+    "id": "2609.01595",
+    "title": "Mechanism Design for Alignment and Control",
+    "abstract": "We develop a framework for mechanism design with AI agents whose alignment (preferences) and capabilities (feasible actions and information) are unknown. We want such agents to act on our behalf so mechanisms must incentivize both honesty and obedience. A one-sided imitation structure---capabilities can be concealed but not counterfeited---yields a revelation principle, a characterization of implementable policies via nested cyclical monotonicity, and conditions under which eliciting higher-order beliefs can discipline multiple agents. We apply our framework to stylized examples of (i) sandbagging in which a more capable agent pretends to be less capable; (ii) an alignment--interpretability trade-off, where the two are substitutes in the instrument but complements in value; (iii) discipline via peer scoring; (iv) coupling rewards to induce competition among multiple agents; and (v) scalable oversight and reward shaping."
+   },
+   "p": {
+    "id": "2607.14865",
+    "title": "The Energy Society: A Simulation Environment for Studying Agent Cooperation under Survival Pressure",
+    "abstract": "LLM-based agents are increasingly deployed in multi-agent environments whose incentives can shape their behavior. We introduce The Energy Society, a minimal survival economy for studying how competitive and cooperative incentives affect emergent behavior when inference cost is directly tied to survival: Agents spend energy based on model size when generating tokens, regain energy by completing jobs or receiving donations, and deactivate if their energy reaches zero. We compare competitive and cooperative objectives against a baseline setting and several control variants. Across experiments, larger models consistently consume the most energy and spend more energy than they gain, even in those settings where token cost is not size-dependent. Cooperative incentives substantially alter behavior: agents donate to reactivate others, sometimes at the cost of their own survival, and job allocation changes. Ablations reveal that allowing agents to recommend actions to each other supports coordination and ambitious job selection, while memory helps agents calibrate risk from past outcomes. Agents rarely choose direct sabotage, but show more subtle signs of self-serving behavior in the competitive setting. The Energy Society is a compact testbed for studying the interaction between token costs and group incentives under a survival pressure. Source code is available at https://github.com/LucasBergholdt/EnergySociety"
+   },
+   "summary": "Strongest supported result, score=4/10: the conditional binary subsidy, reserve and burn frontiers (the IC sum (1), \\(V^*(B_0)\\) on Q's prior and \\(2/11\\) versus \\(5/11\\) rederived), together with a reproducible audit of P's prompt/runtime contradiction and the small \\(167.53\\) job-netting wedge against \\(7209.71\\) writeoffs (tables, code lines and final 48-call flip rates rechecked); it holds as stated but is not ready for paper review, because the theory specializes established limited-liability and balanced-mechanism methods with theorem-level novelty uncertified, and the audit needs only P and changes no headline conclusion. The final repeated-seed study removes the only candidate empirical advance: objective, neutral-advice and paraphrase donation contrasts are all zero, the untouched controls recover no donation, and the \\(+25\\) point removal signal comes from two donations at one seed and is not replicated across seeds, while generic framing sensitivity is already covered by Ju et al., Lore-Heydari, Akata et al. and Ye et al. This is round six, so no further round is available; the missing inputs are a theorem-level comparison showing the exact reserve formulas are new and more than routine, or an executed matched runtime intervention with sponsor-inclusive accounting and replicated exact-cell repeats showing a consequential correction to P.",
+   "usage": {
+    "calls": 19,
+    "input_tokens": 55323742,
+    "output_tokens": 397245,
+    "seconds": 19724.7
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 6,
+    "reason": "Strongest supported result, score=4/10: the conditional binary subsidy, reserve and burn frontiers (the IC sum (1), \\(V^*(B_0)\\) on Q's prior and \\(2/11\\) versus \\(5/11\\) rederived), together with a reproducible audit of P's prompt/runtime contradiction and the small \\(167.53\\) job-netting wedge against \\(7209.71\\) writeoffs (tables, code lines and final 48-call flip rates rechecked); it holds as stated but is not ready for paper review, because the theory specializes established limited-liability and balanced-mechanism methods with theorem-level novelty uncertified, and the audit needs only P and changes no headline conclusion. The final repeated-seed study removes the only candidate empirical advance: objective, neutral-advice and paraphrase donation contrasts are all zero, the untouched controls recover no donation, and the \\(+25\\) point removal signal comes from two donations at one seed and is not replicated across seeds, while generic framing sensitivity is already covered by Ju et al., Lore-Heydari, Akata et al. and Ye et al. This is round six, so no further round is available; the missing inputs are a theorem-level comparison showing the exact reserve formulas are new and more than routine, or an executed matched runtime intervention with sponsor-inclusive accounting and replicated exact-cell repeats showing a consequential correction to P."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T15:22:56Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q4P10/Q4P10.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q3P9",
+   "score": 3300,
+   "feasibility": 60,
+   "gain": 55,
+   "connexion": "Q documents that LLM agents in a double-auction market fail to converge efficiently, and one could test whether grafting P's self-negotiated contract mechanism onto Q's public double-auction framework (as a pre-trade commitment layer) closes that efficiency gap, since P showed contracts improve cooperative outcomes beyond 'regular trading' in a different LLM multi-agent setting.",
+   "q": {
+    "id": "2609.02580",
+    "title": "Competitive Market Behavior of LLMs",
+    "abstract": "Large language models (LLMs) are increasingly deployed as economic agents, yet there is little evidence whether LLM agents are suited for participating in market mechanisms designed for humans, and whether these mechanisms deliver desired outcomes when faced with LLM agents. We address this question by replicating seminal economic experiments, replacing human subjects with LLM agents. We place agents in a double auction environment, which is a widely-used market mechanism. We check whether such a market is able to deliver an efficient allocation of resources, thereby testing a novel dimension of alignment of LLM agents -- their compatibility with a fundamental market mechanism. We find that markets populated by LLM agents exhibit slower or no convergence towards market equilibrium, thus providing less efficient allocations than markets populated by humans. We then analyze agents' individual trading decisions and find substantial heterogeneity both across model families and market roles. We also run a lexical analysis of Chain-of-Thought (CoT) traces generated by the agents. We find that the decision to execute a trade rather than continue incrementally adjusting prices is associated with a shift from strategic considerations toward urgency. We publicly release our testing framework, which can be used for future evaluations."
+   },
+   "p": {
+    "id": "2607.22750",
+    "title": "Commitment To Cooperation With Self-Negotiated Contracts",
+    "abstract": "As AI agents operate with increasing autonomy in a multi-agent world, they will need to learn to cooperate with other agents and with humans to generate mutual benefits. However, cooperation is a challenge because the costs of cooperation are often incurred early on, but the benefits are only realized later, creating an incentive to defect. How can AI agents cooperate with commitment? Here, we draw on inspiration from legal institutions and contracting that human societies have used to solve principal-agent problems of this kind. Contracts provide observable representations of agreements that enable credible commitments through the enforcement of terms. We study the role of contract-based cooperation using LLM-based agents in \\CT, a spatial-temporal game that combines bargaining with navigation towards a goal. We study a suite of contract representations that range from formal contracts that compile to code to natural contracts that require reinterpretation. We evaluate agents with a range of LLM backbones using different sizes and providers. We find that self-negotiated contracts can improve cooperative outcomes beyond what is possible with regular trading."
+   },
+   "summary": "The strongest supported result is a single-benchmark audit of P, score=3/10, and it is not ready for paper review: its headline, execution changing at equal reconstructed inputs (\\(54/138\\) repeated groups), reproduces in the records I checked but is the expected behaviour of a judge sampled at temperature 1 (ada/p-repo/src/game/judge.py:18, game.py:68, P's stated setting), which the note never says, and repeated-input judge variability and deterministic compilation already have close prior work. The other findings hold as reported but do not reach a non-obvious contribution, since the prompt bundling and the unimplemented zero-score penalty are implementation corrections to one paper, fresh semantic coding failed validation (\\(\\kappa=0.292\\)), no causal effect or counterfactual completion is measured, Q supplies no measured response, and novelty against the Hantel and RFQ full texts remains uncertified. Another round is not worth it because the retrieved logs have repeatedly yielded only further audit detail, whereas the informative tests need inputs this project lacks: recorded judge requests and replies, a pinned runtime with its judge model (config.py:31 defaults to GPT-4.1 while P names Qwen-3-235B and the inspected log header does not record it), and live model access for crossed continuations.",
+   "usage": {
+    "calls": 15,
+    "input_tokens": 46877507,
+    "output_tokens": 258733,
+    "seconds": 9779.300000000001
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 5,
+    "reason": "The strongest supported result is a single-benchmark audit of P, score=3/10, and it is not ready for paper review: its headline, execution changing at equal reconstructed inputs (\\(54/138\\) repeated groups), reproduces in the records I checked but is the expected behaviour of a judge sampled at temperature 1 (ada/p-repo/src/game/judge.py:18, game.py:68, P's stated setting), which the note never says, and repeated-input judge variability and deterministic compilation already have close prior work. The other findings hold as reported but do not reach a non-obvious contribution, since the prompt bundling and the unimplemented zero-score penalty are implementation corrections to one paper, fresh semantic coding failed validation (\\(\\kappa=0.292\\)), no causal effect or counterfactual completion is measured, Q supplies no measured response, and novelty against the Hantel and RFQ full texts remains uncertified. Another round is not worth it because the retrieved logs have repeatedly yielded only further audit detail, whereas the informative tests need inputs this project lacks: recorded judge requests and replies, a pinned runtime with its judge model (config.py:31 defaults to GPT-4.1 while P names Qwen-3-235B and the inspected log header does not record it), and live model access for crossed continuations."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T12:23:37Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q3P9/Q3P9.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q4P6",
+   "score": 3150,
+   "feasibility": 70,
+   "gain": 45,
+   "connexion": "Q's mechanism-design framework for eliciting truthful capability/contribution signals from agents under concealment could supply the theoretical grounding (revelation principle, incentive compatibility conditions) for why MARS-RA's pairwise-comparison-based credit assignment is robust to strategic misreporting by agents, and conversely MARS-RA's empirical multi-agent RL setup could serve as a testbed for Q's peer-scoring and coupled-reward mechanisms.",
+   "q": {
+    "id": "2609.01595",
+    "title": "Mechanism Design for Alignment and Control",
+    "abstract": "We develop a framework for mechanism design with AI agents whose alignment (preferences) and capabilities (feasible actions and information) are unknown. We want such agents to act on our behalf so mechanisms must incentivize both honesty and obedience. A one-sided imitation structure---capabilities can be concealed but not counterfeited---yields a revelation principle, a characterization of implementable policies via nested cyclical monotonicity, and conditions under which eliciting higher-order beliefs can discipline multiple agents. We apply our framework to stylized examples of (i) sandbagging in which a more capable agent pretends to be less capable; (ii) an alignment--interpretability trade-off, where the two are substitutes in the instrument but complements in value; (iii) discipline via peer scoring; (iv) coupling rewards to induce competition among multiple agents; and (v) scalable oversight and reward shaping."
+   },
+   "p": {
+    "id": "2607.27967",
+    "title": "MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons in Embodied Multi-Agent Cooperation",
+    "abstract": "Credit assignment is a fundamental challenge in cooperative multi-agent reinforcement learning, particularly in embodied AI settings characterized by limited and delayed feedback as well as dynamically changing numbers of active agents. We propose MARS-RA, a framework that reformulates credit assignment as a rank aggregation problem using contribution-based pairwise comparisons among agents generated by large multimodal models. This shift from absolute to relative estimation ensures robustness against noise and dynamic agent participation, converting comparison results into contribution scores for potential-based reward shaping. We provide theoretical justification for the convergence and robustness of the proposed framework, and show that Shapley values can be used as an interpretive reference. Experimental results on challenging tasks of different types indicate that MARS-RA can guide agents toward effective cooperation."
+   },
+   "summary": "The strongest supported result is the critic-information account of comparative potential shaping: the residual \\(e=\\rho(I-\\Pi)\\psi\\) and its future action covariance, the attainable-residual condition \\(\\langle r,z-r\\rangle=0\\), the exact-credit welfare loss under \\(G+\\beta_H q_i\\), and the delay-reversal and selective-absorption probes; I rechecked the main formulas and the round-5 tables and they hold, but score=3/10. It is not ready for paper review, with no correctness problem but insufficient substance: the mathematics is elementary projection and GAE algebra close to HuRL, BARFI, gradient-similarity and decision-aware actor-critic work and to known normalization failures, the DAE full-text comparison remains incomplete, and the round-5 visual study failed to reproduce the delay collapse, attributes much of the residual RMS to query noise, and establishes no failure in P, which is why this result itself falls short rather than merely the rejected Q-to-P claim. Another round is not worth its cost: the gridworld's unshaped controls already solve the task, so P's rescue of a failing baseline is untested, but because the shifted critic exactly equals the base run, any such gain must pass through the unmatched-critic channel, so a final attribution study would add mainly empirical detail inside existing prior art and still could not reach P without its code, its critic and return conventions, and DAE access, which are the missing inputs.",
+   "usage": {
+    "calls": 15,
+    "input_tokens": 27664183,
+    "output_tokens": 249908,
+    "seconds": 11575.2
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 5,
+    "reason": "The strongest supported result is the critic-information account of comparative potential shaping: the residual \\(e=\\rho(I-\\Pi)\\psi\\) and its future action covariance, the attainable-residual condition \\(\\langle r,z-r\\rangle=0\\), the exact-credit welfare loss under \\(G+\\beta_H q_i\\), and the delay-reversal and selective-absorption probes; I rechecked the main formulas and the round-5 tables and they hold, but score=3/10. It is not ready for paper review, with no correctness problem but insufficient substance: the mathematics is elementary projection and GAE algebra close to HuRL, BARFI, gradient-similarity and decision-aware actor-critic work and to known normalization failures, the DAE full-text comparison remains incomplete, and the round-5 visual study failed to reproduce the delay collapse, attributes much of the residual RMS to query noise, and establishes no failure in P, which is why this result itself falls short rather than merely the rejected Q-to-P claim. Another round is not worth its cost: the gridworld's unshaped controls already solve the task, so P's rescue of a failing baseline is untested, but because the shifted critic exactly equals the base run, any such gain must pass through the unmatched-critic channel, so a final attribution study would add mainly empirical detail inside existing prior art and still could not reach P without its code, its critic and return conventions, and DAE access, which are the missing inputs."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T17:02:04Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q4P6/Q4P6.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q3P10",
+   "score": 3000,
+   "feasibility": 60,
+   "gain": 50,
+   "connexion": "Q's double-auction market mechanism (and its urgency-vs-strategy CoT lexicon) could be transplanted into P's Energy Society as the resource-allocation layer, testing whether the allocative inefficiency and urgency-driven trade timing Q observed under artificial induced-value payoffs is amplified when the stakes are literal survival via inference-cost-driven energy depletion.",
+   "q": {
+    "id": "2609.02580",
+    "title": "Competitive Market Behavior of LLMs",
+    "abstract": "Large language models (LLMs) are increasingly deployed as economic agents, yet there is little evidence whether LLM agents are suited for participating in market mechanisms designed for humans, and whether these mechanisms deliver desired outcomes when faced with LLM agents. We address this question by replicating seminal economic experiments, replacing human subjects with LLM agents. We place agents in a double auction environment, which is a widely-used market mechanism. We check whether such a market is able to deliver an efficient allocation of resources, thereby testing a novel dimension of alignment of LLM agents -- their compatibility with a fundamental market mechanism. We find that markets populated by LLM agents exhibit slower or no convergence towards market equilibrium, thus providing less efficient allocations than markets populated by humans. We then analyze agents' individual trading decisions and find substantial heterogeneity both across model families and market roles. We also run a lexical analysis of Chain-of-Thought (CoT) traces generated by the agents. We find that the decision to execute a trade rather than continue incrementally adjusting prices is associated with a shift from strategic considerations toward urgency. We publicly release our testing framework, which can be used for future evaluations."
+   },
+   "p": {
+    "id": "2607.14865",
+    "title": "The Energy Society: A Simulation Environment for Studying Agent Cooperation under Survival Pressure",
+    "abstract": "LLM-based agents are increasingly deployed in multi-agent environments whose incentives can shape their behavior. We introduce The Energy Society, a minimal survival economy for studying how competitive and cooperative incentives affect emergent behavior when inference cost is directly tied to survival: Agents spend energy based on model size when generating tokens, regain energy by completing jobs or receiving donations, and deactivate if their energy reaches zero. We compare competitive and cooperative objectives against a baseline setting and several control variants. Across experiments, larger models consistently consume the most energy and spend more energy than they gain, even in those settings where token cost is not size-dependent. Cooperative incentives substantially alter behavior: agents donate to reactivate others, sometimes at the cost of their own survival, and job allocation changes. Ablations reveal that allowing agents to recommend actions to each other supports coordination and ambitious job selection, while memory helps agents calibrate risk from past outcomes. Agents rarely choose direct sabotage, but show more subtle signs of self-serving behavior in the competitive setting. The Energy Society is a compact testbed for studying the interaction between token costs and group incentives under a survival pressure. Source code is available at https://github.com/LucasBergholdt/EnergySociety"
+   },
+   "summary": "The strongest supported result is a verified diagnostic package, score=3/10: \\(G^\\star=7.5\\) at five or six trades, common-price welfare \\(W_\\kappa=G-\\kappa K\\), the Q code audit, the demoted quote-reset counterexample, and the ceiling \\(U_t=G_t+R_t\\) separating unfinished from committed loss. I reproduced the final-round market and control figures from `ada/round5_market_analysis_01.log`, `ada/round5_inventory_01.log` and `ada/round5_scripted_summary_01.log` and found no material correctness or attribution error, but it is not ready for paper review because the bound and accounting are elementary, the margin and gate observations rest on one complete seed per model with no paired variance, no local model reproduces Q's regime, and fees, ZI efficiency, profit margins and invocation gating all have precedents. Another round is not worth using: a powered 16 to 24 pair margin replication would at best confirm an effect largely anticipated by the scripted reservation-quote controls and known minimum-profit strategies, and the inputs that could change the assessment, namely Q's authentic logs and revision, frontier-model access and valid reasoning-token metering, are unavailable.",
+   "usage": {
+    "calls": 16,
+    "input_tokens": 32585629,
+    "output_tokens": 230809,
+    "seconds": 14075.499999999998
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 5,
+    "reason": "The strongest supported result is a verified diagnostic package, score=3/10: \\(G^\\star=7.5\\) at five or six trades, common-price welfare \\(W_\\kappa=G-\\kappa K\\), the Q code audit, the demoted quote-reset counterexample, and the ceiling \\(U_t=G_t+R_t\\) separating unfinished from committed loss. I reproduced the final-round market and control figures from `ada/round5_market_analysis_01.log`, `ada/round5_inventory_01.log` and `ada/round5_scripted_summary_01.log` and found no material correctness or attribution error, but it is not ready for paper review because the bound and accounting are elementary, the margin and gate observations rest on one complete seed per model with no paired variance, no local model reproduces Q's regime, and fees, ZI efficiency, profit margins and invocation gating all have precedents. Another round is not worth using: a powered 16 to 24 pair margin replication would at best confirm an effect largely anticipated by the scripted reservation-quote controls and known minimum-profit strategies, and the inputs that could change the assessment, namely Q's authentic logs and revision, frontier-model access and valid reasoning-token metering, are unavailable."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T19:01:35Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q3P10/Q3P10.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q7P1",
+   "score": 2200,
+   "feasibility": 40,
+   "gain": 55,
+   "connexion": "Replace Q's expected-value stochastic satisfaction functions with CVaR-based risk-averse objectives and use P's zeroth-order CVaR gradient estimator inside Q's VS-PBR best-response loop, then check whether Q's LMI-derived quadratic payment mechanism still implements the social-welfare NE with budget balance and individual rationality, and whether mean-square convergence survives CVaR's non-smoothness and estimator bias.",
+   "q": {
+    "id": "2608.29130",
+    "title": "A Systematic Approach to Mechanism Design with Stochastic Dynamic Stability",
+    "abstract": "We consider a resource allocation problem with strategic agents that have private stochastic satisfaction functions and local constraints. To achieve a global optimal solution, we propose an incentive mechanism that induces a game among the agents. For the payment function of the mechanism, we construct a family of quadratic functions using the linear matrix inequality (LMI) approach that implements the social welfare maximizing outcome on the unique Nash equilibrium (NE) of the induced game while ensuring budget balance and individual rationality. Moreover, we propose a decentralized variable sample-size proximal best-response (VS-PBR) algorithm with Krasnoselskij iteration where only aggregate information is available to the agents. The algorithm is dynamically stable, as it is proven to converge in the mean-square sense to the NE of the game. The efficiency of the mechanism is then investigated on the Sioux Falls City transportation network, where electric vehicle (EV) users jointly select their destination and route."
+   },
+   "p": {
+    "id": "2609.04460",
+    "title": "Distributed risk-averse optimization via CVaR",
+    "abstract": "Distributed systems often operate under uncertainty, where minimizing expected loss may overlook rare but severe events. This paper studies a distributed risk-averse convex optimization problem in which agents cooperatively minimize the average of local conditional value-at-risk (CVaR) objectives over a time-varying network. Each agent has access only to noisy evaluations of its local loss function, rather than to its CVaR objective or gradient. We therefore develop a zeroth-order algorithm that uses sampled losses to construct empirical CVaR estimates and their gradient estimates. At each iteration, agents combine neighboring decisions and perform a local update. Under convexity and Lipschitz continuity assumptions, we prove that the agents reach exact asymptotic consensus. We also establish a finite-time expected suboptimality bound for the weighted ergodic iterate. With diminishing step sizes and fixed sample sizes, the local last iterates converge almost surely to a common optimum, and their limiting expected CVaR gap is bounded in terms of the smoothing and finite-sample errors. This distributed bound matches the parameter dependence of the centralized benchmark provided in this paper. Finally, simulations on a distributed sensor network estimation problem illustrate the efficacy of the method."
+   },
+   "summary": "Strongest supported result (score=5/10): the refutation of Q's LMI feasibility, IR and unique-message claims, a one-term payment repair with direct implementation, budget balance and IR, atom-safe Lipschitz bias giving order-tight true economic distortion \\(O(\\delta+s^{-1})\\), a saddle-gap transfer to unrestricted joint allocation-price regret, and conditional \\(O(\\epsilon^{-3})\\) total-query upper bounds with locally feasible queries for both private thresholds and independent symmetric batches. It is ready for paper review: I re-derived this round's batch variance, anchor-based multiplier cap, contraction transfer, boundary example and curvature-penalized comparator supremum, and spot-checked the earlier counterexamples, repair and transfer bounds, without finding an error, but the ingredients are established, Hurwicz, Chen and Koshal remain uncompared, no convergence experiment exists for the new learners, and the draft should benchmark \\(\\epsilon^{-3}\\) against the strongly convex one-point bandit literature (from my recollection, e.g. Agarwal, Dekel and Xiao 2010, unchecked in the pool), which neither the note nor the working notes cite. Another round is not worth taking: the bounded round requested by #37 resolved its baseline, curvature and access-model questions, further rate sharpening would mostly refine generic zeroth-order optimization rather than the mechanism contribution, and experiments and priority comparison belong in paper review.",
+   "usage": {
+    "calls": 12,
+    "input_tokens": 15083933,
+    "output_tokens": 248465,
+    "seconds": 9035.5
+   },
+   "research": {
+    "status": "DRAFT",
+    "stage": "done",
+    "round": 4,
+    "reason": "Strongest supported result (score=5/10): the refutation of Q's LMI feasibility, IR and unique-message claims, a one-term payment repair with direct implementation, budget balance and IR, atom-safe Lipschitz bias giving order-tight true economic distortion \\(O(\\delta+s^{-1})\\), a saddle-gap transfer to unrestricted joint allocation-price regret, and conditional \\(O(\\epsilon^{-3})\\) total-query upper bounds with locally feasible queries for both private thresholds and independent symmetric batches. It is ready for paper review: I re-derived this round's batch variance, anchor-based multiplier cap, contraction transfer, boundary example and curvature-penalized comparator supremum, and spot-checked the earlier counterexamples, repair and transfer bounds, without finding an error, but the ingredients are established, Hurwicz, Chen and Koshal remain uncompared, no convergence experiment exists for the new learners, and the draft should benchmark \\(\\epsilon^{-3}\\) against the strongly convex one-point bandit literature (from my recollection, e.g. Agarwal, Dekel and Xiao 2010, unchecked in the pool), which neither the note nor the working notes cite. Another round is not worth taking: the bounded round requested by #37 resolved its baseline, curvature and access-model questions, further rate sharpening would mostly refine generic zeroth-order optimization rather than the mechanism contribution, and experiments and priority comparison belong in paper review."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "draft",
+   "last_activity": "2026-11-02T17:36:58Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q7P1/Q7P1.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q4P3",
+   "score": 2100,
+   "feasibility": 60,
+   "gain": 35,
+   "connexion": "Q's principal-agent mechanism-design framework (honesty/obedience elicitation, peer scoring, sandbagging, scalable oversight) offers a formal lens to model P's reviewer-critic-main agent protocol as a mechanism, predicting when structured disagreement disciplines agents versus collapses into false consensus; one could formalize AR's critic role as Q's 'peer scoring' instrument and derive conditions (from nested cyclical monotonicity) under which disagreement elicitation is incentive-compatible, then test whether AR's empirical false-consensus failure matches the theory's predicted failure mode absent those conditions.",
+   "q": {
+    "id": "2609.01595",
+    "title": "Mechanism Design for Alignment and Control",
+    "abstract": "We develop a framework for mechanism design with AI agents whose alignment (preferences) and capabilities (feasible actions and information) are unknown. We want such agents to act on our behalf so mechanisms must incentivize both honesty and obedience. A one-sided imitation structure---capabilities can be concealed but not counterfeited---yields a revelation principle, a characterization of implementable policies via nested cyclical monotonicity, and conditions under which eliciting higher-order beliefs can discipline multiple agents. We apply our framework to stylized examples of (i) sandbagging in which a more capable agent pretends to be less capable; (ii) an alignment--interpretability trade-off, where the two are substitutes in the instrument but complements in value; (iii) discipline via peer scoring; (iv) coupling rewards to induce competition among multiple agents; and (v) scalable oversight and reward shaping."
+   },
+   "p": {
+    "id": "2608.18167",
+    "title": "Adversarial Review: Structured Disagreement for Grounded Agentic Code Review",
+    "abstract": "Early multi-agent LLM systems often used role-separated teams, yet scaling agent count yields diminishing returns on repository-level coding tasks. Recent alternatives treat agents as passive tools (subagents), yet this removes the benefits of agent interaction entirely. We study whether a subagent paradigm can support a middle ground: minimal agentic cooperation without the overhead of large multi-agent teams. We introduce Adversarial Review (AR), a minimal cooperative code-review protocol in which a main coding agent works with a reviewer and a critic agent. The reviewer evaluates code, while the critic audits the review through structured disagreement before the main agent edits. On LiveCodeBench, AR achieves the highest pass rate among tested methods, outperforming a five-agent baseline while using only three agents. On SWE-PRBench, naive AR exposes a false-consensus failure mode, where agents converge on agreement without sufficient evidence, but a single prompt iteration that adds disagreement explicitly achieves the highest F1 among tested methods. On SWE-bench Verified, AR also shows improvements over the baselines on repository-level coding tasks. Together, AR demonstrates that cooperative code review does not require many agents or complex communication structures: it requires that disagreement be minimal, structured, and evidence-grounded."
+   },
+   "summary": "The strongest supported result is the hidden-effort separation (every live equilibrium at every scale has \\(q\\leq\\bar q<1\\), while large sealed scoring implements effort in all equilibria); I rederived its algebra and it is correct, but score=3/10 and it is not ready for paper review. Two material concerns are not stated: only effort can produce a tag, so by my hand calculation a no-score bounty \\(B>111/100\\) on any verified tag uniquely gives effort and accuracy \\(61/80\\) with nonnegative expected payment near \\(0.28\\) against \\(5.7992\\) for unshifted sealed scoring at \\(v=11\\), which is the direct-payment baseline ada/hidden-effort.md line 28 reserves; and with \\(\\varepsilon=1\\) (no tags) the surviving core is a two-line argument that an exogenous informative \\(Y\\) acts as a noisy audit while a copied reference pays nothing, close to known peer-prediction and performative-scoring ideas. Another round is not worth its cost because each model repair since round 2 has added assumptions without lifting the contribution, endogenous critic effort restores all-shirk equilibria under sealed scoring at every scale and leads toward established audit, multi-task and costly-herding results, and the empirical test that could change this assessment still lacks the model-inference access the record says is missing.",
+   "usage": {
+    "calls": 12,
+    "input_tokens": 16178479,
+    "output_tokens": 198210,
+    "seconds": 8680.5
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 4,
+    "reason": "The strongest supported result is the hidden-effort separation (every live equilibrium at every scale has \\(q\\leq\\bar q<1\\), while large sealed scoring implements effort in all equilibria); I rederived its algebra and it is correct, but score=3/10 and it is not ready for paper review. Two material concerns are not stated: only effort can produce a tag, so by my hand calculation a no-score bounty \\(B>111/100\\) on any verified tag uniquely gives effort and accuracy \\(61/80\\) with nonnegative expected payment near \\(0.28\\) against \\(5.7992\\) for unshifted sealed scoring at \\(v=11\\), which is the direct-payment baseline ada/hidden-effort.md line 28 reserves; and with \\(\\varepsilon=1\\) (no tags) the surviving core is a two-line argument that an exogenous informative \\(Y\\) acts as a noisy audit while a copied reference pays nothing, close to known peer-prediction and performative-scoring ideas. Another round is not worth its cost because each model repair since round 2 has added assumptions without lifting the contribution, endogenous critic effort restores all-shirk equilibria under sealed scoring at every scale and leads toward established audit, multi-task and costly-herding results, and the empirical test that could change this assessment still lacks the model-inference access the record says is missing."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T17:47:36Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q4P3/Q4P3.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q1P1",
+   "score": 1925,
+   "feasibility": 55,
+   "gain": 35,
+   "connexion": "P's zeroth-order CVaR estimator queries expensive tail samples, so one could build a learning-augmented variant that uses a predicted VaR/quantile to seed or bias the sampling and cut query complexity, proving a consistency-robustness bound (fast when the predictor is accurate, falling back to P's existing finite-sample bound when it is wrong).",
+   "q": {
+    "id": "2609.04787",
+    "title": "Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and System-Level Implications",
+    "abstract": "Learning-augmented algorithms use fallible predictions while retaining formal performance guarantees. This survey synthesizes prediction interfaces, error measures, consistency--robustness trade-offs, and five representative construction mechanisms across online optimization, caching, learned data structures, graph problems, and mechanism design. An orthogonal theorem-level axis distinguishes achieved upper bounds from matched asymptotic dependence. Formal guarantees are separated from empirical systems evidence, with explicit treatment of prediction cost, feedback, and composition. The resulting synthesis states sufficient conditions for limited end-to-end reasoning and delineates open problems in cost-aware prediction, endogenous error, semantic predictors, and benchmarking."
+   },
+   "p": {
+    "id": "2609.04460",
+    "title": "Distributed risk-averse optimization via CVaR",
+    "abstract": "Distributed systems often operate under uncertainty, where minimizing expected loss may overlook rare but severe events. This paper studies a distributed risk-averse convex optimization problem in which agents cooperatively minimize the average of local conditional value-at-risk (CVaR) objectives over a time-varying network. Each agent has access only to noisy evaluations of its local loss function, rather than to its CVaR objective or gradient. We therefore develop a zeroth-order algorithm that uses sampled losses to construct empirical CVaR estimates and their gradient estimates. At each iteration, agents combine neighboring decisions and perform a local update. Under convexity and Lipschitz continuity assumptions, we prove that the agents reach exact asymptotic consensus. We also establish a finite-time expected suboptimality bound for the weighted ergodic iterate. With diminishing step sizes and fixed sample sizes, the local last iterates converge almost surely to a common optimum, and their limiting expected CVaR gap is bounded in terms of the smoothing and finite-sample errors. This distributed bound matches the parameter dependence of the centralized benchmark provided in this paper. Finally, simulations on a distributed sensor network estimation problem illustrate the efficacy of the method."
+   },
+   "summary": "The strongest supported result is the single-agent, one-dimensional costly-query frontier for convex CVaR under charged common-decision rank advice: \\(\\widetilde O((U/\\epsilon)^{2/3})\\) for promised exact ranks, and for one algorithm correct under all advice \\(\\widetilde O(U/(\\alpha\\epsilon)+\\min\\{\\eta,U\\}^2/(\\alpha\\epsilon^2))\\) with unknown \\(\\eta\\) and \\(\\widetilde O(U^2/(\\alpha\\epsilon^2))\\) draws, each with a lower bound matching up to logarithms, plus the retained bundle; score=5/10, and it is non-obvious because the matched separation needs atom-tolerant localization, random anchors and hidden-promotion constructions, though the rates themselves come from classical integration and variance-adaptive estimation. It is ready for paper review: I rechecked by hand the sixth-round localization, the anchor identity and sparse-support bound, pilot and batch Bernstein bounds, failure-event costs, nested search, both new lower bounds and the promised-exact hidden-jump bound, and all hold, with material concerns that novelty is uncertified (ranked-set and stratified-integration primary theorems remain unread after access failures), total-cost power stays \\(2\\) under fixed positive draw cost, no network or application gain is shown, and, as minor note defects, line pointers into four working notes are stale by up to about eleven lines and the listed check counts sum to one fewer than the logged total of 49,778 because the sparse-example check is listed separately. This is round six, so no further research round is available, and the remaining work (a theorem-level novelty audit and tidying the pointers) belongs to paper review.",
+   "usage": {
+    "calls": 18,
+    "input_tokens": 25823213,
+    "output_tokens": 361681,
+    "seconds": 9240.0
+   },
+   "research": {
+    "status": "DRAFT",
+    "stage": "done",
+    "round": 6,
+    "reason": "The strongest supported result is the single-agent, one-dimensional costly-query frontier for convex CVaR under charged common-decision rank advice: \\(\\widetilde O((U/\\epsilon)^{2/3})\\) for promised exact ranks, and for one algorithm correct under all advice \\(\\widetilde O(U/(\\alpha\\epsilon)+\\min\\{\\eta,U\\}^2/(\\alpha\\epsilon^2))\\) with unknown \\(\\eta\\) and \\(\\widetilde O(U^2/(\\alpha\\epsilon^2))\\) draws, each with a lower bound matching up to logarithms, plus the retained bundle; score=5/10, and it is non-obvious because the matched separation needs atom-tolerant localization, random anchors and hidden-promotion constructions, though the rates themselves come from classical integration and variance-adaptive estimation. It is ready for paper review: I rechecked by hand the sixth-round localization, the anchor identity and sparse-support bound, pilot and batch Bernstein bounds, failure-event costs, nested search, both new lower bounds and the promised-exact hidden-jump bound, and all hold, with material concerns that novelty is uncertified (ranked-set and stratified-integration primary theorems remain unread after access failures), total-cost power stays \\(2\\) under fixed positive draw cost, no network or application gain is shown, and, as minor note defects, line pointers into four working notes are stale by up to about eleven lines and the listed check counts sum to one fewer than the logged total of 49,778 because the sparse-example check is listed separately. This is round six, so no further research round is available, and the remaining work (a theorem-level novelty audit and tidying the pointers) belongs to paper review."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "draft",
+   "last_activity": "2026-11-02T19:36:05Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q1P1/Q1P1.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q3P3",
+   "score": 1925,
+   "feasibility": 55,
+   "gain": 35,
+   "connexion": "Q's lexical finding that agents shift from strategic language to urgency right before executing a trade parallels P's 'false-consensus' failure where reviewer/critic agents converge without sufficient evidence, suggesting the same premature-closure bias could be tested by applying Q's CoT lexical-analysis method to P's reviewer/critic transcripts to see if urgency markers predict false-consensus convergence.",
+   "q": {
+    "id": "2609.02580",
+    "title": "Competitive Market Behavior of LLMs",
+    "abstract": "Large language models (LLMs) are increasingly deployed as economic agents, yet there is little evidence whether LLM agents are suited for participating in market mechanisms designed for humans, and whether these mechanisms deliver desired outcomes when faced with LLM agents. We address this question by replicating seminal economic experiments, replacing human subjects with LLM agents. We place agents in a double auction environment, which is a widely-used market mechanism. We check whether such a market is able to deliver an efficient allocation of resources, thereby testing a novel dimension of alignment of LLM agents -- their compatibility with a fundamental market mechanism. We find that markets populated by LLM agents exhibit slower or no convergence towards market equilibrium, thus providing less efficient allocations than markets populated by humans. We then analyze agents' individual trading decisions and find substantial heterogeneity both across model families and market roles. We also run a lexical analysis of Chain-of-Thought (CoT) traces generated by the agents. We find that the decision to execute a trade rather than continue incrementally adjusting prices is associated with a shift from strategic considerations toward urgency. We publicly release our testing framework, which can be used for future evaluations."
+   },
+   "p": {
+    "id": "2608.18167",
+    "title": "Adversarial Review: Structured Disagreement for Grounded Agentic Code Review",
+    "abstract": "Early multi-agent LLM systems often used role-separated teams, yet scaling agent count yields diminishing returns on repository-level coding tasks. Recent alternatives treat agents as passive tools (subagents), yet this removes the benefits of agent interaction entirely. We study whether a subagent paradigm can support a middle ground: minimal agentic cooperation without the overhead of large multi-agent teams. We introduce Adversarial Review (AR), a minimal cooperative code-review protocol in which a main coding agent works with a reviewer and a critic agent. The reviewer evaluates code, while the critic audits the review through structured disagreement before the main agent edits. On LiveCodeBench, AR achieves the highest pass rate among tested methods, outperforming a five-agent baseline while using only three agents. On SWE-PRBench, naive AR exposes a false-consensus failure mode, where agents converge on agreement without sufficient evidence, but a single prompt iteration that adds disagreement explicitly achieves the highest F1 among tested methods. On SWE-bench Verified, AR also shows improvements over the baselines on repository-level coding tasks. Together, AR demonstrates that cooperative code review does not require many agents or complex communication structures: it requires that disagreement be minimal, structured, and evidence-grounded."
+   },
+   "summary": "The strongest supported result, at score=3/10, is a source-checked negative diagnostic: Q's urgency vocabulary and P's false consensus do not establish a shared premature-closure bias, commitment correctness must be scored apart from agreement and execution, and Q's inspected prompts can alias ticks 2 and 300 in a synthetic witness, while on one local substitute model one-call evidence-first checking also repairs the market errors, which output-order prior work (Wei et al.) already anticipates. I checked the note's protocol tables and prompt witness against the logs and found no correctness or attribution error, but it is not ready for paper review because the contribution is insufficient on its merits: label certificates are elementary, profitable execution is at ceiling so Q's under-trading is untested, grounded review has no classwise advantage on four clusters per class, and the disclosure result is one adapter-limited seed in a heavily occupied prior-work area. Another round is not worth running because the bounded test of the proposed cross-domain link came back negative and the remaining conditions amount to a different, larger study, while the one open market route (ZI benchmarks and whole-market clock ablations) needs nothing from P and is already pursued in sibling thread Q3P10 (ledger entry 22), and original per-turn data remain unobtained in the checked locations.",
+   "usage": {
+    "calls": 9,
+    "input_tokens": 20742064,
+    "output_tokens": 140494,
+    "seconds": 5056.3
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 3,
+    "reason": "The strongest supported result, at score=3/10, is a source-checked negative diagnostic: Q's urgency vocabulary and P's false consensus do not establish a shared premature-closure bias, commitment correctness must be scored apart from agreement and execution, and Q's inspected prompts can alias ticks 2 and 300 in a synthetic witness, while on one local substitute model one-call evidence-first checking also repairs the market errors, which output-order prior work (Wei et al.) already anticipates. I checked the note's protocol tables and prompt witness against the logs and found no correctness or attribution error, but it is not ready for paper review because the contribution is insufficient on its merits: label certificates are elementary, profitable execution is at ceiling so Q's under-trading is untested, grounded review has no classwise advantage on four clusters per class, and the disclosure result is one adapter-limited seed in a heavily occupied prior-work area. Another round is not worth running because the bounded test of the proposed cross-domain link came back negative and the remaining conditions amount to a different, larger study, while the one open market route (ZI benchmarks and whole-market clock ablations) needs nothing from P and is already pursued in sibling thread Q3P10 (ledger entry 22), and original per-turn data remain unobtained in the checked locations."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T19:01:58Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q3P3/Q3P3.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q4P9",
+   "score": 1800,
+   "feasibility": 40,
+   "gain": 45,
+   "connexion": "Q's revelation-principle/incentive-compatibility characterization of mechanisms under concealable-but-not-counterfeitable capabilities could be used to explain why P's formal (code-compiled) contracts outperform natural-language contracts, since natural contracts permit ex-post reinterpretation that effectively lets an agent 'counterfeit' its commitment, violating Q's core one-sided-imitation assumption.",
+   "q": {
+    "id": "2609.01595",
+    "title": "Mechanism Design for Alignment and Control",
+    "abstract": "We develop a framework for mechanism design with AI agents whose alignment (preferences) and capabilities (feasible actions and information) are unknown. We want such agents to act on our behalf so mechanisms must incentivize both honesty and obedience. A one-sided imitation structure---capabilities can be concealed but not counterfeited---yields a revelation principle, a characterization of implementable policies via nested cyclical monotonicity, and conditions under which eliciting higher-order beliefs can discipline multiple agents. We apply our framework to stylized examples of (i) sandbagging in which a more capable agent pretends to be less capable; (ii) an alignment--interpretability trade-off, where the two are substitutes in the instrument but complements in value; (iii) discipline via peer scoring; (iv) coupling rewards to induce competition among multiple agents; and (v) scalable oversight and reward shaping."
+   },
+   "p": {
+    "id": "2607.22750",
+    "title": "Commitment To Cooperation With Self-Negotiated Contracts",
+    "abstract": "As AI agents operate with increasing autonomy in a multi-agent world, they will need to learn to cooperate with other agents and with humans to generate mutual benefits. However, cooperation is a challenge because the costs of cooperation are often incurred early on, but the benefits are only realized later, creating an incentive to defect. How can AI agents cooperate with commitment? Here, we draw on inspiration from legal institutions and contracting that human societies have used to solve principal-agent problems of this kind. Contracts provide observable representations of agreements that enable credible commitments through the enforcement of terms. We study the role of contract-based cooperation using LLM-based agents in \\CT, a spatial-temporal game that combines bargaining with navigation towards a goal. We study a suite of contract representations that range from formal contracts that compile to code to natural contracts that require reinterpretation. We evaluate agents with a range of LLM backbones using different sizes and providers. We find that self-negotiated contracts can improve cooperative outcomes beyond what is possible with regular trading."
+   },
+   "summary": "The strongest supported result is an exact finite witness in a declared four-neighbor reconstruction of CT-Bench, score=3/10 (I read the logs and certificates but did not rerun code): Boards A, B and restricted B have certified identical complete walk languages, and deleting one Red edge removes only the Blue-alone pure-SPE outcome at \\((11,11)\\) and \\((12,12)\\) under R1-R4, with no repair at \\((10,10)\\) or under I3 or I6, alongside a conditional last-coverage obstruction, a regular-trading correction to the 140 benchmark and rejection of the counterfeiting account. It is insufficient for paper review even though the note reports it faithfully, because it is one protocol-sensitive pure-SPE example of known commitment and hold-up logic, atomic exchanges and selective enforced tiles also achieve completion on its boards so no expressive separation exists, and the gateway and cap claims that gave it more reach fail under P's stated movement, while novelty beyond those general antecedents remains uncertified rather than refuted. This is round six, so no further research round is available, and the missing inputs are P's executable engine semantics (clock, post-goal accounting, unfinished-recipient transfers, insolvency), a model interface that yields valid experimental decisions (the routing and presentation attempts yielded zero valid treatment decisions), and a narrow theorem-level novelty review.",
+   "usage": {
+    "calls": 18,
+    "input_tokens": 49215011,
+    "output_tokens": 385572,
+    "seconds": 11306.5
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 6,
+    "reason": "The strongest supported result is an exact finite witness in a declared four-neighbor reconstruction of CT-Bench, score=3/10 (I read the logs and certificates but did not rerun code): Boards A, B and restricted B have certified identical complete walk languages, and deleting one Red edge removes only the Blue-alone pure-SPE outcome at \\((11,11)\\) and \\((12,12)\\) under R1-R4, with no repair at \\((10,10)\\) or under I3 or I6, alongside a conditional last-coverage obstruction, a regular-trading correction to the 140 benchmark and rejection of the counterfeiting account. It is insufficient for paper review even though the note reports it faithfully, because it is one protocol-sensitive pure-SPE example of known commitment and hold-up logic, atomic exchanges and selective enforced tiles also achieve completion on its boards so no expressive separation exists, and the gateway and cap claims that gave it more reach fail under P's stated movement, while novelty beyond those general antecedents remains uncertified rather than refuted. This is round six, so no further research round is available, and the missing inputs are P's executable engine semantics (clock, post-goal accounting, unfinished-recipient transfers, insolvency), a model interface that yields valid experimental decisions (the routing and presentation attempts yielded zero valid treatment decisions), and a narrow theorem-level novelty review."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T20:56:03Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q4P9/Q4P9.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q7P7",
+   "score": 1650,
+   "feasibility": 55,
+   "gain": 30,
+   "connexion": "Q's LMI-based mechanism with proven Nash-equilibrium convergence could serve as the incentive-compatible payment/scheduling layer that P's NCI-forecast-driven GDL/MESS dispatch currently lacks (P assumes cooperative or centrally-optimized agents), and one could test whether wrapping P's demand-response scheduling in Q's budget-balanced VS-PBR mechanism preserves the claimed emission reductions when GDL owners act strategically on private cost/satisfaction functions.",
+   "q": {
+    "id": "2608.29130",
+    "title": "A Systematic Approach to Mechanism Design with Stochastic Dynamic Stability",
+    "abstract": "We consider a resource allocation problem with strategic agents that have private stochastic satisfaction functions and local constraints. To achieve a global optimal solution, we propose an incentive mechanism that induces a game among the agents. For the payment function of the mechanism, we construct a family of quadratic functions using the linear matrix inequality (LMI) approach that implements the social welfare maximizing outcome on the unique Nash equilibrium (NE) of the induced game while ensuring budget balance and individual rationality. Moreover, we propose a decentralized variable sample-size proximal best-response (VS-PBR) algorithm with Krasnoselskij iteration where only aggregate information is available to the agents. The algorithm is dynamically stable, as it is proven to converge in the mean-square sense to the NE of the game. The efficiency of the mechanism is then investigated on the Sioux Falls City transportation network, where electric vehicle (EV) users jointly select their destination and route."
+   },
+   "p": {
+    "id": "2607.26560",
+    "title": "Emission-Forecasting-Based Spatial-Temporal Carbon Response: A Multi-Agent Attention-Enhanced Deep Learning Framework",
+    "abstract": "As a major contributor to carbon emissions, the decarbonization of power systems has garnered significant societal attention. Nodal carbon intensity (NCI), a critical factor in carbon-oriented demand response, has traditionally been determined through ex-post calculations. However, this ex-post approach introduces latency in low-carbon dispatch. To address this, this paper presents a proactive ex-ante spatial-temporal carbon response framework. At its core, we develop a novel deep learning-based hierarchical design, enhanced by a dual-stage attention mechanism and a large language model (LLM)-based multi-agent cooperation system, to accurately forecast day-ahead NCI. This design effectively mitigates the impact of renewable energy uncertainty and enhances predictive resilience. On the demand side, the framework proposes a spatial-temporal carbon scheduling model that integrates geographically dispatchable loads (GDLs), including mobile energy storage systems (MESSs) and distributed data centers (DDCs). Leveraging high-accuracy day-ahead NCI predictions, the framework can effectively reduce system emissions by quickly responding to carbon intensity fluctuations. The proposed framework is tested on the modified IEEE 33-bus system. According to the simulation results, the impacts of proposed framework on dispatching latency and emission outcomes are analyzed. The results demonstrate that under a one-hour reduction in carbon scheduling latency, the proposed model and methodology can achieve over 30% emission reduction. This research breaks through the limitations of passive carbon accounting, advancing toward proactive carbon management. It offers an intelligent solution that accelerates the transition to cleaner power systems while directly supporting sustainable production goals."
+   },
+   "summary": "Strongest supported result, score=5/10: the correction of Q (P1(ii) is infeasible with P2(i), an exact equilibrium with \\(U_1=-7/6\\), and feasible P2-P4 parameters with a weighted certificate), plus the audit showing static or convergent clearing is not strategically valid on the full oracle domain, the \\(17/4\\) efficient-BIC benchmark and restricted normalized clinching; I rechecked these formulas and the funding table by hand and found no material error. It is ready for paper review, and the review-54 perfection overclaim is now fixed, with these concerns: the auction ingredients are largely classical, theorem-level novelty is uncertified because of failed retrievals, there is no carbon or cost calibration, and the display before Eq. (20) misprints \\(g_iu_i\\) for \\(g_ju_j\\) and calls it equivalent, though the next line states the correct margin matching ada/reporting.md line 321, so paper review should clean it up. Further research is not worth the last round, because the remaining bottlenecks are blocked full-text retrieval and missing causal-carbon and private-cost data, not another mechanism extension.",
+   "usage": {
+    "calls": 17,
+    "input_tokens": 21388045,
+    "output_tokens": 377121,
+    "seconds": 7644.4
+   },
+   "research": {
+    "status": "DRAFT",
+    "stage": "done",
+    "round": 5,
+    "reason": "Strongest supported result, score=5/10: the correction of Q (P1(ii) is infeasible with P2(i), an exact equilibrium with \\(U_1=-7/6\\), and feasible P2-P4 parameters with a weighted certificate), plus the audit showing static or convergent clearing is not strategically valid on the full oracle domain, the \\(17/4\\) efficient-BIC benchmark and restricted normalized clinching; I rechecked these formulas and the funding table by hand and found no material error. It is ready for paper review, and the review-54 perfection overclaim is now fixed, with these concerns: the auction ingredients are largely classical, theorem-level novelty is uncertified because of failed retrievals, there is no carbon or cost calibration, and the display before Eq. (20) misprints \\(g_iu_i\\) for \\(g_ju_j\\) and calls it equivalent, though the next line states the correct margin matching ada/reporting.md line 321, so paper review should clean it up. Further research is not worth the last round, because the remaining bottlenecks are blocked full-text retrieval and missing causal-carbon and private-cost data, not another mechanism extension."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "draft",
+   "last_activity": "2026-11-02T21:09:31Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q7P7/Q7P7.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q8P8",
+   "score": 1650,
+   "feasibility": 55,
+   "gain": 30,
+   "connexion": "Mount two Aero Hand Open units on a bimanual rig and train a DynaMAC-style multi-stream policy that treats each hand as a dynamic task parameter of the other, testing whether DynaMAC's sample-efficiency and zero-shot static-to-dynamic generalization claims hold when the end effectors are compliant, tendon-coupled dexterous hands rather than simple grippers.",
+   "q": {
+    "id": "2608.28578",
+    "title": "Aero Hand Open: A Simulation-Ready Tendon-Driven Hand for Dexterous Manipulation Learning",
+    "abstract": "Tendon-driven hands are anthropomorphic, and moving the actuators off the joints is what makes a hand of this capability affordable to build. Two effects produce that saving. Routing force through a cable removes the requirement that a motor fit inside the joint it drives, so smaller and cheaper motors suffice, and one motor can drive several joints through a single cable, so fewer motors are needed. They are also harder to learn on than a direct-drive hand. The underactuated transmission that produces the saving is itself difficult to represent in a simulator, and the joints one cable drives are not independently commandable. We present Aero Hand Open, a tendon-driven anthropomorphic hand that is released simulation-ready. Three things ship with it. A simulation model reproduces the cable transmission itself. An identified actuation map connects that model to the motor commands in both directions, including the three-way coupling of the thumb. A reinforcement learning package trains policies for the hand. Together they let a policy be trained entirely in simulation and run on the hand with no fine-tuning and no state estimation. We release the mechanical design, the simulation model, the identified mapping, the training environment and the deployment stack."
+   },
+   "p": {
+    "id": "2607.22119",
+    "title": "One Hand Watches The Other: Dynamic Multi-Agent Cooperation for Sample-Efficient Bimanual Manipulation in Dynamic Environments",
+    "abstract": "Multi-stream robot manipulation policies achieve unparalleled sample efficiency and generalization by modeling actions relative to environmental reference frames. However, existing approaches typically assume these frames to be strictly exogenous. This causal assumption collapses in dynamic settings, such as when a single robot arm manipulates a moving object or when two arms coordinate, where each arm effectively becomes part of the dynamic environment of the other. We propose DynaMAC, a lightweight, policy-agnostic framework that resolves this causal limitation while preserving the sample efficiency, computational speed, and flexibility of multi-stream policies, DynaMAC treats the opposite arm as a dynamic task parameter, thereby providing a unified formulation for dynamic manipulation and bimanual coordination without requiring an explicit leader-follower relationship. To rigorously evaluate these capabilities, we introduce DynaBench, a novel benchmark for robot manipulation in dynamic environments. Across both dynamic environments and bimanual manipulation tasks, DynaMAC outperforms leading probabilistic and generative baselines by over 35 percentage points while requiring 20 times fewer samples. Crucially, DynaMAC generalizes zero-shot from static demonstrations to dynamic environments, substantially simplifying data collection and establishing an elegant bridge toward human-robot collaboration."
+   },
+   "summary": "The strongest supported result is a frozen linear-Gaussian account separating expert miscalibration, read-back and response identification: under independent noise the joint conditional has \\(GJ\\) spectrum in \\([0,1]\\) and \\(GJ=I\\) in the noiseless invertible limit, it has an informative-reference boundary \\(jA>\\eta/2-1\\), and the earlier restricted theorems and spring certificate stand; I rechecked these derivations, the observationally identical pair and the five-demonstration table against the code and logs without finding a material error, but score=4/10. It is not ready for paper review and is insufficient by itself because its working remedies are standard (Gaussian conditioning, normalized products, fixed-effects regression), the generic mechanism is a quadratic case of performative prediction with overlap with narrower results uncertified, Q is unnecessary, nothing is measured on P, the unstable regimes are constructed, and in the informative task the deletion cost is not one P's rule incurs because its score retains the frame (0.903 mm against 4.586 mm for deletion). A sixth round is not worth requesting: it needs inputs the record lacks, namely P's actual fitting and tracking implementation (repository empty at last check) and a realistic partly coupled task with validated response identification, while another surrogate would repeat the pattern of standard fixes and could not establish an effect on P.",
+   "usage": {
+    "calls": 15,
+    "input_tokens": 21493148,
+    "output_tokens": 244759,
+    "seconds": 5839.0
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 5,
+    "reason": "The strongest supported result is a frozen linear-Gaussian account separating expert miscalibration, read-back and response identification: under independent noise the joint conditional has \\(GJ\\) spectrum in \\([0,1]\\) and \\(GJ=I\\) in the noiseless invertible limit, it has an informative-reference boundary \\(jA>\\eta/2-1\\), and the earlier restricted theorems and spring certificate stand; I rechecked these derivations, the observationally identical pair and the five-demonstration table against the code and logs without finding a material error, but score=4/10. It is not ready for paper review and is insufficient by itself because its working remedies are standard (Gaussian conditioning, normalized products, fixed-effects regression), the generic mechanism is a quadratic case of performative prediction with overlap with narrower results uncertified, Q is unnecessary, nothing is measured on P, the unstable regimes are constructed, and in the informative task the deletion cost is not one P's rule incurs because its score retains the frame (0.903 mm against 4.586 mm for deletion). A sixth round is not worth requesting: it needs inputs the record lacks, namely P's actual fitting and tracking implementation (repository empty at last check) and a realistic partly coupled task with validated response identification, while another surrogate would repeat the pattern of standard fixes and could not establish an effect on P."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T20:39:18Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q8P8/Q8P8.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q3P6",
+   "score": 1575,
+   "feasibility": 45,
+   "gain": 35,
+   "connexion": "Q's finding that LLM agents make noisy, heuristic-driven (urgency-biased) comparative decisions under market pressure could be used to stress-test P's core reliance on LLM-generated pairwise contribution comparisons, especially P's claimed robustness to dynamically changing numbers of active agents.",
+   "q": {
+    "id": "2609.02580",
+    "title": "Competitive Market Behavior of LLMs",
+    "abstract": "Large language models (LLMs) are increasingly deployed as economic agents, yet there is little evidence whether LLM agents are suited for participating in market mechanisms designed for humans, and whether these mechanisms deliver desired outcomes when faced with LLM agents. We address this question by replicating seminal economic experiments, replacing human subjects with LLM agents. We place agents in a double auction environment, which is a widely-used market mechanism. We check whether such a market is able to deliver an efficient allocation of resources, thereby testing a novel dimension of alignment of LLM agents -- their compatibility with a fundamental market mechanism. We find that markets populated by LLM agents exhibit slower or no convergence towards market equilibrium, thus providing less efficient allocations than markets populated by humans. We then analyze agents' individual trading decisions and find substantial heterogeneity both across model families and market roles. We also run a lexical analysis of Chain-of-Thought (CoT) traces generated by the agents. We find that the decision to execute a trade rather than continue incrementally adjusting prices is associated with a shift from strategic considerations toward urgency. We publicly release our testing framework, which can be used for future evaluations."
+   },
+   "p": {
+    "id": "2607.27967",
+    "title": "MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons in Embodied Multi-Agent Cooperation",
+    "abstract": "Credit assignment is a fundamental challenge in cooperative multi-agent reinforcement learning, particularly in embodied AI settings characterized by limited and delayed feedback as well as dynamically changing numbers of active agents. We propose MARS-RA, a framework that reformulates credit assignment as a rank aggregation problem using contribution-based pairwise comparisons among agents generated by large multimodal models. This shift from absolute to relative estimation ensures robustness against noise and dynamic agent participation, converting comparison results into contribution scores for potential-based reward shaping. We provide theoretical justification for the convergence and robustness of the proposed framework, and show that Shapley values can be used as an interpretive reference. Experimental results on challenging tasks of different types indicate that MARS-RA can guide agents toward effective cooperation."
+   },
+   "summary": "The strongest supported result is a conditional theory of pairwise wins versus coalition credit for a fixed comparator with population BT refitting: the sharp dropout error \\(1/[2(d+1)]\\), the closed-form gradient projection for arbitrary games under Bernoulli participation, the \\(d+1\\) local-order repair (tie-sensitively sharp), the \\(\\log m/\\sqrt{m}\\) lower bound and the contrasting \\(1.3913\\%\\) grid fit; I re-derived the projection, residual kernel, zero-loss class, witness identity and Bernoulli bound by hand and they hold, score=5/10, so it is ready for paper review. The material concerns are that the proofs are elementary, no judge was measured, the fixed-input premise for P is unverified, and novelty is uncertified: neither the record nor the pool consults semivalue and weighted-approximation work (Owen, Dubey-Neyman-Weber, Hammer-Holzman, Marichal-Mathonet), although \\(\\mu_i(p)=\\sum_{T\\ni i}d_Tp^{|T|-1}/|T|\\) is semivalue-shaped, so paper review must check this and present the work as capacity theory plus a benchmark proposal, not as a finding about real judges or a refutation of Q or P. Another round is not worth using because the decisive empirical test needs inference access that remains absent, novelty checking belongs to paper review, and the remaining mathematics (joint-stratum optimum, nonlinear BT projection) or a toy learning simulation with synthetic comparators would not materially change significance.",
+   "usage": {
+    "calls": 15,
+    "input_tokens": 19030530,
+    "output_tokens": 266737,
+    "seconds": 6413.9
+   },
+   "research": {
+    "status": "DRAFT",
+    "stage": "done",
+    "round": 5,
+    "reason": "The strongest supported result is a conditional theory of pairwise wins versus coalition credit for a fixed comparator with population BT refitting: the sharp dropout error \\(1/[2(d+1)]\\), the closed-form gradient projection for arbitrary games under Bernoulli participation, the \\(d+1\\) local-order repair (tie-sensitively sharp), the \\(\\log m/\\sqrt{m}\\) lower bound and the contrasting \\(1.3913\\%\\) grid fit; I re-derived the projection, residual kernel, zero-loss class, witness identity and Bernoulli bound by hand and they hold, score=5/10, so it is ready for paper review. The material concerns are that the proofs are elementary, no judge was measured, the fixed-input premise for P is unverified, and novelty is uncertified: neither the record nor the pool consults semivalue and weighted-approximation work (Owen, Dubey-Neyman-Weber, Hammer-Holzman, Marichal-Mathonet), although \\(\\mu_i(p)=\\sum_{T\\ni i}d_Tp^{|T|-1}/|T|\\) is semivalue-shaped, so paper review must check this and present the work as capacity theory plus a benchmark proposal, not as a finding about real judges or a refutation of Q or P. Another round is not worth using because the decisive empirical test needs inference access that remains absent, novelty checking belongs to paper review, and the remaining mathematics (joint-stratum optimum, nonlinear BT projection) or a toy learning simulation with synthetic comparators would not materially change significance."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "draft",
+   "last_activity": "2026-11-02T21:22:59Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q3P6/Q3P6.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q1P6",
+   "score": 1500,
+   "feasibility": 60,
+   "gain": 25,
+   "connexion": "Q's survey framework for consistency-robustness trade-offs in learning-augmented algorithms could be applied to formally characterize MARS-RA's reliance on LMM-generated pairwise comparisons as its 'prediction', analyzing how comparison error degrades the guarantees of the resulting reward-shaping/Shapley-value scheme.",
+   "q": {
+    "id": "2609.04787",
+    "title": "Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and System-Level Implications",
+    "abstract": "Learning-augmented algorithms use fallible predictions while retaining formal performance guarantees. This survey synthesizes prediction interfaces, error measures, consistency--robustness trade-offs, and five representative construction mechanisms across online optimization, caching, learned data structures, graph problems, and mechanism design. An orthogonal theorem-level axis distinguishes achieved upper bounds from matched asymptotic dependence. Formal guarantees are separated from empirical systems evidence, with explicit treatment of prediction cost, feedback, and composition. The resulting synthesis states sufficient conditions for limited end-to-end reasoning and delineates open problems in cost-aware prediction, endogenous error, semantic predictors, and benchmarking."
+   },
+   "p": {
+    "id": "2607.27967",
+    "title": "MARS-RA: Rank Aggregation for Credit Assignment via Multimodal Comparisons in Embodied Multi-Agent Cooperation",
+    "abstract": "Credit assignment is a fundamental challenge in cooperative multi-agent reinforcement learning, particularly in embodied AI settings characterized by limited and delayed feedback as well as dynamically changing numbers of active agents. We propose MARS-RA, a framework that reformulates credit assignment as a rank aggregation problem using contribution-based pairwise comparisons among agents generated by large multimodal models. This shift from absolute to relative estimation ensures robustness against noise and dynamic agent participation, converting comparison results into contribution scores for potential-based reward shaping. We provide theoretical justification for the convergence and robustness of the proposed framework, and show that Shapley values can be used as an interpretive reference. Experimental results on challenging tasks of different types indicate that MARS-RA can guide agents toward effective cooperation."
+   },
+   "summary": "The strongest supported result is the attribution package (conditional open-team mask identity and reversal with repairs, valid objection to P's unregularized Bradley--Terry guarantee with the two-agent win-share reduction, V-GEPF and PSPO source mismatches on synthetic inputs, and the exact aliased-critic reversal \\(D=\\lambda\\Delta R+\\rho(1-\\lambda)\\Delta\\phi\\)), plus round five's standard-trainer test; the counterexample and \\(D\\) algebra and the round-five long-table numbers I rechecked hold and the note traces faithfully to the ledger, so score=4/10. It is insufficient for paper review on its own merits, not because the original Q-to-P relabeling failed: the mechanism specializes known work (Schulman et al., Bertsekas, Xiao et al., Li et al.), the catastrophic blind-critic harm did not transfer to the ordinary local critic, the one surviving standard-task effect is an unexplained loss of about 1.8% of return (\\(-0.327\\pm0.067\\) native, centralized, always-wrong labels, \\(\\rho=4\\), MPE dense task, simulated labels), the audit has no measured benchmark consequence, and no MARS-RA defect is established. Another round is not worth it: entry 46's bounded transfer test was answered and said not to re-request that target if nothing consequential emerged, crossing long-run controls would only explain a small effect in a task already chosen, a V-GEPF football rerun has low expected value after the scale downgrade and would at best be a bug report, and the one discriminating test (the fixed-checkpoint replay) needs the MARS-RA wrapper, estimator and critic code, which remain unlocated and are the missing input.",
+   "usage": {
+    "calls": 15,
+    "input_tokens": 50178208,
+    "output_tokens": 381053,
+    "seconds": 11350.400000000001
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 5,
+    "reason": "The strongest supported result is the attribution package (conditional open-team mask identity and reversal with repairs, valid objection to P's unregularized Bradley--Terry guarantee with the two-agent win-share reduction, V-GEPF and PSPO source mismatches on synthetic inputs, and the exact aliased-critic reversal \\(D=\\lambda\\Delta R+\\rho(1-\\lambda)\\Delta\\phi\\)), plus round five's standard-trainer test; the counterexample and \\(D\\) algebra and the round-five long-table numbers I rechecked hold and the note traces faithfully to the ledger, so score=4/10. It is insufficient for paper review on its own merits, not because the original Q-to-P relabeling failed: the mechanism specializes known work (Schulman et al., Bertsekas, Xiao et al., Li et al.), the catastrophic blind-critic harm did not transfer to the ordinary local critic, the one surviving standard-task effect is an unexplained loss of about 1.8% of return (\\(-0.327\\pm0.067\\) native, centralized, always-wrong labels, \\(\\rho=4\\), MPE dense task, simulated labels), the audit has no measured benchmark consequence, and no MARS-RA defect is established. Another round is not worth it: entry 46's bounded transfer test was answered and said not to re-request that target if nothing consequential emerged, crossing long-run controls would only explain a small effect in a task already chosen, a V-GEPF football rerun has low expected value after the scale downgrade and would at best be a bug report, and the one discriminating test (the fixed-checkpoint replay) needs the MARS-RA wrapper, estimator and critic code, which remain unlocated and are the missing input."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T23:48:29Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q1P6/Q1P6.tex",
+     "stale": false
+    }
+   ]
+  },
+  {
+   "unit": "Q1P2",
+   "score": 600,
+   "feasibility": 30,
+   "gain": 20,
+   "connexion": "P's room-detection-as-prior-for-door-detection is exactly a fallible 'prediction' feeding a downstream task, so Q's consistency-robustness machinery could be used to formalize worst-case guarantees for the door detector when the room prior is wrong, rather than relying only on the paper's empirical prediction-matching loop.",
+   "q": {
+    "id": "2609.04787",
+    "title": "Learning-Augmented Algorithms: Guarantees, Construction Mechanisms, and System-Level Implications",
+    "abstract": "Learning-augmented algorithms use fallible predictions while retaining formal performance guarantees. This survey synthesizes prediction interfaces, error measures, consistency--robustness trade-offs, and five representative construction mechanisms across online optimization, caching, learned data structures, graph problems, and mechanism design. An orthogonal theorem-level axis distinguishes achieved upper bounds from matched asymptotic dependence. Formal guarantees are separated from empirical systems evidence, with explicit treatment of prediction cost, feedback, and composition. The resulting synthesis states sufficient conditions for limited end-to-end reasoning and delineates open problems in cost-aware prediction, endogenous error, semantic predictors, and benchmarking."
+   },
+   "p": {
+    "id": "2608.23650",
+    "title": "Concept-Guided Exploration: Building Persistent, Actionable Scene Graphs",
+    "abstract": "The perception of 3D space by mobile robots is rapidly moving from flat metric grid representations to hybrid metric-semantic graphs built from human-interpretable concepts. While most approaches first build metric maps and then add semantic layers, we explore an alternative, concept-first architecture in which spatial understanding emerges from asynchronous concept agents that directly instantiate and manage semantic entities. Our robot employs two spatial concepts (room and door), implemented as autonomous processes within a cognitive distributed architecture. These concept agents cooperatively build a shared scene graph representation of indoor layouts through active exploration and incremental validation. The key architectural principle is hierarchical constraint propagation: Room instantiation provides geometric and semantic priors to guide and support door detection within wall boundaries. The resulting structure is maintained by a complementary functional principle based on prediction-matching loops. This approach is designed to yield an actionable, human-interpretable spatial representation without relying on any pre-existing global metric map, supporting scalable operation and persistent, task-relevant understanding in structured indoor environments."
+   },
+   "summary": "The strongest supported result separates registration, detection and visibility obligations for room-gated door detection, using a correct first-gate margin \\(\\eta+\\varepsilon\\leq\\delta\\), conditional matched-corner and contact-gap certificates, an occlusion indistinguishability example with a movement bound \\(2.8/\\sqrt{1.36}\\approx2.401\\,\\mathrm m\\), and a synthetic table I found consistent with the note's check log; score=2/10, not ready for paper review, with no material correctness or attribution problem found but no novelty because the arguments are elementary, conditional on trusted association, and close to prior frontier-coverage and query-policy work. This result is insufficient on its own merits because it gives no new algorithm, competitive or trade-off bound, or performance advantage: the silent family is unobservable even in the ungated scan, so no gate-induced silent failure was shown, and the tested geometric misses come from a reconstructed detector and are exposed by a simple diagnostic. Further research is not worth another round because the proposed replay needs P's software and scans, which the supplied inputs do not provide and which would at best yield an implementation finding, while a prediction-sensitive sensing policy would most likely restate known interleaving robustification in a visibility setting, with the pair adding little beyond the occlusion example.",
+   "usage": {
+    "calls": 6,
+    "input_tokens": 7217675,
+    "output_tokens": 71195,
+    "seconds": 2063.7999999999997
+   },
+   "research": {
+    "status": "PAUSE",
+    "stage": "done",
+    "round": 2,
+    "reason": "The strongest supported result separates registration, detection and visibility obligations for room-gated door detection, using a correct first-gate margin \\(\\eta+\\varepsilon\\leq\\delta\\), conditional matched-corner and contact-gap certificates, an occlusion indistinguishability example with a movement bound \\(2.8/\\sqrt{1.36}\\approx2.401\\,\\mathrm m\\), and a synthetic table I found consistent with the note's check log; score=2/10, not ready for paper review, with no material correctness or attribution problem found but no novelty because the arguments are elementary, conditional on trusted association, and close to prior frontier-coverage and query-policy work. This result is insufficient on its own merits because it gives no new algorithm, competitive or trade-off bound, or performance advantage: the silent family is unobservable even in the ungated scan, so no gate-induced silent failure was shown, and the tested geometric misses come from a reconstructed detector and are exposed by a simple diagnostic. Further research is not worth another round because the proposed replay needs P's software and scans, which the supplied inputs do not provide and which would at best yield an implementation finding, while a prediction-sensitive sensing policy would most likely restate known interleaving robustification in a visibility setting, with the pair adding little beyond the occlusion example."
+   },
+   "editorial": {
+    "status": null,
+    "reason": null
+   },
+   "assessment": {
+    "status": null,
+    "reason": null
+   },
+   "controller": "queued",
+   "lifecycle": "pause",
+   "last_activity": "2026-11-02T21:30:27Z",
+   "documents": [
+    {
+     "kind": "research note",
+     "pdf": null,
+     "source": "threads/Q1P2/Q1P2.tex",
+     "stale": false
+    }
+   ]
+  }
+ ]
+}

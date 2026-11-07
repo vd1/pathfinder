@@ -1,0 +1,21 @@
+# Notation police agent
+
+- **Where:** Pathfinder paper workflow; after paper reviewers return ACCEPT, before final PDF release.
+- **Inputs:** manuscript, bibliography, source pair, outstanding minor findings.
+- **Notation: unconditional.** Define every locally introduced symbol, even if the sources use it.
+  Example: state what U denotes. Definitions immediately after formulas allowed.
+- **Concepts: source-calibrated.** Explain concepts at the level of the source pair.
+  Example: explain what a unitary is only if the sources do. Follow their notation where practical.
+- **Audit:** undefined symbols, scope, index ranges, multiplicities, domains, normalisations,
+  conflicting conventions, abbreviations.
+- **Edit directly:** unambiguous definitions and notation repairs. Preserve claims and assumptions.
+- **Escalate:** competing interpretations, missing hypotheses, changes to mathematical meaning.
+  Do not infer a definition merely because a source uses it.
+- **Output:** corrected manuscript + short change log + unresolved findings.
+- **Fresh check:** manuscript and changes, without ledger; catch remaining notation defects
+  and accidental changes of meaning. One routine correction cycle; unresolved ambiguity
+  returns to substantive review.
+- **Release:** clear required corrections; rebuild PDF; run reference and style checks.
+  Clearance applies to the checked manuscript version only.
+- **Pilot:** accepted papers, including ambition Q472-P527. Track omissions caught,
+  unnecessary edits, residual errors and cost. No elaborate proposer/verifier dialogue initially.

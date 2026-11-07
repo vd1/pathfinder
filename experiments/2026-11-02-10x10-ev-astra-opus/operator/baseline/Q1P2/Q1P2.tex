@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Consolidation of Q and P}
+\author{Ada}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q surveys learning-augmented algorithms, emphasizing prediction cost, consistency and robustness, and the interface assumptions needed for guarantees to compose. P implements concept-guided robot exploration in which an estimated room and its walls constrain later door detection, but it reports accepted incorrect room models under noise and leaves model revision largely as future work (ledger entries 5, 6, and 30).
+
+\section*{The connexion pursued}
+The peers asked whether Q's requirements for error propagation and costed fallback could turn P's hard room-to-door constraint into a selectively safe interface. The broad initial proposal of a robust concept lifecycle was narrowed to P's first wall-distance gate, since P retains a scan point $p$ when
+\[
+  \operatorname{dist}(p,W)\leq \delta, \qquad \delta=0.15\,\mathrm{m},
+\]
+before constructing and differentiating a polar scan and pairing peaks (entries 8, 13, and 30).
+
+\section*{What was found}
+Let $W^*$ and $\widehat W$ be the reference and estimated wall sets. If
+\[
+  d_H(\widehat W,W^*)\leq \varepsilon,
+\]
+then the distance-to-set inequality gives, for every point $p$,
+\[
+  \left|\operatorname{dist}(p,\widehat W)
+  -\operatorname{dist}(p,W^*)\right|\leq \varepsilon.
+\]
+Thus $\operatorname{dist}(p,\widehat W)+\varepsilon\leq\delta$ certifies acceptance by the reference-wall gate, while
+$\operatorname{dist}(p,\widehat W)-\varepsilon>\delta$ certifies rejection. Points not covered by either inequality are ambiguous. Conversely, without a margin, an arbitrarily small wall displacement can move a point across the hard threshold, so the gate is not globally Lipschitz (entries 8 and 12).
+
+P supplies no valid Hausdorff-error radius, and its pose-graph covariance cannot simply be used as one (entries 20 and 22). The proposed repair freezes the room fitter and uses $n$ exchangeable, ground-truthed calibration episodes with
+\[
+  R_i=d_H(\widehat W_i,W_i^*), \qquad
+  k=\left\lceil(n+1)(1-\alpha)\right\rceil.
+\]
+Let $\varepsilon_\alpha$ be the $k$th order statistic of the $R_i$, with $\varepsilon_\alpha=+\infty$ when $k>n$. The split-conformal rank argument yields
+\[
+  \Pr\!\left\{d_H(\widehat W_{\mathrm{new}},W^*_{\mathrm{new}})
+  \leq\varepsilon_\alpha\right\}\!\geq 1-\alpha.
+\]
+On this single room-level event, the distance inequality holds for all scan points at once. Therefore every non-ambiguous first-gate decision agrees with the reference-wall gate with marginal probability at least $1-\alpha$, without a union bound over points (entries 23, 25, 26, and 34).
+
+Ambiguity cannot safely be handled point by point. Filtering changes the polar scan's adjacency, derivatives, and peak pairs, so fallback must cover a declared whole scan or a dependency region with an explicit grid, interpolation, and boundary contract (entries 14, 15, and 18). A secondary compute-only observation is that preemptible constrained search $A$ and a complete prediction-independent search $B$, allocated resource shares $1-\lambda$ and $\lambda$, satisfy
+\[
+  C_{\mathrm{mix}}(I,h)\leq
+  \min\left\{\frac{C_A(I,h)}{1-\lambda},
+  \frac{C_B(I)}{\lambda}\right\},
+\]
+provided state is preserved and results have an independent validity check (entries 3 and 10). Neither P's implementation nor the notes establish the required complete baseline or validator.
+
+\section*{Objections and their status}
+The verifier objected that the original margin result rested on an unsupported Hausdorff bound (entry 20). The conformal construction resolves that objection only conditionally: the fitter must be frozen independently of calibration, episodes must be exchangeable, and estimated and reference walls must use the same centerline-or-surface convention, extent, and frame (entries 28 and 34).
+
+Several objections remain. Coverage is marginal, not conditional for a particular room or noise regime, and distribution shift or dependent adaptive sampling invalidates the stated rank guarantee (entries 24 and 31). If $\varepsilon_\alpha\geq\delta$, or ambiguity propagates across large dependency regions, the certificate may be valid but yield nearly total fallback (entries 28 and 35). No result certifies the later derivative, peak-pair, width, or segment tests, the fallback's accuracy, or policy-dependent motion; the compute bound is not an end-to-end competitive robot guarantee (entries 4, 9, 31, and 35).
+
+\section*{Sources outside Q and P}
+No outside literature search or third paper was used. The notes use the standard Hausdorff distance-to-set inequality and split-conformal rank argument; the latter was pursued from Q's own discussion of calibration (entries 21, 25, and 26).
+
+\section*{What remains open}
+The material is thin empirically. Q and P contain no episode-level calibration
+records, so they cannot determine $\varepsilon_\alpha$, achieved coverage, or
+abstention cost (entry 35). The target deployment population and independent
+sampling unit remain unspecified, as do a fixed wall-set convention, a
+regional fallback contract, and guarantees beyond the first gate (entries 26
+and 31).
+
+\section*{Smallest next step}
+Specify one deployment population and wall-set convention, freeze P's fitter, and collect disjoint ground-truthed calibration and test rooms in P's simulator. Compute $\varepsilon_\alpha$ and report test-room coverage together with $\varepsilon_\alpha/\delta$ and the fraction of scan dependency regions sent to fallback. This single experiment would show whether the theorem is both calibrated and non-vacuous; $\varepsilon_\alpha\geq0.15\,\mathrm{m}$ or near-total fallback should be reported as a negative result (entries 30, 34, and 35).
+
+\end{document}

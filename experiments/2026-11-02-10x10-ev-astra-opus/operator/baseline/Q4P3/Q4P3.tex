@@ -1,0 +1,629 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\emergencystretch=2em
+
+\title{Coupled rewards in Q and false consensus in P:\\
+a converse on Q's side, an untested premise on P's}
+\author{ada\\[2pt]
+\small Consolidated note for pair Q4P3, ledger entries \#1 to \#27}
+\date{11 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Both peers read P's false consensus as the equilibrium that Q mentions in
+passing in its coupled-rewards example. On Q's side the ledger has a
+checked converse to Q's result: in Q's two-agent quadratic model, rewards
+based on the action difference cannot discipline agents whose biases move
+together across types, and with finite agreement weights a reviewer who
+seeks agreement never ends up less biased than the less biased agent
+alone. On P's side there is no result. Under Q's own standard of partial
+implementation, a terminate-on-agreement device also supports the truthful
+action, so every claim about P turns on whether truth is focal for a
+reviewer and critic run on the same model, and nothing in the material
+tests that. In round~2 the peers withdrew the audit that round~1 proposed,
+because it is confounded, designed a same-diff test of the critic in its
+place, and read P's prompts for what P's SWE-PRBench numbers can carry. No
+model calls were made, so nothing about P has been measured.
+\end{abstract}
+
+\section{The pair}
+
+Q (Bergemann, Koh and Morris, \emph{Mechanism Design for Alignment and
+Control}, arXiv 2609.01595) develops mechanism design for AI agents whose
+preferences and capabilities are unknown, under a one-sided imitation
+order in which capabilities can be concealed but not counterfeited, and
+works through stylised examples that include peer scoring and coupled
+rewards between two biased agents. P (Qiu and Gill, \emph{Adversarial
+Review}, arXiv 2608.18167) proposes a code-review protocol (AR) in which a
+reviewer R and a critic C, both run on Claude Sonnet~4.5, exchange reviews
+before a main agent M edits, and reports gains on LiveCodeBench (LCB),
+SWE-PRBench and SWE-bench Verified together with a false-consensus
+failure, agreement without sufficient evidence, which a prompt adding
+evidence-grounded disagreement repairs.
+
+\section{The connexion pursued}
+
+Q's example ``Competition through coupled rewards'' has two agents who
+observe a state $\theta$ and choose $a_1,a_2\in\mathbf{R}$. The human's
+payoff is $v=-\sum_i(a_i-\theta)^2$, and agent $i$ receives
+$U_i=-(a_i-\theta-b_i)^2+r_i(D)$ with $D:=a_2-a_1$. The biases lie on a
+known curve $b_2=f(b_1)$ with $f$ strictly decreasing and $f(0)=0$, and
+Q's rewards (CR) give a unique equilibrium with loss
+$\eta^2(b_2-b_1)^2/2$, which vanishes as $\eta\to0$. Q remarks that
+coupling ``need not push them toward choosing $a_i=\theta$; they might
+simply choose the same fixed action'' (Q line 1918).
+
+Both peers read P's false consensus as that equilibrium (ada \#1, emmy
+\#2), with agent~1 as R, agent~2 as C, $x_i:=a_i-\theta$ as an agent's
+error and $b_i$ as its error tendency (over- or under-flagging). Because
+P runs every role on the same model, the case of interest is $b_C=k\,b_R$
+with $k>0$, clones $k=1$ included, or more generally biases that move
+together across tasks, which Q's assumption rules out. Both peers mark
+this dictionary as an analogy that P does not measure (\#5(b), \#11(3),
+\#15(2), \#24(3)). The secondary lines in round~1 were P's
+evidence-grounded verdicts read as Q's hard evidence (\#1, \#2, \#10), Q's
+peer scoring set against P's terminate-on-AGREE rule (\#8), and the design
+of P's LCB comparison (\#9). Two side lines announced in \#1, on Q's
+weak-strong monitor and on P's SKILL form, were not pursued.
+
+The verifier (\#20) accepted the algebra on Q's side and raised two
+points: under Q's standard of partial implementation the claims about P
+come down to equilibrium selection, and the audit that round~1 proposed as
+the next step (\#8) is confounded. In round~2 the peers looked for an
+anchor on P's side that needs no model spend: a same-diff test of the
+critic (emmy \#21, ada \#23(3)), a map of what P's published numbers and
+outside work can show (ada \#23), and a reading of P's own prompts against
+its Table~2 (emmy \#26). Line numbers below refer to the source texts of P
+and Q supplied with the pair.
+
+\section{What was found}
+
+\subsection{An agreement penalty}\label{sec:penalty}
+
+Replacing (CR) by $r_i=-\kappa_i D^2$ with $\kappa_i>-1$ gives the unique
+equilibrium (ada \#7)
+\begin{equation*}
+a_R-\theta=\frac{(1+\kappa_C)\,b_R+\kappa_R\,b_C}{1+\kappa_R+\kappa_C},
+\qquad
+D=\frac{b_C-b_R}{1+\kappa_R+\kappa_C}.
+\end{equation*}
+In P the output is R's final review. C moves it only through R's own
+agreement weight, since $\kappa_R=0$ gives $a_R=\theta+b_R$. A critic that
+yields ($\kappa_C\to\infty$) also leaves $a_R\to\theta+b_R$, so AR
+collapses to Single-reviewer. With $\kappa_R=\kappa_C\to\infty$ both
+actions tend to $\theta+(b_R+b_C)/2$: agreement without any drop in error.
+In that limit the critic helps iff $b_C\in(-3b_R,b_R)$ for $b_R>0$, so a
+same-direction critic more biased than R makes AR worse than
+Single-reviewer. ada matched this to the ordering of P's SWE-PRBench F1
+scores, AR $0.457$ against Single-reviewer $0.495$ (\#7). The match is
+qualitative, nothing was fitted, and other channels can carry the same
+gap (Section~\ref{sec:table2}).
+
+Any symmetric reward $r_1=r_2=\rho(D)$ that is differentiable at the
+equilibrium has first-order conditions $-2(x_1-b_1)-\rho'(D)=0$ and
+$-2(x_2-b_2)+\rho'(D)=0$, which add to $x_1+x_2=b_1+b_2$, so the loss is
+at least $(b_1+b_2)^2/2$ at any penalty strength (emmy \#3). If R and C
+yield unequally, with $\kappa_R=\alpha K$, $\kappa_C=(1-\alpha)K$ and
+$K\to\infty$, the consensus is $\theta+(1-\alpha)b_R+\alpha b_C$ (ada
+\#10(2)). That is still a convex combination, and it beats R alone only if
+R does the yielding and C is less biased.
+
+\subsection{Co-moving biases}\label{sec:comove}
+
+Let $b_1$ range over an interval $[b_{lo},b_{hi}]$ of length $L$, and let
+each $r_i$ depend on $D$ alone, with $-\infty$ allowed.
+
+\paragraph{Proposition (emmy \#2).} If $b_2=k\,b_1$ with $k>0$ and
+$L>12\varepsilon\max(1,1/k)$, then any such rewards under which every
+type has an equilibrium with $|x_i|\le\varepsilon$ make the equilibrium
+$D$ the same for every type. The extreme type $b_{hi}$ also has
+equilibria with both actions shifted by any $c$ with
+$0\le c\le\min(1,k)L-2\varepsilon$, so its worst equilibrium loss is at
+least $2(\min(1,k)L-2\varepsilon)^2-O(\varepsilon)$. For $k<0$, (CR)
+works. For $k=0$, the rewards $r_2=0$ and $r_1=-KD^2/2$ give
+$x_1=2b_1/(2+K)\to0$.
+
+\paragraph{Argument.} Facing its partner, agent~1 chooses $D$ to maximise
+$r_1(D)-(D-z_1)^2$ with $z_1:=x_2-b_1$, and agent~2 maximises
+$r_2(D)-(D-z_2)^2$ with $z_2:=b_2-x_1$. Adding the optimality conditions
+of two types, each tested against the other's choice, gives exactly
+(ada \#7)
+\begin{equation*}
+\bigl(D(b)-D(b')\bigr)\bigl(z_i(b)-z_i(b')\bigr)\ \ge\ 0,\qquad i=1,2.
+\end{equation*}
+Near first best, $z_1=-b_1+O(\varepsilon)$ and $z_2=kb_1+O(\varepsilon)$.
+For $k>0$, agent~1's inequality makes $D$ weakly decreasing in $b$ and
+agent~2's makes it weakly increasing, across types more than
+$2\varepsilon/\min(1,k)$ apart. Chaining through a distant third type makes
+$D$ constant. For $k<0$ the two conditions agree. emmy's own route (\#2)
+uses $r_1(D+y)\le r_1(D)+s\,y+y^2$ for all $y$, with $s=2(b-x_1)$, which
+needs no differentiability. At the pooled value the slopes $s$ satisfying
+it form a convex set containing every type's slope, so shifting both
+actions of type $b_{hi}$ by $c$ moves the two agents' slopes by $-2c$ and
+$+2c$ without leaving the valid sets (Step~4). The reward is then a pure
+consensus device.
+
+\paragraph{Co-movement, not sign (emmy \#4).} The proof uses only that
+$f$ is increasing. With $f(b)=b-1$ on $[0,1]$ the biases have opposite
+signs for every type, and the result still holds. Q's (Curve) is used
+only through the fact that the biases move in opposite directions. The
+quantity to measure in P is the across-task correlation of R's and C's
+signed errors, not whether they agree.
+
+\paragraph{Scope (\#20, \#21(1)).} The proposition says that near-first-best
+difference rewards also support biased-consensus equilibria, so it rules
+out full implementation, not partial implementation. Terminate-on-AGREE
+written as a $0/{-\infty}$ indicator lies in this class, and for it the
+result is one of multiplicity: the equilibrium with $a_i=\theta$ exists
+alongside the biased ones.
+
+\subsection{General quadratic rewards, output by R alone}\label{sec:quad}
+
+For any quadratic state-independent rewards $r_i(a_1,a_2)$ with a unique
+equilibrium, best responses are $a_i=c_it_i+\rho_ia_j+d_i$, with
+$t_1=\theta+b$, $t_2=\theta+kb$, $c_i>0$ and $\Delta=1-\rho_1\rho_2\ne0$.
+The equilibrium loadings $L_i$ on $\theta$ and $\beta_i$ on $b$ satisfy
+(emmy \#14(1))
+\begin{equation*}
+(\beta_1-kL_1)(L_2-\beta_2)=\frac{(1-k)^2c_1c_2}{\Delta^2}\ \ge\ 0 .
+\end{equation*}
+Bounded loss forces $L_i=1$, that is $\rho_i=1-c_i$, which is the
+quadratic difference class with $c_i=1/(1+\kappa_i)$. Then for $k>0$,
+$\max_i|\beta_i|\ge\min(k,1)$, attained as $c_1\to0$ (R copies C). If only
+R's output counts, as in P,
+\begin{equation*}
+\beta_R=\frac{c_1+k(1-c_1)c_2}{c_1+(1-c_1)c_2}.
+\end{equation*}
+An agreement-seeking R ($\kappa_R\ge0$) makes $\beta_R$ a weighted average
+of $1$ and $k$ whatever C is paid, so $|\beta_R|\ge\min(1,k)$ (\#14(2)).
+Reaching $\beta_R=0$ needs $kc_2>1$ and $c_1=kc_2/(kc_2-1)>1$, that is
+$\kappa_R<0$. R is then paid to disagree and extrapolates away from C,
+which overshoots with $\beta_C=kc_2>1$. For example, $k=1/2$,
+$r_R=+D^2/2$ and $r_C=+3D^2/4$ give $x_R=0$ and $x_C=2b$.
+
+These results have a unique equilibrium, so full and partial
+implementation coincide and no selection question arises. They model LLM
+conformity as a finite pull $\kappa$ (\#21(2)). For nonlinear difference
+rewards, \#14(2) argues that any concave $r_R$, terminate-on-agreement as a
+$0/{-\infty}$ indicator included, forces pooling for a near-first-best R
+and hence biased-consensus equilibria, which is again a multiplicity
+statement. The claim that P's loop, which terminates on AGREE, cannot
+de-bias R's output therefore holds in the unique equilibrium when
+conformity is finite, and only as a statement about selection when the
+loop is read as a hard device (\#20, \#21(1)). Which reading fits P is an
+empirical question (\#21(2)).
+
+\subsection{Limits of the contrarian escape}
+
+In the quadratic difference class $x_R=A\,b_R+(1-A)\,b_C$ with
+$A=c_R/(c_R+c_C-c_Rc_C)$, and $A$ can be any real number (ada \#17(3)).
+The error vanishes only at $A^*=k/(k-1)$, so de-biasing needs the ratio
+and, for same-sign biases, extrapolation.
+\begin{itemize}
+\item \emph{Stability.} For $0<k<1$, $A^*<0$, and $A<0$ iff
+$\rho_R\rho_C>1$ with $\rho_i=1-c_i$. That is the condition under which
+alternating best responses, the way P's inner loop proceeds, diverge.
+emmy's example reaches order $10^{19}$ in 40 rounds. For $k>1$ a stable
+design exists: C states its bliss point and R plays
+$a_R=c_Rt_R+(1-c_R)t_C$ with $c_R=k/(k-1)$, which at $k=2$ is
+$a_R=2t_R-t_C$ and converges in one round.
+\item \emph{Unknown ratio.} A design tuned to $k_0$ leaves
+$\beta_R(k)=(k-k_0)/(1-k_0)$, and every design has $\beta_R(1)=1$. The
+minimax residual over $[k_{lo},k_{hi}]$ with $k_{hi}<1$ is
+$(k_{hi}-k_{lo})/\bigl((1-k_{lo})+(1-k_{hi})\bigr)$: $0.96$ on
+$[0.5,0.99]$ and $0.6$ on $[0.8,0.95]$, against $1$ for R alone. The
+analogue above $1$ ($0.6$ on $[1.5,3]$) was computed by hand only
+(\#18(2)).
+\item \emph{Identification.} With an unknown ratio, the types
+$[0,B]\times[k_{lo},k_{hi}]$ include two with the same preferences whose
+states differ by $B(k_{hi}-k_{lo})/(1-k_{lo})$, whatever the
+state-independent mechanism. The selection qualifier below applies.
+\end{itemize}
+The stable form in the model is a single round. C is prompted to
+exaggerate, so that $k>1$, and states its position without strategising;
+R discounts it with a fixed weight $A>1$ (\#18(2)). P's text-constraint
+prompt instead tells R to incorporate any bug C adds (P line 1172, \#2).
+
+\subsection{Clones and equilibrium selection}
+
+At $k=1$ preferences depend on $(\theta,b)$ only through $t=\theta+b$, so
+no mechanism without a state measure can distinguish $(\theta,b)$ from
+$(\theta+c,b-c)$, and emmy concluded that the best equilibrium does no
+better than one agent (\#14(3)). ada restricted this to full
+implementation, or to selections that depend only on the game (\#17(4),
+\#18(1)). Under Q's partial implementation (Q line 543: ``an equilibrium,
+not necessarily the unique one''), a report-matching device for clones has
+every common report $m$ as an equilibrium in every state, $m=\theta$
+included, while both agents strictly prefer $m=t$ (payoff $0$ against
+$-b^2$). The clone result is therefore about selection: a same-model loop
+helps only if truth is focal for the models, and no state-independent
+mechanism can enforce that (\#17(4)). emmy accepted this in round~2
+(\#21(1)), and the verifier made the same point for every claim about P
+(\#20). For $k\ne1$, emmy withdrew the conjecture that report matching
+also fails (\#5(a), \#14(4)). Message mechanisms may succeed there, but
+none has been built.
+
+\subsection{Peer scoring against terminate-on-AGREE}
+
+Q's binary example scores reports by $q(H,H)=7/9$, $q(H,L)=1/9$,
+$q(L,H)=1$ and $q(L,L)=-1$, and truth gives the human $1$. If the partner
+reports $H$ with probability $p$ regardless of type, reporting $H$ earns
+$1/9+2p/3$ and reporting $L$ earns $2p-1$. These are equal at $p^*=5/6$,
+so both types mixing $5/6$ on $H$ is an equilibrium that gives the human
+$1/2$ (ada \#8). Agent~1 always $H$ with agent~2 always $L$ is also an
+equilibrium ($1/9>-1$, $1>7/9$), with the same human payoff (emmy \#13).
+Ex ante, truth and babbling each give every agent $2/3$ and asymmetric
+pooling gives $(1/9,1)$, so payoff dominance does not select truth
+(\#13). The design contrast with P is that P's loop rewards agreement
+absolutely, while Q's score rewards it only as far as an agent's own type
+predicts its partner's report (\#8).
+
+\#8 turned this into an audit comparing C's AGREE rate on matched pairs
+(review of PR $i$ with diff $i$) and mismatched pairs (review of PR $j$
+with diff $i$). That audit is withdrawn. P's critic is asked whether each
+flag is a real bug in the diff shown (P lines 1107--1109), a review of PR
+$j$ cites code absent from diff $i$, and C would reject it on topicality
+alone, so a gap would appear whatever AGREE tracks (\#20). Mismatched-task
+baselines assume a shared report space, which free-text reviews that cite
+task content lack (\#21(1)).
+
+\subsection{Evidence as a state measure}\label{sec:state}
+
+emmy's result sits in the cell of Q's taxonomy with an exact action
+measure and no state measure (ada \#10(1)). P's evidence-grounded
+verdicts (P Sec.~4.4) add a coarse state measure. Suppose the protocol
+sees $m=\theta+\beta_m$ plus noise and adds $-\lambda(a_i-m)^2$ to each
+payoff. Setting the noise aside,
+$a_i=\theta+(b_i+\lambda\beta_m)/(1+\lambda)\to\theta+\beta_m$ as
+$\lambda\to\infty$, whether or not the biases co-move, so the error moves
+onto the checker. P's citations are judged by R, the same model as C, so
+$\beta_m$ is roughly the common-mode bias. A mechanical check that the
+snippet occurs in the diff is unbiased, but it tests existence, not
+relevance. Label C's types E (contradicting code), N (doubt) and A (no
+objection). If citations are checked, N and A cannot mimic E, and Q's
+multi-agent revelation principle then implies that three typed verdicts
+with response rules lose nothing against a richer exchange (\#10(3)). This
+needs citations that cannot be counterfeited and an obedient R, and P
+enforces neither. AGREE and C's added bugs carry no certificate (\#2).
+
+\subsection{What P's numbers and prompts can carry}\label{sec:table2}
+
+P reports only F1 on SWE-PRBench: $0.533$ for AR with the text
+constraint (v2), $0.503$ for Two-reviewers, $0.501$ for MARS, $0.495$ for
+Single-reviewer and $0.457$ for naive AR, on 100 PRs each, with no
+precision, recall or comments per PR (P lines 294--312, ada \#23(1)).
+
+\paragraph{The anchor (emmy \#26(1)).} Single-reviewer, Two-reviewers and
+AR use the same reviewer prompt (P lines 1030--1034), and R's first call
+has an empty prior-exchange slot. R's first draft in naive AR therefore
+has the distribution of the Single-reviewer output, and the F1 difference
+between AR and Single-reviewer comes from the inner loop's edits to that
+draft plus any post-processing applied to AR alone. The one candidate is
+the format-review step that splits each flag into a separate comment
+(P line 320), which P describes only for AR and for which it gives no
+prompt.
+
+\paragraph{Case B is neutral against Single-reviewer (emmy \#26(2)).} In
+Case~B, R's draft is APPROVE, C raises a real concern and yields, and the
+final review is R's draft (P lines 329--331). It loses against MARS
+($0.286$ against $0.667$ on that task, P line 336), not against
+Single-reviewer. It is the limit $\kappa_C\to\infty$ of
+Section~\ref{sec:penalty}. Of P's two documented failure modes, only
+Case~A (C confirms R's hedges and adds a speculative bug, P lines
+317--326) can contribute to the gap between $0.457$ and $0.495$. This
+corrects the Case~B row of ada's table in \#23(1).
+
+\paragraph{Deletion channels (emmy \#26(3)).} The v2 prompt changes only
+R's block on responding to the critic (P lines 1125--1127). That block
+forbids R to ``consolidate, drop, or rephrase legitimate findings just
+because you are about to converge'' (P lines 1156--1158) and to
+``capitulate to APPROVE merely because the critic called the concern
+`speculative' '' (P lines 1168--1170). Both describe R deleting its own
+draft flags, which lowers recall against Single-reviewer and which P's
+case studies do not show. Under micro-averaged $F_1=2T/(C+H)$, with $T$
+matched comments, $C$ comments and $H$ human comments, normalise
+Single-reviewer to $T=1$, so that $C+H=2/0.495\approx4.04$. Moving from
+$0.495$ to $0.457$ then needs either $0.336$ added unmatched comments per
+Single-reviewer match or deletion of $10.0\%$ of Single-reviewer's
+matches. Deletion moves F1 about three times as fast, so the deletion
+channels alone could carry the deficit. The candidates have different
+signatures (\#23(1) as corrected by \#26(2) and \#26(3)):
+\begin{center}\small
+\begin{tabular}{p{0.36\linewidth}p{0.18\linewidth}p{0.34\linewidth}}
+\hline
+\raggedright Candidate carrier & \raggedright P lines &
+\raggedright Signature against Single-reviewer\tabularnewline
+\hline
+\raggedright Case A: C confirms R's hedges and adds a flag (the
+co-movement mode) & \raggedright 317--326 &
+\raggedright lower precision, more comments per PR\tabularnewline
+\raggedright R drops its own flags on convergence or under doubt &
+\raggedright 1156--1158, 1168--1170 &
+\raggedright lower recall, fewer comments per PR\tabularnewline
+\raggedright Case B: C yields to a rebuttal that cites no code &
+\raggedright 328--336 &
+\raggedright none; it loses only against MARS\tabularnewline
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{What can carry v2's gain (emmy \#26(4)).} On AGREE, v2 keeps
+R's draft unchanged, so v2 equals Single-reviewer on tasks where C agrees;
+in the model this sets $\kappa_R=0$ on that path (\#7). The clause ``If
+the critic added a missed bug (under any verdict type), incorporate it''
+(P line 1172) is new in v2. It appends C's additions with no certificate,
+which closes Case~B and opens Case~A's addition channel. C then acts only
+through the union of its additions with R's draft and through the
+cite-or-drop rule, which is the state measure of
+Section~\ref{sec:state}. The gain of $0.038$ over Single-reviewer needs
+only $0.105$ matched additions per Single-reviewer match. ada's reading
+(\#23(1)) is that the cite-or-drop rule raises precision, capped by C's
+added flags. The ablation that separates the two readings is v2 with the
+DISAGREE\_CONCERN cite-or-drop clause removed and the other two clauses
+kept. If it scores near $0.533$, P's design principle, ``force
+disagreement to be explicit and evidence-grounded'' (P line 264), is not
+what carries the gain.
+
+\paragraph{Strength and scope (emmy \#26(5), \#26(6)).} If the format step
+is common to all methods, AR below Single-reviewer is the $n=100$
+aggregate form of the statement that the pair does not select truth: the
+loop leaves R worse than its own draft. The evidence is weak. With an
+assumed paired per-PR standard deviation of $0.2$ to $0.3$ (P gives none),
+the gap of $0.038$ is $1.3$ to $1.9$ standard errors. P's judge scores
+similarity to human comments, so an unmatched comment need not be false
+(\#21(4)). And the deficit need not come from the co-movement mode. Q's
+model has one state and a scalar action, so bias is its only error. Case
+B's mechanism, where R ``can end the disagreement by writing a
+confident-sounding rebuttal, even when R is wrong'' (P lines 333--334), is
+a failure of discrimination, not of flagging volume, and the co-movement
+results say nothing about it.
+
+\subsection{The primitive on P's side}\label{sec:primitive}
+
+Both readings of P's loop need one quantity: how C's verdict on the same
+diff responds to a false flag in R's review, and whether that depends on
+the flag being one that C's own model would write (emmy \#21(3)). In the
+model C's disposition on item $\tau$ is $b_C(\tau)$, and co-movement means
+that $b_C$ and $b_R$ covary positively across items. A false flag written
+by Sonnet as R points along $b_R$, so under co-movement C's own disposition
+favours it, while a flag written by another model family carries no such
+alignment. The gap in detection between own-model and other-model false
+flags is then the co-movement premise of \#4, measured by intervention.
+Under the hard device, truth is focal for C exactly when detection is
+high. With finite $\kappa$, detection is $(1-\text{conformity})$ times
+discriminability.
+
+Outside work measures two different things, and only one of them is P's
+premise (ada \#23(2)). \emph{Ownership}, with content fixed and role
+varied: arXiv 2606.05976 injects a false claim into a model's own thought
+block, and relabelling it as a user, tool or memory message raises
+explicit correction by 23 to 93 percentage points in 10 of 12 settings
+(9 models, maths and logic). P's C always receives R's review as another
+agent's message, so this effect does not arise in P, and results that
+models cannot correct themselves overstate what carries over.
+\emph{Disposition}, the model's own kind of error shown as external
+input: DeltaBench (arXiv 2502.19361) finds self-critique below
+cross-model critique for three reasoning models, $36\%$ below for
+DeepSeek-R1, and arXiv 2408.10495 finds that GPT-3.5 and GPT-4 repair
+other models' insecure code at $33.2$ to $59.6\%$ but do poorly on their
+own. Both point towards co-movement in P's presentation condition. Both
+are confounded by source, since own outputs differ in difficulty and
+style, and neither covers code review or Sonnet~4.5. Kim et al.\ (arXiv
+2506.07962) find more correlated errors within a provider, which is
+co-movement of correctness across items, not of flagging. The outside
+work supports the direction of the premise and does not measure it for
+P's pair (\#23(2), \#24).
+
+\subsection{Checks}
+
+The four check scripts in \texttt{ada/} and \texttt{emmy/} were rerun for
+this note on 11 September 2026 and reproduce every value quoted from them:
+the closed forms, limits and fractions, emmy's quadratic identity
+(symbolically and on random draws), the affine form and minimax values,
+the divergence of emmy's example against one-round convergence at $k=2$,
+and Step~4 of the proposition for a kink penalty. The round-2 arithmetic
+was also rechecked: the interval half-widths of \#21(5), and the size
+check and standard-error ratios of \#26(3) and \#26(5). The P passages
+cited in round~2 (P lines 272, 320, 329--336, 685--688, 728, 1030--1034,
+1107--1109, 1125--1127, 1156--1172) were read against P's text and say what
+the entries quote. Steps 1 to 3 of the proposition rest on the written
+proof, which ada checked (\#7, \#11). The verifier checked the
+proposition, ada's exact inequality, the Step~4 shift, the quadratic
+identity, the weighted-average bound and the contrarian algebra (\#20).
+Neither peer made model calls: no API key was set and no spending was
+authorised (\#21(7), \#23(4)).
+
+\section{Objections and their status}
+
+\begin{itemize}
+\item \textbf{Claims about P rest on selection} (verifier \#20). Under
+Q's partial implementation a $0/{-\infty}$ consensus device supports
+$a=\theta$, so every claim about P, including that the loop cannot
+de-bias R's output, turns on whether truth is focal for a same-model R-C
+pair. Accepted by emmy (\#21(1)) and ada (\#23(5), \#24). emmy narrowed
+its reach: the finite-conformity results have unique equilibria and are
+unaffected, and which reading fits P is empirical (\#21(2)). The premise
+remains untested.
+\item \textbf{The matched-versus-mismatched audit is confounded}
+(verifier \#20, on \#8). Accepted and withdrawn (\#21(1), \#23(5),
+\#24(6)).
+\item \textbf{Replacing a flag confounds detection with omission} (emmy
+\#21(4), on the verifier's proposed arm). A replaced true flag leaves an
+omission that C's second task, naming missed bugs (P line 1109), can
+catch. emmy appends the false flag instead, and ada's extra arm builds on
+that design (\#23(3)). Not contested.
+\item \textbf{Case B and Single-reviewer} (emmy \#26(2), correcting ada
+\#23(1) and \#24). Case~B loses recall against MARS, not against
+Single-reviewer. The peer phase ended before ada answered. The passages
+it rests on (P lines 329--331, 1030--1034) were reread for this note and
+say what \#26 quotes, and Section~\ref{sec:table2} uses the corrected
+version.
+\item \textbf{Full versus partial implementation} (ada \#17(4), \#18(1),
+on emmy \#14(3) and \#15). Resolved: emmy accepted it (\#21(1)), and the
+verifier raised it independently (\#20).
+\item \textbf{The format-review step} (emmy \#26(1)). P describes it only
+for AR (P line 320). If Single-reviewer output skips it, AR's comment
+count rises mechanically. Open.
+\item \textbf{Unmatched does not mean false} (\#21(4), \#26(5)). P's
+judge scores similarity to human comments (Cohen's $\kappa=0.75$ against
+annotators, P line 272) and may penalise valid comments (P lines
+685--688). This limits every reading of Table~2, and it is why falsity
+in the proposed test is confirmed by a person. Stands.
+\item \textbf{Micro versus macro F1} (\#26). The ratios in \#26(3) assume
+micro-averaging, and P does not say which it uses. Open.
+\item \textbf{P's LCB ladder confounds interaction with the acceptance
+rule} (ada \#9). Single-reviewer and Two-reviewers edit once and MARS is
+capped at two rounds, while AR re-edits until R and C converge at once
+and find no flaws (P lines 203--205). P states no outer cap for LCB, and
+its SWE-bench workflow caps the outer loop at two (P lines 1884, 1892).
+The LCB gain may therefore come from the stricter acceptance rule and the
+extra edits rather than from R-C interaction. emmy confirmed this from
+P's text and found that P's generic AR skill allows seven inner rounds,
+against five in P Sec.~3.5 (\#13, P lines 199, 1689); ada confirmed it
+(\#17(1)). Open: which caps ran on LCB, and the separating run.
+\item \textbf{Sign versus co-movement} (emmy \#4, correcting \#2 and \#3).
+Resolved; ada checked it (\#11).
+\item \textbf{Pure pooling in Q's example} (emmy \#13, correcting \#8).
+Resolved (\#17(1)).
+\item \textbf{Report matching for co-moving biases} (\#5(a)). Withdrawn
+by emmy (\#14(4)); message mechanisms for $k\ne1$ remain open (\#15(4)).
+\item \textbf{P's evidence is thin} (\#5(c), \#11(2), \#26(5)). About five
+of 105 LCB tasks separate MARS ($82\%$) from AR ($87\%$). SWE-PRBench has
+100 PRs and no intervals, and the text constraint was designed on the
+benchmark on which it is scored. Stands.
+\item \textbf{The scalar model is an analogy} (\#5(b), \#11(3), \#15(2),
+\#24(3)). P's verdicts are discrete, P reports no per-task signed errors,
+and the model cannot express failures of discrimination such as Case~B's
+(\#26(6)). Stands.
+\end{itemize}
+
+\section{Sources from outside Q and P}
+
+None of these enters a derivation. They position the results, bear on
+the premise, or supply inputs for the proposed test.
+\begin{itemize}
+\item Krishna and Morgan (2001), \emph{A Model of Expertise}, Quarterly
+Journal of Economics 116(2), 747--775 (\#3). The like-versus-opposing
+experts point is theirs. emmy argues that co-movement is a different
+condition from their sign condition (\#4).
+\item Moore and Repullo (1988) and Dutta and Sen (1991), on
+implementation with two agents (\#14(4)).
+\item Correlated-agreement peer prediction: Dasgupta and Ghosh (2013),
+Shnayder et al.\ (2016), and the survey arXiv 2106.03176 (\#8). They
+motivated the withdrawn audit.
+\item LLM conformity: arXiv 2508.18321 and arXiv 2606.01637 (\#8).
+\item Correlated errors across LLMs: Kim et al., arXiv 2506.07962 (\#3,
+\#23(2)), and arXiv 2605.29800 (\#3).
+\item Self-critique against cross-model critique: arXiv 2606.05976
+(\#21 from a search snippet, \#23(2) with figures), arXiv 2505.17656
+(\#21, snippet only, not read), DeltaBench (arXiv 2502.19361), arXiv
+2408.10495, and arXiv 2605.21537, which has no cross-model arm and so
+cannot separate ownership from disposition (\#23(2)).
+\item SWE-PRBench: the public dataset (CC BY 4.0), with diffs and human
+comments but no model reviews, and its paper, arXiv 2603.26130, which
+reports single-pass hallucination rates of $0.19$ to $0.42$ on diff-only
+input ($0.227$ for Sonnet~4.6), so own-model false flags should exist on
+most diffs (\#23(1), \#23(3)).
+\item Morris and Shin (2002) and Geanakoplos and Polemarchakis, for the
+information version that was not worked out (\#9, ada's notes).
+\end{itemize}
+Searches are recorded in \#3, \#8, \#21 and \#23 (\#24(5)), and none was
+run for the contrarian result (\#15(6)). These are search records, not
+novelty claims. A crossover of critic and error source is not new as a
+method (\#21(7)).
+
+\section{What remains open}
+
+The material is thin: a stylised quadratic model with complete
+information between the agents, a reading of P's text and prompts, and
+P's published aggregates. Nothing about P has been measured.
+\begin{enumerate}
+\item \emph{The premise on P's side.} Whether P's critic reacts to false
+flags its own model would write, which under the hard reading is whether
+truth is focal for a same-model R-C pair (\#20, \#21(3), \#24). Every
+claim about P depends on it.
+\item \emph{What carries P's Table~2.} Case~A additions or R's deletions
+for naive AR's deficit (\#26(3)); union plus no deletion, or
+evidence-grounded disagreement, for v2's gain (\#26(4)); whether the
+format-review step is applied to AR alone, and micro or macro F1
+(\#26(1)). These need P's logs, which are not public (P line 728), or
+reruns.
+\item \emph{LCB.} Which inner cap ran, and whether an outer cap applied
+(\#13, \#24(2)); Single-reviewer inside AR's outer loop (\#9).
+\item \emph{Predictions not run.} If the crossover contrast of
+Section~\ref{sec:next} is positive, a cross-family critic cuts Case~A
+over-flagging (\#21(6)), and AR's gain should grow as R's and C's signed
+errors become negatively correlated (\#3, \#4). Extra rounds do not help
+same-direction clones (\#3). Under the text constraint, residual
+fabricated comments come from C's certificate-free additions, and the
+gain falls on flags settled by citations that occur in the diff (\#3,
+\#10). A one-round contrarian design with an exaggerating critic beats
+P's R on over-flagging (\#15(1), \#18(2)).
+\item \emph{Theory.} Message mechanisms for $k\ne1$ (\#14(4), \#15(4));
+difference rewards for R that are neither concave nor convex along the
+path (\#15(5)); non-quadratic contrarian rewards (\#18(3)); the minimax
+case above $1$, computed by hand only (\#18(2)); the information version,
+in which a beauty contest gives evidence weight
+$w=(1-r)\lambda/(1-r\lambda)<\lambda$ but P's sequential loop calls for a
+model of conformity garbling C's message (\#9, \#11(4)); and failures of
+discrimination, which the scalar model cannot express (\#26(6)).
+\item \emph{Novelty} is unestablished (\#5(d), \#11(5), \#15(6),
+\#21(7), \#24(5)).
+\item \emph{Coverage.} The peer phase ended when the allowance ran out.
+emmy's last ready is at \#26, but ada's is at \#24 and does not cover
+\#26, so emmy's reading of Table~2 has only emmy's own check and the
+rereading of P's passages for this note. The revelation-principle reading
+(\#10(3)) was flagged by emmy as unchecked (\#5(e)) and not taken up
+again.
+\end{enumerate}
+
+\section{The smallest next step}\label{sec:next}
+
+Every claim about P turns on one quantity: whether P's critic, on the
+same diff, reacts to a false flag that its own model would write (\#20,
+\#21(3)). The smallest step that settles it is the core of emmy's
+same-diff test (\#21(4)), with two arms. On each of P's 100 SWE-PRBench
+diffs, run P's baseline critic prompt (P lines 1083--1120) on Sonnet~4.5,
+in a fresh context, against R's round-1 review $r_i$ (arm A0) and against
+$r_i$ with one appended false flag $f_i^{\mathrm{own}}$ (arm A1). The flag
+is one that Sonnet~4.5 wrote as R on that diff in an extra sample; it
+cites real lines of the diff, and a person has confirmed it false, since
+P's judge cannot certify falsity. It is appended rather than swapped for
+a true flag, so that C's search for missed bugs cannot react to an
+omission instead. Report the share of diffs on which C names the injected
+flag as spurious, which is the primary outcome, and the paired change in
+AGREE between the arms with its interval, whose $95\%$ half-width at
+$n=100$ is $0.085$ to $0.126$ (\#21(5)). The inputs are public except R's
+reviews, which one R pass per diff supplies (\#23(1)). The cost is some
+hundreds of model calls and a person checking one flag per diff.
+
+If C seldom names the flag and AGREE barely moves, C's AGREE does not
+react to its own model's errors, and P's naive loop is a consensus device
+for common-mode errors under either reading of the loop (\#21(6)). P's v2
+gain then has to come from the citation channel (\#10) or from union plus
+no deletion (\#26(4)). If C names most such flags, the premise fails for
+this pair, and the naive-AR deficit has to come from something other than
+co-moving errors. \#21(6) named Case~B at this point; by \#26(2) Case~B is
+neutral against Single-reviewer, which leaves the deletion channels of
+\#26(3).
+
+The core does not say whether a low detection rate reflects co-movement
+or weak discrimination of false flags in general. That needs the
+other-family arm and the crossover contrast
+$I=[d(S,G)-d(S,S)]+[d(G,S)-d(G,G)]$ of \#21(4), where $d(c,s)$ is critic
+$c$'s detection rate for false flags from source $s$, $S$ is Sonnet and
+$G$ another family. Its $95\%$ half-width at $n=100$ is about $0.18$ to
+$0.20$ unless several flags are injected per diff (\#21(5)). Separating
+ownership from disposition needs ada's arm that shows the same flag to C
+as its own earlier draft (\#23(3)). Before any spending, P's authors can
+be asked whether Single-reviewer passes through the format-review step
+and whether F1 is micro- or macro-averaged (\#26(1)), which caps ran on
+LCB (\#13), and for the per-comment judge labels, which split Table~2 into
+precision, recall and comments per PR at no call cost (\#23(1), \#26(3)).
+Those answers would settle the confounds in P's comparisons, but they do
+not measure C's response to its own model's errors.
+
+\end{document}

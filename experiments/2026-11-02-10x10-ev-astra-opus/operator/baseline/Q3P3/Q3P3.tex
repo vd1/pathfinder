@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\title{Q and P: Institutions, Agents, and Stopping Rules}
+\author{Ada}
+\date{September 11, 2026}
+
+\begin{document}
+\maketitle
+
+\section*{The pair in two sentences}
+Q studies LLM traders in a continuous double auction and reports slower or absent convergence and lower allocative efficiency than in the human benchmark. P studies Adversarial Review (AR), where a reviewer and critic exchange structured judgments before a coding agent revises its work, and reports gains alongside a false-consensus failure mode.
+
+\section*{The connexion pursued}
+The pursued question was whether observed multi-agent performance comes from agent information or from the institution, especially its stopping rule and admissible messages. A zero-intelligence control can separate those contributions: Q permits a constrained random-trader benchmark, while P suggests analogous controls in which critic verdicts are random or the reviewer alone is allowed to iterate (ledger entries 11, 14, 16, and 18).
+
+\section*{What was found}
+The firm result is on Q alone. Two independent implementations of Q's stated mechanism give constrained zero-intelligence traders (ZI-C) efficiency near $0.96$, about $5.8$--$5.9$ trades per round, and mean transaction price $2.00$; every reported LLM cell in Q has efficiency $0.36$--$0.91$ (ledger entries 3 and 5). The comparison is robust to the simulated quote range (ledger entry 5). On a finer horizon grid, the five-round LLM means equal the ZI-C efficiency obtained after only about 53 draws for GPT Large, 80 for Gemini Large, and 131 for GPT Small, although Q allows 300 draws (ledger entry 8).
+
+The surplus accounting explains the benchmark. With maximum feasible surplus $7.50$, define
+\[
+  1-E=O+C,
+\]
+where $O$ is the foregone surplus of intramarginal traders left out, divided by $7.50$, and $C$ is the surplus destroyed by extramarginal participation, divided by $7.50$. The five efficient pairs contribute $2.50,2.00,1.50,1.00,0.50$, so at most $k=1,\ldots,5$ completed efficient pairs yield efficiencies $0.33,0.60,0.80,0.93,1.00$ (ledger entries 4 and 7). ZI-C has $O=0.009$ and $C=0.032$, whereas a stylised one-cent ``creeper'' has omission about $0.82$; making acceptance the default raises volume but produces commission $0.10$--$0.17$ and efficiency only $0.71$--$0.79$ (ledger entry 4). Thus a cheap terminal move can exchange missed trades for bad trades without recovering the ZI-C result. The direction is model-dependent: reported GPT Large and Gemini Large mainly omit trades, but GPT Small and unreported Gemini runs also display commission (ledger entries 6 and 7).
+
+This does not establish the proposed connexion to P. In P, Single-reviewer and Two-reviewers edit once, while MARS and AR re-review revised artifacts; those latter methods are also the methods above the $75$--$77\%$ cluster (ledger entries 11, 16, and 22). Consequently P does not identify the informational value of reviewer--critic interaction separately from re-review, stopping, and adaptive compute. A four-parameter toy model shows only plausibility: when one review--edit cycle is calibrated to have zero net effect, iteration until approval adds $0.3$--$9.1$ percentage points, with median $2.6$, but it is not evidence about P's tasks (ledger entry 12).
+
+\section*{Objections and resolutions}
+The first objection was that an enforced tick-size result had been attributed too directly to Q. Code inspection showed that Q uses strict floating-point improvement for LLM orders and applies its price increment only in a ZI deadlock check; the tick experiment therefore concerns a new enforced and stated message constraint, not Q as run (ledger entries 9 and 13). This objection was resolved by narrowing the claim.
+
+The second objection was that ZI-C and the LLMs might not share the same effective constraint. Q's exchange does not enforce reservation values, although its prompt tells LLMs never to violate them; violation events are logged but their rate is not reported (ledger entries 13, 18, 20, and 22). The $0.96$ result is therefore a constrained-strategy floor conditional on LLM prompt compliance, not an unconditional exchange baseline.
+
+The verifier objected that the Q--P connexion remained analogy rather than a supported cross-paper result and requested a matched P ablation (ledger entry 24). Both peers accepted the objection. They also established that the supplied material lacks P's task instances, per-task outcomes, traces, disagreement rates, orchestration, and credentials, so running that ablation here would invent evidence (ledger entries 25, 27, and 29). P also reports MARS as $82\%$ in Table~1 but calls it $85\%$ in prose, an unresolved internal inconsistency (ledger entries 16 and 22).
+
+\section*{Sources outside Q and P}
+The work used Gode and Sunder's 1993 ZI-C strategy as background and inspected Q's released repository, including its configurations, notebook, and order-handling code (ledger entries 4, 6, and 13). A prior-work search found BAZAAR, a sealed-bid double auction that reports individual profit rather than market efficiency; it is a different comparison and supplies no novelty claim here (ledger entry 14). No outside source supplied evidence for the proposed P ablation.
+
+\section*{What remains open}
+The material is thin on the cross-paper question. No LLM intervention was run; Q's LLM reservation-violation rate is unknown; two author ZI-C batches have unexplained price-dispersion differences; and P provides neither uncertainty nor paired task-level outputs (ledger entries 14, 18, 27, and 31). The supported conclusion is therefore negative: Q supplies a standalone constrained ZI-C result, but Q and P together do not yet establish a cross-paper advance (ledger entries 27, 29, and 31).
+
+\section*{Smallest settling step}
+On the same P tasks, compare an R-only iterate-to-clean loop, AR, and AR with a critic whose verdict is random but matched to the observed disagreement rate. Hold outer caps and compute equal and report paired per-task outcomes. If AR beats both controls, critic information has an effect beyond re-review and stopping; otherwise the proposed institutional decomposition is not supported (ledger entries 25, 27, and 31).
+
+\end{document}

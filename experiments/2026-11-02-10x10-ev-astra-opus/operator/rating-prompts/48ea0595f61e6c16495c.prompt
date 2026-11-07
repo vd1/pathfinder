@@ -1,0 +1,2673 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Quantile Advice and CVaR Optimization:
+Retained Results and a Tail-Localized Rank Frontier}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+Q, \emph{Learning-Augmented Algorithms: Guarantees, Construction
+Mechanisms, and System-Level Implications}, distinguishes prediction
+interfaces, charged prediction access, and achieved versus matched
+guarantees. P, \emph{Distributed risk-averse optimization via CVaR},
+studies distributed zeroth-order optimization from independent noisy
+loss evaluations, proving consensus and convergence to an expected
+empirical smoothed surrogate.
+
+The connexion pursued was whether predicting a value-at-risk threshold
+could reduce P's expensive loss queries. P's oracle does not identify
+tail scenarios before their losses are evaluated. A predicted threshold
+therefore cannot supply cheap screening without changing the
+information interface \ledger{1, 3, 9}.
+
+The preceding consolidation retained an equal-quantile lower bound,
+a sharper analysis of P, a convexity obstruction, costed screening,
+lifted correction, multilevel rank estimators, robust quadrature,
+and a separation between exact and untrusted rankings.
+These results remain below. Review 42 identified the missing
+noisy-value convex-optimization baseline; the fifth round corrected
+it and supplied direct optimization lower bounds
+\ledger{42, 44, 47--50}.
+
+The latest review is entry 52. It returned ITERATE, assessed the
+preceding account at \([rating withheld]\), and reported that its checks of the
+search lemma, hidden-jump construction, rare-bin coupling, pilot
+bounds, and surrogate-error bound held. It requested preservation of
+those results and proposed a final investigation of the dependence
+on tail probability and prediction error \ledger{52}.
+
+The appended sixth round supplies that investigation. In the declared
+single-agent rank interface, it strengthens the robust costly-query
+bound to
+\[
+ \widetilde O\!\left(
+ \frac{U}{\alpha\epsilon}
+ +\frac{\min\{\eta,U\}^2}{\alpha\epsilon^2}
+ \right),
+\]
+with a matching lower expression up to logarithms for algorithms
+required to remain correct under arbitrary advice. Here
+\(\eta\) bounds the uniform error of scores inducing the ranks;
+the algorithm does not know \(\eta\). Draws also improve to
+\(\widetilde O(U^2/(\alpha\epsilon^2))\).
+No later verifier review certifies this extension
+\ledger{53--61}.
+
+\section{Retained first-round results}
+
+\subsection{Exact quantiles leave tail-mean uncertainty}
+
+\begin{claim}
+Under P's unconditional independent loss-sampling interface, exact
+knowledge of the quantile at every decision leaves a worst-case
+\(\Omega(b^2/(\alpha\epsilon^2))\) query requirement for expected
+additive CVaR optimization error \(\epsilon\).
+\end{claim}
+
+The construction is in
+\url{ada/quantile-obstruction-and-baseline.md},
+lines 11--74 \ledger{3, 7}.
+For \(x\in[-1,1]\), \(a>b>0\), and
+\(0<\gamma\leq1/2\), let
+\[
+ B\sim\operatorname{Bernoulli}(\alpha),
+ \qquad
+ \Pr_v(S=1)=\frac{1+v\gamma}{2},
+ \qquad v\in\{-1,+1\},
+\]
+independently, and return
+\[
+ J_v(x;B,S)=B(a+bSx).
+\]
+Every sample loss is affine, \(b\)-Lipschitz, and bounded. Under the
+lower-quantile convention,
+\[
+ q_v(x)=
+ \inf\{t:\Pr_v(J_v(x)\leq t)\geq1-\alpha\}=0
+\]
+for every decision and both instances. Nevertheless,
+\[
+ \begin{aligned}
+ C_v(x)&=a+vb\gamma x,\\
+ x_v^\ast&=-v,\\
+ C_v(x)-C_v^\ast&=b\gamma(1+vx).
+ \end{aligned}
+\]
+Zero is a minimizing Rockafellar--Uryasev threshold; the support gap
+makes that threshold nonunique.
+
+Even granting the stronger oracle that reveals \(B\) and, when
+\(B=1\), \(S\), the divergence per sample is
+\[
+ D_{\mathrm{KL}}(P_+\Vert P_-)
+ =\alpha\gamma\log\frac{1+\gamma}{1-\gamma}
+ \leq4\alpha\gamma^2.
+\]
+Adaptive decisions cannot increase the information in a sample.
+For \(n\) queries,
+\[
+ \operatorname{TV}(P_+^{(n)},P_-^{(n)})
+ \leq\sqrt{2n\alpha\gamma^2}.
+\]
+If \(n\leq1/(8\alpha\gamma^2)\), average testing error is at least
+\(1/4\). Classifying by the output's sign, a classification error
+incurs gap at least \(b\gamma\). Thus
+\[
+ \max_v\mathbb E_v[C_v(\hat x)-C_v^\ast]\geq b\gamma/4.
+\]
+In particular, for \(0<\epsilon\leq b/16\),
+\[
+ \begin{aligned}
+ n&\leq \frac{b^2}{512\alpha\epsilon^2}\\
+ &\Longrightarrow\
+ \max_v\mathbb E_v[C_v(\hat x)-C_v^\ast]\geq2\epsilon.
+ \end{aligned}
+\]
+This single-agent obstruction does not exclude distribution-specific
+gains, threshold localization, or savings under richer advice
+\ledger{7, 9}.
+
+\subsection{P's sampling residual improves without predictions}
+
+\begin{claim}
+Comparing values of the expected empirical objective replaces P's
+sampling residual \(O(e_s/\delta_{\min})\) by \(O(e_s)\).
+The limiting residual becomes \(O(\delta_{\max}+e_s)\).
+\end{claim}
+
+For deterministic batch sizes, define
+\[
+ F_{i,k}(x)=\mathbb E\widehat C^i_{s_k^i}(x),
+ \qquad
+ b_{i,k}=\frac{U_i\sqrt{2\pi}}{\alpha_i\sqrt{s_k^i}}.
+\]
+Empirical CVaR is convex and \(L_i\)-Lipschitz. Expectation of a
+minimum is no larger than the minimum of the expectation.
+Together with P's DKW calculation, this gives
+\[
+ 0\leq C^i(x)-F_{i,k}(x)\leq b_{i,k}.
+\]
+This is a deterministic expected-objective bound, uniform in its
+constant, not a simultaneous bound on every realized empirical
+function.
+
+Let \(F_{i,k,\delta}\) denote ball smoothing on P's contracted
+feasible set. P's estimator satisfies
+\[
+ \mathbb E[\hat g_k^i\mid\mathcal F_k]
+ =\nabla F_{i,k,\delta}(y_k^i).
+\]
+Jensen's inequality, the one-sided bias, and Lipschitz continuity imply
+\[
+ \begin{aligned}
+ F_{i,k,\delta}(x)&\geq C^i(x)-b_{i,k},\\
+ F_{i,k,\delta}(z)&\leq C^i(z)+L_i\delta_i.
+ \end{aligned}
+\]
+Consequently,
+\[
+ \begin{aligned}
+ &\sum_i
+ \langle\nabla F_{i,k,\delta}(y_k^i),y_k^i-z\rangle\\
+ &\quad\geq
+ m\bigl(\mathcal C(\bar x_k)-\mathcal C(z)\bigr)
+ -L_{\max}\sum_j\|x_k^j-\bar x_k\|\\
+ &\qquad-\sum_i(b_{i,k}+L_i\delta_i).
+ \end{aligned}
+\]
+P's remaining disagreement and projection argument is unchanged.
+
+Writing
+\[
+ \begin{gathered}
+ S_T=\sum_{k<T}\eta_k,\qquad
+ B_k=\frac1m\sum_i b_{i,k},\\
+ \overline{L\delta}=\frac1m\sum_iL_i\delta_i,
+ \qquad G_i=\frac{dU_i}{\delta_i},
+ \end{gathered}
+\]
+the sharpened ergodic bound is
+\[
+ \begin{aligned}
+ \mathbb E[\mathcal C(\hat x_T)-\mathcal C^\ast]
+ \leq{}&
+ \frac{D_x^2}{2S_T}
+ +\frac{\sum_iG_i^2}{2mS_T}\sum_{k<T}\eta_k^2\\
+ &+\frac{L_{\max}}{mS_T}
+ \sum_{k<T}\eta_k
+ \mathbb E\!\left[\sum_j\|x_k^j-\bar x_k\|\right]\\
+ &+\overline{L\delta}
+ +\frac1{S_T}\sum_{k<T}\eta_kB_k
+ +\frac{D_xL_{\max}\delta_{\max}}r.
+ \end{aligned}
+\]
+For fixed batch sizes, P's almost-sure limit minimizes the fixed
+expected empirical smoothed objective. Its true gap is bounded
+pathwise by
+\[
+ \overline{L\delta}+B+
+ \frac{D_xL_{\max}\delta_{\max}}r,
+ \qquad B=\frac1m\sum_i b_i.
+\]
+P's sampling condition makes \(B=O(e_s)\). Inverse smoothing radii
+remain in the transient estimator term. Predictable batch sizes
+require conditional expected objectives and expectations around random
+bias bounds \ledger{2, 5}.
+
+The derivation is in
+\url{ada/quantile-obstruction-and-baseline.md},
+lines 76--149. Levy et al.\ already analyze expected minibatch CVaR
+objectives and give the sharper bias order
+\[
+ b_{i,k}
+ =O\!\left(
+ U_i\min\{1,(\alpha_i s_k^i)^{-1/2}\}
+ \right).
+\]
+A shift handles signed bounded losses. The retained contribution is
+the transfer to P, not a new expected-minibatch principle
+\ledger{4, 5, 11, 52}.
+
+\subsection{Finite-batch prediction correction can destroy convexity}
+
+QuEst uses a correction of the form
+\[
+ \widehat Q_\lambda
+ =Q(F_n)+\lambda
+ \bigl[Q(\widetilde F_N^u)-Q(\widetilde F_n)\bigr].
+\]
+Its asymptotic inference theorem does not automatically provide a
+convex objective for P's finite-batch optimizer.
+
+Take \(x\in[-1,1]\), \(\alpha=1/2\), one labeled sample, and two
+independent cheap samples. Let the true loss be deterministic,
+\(J(x)=\mu x^2\), while a predicted loss equals \(x^2\) or \(1\),
+equiprobably. Then
+\[
+ \begin{aligned}
+ \mathbb E\widehat C^{\mathrm{pred}}_1(x)
+ &=\frac{x^2+1}{2},\\
+ \mathbb E\widehat C^{\mathrm{pred}}_2(x)
+ &=\frac{x^2}{4}+\frac34.
+ \end{aligned}
+\]
+The expected corrected objective is
+\[
+ \mu x^2+\frac{\lambda}{4}(1-x^2).
+\]
+For \(0<\mu<\lambda/4\), this is strictly concave and selects
+endpoints, whereas the true objective selects zero. Smoothing retains
+the quadratic curvature.
+
+This is a transfer obstruction, not a contradiction of QuEst's
+asymptotic theorem or an analysis of its population variance-optimal
+weight. See
+\url{ada/quantile-obstruction-and-baseline.md},
+lines 165--194 \ledger{6, 8, 11, 52}.
+
+\section{Retained continuation: costed sample-level screening}
+
+\subsection{The stronger interface}
+
+In the affine family \(J(x)=B(a+bSx)\), a scenario contains
+\[
+ (B,S,H)\in\{0,1\}\times\{-1,1\}\times\{0,1\},
+ \qquad \Pr(B=1)=\alpha.
+\]
+A draw costs \(c_0>0\), optional binary prediction \(H\) costs
+\(c_p\geq0\), and a true evaluation costs \(c_e>0\).
+Opaque handles reveal nothing else about \(B,S\). Evaluating at
+\(x=1\) reveals \(B\) and \(BS\); reevaluation supplies no fresh
+sign. The prevalence \(p=\Pr(H=1)\) is known as part of this
+interface. Learning it is not included in the fixed-rule theorem.
+
+The sign may depend arbitrarily on \(B,H\). Define
+\[
+ C(x)=a+b\mu x,\qquad
+ \mu=\frac{\mathbb E[BS]}{\alpha}.
+\]
+If \(\hat x\) minimizes \(b\hat\mu x\) on \([-1,1]\), then
+\[
+ C(\hat x)-C^\ast\leq2b|\hat\mu-\mu|.
+\]
+See \url{ada/two-resource-screening.md},
+lines 28--72 \ledger{13--15}.
+
+\subsection{A defensive finite-sample rule}
+
+Query every predicted positive and each predicted negative with
+independent probability \(\tau\in(0,1]\). Put
+\[
+ f=\Pr(B=1,H=0),\qquad \pi_1=1,\qquad\pi_0=\tau,
+\]
+and use
+\[
+ \hat\mu_N=\frac1{N\alpha}
+ \sum_{j=1}^N\frac{I_jB_jS_j}{\pi_{H_j}}.
+\]
+Inverse-propensity cancellation gives
+\[
+ \mathbb E\hat\mu_N=\mu,\qquad
+ \operatorname{Var}(\hat\mu_N)
+ \leq\frac{\alpha-f+f/\tau}{N\alpha^2}.
+\]
+Expected evaluations and cost are
+\[
+ \begin{aligned}
+ M_{\mathrm{true}}&=N[p+\tau(1-p)],\\
+ K&=Nw,\qquad
+ w=c_0+c_p+c_e[p+\tau(1-p)].
+ \end{aligned}
+\]
+Hence
+\[
+ \mathbb E[C(\hat x)-C^\ast]
+ \leq\frac{2b}{\alpha}
+ \sqrt{\frac{\alpha-f+f/\tau}{N}}.
+\]
+False negatives enter through \(f/\tau\), while false positives
+increase cost through \(p\).
+
+Define
+\[
+ \mathcal V(\tau)
+ =\frac{w(\alpha-f+f/\tau)}{\alpha^2}.
+\]
+For \(N=\lfloor K/w\rfloor\) and \(K>w\),
+\[
+ \mathbb E[C(\hat x)-C^\ast]
+ \leq2b\sqrt{\frac{\mathcal V(\tau)}{K-w}}.
+\]
+The algorithm need not know \(f\). A horizon involving \(f\) is a
+certificate, not an implementable accuracy stopping rule.
+See \url{ada/two-resource-screening.md},
+lines 74--134 \ledger{13, 15, 20}.
+
+For a fair prediction-free comparison, write
+\[
+ D_c=c_0+c_e,\qquad A=c_0+c_p+c_ep.
+\]
+Fix \(\lambda\in(0,1]\). Skip prediction if \(A>D_c\); otherwise
+set \(\tau=\lambda A/D_c\). Since
+\[
+ \frac w\tau=\frac{D_c}{\lambda}+c_e(1-p),
+\]
+and \(f\leq\alpha\),
+\[
+ \mathcal V(\tau)
+ \leq(1+1/\lambda)\frac{D_c}{\alpha}.
+\]
+For exact labels \(H=B\), \(p=\alpha\), \(f=0\), and
+\[
+ \begin{aligned}
+ \mathcal V(\tau)
+ &=\frac A\alpha
+ \left(1+\lambda\frac{c_e(1-\alpha)}{D_c}\right)\\
+ &\leq(1+\lambda)\frac A\alpha.
+ \end{aligned}
+\]
+Including the branch that skips prediction,
+\[
+ \mathcal V_{\mathrm{rule}}
+ \leq(1+\lambda)\frac{\min\{D_c,A\}}{\alpha}
+ \qquad(H=B).
+\]
+These are sufficient cost--variance certificates. Their factors enter
+fixed-budget error through a square root; they are not CVaR competitive
+ratios or an optimal trust frontier. See
+\url{ada/two-resource-screening.md},
+lines 136--209 \ledger{14, 15, 20}.
+
+\subsection{Matched affine resource endpoints}
+
+With exact labels \(H=B\), worst-case small-error orders within this
+opaque-scenario interface are
+\[
+ \begin{aligned}
+ \mathbb E N_{\mathrm{draw}}
+ &=\Theta\!\left(\frac{b^2}{\alpha\epsilon^2}\right),\\
+ \mathbb E N_{\mathrm{true}}
+ &=\Theta\!\left(\frac{b^2}{\epsilon^2}\right).
+ \end{aligned}
+\]
+With optional paid prediction, optimal total-cost order is
+\[
+ \Theta\!\left[
+ \frac{b^2}{\epsilon^2}
+ \min\left\{
+ \frac{c_0+c_e}{\alpha},
+ \frac{c_0+c_p}{\alpha}+c_e
+ \right\}\right].
+\]
+
+For the lower bound, take \(S\) independent of \(B\) with
+\(\mathbb E_vS=v\gamma\). If \(R\) counts distinct evaluated tail
+scenarios, transcript divergence is at most
+\(4\gamma^2\mathbb E_+R\). Testing requires
+\(\mathbb E_+R=\Omega(b^2/\epsilon^2)\), whereas
+\[
+ \mathbb ER\leq\alpha\mathbb EN_{\mathrm{draw}},
+ \qquad
+ \mathbb ER\leq\mathbb EN_{\mathrm{true}}.
+\]
+Evaluating a fixed number of observed tails attains both resource
+orders. Integrable stopping times are handled by truncation.
+
+Partition informative observations into \(R_1\), preceded by prediction,
+and \(R_0\), obtained without prediction. Expected cost is at least
+\[
+ \frac{c_0+c_p+\alpha c_e}{\alpha}\mathbb ER_1
+ +\frac{c_0+c_e}{\alpha}\mathbb ER_0.
+\]
+Opaque handles prevent selection of promising unpaid scenarios.
+Combining this with the information bound gives the stated minimum.
+Constant uninformative advice instead gives
+\[
+ \Theta\!\left(
+ \frac{b^2(c_0+c_e)}{\alpha\epsilon^2}\right).
+\]
+See \url{ada/two-resource-screening.md},
+lines 211--286 \ledger{15, 20}.
+
+No matching intermediate-\(f\) lower bound was established. Advice
+can reveal sign information independently of its tail-label error.
+Exact labels save \(1/\alpha\) in costly evaluations, not draws;
+the largest monetary saving requires cheap draws and predictions
+\ledger{19}.
+
+\section{Retained continuation: correction before minimization}
+
+\subsection{The fixed convex lifted target}
+
+After shifting losses to \(0\leq J\leq U\), define
+\[
+ \begin{aligned}
+ \phi(x,t;\xi)&=t+\frac{(J(x,\xi)-t)_+}{\alpha},\\
+ \Phi(x,t)&=\mathbb E\phi(x,t;\xi),
+ \qquad t\in[0,U].
+ \end{aligned}
+\]
+This function is jointly convex, and
+\[
+ \min_{x,t}\Phi(x,t)=C^\ast,\qquad
+ C(x)-C^\ast\leq\Phi(x,t)-\Phi^\ast.
+\]
+One true loss evaluates \(\phi\), without an empirical-CVaR batch.
+
+Write \(z=(x,t)\), \(p=d+1\), and center \(t\) at \(U/2\) when
+contracting the domain. Suitable bounds are
+\[
+ \begin{gathered}
+ R_z=\sqrt{D_x^2+U^2},\qquad
+ r_z=\min\{r,U/2\},\\
+ M_\phi=U/\alpha,\qquad
+ K_\phi=\sqrt{L^2+1}/\alpha.
+ \end{gathered}
+\]
+Here \(R_z\) is a diameter bound, \(r_z\) an interior radius,
+\(0\leq\phi\leq M_\phi\), and \(K_\phi\) a Lipschitz bound.
+
+A clipped paired prediction supplies \(\hat\phi\). Choose a causal
+query probability \(\pi>0\) from cheap information, with an independent
+query coin conditional on that information and the scenario. Return
+\[
+ Z_{\mathrm{corr}}
+ =\hat\phi+\frac I\pi(\phi-\hat\phi).
+\]
+Then
+\[
+ \begin{aligned}
+ \mathbb E_I Z_{\mathrm{corr}}&=\phi,\\
+ \mathbb E_I Z_{\mathrm{corr}}^2
+ &=\phi^2+(\pi^{-1}-1)(\phi-\hat\phi)^2.
+ \end{aligned}
+\]
+Consequently,
+\[
+ g_k=\frac p\delta
+ Z_{\mathrm{corr}}(z_k+\delta u_k)u_k
+\]
+has conditional mean \(\nabla\Phi_\delta(z_k)\).
+Predictably changing predictions do not change this fixed convex
+target. Correction precedes threshold minimization; the realized
+corrected sample need not itself be convex.
+See \url{ada/lifted-correction-and-baselines.md},
+lines 16--154 \ledger{16, 20}.
+
+\subsection{Finite-time and cost guarantees}
+
+If \(\pi\geq\nu>0\) and, including query-point randomness,
+\[
+ \mathbb E[(\phi-\hat\phi)^2\mid\mathcal F_k]\leq\sigma_k^2,
+\]
+then
+\[
+ \mathbb E[\|g_k\|^2\mid\mathcal F_k]
+ \leq\frac{p^2}{\delta^2}
+ \left[M_\phi^2+(\nu^{-1}-1)\sigma_k^2\right].
+\]
+Squared loss-prediction error divided by \(\alpha^2\) bounds the
+residual, and clipping gives \(\sigma_k^2\leq M_\phi^2\).
+
+Constant-step projected updates satisfy
+\[
+ \begin{aligned}
+ \mathbb E[C(\bar x_T)-C^\ast]
+ \leq{}&
+ \frac{R_z^2}{2\eta T}\\
+ &+\frac{\eta p^2}{2\delta^2}
+ \left[M_\phi^2+(\nu^{-1}-1)\bar\sigma_T^2\right]\\
+ &+K_\phi\delta(1+R_z/r_z),
+ \end{aligned}
+\]
+where \(\bar\sigma_T^2=T^{-1}\sum_{k<T}\mathbb E\sigma_k^2\).
+
+Unknown residual error need not determine the step. With
+\[
+ S_k=\sum_{j=0}^k\|g_j\|^2,\qquad
+ \eta_k=R_z/\sqrt{S_k},
+\]
+and zero updates when \(S_k=0\), the pathwise regret inequality is
+\[
+ \sum_{k<T}\langle g_k,z_k-z\rangle
+ \leq\frac32R_z\sqrt{S_{T-1}}.
+\]
+Since \(z_k\) precedes the current sample, conditional unbiasedness gives
+\[
+ \begin{aligned}
+ \mathbb E[C(\bar x_T)-C^\ast]
+ \leq{}&
+ \frac{3R_zp}{2\delta\sqrt T}
+ \sqrt{M_\phi^2+(\nu^{-1}-1)\bar\sigma_T^2}\\
+ &+K_\phi\delta(1+R_z/r_z).
+ \end{aligned}
+\]
+This is a finite-time policy. A separate square-summable
+diminishing-step policy, with fixed smoothing and a positive propensity
+floor, supports convergence to the smoothed lifted minimizer
+\ledger{16}.
+
+For charged cost let
+\[
+ A_{\mathrm{lift}}=c_0+c_p,\qquad D_c=c_0+c_e.
+\]
+Skip prediction if \(A_{\mathrm{lift}}>D_c\); otherwise set
+\[
+ \nu=\lambda A_{\mathrm{lift}}/D_c,\qquad
+ w=A_{\mathrm{lift}}+\nu c_e.
+\]
+The certificate
+\[
+ \mathcal W_{\mathrm{lift}}
+ =w\left[M_\phi^2+(\nu^{-1}-1)\sigma^2\right]
+\]
+obeys
+\[
+ \begin{aligned}
+ \mathcal W_{\mathrm{lift}}
+ &\leq(1+\lambda)A_{\mathrm{lift}}M_\phi^2
+ &&\text{for exact predictions},\\
+ \mathcal W_{\mathrm{lift}}
+ &\leq(1+1/\lambda)D_cM_\phi^2
+ &&\text{for arbitrary predictions}.
+ \end{aligned}
+\]
+These compare sufficient certificates at common geometry and smoothing,
+not optimal instancewise costs.
+See \url{ada/lifted-correction-and-baselines.md},
+lines 156--226 \ledger{16, 19}.
+
+\section{Retained gradient-estimator comparisons}
+
+These computations remain valid sufficient upper bounds. Entry 44
+corrects their interpretation: they compare gradient-estimator
+templates, not the best prediction-free noisy-value methods
+\ledger{18, 20, 42, 44}.
+
+For one agent, the sharpened batched one-point analysis of P gives
+\[
+ O\!\left(
+ \frac{dUD_x}{\delta\sqrt T}
+ +L\delta(1+D_x/r)
+ +\frac U{\sqrt{\alpha s}}\right).
+\]
+Balancing terms gives total evaluations
+\[
+ O\!\left(
+ \frac{d^2U^4D_x^2L^2}{\alpha\epsilon^6}\right),
+\]
+suppressing fixed contraction factors.
+
+A prediction-free one-sample lifted method instead gives
+\[
+ O\!\left(
+ \frac{p^2R_z^2M_\phi^2K_\phi^2(1+R_z/r_z)^2}
+ {\epsilon^4}\right).
+\]
+It removes empirical-CVaR bias, but its displayed dependence on
+\(\alpha\) may be worse.
+
+For independent batches on the two sides, let
+\[
+ g=\frac d{2\delta}
+ \left[
+ \widehat C_s(x+\delta u;S^+)
+ -\widehat C_s(x-\delta u;S^-)
+ \right]u.
+\]
+Its mean is \(\nabla F_{s,\delta}(x)\), where
+\(F_s=\mathbb E\widehat C_s\), and
+\[
+ \mathbb E\|g\|^2
+ \leq d^2L^2+\frac{d^2v_s}{2\delta^2},
+ \qquad
+ v_s=\sup_x\operatorname{Var}(\widehat C_s(x)).
+\]
+Levy et al.\ give \(v_s=O(U^2/(\alpha s))\). Taking
+\(s\) of order \(U^2/(\alpha\epsilon^2)\) and
+\(\delta\) of order \(\epsilon/L\) yields
+\[
+ \begin{aligned}
+ T&=O(d^2D_x^2L^2/\epsilon^2),\\
+ 2sT&=O\!\left(
+ \frac{d^2D_x^2L^2U^2}{\alpha\epsilon^4}\right).
+ \end{aligned}
+\]
+No common-random-number oracle is assumed. The affine family is easier:
+a value at \(x=1\) reveals its sampled slope, and uniform sampling
+already uses \(O(b^2/(\alpha\epsilon^2))\) evaluations.
+
+See \url{ada/lifted-correction-and-baselines.md},
+lines 228--321. The noisy-value baseline below supersedes any global
+optimality interpretation of these exponents.
+
+\section{Retained third round: moving tails and consistent ranks}
+
+\subsection{Why population labels are insufficient for empirical tails}
+
+A batch may contain fewer than \(\lceil\alpha s\rceil\) strict
+population-tail observations. Its empirical CVaR then also depends on
+observations below the population quantile. Exact population labels
+do not identify them; completing the batch on this event can cost a
+constant fraction of all values \ledger{22, 23, 29}.
+
+The third round instead declared a within-batch score order. Let
+sample losses be convex, \(L\)-Lipschitz, and in \([0,U]\), and write
+\[
+ F_n(x)=\mathbb E\widehat C_n(x),\qquad
+ 0\leq C(x)-F_n(x)\leq
+ c_bU\min\{1,(\alpha n)^{-1/2}\}.
+\]
+A score rule, fixed conditional on the past, orders fresh scenarios.
+Full and half batches use restrictions of the same order, with
+consistent independent tie-breaking. The order may depend on the
+decision and be arbitrarily inaccurate. Independently supplied
+inconsistent sub-batch lists are excluded.
+
+Draws, prediction including sorting, and true queries are charged.
+A zeroth-order query returns a loss. A first-order query also returns
+a measurable subgradient of norm at most \(L\), which is strictly
+stronger than P's interface. Same-decision values may be reused in
+sub-batches; cross-decision reuse is not assumed.
+See \url{ada/moving-tail-rank-correction.md},
+lines 43--90 \ledger{24, 26}.
+
+\subsection{A multilevel variance bound without rank accuracy}
+
+For an ordered batch of size \(m\), let \(q\) assign weight
+\(1/(\alpha m)\) to a top prefix until total weight one is reached,
+with a fractional boundary weight. For \(\|v_j\|\leq G\), define
+\[
+ A_m=\sum_jq_jv_j,\qquad
+ \Delta_m=A_m-\frac12
+ \left(A_{m/2}^{(1)}+A_{m/2}^{(2)}\right).
+\]
+For true ranks, \(v_j\) can be sample values or a fixed measurable
+selection of sample subgradients. Predicted ranks give feasible
+weights, though generally not maximizing ones.
+
+Full weights and half weights divided by two have the same coordinate
+cap. Their supports within each half are nested prefixes. If \(W\)
+is the full-batch weight in the first half, then
+\[
+ \left\|q-\frac12(q^{(1)}+q^{(2)})\right\|_1
+ =2|W-1/2|.
+\]
+Exchangeability of the weight multiset gives
+\[
+ \begin{aligned}
+ \mathbb EW&=\frac12,\\
+ \operatorname{Var}(W)
+ &=\frac{m}{4(m-1)}
+ \sum_j(q_j-1/m)^2\\
+ &\leq\frac1{4\alpha(m-1)}.
+ \end{aligned}
+\]
+Thus, for \(m\geq2\),
+\[
+ \mathbb E\|\Delta_m\|^2
+ \leq4G^2\operatorname{Var}(W)
+ \leq\frac{2G^2}{\alpha m}.
+\]
+The vector bound is pathwise; scores need not be independent of
+losses or gradients. Fractional weights are included. The result
+extends the true-rank sign argument to arbitrary consistent orders,
+not arbitrary masks.
+See \url{ada/moving-tail-rank-correction.md},
+lines 92--146 \ledger{24, 26}.
+
+\subsection{Multilevel responses and full-batch correction}
+
+Set
+\[
+ n_0=\lceil1/\alpha\rceil,\qquad
+ n=2^\ell n_0,\qquad \ell\geq1,
+\]
+and draw \(R\) with
+\[
+ p_j=\Pr(R=j)=
+ \begin{cases}
+ 2^{-j},&1\leq j<\ell,\\
+ 2^{1-\ell},&j=\ell.
+ \end{cases}
+\]
+Using \(m_R=2^Rn_0\) scenarios, return
+\[
+ Z=A_{n_0}+\frac{\Delta_{m_R}}{p_R}.
+\]
+The base uses the first \(n_0\) elements of the same batch.
+True-rank telescoping yields
+\[
+ \mathbb EZ=F_n(x)
+ \quad\text{or}\quad
+ \mathbb EZ\in\partial F_n(x),
+\]
+for scalar or subgradient responses. For both true and predicted
+consistent ranks,
+\[
+ \mathbb E\|Z\|^2\leq V_G,\qquad
+ V_G=G^2\left(2+\frac{4\ell}{\alpha n_0}\right),
+\]
+and expected draws are \(M=n_0(\ell+1)\).
+
+The union of predicted base, full, and half supports has size at most
+\[
+ \lceil\alpha n_0\rceil+\lceil\alpha m_R\rceil
+ +2\lceil\alpha m_R/2\rceil
+ \leq5\alpha m_R,
+\]
+and at most \(m_R\). The predicted response \(\widehat Z\) therefore
+requires at most \(hM\) expected true queries, where
+\(h=\min\{1,5\alpha\}\).
+
+Audit the whole batch independently with probability \(\tau\), returning
+\[
+ Z^{\mathrm{corr}}
+ =\widehat Z+\frac I\tau(Z-\widehat Z).
+\]
+Conditional on the batch,
+\[
+ \begin{aligned}
+ \mathbb E_I Z^{\mathrm{corr}}&=Z,\\
+ \mathbb E_I\|Z^{\mathrm{corr}}\|^2
+ &=\|Z\|^2+(\tau^{-1}-1)\|Z-\widehat Z\|^2.
+ \end{aligned}
+\]
+With
+\[
+ e_k^2=\mathbb E[\|Z-\widehat Z\|^2\mid\mathcal F_k],
+\]
+one obtains
+\[
+ \mathbb E[\|Z^{\mathrm{corr}}\|^2\mid\mathcal F_k]
+ \leq V_G+(\tau^{-1}-1)e_k^2,\qquad
+ e_k^2\leq4V_G.
+\]
+Exact agreement of the required weights gives \(e_k=0\).
+
+For \(E_m=A_m-\widehat A_m\), the error retains cross-scale structure:
+\[
+ \begin{aligned}
+ e_k^2\leq{}&
+ 2\mathbb E\|E_{n_0}\|^2\\
+ &+2\sum_{j=1}^{\ell}\frac1{p_j}
+ \mathbb E\left\|
+ E_{m_j}
+ -\frac{E_{m_j/2}^{(1)}+E_{m_j/2}^{(2)}}2
+ \right\|^2.
+ \end{aligned}
+\]
+Each discrepancy is at most \(G\|q-\widehat q\|_1\).
+The corrected mean remains the fixed true \(F_n\), despite predictable
+changes in the score rule.
+See \url{ada/moving-tail-rank-correction.md},
+lines 148--243 \ledger{26}.
+
+\subsection{Optimization and charged-cost upper bounds}
+
+The observed-gradient-norm step rule gives
+\[
+ \mathbb E[C(\bar x_T)-C^\ast]
+ \leq b_n+\frac{3D_x}{2\sqrt T}
+ \sqrt{V_L+(\tau^{-1}-1)\bar e_T^2},
+\]
+where
+\[
+ b_n=c_bU\min\{1,(\alpha n)^{-1/2}\},\qquad
+ \bar e_T^2=\frac1T\sum_{k<T}\mathbb Ee_k^2.
+\]
+With exact ranks, \(n\) of order \(U^2/(\alpha\epsilon^2)\), and
+\(\tau=O(\alpha)\),
+\[
+ \begin{aligned}
+ T&=\widetilde O(D_x^2L^2/\epsilon^2),\\
+ N_{\mathrm{draw}}
+ &=\widetilde O(D_x^2L^2/(\alpha\epsilon^2)),\\
+ N_{\mathrm{true}}
+ &=\widetilde O(D_x^2L^2/\epsilon^2).
+ \end{aligned}
+\]
+The comparator is Levy's prediction-free multilevel first-order method,
+which pays true-query cost on all draws. This is an upper-bound
+comparison under richer charged advice \ledger{27}.
+
+For independent scalar responses at \(x+\delta u\) and
+\(x-\delta u\), set
+\[
+ g=\frac d{2\delta}
+ (Z^{\mathrm{corr}}_+-Z^{\mathrm{corr}}_-)u.
+\]
+Its mean is \(\nabla F_{n,\delta}(x)\), and
+\[
+ \begin{aligned}
+ \mathbb E[C(\bar x_T)-C^\ast]
+ \leq{}&b_n+L\delta(1+D_x/r)\\
+ &+\frac{3D_xd}{2\delta\sqrt T}
+ \sqrt{V_U+(\tau^{-1}-1)\bar e_T^2}.
+ \end{aligned}
+\]
+Under exact ranks and \(\tau=O(\alpha)\), sufficient counts are
+\[
+ \begin{aligned}
+ N_{\mathrm{draw}}
+ &=\widetilde O\!\left(
+ \frac{d^2D_x^2U^2L^2(1+D_x/r)^2}
+ {\alpha\epsilon^4}\right),\\
+ N_{\mathrm{true}}
+ &=\widetilde O\!\left(
+ \frac{d^2D_x^2U^2L^2(1+D_x/r)^2}
+ {\epsilon^4}\right).
+ \end{aligned}
+\]
+The batch cap stays fixed throughout the run. These are
+gradient-template bounds, not the noisy-value frontier.
+See \url{ada/moving-tail-rank-correction.md},
+lines 245--333 \ledger{27, 42, 44}.
+
+For charged resources, put
+\[
+ D_c=c_0+c_e,\qquad A_{\mathrm{rank}}=c_0+c_p+h c_e.
+\]
+Skip advice if \(A_{\mathrm{rank}}>D_c\); otherwise use
+\(\tau=\lambda A_{\mathrm{rank}}/D_c\). Expected response cost is
+at most \(w=M(A_{\mathrm{rank}}+\tau c_e)\), and
+\[
+ \begin{aligned}
+ wV_G&\leq(1+\lambda)MA_{\mathrm{rank}}V_G
+ &&\text{for exact ranks},\\
+ w\left[V_G+(\tau^{-1}-1)\bar e_T^2\right]
+ &\leq4(1+1/\lambda)MD_cV_G
+ &&\text{for arbitrary ranks}.
+ \end{aligned}
+\]
+The strongest costly-query saving at fixed \(\lambda\) requires
+\(c_0+c_p=O(\alpha c_e)\). These are expected-cost,
+fixed-horizon guarantees. Deterministic-budget stopping and an
+error-dependent accuracy certificate were not proved for this
+construction.
+See \url{ada/moving-tail-rank-correction.md},
+lines 335--386 \ledger{28}.
+
+\section{Retained interface distinctions and objections}
+
+\subsection{Exact population-tail witnesses give a separate endpoint}
+
+Suppose a cheap Bernoulli label has conditional probability
+\(a_x(\xi)\in[0,1]\) satisfying
+\[
+ \mathbb Ea_x=\alpha,\qquad
+ \mathbb E[a_xJ(x,\xi)]=\alpha C(x).
+\]
+This is an exact CVaR dual witness, with appropriate randomization at
+quantile atoms. Draw until a positive label and then query a sample
+subgradient. Its conditional mean is a subgradient of \(C\), because
+\[
+ \begin{aligned}
+ C(y)
+ &\geq\alpha^{-1}\mathbb E[a_xJ(y,\xi)]\\
+ &\geq C(x)+
+ \left\langle
+ \alpha^{-1}\mathbb E[a_xg(x,\xi)],y-x
+ \right\rangle.
+ \end{aligned}
+\]
+The accepted gradient has norm at most \(L\). Stochastic subgradient
+descent therefore uses
+\[
+ O(D_x^2L^2/\epsilon^2)
+ \quad\text{costly gradients},\qquad
+ O(D_x^2L^2/(\alpha\epsilon^2))
+ \quad\text{draws}.
+\]
+The affine family has \(a_x=B\) everywhere; its lower bound survives
+even if a query reveals the whole sampled affine function.
+This matches the resource orders in the population-witness first-order
+interface. It neither learns the witness nor tolerates wrong witnesses.
+See \url{ada/moving-tail-rank-correction.md},
+lines 388--421 \ledger{29}.
+
+\subsection{Full ranks invalidate the old costly-query lower bound}
+
+At \(x=1\), the affine losses take only values
+\(\{0,a-b,a+b\}\). After receiving their exact order, binary search
+for category boundaries recovers all counts with \(O(\log n)\)
+true evaluations. Thus the old \(\Omega(b^2/\epsilon^2)\)
+costly-query bound does not transfer from population labels to full
+rankings.
+
+A draw lower bound survives when advice contains only the actual order
+of independent sampled losses. Extra numerical population information
+would change the model. The fifth round below supplies a new costly-query
+hard family instead of reusing the invalidated argument.
+See \url{ada/moving-tail-rank-correction.md},
+lines 423--439 \ledger{25, 32, 47}.
+
+\subsection{Fixed masks preserve convexity; moving masks need not}
+
+For nonnegative losses and a scenario mask \(M(\xi)\in\{0,1\}\)
+fixed across decisions, \(M(\xi)J(x,\xi)\) remains convex. If
+\(C_M\) is its CVaR and \(a_x\) an optimal true-tail witness, then
+\[
+ \begin{aligned}
+ 0\leq C(x)-C_M(x)
+ &\leq\alpha^{-1}\mathbb E[a_x(1-M)J(x,\xi)]\\
+ &\leq Uf(x)/\alpha,\qquad
+ f(x)=\mathbb E[a_x(1-M)].
+ \end{aligned}
+\]
+A uniform bound \(f(x)\leq f\) adds at most \(Uf/\alpha\) when
+optimizing the screened objective. The same dual argument applies to
+fixed-mask empirical objectives.
+
+For equiprobable losses \(1+x\) and \(1-x\), with \(\alpha=1/2\),
+keeping only the smaller loss instead produces \(1-|x|\), whereas
+true CVaR is \(1+|x|\). Arbitrary moving masks therefore need not
+preserve convexity.
+See \url{ada/moving-tail-rank-correction.md},
+lines 441--475 \ledger{29}.
+
+\subsection{Quantiles can improve localization}
+
+Ignoring equality atoms, a lifted sample subgradient is
+\[
+ v=\left(\frac{ag}{\alpha},\,1-\frac a\alpha\right),
+ \qquad a=\mathbf1\{J(x,\xi)>t\}.
+\]
+For \(p_t=\Pr(J(x,\xi)>t)\),
+\[
+ \mathbb E\|v\|^2
+ \leq1-\frac{2p_t}{\alpha}
+ +\frac{(L^2+1)p_t}{\alpha^2}.
+\]
+Maintaining \(p_t=O(\alpha)\) improves the crude moment dependence
+to \(O((L^2+1)/\alpha)\). Exact exceedance labels also permit skipping
+gradients when \(a=0\), but maintaining localization as decisions move
+is an additional obligation.
+
+For an exact quantile \(q(x)\),
+\[
+ q(x)+\frac{(J(x,\xi)-q(x))_+}{\alpha}
+\]
+has mean \(C(x)\), variance at most \(U^2/\alpha\), and requires a
+true evaluation only on strict exceedances if those labels are supplied.
+An arbitrary threshold changes the mean and can lose convexity in
+\(x\). Under a density bound \(f_x\leq K\) between \(q(x)\) and \(t\),
+threshold excess is at most
+\[
+ \frac{K(t-q(x))^2}{2\alpha};
+\]
+without that regularity, only a first-order bound follows.
+See \url{ada/moving-tail-rank-correction.md},
+lines 477--514 \ledger{29}.
+
+\subsection{A fixed trust curve is not an impossibility frontier}
+
+For stationary affine binary advice, uniformly evaluate \(K^{1/2}\)
+pilot scenarios at nominal budget \(K\). Estimate frequencies and
+tail second moments, then optimize the estimated certificate over
+propensities in \([K^{-1/8},1]^2\), including the prediction-free
+alternative.
+
+The certificate has moment-Lipschitz constant \(O(K^{1/8})\);
+pilot estimation error is \(O(K^{-1/4})\). Uniform certificate
+error is therefore \(O(K^{-1/8})=o(1)\). The propensity floor
+vanishes and pilot cost is \(o(K)\), for fixed rarity and costs.
+Fresh data preserve conditional unbiasedness. Conservative cost
+estimation, or expected total cost \(K(1+o(1))\), lets the rule
+approach the best fixed allocation.
+
+This is an asymptotic adaptive-stratification argument, not a
+finite-budget frontier uniform in varying rarity and costs.
+See \url{ada/moving-tail-rank-correction.md},
+lines 516--543 \ledger{29}.
+
+\section{Retained fourth round: capped rank quadrature}
+
+\subsection{Fractional CVaR weights and monotone integration}
+
+At a chosen decision, draw independent scenario handles, receive a
+permutation, and pay for selected values. The permutation is frozen
+before fresh integration probes. Values are cached at that decision;
+distinct value requests use independent batches. Prediction and sorting
+are charged. This is stronger than P's sampling interface
+\ledger{36, 38}.
+
+For correctly sorted losses \(a_1\leq\cdots\leq a_s\) in \([0,U]\),
+put \(q_s(v)=a_{\lceil sv\rceil}\). Empirical CVaR is exactly
+\[
+ A_s=\frac1\alpha\int_{1-\alpha}^1q_s(v)\,dv
+ =\int_0^1q_s(1-\alpha+\alpha u)\,du.
+\]
+Fractional boundary weights are included.
+
+One independent uniform probe in each of \(k\) equal cells gives a
+conditionally unbiased estimator. If \(r_j\) is the cell range,
+monotonicity gives \(\sum_jr_j\leq U\), and
+\[
+ \operatorname{Var}(\widehat A_s\mid a_{1:s})
+ \leq\frac1{4k^2}\sum_jr_j^2
+ \leq\frac{U^2}{4k^2}.
+\]
+It uses at most \(k\) costly values. Deterministic equally spaced
+quadrature instead has error \(O(U/k)\) and needs a bias analysis.
+
+Together with empirical bias \(O(U/\sqrt{\alpha s})\) and variance
+\(O(U^2/(\alpha s))\), the choices
+\[
+ s\asymp U^2/(\alpha\epsilon^2),\qquad k\asymp U/\epsilon
+\]
+give costly-query order \(\epsilon^{-3}\) within independent two-point
+optimization, with draw order \(1/(\alpha\epsilon^4)\) at fixed
+remaining parameters. Wrong predicted tails need not preserve the mean.
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 71--115 \ledger{34, 37}.
+
+\subsection{Capped adaptive integration}
+
+For a step function \(f:[0,1]\to[0,M]\), start with \(k\) equal
+cells and query endpoints. Bisect \([a,b]\) whenever
+\[
+ (b-a)|f(b)-f(a)|>M/k^2,
+\]
+until no cell qualifies or \(2k\) bisections have occurred.
+Independently sample a fresh uniform point \(V_I\) in each final
+cell \(I\), returning
+\[
+ Q=\sum_I|I|f(V_I).
+\]
+There are at most \(3k\) final cells and \(6k+1\leq7k\) queries.
+Repeated finite-array positions are cached.
+
+For every ordering, fresh probes conditional on the pilot partition
+give the exact integral mean. Every final width is at most \(1/k\), so
+\[
+ \mathbb E[Q\mid f]=\int f,\qquad
+ \operatorname{Var}(Q\mid f)\leq\frac{M^2}{4k}.
+\]
+If \(f\) is nondecreasing, fewer than \(k/2^h\) cells can split at
+relative depth \(h\): each has variation exceeding \(M2^h/k\), and
+disjoint variations sum to at most \(M\). Fewer than \(2k\) splits
+therefore suffice, regardless of the qualifying-cell order.
+
+For each final cell put
+\[
+ A_I=|I|\bigl(f(\sup I)-f(\inf I)\bigr).
+\]
+Then
+\[
+ \max_I A_I\leq M/k^2,\qquad
+ \sum_I A_I\leq M/k,
+\]
+and
+\[
+ \operatorname{Var}(Q\mid f)
+ \leq\frac14\sum_I A_I^2
+ \leq\frac{M^2}{4k^3}.
+\]
+Consistent endpoint conventions handle jumps. Applied to an exact
+empirical tail quantile, this gives
+\(k\asymp(U/\epsilon)^{2/3}\), and costly-query order
+\(\epsilon^{-8/3}\) within the two-point template.
+
+Adaptive monotone integration with inverse-cube variance is classical.
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 117--183 \ledger{37--39}.
+
+\subsection{Full lifted integration is unbiased under every permutation}
+
+Center \(t\) at \(U/2\), write \(z=(x,w)\), \(t=w+U/2\), and use
+\[
+ \mathcal Z=\mathcal X\times[-U/2,U/2].
+\]
+For this construction define
+\[
+ \begin{gathered}
+ p=d+1,\quad D=\sqrt{D_x^2+U^2},\quad R=\min\{r,U/2\},\\
+ M=U/\alpha,\quad K=\sqrt{L^2+1}/\alpha,\quad
+ H=K(1+D/R).
+ \end{gathered}
+\]
+Here \(D\) is a diameter, not a cost.
+
+For a predicted permutation \(\pi\), apply capped quadrature to
+\[
+ f_z(v)=\phi(z;\xi_{\pi(\lceil sv\rceil)}).
+\]
+For every batch and permutation,
+\[
+ \mathbb E[Q_s(z)\mid\xi_{1:s},\pi]
+ =\frac1s\sum_{j=1}^s\phi(z;\xi_j).
+\]
+Thus \(\mathbb E Q_s(z)=F(z)\), where \(F=\mathbb E\phi\) is the
+fixed true convex lifted objective. There is no empirical threshold
+minimization, full-batch audit, or cross-sub-batch consistency
+requirement.
+
+Define
+\[
+ \chi(z)=\frac{4k}{M^2}
+ \mathbb E\!\left[
+ \operatorname{Var}(Q_s(z)\mid\xi_{1:s},\pi)
+ \,\middle|\,\text{history}\right].
+\]
+Always \(0\leq\chi(z)\leq1\), while exact ranks give
+\(\chi(z)\leq k^{-2}\). Total variance gives
+\[
+ \operatorname{Var}(Q_s(z)\mid\text{history})
+ \leq\frac{M^2}{4s}+\frac{M^2\chi(z)}{4k}.
+\]
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 185--249 \ledger{36, 38}.
+
+\subsection{Error-sensitive optimization}
+
+Project onto
+\[
+ \mathcal Z_\delta=(1-\delta/R)\mathcal Z,\qquad 0<\delta<R.
+\]
+Using independent ranked batches at the two perturbed points, set
+\[
+ g_j=\frac p{2\delta}
+ [Q_s(z_j+\delta u_j)-Q_s(z_j-\delta u_j)]u_j.
+\]
+Then
+\[
+ \mathbb E[g_j\mid\mathcal F_j]=\nabla F_\delta(z_j),
+\]
+and, averaging the two roughness terms,
+\[
+ \mathbb E[\|g_j\|^2\mid\mathcal F_j]
+ \leq p^2K^2+
+ \frac{p^2M^2}{8\delta^2}
+ \left(\frac1s+\frac{\bar\chi_j}{k}\right).
+\]
+The observed-gradient-norm rule yields
+\[
+ \begin{aligned}
+ \mathbb E[C(\bar x_T)-C^\ast]
+ \leq{}&H\delta\\
+ &+\frac{3D}{2\sqrt T}
+ \sqrt{
+ p^2K^2+\frac{p^2M^2}{8\delta^2}
+ \left(\frac1s+\frac{\overline\chi_T}{k}\right)
+ },
+ \end{aligned}
+ \tag{1}
+\]
+where
+\[
+ \overline\chi_T=\frac1T\sum_{j=1}^T\mathbb E\bar\chi_j.
+\]
+Convexity gives \(F\leq F_\delta\); contraction and smoothing cost
+at most \(H\delta\); and \(C(\bar x_T)\leq F(\bar z_T)\).
+
+Under exact ranks choose
+\[
+ \begin{gathered}
+ \delta\asymp\epsilon/H,\qquad
+ k\asymp\left(\frac M{\delta K}\right)^{2/3},
+ \qquad s=k^3,\\
+ T\asymp p^2D^2K^2/\epsilon^2.
+ \end{gathered}
+\]
+Then
+\[
+ \begin{aligned}
+ N_{\mathrm{eval}}
+ &=O\!\left(
+ p^2D^2K^{4/3}M^{2/3}H^{2/3}
+ \epsilon^{-8/3}\right),\\
+ N_{\mathrm{draw}}
+ &=O\!\left(
+ p^2D^2M^2H^2\epsilon^{-4}\right).
+ \end{aligned}
+\]
+These are valid upper bounds within the compared gradient templates.
+They do not establish a general advantage over prediction-free
+noisy-value optimization; their \(\alpha\)-dependence is also worse
+than direct-tail quadrature.
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 251--328 \ledger{38--40, 42, 44}.
+
+\subsection{Charged certificate and deterministic budget conversion}
+
+Let
+\[
+ c=c_0+c_p,\qquad d_0=c_0+c_e,\qquad a=M/(\delta K).
+\]
+The comparator is the lifted independent two-point method with one
+true sample per side:
+\[
+ \text{cost}=2d_0,\qquad
+ V_0=p^2\left(K^2+\frac{M^2}{8\delta^2}\right).
+\]
+Skip ranks if \(a<1\) or \(c>d_0\). Otherwise set
+\[
+ k=\max\left\{
+ 1,\left\lfloor
+ \min\{a^{2/3},\sqrt{d_0/c}\}
+ \right\rfloor\right\},\qquad s=k^3.
+\]
+Declared response cost is bounded by
+\[
+ C_k=2(k^3c+7kc_e)\leq16kd_0.
+\]
+Writing \(\overline V_k\) for the moment bound in (1) and
+\(\Gamma_0=2d_0V_0\),
+\[
+ \frac{C_k\overline V_k}{\Gamma_0}
+ \leq8\left(\frac9{k^2}+\overline\chi_T\right).
+ \tag{2}
+\]
+Indeed, the ratio is bounded by
+\[
+ 8\,
+ \frac{
+ kK^2+\dfrac{M^2}{8\delta^2}
+ (k^{-2}+\overline\chi_T)
+ }{
+ K^2+\dfrac{M^2}{8\delta^2}
+ },
+\]
+and \(kK^2\leq M^2/(\delta^2k^2)\).
+Arbitrary ranks therefore give a factor at most \(80\), and exact
+ranks a factor at most \(80/k^2\). These are certificates against
+the specified lifted gradient baseline, not competitive ratios.
+
+For announced budget \(\mathfrak B\geq2C_k\), take
+\(T=\lfloor\mathfrak B/C_k\rfloor\). Then
+\[
+ \mathbb E[C(\bar x_T)-C^\ast]
+ \leq H\delta+
+ \frac{3D}{\sqrt2}
+ \sqrt{\frac{C_k\overline V_k}{\mathfrak B}}.
+\]
+The query cap gives deterministic declared response cost.
+
+The uncapped rate requires
+\[
+ c\lesssim d_0(\delta K/M)^{4/3}.
+\]
+For fixed positive draw and prediction costs, \(k\) eventually reaches
+its cost cap. The \(\epsilon^{-8/3}\) count is not a uniform
+total-cost exponent. Returning to this gradient baseline's rate
+does not mean returning to the best noisy-value rate.
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 330--403 \ledger{38--40, 42, 44}.
+
+\subsection{Paid selection without known rank quality}
+
+Use a finite geometric grid of \(N\) radii. Allocate training budget
+\(\mathfrak B/(2N)\) to each admissible candidate and validate each
+lifted output \(\widehat z_j\) using
+\[
+ n_v=\left\lfloor\frac{\mathfrak B}{2Nd_0}\right\rfloor
+\]
+fresh prediction-free samples of \(\phi\).
+Selecting the smallest validation mean gives
+\[
+ \begin{aligned}
+ \mathbb E[F(\widehat z_{\mathrm{selected}})-F^\ast]
+ \leq{}&
+ \min_j\mathbb E[F(\widehat z_j)-F^\ast]\\
+ &+O\!\left(
+ M\sqrt{\frac{\log(2N)}{n_v}}\right).
+ \end{aligned}
+\]
+Conditional independence of training and validation supplies the bound.
+A logarithmic grid retains the arbitrary-advice
+\(\mathfrak B^{-1/4}\) and uncapped exact-advice
+\(\mathfrak B^{-3/8}\) orders within these templates.
+
+The direct-CVaR gradient baseline can be included as a paid candidate.
+For independent empirical-CVaR validation,
+\[
+ \begin{aligned}
+ &\mathbb E\max_j
+ |\widehat C_{n_v}(\widehat x_j)-C(\widehat x_j)|\\
+ &\quad\leq b_{n_v}
+ +O\!\left(
+ \frac U\alpha
+ \sqrt{\frac{\log(2N)}{n_v}}\right),\\
+ &b_{n_v}=O(U/\sqrt{\alpha n_v}).
+ \end{aligned}
+\]
+Selection adds at most twice this error to the best candidate gap
+at the allocated budget fraction. It does not change the comparator
+in (2). This is fixed-budget selection, not a sequential certificate
+for a prescribed true gap.
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 405--487 \ledger{38--40}.
+
+\section{Retained fourth-round objections}
+
+\begin{objection}
+Multiplying a monotone-estimation lower bound by an optimization horizon
+proves the \(\epsilon^{-8/3}\) exponent optimal.
+\end{objection}
+
+It does not. The estimation construction divides \([0,1]\) into \(m\)
+blocks and independently places a jump of height \(U/m\) at either
+the first or third quarter of each block. A query exposes at most its
+block's bit. After \(q\) queries, posterior integral variance is at least
+\[
+ (m-q)\frac{U^2}{16m^4}.
+\]
+Taking \(m=2q\) gives \(\Omega(U^2/q^3)\). A finite array can
+represent this inside an empirical CVaR tail. An optimizer can use
+cross-decision structure, however, so the bound does not compose
+with a gradient horizon. The fifth-round lower bound instead concerns
+optimization directly \ledger{39, 47}.
+
+\begin{objection}
+A supports-only oracle automatically restores the affine costly-query
+lower bound.
+\end{objection}
+
+A single support is weaker than a full order, but support queries on
+chosen subsets or sufficiently rich nested supports can reveal
+comparisons. The transcript must be specified before transferring a
+lower bound \ledger{39}.
+
+\begin{objection}
+Loss-rank quadrature also improves first-order gradients.
+\end{objection}
+
+Subgradients need not be monotone in loss rank. Rank probes at selected
+decisions can also reveal directions in affine examples. No general
+analogous first-order quadrature improvement was established
+\ledger{39}.
+
+\begin{objection}
+Wrong rankings must be detected or corrected by a full-batch audit.
+\end{objection}
+
+Full lifted integration has the correct mean under every permutation.
+Width and query caps control cost and variance without certifying
+sortedness. A tester alone does not repair direct-tail plug-in bias,
+and no robust direct-tail sortedness-test theorem was proved.
+See \url{ada/rank-quadrature-and-robust-lifting.md},
+lines 489--561 \ledger{36, 38, 40}.
+
+\section{Retained fifth round: the corrected noisy-value baseline}
+
+Review 42 identified a substantive omission. Agarwal et al.\ study
+stochastic convex optimization with independent centered sub-Gaussian
+value noise. Belloni et al.\ give an approximate-value construction
+using \(\widetilde O(p^{4.5})\) oracle calls and a noisy-value
+application with normalized complexity
+\[
+ \widetilde O(p^{7.5}\epsilon^{-2}).
+\]
+Their construction uses discretization and a fixed approximate oracle.
+Its uniform approximation requirement must not silently become a
+pointwise adaptive-noise argument \ledger{42, 44}.
+
+For bounded losses, one true evaluation supplies an unbiased observation
+of
+\[
+ \phi(x,t;\xi)=t+(J(x,\xi)-t)_+/\alpha.
+\]
+The centered noise is uniformly sub-Gaussian because
+\(0\leq\phi\leq U/\alpha\). Applying the noisy-value construction
+in dimension \(p=d+1\), with range and geometry factors included,
+gives prediction-free accuracy exponent \(2\) at fixed dimension.
+This is a centralized oracle-complexity comparison, not a replacement
+for P's distributed last-iterate theorem.
+
+Thus the old \(\epsilon^{-8/3}\) and \(\epsilon^{-4}\) comparisons
+do not identify a prediction-free frontier.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 53--105, and the corrected baseline notes
+\ledger{44, 49, 50}.
+
+\section{The fifth-round information model}
+
+Let the feasible set initially be an interval, later a box of fixed
+dimension. Sample losses are convex, uniformly \(L\)-Lipschitz,
+and in \([0,U]\), with a fixed independent scenario law.
+
+At a chosen decision, draw a batch of handles, receive a permutation,
+and pay for selected true values. All simulation randomness belongs to
+the handle, so same-decision values can be cached. Exact ranks order
+losses nondecreasingly, with a fixed tie rule encoding no additional
+data. Arbitrary advice may return any permutation. No numerical
+surrogate values, tie-equivalence classes, or population probabilities
+are supplied.
+
+Different value requests use fresh batches. Predictions may depend on
+history but are fixed before current residual probes. Free ranks
+compare losses at a common decision only. Free cross-decision
+comparisons are excluded.
+
+Draws, costly values, and prediction plus sorting are counted separately.
+Lower bounds sometimes grant coordinates or arbitrary coordinate
+probes. Uniform surrogate error is an analytical condition, not
+information the algorithm needs.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 107--139 \ledger{47, 48, 50}.
+
+\section{Approximate convex search without a gradient horizon}
+
+For convex \(L\)-Lipschitz \(f\) on an interval of length \(D\),
+evaluate trisection points \(u<v\) with absolute errors at most \(\nu\).
+Keep the left two thirds if the estimate at \(u\) is no larger;
+otherwise keep the right two thirds. Retain all evaluated candidates
+and their estimates, including a final midpoint, and output the
+candidate with smallest estimate.
+
+The interval need not always retain a minimizer. At the first step
+discarding a minimizer \(x^\ast\) in the right third, the comparison
+implies \(f(u)-f(v)\leq2\nu\). Convexity gives
+\[
+ f(v)-f(x^\ast)
+ \leq\frac{x^\ast-v}{v-u}[f(u)-f(v)]
+ \leq2\nu.
+\]
+The left case is symmetric. If a minimizer is never discarded, the
+final midpoint is within \(LD(2/3)^N\) of optimum. Selection adds
+at most \(2\nu\), so the output gap is at most
+\[
+ \max\{2\nu,LD(2/3)^N\}+2\nu.
+ \tag{3}
+\]
+Taking \(\nu=\epsilon/8\) and
+\[
+ N=\left\lceil
+ \log_{3/2}(4LD/\epsilon)
+ \right\rceil_+
+\]
+suffices with \(2N+1\) approximate values. Conditional confidence at
+adaptive queries and a union bound supply simultaneous accuracy.
+
+On a fixed-dimensional box, recursively minimize remaining coordinates
+to evaluate a partial minimum. Partial minimization over a fixed convex
+box preserves convexity and coordinate Lipschitz continuity. A
+recursive call with witness error \(a\) and value error \(a\)
+supplies a \(2a\)-accurate partial-minimum estimate. Taking
+\(a=\epsilon/32\) and final interval error at most \(\epsilon/4\)
+gives witness gap at most \(9a+\epsilon/4<\epsilon\).
+
+A crude leaf-call bound, with leaf tolerance
+\(\nu=\epsilon/32^p\), is
+\[
+ Q_p(\epsilon)\leq
+ \left[
+ 2\left\lceil
+ \log_{3/2}\left(
+ \frac{4LD_\infty32^p}{\epsilon}\right)
+ \right\rceil_++1
+ \right]^p.
+ \tag{4}
+\]
+The dimension dependence is poor. At fixed dimension it is
+polylogarithmic in inverse accuracy. Lifted optimization adds a
+threshold coordinate and uses its corresponding Lipschitz bound.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 141--200 \ledger{45, 47, 49, 52}.
+
+\section{Promised exact ranks: matching costly-query powers}
+
+\subsection{Direct-tail value estimation}
+
+At a fixed decision, exact-rank adaptive quadrature estimates
+\[
+ A_s=\int_0^1q_s(1-\alpha+\alpha v)\,dv
+\]
+using at most \(7k\) costly values, with
+\[
+ \mathbb E[Q_{s,k}\mid\text{batch}]=A_s,\qquad
+ \operatorname{Var}(Q_{s,k}\mid\text{batch})
+ \leq U^2/(4k^3).
+\]
+Levy's bounds give
+\[
+ \begin{aligned}
+ 0\leq C(x)-\mathbb EA_s&\leq c_bU/\sqrt{\alpha s},\\
+ \operatorname{Var}(A_s)&\leq c_vU^2/(\alpha s).
+ \end{aligned}
+\]
+For value tolerance \(\nu\), choose
+\[
+ s\asymp\frac{U^2}{\alpha\nu^2},
+ \qquad k\asymp(U/\nu)^{2/3},
+\]
+with sufficiently large constants. Bias is at most \(\nu/4\);
+Chebyshev's inequality gives constant success probability from the
+variance bound. Medians of \(O(\log(Q_p/\beta))\) independent
+copies make all leaf values accurate with probability at least
+\(1-\beta\). The median need not be unbiased because search needs
+accurate values.
+
+In one dimension, (3) therefore gives
+\[
+ \begin{aligned}
+ N_{\mathrm{eval}}
+ &=\widetilde O((U/\epsilon)^{2/3}),\\
+ N_{\mathrm{draw}}
+ &=\widetilde O(U^2/(\alpha\epsilon^2)).
+ \end{aligned}
+ \tag{5}
+\]
+At fixed dimension, use the leaf tolerance and call count in (4).
+Taking \(\beta=O(\epsilon/U)\) converts high-probability accuracy
+to expected gap \(O(\epsilon)\).
+
+Fully evaluating empirical-CVaR batches in the same search gives the
+prediction-free bound
+\[
+ \widetilde O(U^2/(\alpha\epsilon^2)).
+\]
+The equal-quantile family matches its accuracy and rarity powers up to
+logarithms under P's sampling interface.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 202--260 \ledger{45, 47, 52}.
+
+\subsection{A direct optimization lower bound immune to rank leakage}
+
+Let \(b_1,\ldots,b_m\) be independent uniform signs. In cell
+\([(j-1)/m,j/m)\), define
+\[
+ h_b(u)=a\left[
+ u+\frac{j-1}{m}
+ +\frac1m
+ \mathbf1\!\left\{
+ u\geq\frac{j-1+1/2-b_j/4}{m}
+ \right\}\right].
+\]
+Use the monotone limit at the final endpoint. The linear term makes
+\(h_b\) strictly increasing for every bit vector, with bit-independent
+order. Its integral is
+\[
+ \int_0^1h_b(u)\,du
+ =a+\frac{a}{4m^2}\sum_{j=1}^m b_j.
+\]
+Set \(a=U/3\), let \(B\) be Bernoulli with parameter \(\alpha\),
+and let \(u\) be uniform and independent. Define
+\[
+ J_b(x;B,u)=B[2a+x(h_b(u)-a)],
+ \qquad x\in[-1,1].
+\]
+Sample losses are affine, \(a\)-Lipschitz, and in \([0,U]\).
+The positive component is separated from zero, so
+\[
+ C_b(x)=2a+\frac{ax}{4m^2}\sum_{j=1}^m b_j.
+ \tag{6}
+\]
+
+Grant \((B,u)\) for free. At \(x>0\), positive losses are ordered
+by \(u\); at \(x<0\), by reversed \(u\); at \(x=0\), tie-breaking
+is bit-independent. Thus coordinates simulate every common-decision
+rank response without exposing the signs. Repeated and nested ranks
+supply no additional bit information.
+
+A costly query at a nonzero decision reveals at most its cell's bit.
+Grant the stronger oracle that always reveals that bit. If prior
+expected costly queries are at most \(n\), the posterior mean of
+\(S_m=\sum_jb_j\) is a stopped sum of exposed independent signs.
+Its second moment is at most \(n\), hence its expected absolute value
+is at most \(\sqrt n\). Bayes expected gap in (6) is at least
+\[
+ \frac a{4m^2}
+ \left(\mathbb E|S_m|-\sqrt n\right).
+\]
+Since
+\[
+ \mathbb E|S_m|
+ \geq
+ \frac{(\mathbb ES_m^2)^{3/2}}
+      {(\mathbb ES_m^4)^{1/2}}
+ \geq\sqrt{m/3},
+\]
+taking \(m=12n\), with integer rounding, gives gap at least
+\(a/(576n^{3/2})\). Therefore
+\[
+ N_{\mathrm{eval}}
+ =\Omega((U/\epsilon)^{2/3}).
+ \tag{7}
+\]
+
+This permits arbitrary coordinate probes and free draws. It is a
+direct optimization lower bound, not an estimation bound multiplied
+by a horizon. The common-decision restriction remains essential.
+
+Separately, the Bernoulli-sign family requires
+\(\Omega(U^2/(\alpha\epsilon^2))\) draws even if every sampled loss
+function is revealed for free. Different subfamilies establish the
+worst-case marginal resource bounds; no single instance is claimed
+to maximize both.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 262--354 \ledger{47, 49, 50, 52}.
+
+\section{Untrusted ranks: the retained residual estimator}
+
+\subsection{A fixed convex mean}
+
+At lifted point \(z=(x,t)\), let
+\[
+ f(v)=\phi(z;\xi_{\pi(\lceil sv\rceil)}),
+ \qquad M=U/\alpha.
+\]
+Its integral is the empirical mean of \(\phi\), independently of
+the permutation.
+
+For tolerance \(\nu\in(0,M]\), take \(k=\lceil M/\nu\rceil\)
+equal cells and query endpoints consistently. On each cell, let \(H\)
+equal the midpoint of endpoint values. Put
+\[
+ R=f-H,\qquad |R|\leq M,\qquad v_R=\int_0^1R(v)^2\,dv.
+\]
+For exact ranks, cell ranges \(r_j\) satisfy
+\[
+ v_R\leq\frac1{4k}\sum_jr_j^2
+ \leq\frac{M^2}{4k}\leq M\nu/4.
+ \tag{8}
+\]
+Arbitrary ranks satisfy \(v_R\leq M^2\).
+
+With independent uniform pilot probes and
+\(\ell=\log(4/\rho)\), set
+\[
+ m_0=\left\lceil16M\ell/\nu\right\rceil,\qquad
+ \widehat v=\frac1{m_0}\sum_{j=1}^{m_0}R(V_j)^2.
+\]
+Since \(\operatorname{Var}(R^2)\leq M^2v_R\), Bernstein gives,
+except with probability \(e^{-\ell}\),
+\[
+ v_R\leq2\widehat v+\frac{4M^2\ell}{m_0}
+ =:\overline v.
+ \tag{9}
+\]
+The square-root term is controlled by
+\[
+ \sqrt{2M^2v_R\ell/m_0}
+ \leq v_R/2+M^2\ell/m_0.
+\]
+
+Choose an independent main sample with
+\[
+ n=\left\lceil
+ 64\ell\left(\frac{\overline v}{\nu^2}+\frac M\nu\right)
+ \right\rceil,
+\]
+and return
+\[
+ \widehat F_s
+ =\int_0^1H(v)\,dv+\frac1n\sum_{j=1}^nR(W_j).
+ \tag{10}
+\]
+Conditional on the batch, anchors, and pilot, this has exactly the
+empirical lifted mean. On (9), Bernstein bounds main error by
+\(\nu/2\), except with probability \(2e^{-\ell}\). A batch size
+\[
+ s\geq2M^2\nu^{-2}\log(2/\rho)
+ \tag{11}
+\]
+controls population error by another \(\nu/2\).
+
+The main sample count is chosen from an independent pilot. One may
+instead decide before main probes to evaluate the whole remaining
+batch and return its exact mean. Switching after inspecting main
+samples is not used.
+
+Since \(\mathbb E\widehat v=v_R\), conditional expected costly probes
+satisfy
+\[
+ \mathbb EN_{\mathrm{eval}}(z)
+ =O\!\left[
+ \left(\frac M\nu+\frac{v_R}{\nu^2}\right)
+ \log(1/\rho)\right].
+ \tag{12}
+\]
+This controls expected pilot cost without discarding failure events.
+The absolute query cap is of order
+\(M^2\nu^{-2}\log(1/\rho)\); a further Bernstein bound also gives
+the order in (12) with high probability for this construction.
+
+Exact ranks give \(\widetilde O(M/\nu)\) costly values; arbitrary
+ranks give \(\widetilde O(M^2/\nu^2)\), without known advice
+quality or a trust parameter.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 356--460 \ledger{48, 49, 52}.
+
+\subsection{The retained natural-error bound}
+
+If the permutation sorts clipped scores with
+\(|J-\widehat J|\leq\eta\), their lifted values form a
+nondecreasing \(g\in[0,M]\) with
+\(\|f-g\|_\infty\leq e=\eta/\alpha\). If \(r_j^g\) is its
+range in a cell, then
+\[
+ |f(v)-H(v)|\leq r_j^g/2+2e.
+\]
+Consequently,
+\[
+ v_R\leq\frac{M^2}{2k}+8e^2
+ \leq M\nu/2+\frac{8\eta^2}{\alpha^2}.
+ \tag{13}
+\]
+Together with (12) and \(v_R\leq M^2\), this gives
+\[
+ \widetilde O\!\left[
+ \frac{U}{\alpha\nu}
+ +\min\left\{
+ \frac{\eta^2}{\alpha^2\nu^2},
+ \frac{U^2}{\alpha^2\nu^2}
+ \right\}\right].
+ \tag{14}
+\]
+The algorithm needs neither \(\eta\) nor numerical scores.
+
+Applying box search to the lifted objective, with fresh batches and
+conditional confidence allocation, gives costly-query power \(1\)
+on exact ranks and power \(2\) on arbitrary ranks at fixed dimension
+and fixed positive \(\alpha\). Draws have power \(2\).
+This valid but weaker bound is improved by the appended sixth round.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 462--504 \ledger{48, 50, 56}.
+
+\section{The retained price of robustness}
+
+\subsection{A lower bound even with exact tail membership}
+
+Let \(x\in[-1,1]\), \(a=U/4\), \(A=U/2\), and partition a
+uniform coordinate \(u\) into \(N\) equal bins. Put
+\(\gamma=a/(2N)\), independently of
+\(B\sim\operatorname{Bernoulli}(\alpha)\).
+
+On the good instance,
+\[
+ J_0(x;B,u)=B(A-\gamma x),\qquad
+ C_0(x)=A-\gamma x.
+\]
+All positive losses tie, so ordering them by \(u\) is exact advice.
+Grant \((B,u)\) for free. Alternative \(j\) changes only bin \(j\):
+\[
+ J_j(x;B,u)
+ =B\left[A+x\left(-\gamma+
+ a\mathbf1\{u\text{ in bin }j\}\right)\right].
+\]
+Then \(C_j(x)=A+\gamma x\). Losses remain affine and bounded;
+the positive component remains positive. The same permutations are
+returned on every instance.
+
+Expected gap at most \(\epsilon=\gamma/4=a/(8N)\) implies
+good-instance expected output at least \(3/4\), and alternative
+expected output at most \(-3/4\). Couple the runs until a query
+hits the altered positive-component bin. If good-instance expected
+costly queries are \(n_0\), a uniform hidden bin is visited with
+probability at most \(n_0/N\), even allowing coordinate probes.
+Thus
+\[
+ \frac32\leq\frac{2n_0}{N},
+ \qquad
+ n_0\geq\frac{3N}{4}
+ =\frac{3a}{32\epsilon}
+ =\Omega(U/\epsilon).
+ \tag{15}
+\]
+This is a lower bound on a perfect-rank instance for an algorithm
+also correct under arbitrary ranks. It allows random stopping and
+free certified tail membership on every instance
+\ledger{46, 48, 52}.
+
+\subsection{Worst-case arbitrary ranks and the fixed-rarity table}
+
+With constant uninformative advice, the Bernoulli-sign family requires
+\(\Omega(U^2/\epsilon^2)\) costly evaluations at fixed \(\alpha\),
+even granting tail membership. Every new paid tail sign supplies
+only \(O((\epsilon/U)^2)\) divergence; reevaluation supplies no
+new independent sign.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 506--569 \ledger{48, 50}.
+
+For fixed \(U,L,\alpha>0\) and fixed-dimensional boxes, the retained
+table is
+\[
+ \begin{array}{c|c|c}
+ \text{Correctness and measured class}
+ &\text{Upper}&\text{Lower}\\ \hline
+ \text{Exact-rank promise}
+ &\widetilde O(\epsilon^{-2/3})
+ &\Omega(\epsilon^{-2/3})\\
+ \text{Robust; exact ranks}
+ &\widetilde O(\epsilon^{-1})
+ &\Omega(\epsilon^{-1})\\
+ \text{Robust; arbitrary ranks}
+ &\widetilde O(\epsilon^{-2})
+ &\Omega(\epsilon^{-2})
+ \end{array}
+\]
+The robust upper rows belong to the same algorithm; lower bounds
+already hold in one dimension. The promise row does not imply
+robustness. Logarithmic gaps prevent promotion to a fully matched E1
+record under Q's strict rule at
+\url{inputs/Q.tex}, lines 203--208
+\ledger{47, 48, 50, 52}.
+
+\section{Retained fifth-round costs and roughness qualification}
+
+The old robust method pays
+\[
+ \text{cost}=(c_0+c_p)s+c_eN_{\mathrm{eval}},
+\]
+where \(c_p\) includes prediction and amortized sorting.
+Its fair lifted value-search comparator pays \((c_0+c_e)s\).
+Skipping ranks when their known cost exceeds a fixed multiple of
+the comparator preserves that declared baseline order, but promises
+no rank saving on the skipped branch.
+
+The old counts were
+\[
+ \begin{aligned}
+ N_{\mathrm{draw}}^{\mathrm{exact}}
+ &=\widetilde O(U^2/(\alpha\epsilon^2)),\\
+ N_{\mathrm{draw}}^{\mathrm{robust}}
+ &=\widetilde O(U^2/(\alpha^2\epsilon^2)).
+ \end{aligned}
+\]
+They remain valid upper bounds, but the robust one is superseded below.
+Fixed positive draw cost leaves total-cost accuracy power \(2\)
+\ledger{47, 48, 50, 56}.
+
+Approximate ranks can exhaust the earlier adaptive split cap.
+If \(f=g+e_f\), \(g\) is monotone in \([0,M]\), and
+\(\|e_f\|_\infty\leq e\), every final cell still has width at most
+\(1/k\). Therefore
+\[
+ \operatorname{Var}(Q\mid\text{batch})
+ \leq\frac{M^2}{2k^2}+\frac{2e^2}{k},
+\]
+using
+\(\operatorname{Var}(g+e_f)\leq
+2\operatorname{Var}(g)+2\operatorname{Var}(e_f)\).
+For loss-score error \(\eta\),
+\[
+ \chi\leq
+ \min\left\{1,\frac2k+8(\eta/U)^2\right\}.
+\]
+Exact ranks separately retain \(k^{-2}\). The fixed-partition
+residual method avoids the split-cap issue.
+See \url{ada/exact-versus-untrusted-ranks.md},
+lines 571--621 \ledger{49, 50}.
+
+\section{Appended sixth round: tail localization and random anchors}
+
+\subsection{Scope and comparison requested by review 52}
+
+The extension concerns one-dimensional convex stochastic losses in
+\([0,U]\), with uniform Lipschitz continuity and
+\(0<\alpha\leq1/2\). It uses the same common-decision rank interface.
+Permutations are frozen before random anchors and residual probes.
+Visible scenario features may be absent or uninformative; numerical
+surrogate values are unnecessary.
+
+The claims are expected costly-query bounds for an expected objective
+gap at most \(\epsilon\), obtained first through high-probability
+accuracy. Geometry enters logarithmically through interval search.
+Lower families have Lipschitz constants of order \(U\).
+The account does not claim matching dependence on an independently
+varying smaller Lipschitz constant
+\ledger{56--58}.
+
+Interleaving the old robust algorithm's paid queries with fully evaluated
+direct-CVaR search caps costly queries at
+\(\widetilde O(U^2/(\alpha\epsilon^2))\), up to a constant factor,
+by returning the first completed valid run. This verifies one route
+suggested by review 52, but does not repair the old draw count.
+The localized construction improves both resources and makes that race
+unnecessary \ledger{54, 56}.
+
+The full derivation is
+\url{ada/tail-localized-rank-frontier.md},
+lines 1--104 and 339--385.
+
+\subsection{Localization including atoms}
+
+Fix \(x\), write \(Y=J(x,\xi)\), and define
+\[
+ q_\alpha=\inf\{t:F_Y(t)\geq1-\alpha\},
+ \qquad
+ F_x(t)=t+\alpha^{-1}\mathbb E(Y-t)_+.
+\]
+The quantile is a minimizing threshold.
+
+For \(\alpha>1/8\), take \(t_0=0\).
+Otherwise fully evaluate an independent localization batch of size
+\[
+ n_0\geq c\alpha^{-1}\log(2/\zeta),
+\]
+and take its \(k_0\)-th largest value, where
+\(k_0=\lceil2\alpha n_0\rceil\).
+With probability at least \(1-\zeta\),
+\[
+ t_0\leq q_\alpha,\qquad \Pr(Y>t_0)\leq8\alpha.
+ \tag{16}
+\]
+
+For the small-\(\alpha\) branch, \(t_0>q_\alpha\) requires at least
+\(k_0\) observations strictly above \(q_\alpha\), each with probability
+at most \(\alpha\). A binomial upper-tail bound gives failure at
+most \(\exp(-\alpha n_0/3)\). If
+\(\Pr(Y>t_0)>4\alpha\), then \(t_0<q_{4\alpha}\), so fewer than
+\(k_0\) observations are at least \(q_{4\alpha}\), each with
+probability at least \(4\alpha\). A binomial lower-tail bound gives
+failure at most \(\exp(-\alpha n_0/2)\), with sufficiently large
+constants handling rounding.
+
+Strict and non-strict inequalities matter: atoms at the threshold
+contribute zero to the hinge. No density assumption or quantile
+uniqueness is used. In the large-\(\alpha\) branch,
+\(\Pr(Y>0)\leq1\leq8\alpha\) deterministically.
+
+On (16), minimizing \(F_x\) over \([t_0,U]\) preserves CVaR, and
+every queried threshold in that interval has hinge support probability
+at most \(8\alpha\). This is a separate inner problem at each \(x\).
+No convexity claim is made for a joint decision-dependent domain
+\(\{(x,t):t\geq t_0(x)\}\).
+See \url{ada/tail-localized-rank-frontier.md},
+lines 106--159 \ledger{55, 56}.
+
+\subsection{Random anchors preserve the sparse-support gain}
+
+For \(t\in[t_0,U]\), draw a fresh batch of size \(s\) and receive
+its predicted permutation \(\pi\). Define the hinge step function
+\[
+ f(v)=\frac{
+ (J(x,\xi_{\pi(\lceil sv\rceil)})-t)_+}{\alpha},
+ \qquad M=U/\alpha.
+\]
+The integral is the empirical mean hinge for every permutation.
+The deterministic threshold \(t\) is added back at the end.
+
+Partition \((0,1]\) into \(k\) equal cells. After ranks are frozen,
+choose an independent uniform anchor \(A_j\) in each cell \(I_j\),
+and set \(H(v)=f(A_j)\) there. For
+\(R=f-H\) and \(v_R=\int R^2\),
+\[
+ \begin{aligned}
+ \mathbb E_Av_R
+ &=\frac1k\sum_j
+ \mathbb E_{V,W\sim\mathrm{Unif}(I_j)}
+ (f(V)-f(W))^2\\
+ &=\frac2k\sum_j\operatorname{Var}_{I_j}(f).
+ \end{aligned}
+ \tag{17}
+\]
+Hence, with empirical strict-exceedance frequency
+\[
+ p_s=\frac1s\sum_{l=1}^s
+ \mathbf1\{J(x,\xi_l)>t\},
+\]
+arbitrary ranks satisfy
+\[
+ \mathbb E_Av_R\leq2\int f^2\leq2M^2p_s.
+\]
+On successful localization,
+\[
+ \mathbb E_{\mathrm{batch},A}v_R\leq16U^2/\alpha.
+\]
+
+Suppose scores inducing the order satisfy
+\(|J-\widehat J|\leq\eta\).
+After clipping, their hinge is monotone \(g\in[0,M]\), with
+\(\|f-g\|_\infty\leq e=\eta/\alpha\).
+Let \(r_j\) be its essential cell range; then \(\sum_jr_j\leq M\).
+For points in a cell,
+\[
+ \begin{aligned}
+ (f(v)-f(w))^2
+ \leq{}&(2r_j^2+8e^2)\\
+ &\times
+ \mathbf1\{f(v)>0\text{ or }f(w)>0\}.
+ \end{aligned}
+\]
+The indicator is legitimate because the left side vanishes if both
+hinges vanish. Averaging gives
+\[
+ \mathbb E_Av_R
+ \leq\frac{2M^2}{k}+16e^2p_s.
+\]
+Thus, on (16),
+\[
+ \mathbb E_{\mathrm{batch},A}v_R
+ \leq
+ \min\left\{
+ \frac{2M^2}{k}+\frac{128\eta^2}{\alpha},
+ \frac{16U^2}{\alpha}
+ \right\}.
+ \tag{18}
+\]
+Exact ranks also give the stronger pathwise statement
+\(v_R\leq M^2/k\).
+
+Random anchors are essential to this improvement. Under wrong ranks,
+fixed endpoints can all contain rare positive hinges while almost all
+other positions have zero hinge, spreading the interpolant's error
+across the whole rank domain. Uniform anchors prevent that deterministic
+placement from controlling expected residual variance.
+The proof does not assume approximately sorted hinge support.
+See \url{ada/tail-localized-rank-frontier.md},
+lines 161--237 \ledger{55, 56}.
+
+\subsection{Adaptive leaf estimation and failure-event costs}
+
+For leaf tolerance \(0<\nu\leq U\), take
+\[
+ k=\lceil M/\nu\rceil,\qquad \ell=\log(c/\delta).
+\]
+Apply the independent pilot from (9)--(10) to the anchored residual:
+\[
+ \begin{gathered}
+ m_0=\lceil16M\ell/\nu\rceil,\qquad
+ \widehat v=\frac1{m_0}\sum_{j=1}^{m_0}R(V_j)^2,\\
+ \overline v=2\widehat v+4M^2\ell/m_0,\\
+ n=\left\lceil
+ 64\ell(\overline v/\nu^2+M/\nu)
+ \right\rceil.
+ \end{gathered}
+\]
+Return
+\[
+ \widehat F_x(t)
+ =t+\int H+\frac1n\sum_{j=1}^nR(W_j).
+ \tag{19}
+\]
+Conditional on batch, anchors, and pilot, its expectation is exactly
+the empirical lifted mean. Independent main probes give error at most
+\(\nu/2\) with the stated confidence.
+
+Cache all revealed values. If the planned main probes would cost more
+than evaluating the remaining batch, decide before those probes to
+return the fully evaluated batch mean instead. This preserves the
+conditional mean and caps true evaluations by \(s\).
+
+On (16), the random hinge has range at most \(M\) and second moment
+at most \(8U^2/\alpha\). A batch size
+\[
+ s=\left\lceil
+ c\left(
+ \frac{U^2}{\alpha\nu^2}
+ +\frac{U}{\alpha\nu}
+ \right)\log(c/\delta)
+ \right\rceil
+ \tag{20}
+\]
+therefore approximates \(F_x(t)\) within another \(\nu/2\).
+There is no empirical-CVaR minimization bias at this leaf.
+
+Using \(\mathbb E\widehat v=v_R\), expected costly probes, including
+anchors and pilot, are
+\[
+ O\!\left[
+ \left(k+\frac M\nu+\frac{v_R}{\nu^2}\right)
+ \log(c/\delta)\right].
+\]
+Averaging (18) yields
+\[
+ \widetilde O\!\left(
+ \frac{U}{\alpha\nu}
+ +\frac{\min\{\eta,U\}^2}{\alpha\nu^2}
+ \right).
+ \tag{21}
+\]
+The exact-rank specialization is
+\(\widetilde O(U/(\alpha\nu))\).
+
+Choose localization failure probability to satisfy the global
+confidence allocation and \(\zeta\leq\nu/U\). The batch cap makes
+its expected cost contribution at most
+\(\widetilde O(U/(\alpha\nu))\), already absorbed in (21).
+Localization acquisition cost
+\(O(\alpha^{-1}\log(1/\zeta))\) is also absorbed.
+Pilot cost is controlled by its exact expectation, not by conditioning
+away pilot failure.
+See \url{ada/tail-localized-rank-frontier.md},
+lines 239--337 \ledger{56, 58}.
+
+\subsection{Nested search and the resulting upper bounds}
+
+For each outer decision, localize once and minimize the convex
+\(F_x(t)\) on \([t_0,U]\) by retained-candidate search.
+Its threshold Lipschitz constant is at most \(1/\alpha\).
+On successful localization, the inner minimum is \(C(x)\).
+The outer search therefore acts on the original convex,
+\(L\)-Lipschitz CVaR over a fixed interval.
+
+An explicit allocation is outer value tolerance \(w=\epsilon/8\)
+and leaf tolerance \(\nu=w/16=\epsilon/128\).
+Stop the inner interval when its Lipschitz-length bound is at most
+\(w/4\). Formula (3) then gives a candidate within \(3w/8\) of
+the inner minimum, whose estimated value is within \(\nu\) of its
+true value. The returned estimate is within \(w\) of \(C(x)\).
+An outer final Lipschitz-length bound \(\epsilon/4\) gives gap at
+most \(\epsilon/2\) on the success event.
+
+The deterministic call bounds are
+\[
+ \begin{aligned}
+ Q_x&=O(1+\log_+(LD/\epsilon)),\\
+ Q_t&=O(1+\log_+(U/(\alpha\epsilon))).
+ \end{aligned}
+\]
+Allocate conditional failure probabilities over \(Q_xQ_t\).
+With total failure at most \(\epsilon/(2U)\), bounded true gap
+converts the result to expected gap at most \(\epsilon\).
+
+The same algorithm, without knowing \(\eta\), consequently satisfies
+\[
+ \begin{aligned}
+ \mathbb E N_{\mathrm{eval}}
+ &=\widetilde O\!\left(
+ \frac{U}{\alpha\epsilon}
+ +\frac{\min\{\eta,U\}^2}{\alpha\epsilon^2}
+ \right),\\
+ N_{\mathrm{draw}}
+ &=\widetilde O\!\left(
+ \frac{U^2}{\alpha\epsilon^2}\right).
+ \end{aligned}
+ \tag{22}
+\]
+The adaptive evaluation count is an expected bound. High-probability
+claims here concern objective accuracy; the unconditional cached count
+is capped by all drawn batches. No corresponding pathwise
+error-adaptive cost statement is claimed.
+
+The arbitrary-rank costly-query bound now agrees with the direct
+empirical-CVaR prediction-free search baseline in
+\(U,\alpha,\epsilon\), up to logarithms. It no longer relies on
+the weaker lifted-only comparator.
+See \url{ada/tail-localized-rank-frontier.md},
+lines 339--385 \ledger{56, 58}.
+
+\section{Appended sixth round: matching lower expressions}
+
+\subsection{Hidden promotion outside the current tail}
+
+Set
+\[
+ A=U/4,\qquad A'=3U/4,\qquad c=U/8.
+\]
+Let \(B\sim\operatorname{Bernoulli}(\alpha)\). Conditional on \(B=0\),
+partition a uniform coordinate into \(N\) equal bins, each of
+unconditional mass \(m=(1-\alpha)/N\leq\alpha\), and put
+\[
+ \gamma=\frac{mc}{2\alpha-m}.
+\]
+The good instance is
+\[
+ J_0(x)=B(A-\gamma x),\qquad
+ C_0(x)=A-\gamma x.
+\]
+Alternative \(j\) promotes only non-tail bin \(j\) from zero to
+\(A'+cx\). The promoted loss lies in \([5U/8,7U/8]\), above the
+old tail in \([U/8,3U/8]\). All sample losses remain affine and
+bounded. Its CVaR is
+\[
+ C_j(x)=
+ \left(1-\frac m\alpha\right)(A-\gamma x)
+ +\frac m\alpha(A'+cx),
+\]
+with slope
+\[
+ -\gamma+\frac m\alpha(c+\gamma)=\gamma.
+\]
+
+Give original component labels and coordinates \((B,u)\) for free,
+and return the good-instance ranks everywhere. These ranks are exact
+on the good instance, but reveal no promoted-bin information on
+alternatives. Original component labels are not certified true tail
+membership on every alternative.
+
+At \(\epsilon=\gamma/4\), correctness forces
+\(\mathbb E_0x\geq3/4\) and \(\mathbb E_jx\leq-3/4\).
+The same hidden-bin coupling as before gives
+\[
+ n_0\geq3N/4.
+\]
+Since
+\[
+ N=\frac{(1-\alpha)(c+\gamma)}{2\alpha\gamma}
+ =\frac{(1-\alpha)(c+4\epsilon)}{8\alpha\epsilon},
+\]
+this proves
+\[
+ \mathbb E_0N_{\mathrm{eval}}
+ =\Omega\!\left(\frac{U}{\alpha\epsilon}\right)
+ \tag{23}
+\]
+for \(\alpha\leq1/2\) and sufficiently small \(\epsilon/U\).
+Integer rounding can make \(\gamma\geq4\epsilon\), preserving the
+argument.
+
+The good advice can be induced by exact numerical scores, so it lies
+inside every uniform-error class. The alternatives need not lie in
+that class, because the algorithm must remain correct under arbitrary
+advice. Formula (15) remains the separate lower bound for the stronger
+interface supplying certified true tail membership on every instance.
+See \url{ada/tail-localized-rank-frontier.md},
+lines 387--449 \ledger{54, 57, 58}.
+
+\subsection{Hidden tail signs with uniformly accurate scores}
+
+For \(0<\eta\leq U\), set
+\[
+ b=\eta/4,\qquad a=\eta/2,\qquad A=U/4,
+\]
+and define
+\[
+ \begin{gathered}
+ J_v(x)=A+B(a+bSx),\qquad
+ B\sim\operatorname{Bernoulli}(\alpha),\\
+ \Pr_v(S=1)=(1+v\gamma)/2,\qquad v\in\{-1,+1\}.
+ \end{gathered}
+\]
+Losses lie in \([0,U]\), are affine and \(b\)-Lipschitz, and
+\[
+ C_v(x)=A+a+vb\gamma x.
+\]
+Every handle receives constant score \(\widehat J=A\), with an
+independent fixed tie convention. Uniform error is at most
+\(3\eta/4\). Handles carry no information about their latent \(B,S\).
+
+Even revealing \((B,S)\) at a new paid handle gives divergence at
+most \(4\alpha\gamma^2\). Adaptive selection among unqueried opaque
+handles and random stopping yield total divergence at most
+\[
+ 4\alpha\gamma^2\mathbb E_+N_{\mathrm{eval}}.
+\]
+Expected-gap correctness forces constant total variation separation
+when \(b\gamma\geq4\epsilon\). Pinsker therefore gives
+\[
+ \mathbb E_+N_{\mathrm{eval}}
+ =\Omega\!\left(
+ \frac{\eta^2}{\alpha\epsilon^2}\right),
+ \qquad \epsilon\leq c\eta.
+ \tag{24}
+\]
+Repeated values from a handle can be simulated from its revealed pair
+and give no additional independent sign. The lower bound does not
+supply free tail membership or a known simulator formula that exposes
+the latent bits.
+
+Combining (23) and (24), their maximum equals their sum up to a
+constant factor. When \(\eta^2\lesssim U\epsilon\), (23) dominates.
+Otherwise the small-accuracy condition for (24) holds. For \(\eta\geq U\),
+use the construction at \(\eta=U\). Thus, among algorithms correct
+for all predictions, worst-case expected costly queries over the
+uniform-error class satisfy
+\[
+ \Omega\!\left(
+ \frac{U}{\alpha\epsilon}
+ +\frac{\min\{\eta,U\}^2}{\alpha\epsilon^2}
+ \right).
+ \tag{25}
+\]
+This is a worst-case error-class statement, not instancewise optimality.
+A trusted error promise restricting the correctness class would be a
+different problem.
+See \url{ada/tail-localized-rank-frontier.md},
+lines 451--514 \ledger{57, 58}.
+
+\section{The strengthened table and charged resources}
+
+The promised-exact proof (5)--(7) remains unchanged. Combining it
+with (22)--(25) gives the following one-dimensional table, for
+\(0<\alpha\leq1/2\) and sufficiently small accuracy:
+\[
+ \begin{array}{c|c|c}
+ \text{Class}
+ &\text{Expected upper}
+ &\text{Expected lower}\\ \hline
+ \text{Exact promise}
+ &\widetilde O((U/\epsilon)^{2/3})
+ &\Omega((U/\epsilon)^{2/3})\\
+ \text{Robust, exact}
+ &\widetilde O(U/(\alpha\epsilon))
+ &\Omega(U/(\alpha\epsilon))\\
+ \text{Robust, arbitrary}
+ &\widetilde O(U^2/(\alpha\epsilon^2))
+ &\Omega(U^2/(\alpha\epsilon^2))
+ \end{array}
+\]
+The robust rows belong to the same algorithm, which also attains
+(22) without knowing \(\eta\). All upper rows use
+\(\widetilde O(U^2/(\alpha\epsilon^2))\) draws.
+The separate Bernoulli-sign draw lower bound matches that marginal
+resource order up to logarithms \ledger{57, 58}.
+
+If \(c_0,c_p,c_e\) charge draws, prediction and sorting per handle,
+and true values, respectively, robust total cost is bounded by
+\[
+ \begin{aligned}
+ \widetilde O\!\Bigg[
+ &(c_0+c_p)\frac{U^2}{\alpha\epsilon^2}\\
+ &+c_e\left(
+ \frac{U}{\alpha\epsilon}
+ +\frac{\min\{\eta,U\}^2}{\alpha\epsilon^2}
+ \right)\Bigg].
+ \end{aligned}
+\]
+The fair prediction-free comparator pays
+\[
+ \widetilde O\!\left(
+ (c_0+c_e)\frac{U^2}{\alpha\epsilon^2}\right).
+\]
+Sorting may introduce an additional logarithmic computational factor.
+If ranks are too expensive, skipping them preserves the baseline but
+promises no advice-dependent gain.
+
+Fixed positive draw cost still leaves total-cost accuracy power \(2\).
+The table characterizes information resources with explicit charging,
+not an optimal monetary frontier. It has logarithmic gaps and is not
+a strict E1 entry under Q's matching rule. Inefficient fixed-dimensional
+box extensions are available; efficient dimension dependence,
+communication guarantees, and last-iterate results are not claimed.
+See \url{ada/tail-localized-rank-frontier.md},
+lines 516--554 \ledger{58, 60}.
+
+\section{Sources outside Q and P}
+
+The sources below support the arguments and delimit novelty. Locations
+refer to the pooled sources recorded in the working notes. Successful
+retrievals used the shared pool; failed retrievals were not replaced
+with agent-folder copies.
+
+\begin{itemize}
+ \item Levy, Carmon, Duchi, and Sidford,
+ \emph{Large-Scale Methods for Distributionally Robust Optimization},
+ \url{https://arxiv.org/abs/2010.05893}.
+ Recorded source locations include 2116--2196 for expected-minibatch
+ bias, 2556--2675 for multilevel estimation, 2712--2738 for complexity,
+ 2771--2846 for lower bounds, and 5456--5505 for objective variance.
+ Expected-minibatch analysis and true-rank multilevel estimation are
+ established ingredients \ledger{4, 7, 18, 30, 47}.
+
+ \item \emph{QuEst: Enhancing Estimates of Quantile-Based
+ Distributional Measures Using Model Predictions},
+ \url{https://arxiv.org/abs/2507.05220}.
+ Source lines 593--691 contain the estimator and asymptotic theorem
+ motivating the finite-batch convexity check \ledger{6, 8}.
+
+ \item Zrnic and Candes, \emph{Active Statistical Inference},
+ \url{https://arxiv.org/abs/2403.03208},
+ already supplies augmented inverse-propensity correction and convex
+ M-estimation; recorded locations are 322--345 and 434--460.
+ The correction identity is not new here \ledger{17, 59}.
+
+ \item \emph{Cost-Optimal Active AI Model Evaluation},
+ \url{https://arxiv.org/abs/2506.07949},
+ separates cheap and expensive resources and optimizes cost--variance;
+ recorded locations are 340--457 and 733--785.
+ \emph{Robust Sampling for Active Statistical Inference},
+ \url{https://arxiv.org/abs/2511.08991},
+ studies interpolation toward uniform sampling, with the inspected
+ comparison asymptotic under consistent tuning
+ \ledger{17, 19}.
+
+ \item Chaudhuri, Peherstorfer, and Willcox,
+ \emph{Multifidelity Cross-Entropy Estimation of Conditional
+ Value-at-Risk for Risk-Averse Design Optimization},
+ \url{https://doi.org/10.2514/6.2020-2129}.
+ Its abstract establishes earlier multifidelity CVaR design.
+ Pool retrieval returned HTTP 429; detailed convergence statements
+ were not inspected \ledger{17}.
+
+ \item Curi et al.,
+ \url{https://arxiv.org/abs/1910.12511},
+ identify rejected non-tail samples and ideal-tail sampling as central
+ issues, at recorded lines 279--285 and 478--518.
+ The inspected formulations do not use the same charged rank interface.
+
+ \item Classical antecedents include Neyman's double sampling,
+ \url{https://doi.org/10.1080/01621459.1938.10503378},
+ Rao's related work,
+ \url{https://doi.org/10.1093/biomet/60.1.125},
+ and Hesterberg's defensive mixtures,
+ \url{https://doi.org/10.1080/00401706.1995.10484303}.
+ Publisher records or abstracts were checked, but pool failures
+ prevented detailed theorem inspection. Adaptive stratification,
+ \url{https://jmlr.org/papers/v16/carpentier15a.html},
+ and the retrieved source
+ \url{https://arxiv.org/abs/1303.2892},
+ lines 682--733, provide antecedents for learning oracle allocations
+ \ledger{22, 30}.
+
+ \item Pieraccini and Vanzan,
+ \url{https://arxiv.org/abs/2502.10084},
+ are a close CVaR screening antecedent. Source lines 94--103 use a
+ reduced model to estimate moving quantiles and screen evaluations;
+ lines 283--327 require a computable pointwise error bound containing
+ the true risk region. Arbitrary wrong ranks distinguish the present
+ assumptions but do not establish novelty \ledger{30, 40, 59}.
+
+ \item Ganesh and Nobile,
+ \url{https://arxiv.org/abs/2210.03485},
+ combine multilevel simulation with CVaR optimization through a PDE
+ discretization hierarchy. Hu et al.,
+ \url{https://arxiv.org/abs/2408.11084},
+ give a general nonasymptotic multilevel bias--variance--cost framework.
+ The retained optimization recursion is not an advance over that
+ framework \ledger{30}.
+
+ \item The third-round audit also records adaptive CVaR sampling in
+ \url{https://arxiv.org/abs/2606.11515}
+ and charged pilot allocation with a defensive anchor for fixed-policy
+ evaluation in
+ \url{https://arxiv.org/abs/2609.38096}.
+ These limit generic claims about moving-tail and pilot sampling
+ \ledger{30}.
+
+ \item Novak, \emph{Quadrature formulas for monotone functions},
+ \url{https://doi.org/10.1090/S0002-9939-1992-1086337-X},
+ is the classical adaptive randomized integration antecedent.
+ Direct pool retrieval failed with HTTP 429.
+ Gaillard, Gerchinovitz, and de Montbrun,
+ \emph{Adaptive approximation of monotone functions},
+ \url{https://arxiv.org/abs/2309.07530},
+ explicitly record the rate distinction at lines 335--354.
+ Lines 648--746 develop adaptive quadrature, including the conditional
+ mean and area-squared variance argument at 695--729
+ \ledger{37, 40, 59}.
+
+ \item \emph{Integration of bounded monotone functions: Revisiting the
+ nonsequential case, with a focus on unbiased Monte Carlo
+ (randomized) methods},
+ \url{https://arxiv.org/abs/2203.00423},
+ gives the exact nonadaptive equal-width variance \(1/(4k^2)\),
+ at recorded source lines 387--423 \ledger{40}.
+
+ \item Dell and Clutter,
+ \emph{Ranked Set Sampling Theory with Order Statistics Background},
+ \url{https://doi.org/10.2307/2556166},
+ is a close lead for cheap ranks, expensive measurements, and imperfect
+ rankings. The review
+ \url{https://doi.org/10.5402/2012/568385}
+ identifies it, but the primary detailed theorem remained inaccessible.
+ The Takahasi--Wakimoto predecessor,
+ \url{https://www.ism.ac.jp/editsec/aism/pdf/020_1_0001.pdf},
+ also failed through the pool with HTTP 429. Limited primary indexed
+ text discusses order-statistic stratification, unbiased means, and
+ Neyman allocation. These do not constitute a complete theorem audit.
+ Arbitrary-permutation unbiasedness is not claimed as a new principle
+ \ledger{40, 59}.
+
+ \item Agarwal et al.,
+ \emph{Stochastic Convex Optimization with Bandit Feedback},
+ \url{https://arxiv.org/abs/1107.1744},
+ specifies the convex, Lipschitz, centered sub-Gaussian model at source
+ lines 169--195 and the one-dimensional result at 541--568.
+ Belloni et al.,
+ \emph{Escaping the Local Minima via Simulated Annealing},
+ \url{https://arxiv.org/abs/1501.07242},
+ gives the approximate-value and noisy-value results at 695--749.
+ Both were read from pooled LaTeX \ledger{44, 49}.
+
+ \item Dagum, Karp, Luby, and Ross,
+ \url{https://doi.org/10.1137/S0097539797315306},
+ and Mnih, Szepesvari, and Audibert,
+ \emph{Empirical Bernstein Stopping},
+ \url{https://www.cs.toronto.edu/~vmnih/docs/ebstop.pdf},
+ are antecedents for variance-adaptive estimation.
+ Pool retrievals failed with HTTP 429. In the sixth round, the Mnih
+ primary text was readable through web access: Section 3, equation (4),
+ gives variance divided by squared tolerance plus range divided by
+ tolerance, with logarithms. It discusses relative error and omits
+ that proof in the conference text. The independent-pilot absolute-error
+ derivation here does not rely on the omitted proof
+ \ledger{49, 59}.
+
+ \item Karabag, Neary, and Topcu,
+ \emph{Smooth Convex Optimization Using Sub-Zeroth-Order Oracles},
+ \url{https://arxiv.org/abs/2103.00667},
+ defines comparisons of objective values at different decisions,
+ at pooled source lines 213--223 and 811--818.
+ That oracle differs from common-decision scenario ranks. Its theorem
+ does not settle this frontier, and these lower bounds do not apply to
+ its cross-decision comparator \ledger{59}.
+\end{itemize}
+
+Detailed earlier audits appear in
+\url{ada/two-resource-screening.md}, lines 293--343;
+\url{ada/lifted-correction-and-baselines.md},
+lines 294--308 and 323--343;
+\url{ada/moving-tail-rank-correction.md}, lines 545--629;
+\url{ada/rank-quadrature-and-robust-lifting.md}, lines 563--605;
+and \url{ada/exact-versus-untrusted-ranks.md}, lines 623--685.
+The final audit and access qualifications are in
+\url{ada/tail-localized-rank-frontier.md}, lines 556--637.
+
+Searches covered CVaR screening, active inference, monotone integration,
+ranked-set sampling, noisy-value and comparison-oracle optimization,
+variance-adaptive estimation, and prediction-dependent lower bounds.
+Failure to locate an identical theorem is not evidence of novelty
+\ledger{17, 30, 40, 50, 59}.
+
+\section{Verification and limits of the evidence}
+
+The recorded checks supplement the arguments; they do not replace
+proofs or establish practical speedups.
+
+\begin{itemize}
+ \item \url{ada/check-derivations-run1.log}, lines 1--7:
+ exact CVaR and convexity checks, plus a numerical KL grid
+ \ledger{9}.
+
+ \item \url{ada/check-screening-round2-run2.log}, lines 1--7:
+ 10,980 screening and moment checks and 307 lifted checks, totaling
+ 11,287 \ledger{19}.
+
+ \item \url{ada/check-moving-tails-round3-run1.log}, lines 1--5:
+ 28,632 fractional-weight rank checks and 1,331 audit-moment checks,
+ plus level-cost, moving-mask, and category-recovery checks.
+ Script: \url{ada/check_moving_tails.py} \ledger{31}.
+
+ \item \url{ada/check-rank-quadrature-round4-run1.log}, lines 1--7:
+ 36,503 checks covering arbitrary orders, inverse-cube variance,
+ fractional CVaR, larger arrays, cost certificates, and posterior
+ variance. Script: \url{ada/check_rank_quadrature.py} \ledger{39}.
+
+ \item \url{ada/check-rank-frontier-round5-run1.log}, lines 1--8:
+ 40,711 checks covering residual identities, natural-error and
+ roughness bounds, hidden-block rank invariance, Bayes constants,
+ rare-bin coupling, retained-candidate search, and pilot inequalities.
+ Script: \url{ada/check_rank_frontier.py} \ledger{49}.
+
+ \item \url{ada/check-tail-localization-round6-run1.log}, lines 1--9:
+ 21,840 anchor-moment checks, 27,594 localized-error checks,
+ 45 atomic localization checks, 100 promoted-bin checks,
+ 162 error-family checks, and 36 pilot-cost checks, totaling
+ 49,778. It also records a sparse example where fixed anchors have
+ 32 times the random-anchor residual.
+ Script: \url{ada/check_tail_localization.py}
+ \ledger{57, 58}.
+\end{itemize}
+
+Review 52 independently reported successful hand checks of the
+fifth-round core and requested that the retained results survive
+whatever the extension found. The sixth-round extension has its
+derivations and finite checks, but no subsequent verifier review
+in the supplied ledger \ledger{52, 60, 61}.
+
+\section{What is resolved, what remains open, and the smallest next step}
+
+The predicted-VaR wrapper remains unsupported under P's original
+oracle. Exact quantiles leave tail-mean uncertainty. P's value-based
+residual improvement, the QuEst transfer counterexample, costed
+screening, the label and population-witness endpoints, and the
+convex-target corrections remain valid in their stated interfaces.
+
+The fifth round corrected the missing noisy-value baseline and supplied
+direct optimization lower bounds for common-decision rankings.
+The sixth round resolves the principal parameter gap identified in
+review 52: the robust algorithm now matches the direct-CVaR baseline
+in worst-case draw and costly-value powers, while adapting to uniform
+score error with matching lower powers up to logarithms.
+Its exact-advice auditing cost can exceed the promised-exact cost
+because correctness must include undetected changes outside the
+current tail \ledger{52, 56--58}.
+
+The contribution under consideration is this explicit resource
+characterization, not the invention of screening, unbiased correction,
+ordered integration, or variance-adaptive estimation. Those tools
+have close classical antecedents. Equivalence to a ranked-set or
+stratified-integration theorem remains unresolved, particularly because
+primary full texts were inaccessible. The mathematical account is
+substantial; the novelty and application evidence remain thin.
+Entry 60 recommends advancing to a research draft for expert review,
+not announcing a novel publication \ledger{59, 60}.
+
+Remaining technical boundaries include logarithmic optimality,
+efficient dimension dependence, and richer interfaces with free
+cross-decision comparisons. The lower bounds involving hidden tails
+require that certified true tail membership is not supplied on every
+instance. The error-class frontier requires correctness outside the
+class in which cost is measured. Neither restriction can be silently
+removed. No distributed prediction theorem, communication gain, or
+new last-iterate theorem has been established. Adding P's network
+recursion alone would not resolve these questions.
+
+The smallest next step is a theorem-level novelty audit of
+(22)--(25) in the one-dimensional opaque-handle model. Obtain and
+compare the primary ranked-set and variance-adaptive inference
+statements, explicitly mapping their information, correctness class,
+error parameter, and charged resources. At the same time, independently
+check the random-anchor sparse-support step and the promoted-bin
+coupling, which are the new parts after review 52. This would decide
+whether the strengthened frontier is a distinct optimization result
+or a direct reformulation of established integration theory.
+
+If practical value is the deciding criterion, the smallest separate
+experiment is a costly convex simulator with measured draw, prediction,
+sorting, evaluation, and validation costs. Compare exact, learned, and
+degraded ranks with fully evaluated direct-CVaR search at common total
+budgets. Such evidence could establish usefulness of the interface in
+that application, but would not settle novelty or logarithmic
+optimality.
+
+\end{document}

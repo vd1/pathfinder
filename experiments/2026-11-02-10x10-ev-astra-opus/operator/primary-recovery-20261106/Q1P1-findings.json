@@ -1,0 +1,26 @@
+{
+  "summary": "User explicitly authorized recovering primary sources through alternate routes. Read the files in /Users/v/Code_2026/pathfinder/experiments/2026-11-02-10x10-ev-astra-opus/sources/primary-recovery-20261106. Author, institutional, publisher and proceedings copies/metadata are acceptable evidence; do not exclude an authenticated source merely because a DOI landing page fails. Update search.md and references.bib, recording copies and theorem-level comparisons. Retain precise unresolved gaps, and never infer novelty from failed retrieval. Preserve research results unless a demonstrated overlap or error requires narrowing them. No PCE.",
+  "findings": [
+    {
+      "id": "REC-1",
+      "severity": "major",
+      "where": "Related work, novelty claims, search.md and references.bib",
+      "issue": "Novak 1992 original is recovered as author PostScript novak1992.ps; readable author-uploaded full text is https://www.researchgate.net/publication/238870154_Quadrature_formulas_for_monotone_functions. Section 2, Theorems 2 and 3 give matching order n^(-3/2) for adaptive randomized monotone integration in worst-case expected absolute error. The epsilon^(-2/3) exponent is established prior art.",
+      "fix": "Read and compare the oracle, error criterion, finite ranked pool, tail localization, confidence conversion and optimization wrapper. Attribute the integration exponent and distinguish the untrusted-advice guarantees; do not automatically claim the full Q1P1 theorem is subsumed."
+    },
+    {
+      "id": "REC-2",
+      "severity": "major",
+      "where": "Related work, novelty claims, search.md and references.bib",
+      "issue": "Takahasi and Wakimoto 1968 publisher PDF and OCR recovered in cache. First pages define cheap ranking with costly measurement, ranked-set mean, unbiasedness and variance. This invalidates treating the basic ranking/measurement split as unexplored. Dell and Clutter 1972 full text remains unresolved.",
+      "fix": "Read relevant sections, identify which assumptions and results overlap Q1P1 and which do not. OCR can corrupt formulas: verify consequential claims against PDF. Keep Dell and Clutter as an explicit unread-original gap."
+    },
+    {
+      "id": "REC-3",
+      "severity": "major",
+      "where": "Related work, novelty claims, search.md and references.bib",
+      "issue": "Mnih, Szepesvari and Audibert 2008 recovered as mnih2008.pdf/txt, author-hosted at https://www.cs.toronto.edu/~vmnih/docs/ebstop.pdf; ICML metadata DOI 10.1145/1390156.1390241 corroborates it. Exclusion solely for failed DOI metadata is unwarranted.",
+      "fix": "Cite and compare variance-adaptive stopping; separate established empirical-Bernstein machinery from any new residual or advice guarantee."
+    }
+  ]
+}

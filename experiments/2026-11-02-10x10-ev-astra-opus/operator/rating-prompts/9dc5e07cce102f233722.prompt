@@ -1,0 +1,311 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Evidence-Calibrated Commitment in Markets and Code Review}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q studies LLM traders in a continuous double auction, finding incomplete market convergence and substantial differences across models and roles. P studies a reviewer--critic protocol for coding, finding both useful corrections and false consensus, with evidence-grounded prompt constraints improving its reported review score.
+
+\section{The connexion pursued}
+
+The initial connexion associated Q's urgency vocabulary with P's premature agreement. Ada rejected this interpretation: Q's urgency language accompanies trade execution, which can recover otherwise unrealized gains, whereas P documents agreement that suppresses a verified defect. Q also cautions that its lexical analysis does not establish causes or faithfully reveal decision processes. These observations do not establish a common premature-closure bias. \ledger{1, 5}
+
+A subsequent route considered positional anchoring: Q has buyer/seller and opening-side asymmetries, while P places the reviewer before the critic. Prior-work checks weakened generic novelty claims about first-speaker influence and independent precommitment. The retained connexion instead asks whether evidence-grounded review can improve \emph{commitment decisions in both directions}: completing warranted actions and withholding unwarranted ones. This is a proposed transfer test, not evidence that P's protocol improves Q's market efficiency. \ledger{2, 3, 4, 7}
+
+The previous consolidation established decision certificates, experimental controls, a source audit, an exact prompt-observability witness, and a prepared gate. Those results remain below. The latest verifier review requested measurements through a newly identified local inference route, mechanism baselines, and a bounded horizon-disclosure experiment. The appended results resolve the inference-access limitation but do not establish a distinctive cross-domain mechanism or publication readiness. See \url{ada/research-note.md}, lines 5--17. \ledger{9, 19, 34, 35, 36, 37}
+
+\section{Results retained from the preceding rounds}
+
+\subsection{An exact terminal decision certificate}
+
+\begin{claim}
+At an explicitly announced final decision of the entire trading episode, with no later execution or continuation payoff, the sign of the available private gain determines whether execution is preferable to declining.
+\end{claim}
+
+For a buyer with reservation value \(v\) facing standing ask \(a\), and a seller with cost \(c\) facing standing bid \(b\), define
+\[
+g_B=v-a,
+\qquad
+g_S=b-c.
+\]
+Execution yields \(g\); declining or posting a noncrossing order yields zero under the terminal assumptions. Thus, for execution indicator \(D\in\{0,1\}\),
+\[
+V^\star=\max\{0,g\},
+\qquad
+R(D,g)=\max\{0,g\}-Dg.
+\]
+Execution is strictly preferable when \(g>0\), and declining is strictly preferable when \(g<0\). The case \(g=0\) is a tie and is excluded from the binary-error endpoint. No model of future prices or counterpart beliefs is needed. \ledger{4, 5, 6}
+
+The qualification is essential: Q's printed prompts do not disclose this precise terminal information. The certificate labels a controlled extension, not retrospectively identified mistakes in Q. Earlier noncrossing orders might execute later or improve expected profit. The relevant endpoint is the final episode decision, not merely a trader's last opportunity in a round with possible continuation consequences. See \url{ada/research-note.md}, lines 81--103. \ledger{5, 6}
+
+\subsection{A role-reflection control}
+
+Reflect all prices and reservations, measured in dollars, through
+\[
+x'=4-x,
+\]
+and interchange buyer and seller. The reflected seller corresponding to a buyer facing an ask has identical profit:
+\[
+(4-a)-(4-v)=v-a.
+\]
+Terminal optimal actions and regret are therefore preserved. The observation, standing orders, history, identities, and admissible price domain must all be transformed consistently. This is a diagnostic control for equivalent private-profit problems, not a new auction theorem. \ledger{6}
+
+The script \url{ada/check_certificates.py}, lines 19--35, checks both roles, eleven reservation values, and 401 resting prices:
+\[
+2\cdot11\cdot401=8{,}822
+\]
+integer-cent states. The successful record is \url{ada/certificates-trial-002.log}, lines 1--2. This validates the arithmetic certificate, not model behavior. \ledger{6}
+
+\subsection{Code certificates and the limit of local correctness}
+
+The code analogue distinguishes a defect witnessed by a counterexample from a corrected program exhaustively verified over a stated finite domain. Passing an ordinary test suite cannot certify unrestricted correctness. The original check uses inputs \(0,\ldots,10\) and validates a defective/corrected program pair; see \url{ada/check_certificates.py}, lines 7--16 and 36--38, and \url{ada/certificates-trial-002.log}, line 3. \ledger{6}
+
+Private trading correctness also differs from aggregate efficiency. Profitable early matches can produce total surplus
+\[
+(3.25-2.75)+(1.00-0.75)=0.75,
+\]
+while matching only the high-value buyer to the low-cost seller yields
+\[
+3.25-0.75=2.50.
+\]
+Thus, accepting profitable opportunities earlier need not maximize total surplus. The arithmetic is checked in \url{ada/check_certificates.py}, lines 39--42. Terminal private-profit regret is a diagnostic, not a market-design guarantee. \ledger{6}
+
+\section{The retained implementation audit}
+
+\subsection{Pinned source and unresolved original data}
+
+The inspected repository revision is
+\url{https://github.com/jswistak/competitive-market-simulation/tree/a8e3e8cbe712b3a26e331d781a5fddc50274281d}.
+This pins the audit, not necessarily Q's experimental revision. Its README maps the paper conditions to final configurations and identifies a separate supplementary package as supplying raw experiment directories. No raw runs were obtained from the pinned archive, the checked supplementary-preparation branch, the empty releases listing, or Q's pooled arXiv source. Saved notebook outputs cannot supply per-turn profitable-opportunity denominators. This is a limitation of the checked locations, not proof that no supplementary package exists. See \url{ada/research-note.md}, lines 25--29. \ledger{11}
+
+The code supports resting-price execution, random active-trader selection, and an operative 300-iteration cap. Reservation violations are logged rather than mechanically prohibited, although prompts prohibit them. A future raw-data analysis must recover standing offers from predecision prompts: iteration CSV book fields are recorded after processing orders. Valid refusals must be separated from inference and parsing failures. See \url{ada/research-note.md}, lines 31--33. No original-model opportunity rates have been established. \ledger{11, 17}
+
+\subsection{An exact prompt-observability witness}
+
+\begin{claim}
+For each of Q's three inspected paper configurations, a constructed profitable opportunity at iteration 2 and at iteration 300 can produce byte-identical system and user prompts.
+\end{claim}
+
+The numerical cap and current iteration are omitted from the live templates. Passes add neither market-history text nor private-history entries, and full-history rendering returns those histories directly. Consequently, passes can advance the clock without changing the textual observation. \ledger{15}
+
+The check executes unmodified rendering and history function bodies from the pinned source. In round 5, a buyer with reservation value \(2.50\) faces a standing ask of \(2.00\). After 298 intervening passes, its prompts at iteration 300 equal those at iteration 2 for all three configurations. See \url{ada/check_prompt_clock.py}, lines 30--70, and \url{ada/prompt-clock-trial-003.log}, lines 1--4. \ledger{15}
+
+This is a synthetic witness, not an observed Q trajectory. It shows that exact remaining time cannot always be reconstructed; it neither identifies the optimal earlier action nor explains Q's aggregate inefficiency. Its experimental implication survives: terminal disclosure supplies additional information, so direct checking must receive the same disclosure before any benefit can be attributed to reviewer--critic interaction. \ledger{15, 17}
+
+\subsection{What the lexical pipeline measures}
+
+The notebook classifies every effective noncrossing quote as an increment, including opening quotes and improvements larger than one cent. It excludes passes, non-improving orders, and records without thinking text. See \url{ada/results_analysis_lexical_aaai27-source.txt}, lines 106--122 and 164--177. \ledger{12}
+
+Saved output reports 15,000 records, with 9,505 included traces: 9,323 increments and 182 crosses. These are saved-output counts, not a recomputation from raw runs; see \url{ada/notebook-inspection-001.log}, lines 2--13. The comparison labels actions, not correctness, and supplies no prospective urgency predictor. Transplanting it into P requires substantive review labels and selection controls. \ledger{12}
+
+\subsection{The prepared gate and the superseded access limitation}
+
+The preceding round prepared 120 certified prompts: 48 profitable trades, 48 loss-making trades, 12 correct programs, and 12 defective programs. Trading varies profit magnitude, reflected role, three paraphrases, and the explicit reservation prohibition. Every trading prompt discloses the final episode decision. Code uses four exhaustively checked finite-domain program pairs. Related variants belong to eight underlying clusters, with expected labels outside model-facing prompts. See \url{ada/build_ceiling_gate.py}, lines 25--102, and \url{ada/ceiling-gate-build-001.log}, lines 1--5. \ledger{16}
+
+At that stage, API configuration and connector searches failed, and the installed CLI could not initialize its client. That was an infrastructure failure, not an empirical null. The statement that the gate was unrun described that round only: the following measurements supersede it. \ledger{13, 16, 19, 20}
+
+\section{Appended measurements after the latest verifier review}
+
+\subsection{Two substitute models establish errors, but also a ceiling}
+
+Ollama was reachable at \url{http://127.0.0.1:11434}, reporting server version 0.32.15. The unchanged gate ran on \texttt{qwen3.5:4b} and \texttt{nemotron-3-nano:4b}, with temperature zero, thinking disabled, and seed 719. Inventory digests are recorded in \url{ada/ollama-tags-001.log}; beginning/end digest checks are recorded in \url{ada/model-digest-verification-001.log}. These are disclosed substitutes, not Q's models. \ledger{20, 21}
+
+Only the original prompt text was sent, without expected-label metadata. Qwen made 24 errors among 48 loss-making trades, all seller cases, and one among twelve defective programs. Nemotron made 48 and four errors in those respective classes. Both answered all 48 profitable trades and all twelve correct programs correctly. The reservation prohibition changed none of the paired trading decisions. There were no missing decisions or transport errors; Qwen added extra JSON keys in 19 responses, recorded separately as schema violations. \ledger{21}
+
+These results establish sensitivity to some errors in these substitutes. However, helpful execution is already at ceiling: this assay does not reproduce Q's motivating failure to complete beneficial trades. Class-specific clustered uncertainty is recorded in \url{ada/local-gate-analysis-001.json}. Only four underlying clusters contribute to each class, so coarse or degenerate bootstrap intervals are not population guarantees. \ledger{21, 34}
+
+\subsection{Protocol comparison and the output-order control}
+
+The errors justified a bounded Qwen-only intervention probe. It selected 24 existing tasks, using paraphrase zero and the reservation prohibition for trading, and crossed each with correct and incorrect frozen recommendations. Each arm therefore contains the same 48 task/proposal units. Comparators were direct checking, three-call self-reflection, naive reviewer--critic--reviewer exchange, and evidence-grounded exchange. All received the same task information without oracle labels or tools. \ledger{22}
+
+This fixed exchange is an adaptation, not P's full adaptive AR. It stops before a second critic response and cannot reproduce P's Case B capitulation after a reviewer rebuttal. It measures binary decisions, not P's comment-matching F1. See \url{ada/round3-measurements.md}, lines 52--54. \ledger{31}
+
+An interim direct-check response exposed a confound: it emitted \texttt{EXECUTE}, then correctly computed
+\[
+1.49-1.50=-0.01
+\]
+and concluded in prose that declining was preferable. The structured action remained scored as wrong. An exploratory one-call control therefore requested evidence before the decision. Its initial 192-token cap caused code-output truncations, so both direct formats were subsequently run on every unit with a common 576-token cap, equal to the three-call arms' total maximum generation allowance. Original failures were retained; these were additional conditions, not silent retries. See \url{ada/round3-measurements.md}, lines 56--64. \ledger{24, 27, 30}
+
+The completed comparison contains 336 units and 624 calls. The following counts include invalid final actions as errors; invalidity is also recorded separately. P and L denote profitable and loss-making trades, and C and D denote correct and defective programs. \ledger{35}
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+Arm & P & L & C & D \\
+ & /16 & /16 & /8 & /8 \\
+\hline
+Direct, 192 & 0 & 8 & 2 & 2 \\
+Evidence first, 192 & 0 & 0 & 3 & 2 \\
+Self-reflection & 0 & 0 & 0 & 1 \\
+Naive review & 0 & 0 & 0 & 2 \\
+Grounded review & 0 & 0 & 2 & 0 \\
+Direct, 576 & 0 & 8 & 0 & 2 \\
+Evidence first, 576 & 0 & 0 & 0 & 2 \\
+\hline
+\end{tabular}
+\end{center}
+
+The table and usage accounting are in \url{ada/protocol-summary-final-001.md}, lines 3--25. Invalid final actions numbered three for direct checking at 192 tokens, five for evidence-first checking at 192, and two for grounded review; the other arms had none. The grounded failures were a critic-label substitution and a truncation, not valid rejections of correct code. \ledger{27, 35}
+
+Actual token use separates computation cost from nominal caps:
+
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\hline
+Arm & Input & Output & Median total \\
+\hline
+Direct, 192 & 12,484 & 5,077 & 357 \\
+Evidence first, 192 & 12,724 & 4,680 & 343 \\
+Self-reflection & 65,080 & 13,877 & 1,619.5 \\
+Naive review & 51,312 & 11,969 & 1,223.5 \\
+Grounded review & 58,142 & 14,173 & 1,426.5 \\
+Direct, 576 & 12,484 & 5,160 & 357 \\
+Evidence first, 576 & 12,724 & 4,923 & 343 \\
+\hline
+\end{tabular}
+\end{center}
+
+Input and output columns sum each arm's 48 units; the last column is the per-unit median. All three multi-call arms repair the observed trading errors, but evidence-first direct checking does too. Mean terminal private-profit regret over the 32 trading units falls from 6.625 cents in answer-first checking to zero in those repairing arms. This does not demonstrate a specifically adversarial-review mechanism. See \url{ada/round3-measurements.md}, lines 124--132. \ledger{30, 35}
+
+Code results remain mixed. Grounded review catches every defective example but loses valid decisions on two correct examples. Self-reflection misses one defect; naive review and larger-budget evidence-first checking each miss two. Thus grounded review has no demonstrated classwise advantage across domains. Four program families cannot establish general review quality. \ledger{34, 35}
+
+\subsection{Compliance and the limits of the review interpretation}
+
+All 48 direct/self-reflection initial request-response pairs, and all 48 naive/grounded initial pairs, were byte-identical. However, initial critic JSON was invalid in four naive and nine grounded units. The driver passed raw text onward instead of enforcing P's adaptive verdict routing. \ledger{36}
+
+A concrete trace illustrates the distinction between useful evidence and faithful protocol behavior. The initial reviewer correctly identified that a purported first-zero program returned the last zero. The naive critic supplied a false account of later assignments, and the reviewer adopted it. Grounded critique eventually computed the correct counterexample, but labeled disagreement against a correct review and truncated its JSON. The final reviewer recovered the useful computation. This supports neither reliable verdict semantics nor a reproduction of P's full false-consensus mechanism. See \url{ada/round3-measurements.md}, lines 128--136, and \url{ada/protocol-final-audit-001.log}. \ledger{31, 36}
+
+\subsection{Mechanism baselines and ordinary clock gaps}
+
+The pinned ZI-C and ZI-U implementations ran on Q's actual schedule: eleven buyers and eleven sellers, reservations from \(0.75\) to \(3.25\) in \(0.25\) increments, five rounds, cap 300, and fifty seeded simulations per strategy. Original node functions and reducers were used. After isolating selection randomness from runtime randomness, the first seeded run of each strategy matched the original LangGraph final state exactly. \ledger{23}
+
+ZI-C averaged 6.568 trades per round, efficiency \(0.9304\), and \(\alpha=22.19\). Its seed-bootstrap 95\% efficiency interval was \(0.9211\) to \(0.9397\). ZI-U made eleven trades and had zero net efficiency in every round: all participants traded, and the two sides' reservation sums coincide. These are mechanism baselines, not new zero-intelligence theory or matched comparisons with Q's original runs. \ledger{23}
+
+The 298-pass witness is extreme relative to these simulations. Predecision gaps since the last visible history event had median, 95th percentile, and maximum
+\[
+\begin{aligned}
+\text{ZI-C}:&\quad 1,\ 14,\ 66,\\
+\text{ZI-U}:&\quad 0,\ 4,\ 12.
+\end{aligned}
+\]
+Same-actor reencounters with unchanged history occurred 6,241 and 2,326 times, with maximum spans 62 and 10. Thus ordinary simulated temporal aliasing occurs, but these results do not establish the frequency of the extreme witness or of hidden-clock problems in Q's LLM runs. Records are in \url{ada/zi-market-005.jsonl} and \url{ada/zi-analysis-001.json}. \ledger{23}
+
+\subsection{A horizon-disclosure feasibility pair}
+
+One complete paired seed compared withheld and disclosed clock information using Qwen, temperature zero, and thinking disabled. It used one round and cap 100, changing Q's five-round, cap-300 design. The initial four-pair plan was reduced for measured throughput and wall-clock limits, with the final stopping decision recorded before seeing the disclosed result. \ledger{22, 25, 28, 29}
+
+At seed 9200, withheld versus disclosed horizon produced six versus six trades, efficiency \(0.6667\) versus \(0.9333\), \(\alpha=37.50\) versus \(31.46\), and three versus one strictly extramarginal trades. Crossing iterations were
+\[
+\begin{aligned}
+\text{Withheld}:&\quad 2,\ 9,\ 15,\ 17,\ 23,\ 40,\\
+\text{Disclosed}:&\quad 2,\ 9,\ 23,\ 28,\ 29,\ 51.
+\end{aligned}
+\]
+Neither final decision faced a profitable standing offer. One seed supports no population effect claim or useful uncertainty estimate. \ledger{29}
+
+The adapter rejected 19 withheld-arm and 21 disclosed-arm fenced-JSON responses as passes. These failures are distinct from valid model refusals and could change later histories. Offline removal of exact fences cannot reconstruct the counterfactual market. The retained pair used 195,805 input and 1,045 output tokens when the horizon was withheld, versus 151,220 and 931 when disclosed. One extra completed call was excluded; an interrupted in-flight request has unknown server-side usage. See \url{ada/round3-measurements.md}, lines 72--87. The pilot is materially adapter-dependent and cannot explain Q's reported inefficiency. \ledger{29, 34}
+
+\section{Objections and their disposition}
+
+\begin{objection}
+Agreement, execution, and correctness are different outcomes.
+\end{objection}
+
+This objection remains decisive. P's agents can correctly agree on \texttt{NEEDS\_CHANGES}; its speculative-findings case is false consensus without premature approval. Q's execution can be beneficial. Substantive correctness must therefore be scored separately from agreement, termination, urgency, and output validity. The shared premature-closure inference remains rejected. \ledger{1, 5, 12, 36}
+
+\begin{objection}
+An intervention benefit could reflect computation, information, output order, or a generic tendency to refuse.
+\end{objection}
+
+Balanced recommendations and warranted/unwarranted actions address simple response habits. Matched terminal disclosure addresses the information confound. Reflection and direct evidence checking address simpler computation alternatives. In the completed probe, evidence-first checking explains the market repair, while the helpful-execution class is already at ceiling. The hoped-for distinctive correction across opposite warranted decisions was not demonstrated. The output-order and larger-budget controls were exploratory additions after trace inspection. \ledger{7, 15, 24, 27, 30, 35}
+
+\begin{objection}
+Lexical association and correct assay labels do not establish an empirical mechanism.
+\end{objection}
+
+The certificates validate labels, and the clock witness validates an implementation possibility. The new model measurements establish actual substitute-model failures, repairing the earlier absence of inference data. They still do not identify a common mechanism, validate a prospective urgency predictor, or establish ecological transfer. Lexical analysis remains secondary and would require held-out, action-conditioned evaluation. \ledger{9, 12, 19, 21, 34}
+
+\begin{objection}
+The experiments are too small and protocol-dependent for a publication claim.
+\end{objection}
+
+This remains unresolved. Variants share eight underlying clusters, with only four per class; clustered intervals are exploratory. The review exchange omits P's full capitulation sequence, some verdicts fail syntactically or semantically, and the market pilot has one seed with substantial adapter failures. Ada's final recommendation is not to advance this pair to paper drafting and not to continue iterating the same tiny assay. \ledger{31, 34, 35, 36, 37}
+
+\section{External sources used}
+
+The prior-work search used the shared source pool and remains non-exhaustive. Its role is to constrain novelty, not to supply additional experimental results. The anchoring search, recorded in ledger entry 3, used:
+\begin{itemize}
+\item \emph{Talk Isn't Always Cheap},
+\url{https://arxiv.org/abs/2509.05396},
+for harmful answer flips under social pressure and an insufficient correctness-payoff prompt; pooled source lines 309--372.
+\item \emph{Can LLM Agents Really Debate?},
+\url{https://arxiv.org/abs/2511.07784},
+for structural comparisons and a statistically insignificant debate-order coefficient; source lines 1270--1302.
+\item \emph{Who Convinced Whom?},
+\url{https://arxiv.org/abs/2610.35930},
+for matched reflection and interventions separating message content, attribution, and position; source lines 563--581 and 684--700.
+\end{itemize}
+These limit generic first-speaker and precommitment claims without establishing universal absence of order effects. \ledger{3}
+
+The stopping/calibration extension is documented in \url{ada/research-note.md}, lines 59--66:
+\begin{itemize}
+\item \emph{Calibrate-Then-Act},
+\url{https://arxiv.org/abs/2602.16699},
+addresses costly exploration, commitment, and explicit environment priors, including coding; source lines 174--190 and 220--256.
+\item \emph{Confidence Calibration and Rationalization for LLMs via Multi-Agent Deliberation},
+\url{https://arxiv.org/abs/2404.09127},
+combines peer feedback with factual verification; source lines 609--625.
+\item \emph{Sequential Consensus for Multi-Agent LLM Debates},
+\url{https://arxiv.org/abs/2605.19193},
+distinguishes useful consensus from uninformative agreement scores and discusses ceilings; source lines 273--316.
+\end{itemize}
+A stopping-workshop lead could not be pooled successfully; no detailed findings from its uninspected full text are used. Broad claims about stopping, calibration, and evidence-sensitive deliberation are already occupied. \ledger{14}
+
+The appended round also checked Wei et al.,
+\emph{Chain-of-Thought Prompting Elicits Reasoning in Large Language Models},
+\url{https://arxiv.org/abs/2201.11903}.
+Section 3.3 explicitly compares reasoning after versus before the answer, with after-answer performance near standard prompting. The pooled passage is at lines 902--907; see also \url{ada/round3-measurements.md}, line 66. Output-order sensitivity is therefore an established alternative explanation, not a new mechanism discovered here. \ledger{26}
+
+\section{What remains open}
+
+The material is now empirical but still thin. It establishes local substitute-model errors, simple controls that repair trading decisions, mixed code-review outcomes, and an adapter-limited market feasibility result. It does not establish a unique benefit of grounded review, a shared urgency bias, or sufficient novelty. \ledger{34, 35, 36}
+
+Original per-turn data, natural profitable-trade refusal rates, transfer to Q's and P's models and reasoning settings, full-protocol compliance, realistic held-out code tasks, and a replicated horizon-disclosure effect remain unresolved. The inference-access problem is resolved; it should no longer appear among the open limitations. See \url{ada/research-note.md}, lines 13--17, and \url{ada/round3-measurements.md}, lines 138--142. \ledger{20, 34}
+
+\section{The smallest next step}
+
+The prescribed direct gate and comparator study have been completed. Their narrow conclusion is already informative: grounded review has no demonstrated unique cross-domain advantage in this assay. No further iteration of the same tiny tasks is requested. \ledger{34, 35, 37}
+
+The smallest remaining prerequisite for reconnecting the proposal to Q is access to its original per-turn data. With those records, recover predecision standing offers and count profitable opportunities followed by valid refusals or noncrossing quotes, stratified by model, role, round, and remaining iterations, separating parsing failures. This would settle the descriptive question of where natural profitable non-execution occurs; it would not classify earlier decisions as errors or establish a shared mechanism. \ledger{9, 11, 19, 34}
+
+A renewed intervention claim would require a different study: realistic tasks with measurable failures, valid structured outputs, and grounded review tested against evidence-first checking and reflection under matched horizon information. A horizon-effect claim separately requires a replicated paired market experiment after resolving the adapter limitation. Those requirements remain conditions for reopening the direction, not positive results or a request to prolong this completed investigation. \ledger{19, 29, 34}
+
+\end{document}

@@ -1,0 +1,1170 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Peer Scoring When Dialogue Can Change the Reference}
+
+\begin{document}
+\maketitle
+
+\paragraph{The pair in two sentences.}
+Q develops mechanisms for agents with private preferences and capabilities, including a peer-scoring construction that supports truthful reporting and prescribed actions under specified assumptions. P studies a reviewer--critic protocol for code review, documenting both improvements and false consensus, and reports that explicit evidence requirements improve review quality.
+
+\paragraph{The connexion pursued.}
+The initial analogy between Q's peer discipline and P's critic was rejected: P does not implement Q's reward schedule, and failure to satisfy a sufficient condition cannot explain P's observed failures. The narrower question is whether adding peer-score optimization to an interactive review protocol rewards influencing the reference judgment instead of improving its correctness. P freezes the code during review, but allows judgments to change through dialogue; Q's reporting incentive calculation holds the other agents' truthful reports fixed under a unilateral deviation. \ledger{1, 5, 8}
+
+This distinction motivated protecting the scoring reference before the entire dialogue while retaining dialogue for subsequent review and editing. The earlier account and its established results are retained below, followed by this round's hidden-effort extension responding to verifier entry 29. That extension corrects a fair-baseline gap: with free mandatory evidence, sealed scoring has the same disclosure incentives as no scoring. The new game gives scoring an information-acquisition function and compares all equilibrium outcomes across the requested baselines. No LLM experiment was run, and none of these rounds establishes a performance improvement to P. \ledger{10, 16, 19, 21--30, 33--37}
+
+\paragraph{What Q's calculation requires.}
+Write \(p_t\) for type \(t\)'s probability vector over co-player reports. The quadratic score is
+\[
+S(q,y)=2q_y-\lVert q\rVert_2^2.
+\]
+For a reference report with fixed distribution \(v\),
+\[
+\mathbb E_v[S(q,Y)]
+=
+\lVert v\rVert_2^2-\lVert q-v\rVert_2^2.
+\]
+Consequently, reporting the belief vector associated with another type loses
+\[
+\Lambda\lVert p_t-p_{\hat t}\rVert_2^2
+\]
+relative to reporting \(p_t\). Q uses distinct belief vectors and sufficiently large \(\Lambda\) to dominate bounded residual gains from misreporting. Its action implementation also uses cancellation of reported private utility and prohibitions outside the desired action support. Proper scoring alone does not supply these action incentives.\footnote{\url{inputs/Q.tex}, lines 1644--1734.} \ledger{1, 3, 5}
+
+The notes identify the additional term when a deviation changes the reference law from \(p_t\) to \(v_{t,\hat t,m}\). The baseline truthful score minus the deviating score then equals
+\[
+\begin{aligned}
+&\mathbb E_{p_t}[S(p_t,Y)]
+-\mathbb E_{v_{t,\hat t,m}}[S(p_{\hat t},Y)]\\
+&\qquad=
+\lVert p_t-p_{\hat t}\rVert_2^2
+-2p_{\hat t}\cdot\bigl(v_{t,\hat t,m}-p_t\bigr).
+\end{aligned}
+\]
+Increasing the score scale multiplies both terms. The fixed-reference calculation therefore cannot simply be carried over to a setting where earlier messages influence later scored reports. This identity does not imply that dialogue generally harms correctness.\footnote{Derivation and qualification: \url{ada/research-note.md}, lines 65--72, as cited in the preceding account.} \ledger{5, 7}
+
+\paragraph{An exact sequential counterexample.}
+Let the correctness state \(\theta\in\{0,1\}\) have a uniform prior. An evaluated agent observes \(X\), and a reference reviewer observes \(Y^0\). Conditional on \(\theta\), the signals are independent, and each equals \(\theta\) with probability \(p\in(1/2,1)\). Thus
+\[
+\rho:=\Pr(Y^0=X\mid X)=p^2+(1-p)^2.
+\]
+
+In the first round, the evaluated agent can send either a benign message \(m_0\), leaving the reference report unchanged, or a persuasive message \(m_1\), making the reference report the constant zero. This complete influence is an explicit toy-model assumption, not an observed capability of P's agents. In the second round, the evaluated agent forecasts the reference report before seeing its realization. Unlike Q's type reports, this extension permits probability forecasts. \ledger{7}
+
+\begin{claim}
+Truthful forecasting at the second round can reward an earlier message that reduces reference accuracy.
+\end{claim}
+
+\begin{proof}
+After \(m_0\), the calibrated forecast assigns probability \(\rho\) to the reference matching \(X\). Its expected quadratic score is
+\[
+V_0=\rho^2+(1-\rho)^2.
+\]
+After \(m_1\), the calibrated forecast is \((1,0)\), with score \(V_1=1\). Hence
+\[
+\Lambda(V_1-V_0)=2\Lambda\rho(1-\rho)>0,
+\]
+while reference accuracy falls from \(p\) to \(1/2\). With persuasion cost \(k\), the deviation is profitable whenever
+\[
+2\Lambda\rho(1-\rho)>k.
+\]
+Both forecasts accurately describe their respective reference distributions. The distortion occurs in the earlier communication choice.
+\end{proof}
+
+At \(p=4/5\), the calculation gives
+\[
+\rho=\frac{17}{25},
+\qquad
+V_0=\frac{353}{625},
+\qquad
+V_1-V_0=\frac{272}{625}.
+\]
+The recorded exact enumeration verifies these quantities and the accuracy decline from \(4/5\) to \(1/2\).\footnote{Exact checks: \url{ada/check_mechanisms.py}, lines 17--49; successful output: \url{ada/exact-check-001.log}, lines 1--8 and 14.} This is a counterexample to an unrestricted sequential extension of the scoring argument, not to Q's stated simultaneous-report theorem. \ledger{7}
+
+\paragraph{Objections and their disposition.}
+\begin{objection}
+P's false consensus need not be strategic reward maximization.
+\end{objection}
+This remains unresolved empirically. P changes textual constraints, not explicit peer rewards. Its reported F1 increase from \(0.457\) to \(0.533\) establishes prompt sensitivity; its case of a critic abandoning a correct concern is also compatible with anchoring, reasoning error, imitation, or uncertainty. The proposed experiment therefore introduces an explicit optimizer over candidate messages instead of inferring latent LLM preferences. \ledger{1, 5, 8}
+
+\begin{objection}
+Even a fixed reference does not ensure selection of an informative equilibrium.
+\end{objection}
+Q promises partial implementation, explicitly at \url{inputs/Q.tex}, line 426. The notes verify that its quadratic score, specialized to a symmetric binary reporting game, can support truthful reporting and both constant-report profiles as strict equilibria. Writing \(d=2p-1\), the truthful-report margin against a truthful peer is \(2\Lambda d^4\); the advantage of matching a constant peer is \(2\Lambda d^2\). An independent audit paying \(B\) for a correct state report with probability \(a\) makes signal reporting strictly dominant when
+\[
+aB>2\Lambda d.
+\]
+Below this threshold both constant pools remain strict. This diagnostic was retained as a limitation, but rejected as a novelty claim because prior work already studies peer prediction, uninformative equilibria, and trusted audits.\footnote{\url{ada/check_mechanisms.py}, lines 51--81.} \ledger{3--5}
+
+\begin{objection}
+Committing forecasts before each round may already solve the problem.
+\end{objection}
+It prevents influence through the current round's messages, but earlier messages can remain in the reference agent's history. The proposed distinction is therefore between commitments made within an ongoing dialogue and a reference isolated before the entire dialogue. No empirical failure of an existing per-round commitment algorithm was established. \ledger{6}
+
+The notes also flag inconsistent LCB figures in P: its MARS narrative reports \(85\%\) and \(43\) hard tasks, whereas its table reports \(82\%\) and \(39\). Its text-constrained variant was not used for the reported SWE-bench Verified result. Those results cannot establish that the same prompt repair transfers across all benchmarks.\footnote{\url{ada/research-note.md}, final section, beginning at line 115.}
+
+\paragraph{The proposed repair and its limits.}
+Commit a reference judgment before it sees any message from the evaluated agent, and conceal that judgment until the evaluated report or forecast is committed. Alternatively, use a blind reference agent receiving the frozen task and artifact but no dialogue or derivative summaries. Subsequent dialogue can still inform final reviews and code edits. \ledger{5, 6, 8}
+
+If the evaluated strategy cannot causally change the scoring reference, subsequent persuasion cannot improve the score by changing that reference. In the toy example the score advantage of \(m_1\) disappears. With positive persuasion cost this favors \(m_0\); without such a cost it only removes the incentive.
+
+This protection does not establish correct state reports, effort, non-collusion, informative equilibrium selection, or correct edits. A reference may itself be predictably wrong, and reference isolation may discard useful incentives to share information. The response-model extension below makes the last limitation explicit. \ledger{7, 8, 16}
+
+\paragraph{Outside sources and the initial novelty boundary.}
+The notes record checking the shared source pool through its helper before consulting the following papers. These are literature checks recorded by the peers, not a new exhaustive literature review.
+
+\begin{itemize}
+\item Oesterheld et al., on performative prediction with proper scoring rules:
+\url{https://arxiv.org/abs/2305.17601}.
+Outcome-influencing forecasts are an established problem, so the toy construction is an application rather than a new general theorem. A later extension below corrects the source location supporting this attribution. \ledger{2, 26}
+
+\item Gao, Wright, and Leyton-Brown, \emph{Incentivizing Evaluation via Limited Access to Ground Truth: Peer-Prediction Makes Things Worse}:
+\url{https://arxiv.org/abs/1606.07042}.
+This defeats a broad novelty claim based on adding audits to eliminate false consensus. \ledger{4}
+
+\item Qiu, Carroll, and Allen, \emph{Truthfulness Despite Weak Supervision: Evaluating and Training LLMs Using Peer Prediction}:
+\url{https://arxiv.org/abs/2601.20299}.
+Applying peer prediction to LLM evaluation and training is already established. \ledger{2}
+
+\item Liu et al., \emph{Breaking the Martingale Curse: Multi-Agent Debate via Asymmetric Cognitive Potential Energy}:
+\url{https://arxiv.org/abs/2603.06801}.
+Its AceMAD protocol already combines debate, peer forecasts, Brier scores, and per-round commitments. Neither adding scoring to debate nor committing before current-round messages is new. \ledger{6}
+\end{itemize}
+
+These checks delimit the proposed contribution; they do not establish that no closer prior work exists.
+
+\paragraph{The first-round experimental proposal, retained.}
+The initial smallest informative step was a pilot on frozen code artifacts with executable correctness checks. Generate a fixed candidate-message pool and compare an explicit best-of-\(K\) peer-score selector under live post-dialogue references, per-round commitments with shared history, and concealed pre-dialogue references. Match candidate pools, models, sampling budgets, and access to evidence; evaluate selected messages on fresh reference samples. Conceal final reference realizations until selection and forecasting are complete. \ledger{8}
+
+Measure score alongside correctness, wrong unanimous approvals, and retention of initially correct dissent. Include genuine new evidence and confidence-only message changes to distinguish useful correction from influence without evidential support. A growing score--correctness gap under live references, reduced by isolation and persisting under per-round commitments, would support that proposed mechanism. If optimization does not harm correctness, or isolation loses useful corrections without reducing harmful influence, that proposed advance fails. Subsequent rounds retain these controls but sharpen the target to selective disclosure of evidence quality. \ledger{8, 17, 27}
+
+\section*{Response-model extension following the first verifier review}
+
+\paragraph{What the verifier required.}
+The first verifier returned ITERATE: the first-round derivations were sound, but complete influence was assumed, the scoring problem was already known, and no LLM experiment had been run. The requested bounded extension was to model the reference's response under verifiable evidence, Bayesian cheap talk, and partial credulity, and to compare live and sealed scoring while retaining the benefits of dialogue. The work below answers that request with a boundary result and a Bayesian concealment example, not an empirical validation. \ledger{10--17}
+
+\paragraph{Timing and the sender's objective.}
+Let the state remain uniform and binary. Initially suppose the sender's signal \(X\) and the reference's signal \(Y\) have known symmetric accuracies \(p,r\in(1/2,1)\), independently conditional on the state. Define
+\[
+\rho(p,r)=pr+(1-p)(1-r),
+\qquad
+C(t)=t^2+(1-t)^2.
+\]
+The sender communicates, then privately forecasts the reference's action before learning \(Y\) or the realized action. The forecast is concealed from the reference, so it is not another communication channel. The sender knows its own message randomization.
+
+If the induced action law, conditional on the sender's information, is \(v\), calibrated forecasting earns \(\lVert v\rVert_2^2\). Thus communication maximizes expected conditional collision probability, or predictability, of the reference action. That objective need not coincide with correctness. Live scoring uses the final reference action; sealed scoring uses the concealed initial judgment \(Y\). Both allow the same subsequent dialogue and final decision. \ledger{10, 12, 15}
+
+\paragraph{A Bayesian boundary: dialogue cannot lower accuracy below isolation.}
+\begin{claim}
+Suppose the reference retains \(Y\), has correctly specified common beliefs, knows the actual disclosure strategy, and maximizes correctness. Its ex-ante accuracy after any message \(M\) is at least its no-dialogue accuracy \(r\).
+\end{claim}
+
+\begin{proof}
+After seeing \(M\), the reference can still choose its original decision based only on \(Y\). Equivalently,
+\[
+\begin{aligned}
+&\mathbb E\!\left[
+\max_{a\in\{0,1\}}\Pr(\theta=a\mid Y,M)
+\right]\\
+&\qquad\geq
+\mathbb E\!\left[
+\max_{a\in\{0,1\}}\Pr(\theta=a\mid Y)
+\right]
+=r.
+\end{aligned}
+\]
+The inequality follows by posterior averaging and optimization.
+\end{proof}
+
+This is the standard value-of-information argument. It covers selective disclosure and on-path Bayesian cheap-talk equilibria. It is ex ante, not conditional on every realized message or disagreement. It can fail with incorrect beliefs, a different reference objective, or loss of access to the original evidence. Q does not generally impose this common-belief benchmark. The forced-constant example therefore cannot reproduce a decline below isolation within this benchmark. \ledger{12, 15}
+
+\paragraph{Fixed-precision verifiable and selective disclosure.}
+For any correctly understood message channel \(K(m\mid X)\), the posterior odds after \(m\) lie between
+\[
+\frac{1-p}{p}
+\quad\text{and}\quad
+\frac{p}{1-p}.
+\]
+Combining these bounds with the reference signal gives the following cases.
+
+If \(p<r\), the reference always follows \(Y\): no garbling of the weaker signal changes its optimal action. Accuracy remains \(r\), and the sender's calibrated score remains \(C(\rho)\). If \(p>r\), fully disclosing \(X\) makes the reference follow \(X\), attaining maximal score \(1\) and full-information accuracy \(p\). If \(p=r\), conflicting signals tie. A rule choosing \(X=x\) with probability \(\tau_x\) on disagreement gives matching probability
+\[
+\rho+(1-\rho)\tau_x.
+\]
+Tie rules affect score but leave accuracy equal to \(p\). \ledger{12, 15}
+
+Full disclosure need not be the only score maximizer. Suppose \(p>r\), a sender observing \(X=0\) certifies that signal with probability \(\alpha\), and otherwise all senders remain silent. The likelihood ratio after silence is
+\[
+\frac{\Pr(M=\varnothing\mid\theta=1)}
+     {\Pr(M=\varnothing\mid\theta=0)}
+=
+\frac{1-\alpha(1-p)}{1-\alpha p}.
+\]
+The Bayesian reference follows the certificate when present and chooses one after silence, regardless of \(Y\), whenever
+\[
+\alpha>\frac{2r-1}{p+r-1}.
+\]
+Every response is then predictable to the sender, giving score \(1\), but accuracy is only
+\[
+A(\alpha)=\frac12+\frac{\alpha(2p-1)}2.
+\]
+For
+\[
+p=\frac9{10},\qquad r=\frac35,\qquad \alpha=\frac12,
+\]
+accuracy is \([rating withheld]\), compared with \([rating withheld]\) under full disclosure and \(3/5\) without dialogue. This is a tie between score maximizers, not a strict score preference for poorer information. With zero message costs and no correctness preference it is a weak disclosure equilibrium; positive certificate cost destroys this particular mixing equilibrium.\footnote{Exact example: \url{ada/check_response_models.py}, lines 75--88.} \ledger{15}
+
+\paragraph{Bayesian cheap talk.}
+Removing verifiability does not justify treating the reference as believing arbitrary literal claims. Its beliefs must reflect the communication strategy. For \(p<r\), the same odds bound makes messages irrelevant to its action. For \(p>r\), there is an informative equilibrium with \(M=X\) and reference action \(M\), but the sender receives score \(1\) after either message, so truth is only a weak best response under score-only utility. Babbling is also an equilibrium, with accuracy \(r\) and score \(C(\rho)\). Replacing certificate and silence in the selective-disclosure example with cheap-talk labels supplies another weak equilibrium.
+
+A positive correctness preference makes reversing a separating message strictly worse, but does not establish unique equilibrium selection. This analysis distinguishes correctly understood strategic communication from non-Bayesian credulity. \ledger{15}
+
+\paragraph{Partial credulity: when accuracy can fall below isolation.}
+Now let \(p<r\). After a literal message \(m\), the reference copies it with probability \(\lambda\), and otherwise uses its Bayesian best response \(Y\). The independent copying coin is hidden from the sender before forecasting; silence leaves the reference using \(Y\).
+
+For \(0<\lambda<1\), sending \(m=X\), rather than \(m=1-X\), gives matching probabilities
+\[
+t_+=\rho+\lambda(1-\rho),
+\qquad
+t_-=(1-\lambda)\rho.
+\]
+Their score difference is
+\[
+C(t_+)-C(t_-)
+=
+2\lambda(1-\lambda)(2\rho-1)>0.
+\]
+Thus the score-optimal literal claim is the sender's actual signal. Nevertheless, its gain over silence and effect on accuracy are
+\[
+\begin{aligned}
+\Delta V(\lambda)
+&=2\lambda(1-\rho)(2\rho-1)
+  +2\lambda^2(1-\rho)^2>0,\\
+A_{\rm live}(\lambda)-r
+&=-\lambda(r-p)<0.
+\end{aligned}
+\]
+Any positive copying probability creates a score--accuracy conflict in this weaker-sender model. It requires neither a false claim nor complete control of the reference. \ledger{12, 15}
+
+With message cost \(k\), score-only communication is strictly preferred when \(\Lambda\Delta V(\lambda)>k\). For
+\[
+0\leq k<2\Lambda\rho(1-\rho),
+\]
+this is equivalent to
+\[
+\lambda>
+\frac{
+\sqrt{(2\rho-1)^2+2k/\Lambda}-(2\rho-1)
+}{
+2(1-\rho)
+}.
+\]
+At or above that maximal cost, no strict communication gain is possible. With correctness weight \(\beta\geq0\), the condition becomes
+\[
+\Lambda\Delta V(\lambda)>k+\beta\lambda(r-p).
+\]
+At \(\lambda=0\), communication has no effect. At \(\lambda=1\), all literal messages earn score \(1\), so the preference for reporting \(X\) is no longer strict.
+
+For
+\[
+p=\frac35,\qquad r=\frac45,\qquad \lambda=\frac14,
+\]
+the score gain is \(253/5000\), while accuracy falls from \(4/5\) to \(3/4\). Sealing removes this message-dependent gain; a positive message cost then selects silence under score-only utility. With credibly disclosed \(p>r\), copying instead reinforces useful evidence, while \(p=r\) changes predictability through ties without changing accuracy.\footnote{Exact checks: \url{ada/check_response_models.py}, lines 90--119.} \ledger{15}
+
+\paragraph{The stronger example: hiding evidence quality from a Bayesian reference.}
+Credulity is unnecessary for a conflict with \emph{full-disclosure} accuracy. Let the sender privately know its signal-quality type \(h\in\{L,H\}\), independent of the state, with
+\[
+\frac12<p_L<r<p_H<1,
+\qquad
+\Pr(h=H)=\pi,
+\]
+and suppose pooled precision satisfies
+\[
+\bar p=\pi p_H+(1-\pi)p_L>r.
+\]
+Signals remain conditionally independent given state and quality. The sender must certify its actual signal \(X\), but can disclose or withhold a separate certificate of \(h\). Certificates cannot be fabricated. This models verifiable evidence provenance, not automatically verifiable self-reported confidence. \ledger{13, 15}
+
+\begin{claim}
+With this message technology, concealing quality can strictly increase the live calibrated score while reducing accuracy relative to full disclosure, even with a Bayesian reference and true certified claims.
+\end{claim}
+
+\begin{proof}
+Under full disclosure, the reference follows \(X\) for high quality and \(Y\) for low quality. Writing \(\rho_L=\rho(p_L,r)\),
+\[
+\begin{aligned}
+A_{\rm full}&=\pi p_H+(1-\pi)r,\\
+V_{\rm full}&=\pi+(1-\pi)C(\rho_L).
+\end{aligned}
+\]
+If both types hide quality, the reference correctly uses pooled precision \(\bar p>r\) and follows \(X\). Therefore
+\[
+A_{\rm coarse}=\bar p,\qquad V_{\rm coarse}=1.
+\]
+Subtracting gives
+\[
+\begin{aligned}
+V_{\rm coarse}-V_{\rm full}
+&=(1-\pi)2\rho_L(1-\rho_L)>0,\\
+A_{\rm full}-A_{\rm coarse}
+&=(1-\pi)(r-p_L)>0.
+\end{aligned}
+\]
+\end{proof}
+
+The weak-evidence sender gains predictability by hiding the metadata that would make the reference rely on its own better evidence. Accuracy under concealment still exceeds isolation, since \(\bar p>r\); there is no contradiction with the Bayesian boundary.
+
+For a distribution of privately known precisions \(P\) with mean above \(r\), the corresponding accuracy comparison is
+\[
+A_{\rm coarse}=\mathbb E[P],
+\qquad
+A_{\rm full}=\mathbb E[\max\{P,r\}].
+\]
+Away from ties, the full-disclosure score loss is the expectation of \(2\rho(P,r)(1-\rho(P,r))\) over \(P<r\). The notes also observe that the strict ranking extends to symmetric strictly proper scores with equal finite truthful values at deterministic endpoints: strict convexity makes an interior calibrated forecast less valuable than a deterministic one. Neither observation is claimed as a new general theorem. \ledger{15, 17}
+
+\paragraph{Selected equilibria preserving dialogue.}
+To make disclosure choices explicit, give the sender utility
+\[
+\Lambda S(q,Z)
++\beta\mathbf 1\{R=\theta\}
+-k\mathbf 1\{\text{quality disclosed}\},
+\]
+where \(R\) is the final reference action and \(Z=R\) under live scoring, while \(Z=Y\) under sealed scoring. The coefficient \(\beta>0\) represents a residual correctness preference; it is a substantive assumption, not an additional scoring oracle. Suppose
+\[
+\begin{aligned}
+0<k&<\beta(r-p_L),\\
+\Lambda\,2\rho_L(1-\rho_L)
+&>\beta(r-p_L)-k.
+\end{aligned}
+\]
+
+Under live scoring, both quality types strictly prefer concealment in a pooling equilibrium. A low type's disclosure would gain correctness utility \(\beta(r-p_L)\), but lose score value \(\Lambda\,2\rho_L(1-\rho_L)\) and cost \(k\). A high type's disclosure changes neither action nor score and costs \(k\). The reference follows \(X\) using the correct pooled precision. \ledger{14, 15}
+
+Under sealed scoring, there is a separating equilibrium in disclosure: low types reveal quality and high types withhold it. Absence of a quality certificate then identifies high quality on path, and the reference follows \(X\); a low-quality certificate makes it follow \(Y\). The forecast against hidden \(Y\) has score \(C(\rho(p_H,r))\) or \(C(\rho(p_L,r))\), independently of disclosure. A low type strictly gains
+\[
+\beta(r-p_L)-k>0
+\]
+by disclosure rather than imitating the high-quality branch; a high type saves \(k\) by withholding. Final accuracy equals \(A_{\rm full}\). These are equilibrium constructions with strict disclosure incentives, not claims of unique or full implementation. \ledger{14--16}
+
+Verifier entry 19 correctly identified another live equilibrium: high quality certifies and low quality stays silent, so skeptical inference from silence recovers full-information accuracy. Thus the preceding comparison establishes existence of concealment under live scoring, not that live scoring necessarily induces concealment. The disclosure-equilibrium extension enumerates this omitted equilibrium and the mixed equilibria. \ledger{19, 21, 23}
+
+The exact example uses
+\[
+p_L=\frac35,\quad
+p_H=\frac9{10},\quad
+r=\frac7{10},\quad
+\pi=\frac12,\quad
+\beta=1,\quad
+k=\frac1{100}.
+\]
+Live pooling is strict for \(\Lambda>25/138\). At \(\Lambda=1\),
+\[
+\begin{array}{c|cc}
+&\text{Final accuracy}&\text{Live score}\\ \hline
+\text{Quality concealed}&3/4&1\\
+\text{Quality disclosed}&4/5&1879/2500
+\end{array}
+\]
+Sealed separation achieves accuracy \(4/5\). The low type's live hiding advantage against unilateral disclosure from pooling is \(1017/2500\); its sealed disclosure advantage is \(9/100\).\footnote{\url{ada/check_response_models.py}, lines 121--195; \url{ada/response-check-002.log}, lines 8--15.} \ledger{14}
+
+\paragraph{The reverse comparison: live scoring can pay for useful evidence.}
+\begin{objection}
+Does the concealment example establish that sealed scoring is preferable?
+\end{objection}
+No. If \(\beta=0\) and disclosure costs are positive, sealed scoring also induces withholding: it provides no reward for useful metadata. With zero costs, it merely leaves disclosure indifferent. \ledger{16}
+
+There is also an explicit comparison in which live scoring performs better. Before seeing \(X\), let the sender publicly choose between no transmission and mandatory transmission of its certified signal at cost \(k\). This ex-ante commitment prevents selectively chosen silence from being incorrectly treated as uninformative. Let \(p>r\) and \(\beta=0\). Live scoring pays for transmission whenever
+\[
+0<k<2\Lambda\rho(1-\rho),
+\]
+raising accuracy from \(r\) to \(p\). Sealed scoring leaves the forecast target unchanged and therefore chooses no transmission.
+
+At
+\[
+p=\frac9{10},\qquad r=\frac7{10},
+\qquad \Lambda=1,\qquad k=\frac1{10},
+\]
+live transmission gives a net sender gain \(218/625\) and accuracy \(9/10\). Sealed scoring declines transmission and yields accuracy \(7/10\). Thus reference protection removes both harmful and useful routes by which communication changes the score. A useful intervention must preserve incentives for valuable evidence production and disclosure.\footnote{Exact verification: \url{ada/check_response_models.py}, lines 197--210; \url{ada/response-check-002.log}, lines 16--19.} \ledger{16}
+
+\paragraph{Verification and the resolved modeling objection.}
+The response-model script checks \(3{,}888\) rational Bayesian channel and tie-rule cases, \(66\) partial-credulity cases, the selective-disclosure example, and the hidden-precision equilibrium inequalities. The extended log also checks the reverse welfare comparison. These are finite checks supporting the displayed arguments, not empirical measurements or proofs for all parameter values.\footnote{\url{ada/check_response_models.py}, lines 59--210; \url{ada/response-check-002.log}, lines 1--19.} \ledger{14--16}
+
+The first verifier's forced-influence objection is resolved within the new model: the reference's behavior follows from Bayesian optimization, and the sender's concealment is supported by explicit incentives. The later equilibrium-selection objection requires the additional analysis below. The empirical and novelty objections remain. Ordinary code citations are not automatically Q-style certificates, and neither P nor these calculations establishes that real reviewers possess or suppress verifiable quality metadata. \ledger{10, 13, 17, 19}
+
+\paragraph{Additional sources and unresolved priority.}
+The response-model extension checked adjacent work on information cascades, persuasion, credulity, sequential peer prediction, and selective evidence disclosure. The notes record the following sources and access limits. \ledger{17}
+
+\begin{itemize}
+\item Bikhchandani, Hirshleifer, Tamuz, and Welch,
+\emph{Information Cascades and Social Learning}:
+\url{https://arxiv.org/abs/2105.11044}.
+Pooled LaTeX was obtained. Rational herding and information loss relative to full sharing are established themes.
+
+\item Kamenica and Gentzkow, \emph{Bayesian Persuasion}:
+\url{https://web.stanford.edu/~gentzkow/research/BayesianPersuasion.pdf}.
+The known-channel calculation belongs to standard information design. The notes used author-hosted search excerpts, not an inspected full local source.
+
+\item Kartik, Ottaviani, and Squintani,
+\emph{Credulity, lies, and costly talk}:
+\url{https://doi.org/10.1016/j.jet.2006.04.003}.
+The author-hosted abstract and introduction establish that credulous response rules are not a new modeling idea.
+
+\item Miller, Resnick, and Zeckhauser,
+\emph{Eliciting Informative Feedback: The Peer-Prediction Method}:
+\url{https://doi.org/10.1287/mnsc.1050.0379}.
+Author-hosted excerpts describe sequential interaction using a later rater's private experience. Sequential peer scoring itself is not new; the distinction pursued here is a reference decision changed by dialogue.
+
+\item Farina et al., \emph{The Selective Disclosure of Evidence: An Experiment}:
+\url{https://www.nber.org/papers/w32975}.
+The abstract concerns strategic selection of verifiable evidence and receivers' responses to selection. No claim rests on its unread full text.
+\end{itemize}
+
+Pool resolution for the non-arXiv sources failed with Semantic Scholar HTTP \(429\), as recorded in \url{ada/pool-fetch-004.log} and \url{ada/pool-fetch-005.log}. The notes report no separate paper copies or alternative PDF extractions. These limited checks do not certify priority for the precision-hiding construction. Oesterheld et al. already study incentives favoring extreme scored outcome distributions; the corrected published-text attribution appears below. \ledger{17, 26}
+
+\paragraph{What remained open after the response-model extension.}
+At that stage, the strongest established result was a verified model of evidence-quality concealment, with an explicit distinction between loss relative to isolation and loss relative to full disclosure. It remained an application of established scoring and communication ideas. No real reviewer influence was measured, no LLM pilot was run, and no improvement to AR was demonstrated.
+
+The unresolved questions were whether reviewers have useful quality metadata to withhold, whether explicit peer-score optimization suppresses it, whether critics respond appropriately when it is disclosed, and whether reference protection can preserve useful disclosure incentives. Novelty beyond the adjacent literature remained unresolved. The record supported a falsifiable project, not a publication-ready empirical finding. \ledger{17, 18}
+
+\paragraph{The response-model pilot proposal, retained.}
+Run a focused pilot on frozen patches with executable correctness checks. Give reviewers diagnostic evidence with controlled, externally verifiable quality, such as known trace coverage or code-slice completeness. Give critics their own evidence. Vary the frequency of strong reviewer evidence so that pooled reviewer precision crosses critic precision while the weak-evidence stratum remains less accurate. The key test is whether optimizing live peer score favors withholding the metadata that identifies that stratum. \ledger{17}
+
+Use the same candidate messages, evidence, compute, and final-action objective under live and sealed scoring. Include mandatory-full-metadata disclosure, no dialogue, ordinary AR, and P's text-constrained AR as controls; retain the earlier per-round-commitment comparison for multiround tests. Match access to search samples and use held-out tasks and fresh reference samples for final evaluation. Sealing must conceal the final scoring reference until both message selection and forecasting are complete.
+
+Measure metadata retention, calibration, critic reliance, executable correctness, wrong unanimous approvals, and preservation of correct dissent. The Bayesian prediction is a loss relative to full metadata disclosure, not necessarily relative to no dialogue. A decline below isolation instead calls for checking credulity, mistaken precision beliefs, or loss of independent evidence. A real critic need not follow the literal mixture model parameterized by \(\lambda\).
+
+If score optimization does not suppress useful metadata or does not reduce accuracy relative to full disclosure, this specific mechanism is unsupported. If sealing suppresses useful disclosure without an offsetting benefit, it fails as an intervention. The next round refines this proposal by varying whether quality certificates actually exist. \ledger{16, 17, 27}
+
+\section*{Disclosure-equilibrium extension following review 19}
+
+\paragraph{The objection and the scope of the correction.}
+Verifier entry 19 returned ITERATE because the preceding comparison selected live pooling and sealed separation while omitting an accurate live equilibrium. It requested complete disclosure-equilibrium sets, a test of concealment under skeptical inference, and checks of disclosure and insulated-scoring prior art. The previous algebra, Bayesian boundary, partial-credulity analysis, reverse example, and novelty limits were retained. The correction concerns equilibrium selection, not those calculations. \ledger{19--21}
+
+The completed account is \url{ada/disclosure-equilibria.md}. It establishes a strict comparison of all consistent equilibrium outcomes only after changing the evidence technology: quality certificates can be genuinely unavailable, and their availability is private. This is a conditional model result, not a finding that P's agents conceal evidence. \ledger{22--27}
+
+\paragraph{Equilibrium conventions and disclosure gains.}
+Retain the hidden-quality game above, including mandatory truthful transmission of \(X\), optional verifiable quality, concealed forecasts, and a correctness-maximizing reference. Use sequentially consistent Bayesian beliefs. A verifiable quality certificate fixes the physical signal law even off path: the sender cannot reveal state information it never observed. This excludes arbitrary off-path state beliefs that could otherwise change the reference's response to a certified type. \ledger{25}
+
+Let \(d_h\) be a quality-certificate holder's disclosure probability. Let \(t\) be the probability the critic follows \(X\) when \(X\ne Y\) and no quality certificate was disclosed. It follows the common signal when \(X=Y\). If silent effective precision exceeds \(r\), Bayesian optimization requires \(t=1\); if it is below \(r\), it requires \(t=0\); at equality any \(t\in[0,1]\) is optimal.
+
+For type \(h\), define
+\[
+\rho_h=p_hr+(1-p_h)(1-r).
+\]
+Conditional on \(h,X\), silence produces accuracy and calibrated live score
+\[
+a_h(t)=r+(p_h-r)t,
+\qquad
+v_h(t)=C\bigl(\rho_h+(1-\rho_h)t\bigr).
+\]
+Certification induces \(Y\) for low quality and \(X\) for high quality. Thus certification utility minus silence utility is
+\[
+\begin{aligned}
+D_L^{\rm live}(t)
+={}&\Lambda\bigl[
+C(\rho_L)-C(\rho_L+(1-\rho_L)t)
+\bigr]\\
+&+\beta(r-p_L)t-k,\\
+D_H^{\rm live}(t)
+={}&\Lambda\bigl[
+1-C(\rho_H+(1-\rho_H)t)
+\bigr]\\
+&+\beta(p_H-r)(1-t)-k,
+\end{aligned}
+\]
+and under sealed scoring,
+\[
+\begin{aligned}
+D_L^{\rm sealed}(t)&=\beta(r-p_L)t-k,\\
+D_H^{\rm sealed}(t)&=\beta(p_H-r)(1-t)-k.
+\end{aligned}
+\]
+A type discloses with probability one when its gain is positive, with probability zero when negative, and may mix only when the gain is zero. These conditions, together with Bayesian silence beliefs, characterize disclosure equilibria.
+
+Because \(X\) is uniform independently of quality, the branches \(X=0\) and \(X=1\) are separate disclosure games with identical parameters. Strategies may differ across branches. The analysis therefore includes signal-dependent strategies and receiver randomization rather than only symmetric pure strategies. No public correlation device is assumed.\footnote{Game, consistency convention, and gain formulas: \url{ada/disclosure-equilibria.md}, lines 15--78.} \ledger{23, 25}
+
+\paragraph{Always-available certificates: the omitted equilibrium.}
+At the preceding numerical parameters with \(\Lambda=\beta=1\), high-quality certification and low-quality silence form a strict live disclosure equilibrium. Silence identifies low quality, so the critic follows \(Y\). The high type's gain from certification is
+\[
+D_H^{\rm live}(0)=\frac{1597}{2500}=0.6388>0.
+\]
+The low type saves the certificate cost by staying silent. Accuracy is \(4/5\), equal to full-information accuracy. This verifies review 19's objection. \ledger{19, 21}
+
+The exact live disclosure gains are
+\[
+\begin{aligned}
+D_L^{\rm live}(t)
+&=\frac{-125+330t-5290t^2}{12500},\\
+D_H^{\rm live}(t)
+&=\frac{1597-1044t-578t^2}{2500}.
+\end{aligned}
+\]
+The low-type gain has maximum
+\[
+-\frac{25361}{2645000}<0,
+\]
+so low quality never certifies. The high-type gain decreases strictly and has one zero,
+\[
+t_*=
+\frac{\sqrt{1044^2+4\cdot578\cdot1597}-1044}{1156}
+=0.9886022329\ldots.
+\]
+When low quality stays silent, the silent posterior high-quality probability is
+\[
+\frac{1-d_H}{2-d_H}.
+\]
+The critic's precision threshold corresponds to high-quality probability \(1/3\), attained at \(d_H=1/2\). Hence the complete live equilibrium set in each signal branch is
+\[
+\begin{array}{c|c|c}
+(d_H,d_L)&t&\text{Accuracy}\\ \hline
+(0,0)&1&3/4\\
+(1,0)&0&4/5\\
+(1/2,0)&t_*&3/4
+\end{array}
+\]
+In the mixed equilibrium the silent pool has precision exactly \(r\), so its accuracy is independent of the receiver's tie rule; \(t_*\) is nevertheless required for sender indifference. \ledger{23, 25}
+
+For sealed scoring,
+\[
+D_L^{\rm sealed}(t)=\frac{t}{10}-\frac1{100},
+\qquad
+D_H^{\rm sealed}(t)=\frac{19}{100}-\frac{t}{5}.
+\]
+The complete per-branch correspondence is
+\[
+\begin{array}{c|c|c}
+(d_H,d_L)&t&\text{Accuracy}\\ \hline
+(0,1)&1&4/5\\
+(1,0)&0&4/5\\
+(1,1)&[1/10,19/20]&4/5
+\end{array}
+\]
+The final row specifies behavior after off-path silence. A silent high-quality posterior of \(1/3\), obtainable as the limit of suitable disclosure trembles, supports the displayed receiver mixtures.
+
+There is no on-path mixed disclosure equilibrium under sealed scoring. At the low type's indifference point \(t=1/10\), high quality must certify; any on-path silence would then reveal low quality and require \(t=0\). At the high type's indifference point \(t=19/20\), low quality must certify; any on-path silence would reveal high quality and require \(t=1\). Between these points both types certify. These sign and posterior arguments establish completeness; a finite grid alone would not. \ledger{23, 25}
+
+Allowing different equilibria after the two signal values gives the full-game accuracy sets
+\[
+\mathcal A_{\rm live}
+=\left\{\frac34,\frac{31}{40},\frac45\right\},
+\qquad
+\mathcal A_{\rm sealed}=\left\{\frac45\right\}.
+\]
+Thus sealed scoring weakly orders the entire live outcome set at these parameters, but strict superiority is false. Adding a public random equilibrium selector would fill the interval between the minimum and maximum live accuracies without changing that weak ordering.
+
+Both sender types prefer live pooling to skeptical live separation. Their utility gains are \(248/625\) for low quality and \(1/100\) for high quality. This is a possible selection consideration, not an equilibrium-selection theorem.\footnote{Exact results: \url{ada/equilibrium-check-002.log}, lines 1--9.} \ledger{23, 25}
+
+\paragraph{Uncertain certificate availability.}
+Now change the evidence technology. With probability \(\varepsilon\), independently of quality, state, and signals, the sender lacks a quality certificate. It still knows its quality and must transmit its truthful signal certificate \(X\). The critic knows the availability distribution but not whether a particular sender could have certified quality. The uncertainty concerns availability of verifiable evidence, not knowledge of one's own quality. \ledger{22, 24, 25}
+
+For holder disclosure probabilities \(d_H,d_L\), silent quality masses are
+\[
+\begin{aligned}
+w_H&=\pi[1-(1-\varepsilon)d_H],\\
+w_L&=(1-\pi)[1-(1-\varepsilon)d_L].
+\end{aligned}
+\]
+Under every strategy, including signal-dependent strategies, silent effective precision is bounded below by
+\[
+\underline p_{\rm silent}(\varepsilon)
+=
+\frac{\pi\varepsilon p_H+(1-\pi)p_L}
+     {\pi\varepsilon+1-\pi}.
+\]
+The bound is attained when all available high-quality senders certify and all low-quality senders remain silent. Unavailable high-quality certificates prevent the critic from interpreting every absence as low quality. For \(\varepsilon>0\), silence is on path under every strategy, so this is a Bayesian posterior bound rather than a selected off-path belief. \ledger{22, 24}
+
+\begin{claim}
+Suppose
+\[
+\varepsilon_c:=
+\frac{(1-\pi)(r-p_L)}{\pi(p_H-r)}
+<\varepsilon<1,
+\]
+and
+\[
+\begin{aligned}
+0<k&<\beta(r-p_L),\\
+\Lambda\,2\rho_L(1-\rho_L)
+&>\beta(r-p_L)-k.
+\end{aligned}
+\]
+Every sequential equilibrium under live scoring has all quality-certificate holders withhold. Every sequential equilibrium under sealed scoring has available low-quality senders certify and available high-quality senders withhold. The corresponding accuracies are uniquely
+\[
+\begin{aligned}
+A_{\rm live}&=\bar p,\\
+A_{\rm sealed}
+&=\pi p_H+(1-\pi)
+  \bigl[\varepsilon p_L+(1-\varepsilon)r\bigr],
+\end{aligned}
+\]
+with strict gap
+\[
+A_{\rm sealed}-A_{\rm live}
+=(1-\pi)(1-\varepsilon)(r-p_L)>0.
+\]
+\end{claim}
+
+\begin{proof}
+The availability inequality is exactly
+\[
+\underline p_{\rm silent}(\varepsilon)>r.
+\]
+Consequently, for every disclosure policy, the critic strictly follows \(X\) after silence, even on disagreement with \(Y\). Revealing high quality also induces \(X\) and costs \(k\), so high-quality holders strictly withhold under both mechanisms.
+
+At \(t=1\), a low-quality holder's live disclosure gain is
+\[
+D_L^{\rm live}(1)
+=
+\beta(r-p_L)-\Lambda\,2\rho_L(1-\rho_L)-k<0.
+\]
+It therefore withholds. Under sealed scoring the score is unchanged by disclosure, and
+\[
+D_L^{\rm sealed}(1)=\beta(r-p_L)-k>0,
+\]
+so every available low-quality holder certifies. These strict choices and Bayesian responses determine all equilibrium outcomes. Unavailable low-quality senders induce action \(X\), while available low-quality senders under sealed scoring induce \(Y\). Averaging these cases gives the stated accuracy formulas.
+\end{proof}
+
+The assumption \(\bar p>r\) is equivalent to \(\varepsilon_c<1\), so the robust region is nonempty. For the numerical example, \(\varepsilon_c=1/2\). At \(\varepsilon=3/4\),
+\[
+A_{\rm live}=\frac34,\qquad
+A_{\rm sealed}=\frac{61}{80},\qquad
+A_{\rm sealed}-A_{\rm live}=\frac1{80}.
+\]
+These are constructed-model quantities, not measured code-review effects. The comparison is independent of receiver tie-breaking and favorable off-path beliefs: all relevant receiver choices are strict, and silence always occurs.\footnote{Availability model, proposition, and proof: \url{ada/disclosure-equilibria.md}, within lines 145--228; numerical verification: \url{ada/equilibrium-check-002.log}, lines 10--14.} \ledger{22, 24, 25}
+
+\paragraph{The full numerical correspondence across availability levels.}
+The notes also classify the region below the strict threshold at the fixed numerical payoffs. This checks whether mixed or signal-dependent equilibria defeat the claimed comparison. Each row below describes a single signal branch; the full game averages independently chosen branch outcomes. \ledger{25}
+
+For \(0<\varepsilon<1/2\), live scoring has exactly
+\[
+\begin{array}{c|c}
+(d_H,d_L,t)&\text{Accuracy}\\ \hline
+(0,0,1)&3/4\\
+(1,0,0)&4/5-\varepsilon/10\\
+\bigl(1/[2(1-\varepsilon)],0,t_*\bigr)&3/4
+\end{array}
+\]
+and sealed scoring has exactly
+\[
+\begin{array}{c|c}
+(d_H,d_L,t)&\text{Accuracy}\\ \hline
+(0,1,1)&4/5-\varepsilon/20\\
+(1,0,0)&4/5-\varepsilon/10\\
+\bigl(1,(1-2\varepsilon)/(1-\varepsilon),1/10\bigr)
+&4/5-\varepsilon/10
+\end{array}
+\]
+The disclosure-gain sign regions are unchanged. Mixing can occur only at \(t_*\), \(1/10\), or \(19/20\); solving the silent-posterior equality yields these rows. A possible sealed mixture at \(19/20\) would require
+\[
+d_H=\frac{1-\varepsilon/2}{1-\varepsilon}>1,
+\]
+so it cannot occur. The both-certify equilibrium disappears for every positive \(\varepsilon\): its residual unavailable pool has precision \(\bar p>r\), which induces \(t=1\) and makes high-quality certification costly without benefit.
+
+At \(\varepsilon=1/2\), live equilibria are pooling and
+\[
+(d_H,d_L,t)=(1,0,t),
+\qquad 0\leq t\leq t_*.
+\]
+All have accuracy \(3/4\). Sealed equilibria are \((0,1,1)\), with accuracy \(31/40\), and
+\[
+(d_H,d_L,t)=(1,0,t),
+\qquad 0\leq t\leq 1/10,
+\]
+with accuracy \(3/4\).
+
+For \(1/2<\varepsilon<1\), only the disclosure profiles in the proposition remain. At \(\varepsilon=1\), no quality certificate exists and both mechanisms attain \(3/4\).
+
+Thus, at these numerical payoff parameters, every sealed equilibrium weakly outperforms every live equilibrium for \(0\leq\varepsilon\leq1\). Strict separation of the outcome sets holds exactly for
+\[
+\frac12<\varepsilon<1.
+\]
+The threshold is sharp for this example's strict comparison and unique concealment outcome. The general proposition supplies a sufficient region, not a complete classification for arbitrary payoffs or signal technologies. \ledger{24, 25}
+
+\paragraph{What the extension resolves, and what it assumes.}
+The equilibrium-selection objection is resolved within the changed model. Always-available certificates admit skeptical separation as well as concealment; sufficiently frequent unavailable certificates prevent that separation from making silence less precise than the critic's own signal. The strict comparison then follows from disclosure incentives, without selecting favorable equilibria. \ledger{21--25}
+
+The result still requires mandatory certified \(X\), verifiable quality, private certificate availability, a concealed scoring reference, and a residual correctness preference \(\beta>0\). If actual availability becomes public, deliberate withholding among known certificate holders can again be distinguished from unavailable evidence, and the posterior bound no longer applies to that stratum. Optional signal transmission, forged certificates, observation of the critic's initial report before forecasting, or a critic maximizing its own peer score define different games. \ledger{25, 27}
+
+Sealing without a correctness preference does not reward useful quality disclosure. The earlier reverse example, in which live scoring funds valuable transmission while sealed scoring does not, remains a counterexample to a universal welfare ordering. The Bayesian non-harm boundary also remains: the concealment outcome here exceeds isolation accuracy \(r\). Its loss is relative to using available quality metadata. \ledger{16, 25, 27}
+
+\paragraph{Verification of the disclosure extension.}
+The recorded script \url{ada/check_disclosure_equilibria.py} checks the exact gain polynomials, the omitted equilibrium, rational equilibrium families, and the irrational root by rational isolation. It checks \(10{,}648\) rational strategy/tie triples and \(35\) parameter sets satisfying the general proposition. The successful output is \url{ada/equilibrium-check-002.log}, lines 1--14. Completeness comes from the analytical sign and posterior arguments, not grid coverage. \ledger{23--25}
+
+The first run failed because an older system Python lacked \texttt{set\_int\_max\_str\_digits}; that failure is retained in \url{ada/equilibrium-check-001.log}. The notes report subsequent successful checks using uv-managed Python 3.12. These are mathematical verification records, not evidence from LLM reviewers. No LLM pilot was run. \ledger{23, 27}
+
+\paragraph{Additional prior art and the corrected attribution.}
+The disclosure round checked the sources requested by the verifier. Their role is to restrict novelty claims, not to certify priority for the small proposition.\footnote{Source details and access qualifications: \url{ada/disclosure-equilibria.md}, lines 231--246.} \ledger{19, 26}
+
+\begin{itemize}
+\item Grossman (1981), \emph{The Informational Role of Warranties and Private Disclosure about Product Quality}:
+\url{https://doi.org/10.1086/466995};
+and Milgrom (1981), \emph{Good News and Bad News: Representation Theorems and Applications}:
+\url{https://web.stanford.edu/~milgrom/publishedarticles/Good%20News%20and%20Bad%20News.pdf}.
+These are antecedents for skeptical disclosure and unravelling. The omitted separating equilibrium should not be presented as an unexpected new mechanism. Their classic conclusions do not transfer automatically because the sender's payoff here includes predictability and disclosure costs.
+
+\item Dye (1985), \emph{Disclosure of Nonproprietary Information}:
+\url{https://www.jstor.org/stable/2490910}.
+Uncertainty about what information a sender possesses can sustain nondisclosure. The unavailable-certificate extension borrows this principle; it does not introduce uncertainty as a new way to prevent unravelling. The model distinguishes knowledge of quality from possession of a certificate, so it is not an exact restatement of Dye's setting.
+
+\item Armstrong and O'Rorke, \emph{Good and safe uses of AI Oracles}:
+\url{https://arxiv.org/abs/1711.05541}.
+The pooled LaTeX describes reward through erasure events that evaluate a prediction when its content is not used, and discusses indirect influence through other oracles. Insulating an evaluation target is therefore established prior art.
+
+\item Krueger, Maharaj, and Leike, \emph{Hidden Incentives for Auto-Induced Distributional Shift}:
+\url{https://arxiv.org/abs/2009.09153}.
+The pooled LaTeX distinguishes better prediction from making targets easier to predict, tests incentives under optimization, and proposes context swapping. A review experiment must establish a specific disclosure effect, not merely rediscover target influence.
+
+\item Prendergast (1993), \emph{A Theory of ``Yes Men''}:
+\url{https://www.jstor.org/stable/2117577}.
+The inspected abstract and primary excerpts concern conformity under subjective evaluation and distorted communication. Agreement incentives and conformity are established organizational-economics themes; the full model was not audited against this construction.
+
+\item The Oesterheld et al. attribution is re-anchored to rendered Appendix B, Proposition 4:
+\url{https://arxiv.org/html/2305.17601v2#A2}.
+It states that maximizing a strictly proper score over attainable fixed points favors extreme points. Active pooled source locations are lines 197, 634, and 2598--2615 of the source identified in ledger entry 26. The earlier passage partly inside a comment block is not evidence of published text.
+\end{itemize}
+
+The pool helper was tried first for the disclosure and conformity references, using titles and available primary URLs. Resolution returned Semantic Scholar HTTP \(429\), recorded in \url{ada/pool-fetch-006.log} and \url{ada/pool-fetch-007.log}. Bounded primary browser excerpts were then inspected. The notes distinguish Dye's inspected introduction, Milgrom's checked abstract and metadata, Grossman's metadata and search excerpt with a fetch timeout, and Prendergast's abstract and excerpts. No full-text novelty comparison is inferred from those limited accesses. The Armstrong--O'Rorke and Krueger et al. LaTeX sources were obtained through the pool. \ledger{26}
+
+\paragraph{Assessment at the end of the disclosure round.}
+The strongest supported result at that stage was a comparison across all consistent equilibrium outcomes under an explicit certificate-unavailability threshold, accompanied by the complete numerical correspondence below and at that threshold. It repaired review 19's selection objection while preserving the earlier Bayesian boundary and reverse welfare example. \ledger{24--27}
+
+The empirical material was thin. No reviewer response to missing metadata was measured, no LLM pilot was run, and no improvement to ordinary or text-constrained AR was shown. The notes reported that no callable inference tool or accessible \texttt{claude} command was found; this was an access observation, not an experimental result. The proof applied established scoring, disclosure, and information-design ideas. Publication-level novelty remained unresolved. \ledger{26, 27}
+
+The remaining substantive questions were whether useful evidence-quality certificates exist in realistic review, whether critics interpret their absence skeptically, whether explicit live peer-score optimization suppresses available weak-quality metadata, and whether reference protection preserves enough incentive to disclose it. The record supported a precise, falsifiable project plus a checked small model, not a paper-ready empirical finding. \ledger{27, 28}
+
+\paragraph{The disclosure round's smallest empirical next step, retained.}
+First measure the critic's response before optimizing messages. Use frozen patches with executable correctness checks, independently supplied reviewer and critic evidence, and randomized evidence quality. Produce an objectively checkable quality tag when available, and randomize its availability independently of quality. Hold the literal reviewer conclusion fixed across replays. Tell critics the actual quality and availability frequencies, then compare disclosed tags, available-but-withheld tags, and genuinely unavailable tags. This tests whether the critic's reliance responds to the distinction on which the model depends. \ledger{25, 27}
+
+Only if that response is present should a fixed candidate-message selector optimize live versus sealed peer scores. Retain identical evidence, dialogue options, candidate pools, sampling budgets, and a stated correctness objective. Conceal scoring-reference realizations until selection and forecasting are complete, and evaluate with fresh samples and held-out tasks. Compare against mandatory disclosure of available tags, no dialogue, ordinary AR, and P's evidence-constrained AR; retain the per-round commitment control for multiround versions.
+
+Measure disclosure among low-quality certificate holders, retention of initially correct critic dissent, calibration, critic reliance, and final executable correctness. If useful metadata does not change reliance, the immediate empirical premise fails. If live-score optimization does not suppress that metadata or reduce accuracy relative to mandatory available-tag disclosure, this concealment mechanism is unsupported. If sealing removes useful disclosure without offsetting gains, it fails as an intervention. A decline below isolation would contradict the calibrated Bayesian benchmark rather than verify its concealment theorem.
+
+A study with stipulated tag quality must be labeled a synthetic mechanism test. Establishing naturally occurring quality metadata, robustness across review settings, and novelty beyond the adjacent literature would remain further work. \ledger{17, 25, 27}
+
+\section*{Hidden-effort extension following the latest review}
+
+\paragraph{The fair-baseline objection and its correction.}
+Verifier entry 29 accepted the disclosure algebra and the repair of the equilibrium-selection objection, but identified a further problem. In that game, \(X\) was mandatory and costless. Sealed scoring was constant across quality-disclosure choices, so it induced exactly the same disclosure game as no scoring. In the strict availability region, live scoring also induced the same useful disclosure profile whenever
+\[
+0\leq\Lambda<
+\frac{\beta(r-p_L)-k}{2\rho_L(1-\rho_L)}.
+\]
+Thus the earlier proposition establishes harm from a sufficiently strong live predictability reward. It does not establish a benefit of sealed peer scoring over no peer scoring, or over a suitably reduced live score. The earlier theorem and equilibrium correspondence remain correct with this interpretation. \ledger{29, 30}
+
+The verifier requested a setting in which the score has a function, comparisons that optimize its scale, mixed targets and mandatory certificates, and accounting for payments and information costs. The response changes the evidence technology again, explicitly: informative diagnostics require hidden costly effort, while an authentic but uninformative diagnostic is cheap. This is an additional model, not a reinterpretation of the earlier disclosure game.\footnote{\url{ada/hidden-effort.md}, lines 1--30.} \ledger{31, 32}
+
+\paragraph{The hidden-effort game.}
+Keep a uniform binary state and a correctness-maximizing critic with an independent signal \(Y\) of precision \(r\). Before observing its own signal or quality, the sender chooses whether to pay effort cost \(c\).
+
+Without effort, it obtains a fair-coin result \(X\), independent of the state and \(Y\). It knows this result is uninformative but cannot certify that quality. With effort, it privately learns a quality \(h\in\{L,H\}\), with high-quality probability \(\pi\), and obtains a signal of precision \(p_h\). Quality is independent of the state; conditional on state and quality, the signals are independent.
+
+In either case, the same authentic coarse diagnostic record automatically transmits the actual bit \(X\). The sender cannot replace or suppress it, and the record does not reveal effort. Paying merely for the existence of a record therefore does not pay for informative acquisition. After effort, a verifiable quality tag is available with probability
+\[
+a=1-\varepsilon,
+\]
+independently of quality, signals, and state. Its disclosure costs \(k\). Missing metadata can mean shirking, an unavailable tag, or withholding.
+
+The critic observes \(X\), any tag, and \(Y\), and chooses a Bayesian correctness action \(R\). After choosing disclosure, the sender privately forecasts the relevant reference before observing \(Y\) or \(R\). Forecasts are concealed from the critic. Utility is score payment plus the intrinsic term
+\[
+\beta\mathbf1\{R=\theta\},
+\]
+less effort and disclosure costs. The mechanism does not observe the state and pay that intrinsic term. The critic's supplied evidence has the same cost in every comparison.
+
+Equilibria are sequential and consistent with the physical signal law. Effort may mix with probability \(q\); disclosure may depend on \(X\); the critic may randomize at ties. Verifiable tags determine their signal law even off path. This remains a restricted evidence technology, not a general cheap-talk game or a game where both agents strategically acquire information. \ledger{32, 33, 35, 37}
+
+\paragraph{A common representation of the compared mechanisms.}
+The analysed target family pays
+\[
+wS(f_R,R)+vS(f_Y,Y),
+\qquad w,v\geq0.
+\]
+Live scoring is \((w,v)=(\Lambda,0)\), sealed scoring is \((0,\Lambda)\), and no scoring is \((0,0)\). A labelled random selector is equivalent: submit separate forecasts for \(R\) and \(Y\), select which to score with probabilities \(1-\alpha\) and \(\alpha\), and use scale \(\Lambda\), where
+\[
+w=(1-\alpha)\Lambda,\qquad v=\alpha\Lambda.
+\]
+This is not a single forecast of an unlabelled mixture target; that different mechanism is not covered by the mixture calculations. \ledger{34, 35}
+
+Let \(t\) again be the critic's probability of following \(X\) after conflicting signals and missing metadata. Under silence, an effortful quality \(h\) earns calibrated live value
+\[
+C\bigl(\rho_h+(1-\rho_h)t\bigr),
+\]
+whereas a shirker earns
+\[
+C\left(\frac{1+t}{2}\right).
+\]
+At \(t=1\), the latter equals one: the sender can perfectly predict copying of its random result without acquiring information about correctness. Sealed values are \(C(\rho_h)\) with effort and \(1/2\) without effort.
+
+The disclosure gains are
+\[
+\begin{aligned}
+D_L(t)
+={}&w\bigl[C(\rho_L)-C(\rho_L+(1-\rho_L)t)\bigr]\\
+&+\beta(r-p_L)t-k,\\
+D_H(t)
+={}&w\bigl[1-C(\rho_H+(1-\rho_H)t)\bigr]\\
+&+\beta(p_H-r)(1-t)-k.
+\end{aligned}
+\]
+They do not depend on \(v\). Define
+\[
+\begin{aligned}
+G&=\mathbb E_h C(\rho_h)-\frac12,\\
+J(t)&=\mathbb E_h C\bigl(\rho_h+(1-\rho_h)t\bigr)
+      -C\left(\frac{1+t}{2}\right).
+\end{aligned}
+\]
+Writing \(z_+=\max\{z,0\}\), the optimal effort gain at a fixed critic policy is
+\[
+\begin{aligned}
+E(t;w,v)
+={}&wJ(t)+vG+\beta(\bar p-1/2)t-c\\
+&+a\bigl[(1-\pi)(D_L(t))_+
+           +\pi(D_H(t))_+\bigr].
+\end{aligned}
+\]
+The positive parts represent optimal disclosure after learning quality and availability. A unilateral hidden-effort deviation holds the critic's response policy fixed. If the policies differ between \(X=0\) and \(X=1\), the ex-ante effort gain averages their expressions; both signal values remain equally likely under either effort choice.
+
+For holder disclosure probabilities \(d_H,d_L\), the unnormalized silent-pool advantage of \(X\) over \(Y\) is
+\[
+\begin{aligned}
+B(q,d_H,d_L)
+={}&(1-q)(1/2-r)\\
+&+q\pi(1-ad_H)(p_H-r)\\
+&+q(1-\pi)(1-ad_L)(p_L-r).
+\end{aligned}
+\]
+The critic takes \(t=1\) when \(B>0\), \(t=0\) when \(B<0\), and can mix when \(B=0\). Together with the signs of \(D_h\) and the branch-average effort gain, these conditions characterize the game.\footnote{Reduced incentives and posterior consistency: \url{ada/hidden-effort.md}, lines 32--93.} \ledger{33--35}
+
+\paragraph{An all-equilibrium separation at every live scale.}
+Use
+\[
+\begin{gathered}
+p_L=\frac35,\quad p_H=\frac9{10},\quad
+r=\frac7{10},\quad \pi=\frac12,\\
+\varepsilon=\frac34,\quad
+\beta=1,\quad k=\frac1{100},\quad c=\frac3{10}.
+\end{gathered}
+\]
+Then
+\[
+G=\frac{17}{625},
+\qquad
+J(t)=\frac{17+91t-108t^2}{625}.
+\]
+
+\begin{claim}
+In this hidden-effort game, every no-score equilibrium has no effort and accuracy \([rating withheld]\). At every nonnegative live score scale, every consistent equilibrium has
+\[
+q\leq\frac89,
+\qquad
+A_{\rm live}\leq\frac{11}{15}.
+\]
+Sealed scoring at any scale
+\[
+v>\frac{325}{32}
+\]
+induces effort and disclosure of every available low-quality tag in every consistent equilibrium, with unique outcome accuracy \(61/80\).
+\end{claim}
+
+\begin{proof}
+Without scoring, the pre-cost effort benefit is convex and piecewise affine in \(t\). Its endpoint values are \(19/800\) and \(209/800\). Hence
+\[
+E(t;0,0)\leq\frac{209}{800}-\frac3{10}<0
+\]
+for every critic policy. All equilibria shirk; the critic then ignores the random result and uses \(Y\).
+
+For live scoring, the posterior bound
+\[
+B(q,d_H,d_L)\geq\frac9{40}q-\frac15
+\]
+holds under every disclosure policy, including signal-dependent policies. If \(q>8/9\), every silent pool therefore induces \(t=1\). A shirker then earns maximal live score one. Effort cannot improve that score, while its intrinsic correctness benefit net of optional disclosure costs is at most \(209/800<c\). Thus effort is strictly worse at every live scale, contradicting an equilibrium with \(q>8/9\).
+
+For an accuracy bound, give the critic all available tags for free. This provides at least as much information as any strategic disclosure. At effort probability \(q\), its Bayes accuracy is
+\[
+F(q)=
+\max\left\{
+\frac7{10}+\frac q{40},
+\frac12+\frac{21q}{80}
+\right\}.
+\]
+The branches correspond to following \(Y\) or \(X\) after missing metadata, while using the better signal after a tag. Strategic withholding is a garbling of this fuller observation. Both branches increase in \(q\), so
+\[
+A_{\rm live}\leq F(8/9)=\frac{11}{15}.
+\]
+
+With sealed scoring, \(E(t;0,v)\) is strictly increasing in \(t\), with minimum
+\[
+E(0;0,v)=
+\frac{17v}{625}+\frac{19}{800}-\frac3{10}.
+\]
+It is positive exactly when \(v>325/32\). Effort is then strictly optimal at every critic policy, so every equilibrium has \(q=1\). The availability bound makes every silent pool more precise than \(Y\). High-quality holders save the redundant disclosure cost by withholding; low-quality holders strictly disclose because \(r-p_L>k\). Accuracy is \(61/80\).
+\end{proof}
+
+Consequently, even optimizing the live scale and selecting its best equilibrium cannot reach the sealed guarantee:
+\[
+\frac{61}{80}
+-
+\sup_{\substack{\Lambda\geq0\\
+                 \sigma\in\operatorname{Eq}(\Lambda,0)}}
+A(\sigma)
+\geq
+\frac{61}{80}-\frac{11}{15}
+=
+\frac7{240}>0.
+\]
+The live bound is conservative, not claimed sharp. At \(\Lambda=11\), an explicit equilibrium has \(q=8/9\), available high types certify, low types withhold, and the critic uses disagreement probability
+\[
+t=0.9821452565\ldots.
+\]
+Its accuracy is \(13/18\); the checking script isolates the root with rational bounds. Thus the obstruction is not based on an empty equilibrium set.
+
+For sealed scale \(v\leq325/32\), a no-effort equilibrium survives because acquisition at its \(t=0\) critic policy has nonpositive gain. The threshold is therefore exact for eliminating all no-effort equilibria in this example, rather than merely supporting a selected full-effort equilibrium.\footnote{Numerical theorem and proof: \url{ada/hidden-effort.md}, lines 95--169.} \ledger{33, 35}
+
+\paragraph{Mixed targets and mandatory provenance.}
+At full effort, useful low-quality disclosure requires
+\[
+w<
+\frac{\beta(r-p_L)-k}{1-C(\rho_L)}
+=
+\frac{25}{138}.
+\]
+Within \(0\leq w\leq25/138\), the effort gain is strictly increasing in \(t\). Away from its finite kinks, the note gives the uniform bound
+\[
+\frac{\partial E}{\partial t}
+\geq\frac9{40}-\frac25w>0;
+\]
+continuity handles the kinks. Therefore strict implementation of full effort and useful disclosure in every equilibrium follows exactly within this region from
+\[
+\begin{aligned}
+w&<\frac{25}{138},\\
+\frac{833}{10000}w+\frac{17}{625}v
+&>\frac{221}{800}.
+\end{aligned}
+\]
+If the second inequality fails, the no-effort equilibrium at \(t=0\) survives. At equality in the first, low-quality withholding can remain optimal, so strict useful-disclosure implementation is lost. \ledger{34, 35}
+
+The choice
+\[
+w=\frac9{50},\qquad v=\frac{961}{100}
+\]
+satisfies both conditions. Its total scale is \(9.79\), its worst-policy effort margin is \(17/125000\), and its low-tag disclosure margin is \(9/15625\). The infimum successful total scale in this labelled family is
+\[
+\inf(w+v)=\frac{225}{23},
+\]
+approached as \(w\) tends to \(25/138\) from below. It is not attained with strict incentives. The sealed fraction tends to \(53/54\), so the example requires almost complete reference insulation. This is a restricted-family characterization, not optimality over all contracts. At a fixed positive live fraction, sufficiently increasing total scale eventually destroys the quality-disclosure guarantee. \ledger{34, 35}
+
+Enforcing disclosure of every available tag is a stronger baseline than requesting it in text. It still does not rescue live acquisition. At a putative full-effort equilibrium,
+\[
+E_{\rm mandatory}(1;\Lambda,0)
+=
+-\frac1{25}-\frac{621\Lambda}{10000}<0.
+\]
+A shirker has no tag, induces copying of its random result, and earns maximal score. More generally, mandatory tags force \(t=1\) whenever \(q>16/19\), giving
+\[
+A_{\rm live,mandatory}
+\leq F(16/19)=\frac{137}{190}.
+\]
+Sealed scoring with mandatory tags still implements effort at every policy when
+\[
+v>\frac{2775}{272},
+\]
+but pays the additional cost of redundant high-quality tags.\footnote{Mixture conditions and mandatory-tag comparison: \url{ada/hidden-effort.md}, lines 171--205.} \ledger{34, 35}
+
+\paragraph{Payments and information costs.}
+The incentive separation is not a claim of free improvement. Under the desired optional-tag outcome, expected unshifted quadratic scores are
+\[
+\mathbb E S_R=\frac{9379}{10000},
+\qquad
+\mathbb E S_Y=\frac{659}{1250}.
+\]
+Thus the implementations above have the following accounting:
+\[
+\begin{array}{c|ccc}
+\text{Mechanism}
+&\text{Expected payment}&\text{Effort cost}&\text{Tag cost}\\ \hline
+\text{Sealed }v=11
+&7249/1250&3/10&1/800\\
+\text{Mixture }(0.18,9.61)
+&2617607/500000&3/10&1/800
+\end{array}
+\]
+The expected payments are \(5.7992\) and \(5.235214\), respectively. With mandatory tags, expected tag cost is \(1/400\). With no score, equilibrium effort and tag costs are zero. The critic's common evidence cost is excluded from differences. \ledger{34, 35}
+
+Outcome-independent fees or participation payments leave these conditional incentives unchanged but alter gross transfers and participation. The score may be negative ex post; adding an offset for nonnegative payments raises expenditure. Therefore the minimum-scale result is not a normalization-invariant budget optimum. Limited liability, participation, risk aversion, and payment constraints remain unanalysed. Monetary transfers and real resource costs are reported separately rather than equated with social waste.
+
+The note supplies a cost-accounted existence example, not a universal welfare ranking. If a correct decision is worth \(300\) reward units, sealed scoring at \(11\), after both its expected payment and real effort and tag costs, yields
+\[
+300\frac{61}{80}
+-\frac{7249}{1250}
+-\frac3{10}
+-\frac1{800}
+=
+\frac{4452991}{20000}
+=
+222.64955.
+\]
+This exceeds the gross correctness-value upper bound
+\[
+300\frac{11}{15}=220
+\]
+for every optional-tag live equilibrium, even before charging live payments. Under the literal unshifted score, calibrated expected live payments are nonnegative. This comparison depends on the specified valuation and payment convention; it does not justify these magnitudes for deployed review.\footnote{Payment and resource accounting: \url{ada/hidden-effort.md}, lines 207--223.} \ledger{34, 35, 37}
+
+\paragraph{Extension beyond two qualities and the quadratic score.}
+Let effort draw precision \(P\) from any finite distribution in \((1/2,1)\), with qualities on both sides of \(r\). Write
+\[
+\begin{gathered}
+\bar p=\mathbb EP,\qquad a=1-\varepsilon,\\
+U=\mathbb E(P-r)_+,\qquad
+D=\mathbb E(r-P)_+,\\
+b=\varepsilon U-D>0.
+\end{gathered}
+\]
+Use positive quality-dependent disclosure costs \(k(P)\), with
+\[
+k(P)<\beta(r-P)\qquad\text{for every }P<r.
+\]
+Define the endpoint intrinsic acquisition benefits
+\[
+\begin{aligned}
+F_0
+&=a\mathbb E\!\left[
+\mathbf1\{P>r\}\bigl(\beta(P-r)-k(P)\bigr)_+
+\right],\\
+F_1
+&=\beta(\bar p-1/2)\\
+&\quad+a\mathbb E\!\left[
+\mathbf1\{P<r\}\bigl(\beta(r-P)-k(P)\bigr)_+
+\right].
+\end{aligned}
+\]
+Assume \(c>\max\{F_0,F_1\}\).
+
+Let the score be symmetric and strictly proper, with finite calibrated value \(H(z)\) on \([0,1]\). Strict convexity and symmetry imply that \(H(1)\) is maximal and that informative forecasts have value above \(H(1/2)\). The sealed acquisition premium is
+\[
+G_H=
+\mathbb E H\bigl(Pr+(1-P)(1-r)\bigr)-H(1/2)>0.
+\]
+
+\begin{claim}
+Under these conditions, every no-score equilibrium shirks. Every live-score equilibrium, at every scale, satisfies
+\[
+q\leq\bar q:=
+\frac{r-1/2}{r-1/2+b}<1.
+\]
+Sealed scoring at scale \(\Lambda>c/G_H\) induces effort in every consistent equilibrium, with available weak tags disclosed and available strong tags withheld. Its outcome accuracy is
+\[
+A_*=
+a\mathbb E\max(P,r)+\varepsilon\bar p.
+\]
+Every live equilibrium has accuracy at most
+\[
+\begin{aligned}
+\mathcal F(\bar q)
+=\max\bigl\{&
+1/2+\bar q(A_*-1/2),\\
+&r+a\bar q\bigl(\mathbb E\max(P,r)-r\bigr)
+\bigr\}
+<A_*.
+\end{aligned}
+\]
+\end{claim}
+
+\begin{proof}
+Without scoring, the acquisition benefit is convex in \(t\), with endpoint values \(F_0,F_1\); both are below \(c\).
+
+At effort probability \(q\), the smallest silent-pool advantage is
+\[
+(1-q)(1/2-r)+qb.
+\]
+If \(q>\bar q\), it is positive under every disclosure strategy, so the critic follows silent \(X\). Shirking then earns \(H(1)\), the maximal calibrated live value. Acquisition cannot increase that score, and its intrinsic gain net of disclosure costs is at most \(F_1<c\). Hence such \(q\) is inconsistent with equilibrium.
+
+For sealed scoring, consider acquiring information and never disclosing a tag. Against any fixed critic policy, this feasible deviation increases expected score by \(G_H\) and correctness by
+\[
+(\bar p-1/2)t\geq0,
+\]
+without disclosure cost. Thus \(\Lambda G_H>c\) makes effort strictly optimal at every policy. At full effort, \(b>0\) forces copying after missing metadata. The tag-cost inequalities then make available weak tags useful to disclose, while strong tags are redundant.
+
+Giving the critic every available tag bounds any strategic-disclosure accuracy by \(\mathcal F(q)\). Its branches increase with \(q\). Since \(\bar q<1\) and
+\[
+\varepsilon(\bar p-r)>0,
+\]
+both branches at \(\bar q\) lie strictly below \(A_*\).
+\end{proof}
+
+The sealed scale condition is sufficient rather than minimal; the numerical threshold above is sharper. These arguments cover mixed effort, signal-dependent disclosure, and randomized Bayesian ties. They do not establish full implementation when both agents choose effort, coordinate unverifiable reports, or manipulate the sealed signal.\footnote{General assumptions, proposition, and proof: \url{ada/hidden-effort.md}, lines 225--274.} \ledger{35, 37}
+
+\paragraph{What the latest extension resolves.}
+The score now has an acquisition function. No scoring fails on effort; reducing live scale cannot overcome the all-scale bound; mandatory quality disclosure does not remove the hidden-effort obstruction; and a sufficiently strong sealed component implements effort across all consistent equilibria. The labelled-mixture comparison and explicit cost accounting address the additional baselines requested in review 29. This repairs that particular fair-baseline gap within a materially changed model. \ledger{29--35, 37}
+
+The earlier reverse example remains valid. There, the decision was whether to transmit already acquired useful information, and making the reference predictable could reward valuable transmission. Here, a cheap random diagnostic is already transmitted; the decision is whether to acquire informative evidence. Copying the diagnostic makes both informative and uninformative senders predictable, destroying the live acquisition premium. Different information technologies support different incentive comparisons. \ledger{16, 35, 37}
+
+The result is not a counterexample to Q. Q's reporting calculation fixes co-player reports under a unilateral deviation and includes separate action incentives. It does not promise that scaling an arbitrary score against a downstream decision will induce acquisition. Nor does the result explain P's unscored false consensus: the proposed extension adds forecasts, rewards, and an effort choice absent from P's experiment. It controls a review decision, not the main agent's subsequent code edits.\footnote{Relation to Q and P: \url{ada/hidden-effort.md}, lines 11--15; comparison with the reverse example: lines 276--278.} \ledger{32, 35, 37}
+
+\paragraph{Additional effort-elicitation sources and priority limits.}
+The established performative-scoring, uncertain-disclosure, conformity, and insulated-oracle precedents remain applicable. In particular, mixing an untouched reference with an influenced target is not a new insulation principle. Unlike an erasure event that prevents use of the scored answer, the construction retains dialogue on every trial and scores an earlier reference measurement. That operational distinction is not itself a priority claim. \ledger{26, 36}
+
+The latest notes add the following bounded checks.
+
+\begin{itemize}
+\item Miller, Resnick, and Zeckhauser,
+\emph{Eliciting Informative Feedback: The Peer-Prediction Method},
+\url{https://doi.org/10.1287/mnsc.1050.0379}.
+The primary abstract and indexed author-hosted manuscript excerpts, including Section 2.2 and Proposition 2, discuss scaling proper scores to pay for acquisition. Funding effort through peer prediction is therefore established. Pool resolution found no open PDF for the DOI and was rate-limited for the manuscript URL; direct opening failed. This was not a full audit of sequential extensions.
+
+\item Dasgupta and Ghosh,
+\emph{Crowdsourced Judgement Elicitation with Endogenous Proficiency},
+\url{https://arxiv.org/abs/1303.0799}.
+The pooled LaTeX was read, especially source lines 137--139, 158--170, 181--197, and 213--225. It models zero effort as random guessing, rewards informative effort, and penalizes blind agreement using multiple tasks. Those ingredients cannot be claimed as new. Its mechanism is an essential comparison for any claim of improved peer prediction; the present theorem compares a restricted target family rather than that mechanism.
+
+\item Bacon et al., \emph{Predicting Your Own Effort},
+\url{https://projects.iq.harvard.edu/sites/projects.iq.harvard.edu/files/yiling/files/aamas2012_predicteffort.pdf}.
+The indexed primary abstract combines forecasting with effort that changes the outcome and describes incentive constructions addressing both. Pool resolution was rate-limited and direct opening failed. The full source was not audited, so absence of the present characterization from that work is not established.
+\end{itemize}
+
+Pool attempts and search details are recorded in \url{ada/pool-fetch-008.log}, \url{ada/pool-fetch-009.log}, and \url{ada/hidden-effort.md}, lines 286--296. The notes report no separate downloaded copies or alternative PDF extraction. The proposed contribution is the acquisition-versus-influence separation in interactive review, not the invention of costly information elicitation, random-guessing effort models, or insulated scoring. Publication-level novelty remains unresolved. \ledger{36, 37}
+
+\paragraph{Verification of the latest work.}
+The exact script \url{ada/check_hidden_effort.py} checks the score polynomials, margins, thresholds, posterior bounds, the exhibited live equilibrium by rational root isolation, mandatory-disclosure comparisons, and payment and resource calculations. It also checks \(73{,}205\) rational profiles. The extended run checks \(18\) finite-quality and proper-score configurations, including three and four qualities and the nonquadratic calibrated value
+\[
+H(z)=z^4+(1-z)^4.
+\]
+The successful record is \url{ada/hidden-effort-check-002.log}, lines 1--16. The script was rerun successfully for this consolidation using uv-managed Python 3.12. Finite checks corroborate the calculations; the pointwise incentive and information arguments, not the grid, establish the all-equilibrium statements.\footnote{Verification scope and assessment: \url{ada/hidden-effort.md}, lines 298--302.} \ledger{33--35}
+
+\paragraph{Current assessment and what remains open.}
+The latest result is stronger than a selected-equilibrium concealment example: it supplies an all-equilibrium acquisition separation over every live scale, fair no-score and mandatory-tag baselines, a labelled-mixture characterization, and an extension to finite precision distributions and symmetric proper scores. Its guarantee still rests on a substantial evidence restriction: authentic outputs are mandatory and cheap, informativeness requires hidden effort, richer provenance is only sometimes available, and the initial critic signal is independently informative and insulated from the sender. \ledger{32--37}
+
+The empirical material remains thin. No LLM pilot was run, no actual reviewer acquisition incentive was measured, and no improvement to ordinary or text-constrained AR was demonstrated. The notes record no newly supplied inference access. Exact arithmetic cannot establish that an LLM behaves as the utility-maximizing sender in this model. Existing literature supplies much of the conceptual machinery, and the source-access limits prevent a certified novelty judgment. The record supports a theory-led research project with a checked conditional separation, not a paper-ready empirical finding. \ledger{36--38}
+
+If effort is directly observable, payment for effort is an additional baseline. If a sender can counterfeit or suppress the diagnostic bit, the equilibrium analysis changes. If the critic can identify cheap diagnostics, the hidden-effort premise fails. If reviewer and critic errors are strongly shared, the sealed acquisition premium may not have the assumed size. Public certificate availability, universally recorded provenance, strategic critic effort, budget limits, and participation constraints also require new analysis. None is resolved by the present theorem. \ledger{35, 37}
+
+\paragraph{The smallest next step.}
+Before optimizing an agent, test the response premise on frozen patches with executable correctness checks. Supply a costly informative diagnostic and a cheap uninformative diagnostic with the same coarse output format, sometimes provide objectively checkable quality provenance, and give the critic an independent evidence packet. Measure whether the critic follows an uncertified result at the stipulated quality and availability frequencies, and whether revealing a weak-quality tag changes that response. This is a synthetic mechanism test until naturally occurring diagnostics with those properties are demonstrated.\footnote{Experimental proposal and failure conditions: \url{ada/hidden-effort.md}, lines 280--284.} \ledger{35, 37}
+
+If that premise holds and model access is supplied, let an explicit optimizer choose diagnostic effort and tag disclosure. Keep communication, evidence options, candidate pools, and evaluation budgets fixed. Compare no scoring, live scoring over a scale sweep, sealed scoring, labelled mixtures, and enforced disclosure of available provenance. Include direct effort reimbursement if the scaffold can observe actual effort. Retain ordinary AR and P's evidence-constrained AR as workflow controls. Conceal reference realizations until forecasts and choices are committed; use executable truth for held-out evaluation rather than supplying it as the peer reward.
+
+Measure acquisition, disclosure among available weak-tag holders, forecast calibration, critic reliance, final correctness, and payments and resource costs. If the critic ignores reviewer results, live and sealed targets may coincide. If it detects cheap diagnostics, the specific hidden-effort obstruction is unsupported. If sealed scoring does not induce useful acquisition or loses useful transmission, its proposed benefit fails in that setting. A decline below isolation accuracy would require departure from the calibrated Bayesian benchmark, not confirmation of its theorem.
+
+Without inference access, the next feasible step is a full-source comparison with existing endogenous-effort peer mechanisms, especially Dasgupta--Ghosh and the incompletely accessed effort-prediction work. Either route is more informative than treating P's existing false-consensus observations as evidence for the new scored model. \ledger{36--38}
+
+\end{document}

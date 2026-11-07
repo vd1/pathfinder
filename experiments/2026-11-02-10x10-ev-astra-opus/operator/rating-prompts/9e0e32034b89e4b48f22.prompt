@@ -1,0 +1,1454 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Enforced Obligations and Residual Trading}
+
+\begin{document}
+\maketitle
+
+Q studies LLM traders in a continuous double auction and reports incomplete
+price convergence and unrealized gains from trade relative to theoretical
+and human benchmarks.
+P studies cooperation in Colored Trails, finding benefits from programmatic
+contracts and interpreting reduced supplemental trading under
+natural-language contracts as possible anchoring on insufficient agreements.
+\ledger{1, 2, 13, 14}
+
+\section{The connexion pursued}
+
+The initial question was whether P's self-negotiated contracts could repair
+Q's inefficient markets. The investigation replaced this with a narrower
+question: does the representation of an already enforced obligation affect
+profitable actions outside its scope? \ledger{1, 2, 9}
+
+The institutions address different problems. P's pay-for-partner promises
+concern future coverage that a player may withhold. Q already executes
+crossing orders immediately at the resting price; neither party subsequently
+chooses whether to perform the exchange. Q therefore supplies a prospective
+control without the contractual nonperformance risk motivating P.
+Any benefit from contractual wording in Q would require another explanation.
+\ledger{2, 8}
+
+The common object is an enforced conditional obligation, not an identical
+bilateral contract. An unmatched standing order in Q is a unilateral
+conditional commitment with existing revision and expiry rules. Calling it
+a signed bilateral agreement would change the represented facts.
+\ledger{11}
+
+Earlier reviews rejected elementary controls and a proposed experiment
+as sufficient research evidence. The resulting audit asked whether P's
+coordination gains reflect contractual representation or decision guidance
+packaged into the contract condition. Review 26 requested failed-contract
+comparisons and broader coverage checks. Review 41 proposed contradictory
+first-person terms as an alternative explanation for apparent enforcement
+failures. The latest review, entry 52, requested full-cohort coding,
+within-conflict reading tests, execution-coherence checks and a broader
+formal-arm audit. \ledger{13, 16, 26, 41, 52}
+
+The earlier results are retained below, with superseded interpretations
+identified, followed by the final extension. Its strongest finding concerns
+execution instability under equal reconstructed adjudication inputs.
+The broader semantic coding failed its fresh reliability check.
+Q remains motivation and a prospective control; it supplies no measured
+response for this empirical reanalysis. The proposed P-to-Q commitment
+transplant should be abandoned as the main claim.
+\ledger{34, 39, 50, 58, 61, 63}
+
+\section{Results retained from the earlier rounds}
+
+\begin{claim}
+A bilateral, budget-balanced transfer conditional only on the same
+immediately settled trade is equivalent in allocation and utilities to an
+admissible change in its net price.
+\end{claim}
+
+For buyer value \(v\), seller cost \(c\), transaction price \(p\), and
+additional transfer \(\tau\) from buyer to seller,
+\[
+\begin{aligned}
+u_B &= v-p-\tau = v-(p+\tau),\\
+u_S &= p-c+\tau = (p+\tau)-c.
+\end{aligned}
+\]
+Whenever \(p'=p+\tau\) is admissible, the same allocation and utilities
+are obtainable at net price \(p'\). The transfer neither creates surplus
+nor removes a subsequent performance risk in Q. This is outcome
+equivalence, not behavioral equivalence: negotiation can coordinate
+actions, reveal information, or change price selection. Nor does it imply
+that every net price is immediately executable against a fixed book.
+Future commitments, third parties and subsidies fall outside the argument.
+\ledger{4}
+
+\begin{claim}
+Q's transaction count, price dispersion and allocative efficiency are
+distinct outcomes.
+\end{claim}
+
+Both sides have reservation prices from \(0.75\) to \(3.25\) in increments
+of \(0.25\). Matching descending buyer values to ascending seller costs
+gives marginal gains
+\[
+2.50,\;2.00,\;1.50,\;1.00,\;0.50,\;0,\;-0.50,\ldots,
+\]
+and hence
+\[
+S_{\max}=2.50+2.00+1.50+1.00+0.50=7.50.
+\]
+Five or six trades can attain this maximum because the sixth marginal
+trade has zero surplus. Fewer than six trades alone does not establish
+inefficiency. \ledger{5}
+
+The five efficient pairs can trade at respective prices
+\[
+(0.76,\;1.01,\;1.26,\;1.51,\;1.76).
+\]
+All participants obtain nonnegative profits and surplus is \(7.50\), yet,
+using the RMS convention in the check,
+\[
+\alpha
+=\frac{100}{2.00}
+ \sqrt{\frac{1}{5}\sum_{j=1}^{5}(p_j-2.00)^2}
+\approx 41.01\%.
+\]
+This is an allocation and payment witness, not an observed market
+trajectory. It separates welfare from price convergence without disputing
+Q's reported efficiency losses. The arithmetic and transfer identity were
+checked in \url{ada/structural_checks.py}; see
+\url{ada/research_note.md}, lines 79--99. \ledger{8}
+
+\paragraph{A payoff-grounded diagnostic.}
+A buyer with value \(3.00\), its own standing bid \(1.50\), and standing
+ask \(2.25\) earns \(0.75\) by crossing. If it is the final actor before
+immediate expiry, passing or bidding without crossing earns zero.
+The mirrored seller has cost \(1.00\), its own ask \(2.50\), and standing
+bid \(1.75\), again earning \(0.75\) by crossing.
+This identifies strictly inferior inaction without assuming that waiting
+earlier is irrational. \ledger{7, 9}
+
+The pinned processing node passed 301 tested buyer actions and 226 seller
+actions on the cent grid. This validates a local construction, not a
+behavioral hypothesis or full workflow. Disclosing the final tick extends
+Q's original prompt and must be common to both treatment arms.
+These derivations remain controls rather than a demonstrated research
+contribution. See \url{ada/research_note.md}, lines 89--99.
+\ledger{7, 8, 9, 13, 26, 52}
+
+\section{The earlier empirical audit}
+
+\subsection{Access and observed contrasts}
+
+The access audit found no OpenAI, Anthropic, Google, Gemini or OpenRouter
+API credential. No live pilot was run, and access to the original model
+snapshots was not established. Q's inspected public repository and release
+endpoint did not supply the required chronological records.
+These are session limitations, not claims of global unavailability.
+See \url{ada/research_note.md}, lines 105--109.
+\ledger{15, 24}
+
+P's retrieved summary CSV contains \(3{,}840\) games: six models, 80 boards,
+four contract conditions and two trading modes, with one run per cell.
+It excludes the later GPT repetition expansion and does not exactly
+replicate the supplied paper's tables.
+On mutually dependent boards in pay-for-partner mode, joint completion is
+\(79.17\%\) for programmatic contracts, \(50.00\%\) for natural-language
+contracts, and \(58.33\%\) for No Contract.
+Resampling the 20 paired boards while retaining models within each board
+gives a programmatic-minus-natural-language difference of \(29.17\)
+percentage points, with \(95\%\) bootstrap interval \([20.83,37.50]\).
+The proposal difference is \(1.667\) per game, interval \([1.075,2.292]\).
+These are descriptive bundled-condition contrasts.
+See \url{ada/research_note.md}, lines 135--137. \ledger{19}
+
+The GPT-only completion difference is \(20\) percentage points,
+interval \([-5,45]\). GPT programmatic versus natural-language proposals
+average \(1.5\) versus \(0\) per game, and accepted arrangements
+\(0.15\) versus \(0\). This correction matters because the initial log
+audit covered GPT alone. Few accepted supplemental arrangements also limit
+what those records establish about residual trading as an explanation.
+\ledger{26, 29}
+
+\subsection{Targeted instructions differ}
+
+The implementation adds a residual-trading example only to the
+programmatic condition. It teaches that coverage of earlier tiles does
+not remove the need for a supplemental trade. A separate movement example
+teaches an alternative covered route. Executing the prompt functions with
+identical synthetic states confirmed these differences in both trading
+modes, even without an accepted contract. In that case the additions are
+572 characters for trading and 825 for movement. No Contract also lacks
+both examples. See \url{ada/research_note.md}, lines 113--123.
+\ledger{16, 17, 29}
+
+All 40 GPT programmatic and natural-language games on mutually dependent
+pay-for-partner boards were requested without outcome filtering.
+The initially retrieved 15 programmatic and 16 natural-language games
+contained 187 and 203 trade prompts respectively. Every programmatic
+prompt contained the example; no natural-language prompt did.
+The movement-example difference was also present.
+Thus the imbalance is recorded in historical runs, not merely a later
+source snapshot. See \url{ada/research_note.md}, lines 139--141.
+\ledger{20}
+
+Matching terms alone cannot separate representation from demonstrations.
+Writing \(R\) for representation and \(E\) for the example, the comparison
+changes both:
+\[
+Y(R=1,E=1)-Y(R=0,E=0),
+\]
+rather than identifying \(Y(1,e)-Y(0,e)\) at fixed \(e\).
+The programmatic-versus-No-Contract headline comparison is bundled too.
+This does not establish that demonstrations explain the gap.
+\ledger{17, 20, 24, 29}
+
+\subsection{Initial terms, missingness and execution}
+
+The first audit transcribed 16 natural-language accepted tile lists and
+decoded 15 programmatic lists, retaining stated colors and flagging
+board-color contradictions. A checker enumerated 184 simple
+corner-to-corner paths and checked joint chip budgets.
+Sufficiency means both players can finish without supplemental trading;
+it does not imply that they follow those paths or receive enforcement.
+\ledger{18, 21}
+
+Under that initial normalization, 12 contracts in each arm were sufficient,
+out of 15 programmatic and 16 natural-language games.
+Two programmatic and four natural-language contracts had color
+inconsistencies; discarding those terms did not change the classifications.
+Among 13 boards with both logs, five had identical normalized terms:
+\[
+82,\;85,\;93,\;95,\;98.
+\]
+All five were sufficient and completed jointly in both arms.
+No matched insufficient-contract cell was available. This is missing
+overlap, not a causal null.
+An independent reachability implementation agreed on the 31 classifications,
+but the linguistic annotations were single-researcher judgments.
+Later rounds revise the interpretation of natural-language sufficiency
+when named roles depend on contradictory statements.
+See \url{ada/research_note.md}, lines 143--145.
+\ledger{21, 44, 49}
+
+Nine indexed GPT run paths returned empty listings and \(404\) responses.
+Seven missing games failed: all four natural-language games and three
+of five programmatic games. The retrieved cohort overrepresents success.
+\ledger{22}
+
+Initially, 203 natural-language move responses included 192 legal proposals
+and 68 proposals on listed, unused, correctly colored tiles with a funded
+giver under the chosen reading. Six did not execute under contract and
+left Player 1 stationary:
+\[
+(87,4),\;(90,0),\;(91,2),\;(94,3),\;(96,2),\;(96,3),
+\]
+where pairs denote original board and turn.
+The proposed moves were adjacent and giver inventories contained
+11--14 red chips.
+Without historical judge decisions or a pinned runtime, these were
+apparent missed executions, not certified judge false negatives.
+See \url{ada/research_note.md}, lines 149--151. \ledger{23}
+
+Four affected games still finished jointly; board 96 was already
+classified insufficient. None of the six events is shown to have changed
+completion. The counts were \(0/32\) for Player 0 and \(6/36\) for
+Player 1. All 16 games had zero recorded judge-format errors, and neither
+log type contained the corresponding parsing/API-error record.
+This excludes recorded errors in that subset, not unlogged failures.
+The broader final cohort does contain recorded errors.
+The role audit also shows why eligibility under a selected reading need
+not establish an agreed entitlement.
+See \url{ada/review3_note.md}, lines 28--32.
+\ledger{26, 29, 30, 44, 56}
+
+\section{Extension following review 26}
+
+\subsection{Failed-contract comparisons}
+
+Review 26 proposed comparing games with no active contract, since the
+programmatic condition still receives the examples.
+There are 34 paired model-board observations in pay-for-partner mode and
+27 in regular trading, spanning 31 and 23 boards.
+Only one pair per mode is mutually dependent; Haiku supplies 21 and
+20 pairs. These are mainly independent or asymmetric states, rather than
+the insufficient accepted-contract states motivating the hypothesis.
+\ledger{26, 28, 33, 35}
+
+In programmatic, natural-language and No Contract order, paired-cohort
+mean completion is
+\[
+\begin{array}{lccc}
+ & \text{Prog.} & \text{NL} & \text{No Contract}\\
+\text{Pay-for-partner} & 0.8824 & 0.8235 & 0.8235\\
+\text{Regular} & 0.6667 & 0.7407 & 0.6667
+\end{array}
+\]
+The programmatic-minus-natural-language differences are \(5.88\)
+percentage points, interval \([-11.11,22.58]\), and \(-7.41\) points,
+interval \([-17.86,0]\).
+Proposal differences are \(-0.088\), interval \([-0.879,0.722]\), and
+\(0.333\), interval \([-0.240,1.333]\), per game.
+\ledger{28, 39}
+
+Mean proposal/acceptance counts in the same arm order are
+\[
+\begin{array}{lccc}
+\text{Pay-for-partner} & 2.176/0.500 & 2.265/0.529 & 2.647/0.412\\
+\text{Regular} & 3.407/0.185 & 3.074/0.259 & 3.370/0.148
+\end{array}
+\]
+and mean joint rewards are
+\[
+\begin{array}{lccc}
+\text{Pay-for-partner} & 131.765 & 127.647 & 127.647\\
+\text{Regular} & 116.667 & 121.111 & 116.667 .
+\end{array}
+\]
+Intervals use 5,000 board-cluster bootstrap draws, retaining model
+observations within boards. They describe variation across boards,
+not repeated-generation variability.
+Unrestricted failed-contract arm sizes differ: 99 versus 67 in
+pay-for-partner and 129 versus 54 in regular trading, with different
+model and board composition.
+See \url{ada/review3_note.md}, lines 7--18.
+\ledger{28, 39}
+
+A verified no-verbal-agreement restriction was unavailable:
+failed natural-language logs omit negotiation records, while some
+programmatic failures follow an agreed draft rejected at ratification.
+Excluding retained formalization records as a proxy leaves 26
+pay-for-partner and 17 regular pairs.
+Completion contrasts become \(3.85\) points, interval \([-16,24]\), and
+\(-11.76\) points, interval \([-29.41,0]\); proposal contrasts are
+\(-0.077\), interval \([-1.115,1.000]\), and \(0.353\),
+interval \([-0.647,1.824]\).
+The proxy cannot certify absence of agreement.
+These selected whole-game contrasts show no consistent benefit and do
+not establish equivalence.
+See \url{ada/review3_note.md}, lines 20--26 and 48.
+\ledger{28, 39}
+
+\subsection{Matched-input first actions}
+
+A narrower comparison uses the first mover's first trade decision.
+In all 61 pairs, saved system and user inputs match after whitespace
+normalization and removal of only the targeted trade example.
+Both arms have historical \url{with_message_history=false}.
+The identical example block was verified in all 772 programmatic trade
+prompts across these games.
+The first decision precedes any movement-example effect and avoids a
+second-player state altered by an earlier action.
+See \url{ada/review3_note.md}, lines 40--46 and 70--88.
+\ledger{31, 33, 35}
+
+First-mover proposals occur in \(4/34\) programmatic versus \(3/34\)
+natural-language cases in pay-for-partner, and \(1/27\) versus \(2/27\)
+in regular trading. With 10,000 board-bootstrap draws,
+\[
+\begin{aligned}
+\widehat{\Delta}_{\mathrm{P4P}}
+ &=2.94\text{ percentage points},
+ & I_{\mathrm{P4P}}&=[-8.82,16.13],\\
+\widehat{\Delta}_{\mathrm{regular}}
+ &=-3.70\text{ percentage points},
+ & I_{\mathrm{regular}}&=[-12.50,0].
+\end{aligned}
+\]
+These sparse estimates are inconclusive, not equivalence results.
+See \url{ada/review3-first-action-stats-002.log}, lines 2--6.
+\ledger{33, 35}
+
+Let \(B\) denote model and board, \(Z\) the example, \(F\) previous
+contract-formation failure, \(U\) fresh response randomness, and \(A\)
+the proposal indicator. The conditional identification argument assumes
+\[
+A=f(B,Z,U),
+\qquad U\perp F\mid(B,Z).
+\]
+Then
+\[
+\mathbb{E}[A\mid B,Z,F=1]
+=\mathbb{E}[A\mid B,Z].
+\]
+Under stateless generation, stable model settings and independent
+continuation randomness, the cause of negotiation failure does not alter
+the response distribution at identical displayed inputs.
+Prompt equality does not prove these assumptions or exclude provider-side
+state. The selected overlap cohort still limits generalization.
+This repairs the hidden-dialogue objection for the local diagnostic
+conditionally, but does not identify effects under accepted contracts
+or a representation-by-sufficiency interaction. \ledger{35, 39}
+
+\subsection{Multi-model prompt and imitation checks}
+
+A prespecified extension retrieved all 40 event/verbose pairs for boards
+80--83 across the other five models.
+Including GPT, this four-board subset had 18 of 24 programmatic and
+15 of 24 natural-language completions.
+The enlarged corpus contains the example in all \(1{,}507\) programmatic
+trade prompts, none of 496 natural-language prompts, and none of 76
+No Contract prompts. Movement counts agree.
+The six No Contract logs span all models on board 80.
+See \url{ada/review3_note.md}, lines 52--54 and 111--117.
+\ledger{32, 38}
+
+At the balanced-extension checkpoint, valid one-color offers included
+\(23/78\) one-for-one and \(6/78\) three-for-two proposals in the
+programmatic arm, versus \(11/42\) and \(5/42\) in the natural-language
+arm. These common ratios do not establish imitation.
+The enlarged programmatic corpus contains one eight-word match about
+lacking blue chips and contract coverage, but it concludes that coverage
+suffices and no trade is needed. It does not reproduce the example's
+insufficiency-to-trade conclusion.
+This supersedes the earlier zero-match checkpoint without establishing
+copying or excluding paraphrased influence. \ledger{32, 38}
+
+P's \(74\%\) versus \(94\%\) contract-citation comparison concerns
+declining trade, whereas the extra example cites a contract while
+proposing trade. Contract-word occurrence cannot automatically explain
+that statistic, and the audit's keyword counts do not replicate P's
+semantic coding. See \url{ada/review3_note.md}, lines 62--68 and 113--117.
+\ledger{32, 38, 39}
+
+\subsection{Coverage and execution accounting}
+
+The programmatic audit retrieved 115 of 120 mutually dependent
+pay-for-partner logs and classified all 110 available accepted contracts:
+\[
+\begin{array}{lrrrr}
+ & \text{Games} & \text{Finished} & \text{Proposals} & \text{Accepted}\\
+\text{Insufficient} & 56 & 42 & 233 & 123\\
+\text{Sufficient} & 54 & 47 & 89 & 24\\
+\text{No contract} & 5 & 4 & 27 & 19\\
+\text{Unavailable} & 5 & 2 & 16 & 1
+\end{array}
+\]
+Proposal and acceptance columns are residual-arrangement totals.
+This accounting survives the final executable-coverage audit.
+See \url{ada/review3-multimodel-004.log}, lines 1--2.
+\ledger{36, 49, 62}
+
+At that checkpoint, natural-language classifications comprised 20
+sufficient games with 17 completions; seven insufficient with two;
+four no-contract games, all complete; nine ambiguous contracts with seven;
+and 80 other unclassified accepted-contract games with 30 completions.
+The last category mostly lay outside the bounded annotation extension,
+rather than representing 80 failed downloads.
+These are historical, reading-dependent classifications, superseded by
+the later ambiguity-aware decompositions.
+\ledger{32, 36, 49, 62}
+
+Of 25 programmatic failures, three were unclassified, giving logical
+failure-count bounds \([14,17]\) for insufficient contracts and
+\([7,10]\) for sufficient contracts.
+The earlier natural-language bounds were \([5,57]\) and \([3,55]\),
+with 52 of 60 failures unresolved. Those bounds are superseded below.
+Neither version is a confidence interval or causal decomposition.
+\ledger{36, 49, 62}
+
+The extended natural-language audit recorded 20 apparent misses among
+107 eligible moves in 12 games under its selected term readings;
+18 left the recipient stationary. Player counts were \(3/54\) for
+Player 0 and \(17/53\) for Player 1. Five transfers occurred outside
+the final coded coordinates, with no specific judge parsing/API-error
+record in that inspected subset.
+The programmatic subset had zero misses among 105 eligible moves,
+but differing cohorts prevent an accuracy comparison.
+\ledger{37, 56}
+
+Three affected natural-language games failed: GPT board 96 and
+Qwen-30B boards 80 and 83. The earlier interpretation classified the
+latter two as sufficient and suggested enforcement might contribute to
+failure. Review 41 exposed contradictory first-person terms:
+their sufficient labels depend on the chosen reading.
+Contract ambiguity, interpretation and execution must therefore remain
+joint possibilities. No corrected-enforcement completion is observed.
+\ledger{37, 41, 44, 49}
+
+Formal representation also has implementation failures.
+Spaces in coordinate keys for Maverick board 84 and Scout board 98
+prevent matching the inspected engine's canonical keys. Both record
+zero contract-covered moves but finish through supplemental arrangements.
+A malformed receiver field in Maverick board 83 makes its clause
+inapplicable. Acceptance and nominal tile counts do not establish
+effective coverage. See \url{ada/review3_note.md}, lines 58 and 109.
+\ledger{37, 59}
+
+\section{Extension following review 41: agreement meaning}
+
+\subsection{Hypothesis, retrieval and coding}
+
+Review 41 proposed testing whether speaker-relative role conflict explains
+apparent non-execution. The negotiation template requests clauses such as
+``I give you'' and ``You give me.'' Repeating a clause verbatim under a
+different speaker label can reverse its named payer.
+The natural-language judge reads the transcript with speaker labels and
+is instructed to reject a move when the mover is the giver.
+Thus a rejection compatible with one literal reading is not automatically
+an enforcement error. \ledger{41, 42, 44}
+
+In Qwen-30B board 83, Player 1 repeats Player 0's first-person terms,
+including the red-chip clause for \((3,0)\), before Player 1's attempted
+move there does not execute under contract.
+In board 80, the recorded non-executions at \((1,0)\), \((3,1)\) and
+\((3,2)\) match Player 1's literal allocation of obligations.
+GPT board 87 supplies a related case without verbatim echo.
+These observations motivated the audit; they were not an unselected test
+sample. \ledger{41}
+
+Retrieval reached 116 of 120 natural-language mutually dependent
+pay-for-partner games, with both event and verbose files.
+The missing GPT boards are 80, 86, 89 and 92; all failed completion.
+All 120 natural-language regular-trading event logs are present,
+but verbose retrieval and initial manual coding are narrower.
+See \url{ada/review4_note.md}, lines 17--19.
+\ledger{46, 50}
+
+The coding protocol was fixed before new outcome tabulation.
+Packets contained boards, initial inventories and dialogue, omitting
+moves, rewards and completion. The lead had already seen some cases
+and cannot claim complete blinding.
+A separate coder received a random 24-game sample from the first 81
+retrieved accepted pay-for-partner transcripts without outcomes or lead
+annotations. A fixed 12-game regular-trading sample was independently
+coded as a replication.
+See \url{ada/review4_protocol.md}, lines 3--15, and
+\url{ada/review4_note.md}, lines 23--31.
+\ledger{43, 46, 48}
+
+Clauses resolve first-person terms to the labeled speaker and
+second-person terms to the counterpart. Attributed quotations preserve
+their original speaker; bare acceptance does not manufacture a reversed
+statement. Superseded offers are excluded, and inventory or color errors
+are recorded without repairing the payer.
+A checkpoint correction restricts directional conflicts to the same tile
+and color and preserves explicitly reciprocal bundles.
+This refinement was made after the checkpoint, not preregistered.
+Three regular games contain nonunit or start-tile bundles outside the
+unit-coverage schema and retain unknown path sufficiency.
+\ledger{43, 45, 48, 50}
+
+The lead labeled 18 of 24 pay-for-partner games conflicting, five
+consistent and one unresolved; the independent coder labeled 19
+conflicting and five consistent.
+Agreement was \(23/24\), with Cohen's \(\kappa=0.885\);
+clause-tuple Dice agreement was \(0.946\).
+The disagreement concerns whether bare acceptance supersedes a prior
+conflicting statement, and explanatory prose affects additional cases.
+Regular coding found eight conflicting, three consistent and one
+unresolved game.
+These remain results for the original sample. The fresh validation below
+does not reproduce their high categorical agreement.
+See \url{ada/review4_note.md}, lines 25--31.
+\ledger{43, 46, 48, 50, 58}
+
+\subsection{Execution estimates and their limits}
+
+An eligible opportunity is a legal proposal to a previously unvisited
+tile, with matching color and a coded reading naming the mover as
+receiver. The donor must have at least two chips at recorded turn start,
+allowing conservatively for an earlier movement cost.
+Regular turns containing a chip trade are excluded in a sensitivity
+analysis. Eligibility under a disputed reading does not prove an agreed
+entitlement.
+The outcome is recorded contract execution, not a historical judge
+yes/no reply, which is unavailable.
+See \url{ada/review4_note.md}, lines 35--37.
+\ledger{44, 46, 48}
+
+The independent-coder estimates in that sample are:
+\[
+\begin{array}{lrrr}
+ & \text{Conflict} & \text{Other} & \Delta\text{ (pp)}\\
+\text{P4P, all attempts} & 53/89 & 5/22 & 36.8\\
+\text{P4P, first attempts} & 22/47 & 4/18 & 24.6\\
+\text{Regular, all attempts} & 14/25 & 2/9 & 33.8\\
+\text{Regular, first attempts} & 7/14 & 2/7 & 21.4
+\end{array}
+\]
+Entries are non-executions divided by eligible opportunities.
+The corresponding \(95\%\) board-bootstrap intervals, in row order, are
+\[
+[2.9,57.9],\quad [-16.7,46.0],\quad
+[-12.4,65.0],\quad [-30.0,63.2].
+\]
+First attempts retain one observation per game, player and tile, limiting
+the weight of repeated stationary attempts.
+See \url{ada/review4_note.md}, lines 39--48.
+\ledger{46, 48}
+
+Game-cluster intervals are respectively
+\[
+[10.4,59.9],\quad [-10.7,49.2],\quad
+[0.0,69.0],\quad [-21.4,65.0].
+\]
+The pay-for-partner estimates use 21 contributing games on 13 boards;
+regular estimates use eight games on six boards.
+Bootstraps use 5,000 draws and omit draws with an empty comparison cell.
+Sparse support limits precision and population interpretation.
+\ledger{46, 48, 50}
+
+Model overlap is the decisive objection.
+Nineteen of 22 nonconflicting pay-for-partner opportunities are GPT;
+the remaining three are Haiku Player 0. All regular nonconflicting
+opportunities are GPT.
+Haiku is the sole pay-for-partner model with both clause types.
+Its only within-player comparison, Player 0, has \(6/10\)
+non-executions under conflicting clauses versus \(2/3\) otherwise,
+opposite to the pooled direction.
+A regression cannot supply the missing overlap for a general adjusted
+conflict effect.
+See \url{ada/review4_note.md}, line 50.
+\ledger{45, 46, 48, 50}
+
+The pay-for-partner Player 1 excess is \(24.3\) percentage points overall,
+\(27.9\) within conflicting clauses and \(9.1\) within other clauses.
+Equal weighting of the conflict strata gives \(18.5\) points,
+board interval \([-14.3,41.2]\); first attempts give \(11.8\),
+interval \([-26.7,41.7]\).
+Lead-coder sensitivity instead gives an all-attempt standardized
+difference of \(29.5\), interval \([3.2,46.0]\).
+Regular differences are \(6.3\) overall and \(1.9\) after standardization,
+with wide intervals.
+Conflict therefore does not consistently account for the role gap,
+and coding uncertainty changes apparent precision.
+See \url{ada/review4_note.md}, line 52.
+\ledger{48, 50}
+
+All eligible pay-for-partner attempts survive the no-chip-trade filter.
+Regular eligibility falls from 34 to 31 attempts, with a pooled contrast
+of \(32.3\) points. Non-execution leaves the mover stationary in
+\(57/58\) pay-for-partner and \(16/16\) regular cases.
+Completion counts are \(6/19\) conflicting versus \(4/5\) consistent
+pay-for-partner games, and \(1/8\) versus \(2/3\) regular games.
+These remain confounded descriptive comparisons, not estimates of
+completion under repaired terms or enforcement.
+See \url{ada/review4_note.md}, line 54.
+\ledger{48, 50}
+
+\subsection{Separate literal readings}
+
+The analysis preserves each speaker's interpretation rather than declaring
+a repaired interpretation correct.
+The earlier table across all resolved eligible clauses was:
+\[
+\begin{array}{llrr}
+ & \text{Reading} & \text{Mover receiver} & \text{Mover giver}\\
+\text{P4P} & \text{Speaker 0} & 42/91 & 3/10\\
+          & \text{Speaker 1} & 23/29 & 25/69\\
+\text{Regular} & \text{Speaker 0} & 16/27 & 2/7\\
+              & \text{Speaker 1} & 9/16 & 9/14
+\end{array}
+\]
+These are executions divided by attempts under each classification.
+Absent and internally ambiguous cases are recorded separately in
+\url{ada/review4-final-sensitivities.json}.
+The table does not restrict attention to clauses with opposite singleton
+payers in both speakers' statements. Review 52's motivating use of the
+\(23/29\) versus \(25/69\) contrast therefore required correction,
+reported in the next section. \ledger{44, 48, 50, 52, 55}
+
+Non-execution does not prove that the judge selected a particular
+speaker's reading, since it sees the whole transcript.
+The earlier table established neither a stable speaker-selection rule
+nor a rule that reproduced in regular trading.
+See \url{ada/review4_note.md}, lines 58--67.
+\ledger{48, 50, 55}
+
+\subsection{Formalization and ratification}
+
+Six matching model-board cells were inspected in the programmatic arm.
+They were purposively selected from the conflict investigation and have
+different negotiation trajectories, so they are neither matched contracts
+nor randomized canonicalizations.
+Five contain role conflict in their own dialogue. \ledger{47}
+
+Qwen-30B board 80 compiles Speaker 1's reading, assigning all five
+red/blue obligations to initially unfunded donors; both agents ratify.
+Player 0's explanation describes receiving blue chips even though the
+formal object makes it their giver.
+Qwen-30B board 83 compiles the funded Speaker 0 reading, but Player 1
+ratifies while describing itself as blue-poor.
+Haiku board 84 also ratifies three initially unfunded clauses.
+\ledger{47}
+
+Qwen-235B board 90 compiles Speaker 0's funded reading, which Player 1
+rejects for reversing its proposal. That literal proposal would itself
+assign Player 1 red chips it lacks. The rejection detects disagreement,
+not a certified compiler error.
+Maverick board 92 rejects after compilation, but its truncated explanation
+does not establish why.
+Scout board 82 preserves consistent final directions and receives matching
+ratification explanations.
+See \url{ada/review4_note.md}, lines 71--80.
+\ledger{47, 50}
+
+A formal object fixes an executable interpretation without certifying
+shared understanding, initial feasibility or accurate ratification.
+These examples undermine a simple claim that JSON repairs perspective
+errors, but do not estimate a population rate.
+Source histories and checks are in
+\url{ada/review4-formal-records.json} and
+\url{ada/review4-formal-check.json}.
+The final extension replaces reliance on these purposive examples with
+a census of available formal objects. \ledger{47, 50, 59}
+
+\subsection{Reading-dependent sufficiency}
+
+The exhaustive joint-path checker was applied separately to Speaker 0,
+Speaker 1, union, nonconflicting-subset and last-substantive-list readings.
+Neither union nor subset is asserted to be the agreed contract.
+Subset insufficiency cannot establish insufficiency of the disputed full
+agreement. \ledger{49}
+
+Among the 24 double-coded pay-for-partner games, these readings classify
+respectively
+\[
+11,\quad 6,\quad 13,\quad 3,\quad 8
+\]
+games as sufficient.
+The corresponding numbers of failed games classified sufficient are
+\[
+6,\quad 1,\quad 7,\quad 0,\quad 3.
+\]
+Initial feasibility is therefore interpretation-dependent.
+See \url{ada/review4_note.md}, lines 84--86.
+\ledger{49, 50}
+
+Conservatively, 11 sampled games are insufficient even under the union
+of coded clauses; seven fail and four complete through other actions.
+Three have sufficient consistent terms and all complete.
+Ten remain conflicting or reading-dependent, with seven failures.
+Across the full 120-game natural-language cohort, 92 accepted games lay
+outside the double-coded sample and four had no contract.
+Of 60 failures, seven were insufficient under all coded readings and
+53 remained ambiguous or unclassified. The resulting historical bounds,
+\[
+\begin{array}{lcc}
+ & \text{Insufficient failures} & \text{Sufficient failures}\\
+\text{Pay-for-partner} & [7,60] & [0,53]\\
+\text{Regular} & [3,67] & [0,64],
+\end{array}
+\]
+are superseded by the full-cohort conditional accounting below.
+They were logical bounds conditional on coded clauses, not confidence
+intervals. \ledger{49, 50, 62}
+
+Qwen-30B board 80 belongs to the double-coded sample; board 83 is a
+previously inspected illustration outside it.
+Neither retains an unconditional sufficient label.
+The revised account allows contract ambiguity as well as interpretation
+or execution failures, without claiming completion under corrected
+enforcement. See \url{ada/review4_note.md}, lines 88--90.
+\ledger{44, 49, 50}
+
+\section{Final extension following review 52}
+
+\subsection{Scope and fixed tests}
+
+This round used only already retrieved experiment logs.
+It did not repeat the blocked live pilot or request API access.
+The protocol fixed a within-conflict reading comparison and a separate
+execution-coherence check before full-cohort outcome tabulation.
+The prior 36 records remained fixed; expanded lead coding was frozen
+before fresh-subset outcomes were supplied.
+The lead had seen earlier aggregate findings, and formal dialogue coding
+was not independently outcome-blind.
+See \url{ada/review5_protocol.md}, lines 3--11, and
+\url{ada/review5_note.md}, lines 13--19.
+\ledger{52, 53, 58, 63}
+
+Natural-language transcripts cover 112 accepted pay-for-partner games
+and 117 accepted regular-trading games. Four accepted GPT pay-for-partner
+games remain missing, all failed; four pay-for-partner and three regular
+games had no contract.
+Only 14 regular verbose logs are local, including 12 accepted games.
+Thus full transcript coverage does not mean full attempted-move coverage.
+Formal pay-for-partner objects cover 110 accepted games and two rejected
+offers; five accepted objects are missing.
+No accepted formal regular-trading object is available: 111 accepted
+cells remain unknown for contract semantics.
+See \url{ada/review5_note.md}, lines 15--17.
+\ledger{58, 59, 62}
+
+\subsection{Execution instability without semantic adjudication}
+
+\begin{claim}
+P's retrieved natural-language logs contain different execution outcomes
+for repeated requests with equal reconstructed adjudication inputs,
+despite available funding.
+\end{claim}
+
+This is an observational claim about reconstructed inputs and recorded
+resource execution. It does not identify historical judge replies or
+establish which interpretation of a disputed contract is correct.
+\ledger{54, 56, 61}
+
+The inspected judge receives a fixed system instruction plus the contract
+transcript, moving player, requested tile and mover's route.
+It does not receive current inventories or the opponent's route.
+The audit groups exact matches of these variable inputs within a game.
+It restricts attention to legal, previously unvisited tiles whose partner
+has at least two chips of the actual color at turn start, conservatively
+allowing for an earlier payment. Regular turns with a chip trade are
+excluded.
+See \url{ada/review5_note.md}, lines 23--27, and
+\url{ada/p-repo/src/game/judge.py}, lines 290--315.
+\ledger{54, 56}
+
+Writing the reconstructed input as
+\[
+x=(\text{transcript},\text{player},\text{tile},\text{route}),
+\]
+a mixed group contains the same \(x\) on repeated eligible attempts,
+with stationary non-execution followed by contract execution.
+For the pay-for-partner cohort, the counts are
+\[
+\begin{aligned}
+\text{eligible attempts}&=888,\\
+\text{distinct input groups}&=572,\\
+\text{repeated groups}&=138,\\
+\text{mixed repeated groups}&=54.
+\end{aligned}
+\]
+The mixed groups occur in 38 games.
+Their fraction among observed repeated groups is
+\[
+\frac{54}{138}=39.13\%,
+\qquad
+I_{\mathrm{board}}=[29.92\%,48.20\%].
+\]
+The interval is a board-cluster percentile bootstrap interval.
+\ledger{54, 56, 61}
+
+Mixed and repeated group counts by agent population are:
+\[
+\begin{array}{lrr}
+\text{Agent population} & \text{Mixed} & \text{Repeated}\\
+\text{GPT} & 5 & 9\\
+\text{Haiku} & 16 & 28\\
+\text{Maverick} & 4 & 19\\
+\text{Scout} & 4 & 34\\
+\text{Qwen-235B} & 8 & 14\\
+\text{Qwen-30B} & 17 & 34
+\end{array}
+\]
+These are six agent populations, not six different judges.
+See \url{ada/review5_note.md}, line 25.
+\ledger{54, 56, 61}
+
+Unlike the earlier small subset, some full-cohort logs contain explicit
+judge parsing errors. Excluding every game containing
+\url{check_if_move_is_in_contract_error}
+leaves \(52/133\) mixed groups in 36 games.
+Excluding only recorded error turns leaves \(54/138\).
+Nineteen mixed groups retain identical relevant-color donor and mover
+stocks; twelve retain identical full turn-start inventories.
+All earlier non-executions in the mixed groups leave the mover stationary.
+Negotiation prompts have the correct distinct initial player inventories
+in all 61 mixed groups across the two modes.
+\ledger{56, 61}
+
+An independent implementation reconstructed all \(1{,}607\) legal
+natural-language move records, checked contemporaneous movement prompts
+for donor funds, and manually inspected a random 15-group, 52-attempt
+subset. It found no duplicate, route, turn-offset or unfunded-donor
+explanation for eligible attempts.
+For example, Qwen-30B on pay-for-partner board 84 requests tile \((2,1)\)
+as Player 0 with route
+\[
+[(0,0),(1,0),(2,0)].
+\]
+Turn 2 does not execute and turn 3 executes under contract, with unchanged
+relevant turn-start stocks of 12 for the donor and zero for the mover.
+See \url{ada/review5_note.md}, lines 27--29, and
+\url{ada/review5_second/repeat-validation.json}.
+\ledger{56, 61}
+
+Regular trading supplies seven mixed groups among 14 repeated groups,
+in four games. This is a smaller corroborating subset, not a full-cohort
+attempted-move replication.
+The available formal event-backed sample has zero mixed groups among
+seven repeated groups in four games.
+Its small and different cohort prevents an arm-effect estimate; zero
+observations do not establish a population zero rate.
+\ledger{54, 61}
+
+The result rules out deterministic execution as a function of the
+reconstructed input alone in these records. It does not prove that actual
+historical requests were identical or that no omitted runtime state
+mattered: ordinary judge requests and replies were not retained, and
+the downloaded source is not a pinned historical runtime.
+Repetition is endogenous. Failed requests create opportunities to retry,
+while execution changes the route. Consequently \(39.13\%\) is neither
+an independent repeated-query disagreement probability nor a judge error
+rate or estimated benefit of retrying.
+Twenty-four of the 38 mixed-outcome games still finish jointly.
+See \url{ada/review5_note.md}, lines 31--35.
+\ledger{54, 56, 61, 63}
+
+P's three errors among \(1{,}155\) approved moves address a different
+question. An approved-move audit does not test rejected requests or
+repeatability. The two percentages have different denominators and must
+not be compared as competing error rates. \ledger{3, 56, 61}
+
+\subsection{Full-cohort semantic coding failed fresh validation}
+
+The automatic parser was checked against the fixed 36 coded games.
+It detected 22 of 27 conflict labels, missed five, falsely flagged one
+of eight consistent games and flagged the unresolved game.
+Clause tuples contained 265 true positives, 11 false positives and
+69 false negatives. Prose, quotations, reciprocal bundles and
+supersession prevented reliable automatic extraction.
+See \url{ada/review5_note.md}, line 39.
+\ledger{52, 58}
+
+Manual expansion produced 229 natural-language transcripts.
+The frozen lead labels 81 of 112 pay-for-partner games and 76 of 117
+regular games conflicting.
+A fresh independent sample contained 24 games, twelve per mode, excluding
+the prior 36. Status agreement fell to
+\[
+\frac{14}{24},
+\qquad \kappa=0.292.
+\]
+Exact clause-set agreement was \(15/24\), and tuple Dice was \(0.891\).
+Disagreements concern attributed adoption, bare acceptance and supersession,
+explanatory prose, and reciprocal bundles.
+Substantial tuple overlap does not rescue the categorical measurement.
+The earlier \(23/24\) agreement cannot be generalized to this extension.
+See \url{ada/review5_note.md}, lines 39--43.
+\ledger{58}
+
+The requested model-level prevalence is therefore reported as
+\emph{frozen lead-coded output}, not validated population prevalence:
+\[
+\begin{array}{llrr}
+\text{Mode} & \text{Model} & \text{Conflict/coded}
+ & I_{\mathrm{board}}\;(\%)\\
+\text{P4P} & \text{GPT} & 1/16 & [0.0,18.8]\\
+ & \text{Haiku} & 20/20 & [100.0,100.0]\\
+ & \text{Maverick} & 12/17 & [47.1,88.2]\\
+ & \text{Scout} & 11/19 & [36.8,78.9]\\
+ & \text{Qwen-235B} & 19/20 & [85.0,100.0]\\
+ & \text{Qwen-30B} & 18/20 & [75.0,100.0]\\
+\text{Regular} & \text{GPT} & 5/20 & [10.0,45.0]\\
+ & \text{Haiku} & 16/20 & [60.0,95.0]\\
+ & \text{Maverick} & 13/18 & [50.0,94.4]\\
+ & \text{Scout} & 12/19 & [42.1,84.2]\\
+ & \text{Qwen-235B} & 17/20 & [70.0,100.0]\\
+ & \text{Qwen-30B} & 13/20 & [45.0,85.0]
+\end{array}
+\]
+In the same model order, unresolved-label counts are
+\[
+(1,0,1,2,0,1)\quad\text{for P4P},
+\qquad
+(3,1,1,4,1,3)\quad\text{for regular}.
+\]
+Board bootstraps exclude annotation uncertainty, and a degenerate interval
+does not establish universal prevalence.
+See \url{ada/review5_note.md}, lines 113--130.
+\ledger{58}
+
+\subsection{Within-conflict readings do not supply a stable rule}
+
+The fixed test requires the same tile and color to have opposite singleton
+payers in the two speakers' operative statements.
+Applying that restriction to the original 36-game coding leaves 72
+pay-for-partner attempts.
+Under Speaker 1's reading, execution is \(3/5\) when the mover is receiver
+and \(23/67\) when it is giver; first-attempt counts are \(3/4\) and
+\(13/31\).
+Thus the earlier \(23/29\) versus \(25/69\) table partly reused the
+consistent-clause and model-composition contrast.
+It was not evidence of a within-conflict speaker-selection rule.
+\ledger{55}
+
+Full lead coding supplies 306 eligible opposing-payer attempts in 62
+pay-for-partner games. The following counts record agreement between a
+reading's execution prediction and observed contract execution:
+\[
+\begin{array}{lrr}
+\text{Reading} & \text{All attempts} & \text{First attempts}\\
+\text{Speaker 0} & 169/306 & 112/182\\
+\text{Speaker 1} & 137/306 & 70/182\\
+\text{Last substantive list} & 137/306 & 85/182\\
+\text{Final speaker} & 134/306 & 82/182\\
+\text{Funded reading} & 151/306 & 119/182
+\end{array}
+\]
+For Speaker 0, board-bootstrap agreement intervals are approximately
+\(45.6\%\)--\(65.0\%\) for all attempts and
+\(53.2\%\)--\(69.6\%\) for first attempts.
+Model results vary, and some small cells have only one prediction class.
+The funded reading is structurally privileged by the eligibility filter;
+its agreement is not an independent measure of semantic preference.
+See \url{ada/review5_note.md}, lines 45--49.
+\ledger{55, 61}
+
+A conservative complete-extraction overlay retains 269 attempts in 54
+games and does not reveal a stable rule. Substituting the independent
+coder's fresh 24 records leaves that conclusion unchanged.
+Regular trading has only 18 eligible opposing-payer attempts in five
+verbose-backed games.
+Detailed model and uncertainty tables are retained in
+\url{ada/review5-final-stats.json} and
+\url{ada/review5-final-uncertainty.json}.
+\ledger{61}
+
+Only Qwen-235B board 80 requires both whole-speaker readings to account
+for its observed executions in this restricted test.
+That witness disappears on first attempts and belongs to a game with a
+recorded parsing error. It is not robust evidence of mutually incompatible
+whole-transcript interpretations; coherent clause-wise interpretation is
+also a different hypothesis.
+The reconstructed-input instability finding is stronger because it does
+not depend on these semantic labels.
+See \url{ada/review5_note.md}, line 51.
+\ledger{61}
+
+\subsection{Formalization and funding across available objects}
+
+Among 110 available accepted formal objects, single-coder dialogue labels
+are 76 conflict-present, 22 consistent and twelve unresolved.
+The explicit-opposing-final-lists subset contains 62 accepted objects;
+excluding conditional or pending wording leaves 58.
+Across all offered objects, 63 have explicit opposing final lists.
+These are single-coder sensitivity counts, not independently validated
+semantic prevalence. \ledger{59}
+
+Across those 63 offered cases, compilation matches Speaker 0 on every
+compared disputed clause in 47, Speaker 1 in nine, a uniform subset in
+four, and mixes speakers in three.
+Of 281 matched disputed clauses, 231 select Speaker 0 and 50 Speaker 1;
+six additional clauses are omitted, changed or malformed.
+Agreement on compared clauses does not prove selection of an entire
+speaker's contract, and mixed selection is not automatically a compiler
+error in an ambiguous dialogue.
+See \url{ada/review5_note.md}, lines 55--57.
+\ledger{59}
+
+All 110 observed accepted objects were mutually ratified.
+In 23, some named giver initially lacks the stated chip color; in 45,
+some named giver initially lacks the actual tile color.
+The retrieved objects contain 477 of 498 accepted clauses reported in
+the full cohort.
+Initially funded named-giver counts are 408 under stated colors and 383
+under actual colors. Logical full-cohort bounds are therefore
+\[
+\frac{408}{498}\leq f_{\mathrm{stated}}\leq\frac{429}{498},
+\qquad
+\frac{383}{498}\leq f_{\mathrm{actual}}\leq\frac{404}{498}.
+\]
+These are missing-data bounds, not confidence intervals.
+Ratification does not verify funding or shared interpretation.
+\ledger{59}
+
+Executable semantics also differ from the displayed fields.
+The inspected engine requires exact coordinate and receiver strings,
+then charges the receiver's counterpart for the actual tile color.
+It does not consult the declared giver or stated color when charging.
+Nine clauses have unmatched spaced coordinate keys and one has a malformed
+receiver. Among 467 potentially actionable clauses, 92 assign actual
+payment to an initially unfunded counterpart.
+This distinction explains why nominal named-giver counts and executable
+coverage counts differ.
+See \url{ada/review5_formal/formal_audit_note.md}, lines 15--21.
+\ledger{59}
+
+The formal audit therefore extends the earlier examples without turning
+them into a remedy claim. Formalization can fix an executable interpretation
+while retaining ambiguous or infeasible obligations, and mutually recorded
+ratification does not establish correct understanding.
+\ledger{47, 59}
+
+\subsection{The described zero-score penalty is not implemented here}
+
+P states that a giver unable to fulfill a contractual transfer immediately
+receives zero points. The retrieved engine instead falls back to ordinary
+self-payment when the transfer cannot occur; its score calculation does
+not impose that penalty.
+See \url{ada/review5_note.md}, line 61, and
+\url{ada/review5_formal/formal_audit_note.md}, lines 63--73.
+\ledger{60}
+
+The audit extracted the original source functions without loading model
+or API dependencies and replayed 444 move responses across 36 event-backed
+formal games. Contract-execution labels and shortfall counters match the
+historical records, with no unresolved responses.
+All 15 reconstructed shortfalls in eleven games fall back to ordinary
+self-payment. Donors retain positive final scores after nine of those
+attempts. Recomputing 41 final states reproduces event and CSV scores.
+\ledger{60}
+
+In the broader pay-for-partner CSV, 30 of 43 affected donor-player/game
+pairs have positive final scores after recorded shortfalls.
+These observations qualify the intervention actually represented by this
+run package. They do not establish the behavior of an unavailable later
+runtime version.
+The replay validates the inspected deterministic branch against observed
+events, not a full simulation of discretionary decisions.
+\ledger{60, 63}
+
+\subsection{Updated completion and residual-trading decomposition}
+
+The original mutually dependent pay-for-partner totals remain
+\[
+95/120\quad\text{programmatic},
+\qquad
+60/120\quad\text{natural-language}.
+\]
+The 35-game gap is descriptive and still bundles examples, representations,
+formation and enforcement.
+The conservative natural-language coding separates incomplete extraction
+and disputed annotations rather than assigning them a convenient reading.
+``Insufficient'' below means insufficient even under the union of all
+coded valid-color clauses, conditional on complete extraction.
+A union-possible conflicting contract need not be a coherent agreement.
+\ledger{19, 58, 62}
+
+Each row gives games, joint completions, residual proposals and accepted
+proposals:
+\[
+\begin{array}{lrrrr}
+\text{P4P natural-language class}
+ & N & C & P & A\\
+\text{Insufficient under all readings} & 32 & 15 & 38 & 19\\
+\text{Sufficient and consistent} & 13 & 11 & 5 & 2\\
+\text{Conflicting, union possible} & 44 & 21 & 66 & 23\\
+\text{Annotation uncertain} & 23 & 9 & 42 & 23\\
+\text{Missing logs} & 4 & 0 & 0 & 0\\
+\text{No contract} & 4 & 4 & 14 & 11
+\end{array}
+\]
+For regular trading:
+\[
+\begin{array}{lrrrr}
+\text{Natural-language class} & N & C & P & A\\
+\text{Insufficient under all readings} & 27 & 7 & 41 & 18\\
+\text{Sufficient and consistent} & 11 & 9 & 7 & 1\\
+\text{Conflicting, union possible} & 29 & 10 & 35 & 6\\
+\text{Annotation uncertain} & 50 & 24 & 76 & 28\\
+\text{No contract} & 3 & 3 & 26 & 8
+\end{array}
+\]
+See \url{ada/review5_note.md}, lines 65--79.
+\ledger{62}
+
+Formal pay-for-partner accounting remains 56 executable-insufficient
+contracts with 42 completions, 233 proposals and 123 acceptances;
+54 sufficient contracts with 47 completions, 89 proposals and 24
+acceptances; five unavailable accepted objects with two completions;
+and five no-contract games with four completions.
+Thus selected formal insufficient-contract games have more supplemental
+proposals and more completion than the selected natural-language
+insufficient-contract games.
+The targeted demonstrations are among the possible explanations.
+This does not identify representation-induced anchoring.
+\ledger{36, 59, 62}
+
+A descriptive standardization illustrates the fragility of attributing
+the gap to contract composition.
+Keeping only unambiguous natural-language classes selects 45
+natural-language versus 110 formal games. Their completion gap is
+\(23.13\) percentage points. Using natural-language within-class rates
+allocates \(7.62\) points to composition and \(15.51\) to within-class
+differences.
+Treating all union-possible conflicts as the upper class selects 89
+natural-language games instead. The gap becomes \(28.10\) points,
+with composition \(-1.39\) and within-class difference \(29.49\).
+The composition term changes sign.
+Neither calculation partitions the full \(35/120\) gap.
+See \url{ada/review5_note.md}, line 83.
+\ledger{62}
+
+Moreover, formal executable coverage follows actual tile colors, whereas
+the main natural-language coding respects stated colors.
+These classes do not provide a common semantic-feasibility scale.
+Combined with failed fresh coding validation and selection of known
+classes, this prevents causal attribution.
+\ledger{58, 59, 62}
+
+Updated logical failure-count bounds are
+\[
+\begin{array}{lcc}
+ & \text{Insufficient} & \text{Sufficient}\\
+\text{NL pay-for-partner} & [17,58] & [2,43]\\
+\text{NL regular} & [20,65] & [2,47]\\
+\text{Formal pay-for-partner} & [14,17] & [7,10].
+\end{array}
+\]
+All 28 accepted-game failures in formal regular trading remain
+unclassified because the accepted objects are unavailable.
+These bounds concern coded or implemented coverage; they neither include
+unrestricted semantic disagreement nor identify causes of failure.
+They replace the earlier natural-language bounds and remain too broad
+to settle the mechanism of the arm gap.
+See \url{ada/review5_note.md}, line 85.
+\ledger{62, 63}
+
+\section{Objections and their status}
+
+\begin{objection}
+P's comparisons do not isolate contractual representation.
+\end{objection}
+
+This remains established. Programmatic contracts combine JSON compression,
+ratification, different enforcement and targeted demonstrations.
+Natural-language contracts retain dialogue and consult a judge during
+execution. The demonstration difference is recorded across all six models
+and also affects the comparison with No Contract.
+Equal achieved covered-move counts do not establish equal initial
+obligations or sufficiency; conditioning on them can introduce
+post-treatment selection. The final accounting does not remove these
+confounds. \ledger{3, 17, 18, 20, 38, 62}
+
+\begin{objection}
+Failed-contract selection invalidates an example-effect estimate.
+\end{objection}
+
+For whole-game contrasts, the concern remains.
+For the first action, identical displayed inputs and verified absence of
+message history support a narrower interpretation under the explicit
+fresh-generation assumption. Negotiation failure was not randomized,
+and the estimates remain inconclusive and restricted to selected
+no-contract states. \ledger{28, 31, 33, 35, 52}
+
+\begin{objection}
+Non-execution proves that the natural-language judge failed.
+\end{objection}
+
+This interpretation is not supported.
+P's approved-move-only accuracy figure cannot bound false negatives,
+but selected-reading eligibility and observed non-execution do not
+certify errors either.
+Historical judge replies are absent, and contradictory terms can support
+opposing obligations.
+The final equal-reconstructed-input result avoids choosing an entitlement,
+but still cannot separate stochastic judgment from omitted historical
+runtime details. \ledger{3, 23, 44, 56, 61, 63}
+
+\begin{objection}
+Role conflict explains the performance and player gaps.
+\end{objection}
+
+The original pooled association lacks model overlap and is sensitive to
+repeated attempts and coding choices.
+The new within-conflict test supplies no stable whole-speaker rule.
+Fresh categorical agreement is poor, so full-cohort prevalence and
+semantic decomposition cannot be treated as validated ground truth.
+The original 36-game coding remains a documented sample result, not a
+population explanation. \ledger{46, 48, 50, 55, 58, 61}
+
+\begin{objection}
+Formalization and ratification solve the interpretation problem.
+\end{objection}
+
+Available formal objects sometimes assign initially unfunded obligations,
+and both players frequently ratify them. Exact engine semantics can also
+differ from the declared fields.
+A deterministic object can preserve a selected mistake as reliably as a
+correct interpretation. The described zero-score penalty is absent from
+the inspected implementation and contradicted by positive donor scores
+after recorded shortfalls in this package.
+These findings qualify P's intervention; they do not measure a general
+failure rate for formal contracting. \ledger{47, 59, 60}
+
+\begin{objection}
+The proposed mechanism may be ordinary prompt sensitivity, and Q's
+terminal diagnostic may saturate.
+\end{objection}
+
+Neither objection is resolved.
+Multiple semantics-preserving displays, fixed guidance, mirrored roles
+and sufficiency interactions remain necessary for a behavioral test.
+A disclosed final tick may induce nearly universal crossing.
+That ceiling must be reported; near-terminal or undisclosed-horizon
+states offer other contrasts, but non-crossing there is not automatically
+dominated. No such Q responses were collected.
+\ledger{10, 13, 24, 39, 50, 63}
+
+\section{Sources beyond Q and P}
+
+Q's public implementation,
+\url{https://github.com/jswistak/competitive-market-simulation},
+was inspected at revision
+\url{a8e3e8cbe712b3a26e331d781a5fddc50274281d}.
+It confirms atomic crossing and mutable orders, but actor shuffling is
+unseeded. Scheduling control is needed before claiming paired rollouts.
+Optional trading tools and zero-intelligence baselines were already
+documented, so their addition alone is not novel.
+See \url{ada/research_note.md}, lines 89--101.
+\ledger{6, 8}
+
+P's repository,
+\url{https://anonymous.4open.science/r/colored_trails-70A4/},
+supplied source, \url{results/all_runs_latest.csv}, and public game logs.
+No commit identifier was retrieved for the anonymous snapshot.
+Saved prompts connect instruction differences to historical runs,
+while unrecorded runtime details remain uncertain.
+Download hashes, failures and source paths are retained in the audit logs
+and under \url{ada/p-repo/public_logs/}.
+The final audit uses the original single-run CSV, not P's later GPT
+expansion. \ledger{16, 19, 20, 35, 46, 60, 63}
+
+Hantel's author page,
+\url{https://agentsquared.org/research/when-biased-agents-trade},
+and the RFQ study's abstract page,
+\url{https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7200918},
+warn against broad novelty claims about anchoring and interface failures.
+Shared-pool full-text retries again returned HTTP \(429\), including the
+final round. An earlier Gode--Sunder DOI attempt did not resolve an open
+PDF. No completed full-text novelty comparison is available for those
+items. \ledger{6, 10, 24, 39, 50, 57}
+
+The perspective audit consulted pooled LaTeX for
+\emph{Using Perspectival Words Is Harder Than Vocabulary Words for Humans
+and Even More So for Multimodal Language Models},
+\url{https://arxiv.org/abs/2506.00065}.
+Its source discusses speaker-relative reference and instruction effects
+at lines 91--115 and 205--227.
+Generic perspective difficulty and instruction-based repair are therefore
+existing research topics. Its task concerns referential labeling rather
+than negotiated obligations and execution.
+See \url{ada/review4_note.md}, lines 94--98.
+\ledger{50}
+
+The final full-text search found a close architectural antecedent:
+\emph{Accurate Legal Reasoning at Scale},
+\url{https://arxiv.org/abs/2605.02472}.
+Pooled LaTeX lines 74--93 and 115--127 describe replacing repeated
+probabilistic interpretation with one-time deterministic compilation;
+lines 336--338 discuss semantic errors becoming fixed by compilation.
+Neither deterministic compilation nor its semantic-risk caveat is a
+novel remedy established by this investigation. \ledger{57, 63}
+
+\emph{Same Input, Different Scores},
+\url{https://arxiv.org/abs/2603.04417},
+already tests repeated identical-input judge variability.
+Pool metadata records that LaTeX was unavailable, so the PDF fallback
+was used.
+\emph{ContraVis}, \url{https://arxiv.org/abs/2609.27014},
+addresses evidence-grounded contradiction analysis rather than repeated
+execution of negotiated game obligations.
+The final note also records GenLayer's engineering distinction between
+nondeterministic interpretation and deterministic state transitions:
+\url{https://docs.genlayer.com/understand-genlayer-protocol/core-concepts/non-deterministic-operations-handling}.
+That documentation is an architectural precedent, not evidence about P.
+See \url{ada/review5_note.md}, lines 89--98.
+\ledger{57, 63}
+
+The narrower observation is that endogenous retries in P grant actual
+resources after earlier non-execution at equal reconstructed adjudication
+inputs. Its economic consequences and distinctiveness against inaccessible
+full texts remain unestablished.
+Searches and pool failures are documented rather than treated as novelty
+certification. \ledger{57, 61, 63}
+
+The earlier validation checked 36 distinct independently coded game
+identifiers and 338 exact-evidence clauses.
+The final structural validation reports 208 records, \(1{,}302\) clauses
+and no validation errors in its checked set:
+\url{ada/review5-full-validation-001.log}, line 1.
+These checks validate evidence references and joins, not linguistic ground
+truth or causal interpretation.
+The fresh semantic disagreement remains part of the result.
+\ledger{50, 58, 63}
+
+\section{What remains open and the smallest next step}
+
+The material remains thin as evidence for a new causal behavioral result
+requiring both papers.
+The transfer identity, surplus witness and terminal probe stand as
+elementary Q controls. The prompt imbalance and conditional first-action
+estimates stand as empirical audit results.
+The original role-conflict sample and formalization examples remain
+documented, but expanded semantic prevalence failed fresh validation.
+The final execution-invariance audit and implemented-penalty discrepancy
+are the strongest additional findings.
+\ledger{39, 50, 58, 60, 61, 63}
+
+The record does not show that contracts repair Q, that representation
+suppresses P's residual trading, or that examples explain P's benefits.
+It does not establish a causal retry benefit or completion under corrected
+enforcement.
+Q contributes no second empirical domain.
+Generic stochastic judging, deterministic compilation and fixed compiler
+errors have close prior work.
+There is no publication-ready cross-paper claim on present evidence.
+The narrower outcome is a reproducible audit of P's implementation and
+measurement limits. \ledger{52, 57, 60, 61, 63}
+
+The smallest next step for the surviving execution question is a
+provenance-complete invariance check: recover or record exact judge
+requests and replies, the runtime revision and instantaneous execution
+state for a fixed repeated request.
+A matched replay should determine whether execution changes when the
+full adjudication input and execution preconditions are held fixed.
+This would distinguish omitted historical state from genuine variability
+at identical requests. It would test invariance, not yet welfare.
+The current reconstructed-input finding motivates that check but cannot
+substitute for it. \ledger{54, 56, 61, 63}
+
+The earlier behavioral experiment remains a separate, larger task.
+Begin with mutually consistent canonical terms and verify their initial
+sufficiency. Hold terms, ratification opportunity, deterministic execution,
+information, horizon, and trade and movement examples fixed.
+Cross named-party versus perspective-preserving speaker-relative displays
+with an explicit check of who gives what to whom.
+Include sufficient and insufficient contracts, measuring correctly
+identified obligations, residual proposals and acceptances, completion,
+and individual and joint rewards.
+Repeated responses should carry uncertainty grouped by board and canonical
+contract. This is a proposed design, not a reported experiment.
+\ledger{17, 24, 35, 49, 50}
+
+For genuinely contradictory negotiations, canonicalization must flag
+ambiguity rather than silently select whichever reading makes completion
+feasible. A formation experiment testing clarification is distinct from
+a fixed-contract continuation test.
+The latter can isolate representation and verification conditional on
+accepted terms; it cannot establish effects on bargaining or formation.
+The earlier prose-versus-JSON and example-presence factorial remains
+useful only once the displays encode the same named obligations.
+\ledger{47, 49, 50, 58, 59}
+
+A Q follow-up is warranted only if it answers an additional question:
+render identical order states with ordinary or accurate
+conditional-commitment wording, preserve revision and expiry rights,
+and measure crossing and payoff with terminal ceilings reported.
+Market-level follow-up must separate surplus, dispersion and trade count.
+It is not justified as a direct transplant of P's commitment mechanism.
+\ledger{7, 9, 11, 24, 50, 63}
+
+Historical judge requests and replies, runtime provenance, reliable
+semantic resolution of disputed terms, accepted formal regular objects,
+causal completion effects and two inaccessible full texts remain open.
+No API-access request or blocked pilot is repeated here.
+The bounded final target is complete: it found execution instability,
+failed to validate a general semantic mechanism, and narrowed the original
+connexion rather than manufacturing a positive result.
+\ledger{58, 61, 62, 63, 64}
+
+\end{document}

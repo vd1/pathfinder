@@ -1,0 +1,2138 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Correcting a Resource Mechanism Before Importing CVaR Learning}
+
+\begin{document}
+\maketitle
+
+\section{The pair and the connexion pursued}
+
+Q proposes quadratic payments for strategic resource allocation,
+claiming efficient Nash implementation, budget balance, individual
+rationality, and stochastic learning stability.
+P develops distributed zeroth-order CVaR optimization and identifies
+the expected empirical smoothed objective targeted by its
+fixed-batch method.
+
+The connexion pursued was to replace Q's expected valuations with
+risk-averse preferences learned through P's empirical CVaR oracle.
+The investigation changed direction when preliminary checks
+invalidated Q's mechanism guarantees: a payment correction and a
+different convergence argument were needed before transferring
+P's oracle.
+\ledger{1, 3, 6, 12}
+
+The preceding account established mechanism counterexamples,
+a corrected payment, surrogate economic guarantees, regularized
+learning, multilevel estimation, a private-threshold oracle,
+an atom-safe Lipschitz-bias bound, and a saddle-gap transfer theorem.
+These results are retained below.
+Reviews \ledger{14, 27, 37} report independent rederivations of
+successive portions without finding an error.
+The latest review, \ledger{37}, nevertheless questioned the
+oracle access model, the batch baseline, and the use of allocation
+curvature in the query bound.
+
+The appended round answers those questions with independent
+symmetric batches, locally feasible queries, and a weighted
+block-learning argument.
+Its strongest conditional upper bound is
+\(O(\epsilon^{-3})\) total loss evaluations for either private
+thresholds or symmetric empirical batches.
+It supersedes any interpretation of the earlier comparison as a
+threshold query-exponent advantage.
+These newest arguments have exact algebra checks but no subsequent
+independent verifier review in the supplied ledger.
+\ledger{38, 39, 40, 42, 43, 45, 46}
+
+The principal accounts are
+\url{ada/mechanism_surrogate.md},
+\url{ada/finite_cost_extension.md},
+\url{ada/private_threshold_oracle.md},
+\url{ada/sharp_bias_and_saddle.md}, and
+\url{ada/feasible_queries_and_curvature.md}.
+The results concern prescribed learning and economic properties
+of its outputs.
+Publication priority, optimal oracle complexity, and incentives
+to follow the transient protocol remain unresolved.
+
+\section{Obstructions in Q}
+
+\begin{claim}
+Q's strict uniqueness LMI and its price-consensus implementation
+condition cannot hold simultaneously.
+\end{claim}
+
+Q requires
+\[
+\Psi+\Psi^\top\preceq-\upsilon I,\qquad
+\upsilon>0,\qquad
+\sum_m A_{nm}^n=0.
+\]
+For a nonzero \(v\in\mathbb R^K\), take \(h_n=(0,v)\).
+Then
+\[
+h^\top(\Psi+\Psi^\top)h
+=-2\sum_n v^\top
+ \left(\sum_m A_{nm}^n\right)v=0.
+\]
+This contradicts strict negative definiteness, independently of
+valuations or CVaR.
+It disproves simultaneous LMI feasibility, without proving
+inefficiency of every equilibrium of the explicit payment.
+\ledger{2, 14, 37}
+
+\begin{objection}
+Failure of a sufficient LMI does not itself disprove individual
+rationality.
+\end{objection}
+
+For Q's explicit payment,
+\[
+\sum_m a_m^n=\frac{\alpha c}{N(N-1)},
+\]
+contradicting its nonpositivity condition when a capacity is
+positive.
+A direct counterexample is stronger.
+Take
+\[
+\begin{gathered}
+N=3,\quad K=1,\quad \alpha=c=1,\quad
+\mathcal X_n=[0,2],\\
+V_1(x)=5x-\frac{x^2}{2},\qquad
+V_2(x)=V_3(x)=-x-\frac{x^2}{2}.
+\end{gathered}
+\]
+The welfare optimum \(x=(1,0,0)\) and common prices \(p_n=4\)
+satisfy the individual first-order conditions.
+The own negative-utility Hessian is
+\[
+\begin{pmatrix}
+1&-1/2\\
+-1/2&1
+\end{pmatrix}\succ0,
+\]
+so these conditions establish a Nash equilibrium.
+Nevertheless,
+\[
+t_1=\frac{14}{3},\qquad
+V_1(1)=\frac92,\qquad
+U_1=-\frac16.
+\]
+Using \([0,2]\), rather than the initially recorded \([0,1]\),
+makes the active allocation locally interior and removes the
+price-selection ambiguity.
+\ledger{4, 10, 14, 37}
+
+Full-message uniqueness also fails.
+Let
+\[
+N=3,\quad c=3,\quad
+\mathcal X_n=[0,1],\quad
+V_n(x)=2x-\frac{x^2}{2},\quad \alpha=1.
+\]
+Every profile \(x_n=1,\ p_n=p\), for \(p\in[0,1]\), is an
+equilibrium.
+Capacity binds, price derivatives vanish, and allocation utility
+derivatives equal \(1-p\ge0\) at the upper boundary.
+The same positive definite own Hessian proves sufficiency.
+The welfare allocation is unique and zero is strictly aggregate
+feasible, but equilibrium messages are not unique.
+\ledger{16, 27, 37}
+
+Additional obstacles to inheriting Q's learning proof are recorded
+in \url{ada/mechanism_surrogate.md}, lines 44--48:
+its reduced-payment matrices do not reproduce the explicit tax;
+full-map nonexpansiveness does not imply the componentwise
+inequality used in its proof; and
+\(\lceil0.96^{i+1}\rceil=1\) in exact arithmetic.
+The preceding counterexamples do not depend on these issues.
+
+\section{A corrected mechanism and direct implementation}
+
+Delete the final opponent-only term from Q's explicit payment.
+Writing its scale as \(\gamma>0\), the corrected tax is
+\[
+\begin{aligned}
+t_n^c(s)
+={}&\frac{\gamma}{2(N-1)}
+       \sum_{j\ne n}\|p_n-p_j\|^2\\
+&-\frac{\gamma}{N-1}
+       p_n^\top\left(\sum_jx_j-c\right)\\
+&+\frac{\gamma N}{(N-1)^2}
+       \left(\sum_{j\ne n}p_j\right)^\top
+       \left(x_n-\frac cN\right).
+\end{aligned}
+\]
+At a fixed scale, the deletion changes neither own derivatives
+nor best responses or equilibria.
+It changes transfers, which is precisely what the participation
+counterexample requires.
+\ledger{5}
+See \url{ada/mechanism_surrogate.md}, lines 50--71.
+
+Assume \(N\ge2\), compact convex nonnegative local sets containing
+zero, normalized valuations \(V_n(0)=0\), and existence of a
+planner multiplier.
+Let \(f_n=-V_n\) be \(m\)-strongly convex.
+For differentiable costs, the negative-utility pseudo-gradient is
+\[
+\begin{aligned}
+F_{x_n}
+&=\nabla f_n(x_n)-\frac{\gamma}{N-1}p_n
+ +\frac{\gamma N}{(N-1)^2}\sum_{j\ne n}p_j,\\
+F_{p_n}
+&=\gamma\left[
+p_n-\frac1{N-1}\sum_{j\ne n}p_j
+-\frac1{N-1}\left(\sum_jx_j-c\right)
+\right].
+\end{aligned}
+\]
+Allocation subgradients replace gradients for nonsmooth costs.
+
+Initially prices range over the nonnegative orthant.
+At equilibrium,
+\(F_{p_n}\ge0\) and \(p_n^\top F_{p_n}=0\).
+Summing stationarity proves feasibility.
+Put
+\[
+r=c-\sum_nx_n\ge0,\qquad
+\bar p=\frac1N\sum_np_n.
+\]
+Summed complementarity gives
+\[
+0=
+\frac{\gamma N}{N-1}\sum_n\|p_n-\bar p\|^2
++\frac{\gamma}{N-1}
+ \left(\sum_np_n\right)^\top r.
+\]
+Both terms are nonnegative.
+Thus prices agree, \(p_n=p\), and \(p^\top r=0\).
+Allocation stationarity reduces to
+\[
+0\in\partial f_n(x_n)+\gamma p+
+N_{\mathcal X_n}(x_n),
+\]
+the planner KKT conditions with multiplier \(\lambda=\gamma p\).
+
+Conversely, any planner primal-dual optimum gives an equilibrium
+when own objectives are convex; it suffices that
+\(m\ge\gamma/(N-1)^2\).
+All equilibria therefore implement the uniquely optimal allocation.
+Prices need not be unique.
+\ledger{3, 5, 8, 14, 37}
+See \url{ada/mechanism_surrogate.md}, lines 73--88.
+
+At any common price, whether or not aggregate feasibility holds,
+\[
+t_n^c
+=\gamma p^\top
+\left(x_n-\frac1{N-1}\sum_{j\ne n}x_j\right).
+\]
+Consequently \(\sum_nt_n^c=0\).
+The feasible deviation \((0,p)\) pays
+\[
+t_n^c((0,p),s_{-n})
+=-\frac{\gamma}{N-1}p^\top\sum_{j\ne n}x_j\le0.
+\]
+Equilibrium optimality proves individual rationality.
+This direct argument resolves the economic objection without
+repairing Q's incompatible strict LMIs.
+\ledger{5, 14, 27, 37}
+See \url{ada/mechanism_surrogate.md}, lines 90--100.
+
+\section{What P transfers: a surrogate and economic errors}
+
+For tail mass \(\rho_n\in(0,1)\), define
+\[
+C_n(x)=\operatorname{CVaR}_{\rho_n}[\ell_n(x,\xi)],
+\qquad
+V_n(x)=C_n(0)-C_n(x).
+\]
+The planner minimizes the sum of local CVaRs, rather than CVaR of
+the aggregate random loss.
+Deterministic payments pass through CVaR by translation equivariance.
+
+The retained oracle results assume sample losses are
+\(m\)-strongly convex, uniformly \(L_n\)-Lipschitz, and bounded by
+\(U_n\) in absolute value.
+The earlier versions assume these properties on a convex
+neighborhood containing all queries.
+This strengthens Q's expectation-only curvature assumption.
+The appended feasible-query construction removes the external
+neighborhood requirement.
+
+For fixed batches and radii, P supplies the useful deterministic
+surrogate
+\[
+\widetilde C_n(x)
+=\mathbb E_{\nu,\xi^{1:s_n}}
+ \widehat C_{n,s_n}(x+\delta_n\nu),
+\qquad
+\nu\sim\operatorname{Unif}(\mathbb B).
+\]
+Fresh batches and sphere directions give an unbiased one-point
+gradient oracle for this surrogate.
+Translation equivariance extracts a common deterministic
+quadratic, so samplewise curvature survives empirical CVaR,
+expectation, and smoothing.
+\ledger{6, 8}
+
+Before dividing by the radius, P's DKW argument gives
+\[
+\sup_x|\widetilde C_n(x)-C_n(x)|\le e_n,
+\qquad
+e_n=L_n\delta_n+
+ \frac{U_n\sqrt{2\pi}}{\rho_n\sqrt{s_n}}.
+\]
+This is a uniform bound on an expected empirical objective;
+it does not exchange a samplewise supremum and expectation.
+
+Let \(\widetilde s\) be a corrected-mechanism equilibrium for
+normalized surrogate valuations, and let \(x^\star\) be the true
+planner optimum.
+Writing
+\[
+\Delta_C(x)
+=\sum_nC_n(x_n)-\sum_nC_n(x_n^\star),
+\]
+the original sandwich argument established
+\[
+\begin{aligned}
+&\sum_n\widetilde x_n\le c,\qquad
+ \sum_nt_n^c(\widetilde s)=0,\\
+&0\le\Delta_C(\widetilde x)\le2\sum_ne_n,\\
+&\operatorname{Regret}_n(\widetilde s)\le2e_n,\qquad
+ U_n(\widetilde s)\ge-2e_n,\\
+&\|\widetilde x-x^\star\|^2
+ \le\frac{4\sum_ne_n}{m}.
+\end{aligned}
+\]
+Regret permits all unilateral allocation and nonnegative-price
+deviations.
+The welfare proof inserts the surrogate at both allocations;
+normalization constants cancel in regret; participation compares
+zero and the equilibrium allocation.
+Strong convexity supplies the allocation bound.
+These estimates remain valid and are sharpened below.
+\ledger{6, 8, 14, 17, 30}
+
+\begin{objection}
+Exact surrogate participation does not imply exact participation
+under true CVaR preferences.
+\end{objection}
+
+Take \(N=3\), \(c=\gamma=m=1\), and
+\(\mathcal X_n=[0,2]\), with
+\[
+\begin{aligned}
+\ell_1(x,\xi)&=\frac{x^2}{2}-2x+\xi x,
+&\mathbb P(\xi=\pm1)&=\frac12,\\
+\ell_2(x)&=\ell_3(x)=x+\frac{x^2}{2}.
+\end{aligned}
+\]
+At tail mass \(1/2\), batch size one makes expected empirical CVaR
+equal expected loss.
+For suitable symmetric smoothing, the unique surrogate equilibrium
+is \(x=(1,0,0)\), \(p_n=1\).
+Its corrected taxes are \((1,-1/2,-1/2)\).
+Agent 1's true utility is \(-1/2\), while the deviation
+\((x_1,p_1)=(0,1/2)\) gives utility \(1/8\).
+The true regret is at least \(5/8\); price selection cannot avoid
+this participation failure.
+\ledger{8, 10, 14, 37}
+
+\section{The retained learning repair}
+
+Stack allocations before prices and set
+\[
+H=\operatorname{diag}
+ \left(I_{NK},\frac{N-1}{N}I_{NK}\right),
+\qquad G=HF.
+\]
+Positive scalar weights on Cartesian blocks preserve VI solutions.
+In consensus directions the symmetric operator has lower bound
+\(\operatorname{diag}(m,0)\).
+In disagreement directions its lower bound is
+\[
+\begin{pmatrix}
+m&-\gamma\kappa_N\\
+-\gamma\kappa_N&\gamma
+\end{pmatrix},
+\qquad
+\kappa_N=\frac{2N-1}{2(N-1)^2}.
+\]
+Thus, if
+\[
+0<\gamma<
+\frac{4m(N-1)^4}{(2N-1)^2},
+\]
+there is \(q>0\) such that
+\[
+\begin{aligned}
+\langle G(s)-G(s'),s-s'\rangle
+\ge q\bigl(
+ \|x-x'\|^2+\|\Pi_\perp(p-p')\|^2
+\bigr).
+\end{aligned}
+\]
+Here \(\Pi_\perp\) projects onto price disagreement.
+This certificate also implies own-objective strong convexity.
+For \(N\ge3\), \(\gamma=m\) works; \(N=2\) requires a smaller scale.
+The common-price direction remains flat.
+\ledger{7, 8, 14, 37}
+See \url{ada/mechanism_surrogate.md}, lines 102--132.
+
+Use a common compact price box containing an uncapped equilibrium.
+Comparing the capped and uncapped VI inequalities forces every
+capped solution to have the same allocation and price disagreement.
+Prices are common; slack resources have zero prices.
+There are no additional capped equilibria under this certificate.
+
+For strictly positive capacities and public loss bounds, a
+sufficient coordinate cap is
+\[
+P_{\max}^{(k)}>
+\frac{2\sum_nU_n}{\gamma c^{(k)}}.
+\]
+Testing zero in the planner dual problem bounds
+\(\lambda^\top c\) by \(2\sum_nU_n\).
+Public bounds are additional information assumptions.
+Zero-capacity resources require separate treatment.
+\ledger{8, 12, 14}
+See \url{ada/mechanism_surrogate.md}, lines 134 onward.
+
+The retained stochastic Tikhonov iteration is
+\[
+\begin{aligned}
+s_{k+1}
+&=\Pi_{\mathcal S}\left[
+s_k-\eta_k\{\widehat G_k(s_k)+\varepsilon_ks_k\}
+\right],\\
+\eta_k&=A(k+1)^{-a},\qquad
+\varepsilon_k=B(k+1)^{-b},\\
+&A,B>0,\qquad \frac12<a<1,\qquad 0<b<1-a.
+\end{aligned}
+\]
+It uses P's oracle in allocation blocks and exact payment
+derivatives elsewhere.
+Aggregate allocation and price information suffice.
+Regularization changes learning, not the limiting tax.
+
+Let \(z_\varepsilon\) solve the regularized VI.
+The path estimate
+\[
+\|z_\varepsilon-z_{\varepsilon'}\|
+\le
+R\frac{|\varepsilon-\varepsilon'|}
+        {\min(\varepsilon,\varepsilon')}
+\]
+implies consecutive target displacement \(O(k^{-1})\).
+For \(D_k=\|s_k-z_{\varepsilon_k}\|^2\), projection and conditional
+unbiasedness give, eventually,
+\[
+\begin{aligned}
+\mathbb E[D_{k+1}\mid\mathcal F_k]
+\le{}&(1-c_0\eta_k\varepsilon_k)D_k\\
+&+O(\eta_k^2)
++O\left(\frac{k^{-2}}{\eta_k\varepsilon_k}\right).
+\end{aligned}
+\]
+The errors are summable and
+\(\sum_k\eta_k\varepsilon_k=\infty\).
+An almost-supermartingale argument gives tracking.
+The deterministic path selects the minimum-norm surrogate
+equilibrium; compactness upgrades almost-sure convergence to
+mean-square convergence.
+\ledger{7, 8, 14, 37}
+
+This applies established stochastic regularization.
+With fixed biased batches, the limit is a surrogate equilibrium,
+not necessarily a true equilibrium.
+
+\section{Retained extension: one-sided bias and every finite batch}
+
+Put
+\[
+f_{n,s}=\mathbb E\widehat C_{n,s},\qquad
+a_n=L_n\delta_n,\qquad
+b_n=\frac{U_n\sqrt{2\pi}}{\rho_n\sqrt{s_n}}.
+\]
+Expectation of an infimum is no greater than the infimum of its
+expectation, so the CVaR representation gives \(f_{n,s}\le C_n\).
+Together with DKW and centered convex smoothing,
+\[
+\begin{aligned}
+C_n-b_n
+&\le f_{n,s_n}\le\widetilde C_n\\
+&\le\mathbb E_\nu C_n(\,\cdot+\delta_n\nu)
+\le C_n+a_n.
+\end{aligned}
+\]
+The discrepancy lies in \([-b_n,a_n]\), so its oscillation is at
+most \(e_n=a_n+b_n\).
+This removes the factor two from the preceding sandwich:
+\[
+\begin{aligned}
+0&\le\Delta_C(\widetilde x)\le\sum_ne_n,\\
+\operatorname{Regret}_n(\widetilde s)&\le e_n,\qquad
+U_n(\widetilde s)\ge-e_n,\\
+\|\widetilde x-x^\star\|^2&\le\frac{2\sum_ne_n}{m}.
+\end{aligned}
+\]
+Feasibility and budget balance remain exact.
+There is no inverse radius in these economic bounds, although the
+oracle variance depends on that radius.
+\ledger{17, 27, 37}
+
+For symmetric Bernoulli noise and tail mass \(1/2\), let
+\(B_s\sim\operatorname{Binomial}(s,1/2)\).
+Then
+\[
+\begin{aligned}
+\widehat{\operatorname{CVaR}}_{1/2}(\xi)
+&=1-\frac4s(s/2-B_s)_+,\\
+\mathbb E\widehat{\operatorname{CVaR}}_{1/2}(\xi)
+&=1-d_s,\\
+d_s&=\frac2s\mathbb E|B_s-s/2|>0.
+\end{aligned}
+\]
+Fractional weighting covers odd sample sizes.
+For even sizes,
+\[
+d_{2r}=\binom{2r}{r}4^{-r}
+\sim\frac1{\sqrt{\pi r}},
+\]
+and \(d_{2r+1}=d_{2r}\) for \(r\ge1\), with \(d_1=1\).
+
+For each finite \(s\), retain
+\(N=3\), \(c=\gamma=m=1\), \(\mathcal X_n=[0,2]\), and choose
+\[
+\begin{aligned}
+\ell_1(x,\xi)
+&=\frac{x^2}{2}+\left(-1+\frac{d_s}{2}\right)x+\xi x,\\
+\ell_2(x)&=\ell_3(x)=x+\frac{x^2}{2}.
+\end{aligned}
+\]
+On nonnegative allocations,
+\[
+C_1(x)=\frac{x^2}{2}+\frac{d_s}{2}x,\qquad
+f_{1,s}(x)=\frac{x^2}{2}-\frac{d_s}{2}x.
+\]
+For \(0<\delta_1<d_s/2\), the surrogate optimum remains
+\[
+\widetilde x=(d_s/2,0,0),\qquad p_n=0.
+\]
+Capacity is slack and taxes vanish.
+The true optimum is zero, and
+\[
+-U_1(\widetilde s)
+=\operatorname{Regret}_1(\widetilde s)
+=\Delta_C(\widetilde x)
+=\frac{3d_s^2}{8}.
+\]
+The zero-allocation, zero-price deviation attains regret; the notes
+also check deviations beyond capacity after optimizing own price.
+\ledger{23, 27, 37}
+
+The family has uniform loss, Lipschitz, and curvature bounds.
+Its linear coefficient varies with \(s\).
+It disproves uniform exact participation for this estimator at
+every finite batch size, rather than asserting failure on one
+fixed instance for all batches or impossibility for all estimators.
+Its economic distortion is \(\Theta(s^{-1})\), whereas value bias
+is \(\Theta(s^{-1/2})\).
+
+\section{Retained extension: multilevel estimation and finite cost}
+
+For terminal batch \(2^J\), define coupled-half increments
+\[
+\Delta_j=\widehat C_{2^j}
+-\frac12\left(
+ \widehat C_{2^{j-1}}^{(1)}
++\widehat C_{2^{j-1}}^{(2)}
+\right).
+\]
+Draw \(L\in\{1,\ldots,J\}\) with
+\[
+q_j=\frac{2^{-j}}{1-2^{-J}},
+\qquad
+Y_J=\widehat C_1^{(0)}+\frac{\Delta_L}{q_L},
+\]
+using an independent baseline.
+Telescoping and squared DKW estimates give
+\[
+\begin{aligned}
+\mathbb EY_J&=\mathbb E\widehat C_{2^J},\\
+\mathbb E[\text{loss evaluations}]
+&=1+\frac{J}{1-2^{-J}},\\
+\mathbb E\Delta_j^2&=O(2^{-j}),\qquad
+\mathbb EY_J^2=O(J).
+\end{aligned}
+\]
+The one-point gradient second moment is \(O(J/\delta^2)\).
+The expected surrogate is unchanged, even though a realized
+estimator need not be convex.
+Worst-case work remains \(2^J+1\).
+\ledger{18, 27, 37}
+
+For the Bernoulli example,
+\[
+\mathbb E\Delta_j=\Theta(2^{-j/2}),\qquad
+\mathbb E\Delta_j^2=\Theta(2^{-j}).
+\]
+For any single-random-level probabilities,
+\[
+\begin{aligned}
+\left(\sum_{j=1}^M
+ \sqrt{2^j\mathbb E\Delta_j^2}\right)^2
+\le
+\left(\sum_{j=1}^M q_j2^j\right)
+\left(\sum_{j=1}^M
+ \frac{\mathbb E\Delta_j^2}{q_j}\right).
+\end{aligned}
+\]
+The left side is \(\Theta(M^2)\).
+Infinite telescoping in this family cannot have both finite
+expected work and finite variance.
+At terminal level \(J\), the product is
+\(\Omega(J^2)\), attained in order by the displayed construction.
+This is an estimator-class lower bound.
+\ledger{23, 27, 37}
+
+For finite-time learning, hold \(h>0\) fixed.
+The solution \(z_h=(x_h,p_h)\) of
+\(\operatorname{VI}(G+hI,\mathcal S)\) has common prices
+\[
+p_h=\frac{\gamma}{Nh}
+ \left[\sum_nx_{h,n}-c\right]_+
+\]
+and minimizes, in allocation,
+\[
+\sum_n\widetilde C_n(x_n)
++\frac h2\|x\|^2
++\frac{\gamma^2}{2Nh}
+ \left\|\left[\sum_nx_n-c\right]_+\right\|^2.
+\]
+Testing stationarity against zero gives
+\[
+\gamma p_h^\top c+Nh\|p_h\|^2+h\|x_h\|^2
+\le2\sum_nU_n.
+\]
+The price cap is uniform in \(h\); capacity violation is \(O(h)\);
+budget balance is exact at \(z_h\).
+\ledger{19}
+
+With \(w=(N-1)/N\), regularization subtracts
+\[
+\frac h2\|x_n\|^2+\frac h{2w}\|p_n\|^2
+\]
+from surrogate utility.
+Comparison with \((0,p_h)\) proves exact surrogate participation
+there, true utility at least \(-e_n\), and true regret at most
+\(e_n+O(h)\).
+
+The correction in \ledger{21} matters:
+unregularized improvement is bounded by the deviation penalty
+minus the current penalty.
+Deviation prices are bounded because the price best response is
+\[
+p_n'=\left[
+\frac{\sum_{j\ne n}p_j}{N-1}
++\frac{x_n'+\sum_{j\ne n}x_j-c}{N-1}
+\right]_+.
+\]
+Compact allocations and capped opponents bound this expression.
+See \url{ada/finite_cost_extension.md}, lines 195--229.
+
+For
+\[
+\begin{aligned}
+s_{t+1}
+&=\Pi_{\mathcal S}
+ [s_t-\eta_t\{\widehat G_t(s_t)+hs_t\}],\\
+\eta_t&=\frac1{h(t+2)},
+\end{aligned}
+\]
+a conditional update second-moment bound \(B_h^2\) gives
+\[
+\begin{aligned}
+r_{t+1}
+&\le\left(1-\frac2{t+2}\right)r_t
++\frac{B_h^2}{h^2(t+2)^2},\\
+r_t&=\mathbb E\|s_t-z_h\|^2,\\
+r_T&\le\frac{\max\{r_0,B_h^2/h^2\}}{T+1}.
+\end{aligned}
+\]
+No operator Lipschitz constant is required.
+Economic continuity on the capped state and bounded deviation
+sets yields
+\[
+\begin{aligned}
+\mathbb E\operatorname{Regret}_n(s_T)
+&\le e_n+O(h+\sqrt{r_T}),\\
+\mathbb E[-U_n(s_T)]_+
+&\le e_n+O(\sqrt{r_T}),\\
+\mathbb E\left|\sum_nt_n^c(s_T)\right|
+&=O(\sqrt{r_T}),\\
+\mathbb E\left\|
+ [\textstyle\sum_nx_{T,n}-c]_+\right\|
+&=O(h+\sqrt{r_T}),\\
+\mathbb E[\Delta_C(x_T)]_+
+&\le\sum_ne_n+O(h+\sqrt{r_T}),\\
+\mathbb E\|\Pi_\perp p_T\|^2&\le r_T,\\
+\mathbb E\|x_T-x^\star\|^2
+&=O\left(r_T+h+\sum_ne_n\right).
+\end{aligned}
+\]
+Positive welfare excess is used because finite-time allocations
+can violate capacity.
+\ledger{19, 21, 27}
+See \url{ada/finite_cost_extension.md}, lines 205--252.
+
+Originally,
+\(h\asymp\delta\asymp\epsilon\) and
+\(2^J\asymp\epsilon^{-2}\) gave multilevel total expected work
+\[
+O\left(\epsilon^{-6}\log^2(1/\epsilon)\right).
+\]
+Plain batches in the same regularized one-point scheme gave
+\(O(\epsilon^{-8})\).
+Geometric growing-batch stages have the same final-order upper
+bound because the last stage dominates.
+These conservative bounds remain valid for those choices.
+Sharp bias later improves the plain-batch bound to
+\(O(\epsilon^{-7})\); different averaged learners improve further.
+\ledger{19, 25, 33}
+
+\section{Retained extension: private thresholds remove batch bias}
+
+\begin{objection}
+The empirical-CVaR counterexamples do not imply that constant-sample
+learning must retain empirical-risk bias.
+\end{objection}
+
+Extract the deterministic quadratic:
+\[
+g_n(x,\xi)=\ell_n(x,\xi)-\frac m2\|x\|^2.
+\]
+Assume \(|g_n|\le B_n\), with Lipschitz constant \(L_{g,n}\).
+A private threshold in \([-B_n,B_n]\) gives
+\[
+\begin{aligned}
+C_n(x)=\frac m2\|x\|^2+
+\min_{\tau\in[-B_n,B_n]}
+\left\{\tau+\frac1{\rho_n}
+ \mathbb E[g_n(x,\xi)-\tau]_+\right\}.
+\end{aligned}
+\]
+Extracting curvature is essential: a threshold hinge alone need
+not be strongly convex in allocation.
+
+Define
+\[
+\begin{aligned}
+Q_{n,\delta}(x,\tau)
+={}&\frac m2\|x\|^2+\tau\\
+&+\frac1{\rho_n}
+ \mathbb E_{\nu,\xi}[g_n(x+\delta_n\nu,\xi)-\tau]_+,
+\end{aligned}
+\]
+with ball-uniform \(\nu\), and
+\[
+C_{n,\delta}^{\mathrm{lift}}(x)
+=\min_{\tau\in[-B_n,B_n]}Q_{n,\delta}(x,\tau).
+\]
+Subtracting \(m\|x\|^2/2\) leaves a jointly convex function.
+Threshold differentiability or curvature is unnecessary.
+Jensen, monotonicity, and translation equivariance imply
+\[
+0\le C_{n,\delta}^{\mathrm{lift}}(x)-C_n(x)
+\le A_n,\qquad A_n=L_{g,n}\delta_n.
+\]
+There is no inverse tail-mass factor in this approximation bound;
+oracle constants still depend on tail mass.
+\ledger{20, 22, 27, 37}
+See \url{ada/private_threshold_oracle.md}, lines 15--44.
+
+With independent fresh scenarios, sphere direction \(u\), and ball
+perturbation \(\nu\), use
+\[
+\begin{aligned}
+\widehat q_x
+&=mx+\frac K{\rho_n\delta_n}
+ [g_n(x+\delta_nu,\xi_1)-\tau]_+u,\\
+\widehat q_\tau
+&=1-\frac1{\rho_n}
+ \mathbf1\{g_n(x+\delta_n\nu,\xi_2)>\tau\}.
+\end{aligned}
+\]
+The expectations form a joint subgradient of \(Q_{n,\delta}\).
+At atoms, strict inequality chooses zero as the hinge subgradient
+at equality.
+Allocation differentiability after smoothing and bounded
+subgradient integration justify compatibility.
+
+The sphere and ball laws are deliberately different.
+Using the sphere query for the threshold update would generally
+target another objective.
+There are exactly two loss evaluations per agent per update, and
+\[
+\|\widehat q_x\|
+\le mR_{x,n}+\frac{2KB_n}{\rho_n\delta_n},
+\qquad
+|\widehat q_\tau|\le1+\rho_n^{-1}.
+\]
+Thus the second moment is \(O(\delta_{\min}^{-2})\), without batch
+bias, scenario gradients, or scenario replay.
+\ledger{22, 27, 37}
+See \url{ada/private_threshold_oracle.md}, lines 46--64.
+
+The joint subgradients satisfy
+\[
+\begin{aligned}
+\langle q_n-q_n',
+ (x_n-x_n',\tau_n-\tau_n')\rangle
+\ge m\|x_n-x_n'\|^2.
+\end{aligned}
+\]
+Weighting only prices by \((N-1)/N\) therefore preserves the
+earlier control of allocations and price disagreement.
+Threshold and common-price directions can remain flat.
+Thresholds do not enter taxes and remain private.
+
+Without regularization, reduction over thresholds gives the
+corrected game with preferences \(C_{n,\delta}^{\mathrm{lift}}\).
+Its equilibria have exact feasibility and budget balance, true
+regret at most \(A_n\), true utility at least \(-A_n\), and welfare
+loss at most \(\sum_nA_n\).
+\ledger{22, 27}
+
+For the extended regularized VI, prices remain
+\[
+p_h=\frac{\gamma}{Nh}
+ [\textstyle\sum_nx_{h,n}-c]_+,
+\]
+and \((x_h,\tau_h)\) minimizes
+\[
+\begin{aligned}
+&\sum_nQ_{n,\delta}(x_n,\tau_n)
++\frac h2(\|x\|^2+\|\tau\|^2)\\
+&\qquad+
+\frac{\gamma^2}{2Nh}
+ \left\|[\textstyle\sum_nx_n-c]_+\right\|^2.
+\end{aligned}
+\]
+If \(\overline Q_n\) uniformly bounds \(|Q_{n,\delta}|\), then
+\[
+\gamma p_h^\top c+Nh\|p_h\|^2
+\le2\sum_n\overline Q_n+\frac h2\sum_nB_n^2.
+\]
+For \(0<h\le1\), a coordinate cap exceeding
+\[
+\frac{2\sum_n\overline Q_n+\tfrac12\sum_nB_n^2}
+     {\gamma c^{(k)}}
+\]
+suffices uniformly.
+At \(z_h\), capacity violation is \(O(h)\), budget balance exact,
+true regret \(A_n+O(h)\), and
+\[
+\begin{aligned}
+\Delta_C(x_h)
+&\le\sum_nA_n+
+ \frac h2\left(R_x^2+\sum_nB_n^2\right),\\
+U_n(z_h)&\ge-A_n-\frac h2B_n^2.
+\end{aligned}
+\]
+A threshold change at zero can incur a regularization penalty,
+so exact surrogate participation at the regularized lifted point
+is not asserted.
+
+The same projection recursion gives
+\[
+r_T=\mathbb E\|z_T-z_h\|^2
+\le\frac{\max\{r_0,B_h^2/h^2\}}{T+1},
+\qquad B_h^2=O(\delta_{\min}^{-2}).
+\]
+Economic errors gain \(O(\sqrt{r_T})\), while
+\[
+\mathbb E\|x_T-x^\star\|^2
+=O\left(r_T+h+\sum_nA_n\right),
+\qquad
+\mathbb E\|\Pi_\perp p_T\|^2\le r_T.
+\]
+Choosing \(h\asymp\delta\asymp\epsilon\) gives the retained
+\(O(\epsilon^{-6})\) constant-sample total-query guarantee.
+\ledger{22, 25, 27}
+
+Geometric accuracy stages recover true optimal allocations at
+stage ends almost surely and in mean square.
+Summable tracking estimates, Markov's inequality, and
+Borel--Cantelli control stochastic errors.
+Vanishing regret makes message cluster points true equilibria.
+This does not prove convergence of all prices when prices are
+nonunique, or of every within-stage iterate.
+\ledger{22, 25}
+
+\section{Verification retained from the preceding note}
+
+The original exact checks cover payment identities for
+\(N=2,\ldots,8\), metric calculations for \(N=2,\ldots,10\),
+and the initial participation counterexamples.
+See \url{ada/algebra_check_01.log}.
+Review \ledger{14} independently checked the mechanism,
+weighted monotonicity, capped VI, and tracking proof.
+
+A ten-seed experiment used 200,000 iterations per seed, batch size
+one, and radius \(0.5\).
+Mean terminal true utility was approximately \(-0.4954\), against
+the exact limit \(-0.5\); mean terminal state distance was
+approximately \(0.0507\).
+Finite-time capacity violations remained.
+Equal initial prices are preserved by that iteration, so tiny
+budget errors are not independent convergence evidence.
+\ledger{11}
+See \url{ada/toy_learning_01.log}.
+
+Further checks cover binomial identities through size 64,
+multilevel moments through level 7, telescoping and work formulas,
+the scalar stochastic-approximation induction, and regularized KKT
+calculations.
+See \url{ada/finite_cost_checks_01.log}.
+The threshold checks include 275625 supporting-plane and curvature
+comparisons and positive-mass threshold atoms:
+\url{ada/threshold_oracle_checks_01.log}.
+They support selected calculations, rather than replacing proofs.
+\ledger{19, 25}
+
+Review \ledger{27} reports rechecking the threshold oracle at atoms,
+uniform cap, uncapped-game regret comparison, finite-time recursion,
+and finite-batch family without finding an error.
+Review \ledger{37} similarly reports rechecking the next extension,
+retained in the following sections.
+
+\section{Outside sources retained from the preceding note}
+
+Early comparisons relied partly on primary abstracts or search
+results because pool requests failed.
+They identified:
+\begin{itemize}
+\item Wang et al., \emph{Learning of Nash Equilibria in Risk-Averse
+Games}, \url{https://arxiv.org/abs/2403.10399}.
+\item \emph{Sample average approximation of conditional value-at-risk
+based variational inequalities},
+\url{https://doi.org/10.1007/s11590-023-01996-9}.
+\item Iusem et al., \emph{Extragradient Method with Variance Reduction
+for Stochastic Variational Inequalities},
+\url{https://doi.org/10.1137/15M1031953}.
+\item Koshal, Nedi\'c, and Shanbhag, \emph{Regularized iterative
+stochastic approximation methods for stochastic variational
+inequality problems},
+\url{https://doi.org/10.1109/TAC.2012.2215413}.
+\item \emph{A Distributed Iterative Tikhonov Method for Networked
+Monotone Stochastic and Hierarchical Aggregative Games},
+\url{https://doi.org/10.1007/s11228-026-00794-6}.
+\end{itemize}
+These established that generic CVaR-game learning and stochastic
+regularization were already known.
+The initial novelty evidence was thin.
+\ledger{9, 12}
+
+Later shared-pool LaTeX retrievals supported fuller comparisons:
+\begin{itemize}
+\item Levy, Carmon, Duchi, and Sidford,
+\url{https://arxiv.org/abs/2010.05893}.
+Their source establishes downward empirical-CVaR bias,
+multilevel value and gradient estimation, and joint primal
+CVaR formulations.
+See \url{../../sources/2010.05893.tex}, lines 2117--2145
+and 2560--2677.
+Their sharper tail-mass dependence can improve elementary DKW
+constants.
+
+\item Asi et al.,
+\url{https://arxiv.org/abs/2106.09481}.
+See \url{../../sources/2106.09481.tex}, lines 642--681 and
+802--807, for bias reduction and the critical logarithmic
+work--variance tradeoff.
+
+\item Wang et al.,
+\url{https://arxiv.org/abs/2403.10399}.
+See \url{../../sources/2403.10399.tex}, lines 397--433 and
+515--526.
+The comparison identifies full strong monotonicity of a
+deterministic interaction component and historical-scenario
+gradient reevaluation.
+The common-price null direction and loss-value access here
+require a different analysis.
+
+\item Sinha and Anastasopoulos,
+\url{https://arxiv.org/abs/1401.1760} and
+\url{https://arxiv.org/abs/1703.05641}.
+The former already uses opponent prices, quadratic
+price-disagreement penalties, capacity slack, and opponent-only
+redistribution; see its pooled source, lines 338--351 and
+772--788.
+The latter changes allocation and adds demand-copy penalties
+for contraction; see lines 288--305.
+
+\item Kakhbod and Teneketzis,
+\url{https://arxiv.org/abs/0910.5502}.
+The pool contains original version 4 and a correction.
+The correction uses requested allocations, opponent prices,
+squared price penalties, excess demand, and rebates.
+See \url{../../sources/0910.5502.tex}, lines 110--160.
+\end{itemize}
+The comparisons and retrieval records are in
+\url{ada/finite_cost_extension.md}, lines 279--295,
+and \url{ada/prior_work_pool_03.log},
+\url{ada/prior_work_pool_04.log}, and
+\url{ada/prior_work_pool_05.log}.
+\ledger{18, 24}
+
+Neither price consensus, redistribution, CVaR lifting,
+multilevel estimation, nor stochastic Tikhonov learning is claimed
+new.
+Koshal's full text, including the author-hosted preliminary
+version at
+\url{https://www.ifp.illinois.edu/~angelia/sa_nash_IEEE_revised.pdf},
+remained unavailable.
+Hurwicz and Chen were not comprehensively compared.
+Successful retrieval of other sources does not turn these
+abstract-only comparisons into full-text evidence.
+\ledger{24, 25}
+
+\section{Retained extension: Lipschitz bias without atom assumptions}
+
+Review \ledger{27} proposed comparing empirical and population
+tail weights at gradient level.
+Direct matching raised concerns about ties and batch-dependent
+selections.
+The notes instead use deterministic spectral weights.
+\ledger{28, 29}
+
+Fix \(\rho,s\), and a pathwise \(L\)-Lipschitz loss.
+Let \(q_x(u)\) be its generalized quantile.
+Common-scenario coupling gives
+\[
+|\ell(x,\xi)-\ell(y,\xi)|\le L\|x-y\|,
+\]
+hence, by monotonicity and translation equivariance of quantiles,
+\[
+|q_x(u)-q_y(u)|\le L\|x-y\|,\qquad 0<u<1.
+\]
+No density, unique quantile, or differentiable loss is needed.
+
+Write \(k=\rho s\), \(j=\lfloor k\rfloor\), \(a=k-j\), and let
+\(b_{r,s}\) be the beta density of the \(r\)-th smallest of
+\(s\) independent uniforms.
+Then
+\[
+C(x)=\int_0^1q_x(u)w(u)\,du,\qquad
+f_s(x)=\int_0^1q_x(u)w_s(u)\,du,
+\]
+where
+\[
+\begin{aligned}
+w(u)&=\rho^{-1}\mathbf1\{u>1-\rho\},\\
+w_s(u)&=\frac1k\left[
+ \sum_{r=s-j+1}^s b_{r,s}(u)+a b_{s-j,s}(u)
+\right].
+\end{aligned}
+\]
+An empty sum is zero.
+Fractional weighting covers noninteger tail counts;
+generalized quantiles cover atoms.
+The spectral representation itself is already in Levy et al.,
+\url{../../sources/2010.05893.tex}, lines 4770--4830.
+\ledger{29}
+
+Because the beta densities sum to \(s\),
+\[
+0\le w_s\le\rho^{-1},\qquad \int_0^1w_s=1.
+\]
+The difference \(w-w_s\) changes sign only at \(1-\rho\).
+For \(B\sim\operatorname{Binomial}(s,\rho)\),
+\[
+\begin{aligned}
+M_{s,\rho}:=\|w-w_s\|_1
+&=2\int_0^{1-\rho}w_s(u)\,du\\
+&=\frac{2\mathbb E[(\rho s-B)_+]}{\rho s}\\
+&\le\min\left\{2,
+ \sqrt{\frac{1-\rho}{\rho s}}\right\}.
+\end{aligned}
+\]
+Apply the weights to a Bernoulli loss of success probability
+\(\rho\): its empirical CVaR is
+\(\min\{B/(\rho s),1\}\).
+Centering of \(B-\rho s\) and its variance prove the bound.
+
+Thus \(D_s=C-f_s\) is Lipschitz:
+\[
+|D_s(x)-D_s(y)|
+\le \Gamma_s\|x-y\|,
+\qquad \Gamma_s=LM_{s,\rho}.
+\]
+Any common deterministic loss term cancels from \(D_s\).
+After extracting the quadratic, a residual-loss Lipschitz
+constant can therefore replace \(L\).
+
+On an open neighborhood where the convex objectives are finite,
+directional derivatives are support functions of their
+subdifferentials.
+The same inequality gives
+\[
+|C'(x;v)-f_s'(x;v)|\le\Gamma_s\|v\|,
+\]
+and Hausdorff distance at most \(\Gamma_s\) between
+\(\partial C(x)\) and \(\partial f_s(x)\).
+This concerns the deterministic expected-batch objective, not
+every realized empirical batch.
+The economic proof needs only bias Lipschitzness.
+\ledger{29, 34, 37}
+See \url{ada/sharp_bias_and_saddle.md}, lines 7--54.
+
+\section{Retained extension: sharp economic distortion}
+
+Let
+\[
+a_n=L_n\delta_n,\qquad
+\Gamma_n=L_nM_{s_n,\rho_n}.
+\]
+Centered convex smoothing gives
+\(0\le\widetilde C_n-f_{n,s_n}\le a_n\), hence
+\[
+\begin{aligned}
+&[C_n(x)-\widetilde C_n(x)]
+-[C_n(y)-\widetilde C_n(y)]\\
+&\qquad\le a_n+\Gamma_n\|x-y\|.
+\end{aligned}
+\]
+
+At an exact surrogate equilibrium, a unilateral increment
+\((d,q)\) in allocation and price has surrogate improvement at most
+\[
+-\frac12\left[
+m\|d\|^2-\frac{2\gamma}{N-1}\langle d,q\rangle
++\gamma\|q\|^2
+\right].
+\]
+Eliminating \(q\) leaves curvature
+\[
+\kappa=m-\frac{\gamma}{(N-1)^2}>0.
+\]
+The weighted monotonicity certificate ensures this positivity.
+Completing the square against the Lipschitz bias gives
+\[
+\begin{aligned}
+\operatorname{Regret}_n(\widetilde s)
+&\le a_n+\frac{\Gamma_n^2}{2\kappa},\\
+U_n(\widetilde s)
+&\ge-a_n-\frac{\Gamma_n^2}{2\kappa}.
+\end{aligned}
+\]
+Surrogate planner optimality similarly contributes a negative
+allocation quadratic, giving
+\[
+0\le\Delta_C(\widetilde x)
+\le\sum_n\left(a_n+\frac{\Gamma_n^2}{2m}\right).
+\]
+Feasibility and budget balance remain exact.
+Economic distortion has order
+\[
+O\left(\sum_n\delta_n+\sum_n s_n^{-1}\right)
+\]
+for fixed curvature and tail masses.
+The older sandwich remains useful as curvature vanishes.
+\ledger{30, 37}
+See \url{ada/sharp_bias_and_saddle.md}, lines 58--105.
+
+Both parameter orders occur in the stated surrogate class.
+In the finite-batch family, choose
+\(\delta_s=d_s^3/4\).
+The exact surrogate minimum is unchanged,
+\(\delta_s=o(s^{-1})\), and the economic errors
+\(3d_s^2/8=\Theta(s^{-1})\) isolate sampling distortion.
+
+For smoothing, let
+\[
+C_1(x)=\frac{x^2}{2}+|x|-\frac x2,\qquad
+C_2(x)=C_3(x)=x+\frac{x^2}{2},
+\]
+with \(N=3\), \(m=\gamma=c=1\), and local intervals \([0,2]\).
+The true optimum is zero.
+Uniform-ball smoothing gives, for \(0\le x<\delta\),
+\[
+\widetilde C_1'(x)=x+\frac x\delta-\frac12.
+\]
+For small \(\delta\), the surrogate equilibrium has
+\[
+\widetilde x_1=\frac{\delta}{2(1+\delta)},
+\qquad \widetilde x_2=\widetilde x_3=0,\qquad p_n=0.
+\]
+Regret, participation shortfall, and welfare loss all equal
+\[
+\frac{\delta}{4(1+\delta)}
++\frac{\delta^2}{8(1+\delta)^2}
+=\Theta(\delta).
+\]
+Joint price deviations do not improve on the true zero response.
+This example uses negative oracle queries around a boundary kink;
+it is not a feasible-query lower bound.
+The appended round supplies a different contraction example.
+\ledger{30, 37}
+See \url{ada/sharp_bias_and_saddle.md}, lines 107--127.
+
+\section{Retained extension: a saddle gap controls mechanism regret}
+
+Use the lifted planner with \(y=(x,\tau)\in Y\):
+\[
+\begin{aligned}
+\mathcal L_\delta(y,\lambda)
+&=\sum_nQ_{n,\delta}(x_n,\tau_n)
++\lambda^\top r(x),\\
+r(x)&=\sum_nx_n-c,\qquad
+\lambda\in[0,\Lambda]^K.
+\end{aligned}
+\]
+Here \(r\) denotes excess demand.
+Choose the cap with fixed margin \(b>0\) above a planner multiplier,
+uniformly over the radii.
+
+Agents perform projected stochastic descent; the manager updates
+the common multiplier from aggregate demand:
+\[
+\begin{aligned}
+y_{t+1}
+&=\Pi_Y[y_t-\eta\widehat\nabla_y
+                  \mathcal L_\delta(y_t,\lambda_t)],\\
+\lambda_{t+1}
+&=\Pi_{[0,\Lambda]^K}[\lambda_t+\eta r(x_t)].
+\end{aligned}
+\]
+The primal notation includes a joint subgradient at threshold
+atoms.
+Prices are reported as \(p_n^t=\lambda_t/\gamma\);
+thresholds remain private.
+
+For averaged iterates, define the restricted saddle gap
+\[
+\begin{aligned}
+\mathcal G_T
+={}&\max_{\lambda\in[0,\Lambda]^K}
+ \mathcal L_\delta(\bar y_T,\lambda)\\
+&-\min_{y\in Y}\mathcal L_\delta(y,\bar\lambda_T).
+\end{aligned}
+\]
+This is a prescribed learning protocol, not proof that following
+each transient update is strategically optimal.
+\ledger{31, 32, 37}
+
+The gap splits as
+\(\mathcal G_T=\mathcal A+\mathcal D\), where
+\[
+\begin{aligned}
+\mathcal A&=\sum_n\mathcal A_n,\\
+\mathcal A_n
+&=Q_{n,\delta}(\bar x_n,\bar\tau_n)
++\bar\lambda^\top\bar x_n\\
+&\quad-\min_{x_n,\tau_n}
+ \{Q_{n,\delta}(x_n,\tau_n)+\bar\lambda^\top x_n\},\\
+\mathcal D
+&=\Lambda\|r(\bar x)_+\|_1
+-\bar\lambda^\top r(\bar x).
+\end{aligned}
+\]
+All terms are nonnegative, and
+\(\mathcal D\ge\bar\lambda^\top r_-\).
+
+Let \(\widehat C_n=\min_\tau Q_{n,\delta}\).
+Strong convexity around its local priced minimizer gives
+\[
+\begin{aligned}
+&\widehat C_n(\bar x_n)+\bar\lambda^\top\bar x_n
+-\widehat C_n(x_n')-\bar\lambda^\top x_n'\\
+&\qquad\le
+2\mathcal A_n-\frac m4\|x_n'-\bar x_n\|^2.
+\end{aligned}
+\]
+At common price \(p=\bar\lambda/\gamma\), set
+\(d=x_n'-\bar x_n\) and \(p_n'=p+q\ge0\).
+Changing own price from \(p\) to \(p+q\), at the deviating
+allocation, changes the tax by
+\[
+\frac\gamma2\|q\|^2
+-\frac\gamma{N-1}q^\top(r+d).
+\]
+If \(\gamma\le m(N-1)^2/4\), then
+\[
+\frac\gamma{N-1}q^\top d
+\le\frac m4\|d\|^2+
+ \frac{\gamma^2}{m(N-1)^2}\|q\|^2.
+\]
+Also,
+\[
+q^\top r\le\|q\|\|r_+\|+p^\top r_-.
+\]
+Optimizing the remaining quadratic yields
+\[
+\begin{aligned}
+\operatorname{Regret}_n(\bar s_T)
+\le{}&2\mathcal A_n+a_n+\frac{\mathcal D}{N-1}\\
+&+\frac\gamma{(N-1)^2}\|r_+\|^2,
+\qquad a_n=L_{g,n}\delta_n.
+\end{aligned}
+\]
+The learning multiplier is capped; unilateral prices in this
+bound are unrestricted above.
+\ledger{32, 37}
+See \url{ada/sharp_bias_and_saddle.md}, lines 129--203.
+
+Weak duality and the cap margin give
+\[
+\mathcal G_T\ge b\|r_+\|_1.
+\]
+Compact allocations imply
+\(\|r_+\|^2\le R_r\|r_+\|_1\).
+Thus true regret is \(O(\mathcal G_T+a_n)\).
+The zero-allocation deviation bounds participation shortfall by
+regret.
+Common prices give exact budget balance.
+Moreover,
+\[
+\Delta_C(\bar x_T)\le\mathcal G_T+\sum_na_n,
+\qquad
+\|\bar x_T-x^\star\|^2
+=O\left(\mathcal G_T+\sum_na_n\right).
+\]
+The allocation bound combines the welfare and capacity estimates
+with true planner KKT curvature.
+Welfare is interpreted through its positive part at possibly
+infeasible outputs.
+\ledger{32, 37}
+See \url{ada/sharp_bias_and_saddle.md}, lines 205--225.
+
+\section{Retained extension: expected gap and the earlier comparisons}
+
+For diameter \(D_Z\) of the product domain and conditional oracle
+second moment \(B^2\), ordinary projected averaging gives
+\[
+\mathbb E\mathcal G_T
+\le
+\frac{D_Z^2}{2\eta T}
++\frac{\eta B^2}{2}
++\frac{D_ZB}{\sqrt T}.
+\]
+The last term controls the comparator selected after seeing the
+trajectory.
+Writing the oracle as conditional mean plus martingale difference
+\(\zeta_t\), its predictable inner-product part has expectation
+zero, while the remaining supremum is bounded by
+\(D_Z\|\sum_t\zeta_t\|\).
+Martingale orthogonality supplies the displayed bound.
+Expectation and maximum are not interchanged.
+\ledger{32, 37}
+
+For the threshold oracle, \(B^2=O(\delta_{\min}^{-2})\).
+Taking
+\[
+\eta=\frac{D_Z}{B\sqrt T},\qquad
+\delta\asymp\epsilon,\qquad
+T=O(\epsilon^{-4})
+\]
+gives expected \(O(\epsilon)\) regret, participation shortfall,
+capacity violation, positive welfare excess, and squared allocation
+error.
+Budget balance is exact.
+With two queries per agent per update, total query cost is
+\(O(\epsilon^{-4})\).
+This remains a valid averaged guarantee, distinct from the retained
+regularized last-iterate bound.
+\ledger{32, 35}
+
+For empirical CVaR, reserve allocation curvature for both price
+deviations and the Lipschitz bias:
+\[
+\begin{aligned}
+\Gamma_n\|d\|
+&\le\frac m8\|d\|^2+\frac{2\Gamma_n^2}{m},\\
+\frac\gamma{N-1}q^\top d
+&\le\frac m8\|d\|^2+
+ \frac{2\gamma^2}{m(N-1)^2}\|q\|^2.
+\end{aligned}
+\]
+Under \(\gamma\le m(N-1)^2/8\), along with the earlier certificate,
+\[
+\begin{aligned}
+\operatorname{Regret}_n
+\le{}&2\mathcal A_n+a_n+\frac{2\Gamma_n^2}{m}
++\frac{\mathcal D}{N-1}\\
+&+\frac\gamma{(N-1)^2}\|r_+\|^2.
+\end{aligned}
+\]
+Welfare follows by the corresponding curvature comparison with
+the true feasible optimum.
+The economic error is
+\(O(\mathcal G_T+\sum_n\delta_n+\sum_n\Gamma_n^2)\).
+\ledger{33, 37}
+
+For the \emph{unbaselined one-point} batch oracle, the preceding
+ordinary saddle bound gave, with
+\(s\asymp\epsilon^{-1}\),
+\[
+\begin{array}{ll}
+\text{Empirical batches}&O(\epsilon^{-5}),\\
+\text{Multilevel values}
+ &O(\epsilon^{-4}\log^2(1/\epsilon)),\\
+\text{Private thresholds}&O(\epsilon^{-4}).
+\end{array}
+\]
+The multilevel count is expected work.
+These are valid upper bounds for the specified estimators.
+Review \ledger{37} correctly objected that they do not establish
+a threshold exponent advantage against symmetric differences.
+That interpretation is withdrawn by \ledger{39}.
+The appended comparison replaces it.
+
+\section{Retained verification and additional source comparison}
+
+The sharp-bias and saddle checks cover 120 spectral identities,
+including fractional tails; 4335 atomic crossing-loss inequalities;
+19683 unrestricted joint-regret inequalities; and 39366
+Lipschitz-bias variants.
+The price best response was optimized analytically rather than
+over a price grid.
+See \url{ada/check_sharp_bias_saddle.py} and
+\url{ada/sharp_bias_saddle_checks_01.log}.
+The kink formula was checked as well.
+No saddle-learner convergence experiment was recorded.
+\ledger{33}
+
+Review \ledger{37} reports independent rederivation of the
+fractional spectral identity, curvature conversion, joint-regret
+bound, cap-margin estimate, martingale term, and tightness families.
+Thus the previous note's request for that particular audit has
+been answered in the ledger.
+
+Additional full-text comparisons narrowed the novelty claim:
+\begin{itemize}
+\item Levy et al.,
+\url{https://arxiv.org/abs/2010.05893},
+already give the spectral representation and value-bias
+tightness; see pooled source lines 2133--2145, 2190--2199,
+and 4770--4830.
+The proposed application is decisionwise bias Lipschitzness
+followed by economic curvature conversion.
+
+\item Mehta et al.,
+\emph{Stochastic Optimization for Spectral Risk Measures},
+\url{https://arxiv.org/abs/2212.05149}.
+See pooled source lines 530--567, 1054--1158, and 1207--1218.
+The inspected argument already uses expected minibatch surrogates
+and strong convexity, with a finite-dataset, without-replacement
+uniform value-bias comparison.
+
+\item Tam Le,
+\emph{Convergence of empirical subgradients for optimal
+transport-based objectives},
+\url{https://arxiv.org/abs/2605.28134}.
+See pooled source lines 390--449.
+The inspected result concerns asymptotic empirical spectral-risk
+subgradient graph inclusion for differentiable losses.
+The present bound concerns a deterministic expected-batch
+objective with an explicit rate under pathwise Lipschitzness.
+\end{itemize}
+These are scoped comparisons, not certification of novelty.
+See \url{ada/sharp_bias_and_saddle.md}, lines 270--284.
+\ledger{29, 34}
+
+Earlier Hurwicz, Chen, and Koshal requests still failed.
+The recorded sources include
+\url{https://yanchen.people.si.umich.edu/published/Chen_ET_2002.pdf},
+\url{https://doi.org/10.2307/2297046}, and
+\url{https://doi.org/10.1109/TAC.2012.2215413}.
+HTTP 429 and unavailable-open-version results are documented in
+\url{ada/prior_work_pool_07.log} and
+\url{ada/prior_work_pool_08.log}.
+Further title-resolution misses appear in
+\url{ada/prior_work_pool_09.log}.
+No separate downloads or substitute PDF extraction were used.
+\ledger{34}
+
+\section{Appended round: an independent symmetric-batch baseline}
+
+Review \ledger{37} proposed symmetric differences with independent
+batches.
+The new note confirms the objection and corrects the comparison.
+Let \(f_s=\mathbb E\widehat C_s\), and let \(f_{s,\delta}\) be its
+ball smoothing.
+For a sphere-uniform \(u\), query independent batches at the two
+points and use
+\[
+\widehat g(x)=\frac{d}{2\delta}
+ \left[\widehat C_s(x+\delta u)
+       -\widehat C_s'(x-\delta u)\right]u.
+\]
+Sphere symmetry gives
+\[
+\mathbb E[\widehat g(x)\mid x]
+=\nabla f_{s,\delta}(x).
+\]
+It targets exactly the same surrogate as P's one-point oracle.
+Neither common random numbers nor scenario replay is needed.
+\ledger{38, 39}
+
+Integrating the DKW tail bound yields
+\[
+\mathbb E|\widehat C_s(z)-C(z)|^2
+\le\frac{4U^2}{\rho^2s},
+\qquad
+\operatorname{Var}(\widehat C_s(z))
+\le\frac{4U^2}{\rho^2s}.
+\]
+Expected empirical CVaR is \(L\)-Lipschitz.
+Conditionally on \(u\), the mean difference is at most
+\(2L\delta\).
+Independence of the batches therefore gives
+\[
+\mathbb E\|\widehat g(x)\|^2
+\le d^2L^2+\frac{2d^2U^2}{\rho^2s\delta^2}.
+\]
+Each update costs \(2s\) loss queries.
+
+With \(s\asymp\epsilon^{-1}\) and
+\(\delta\asymp\epsilon\), this second moment is
+\(O(\epsilon^{-1})\).
+Even the ordinary saddle learner then needs only
+\(O(\epsilon^{-3})\) updates, hence
+\(O(\epsilon^{-4})\) total queries.
+It matches the earlier threshold total-query exponent.
+Thresholds retain constant per-update work and no fixed empirical
+surrogate bias, rather than an established exponent advantage.
+\ledger{39}
+See \url{ada/feasible_queries_and_curvature.md}, lines 5--32.
+
+\section{Appended round: locally feasible queries}
+
+\begin{objection}
+The earlier oracle theorems query outside nonnegative allocation
+sets, while simply shrinking the sets removes the zero deviation
+used for participation.
+\end{objection}
+
+The new construction handles both issues.
+Let
+\[
+E_n=\operatorname{aff}(\mathcal X_n),\qquad d_n=\dim E_n.
+\]
+Since zero belongs to \(\mathcal X_n\), \(E_n\) is a linear
+subspace.
+For \(d_n>0\), choose a relative-interior anchor \(a_n\) and
+radius \(r_n>0\) such that
+\[
+a_n+r_n\mathbb B_{E_n}\subseteq\mathcal X_n.
+\]
+Assume strictly positive capacities.
+Scaling an interior point toward zero permits
+\[
+a_n^{(k)}\le\frac{c^{(k)}}{2N},
+\qquad
+c-\sum_na_n\ge c/2.
+\]
+The scaled relative ball remains in the set by convexity.
+
+Each agent can choose its anchor using the public capacity vector.
+Anchors and affine hulls need not be disclosed to the manager.
+This relaxes the unnecessarily public-anchor wording in
+\ledger{40}; public bounds needed for the multiplier cap remain
+separate assumptions.
+\ledger{40, 44}
+
+Use a common contraction fraction \(0<\theta<1\):
+\[
+\mathcal X_n^\theta
+=(1-\theta)\mathcal X_n+\theta a_n,
+\qquad
+\Phi_n^\theta(x)=(1-\theta)x+\theta a_n.
+\]
+Choose \(0<\delta_n\le\theta r_n/2\).
+For \(x=(1-\theta)y+\theta a_n\) and
+\(v\in\mathbb B_{E_n}\),
+\[
+x+\delta_nv
+=(1-\theta)y+
+\theta\left(a_n+\frac{\delta_n}{\theta}v\right)
+\in\mathcal X_n.
+\]
+A relative margin remains, so smoothing identities hold near
+every center.
+Use sphere and ball laws in \(E_n\), replace ambient dimension by
+\(d_n\), and project allocation updates onto
+\(\mathcal X_n^\theta\).
+For \(d_n=0\), allocation is identically zero and its constant
+objective and threshold can be omitted.
+
+Only boundedness, Lipschitzness, and samplewise strong convexity
+on \(\mathcal X_n\) are required.
+All loss queries are locally feasible.
+Separate perturbed queries need not satisfy the aggregate capacity
+constraint.
+\ledger{40, 44}
+See \url{ada/feasible_queries_and_curvature.md}, lines 34--59.
+
+\subsection{Uniform Slater point and multiplier cap}
+
+The fixed anchor belongs to every contracted set:
+\(\Phi_n^\theta(a_n)=a_n\).
+Its aggregate slack is at least \(c/2\), independently of
+\(\theta\).
+Let \(\widehat C_n\) denote either reduced lifted risk or the
+empirical-smoothed risk, with uniform bounds
+\(|\widehat C_n|\le M_n\).
+Any optimal contracted-planner multiplier satisfies
+\[
+\begin{aligned}
+\lambda_\theta^{\star\top}
+ \left(c-\sum_na_n\right)
+&\le\sum_n\widehat C_n(a_n)
+       -\widehat C_\theta^\star\\
+&\le2\sum_nM_n.
+\end{aligned}
+\]
+Consequently,
+\[
+\lambda_\theta^{\star(k)}
+\le\frac{4\sum_nM_n}{c^{(k)}}.
+\]
+A multiplier box exceeding these bounds has a fixed cap margin.
+The capacity estimate remains uniform as \(\theta\downarrow0\).
+The Slater comparator is the fixed anchor, not the contracted
+zero allocation.
+\ledger{40, 44}
+See \url{ada/feasible_queries_and_curvature.md}, lines 61--75.
+
+\subsection{Original deviations and participation}
+
+Against capped common price \(p\), a best-response price at any
+original allocation \(x_n'\in\mathcal X_n\) is
+\[
+p_n'=\left[
+p+\frac{\sum_{j\ne n}x_j+x_n'-c}{N-1}
+\right]_+.
+\]
+Compactness bounds this price uniformly.
+The true own cost is therefore uniformly Lipschitz in allocation
+on the relevant deviation set.
+If \(D_n=\operatorname{diam}\mathcal X_n\), then
+\[
+\operatorname{Regret}_{n,\mathcal X_n}
+\le
+\operatorname{Regret}_{n,\mathcal X_n^\theta}
++K_nD_n\theta.
+\]
+Indeed, contract an original best-response allocation and keep
+its optimizing price.
+The cost changes by at most \(K_nD_n\theta\).
+
+For explicit constants, if \(P\) bounds common-price norms and
+\(R\) bounds aggregate excess-demand norms, one can take
+\[
+P_{\mathrm{BR}}=P+\frac R{N-1},
+\qquad
+K_n=L_n+\frac{\gamma}{N-1}
+ (P_{\mathrm{BR}}+NP).
+\]
+These bounds do not require capping unilateral deviations.
+\ledger{40}
+See \url{ada/feasible_queries_and_curvature.md}, lines 77--95.
+
+The contracted zero is \(\theta a_n\), not zero.
+Its same-price tax is at most
+\(\lambda^\top\theta a_n\), while
+\[
+C_n(\theta a_n)-C_n(0)
+\le L_n\theta\|a_n\|.
+\]
+Thus
+\[
+U_n\ge
+-\operatorname{Regret}_{n,\mathcal X_n^\theta}
+-\theta(L_n+\|\lambda\|)\|a_n\|.
+\]
+Participation loses only \(O(\theta)\).
+
+The true optimum contracts to an aggregate-feasible profile:
+\[
+\sum_n\Phi_n^\theta(x_n^\star)
+\le(1-\theta)c+\theta c/2\le c.
+\]
+Its true cost increases by at most
+\(\theta\sum_nL_nD_n\).
+Using a common fraction is important; arbitrary separate
+fractions need not preserve this inequality.
+
+Applying the preceding saddle transfer on the contracted sets
+therefore yields
+\[
+\begin{aligned}
+&\text{true regret, participation shortfall,}\\
+&\text{positive welfare excess}\\
+&\qquad =
+O\left(
+\mathcal G_T+\theta+
+\sum_n\delta_n+\sum_n\Gamma_{n,s_n}^2
+\right),\\
+&\|r(\bar x)_+\|_1=O(\mathcal G_T),\qquad
+\sum_nt_n^c=0.
+\end{aligned}
+\]
+The \(\Gamma\) term is absent for private thresholds.
+The expected squared allocation error has the same economic order.
+A common sufficient payment restriction is the earlier certificate
+together with \(\gamma\le m(N-1)^2/8\).
+\ledger{40, 42}
+See \url{ada/feasible_queries_and_curvature.md}, lines 97--121.
+
+\subsection{A feasible-query boundary example}
+
+The old kink example remains valid for neighborhood queries,
+but does not establish a feasible-query lower bound.
+For the specific contraction scheme, take
+\[
+\begin{gathered}
+N=3,\quad c=1,\quad \mathcal X_n=[0,2],\\
+a_n=r_n=1/6,\qquad
+C_n(x)=x+\frac{x^2}{2},\qquad
+\delta_n=\theta/12.
+\end{gathered}
+\]
+The contracted lower endpoint is
+\(\theta/6=2\delta_n\).
+Both empirical smoothing and lifted residual smoothing minimize
+there.
+For small \(\theta\), capacity is slack and prices are zero.
+Each agent's true regret and participation shortfall equal
+\[
+C_n(\theta/6)-C_n(0)
+=\frac{\theta}{6}+\frac{\theta^2}{72}
+=\Theta(\theta)=\Theta(\delta_n).
+\]
+Welfare loss is three times this quantity.
+Every query is nonnegative.
+This proves a linear contraction-boundary order for the specified
+method, not an impossibility for all feasible-query algorithms
+or a lower bound attributable solely to smoothing.
+\ledger{43}
+See \url{ada/feasible_queries_and_curvature.md}, lines 123--129.
+
+\section{Appended round: allocation curvature in a uniform gap bound}
+
+Review \ledger{37} observed that the largest noise lies in the
+strongly convex allocation block.
+The new proof retains that curvature inside the random-comparator
+supremum, instead of charging all noise at order \(T^{-1/2}\).
+\ledger{41, 42}
+
+Write
+\[
+\mathcal L(x,v,\lambda)
+=H(x,v)+\lambda^\top r(x)
+\]
+on compact convex product domains \(X,V,\mathcal D\).
+The threshold block \(v\) is omitted for empirical batches.
+Assume \(H(x,v)-m\|x\|^2/2\) is jointly convex.
+The allocation and threshold conditional means form a joint
+subgradient; the dual block is exact.
+Let
+\[
+\begin{aligned}
+\mathbb E_t\|\widehat g_{x,t}\|^2&\le B_x^2,
+&\mathbb E_t\|\zeta_{x,t}\|^2&\le V_x^2,\\
+\mathbb E_t\|\widehat g_{v,t}\|^2&\le B_v^2,
+&\mathbb E_t\|\zeta_{v,t}\|^2&\le V_v^2,\\
+\|r(x_t)\|&\le B_\lambda.
+\end{aligned}
+\]
+Here \(\zeta\) is oracle minus conditional mean.
+One may take \(V_x\le B_x\), \(V_v\le B_v\).
+Let domain diameters be \(D_x,D_v,D_\lambda\).
+
+For a fixed horizon, set
+\[
+w_t=t,\qquad
+W_T=\sum_{t=1}^Tt=\frac{T(T+1)}2,\qquad
+S_T=\sum_{t=1}^Tt^2.
+\]
+Use
+\[
+\begin{aligned}
+x_{t+1}
+&=\Pi_X\left[
+x_t-\frac{4}{m(t+1)}\widehat g_{x,t}
+\right],\\
+v_{t+1}
+&=\Pi_V[v_t-\alpha_vt\widehat g_{v,t}],
+&\alpha_v&=\frac{D_v}{B_v\sqrt{S_T}},\\
+\lambda_{t+1}
+&=\Pi_{\mathcal D}[\lambda_t+\alpha_\lambda t r(x_t)],
+&\alpha_\lambda&=\frac{D_\lambda}{B_\lambda\sqrt{S_T}}.
+\end{aligned}
+\]
+Zero-diameter blocks are omitted.
+Average all played iterates with weights \(t\).
+
+The new lemma states
+\[
+\begin{aligned}
+\mathbb E\mathcal G_T
+\le{}&
+\frac{4(B_x^2+V_x^2)}{m(T+1)}
++\frac{mD_x^2}{T+1}\\
+&+\left[
+D_v(B_v+V_v)+D_\lambda B_\lambda
+\right]\frac{\sqrt{S_T}}{W_T}.
+\end{aligned}
+\]
+Only the allocation second moment is charged at order \(1/T\).
+Flat, nonsmooth threshold directions are permitted.
+\ledger{42}
+See \url{ada/feasible_queries_and_curvature.md}, lines 131--174.
+
+\subsection{Projection telescoping with reserved curvature}
+
+For any comparator,
+\[
+\begin{aligned}
+&\mathcal L(x_t,v_t,\lambda)-\mathcal L(x,v,\lambda_t)\\
+&\quad\le
+\langle g_{x,t},x_t-x\rangle
++\langle g_{v,t},v_t-v\rangle\\
+&\qquad
+-\langle r(x_t),\lambda_t-\lambda\rangle
+-\frac m2\|x_t-x\|^2.
+\end{aligned}
+\]
+Reserve half the allocation curvature.
+With \(\eta_{x,t}=4/[m(t+1)]\),
+\[
+\begin{aligned}
+&\sum_{t=1}^Tt
+\left[
+\langle\widehat g_{x,t},x_t-x\rangle
+-\frac m4\|x_t-x\|^2
+\right]\\
+&\qquad\le
+\frac2m\sum_{t=1}^T
+ \frac{t}{t+1}\|\widehat g_{x,t}\|^2.
+\end{aligned}
+\]
+The cancellation is
+\[
+\frac{t}{2\eta_{x,t}}
+-\frac{t-1}{2\eta_{x,t-1}}
+=\frac{mt}{4}.
+\]
+The first distance coefficient cancels as well, and the final
+distance term is nonpositive.
+Expected allocation contribution is at most \(2TB_x^2/m\).
+
+For a flat block with step \(\alpha t\), weighted projection regret
+is at most
+\[
+\frac{D^2}{2\alpha}
++\frac\alpha2\sum_{t=1}^Tt^2\|\widehat g_t\|^2.
+\]
+The stated choice of \(\alpha\) bounds its expectation by
+\(DB\sqrt{S_T}\).
+See \url{ada/feasible_queries_and_curvature.md}, lines 176--207.
+\ledger{42}
+
+\subsection{The allocation martingale supremum}
+
+The remaining allocation term is
+\[
+\sup_{x\in X}\sum_{t=1}^Tt f_t(x),
+\qquad
+f_t(x)=
+\langle\zeta_{x,t},x-x_t\rangle
+-\frac m4\|x-x_t\|^2.
+\]
+A proof-only auxiliary sequence starts in \(X\) and follows
+\[
+\begin{aligned}
+u_{t+1}
+&=\Pi_X\left[
+u_t+\frac{t}{\sigma W_t}
+ \{\zeta_{x,t}-\sigma(u_t-x_t)\}
+\right],\\
+\sigma&=m/2.
+\end{aligned}
+\]
+It need not be computed by the learner.
+The point \(u_t\) is measurable before the current noise.
+
+Weighted strong concavity and projection give, pathwise,
+\[
+\begin{aligned}
+&\sup_{x\in X}
+ \sum_{t=1}^Tt[f_t(x)-f_t(u_t)]\\
+&\qquad\le
+\sum_{t=1}^T\frac{t^2}{2\sigma W_t}
+ \|\zeta_{x,t}-\sigma(u_t-x_t)\|^2.
+\end{aligned}
+\]
+The coefficient cancellation uses
+\(\sigma W_t-\sigma W_{t-1}=\sigma t\).
+Conditional centering gives
+\[
+\mathbb E_t f_t(u_t)
+=-\frac m4\|u_t-x_t\|^2\le0
+\]
+and
+\[
+\mathbb E_t
+ \|\zeta_{x,t}-\sigma(u_t-x_t)\|^2
+\le V_x^2+\frac{m^2D_x^2}{4}.
+\]
+Since
+\[
+\frac{t^2}{2\sigma W_t}
+=\frac{2t}{m(t+1)}\le\frac2m,
+\]
+it follows that
+\[
+\mathbb E\sup_{x\in X}\sum_{t=1}^Tt f_t(x)
+\le
+\frac{2T}{m}
+\left(V_x^2+\frac{m^2D_x^2}{4}\right).
+\]
+
+The threshold martingale has no curvature and is bounded by
+\(D_vV_v\sqrt{S_T}\) using orthogonality.
+There is no dual-oracle noise.
+Adding the terms, dividing by \(W_T\), and using
+convexity-concavity of the weighted averages proves the lemma.
+The argument needs conditional second moments, not independence
+across blocks or differentiability at threshold atoms.
+\ledger{42}
+See \url{ada/feasible_queries_and_curvature.md}, lines 209--248.
+
+\section{Appended round: the corrected total-query comparison}
+
+Fix dimensions, geometry, positive tail masses, curvature,
+public bounds, cap margin, and payment scale.
+Choose
+\[
+\theta\asymp\epsilon,\qquad
+\delta_n\asymp\epsilon,\qquad
+\delta_n\le\theta r_n/2.
+\]
+Constants cannot be suppressed uniformly if geometry, curvature,
+or tail masses deteriorate with accuracy.
+
+For private thresholds,
+\(B_x^2=O(\delta_{\min}^{-2})\), while threshold and dual
+bounds remain constant.
+Therefore
+\[
+\mathbb E\mathcal G_T
+=O\left(
+\frac1{\delta_{\min}^2T}+\frac1{\sqrt T}
+\right).
+\]
+Taking \(T=O(\epsilon^{-3})\) gives expected
+\(O(\epsilon)\) true regret, participation shortfall,
+capacity violation, positive welfare excess, and squared allocation
+error.
+Budget balance is exact.
+There are two queries per active agent per update.
+
+For symmetric empirical batches,
+\[
+B_x^2=O\left(1+
+ \frac1{s_{\min}\delta_{\min}^2}\right),
+\]
+and there is no threshold block.
+Taking \(s_n\asymp\epsilon^{-1}\) and
+\(T=O(\epsilon^{-2})\) gives the same economic accuracy.
+Each update costs \(O(\epsilon^{-1})\) queries for fixed \(N\).
+Thus both methods have total-query upper bound
+\[
+O(\epsilon^{-3}).
+\]
+Thresholds use more updates with constant query work;
+symmetric batches use fewer updates with larger batches.
+Neither is declared universally better.
+\ledger{42, 45}
+See \url{ada/feasible_queries_and_curvature.md}, lines 250--281.
+
+For completeness, applying the same weighted learner to the older
+oracles gives the retained comparisons
+\[
+\begin{array}{ll}
+\text{Unbaselined empirical batch}
+ &O(\epsilon^{-4}),\\
+\text{Independent symmetric batches}
+ &O(\epsilon^{-3}),\\
+\text{Multilevel one-point values}
+ &O(\epsilon^{-3}\log^2(1/\epsilon)),\\
+\text{Private sphere/ball thresholds}
+ &O(\epsilon^{-3}).
+\end{array}
+\]
+The multilevel bound is expected work.
+These are upper bounds for specified algorithms, not minimax
+rates or demonstrated practical speedups.
+All preferred-method queries can be locally feasible, without
+common random numbers.
+
+\section{Appended verification and source comparisons}
+
+The new exact checks report:
+216 independent symmetric-batch mean and second-moment identities;
+822 adaptive noise paths with 14796 projection and comparator
+inequalities; and 1629 full-dimensional, affine-hull, and aggregate
+feasibility cases.
+They include exact conditional-centering calculations and the
+contraction boundary-loss identity.
+See \url{ada/check_feasible_curvature.py} and
+\url{ada/feasible_curvature_checks_01.log}.
+The log ends with all checks passed.
+\ledger{43}
+
+These are algebra checks, not convergence experiments or
+substitutes for the general proof.
+No numerical comparison of the new saddle learners is recorded.
+Unlike the earlier extension audited in review \ledger{37},
+this round has no subsequent independent proof review.
+\ledger{45, 46}
+
+Pool-only retries again failed for Chen and Hurwicz with HTTP 429;
+Koshal's DOI returned no open version.
+See \url{ada/prior_work_pool_12.log}.
+These misses preserve the priority uncertainty rather than
+supporting novelty.
+\ledger{44}
+
+Two additional sources were supplied by the pool:
+\begin{itemize}
+\item Lacoste-Julien, Schmidt, and Bach,
+\url{https://arxiv.org/abs/1212.2002}.
+The recorded comparison locates increasing-weight curvature
+telescoping in
+\url{../../sources/1212.2002.tex}, lines 183--234.
+The new allocation proof uses half the curvature for that
+calculation and reserves the rest for the comparator supremum.
+
+\item Zhao,
+\url{https://arxiv.org/abs/1903.01687}.
+The comparison records smooth full-primal-curvature assumptions
+at pooled source lines 1360--1407, different primal and dual
+noise rates at lines 1498--1506, and auxiliary noise-driven
+iterates for uniform stochastic gaps at lines 2908--2928.
+The latter credits earlier work of Nemirovski and collaborators.
+\end{itemize}
+Retrievals appear in \url{ada/prior_work_pool_13.log};
+the scoped comparison is in
+\url{ada/feasible_queries_and_curvature.md}, lines 287--291.
+\ledger{44}
+
+These are prior art for the general proof ingredients.
+Partial allocation curvature with flat nonsmooth thresholds is the
+setting of the displayed block lemma, but its comprehensive
+algorithmic priority has not been investigated.
+The candidate contribution remains the specific mechanism
+correction, sharp economic distortion, and transfer of learning
+accuracy to unrestricted joint deviations.
+
+\section{What remains open and the smallest next step}
+
+The retained mechanism result directly implements efficient
+allocation with budget balance and participation under its stated
+assumptions.
+Q's incompatible strict LMIs, unique-message claim, and original
+participation claim are not retained.
+The empirical-CVaR analysis gives atom-safe Lipschitz bias and
+order-tight \(O(\delta+s^{-1})\) economic distortion within the
+specified surrogate class.
+Review \ledger{37} supports those derivations.
+\ledger{2, 5, 16, 29, 30, 37}
+
+The appended round resolves the stated local-query objection by
+relative-interior contraction, with an \(O(\theta)\) economic cost
+and a uniform multiplier cap.
+It corrects the fair baseline and supplies a conditional
+\(O(\epsilon^{-3})\) total-query upper bound for both private
+thresholds and independent symmetric batches.
+Outputs are weighted averages with common prices.
+Exact budget balance holds there, but aggregate capacity
+feasibility is only approximate at finite time.
+\ledger{39, 40, 42, 45}
+
+The new proof evidence is still thin in specific respects:
+there is no later independent audit, no convergence experiment for
+these learners, and no complete priority comparison.
+Explicit dependence on dimension, tail mass, geometry, and cap
+margin should be collected before a paper-level complexity claim.
+Optimal oracle complexity, zero-capacity resources, exact
+finite-time aggregate feasibility, and incentives to follow the
+learning protocol remain open.
+Nonunique prices prevent an unrestricted full-message convergence
+claim.
+\ledger{44, 45}
+
+The smallest next mathematical step is a focused independent audit
+of the newest uniform-gap and feasible-query arguments:
+\url{ada/feasible_queries_and_curvature.md}, lines 18--29,
+63--121, and 178--248.
+The decisive checks are the independent-batch variance calculation,
+the anchor-based uniform cap, contraction of unrestricted
+best-response deviations, and the curvature-penalized random
+comparator supremum.
+If these hold, the query counts follow directly from lines
+250--281.
+This is a narrower task than reopening the already reviewed
+mechanism, bias, or earlier saddle-transfer proofs.
+
+The separate publication-priority task is full-text comparison
+against Hurwicz, Chen, Koshal, and the broader price-consensus
+mechanism literature.
+The pool misses do not establish absence of prior work.
+The ledger recommends proceeding toward a draft while preserving
+these limitations, rather than claiming novelty for generic
+CVaR lifting, multilevel estimation, weighted averaging, or
+regularization.
+\ledger{44, 45, 46}
+
+This response preserves the preceding mathematical results and
+appends the latest bounded round, with the earlier baseline
+interpretation corrected.
+The document was not compiled in this turn:
+\texttt{pdflatex} was unavailable, and local access restrictions
+blocked the automated style tools.
+No compilation or automated style-gate pass is claimed.
+
+\end{document}

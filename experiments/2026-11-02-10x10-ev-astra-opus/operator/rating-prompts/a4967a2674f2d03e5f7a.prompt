@@ -1,0 +1,1830 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Action-Dependent Frames for Tendon-Driven Manipulation}
+
+\begin{document}
+\maketitle
+
+\section{The pair}
+
+Q presents Aero Hand Open, an underactuated tendon-driven hand whose
+simulation and actuation interface support learned in-hand cube rotation
+using seven motor encoders.
+P presents DynaMAC, which adapts multi-stream imitation policies to
+dynamic and bimanual manipulation by removing kinematically linked
+reference frames and supplementing them with virtual end-effector
+frames.
+\ledger{1,7}
+
+\section{The connexion pursued}
+
+The initial question was whether P's whole-frame removal discards useful
+within-grasp motion constraints when applied to Q's dexterous hand.
+An object can respond to the hand's actions while moving relative to its
+palm: action dependence does not imply rigid attachment.
+The proposed distinction was between common wrist--object motion and
+controlled finger--object motion.
+\ledger{1,3,7}
+
+The first investigation established local examples and a sensing
+ambiguity, but its proposed factor construction was already covered by
+task-space products of experts.
+Subsequent investigations therefore examined feedback from retained
+action-dependent frames, first with freely specified precisions, then
+with precisions constrained by demonstrations, and finally with
+articulated and compliant responses.
+The retained results and their qualifications appear below.
+\ledger{4,8,11,13,21,23,30,32,38}
+
+The latest verifier review is entry 40.
+It accepted the restricted calculations but judged the material thin:
+the general mechanism overlaps with performative prediction, the
+previous experiments did not require retaining the frame, Q was
+unnecessary, and no effect on P had been demonstrated.
+It requested a bounded investigation of correlated experts and an
+informative reference whose deletion would have a measurable cost.
+The appended investigation answers that request.
+\ledger{40,41,48}
+
+The new result separates covariance calibration from motion generation.
+With independent frame noise, population joint conditioning removes
+the growing modes of the independently fitted surrogate, but can
+exactly reproduce the current state and generate no motion.
+With an informative external reference, conditioning can improve on
+deletion or itself become unstable.
+Static-reference trajectories permit an elementary response estimate
+in the constructed experiment, under assumptions not supplied by Q.
+These are established statistical and identification techniques, not a
+new robotics method.
+The current account is \url{ada/correlated-feedback-note.md},
+lines 3--19 and 279--285.
+\ledger{42,43,44,45,47,48}
+
+The recommendation is to pause the original Q/P publication and
+two-hand hardware integration.
+This is a recommendation recorded at the end of the peer phase, not a
+claim that a publication-level result has been achieved.
+The narrower analysis may support a technical explanation, but its
+novelty and practical significance remain unresolved.
+\ledger{48,49}
+
+\section{Retained findings from the first round}
+
+\subsection{Precision does not establish rigid attachment}
+
+P thresholds phase-conditioned stream covariance.
+A changing mean object-to-palm pose therefore need not produce large
+covariance: repeatable in-hand rotation can remain precise at every
+phase.
+This corrects the initial interpretation.
+P also allows temporal filtering of brief false positives, so its
+detector must be evaluated rather than presumed to fail.
+Its per-skill algorithm does not fully specify an online contact
+estimator.
+\ledger{1,2,7,11}
+
+In normalized coordinates, with principal standard deviations
+\(\sigma_1,\ldots,\sigma_6\), P's statistic is
+\[
+ M=|\det\Lambda|^{-1/12}
+   =\left(\prod_{j=1}^{6}\sigma_j\right)^{1/6}.
+\]
+Five standard deviations of \(10^{-4}\) and one of \(10^{-1}\) give
+\[
+ M=\left((10^{-4})^5\,10^{-1}\right)^{1/6}
+   \approx3.1623\times10^{-4}.
+\]
+This is below P's \emph{illustrative} threshold \(10^{-3}\), despite
+a comparatively unconstrained direction.
+It is a normalized example, not measured Aero covariance or a
+conversion between metres and radians.
+See \url{ada/research-note.md}, lines 23--35, and
+\url{ada/local-model-run-001.log}, lines 26--27.
+\ledger{7,11}
+
+Passive relative-pose statistics can also be compatible with an
+externally moved object followed by the hand or an object moved by the
+hand.
+They do not alone establish the direction of influence.
+This qualifies the causal interpretation of the statistic without
+invalidating P's task-specific heuristic.
+The latest investigation makes the observational qualification
+explicit.
+\ledger{7,43,48}
+
+\subsection{Retaining a relative-motion constraint}
+
+In compatible local coordinates, write
+\[
+ \delta x_h=J_h\delta a,
+ \qquad
+ \delta x_f=J_f\delta a+v_f^{\mathrm{ext}}\Delta t.
+\]
+Here \(\delta a\) collects wrist and tendon-command increments;
+\(J_f\) is an action-response derivative, not Q's joint-to-cable map.
+For desired relative increment \(b_f\), define
+\[
+ \begin{aligned}
+ H_f&=J_h-J_f,\\
+ e_f(\delta a)&=H_f\delta a-v_f^{\mathrm{ext}}\Delta t-b_f,\\
+ \phi_f(\delta a)&\propto
+ \exp\!\left[-\tfrac12e_f(\delta a)^\top
+                         \Lambda_f e_f(\delta a)\right].
+ \end{aligned}
+\]
+A quadratic actuator prior of precision \(R\succ0\) gives Hessian
+\[
+ \mathcal H=R+\sum_f H_f^\top\Lambda_fH_f.
+\]
+Rank-deficient factors leave motions for the prior or other factors to
+determine.
+Rigid-pose implementations require the appropriate adjoints and
+logarithm Jacobians.
+\ledger{3,7}
+
+An exogenous frame has \(J_f=0\).
+A rigidly carried frame has \(J_f=J_h\), so its factor does not resist
+common motion; a requested nonzero relative displacement remains
+infeasible.
+For the illustrative within-grasp structure
+\[
+ \delta a=
+ \begin{bmatrix}\delta x_h\\\delta u\end{bmatrix},
+ \qquad
+ J_h=\begin{bmatrix}I&0\end{bmatrix},
+ \qquad
+ J_f=\begin{bmatrix}I&G\end{bmatrix},
+\]
+one obtains
+\[
+ H_f=\begin{bmatrix}0&-G\end{bmatrix}.
+\]
+The factor constrains tendon-induced motion while freeing common wrist
+motion.
+Deleting it loses that constraint.
+See \url{ada/research-note.md}, lines 37--72.
+\ledger{3,7}
+
+The checked scalar example uses object displacement \(x+2u\), desired
+relative displacement \(0.2\), and desired wrist displacement \(1\):
+\[
+ \begin{aligned}
+ L_{\mathrm{relative}}
+   &=10^4(-2u-0.2)^2+(x-1)^2+0.01u^2,\\
+ L_{\mathrm{exogenous}}
+   &=10^4(x-0.2)^2+(x-1)^2+0.01u^2,\\
+ L_{\mathrm{deleted}}
+   &=(x-1)^2+0.01u^2.
+ \end{aligned}
+\]
+The relative solution has \(x=1\),
+\(u\approx-0.099999975\), and relative residual about
+\(-5\times10^{-8}\).
+The exogenous approximation gives \(x\approx0.20008,u=0\);
+deletion gives \(x=1,u=0\).
+Both miss the relative target by \(0.2\).
+The small residual in the first solution comes from regularization.
+See \url{ada/local-model-run-001.log}, lines 28--42.
+\ledger{4}
+
+\begin{objection}
+This example supplies the useful relative constraint by construction,
+and does not compare against P's complete controller.
+\end{objection}
+
+P predicts end-effector poses and leaves gripper actions aside.
+An extension to tendon actions would need to be specified.
+Moreover, factor pullback through known or learned transformations is
+prior art.
+The example remains a local illustration, not evidence of a new fusion
+principle or a DynaMAC failure.
+\ledger{7,8,9,11}
+
+\subsection{Q does not supply the required response model}
+
+Q's map relates joint angles to cable travel, not actuator commands to
+object motion.
+Even imposing the illustrative equality
+\(q_{\mathrm{pip}}=q_{\mathrm{dip}}\), its coefficients admit
+\[
+ \begin{bmatrix}12.49&7.32&9.00\end{bmatrix}
+ \begin{bmatrix}16.32\\-12.49\\-12.49\end{bmatrix}=0.
+\]
+The interior postures
+\[
+ q^{(0)}=
+ \begin{bmatrix}0.8\\0.5\\0.5\end{bmatrix},
+ \qquad
+ q^{(1)}=
+ \begin{bmatrix}0.9632\\0.3751\\0.3751\end{bmatrix}
+\]
+both give \(18.152\) mm cable travel.
+This illustrates the rank deficiency already stated by Q.
+It does not prove identical equilibria under the same load, or
+impossibility of inference from temporal histories and contact dynamics.
+See \url{ada/local-model-run-001.log}, lines 3--25.
+\ledger{5,9,11}
+
+The original experiment proposed privileged simulation state and paired
+actuator probes before attempting identification from tracked object
+motion and encoders.
+That additional sensing and calibration must be counted.
+Q's restricted posture representation does not ensure that changing
+contacts preserve it.
+A second hand was not needed for the proposed test.
+The initial comparison with temporal masking, soft weights, ordinary
+relative feedback and existing model-aware fusion was deferred until a
+consequential regime could be established.
+\ledger{5,7,8,9,11}
+
+\section{Retained investigation: closed-loop frame fusion}
+
+\subsection{Specified local dynamics}
+
+Freeze the Gaussian factors and response in a local Euclidean chart:
+\[
+ x_{f,t}=Jx_t+Gu_t+c.
+\]
+Let the retained expert have mean \(x_{f,t}+r\) and precision
+\(F\succ0\), and combine the competing experts into mean \(v\) and
+precision \(L\succ0\).
+Define
+\[
+ H=F+L,\qquad W=H^{-1}F,\qquad h_t=Gu_t+c+r.
+\]
+Minimizing the instantaneous quadratic
+\[
+ \tfrac12\|y-x_{f,t}-r\|_F^2+
+ \tfrac12\|y-v\|_L^2
+\]
+gives
+\[
+ y_t=WJx_t+Wh_t+(I-W)v.
+\]
+For the stipulated tracker \(x_{t+1}=(1-\eta)x_t+\eta y_t\),
+with \(0<\eta\le1\),
+\[
+ \begin{aligned}
+ x_{t+1}&=A_\eta x_t+b_t,\\
+ A_\eta&=(1-\eta)I+\eta WJ,\\
+ b_t&=\eta\{Wh_t+(I-W)v\}.
+ \end{aligned}
+\]
+This is an algebraic response model and an assumed execution law,
+not P's complete policy or Q's contact dynamics.
+See \url{ada/closed-loop-note.md}, lines 19--49.
+\ledger{13,18,19}
+
+If \(u_t=K_ux_t+k\), the effective response is \(J+GK_u\).
+An independently evolving auxiliary controller requires an augmented
+state.
+Q's measured tendon dynamics do not identify the wrist gain \(\eta\).
+\ledger{18,19,21}
+
+For constant inputs, convergence requires \(\rho(A_\eta)<1\).
+When \(I-WJ\) is invertible, put
+\[
+ \delta=(J-I)v+Gu+c+r.
+\]
+Then
+\[
+ \begin{aligned}
+ x_\infty-v&=(I-WJ)^{-1}W\delta,\\
+ e_N&=A_\eta^Ne_0+
+       \eta\sum_{k=0}^{N-1}A_\eta^kW\delta,
+ \qquad e_t=x_t-v.
+ \end{aligned}
+\]
+The fixed point is independent of positive scalar tracker gain.
+Changing phase means adds forcing; changing matrices requires products
+of transition matrices.
+Pointwise stable spectra do not prove arbitrary switching stability
+or small transient errors.
+See \url{ada/closed-loop-note.md}, lines 51--65.
+\ledger{19}
+
+\subsection{Rigid attachment: an exact finite-phase bound}
+
+For \(J=I,u=0,r=-c\), the bias vanishes.
+If \(\beta_k\) are the generalized eigenvalues of \((F,L)\), then
+\[
+ \alpha_k=\frac{\beta_k}{1+\beta_k}
+\]
+are the eigenvalues of \(W\).
+Since \(HW=F\), \(W\) is self-adjoint in the \(H\) metric, and
+\[
+ \sup_{e_0\ne0}\frac{\|e_N\|_H}{\|e_0\|_H}
+ =
+ \max_k\left[1-\frac{\eta}{1+\beta_k}\right]^N.
+\]
+Thus the exact worst-mode condition for residual at most
+\(0<\epsilon<1\) after \(N\) steps is
+\[
+ \beta_{\max}\le
+ \frac{\eta}{1-\epsilon^{1/N}}-1.
+\]
+If the right side is negative, even deletion cannot meet that deadline
+under the assumed tracker.
+\ledger{13,15,18}
+
+For \(N=100,\epsilon=0.05,\eta=0.5\), the bound is approximately
+\(15.941658\).
+With ideal execution and precision ratio \(1000\), only \(9.51\%\)
+of a unit displacement is completed in 100 steps, despite convergence
+to the correct asymptotic target.
+Practical collapse can therefore be finite-phase lag rather than
+permanent freezing.
+Capping generalized precision modes can enforce this restricted
+deadline condition; it is a performance rule, not a contact classifier.
+See \url{ada/closed-loop-note.md}, lines 67--90, and
+\url{ada/closed-loop-run-001.log}, lines 3--8.
+\ledger{13,15,18,19}
+
+\subsection{Partial coupling: convergence can be biased}
+
+For scalar response \(j\), ratio \(\beta=F/L\), and calibration
+\[
+ Gu+c+r=(1-j)x_0,
+\]
+the fixed point and tracker eigenvalue are
+\[
+ \begin{aligned}
+ x_\infty-x_0&=
+ \frac{v-x_0}{1+\beta(1-j)},\\
+ \lambda_\eta&=
+ 1-\eta+\eta\frac{\beta j}{1+\beta}.
+ \end{aligned}
+\]
+For \(0\le j<1\), weaker coupling can accelerate convergence while
+increasing displacement bias.
+At \(\beta=1000,j=0.8\), the equilibrium completes about \(0.498\%\)
+of the requested displacement.
+Whether that is an error depends on whether the relative constraint
+is part of the task.
+A modewise extension requires compatible eigenbases.
+See \url{ada/closed-loop-note.md}, lines 92--104.
+\ledger{15,19}
+
+\subsection{The free-matrix counterexample and its limitation}
+
+The original example specified
+\[
+ F=\begin{bmatrix}0.9&11.25\\11.25&145\end{bmatrix},
+ \qquad
+ L=\begin{bmatrix}0.1&1.25\\1.25&55\end{bmatrix},
+ \qquad
+ J=\begin{bmatrix}0.5&0.4\\0.4&0.5\end{bmatrix}.
+\]
+Both precisions are positive definite, with determinant \(3.9375\).
+The response is a Euclidean contraction with eigenvalues \(0.1,0.9\),
+but
+\[
+ W=\begin{bmatrix}0.9&10\\0&0.1\end{bmatrix},
+ \qquad
+ WJ=\begin{bmatrix}4.45&5.36\\0.04&0.05\end{bmatrix},
+\]
+and
+\[
+ \rho(WJ)=
+ \frac{4.5+\sqrt{20.2176}}2
+ \approx4.498199279.
+\]
+With compatible zero targets, arbitrarily small local perturbations
+grow.
+The positive tracker eigenvalue
+\(1+\eta(4.498199279-1)\) remains above one for every \(\eta>0\).
+The cause is incompatible metrics, not incompatible targets.
+A sufficient common-metric condition is
+\[
+ \|W\|_H\|J\|_H<1,
+\]
+which holds in particular if \(J^\top HJ\preceq H\).
+See \url{ada/closed-loop-note.md}, lines 106--139.
+\ledger{14,18,19}
+
+Review 21 established that
+\[
+ F^{-1}-(I-J)L^{-1}(I-J)^\top
+\]
+has a negative diagonal entry, about \(-2.14\).
+It cannot be an independent-noise covariance for demonstrations
+generated by that \(J\).
+The example therefore proves only a free-matrix statement.
+\ledger{21,22,28}
+
+The earlier auxiliary construction,
+\[
+ x\sim\mathcal N(0,L^{-1}),\qquad
+ e\sim\mathcal N(0,F^{-1}),\qquad
+ Gu=(I-J)x-e,
+\]
+realizes the covariances through \(x_f=x-e\), but coordinated input makes
+the demonstrated effective response the identity.
+Freezing \(u\) changes the response at execution.
+This is not an unchanged-deployment counterexample.
+See \url{ada/consistent-feedback-note.md}, lines 11--17.
+\ledger{19,21,28}
+
+\subsection{The determinant does not certify feedback performance}
+
+P's absolute score
+\[
+ M=\det(F)^{-1/(2d)}
+\]
+contains neither competing precision, response, execution rate nor
+phase duration.
+Scaling \(F,L\) by the same \(\kappa>0\) leaves \(W\) unchanged but
+multiplies \(M\) by \(\kappa^{-1/2}\).
+For a fixed nonsingular diagonal weighting \(D_w\),
+\[
+ \begin{aligned}
+ \det(D_wFD_w)&=\det(D_w)^2\det(F),\\
+ M_{D_w}&=|\det D_w|^{-1/d}M.
+ \end{aligned}
+\]
+Such weighting only rescales the threshold; it cannot independently
+select position and rotation directions through the determinant.
+Determinant-one changes leave the score unchanged.
+These are limitations of a feedback certificate, not automatic errors
+in attachment labels.
+See \url{ada/closed-loop-note.md}, lines 145--158.
+\ledger{11,13,15,19}
+
+Independent instantaneous quadratic solves agreed with the recurrence
+in 100 randomized checks to about \(4\times10^{-15}\).
+Fixed-point, finite-horizon, scalar, determinant and reciprocal cases
+also passed.
+These checks validate the specified model, not MiDiGaP fitting.
+See \url{ada/check_closed_loop.py} and
+\url{ada/closed-loop-run-001.log}, lines 1--37.
+\ledger{14,19,21}
+
+\section{Retained investigation: demonstration-consistent feedback}
+
+\subsection{A constrained covariance model}
+
+Suppose demonstrations satisfy
+\[
+ x_f=Jx+c+n,\qquad
+ \operatorname{Cov}(x)=S\succ0,\qquad
+ \operatorname{Cov}(n)=N_0\succeq0,\qquad
+ \operatorname{Cov}(x,n)=0.
+\]
+Fit both experts from this population:
+\[
+ L=S^{-1},
+ \qquad
+ F^{-1}=(I-J)S(I-J)^\top+N_0.
+\]
+Assume the latter covariance is positive definite.
+Whitening gives
+\[
+ \begin{aligned}
+ B&=S^{-1/2}JS^{1/2},&
+ a&=I-B,\\
+ N&=S^{-1/2}N_0S^{-1/2},&
+ C&=aa^\top+N.
+ \end{aligned}
+\]
+The feedback is similar to
+\[
+ K=(I+C)^{-1}B.
+\]
+This constrains the precisions and response jointly.
+It still describes independent marginal fitting and a frozen observed
+frame, not a normalized model-aware product.
+See \url{ada/consistent-feedback-note.md}, lines 19--49.
+\ledger{23,28}
+
+\subsection{Sharp bound and sufficient stability}
+
+\begin{claim}
+Every eigenvalue of \(K\) satisfies
+\[
+ |\lambda|\le\frac{1+\sqrt2}{2}.
+\]
+The bound is sharp over the stated class.
+If \(a+a^\top\succeq0\), then \(|\lambda|\le1\);
+invertible \(a\) makes this sufficient regime strictly stable.
+\end{claim}
+
+For a complex unit eigenvector \(z\), put
+\(s=\|a^\top z\|_2\).
+Then
+\[
+ \lambda=
+ \frac{1-z^*az}{1+s^2+z^*Nz},
+\]
+so
+\[
+ |\lambda|\le\frac{1+s}{1+s^2}
+ \le\frac{1+\sqrt2}{2}.
+\]
+Scalar \(B=\sqrt2,N=0\) attains the bound.
+That sharpness example is expansive; it does not prove sharpness under
+physical-coordinate contraction.
+If \(a+a^\top\succeq0\), then
+\[
+ |1-z^*az|^2\le1+s^2,
+ \qquad
+ |\lambda|\le
+ \frac{\sqrt{1+s^2}}{1+s^2+z^*Nz}\le1.
+\]
+Strictness follows when \(s>0\) or \(z^*Nz>0\).
+The simpler condition \(\|B\|_2<1\) also suffices.
+The relevant metric is the demonstration-covariance metric.
+See \url{ada/consistent-feedback-note.md}, lines 51--73.
+\ledger{23,28}
+
+Tracker eigenvalues are \(1-\eta+\eta\lambda\).
+A real eigenvalue above one survives every positive scalar gain;
+slowing execution can damp negative near-unit modes while slowing
+positive modes.
+\ledger{23,25,28}
+
+\subsection{An unchanged-response counterexample}
+
+Take
+\[
+ B=\begin{bmatrix}
+ 0.9&1&-2\\0&0.9&1\\0&0&0.9
+ \end{bmatrix},
+ \qquad N=0,
+\]
+which gives
+\[
+ C=\begin{bmatrix}
+ 5.01&-2.1&0.2\\
+ -2.1&1.01&-0.1\\
+ 0.2&-0.1&0.01
+ \end{bmatrix}.
+\]
+The eigenvalues of \(K\) are approximately
+\[
+ 0.086139827,\qquad1.098360181,\qquad1.001925465.
+\]
+For \(D=I+C\), exact rational arithmetic gives
+\[
+ \begin{aligned}
+ \det\!\left(\frac{21}{20}D-B\right)
+   &=-\frac{137863839}{8000000000}<0,\\
+ \det\!\left(\frac{11}{10}D-B\right)
+   &=\frac{1253931}{1000000000}>0.
+ \end{aligned}
+\]
+A real growing eigenvalue lies between \(1.05\) and \(1.1\).
+Small independent noise preserves instability by continuity.
+\ledger{23,28}
+
+Let
+\[
+ T=\operatorname{diag}(1,10,100),\qquad S=TT^\top.
+\]
+The physical response is
+\[
+ J=TBT^{-1}
+ =\begin{bmatrix}
+ 0.9&0.1&-0.02\\0&0.9&0.1\\0&0&0.9
+ \end{bmatrix},
+ \qquad
+ \|J\|_2\approx0.966974583.
+\]
+Drawing \(x\sim\mathcal N(0,S)\), setting \(x_f=Jx\), and fitting both
+experts from these same observations produces the unstable feedback
+without auxiliary inputs or a response change.
+The covariance condition number is \(10000\).
+A common scale can localize the cloud without changing the feedback;
+the whitened 50-step induced norm is about \(249.11\).
+Neither this large linear-system amplification nor physical-coordinate
+contraction establishes a realizable contact regime.
+See \url{ada/consistent-feedback-note.md}, lines 75--105, and
+\url{ada/consistent-fits-001.log}, lines 1--34.
+\ledger{21,23,28,30}
+
+\subsection{Few-shot fitting, priors and transients}
+
+The six-dimensional generator adds benign response coordinates of
+gain \(0.3\), uses
+\[
+ T=\operatorname{diag}(0.01,0.1,1,0.1,0.1,0.1),
+ \qquad S=TT^\top,
+\]
+and independent frame-noise covariance \(0.01^2S\).
+Both streams use the same observations.
+For 300 replicates per cell, the equal isotropic covariance prior is
+\[
+ R=\gamma\,\frac{\operatorname{tr}(S)}6I.
+\]
+Selected results are
+\[
+\begin{array}{c c c c c}
+ \text{Demos}&\gamma&\text{Growing fraction}
+ &\text{Median }\rho&\text{Median }\|K^{50}\|_2\\
+ \hline
+ 5&10^{-6}&0.740&1.00373&2.256\\
+ 5&10^{-4}&0.480&0.99964&1.671\\
+ 5&10^{-2}&0&0.97640&0.489\\
+ 100&10^{-6}&1.000&1.09533&221.396\\
+ 100&10^{-4}&1.000&1.04600&49.318\\
+ 100&10^{-2}&0&0.97381&0.403
+\end{array}
+\]
+Errors use true demonstration-whitened coordinates.
+More samples recover the unstable population behavior under weak
+regularization; strong regularization removes it in this generator.
+A propagated prior \((I-J)R(I-J)^\top\) was also checked, but requires
+response information and does not remove finite noisy cross terms.
+\ledger{24,28}
+
+The control \(J=0.7I\) produced no unstable eigenvalues in the tested
+cells.
+Weakly regularized five-sample fits nevertheless had median peak
+50-step amplification \(18.47\), with maximum \(48.82\), before decay.
+Transient amplification differs from spectral instability.
+See \url{ada/consistent-feedback-note.md}, lines 107--128, and
+\url{ada/check_consistent_fits.py}.
+\ledger{24,28}
+
+These are sample-covariance surrogates, not MiDiGaP.
+Trajectory fitting can pool information over time, so five
+demonstrations need not mean five effective covariance samples.
+At the recorded check, P's website promised a release and its linked
+repository was empty:
+\url{https://dynamac.cs.uni-freiburg.de/},
+\url{https://github.com/robot-learning-freiburg/DynaMAC}.
+Its actual regularization and tracker were unavailable.
+\ledger{24,28}
+
+\subsection{Limits of the covariance argument}
+
+If \(R_{xn}=\operatorname{Cov}(x,n)\ne0\), then
+\[
+ \begin{aligned}
+ F^{-1}={}&(I-J)S(I-J)^\top+N_0\\
+ &-(I-J)R_{xn}-R_{xn}^\top(I-J)^\top.
+ \end{aligned}
+\]
+Regression yields observational response
+\[
+ J_{\mathrm{obs}}=J+R_{xn}^\top S^{-1},
+\]
+which need not equal the interventional response.
+Finite samples introduce analogous cross terms.
+Demonstrated auxiliary feedback similarly fits \(J+GK_u\), not a
+response obtained by freezing \(u\).
+\ledger{21,28}
+
+An aggregate competing precision need not be \(S^{-1}\).
+For the special case of \(m\) identical world-covariance experts,
+\[
+ K=(I+mC)^{-1}B,\qquad
+ |\lambda|\le\frac{1+\sqrt{1+1/m}}2.
+\]
+This duplication calculation does not justify treating correlated
+experts as independent evidence.
+See \url{ada/consistent-feedback-note.md}, lines 130--150.
+The latest round investigates that independence objection directly.
+\ledger{28,40,42}
+
+\subsection{Reciprocal arms and consistent adjoints}
+
+If reverse relative residuals obey \(e_2=-Ae_1\), shared data and
+compatible covariance priors give
+\[
+ C_2=AC_1A^\top,\qquad
+ F_2=A^{-\top}F_1A^{-1}.
+\]
+Transporting one arm into the other's tangent chart restores shared
+relative precision.
+With positive anchor precisions, both update blocks contract in a
+common metric, proving strict stability of the simultaneous reciprocal
+update.
+An adjoint change alone is not an instability mechanism.
+\ledger{18,25,28}
+
+For equal scalar relative-to-anchor precision ratio \(\beta\), the
+modes are
+\[
+ \lambda_{\mathrm{common}}=\frac{\beta}{1+\beta},
+ \qquad
+ \lambda_{\mathrm{relative}}=-\frac{\beta}{1+\beta}.
+\]
+At \(\beta=1000\), these are about \(\pm0.999001\):
+slow common motion coexists with alternating relative error.
+Positive anchors exclude an exact period-two mode; the anchor-free
+limit does not.
+Gain \(1/2\) damps the alternating mode while further slowing common
+motion.
+\ledger{25,28}
+
+All 1000 adjoint-consistent trials passed.
+Separate isotropic priors in the original charts break congruence:
+259 of 1000 five-sample cases at prior scale \(10^{-6}\) were weakly
+unstable, with maximum radius \(1.00025745\), about \(1.3\%\) modal
+growth in 50 steps.
+No growing cases occurred with ten or one hundred samples in that
+generator.
+See \url{ada/consistent-feedback-note.md}, lines 152--171,
+\url{ada/consistent-fits-001.log}, lines 86--88, and
+\url{ada/reciprocal-fits-001.log}, lines 1--9.
+\ledger{25,28}
+
+\section{Retained investigation: structured responses}
+
+\subsection{Noiseless two-dimensional stability}
+
+Write
+\[
+ D=I+aa^\top+N,\qquad K=D^{-1}B,\qquad a=I-B.
+\]
+For \(N=0\),
+\[
+ \begin{aligned}
+ D-B&=a(I+a^\top),\\
+ \det(I-K)&=\frac{\det(a)\det(I+a)}{\det D},\\
+ \det K&=\frac{\det B}{\det D}.
+ \end{aligned}
+\]
+If real \(B\) is Schur, both \(\det(I-B)\) and \(\det(2I-B)\) are
+positive.
+In two dimensions, therefore,
+\(\det(I-K)>0\) and \(|\det K|<1\).
+\ledger{30,32,38}
+
+An eigenvalue at or below \(-1\) is excluded separately.
+The earlier eigenvector identity gives, even for \(N\succeq0\),
+\[
+ \operatorname{Re}\lambda
+ \ge\frac{1-\sqrt2}{2}>-1.
+\]
+For a negative numerator this follows by minimizing
+\((1-s)/(1+s^2)\); nonnegative numerators already satisfy the bound.
+Complex conjugate eigenvalues in two dimensions have squared modulus
+\(\det K<1\).
+Real eigenvalues above one must occur together because
+\(\det(I-K)>0\), but their product would violate \(|\det K|<1\).
+Equality at one is also excluded.
+Thus every real two-dimensional Schur response gives Schur feedback
+under the noiseless consistent model.
+\ledger{32,38}
+
+More generally, real eigenvalues above one occur in an even count,
+with multiplicity, for noiseless real Schur \(B\).
+For the preceding three-dimensional example,
+\[
+ \det(I-K)=\frac{0.11^3}{\det(I+C)},
+\]
+consistent with its pair of growing real modes.
+These results do not extend automatically to arbitrary noise.
+See \url{ada/structured-feedback-note.md}, lines 51--77.
+\ledger{30,32,38}
+
+\subsection{Idempotent articulation responses}
+
+Suppose \(J^2=J\).
+Whitening preserves idempotence, so in an appropriate orthonormal basis
+\[
+ a=\begin{bmatrix}I&T\\0&0\end{bmatrix},
+ \qquad
+ B=\begin{bmatrix}0&-T\\0&I\end{bmatrix}.
+\]
+The zero-noise limiting feedback is
+\[
+ K=\begin{bmatrix}
+ 0&-(2I+TT^\top)^{-1}T\\
+ 0&I
+ \end{bmatrix}.
+\]
+Its spectrum consists of zeros and ones with the appropriate
+multiplicities.
+This is a limit of positive-covariance fusion, not inversion of a
+singular relative covariance.
+\ledger{32,38}
+
+For noise \(N=\nu I\) in demonstration-whitened coordinates, the nonzero
+eigenvalues become \(1/(1+\nu)\).
+Tracker modes are
+\[
+ 1-\frac{\eta\nu}{1+\nu},
+\]
+along with \(1-\eta\).
+Small aligned noise gives slow common motion.
+Physical sensor isotropy is not the same as isotropy in this metric.
+\ledger{32,38}
+
+For general block noise, define
+\[
+ \begin{aligned}
+ H_p&=2I+TT^\top+N_{11},&
+ E_p&=N_{12},\\
+ Q_p&=I+N_{22}-E_p^\top H_p^{-1}E_p.
+ \end{aligned}
+\]
+The potentially nonzero eigenvalues are those of
+\[
+ Q_p^{-1}(I+E_p^\top H_p^{-1}T),
+\]
+which need not be contractive.
+See \url{ada/structured-feedback-note.md}, lines 79--113.
+\ledger{32,38}
+
+For the physical orthogonal projection \(J=\operatorname{diag}(0,1)\),
+write \(S=[s_{ij}]\), \(N_0=[n_{ij}]\).
+The nonzero feedback eigenvalue exceeds one exactly when
+\[
+ n_{12}(s_{12}+n_{12})>
+ (2s_{11}+n_{11})n_{22}.
+\]
+Indeed,
+\[
+ C_0=\operatorname{diag}(s_{11},0)+N_0,\qquad
+ W=S(S+C_0)^{-1},
+\]
+and the nonzero eigenvalue of \(WJ\) is \(W_{22}\).
+The example
+\[
+ S=\begin{bmatrix}1&0.8\\0.8&1\end{bmatrix},
+ \qquad
+ N_0=0.1\begin{bmatrix}9&3\\3&1\end{bmatrix}
+\]
+has spectrum \(\{0,101/99\}\), positive expert covariances, and
+\(\operatorname{cond}(S)=9\).
+Noise is independent of state but correlated across coordinates.
+Its trace is half the state trace variance.
+Any positive replacement of \(0.1\) retains growth, tending to zero
+growth as that scale vanishes.
+A sufficiently small positive isotropic noise floor preserves it.
+See \url{ada/structured-feedback-note.md}, lines 115--128, and
+\url{ada/structured-followup-001.log}, lines 23--33.
+\ledger{35,37,38}
+
+\subsection{Compliance and metric alignment}
+
+For symmetric positive stiffnesses,
+\[
+ J=(K_c+K_e)^{-1}K_c,\qquad H_s=K_c+K_e,
+\]
+the matrix \(J_H=H_s^{1/2}JH_s^{-1/2}\) is symmetric with spectrum in
+\((0,1)\).
+This does not ensure contraction in the demonstration metric.
+Let
+\[
+ \begin{aligned}
+ S_H&=H_s^{1/2}SH_s^{1/2},&
+ \kappa&=\operatorname{cond}(S_H),\\
+ m&=\lambda_{\min}(J_H),&
+ M&=\lambda_{\max}(J_H),\\
+ c&=(M+m)/2,& d&=(M-m)/2.
+ \end{aligned}
+\]
+Writing \(J_H=cI+E_H\), with \(\|E_H\|_2\le d\), and using
+\[
+ \|S_H^{1/2}z\|_2\|S_H^{-1/2}z\|_2
+ \le\frac{\sqrt\kappa+1/\sqrt\kappa}{2}
+\]
+for unit \(z\), gives
+\[
+ \lambda_{\max}\!\left(\frac{B+B^\top}{2}\right)
+ \le c+\frac d2\left(\sqrt\kappa+\frac1{\sqrt\kappa}\right).
+\]
+If the right side is at most one, the accretivity result proves strict
+stability for every \(N_0\succeq0\).
+For \(d>0\), with \(q=(1-c)/d\), an explicit sufficient condition is
+\[
+ \kappa\le\left(q+\sqrt{q^2-1}\right)^2.
+\]
+This is conservative, not an optimal anisotropy threshold.
+See \url{ada/structured-feedback-note.md}, lines 130--152.
+\ledger{34,38}
+
+Conversely, a growing mode requires
+\[
+ -\operatorname{Re}(z^*az)>
+ \frac{s^2(1+s^2)}2,\qquad
+ s=\|a^\top z\|_2<1.
+\]
+Compare
+\[
+ |1-z^*az|^2\le1-2\operatorname{Re}(z^*az)+s^2
+\]
+with the denominator squared, at least \((1+s^2)^2\).
+The inequality also implies \(s<1\).
+Thus the numerical range of \(B\) must extend beyond one.
+Physical-coordinate contraction need not prevent this after whitening.
+See \url{ada/structured-feedback-note.md}, lines 154--161.
+\ledger{30,38}
+
+\subsection{A diagonal-spring counterexample}
+
+Take
+\[
+ J=\operatorname{diag}\left(\frac{999}{1000},\frac56,\frac1{100}\right),
+\]
+and
+\[
+ S=\frac1{1000}
+ \begin{bmatrix}
+ 767&-1023&-681\\
+ -1023&1456&1029\\
+ -681&1029&777
+ \end{bmatrix}.
+\]
+The covariance eigenvalues are approximately
+\(0.00351279,0.09098815,2.90549907\), giving condition number \(827.12\).
+Positive diagonal spring pairs
+\[
+ K_c=100J,\qquad K_e=100(I-J)
+\]
+realize this response.
+Their diagonal stiffnesses are approximately
+\[
+ K_c:(99.9,83.33,1),\qquad K_e:(0.1,16.67,99).
+\]
+These are constructed values, not Q measurements.
+\ledger{34,38}
+
+At \(N_0=0\), feedback eigenvalues are approximately
+\[
+ 1.0765501,\qquad1.0001559,\qquad0.0002405.
+\]
+For \(C_0=(I-J)S(I-J)^\top\), exact arithmetic gives opposite signs of
+\[
+ p(\lambda)=\det[\lambda(S+C_0)-JS]
+\]
+at \(21/20\) and \(11/10\).
+Since \(WJ\) is similar to \((S+C_0)^{-1}JS\), this certifies a growing
+real mode.
+A Jordan block and a deployment response change are unnecessary.
+Failed searches with covariance condition-number caps \(4,16,100\)
+are not exclusion theorems or evidence about real demonstrations.
+See \url{ada/structured-feedback-note.md}, lines 163--176, and
+\url{ada/structured-followup-001.log}, lines 1--22.
+\ledger{34,38}
+
+\subsection{Earlier controlled rollouts and the deletion objection}
+
+The spring rollout uses phase-varying sinusoidal means, a 20 Hz
+gain-\(0.5\) tracker, same-demonstration covariance fits, and a prior
+propagated through \(I-J\).
+At covariance scale \(0.02\) m, the retained tracker radius is
+\(1.038275\), while the score is \(0.343\) mm.
+Requiring five consecutive samples below the illustrative \(1\) mm
+cutoff deletes the frame and prevents growth.
+Persistent-mask RMS is \(0.494\) mm; immediate deletion, the
+relative-precision rule, response-based deletion and model-aware fusion
+all give about \(0.346\) mm.
+The recorded 5-, 30- and 100-demonstration draws give the same
+qualitative outcome.
+Extreme unmasked positions reflect a globally linear surrogate,
+not a plausible robot workspace.
+See \url{ada/structured-feedback-note.md}, lines 178--186, and
+\url{ada/structured-followup-001.log}, lines 35--58.
+\ledger{34,38}
+
+The noisy slider scales covariances by \(10^{-4}\), uses a \(1\) cm
+sinusoidal target, independent observations every \(50\) ms, gain
+\(0.5\), and 300 replicates per condition.
+All controllers receive the same fitted covariances and known \(J\).
+The final run adds noise floor \(10^{-7}I\) and prior
+\[
+ R=10^{-6}\frac{\operatorname{tr}(S)}2I.
+\]
+Sample means are supplied exactly.
+The population score is \(5.65\) mm, so the persistent \(1\) mm mask
+never removes the frame.
+Retained fusion crosses \(20\) mm error in 266/300 trials over 10 s,
+with median crossing time \(3.325\) s among crossings.
+\ledger{37,38}
+
+The crossing fractions are
+\[
+\begin{array}{c c c c c c}
+ \text{Fit}&\text{Score}&\text{Spectrum}&
+ \text{Relative}&\text{Model}&\text{Delete}\\
+ \hline
+ \text{Population}&0.887&0&0&0&0\\
+ 5&0.673&0.123&0.033&0.070&0\\
+ 30&0.843&0.153&0.003&0&0\\
+ 100&0.880&0.077&0&0&0
+\end{array}
+\]
+``Spectrum'' deletes when the fitted tracker radius is at least one.
+``Relative'' uses the 50-step, \(5\%\) rigid deadline rule, only a
+heuristic for this projection.
+Population median RMS is \(21.8\) mm for retention or score masking,
+\(0.473\) mm for model-aware fusion, and \(0.305\) mm for deletion.
+Five-demonstration model-aware RMS is \(1.66\) mm.
+Stable homogeneous spectra can still permit large noise-driven errors.
+The log's instability fields describe the unmasked candidate, not
+every controller named on the same row.
+See \url{ada/structured-feedback-note.md}, lines 188--209, and
+\url{ada/projection-rollout-002.log}, lines 1--24.
+\ledger{37,38}
+
+\begin{objection}
+Neither earlier task needed the retained frame: the world mean fully
+specified the desired motion.
+\end{objection}
+
+Deletion matched or beat the retained methods.
+These experiments therefore established no advantage over adequate
+frame removal.
+That comparative objection was accepted in review 40 and motivated
+the informative-reference experiment appended below.
+The historical result remains valid; it is no longer a description of
+every experiment in the record.
+\ledger{34,37,38,40,44,48}
+
+The structured checks passed 3000 two-dimensional Schur cases,
+1000 idempotent block-spectrum cases, and 3000 alignment-bound cases.
+The largest radius in the two-dimensional checks was about
+\(0.9999973\).
+These checks support, rather than replace, the proofs.
+See \url{ada/check_structured_theorems.py} and
+\url{ada/structured-theorems-001.log}, lines 1--3.
+The rollout scripts, arrays and failed attempts remain recorded in
+\url{ada/structured-feedback-note.md}, lines 234--236.
+\ledger{32,38}
+
+\section{Retained Aero diagnostics and corrected scope}
+
+The covariance diagnostic used the official checkpoint, pinned assets,
+an allowlisted array reader and a NumPy deterministic actor.
+Recorded sources were:
+\begin{itemize}
+\item
+\url{https://github.com/Chestnut-Robotics/aero-hand-open/tree/7bb2f23485a7d440960c21046da642de132b7745}
+\item
+\url{https://github.com/google-deepmind/mujoco_playground/tree/1bd244fa9c51fa7074c7a449934f556d898f7a15}
+\item
+\url{https://github.com/Chestnut-Robotics/aero-open-sim/tree/dfeff43507fe82f515fed81592070e39a9bb92f6}
+\end{itemize}
+It used plain MuJoCo 3.3.7, a \(50\) mm, \(69.2\) g cube,
+\(0.01\) s integration and \(0.05\) s control, without observation
+noise or parameter randomization.
+It was not the original MJX/Brax runtime.
+See \url{ada/closed-loop-note.md}, lines 166--174.
+\ledger{16,19}
+
+The pinned training history convention adds a delay relative to
+deployment.
+The training-style nominal smoke survived 15 s; deployment settings
+dropped after 1.15 s.
+Several settings changed together, so the cause was not isolated.
+Neither reproduces Q's quantitative evaluation.
+\ledger{16,19}
+
+Each covariance cohort comprised 32 local-reset trials of at most 5 s.
+Hand-angle perturbations had standard deviation \(s\), cube position
+\(0.1s\) metres, and cube rotation \(s\) radians.
+The diagnostic computed phase-conditioned palm-in-cube sample
+covariances in local rotation coordinates, using metres and radians
+without regularization.
+This is a proxy, not P's fitted stream, segmentation or temporal filter.
+\ledger{16,19}
+
+Deployment-style \(s=0.01\) trials had 11/32 survivors and no flags before
+the first fall at 1.10 s.
+Training-style \(s=0.01\) had 31/32 survivors and no flags.
+At \(s=0.001\), 30/32 survived, with flags only at \(0,0.05,0.10\) s.
+Successful-only checks reproduced this pattern, with median scores
+about \(0.155\) and \(0.173\).
+The briefly flagged interval included about \(0.16\) rad mean relative
+rotation; temporal filtering might remove it but was not tested.
+The initial score scales from \(2.79\times10^{-3}\) to
+\(2.79\times10^{-4}\) when \(s\) decreases tenfold.
+Later broad orientation dispersion weakens the local Gaussian
+interpretation.
+See \url{ada/aero-summary-001.log}, lines 1--3, and
+\url{ada/aero-covariance-004.log} and
+\url{ada/aero-covariance-005.log}, lines 33--35.
+\ledger{16,19,21,28}
+
+The moving-wrist follow-up prescribed a mocap mount, retained the tendon
+policy, and used paired probes from identical contact states at phases
+\(0.5,1,2,3\) s and horizons \(0.05,0.2\) s.
+Rotation used a \(0.05\) m characteristic length.
+Initial amplitudes were \(10^{-4}\) and \(5\times10^{-5}\) m in those
+coordinates; 64 random perturbations tested each local fit.
+The response retained the nominal palm-to-cube transform, including
+its lever arm.
+These were calibration probes, not task demonstrations or arm dynamics.
+\ledger{26,28}
+
+The first attempt failed on an unavailable copying binding.
+The corrected run preserved grasp over short horizons, but halving
+amplitude changed derivatives by \(96\%\)--\(214\%\), and
+independent-direction errors were \(100\%\)--\(198\%\).
+Formal fusion radii \(0.087\)--\(0.691\) therefore supported no
+closed-loop conclusion.
+The score crossed the illustrative cutoff only at phase \(0.5\) s over
+the short horizon, with probe-dependent scale.
+See \url{ada/aero-wrist-probes-001.log} and
+\url{ada/aero-wrist-probes-002.log}.
+\ledger{26,28}
+
+Refinement changed both solver iterations from five to 100 and
+amplitude to \(10^{-5}\).
+Only two of eight conditions validated.
+At phases 2 and 3 s over the short horizon, derivative changes were
+\(0.00093\%\) and \(0.00137\%\), and prediction errors \(0.60\%\) and
+\(0.31\%\); formal radii were \(0.464,0.719\).
+The phase-2 long-horizon fit had radius \(1.021\) but about \(100\%\)
+prediction error and cannot support instability.
+See \url{ada/aero-wrist-probes-003.log}, lines 5--7.
+\ledger{27,28}
+
+The earlier description of this as strengthening a negative physical
+result was withdrawn.
+The covariances were experimenter-chosen and near-isotropic, with a
+small regularizer, tiny probes and non-released solver settings.
+The phase-2 short-horizon case already satisfies \(\|B\|_2<1\).
+These tests neither establish nor refute the anisotropic-demonstration
+regime.
+A finite-horizon derivative also need not be an iteratable memoryless
+law.
+No Aero controller advantage, DynaMAC failure or sensing impossibility
+was established.
+See \url{ada/structured-feedback-note.md}, lines 230--232.
+\ledger{30,33,38,48}
+
+\section{Appended investigation: correlated experts}
+
+\subsection{What review 40 asked to distinguish}
+
+The world and relative residuals in the independent-noise model have
+cross-covariance \(S(I-J)^\top\).
+Review 40 therefore asked whether growing modes arise from discarding
+this correlation rather than from endogeneity alone.
+It also requested a normalized-product comparison, a useful external
+reference, a few-shot qualification, and a final reassessment rather
+than another search for unstable response matrices.
+\ledger{40,41}
+
+\subsection{Joint conditioning removes growth under independent noise}
+
+At a fixed phase, let
+\[
+ f=Jx+c+n,\qquad
+ x\sim\mathcal N(m,S),\qquad
+ n\sim\mathcal N(0,N_0),\qquad n\perp x,
+\]
+with \(S\succ0\) and \(JSJ^\top+N_0\succ0\).
+The fitted population conditional mean is
+\[
+ \begin{aligned}
+ \pi(f)&=m+G(f-Jm-c),\\
+ G&=SJ^\top(JSJ^\top+N_0)^{-1}.
+ \end{aligned}
+\]
+The learner can estimate \(G\) directly from paired observations;
+the population formula does not require supplying \(J\) to it.
+\ledger{42,48}
+
+With \(B=S^{-1/2}JS^{1/2}\) and
+\(N=S^{-1/2}N_0S^{-1/2}\),
+\[
+ S^{-1/2}GJS^{1/2}
+ =B^\top(BB^\top+N)^{-1}B.
+\]
+The Schur complement of the joint covariance gives
+\[
+ 0\preceq B^\top(BB^\top+N)^{-1}B\preceq I.
+\]
+Thus every population eigenvalue of \(GJ\) lies in \([0,1]\).
+Positive definite noise makes the upper inequality strict.
+Joint conditioning removes the growing modes of the earlier
+independent-noise population examples.
+See \url{ada/correlated-feedback-note.md}, lines 21--47.
+\ledger{42,48}
+
+For tracker gain \(0<\eta\le1\), define
+\[
+ T=(1-\eta)I+\eta GJ.
+\]
+When the next phase mean is supplied before computing the target,
+\[
+ e_{t+1}=T(e_t-\Delta m_t)+\eta Gn_t,
+ \qquad
+ \Delta m_t=m_{t+1}-m_t.
+\]
+A mode \(\mu\) of \(GJ\) retains
+\((1-\eta+\eta\mu)^H\) of initial error after \(H\) fixed-phase steps.
+Nonexpansion is not instantaneous tracking.
+\ledger{42,48}
+
+For noiseless invertible \(J\), \(G=J^{-1}\), so \(GJ=I\).
+The target is exactly the current state: the phase mean cancels even
+when it changes.
+The diagonal-spring example's independent-fusion eigenvalues become
+unit conditional eigenvalues.
+Calibration removes growth but leaves complete self-following.
+In a noiseless rank-deficient pseudoinverse limit, the observed
+subspace is read back while the mean drives unobserved directions.
+These singular limits are not ordinary full-density Gaussian fits.
+See \url{ada/correlated-feedback-note.md}, lines 49--66.
+\ledger{42,48}
+
+\subsection{Retaining residual correlation gives the same controller}
+
+Using \(a=I-J\), the joint residual covariance is
+\[
+ \Omega=
+ \begin{bmatrix}
+ S&Sa^\top\\
+ aS&aSa^\top+N_0
+ \end{bmatrix}.
+\]
+Independent marginal fusion discards its off-diagonal blocks.
+Evaluating the full Gaussian at candidate residuals
+\[
+ \begin{bmatrix}
+ y-m\\
+ y-f-(am-c)
+ \end{bmatrix}
+\]
+and normalizing over \(y\) yields the same conditional controller.
+The invertible change of variables between \((x,f)\) and
+\((x,x-f)\) establishes the equivalence.
+\ledger{42,48}
+
+In 1000 random models of dimensions one through eight, the similarity
+identity agreed to \(7.4\times10^{-14}\), and the conditional and
+correlated-residual gains to \(7.7\times10^{-13}\).
+See \url{ada/correlated-feedback-note.md}, lines 68--84, and
+\url{ada/correlated-checks-002.log}, line 1.
+Within this model, independence miscalibration explains growth while
+endogeneity explains remaining self-following.
+This is not a theorem about every independence approximation in P.
+\ledger{42,48}
+
+\subsection{Joint normalization is a distinct operation}
+
+Pignat's normalized product training does not mean simply placing a
+full covariance on stacked residuals.
+For centered scalar variables, consider
+\[
+ q(y\mid f)\propto
+ \exp\!\left[-\tfrac12Ly^2-\tfrac12F(y-f)^2\right],
+ \qquad L,F\ge0.
+\]
+Its gain is \(w=F/(L+F)\in[0,1]\).
+For observational regression gain
+\(g=\operatorname{Cov}(x,f)/\operatorname{Var}(f)\), normalized
+conditional maximum likelihood gives
+\[
+ \begin{aligned}
+ w_\star&=\operatorname{clip}(g,0,1),\\
+ L+F&=\left[\operatorname{Var}(x-w_\star f)\right]^{-1}.
+ \end{aligned}
+\]
+The intercept is \(\bar x-w_\star\bar f\).
+Zero precision permits a constant factor; zero residual variance
+requires a singular precision limit.
+The scalar optimum was checked against direct residual minimization.
+\ledger{45,48}
+
+For known response \(0\le j<1\), the physical relative feature is
+\((1-j)y-e\).
+The normalized product has external-reference slope
+\[
+ h=\frac{(1-j)F}{L+(1-j)^2F}
+ \in[0,1/(1-j)].
+\]
+Its optimum clips unrestricted context regression to this interval.
+A negative task slope cannot be represented with these physical
+features and nonnegative precisions.
+Richer learned features or mean models change the family.
+\ledger{45,48}
+
+For the earlier noiseless response-aware unconditional model, total
+precision is
+\[
+ H=L+a^\top Fa,\qquad a=I-J.
+\]
+Normalized maximum likelihood fixes \(H=S^{-1}\), but not the factor
+allocation.
+For invertible \(a\) and \(C=aSa^\top\), every
+\[
+ F=\gamma C^{-1},\qquad
+ L=(1-\gamma)S^{-1},\qquad 0\le\gamma\le1
+\]
+gives the same distribution.
+Independent marginal fitting instead gives \(H=2S^{-1}\).
+Normalization repairs calibration without identifying the generating
+mechanism.
+This is a scalar or linear-Gaussian specialization, not a full
+implementation of Pignat's method.
+See \url{ada/correlated-feedback-note.md}, lines 86--121.
+\ledger{45,47,48}
+
+Likewise, fixed half-half covariance-intersection weights scale both
+precisions equally and leave the fused mean unchanged.
+A guarantee about uncertainty under correlated estimates is not by
+itself a receding-controller stability guarantee.
+See \url{ada/correlated-feedback-note.md}, line 123.
+\ledger{47,48}
+
+\subsection{An informative reference changes the stability question}
+
+Now suppose
+\[
+ f=jx+e+n,\qquad x=m+Ae+w,
+\]
+where \(e,w,n\) are independent Gaussian variables with variances
+\(E,R,N\).
+The controller does not observe \(e\) directly.
+Because demonstration state depends on \(e\), the external frame
+contribution is correlated with \(x\).
+The independent-noise theorem does not apply.
+\ledger{43,48}
+
+For noiseless demonstrations, \(R=N=0\), and \(1+jA\ne0\),
+\[
+ g=\frac{A}{1+jA},\qquad
+ gj=\frac{jA}{1+jA}.
+\]
+The conditional's fixed point has the correct task slope \(A\), but
+tracker stability requires
+\[
+ |1-\eta+\eta gj|<1
+ \quad\Longleftrightarrow\quad
+ jA>\eta/2-1.
+\]
+At \(jA=-1\), the frame is constant in demonstrations and regression
+does not identify this gain.
+For \(-1<jA<-1/2\), ideal execution oscillates; sufficiently small
+positive gain can stabilize it.
+For \(jA<-1\), the positive loop gain exceeds one and reducing a
+positive execution gain does not stabilize it.
+\ledger{43,48}
+
+For desired pose \(d_t=m_t+Ae_t\), the noiseless-fit tracking error obeys
+\[
+ \epsilon_{t+1}
+ =(1-\eta+\eta gj)(\epsilon_t-\Delta d_t)+\eta gn_t.
+\]
+With finite demonstration or observation noise,
+\[
+ g=\frac{A(1+jA)E+jR}
+          {(1+jA)^2E+j^2R+N}.
+\]
+When the equilibrium denominator is nonzero,
+\[
+ \frac{g}{1-jg}
+ =A+\frac{jR-AN}{(1+jA)E+N}.
+\]
+Correct observational regression therefore need not imply either a
+correct equilibrium or stable feedback.
+See \url{ada/correlated-feedback-note.md}, lines 125--169.
+\ledger{43,48}
+
+Independently fitted scalar experts use
+\[
+ \begin{aligned}
+ S&=A^2E+R,\\
+ C&=((1-j)A-1)^2E+(1-j)^2R+N,\\
+ p&=\frac{S}{S+C}.
+ \end{aligned}
+\]
+Their equilibrium slope is \(p/(1-jp)\); deletion has slope zero.
+For \(j=0.5,A=0.8,R=N=0\), the joint conditional gives slope \(0.8\),
+independent fusion gives \(0.941176\), and deletion gives zero.
+For \(A=-1.6\), the conditional has \(g=-8\) and ideal loop gain \(-4\),
+despite its correct fixed point.
+The normalized measured-frame product clips this gain to zero.
+The known-response physical-feature product cannot express the
+negative task slope either.
+These are designed compensation tasks, not evidence of that sign
+structure in P's typical grasps.
+See \url{ada/correlated-feedback-note.md}, lines 171--181.
+\ledger{43,45,48}
+
+\subsection{Observational ambiguity and its temporal qualification}
+
+Two worlds can share the full-rank per-phase covariance
+\[
+ \operatorname{Cov}
+ \begin{pmatrix}x\\f\end{pmatrix}
+ =
+ \begin{bmatrix}1&-0.25\\-0.25&0.0635\end{bmatrix}.
+\]
+For each physical \(j\), define \(e=f-jx\) and regress \(x=Ae+w\).
+Gaussian regression makes \(w\) independent of \(e\).
+The recorded constructions are
+\[
+\begin{array}{c c c c c}
+ j&A&E&R&\lambda_{\eta=0.5}\\
+ \hline
+ 0.2&-2.211302&0.2035&0.004914&0.106299\\
+ 0.9&-0.868908&1.3235&0.000756&-1.271654
+\end{array}
+\]
+Both have the same fitted gain, approximately \(-3.937008\), but
+different physical feedback.
+This is per-phase observational ambiguity with a hidden reference,
+not a new causal theorem or impossibility result for histories,
+additional observations or interventions.
+See \url{ada/correlated-feedback-note.md}, lines 183--199, and
+\url{ada/correlated-checks-002.log}, lines 15--16.
+\ledger{43,47,48}
+
+If the reference \(e_i\) is constant within each demonstration and
+\(j\) is invariant, time-centering removes it:
+\[
+ \widehat j=
+ \frac{\sum_{i,t}(x_{it}-\bar x_i)(f_{it}-\bar f_i)}
+      {\sum_{i,t}(x_{it}-\bar x_i)^2}.
+\]
+With exact hand-state sensing, independent zero-mean frame noise and
+nonzero temporal excitation, this is an ordinary consistent estimate.
+Averaging \(f-\widehat jx\) gives each demonstration's reference;
+regressing the desired pose on these references estimates its task
+dependence.
+At execution, use \(\widehat e=f-\widehat jx\).
+The tracker coefficient becomes
+\[
+ 1-\eta+\eta\widehat A(j-\widehat j),
+\]
+approaching \(1-\eta\) as identification improves.
+\ledger{43,44,48}
+
+If the reference moves during demonstrations, the estimate acquires
+the omitted contribution
+\(\operatorname{Cov}_t(x,e)/\operatorname{Var}_t(x)\).
+Changing contacts, noisy hand-state measurements and unexcited
+directions also invalidate the simple argument.
+These conditions are substantial, especially for Q, and the
+estimator is not claimed as new.
+See \url{ada/correlated-feedback-note.md}, lines 201--215.
+\ledger{44,47,48}
+
+\subsection{Matched informative-reference rollouts}
+
+The new scalar spring surrogate uses \(k_c=k_e=50\), hence
+\(f=0.5x+e\), with external support \(h=2e\).
+Controllers observe the same exact hand state and noisy frame, not
+the support or \(e\).
+Targets are clipped to magnitude \(100\) mm and tracked with gain
+\(0.5\) at 20 Hz for 10 s.
+The phase mean is a \(5\) mm sinusoid; the external reference is a
+signed sinusoid plus a step, with amplitude sampled from \(7\)--\(13\)
+mm.
+\ledger{44,48}
+
+Each training demonstration has a static reference with standard
+deviation \(10\) mm, a fixed hand-offset residual of standard deviation
+\(0.5\) mm, and independent frame noise of standard deviation \(0.2\)
+mm per timestamp.
+Phase means are estimated.
+The scalar covariance floor is \(0.01\) square mm.
+There are 300 matched fits and noise trials per task slope and
+demonstration count.
+Each demonstration has 201 timestamps: five demonstrations mean five
+independent contexts, not five observed points.
+\ledger{44,45,48}
+
+All methods share raw data, initial conditions and observation-noise
+sequences.
+The joint conditional and independent products fit phase statistics.
+Temporal and known-response regressions additionally exploit a
+constant reference within each trajectory.
+The latter are stronger structural assumptions, so this is not an
+ablation that changes only normalization.
+The unrestricted context regression has a richer mean family than
+the normalized physical-feature product.
+See \url{ada/correlated-feedback-note.md}, lines 217--225.
+\ledger{44,45,48}
+
+For five demonstrations, median tracking RMS in millimetres is
+\[
+\begin{array}{l r r r}
+ \text{Controller}&A=0.8&A=-1.6&A=-3\\
+ \hline
+ \text{Independent fusion}&0.903&12.072&21.777\\
+ \text{Persistent mask}&0.903&12.072&21.777\\
+ \text{Delete}&4.586&8.996&17.058\\
+ \text{Joint conditional}&0.472&31.832&109.218\\
+ \text{Normalized measured frame}&0.472&8.996&28.078\\
+ \text{Known response, marginals}&1.062&10.801&20.086\\
+ \text{Known response, normalized}&0.336&8.996&17.058\\
+ \text{Known response, context}&0.336&0.472&0.791\\
+ \text{Temporal identification}&0.336&0.472&0.789
+\end{array}
+\]
+The persistent score is above the illustrative cutoff, so masking is
+retention in these trials.
+The positive task now establishes a real deletion cost and a benefit
+from a demonstration-only retained controller.
+The compensation tasks show that calibrated conditioning alone can
+fail, with actuator saturation included.
+Negative-slope success belongs to unrestricted context regression,
+not merely to normalizing the original physical-factor family.
+See \url{ada/correlated-feedback-note.md}, lines 227--239, and
+\url{ada/informative-rollout-002.log}.
+\ledger{44,45,48}
+
+The actual known-response normalized product was added separately after
+the baseline distinction was identified.
+All 96 earlier summary rows were unchanged in the expanded 108-row
+comparison, with 32400 method-trial records preserved.
+These are synthetic tracking errors, not DynaMAC success rates, Aero
+results, sample-efficiency claims or a new method.
+\ledger{45,48}
+
+\subsection{Population calibration does not guarantee few-shot safety}
+
+A full joint covariance in 12 dimensions has 78 distinct entries,
+versus 42 for separate six-dimensional covariances.
+With five phase-aligned samples, the joint sample covariance has rank
+at most four; both approaches need structure or regularization.
+P's trajectory models may have more effective observations per
+component than this simplification assumes.
+\ledger{46,48}
+
+For \(J=0.5I,S=I,N_0=0.1I\) in six dimensions, fitted conditionals give
+the following fractions with true ideal-loop spectral radius above one:
+\[
+\begin{array}{c c c c}
+ \text{Demos}&10^{-6}I&0.01I&0.1I\\
+ \hline
+ 5&0.627&0.514&0.042\\
+ 10&0.772&0.560&0.007\\
+ 100&0&0&0
+\end{array}
+\]
+Each cell uses 1000 independent fits; ridge rows are not paired.
+The population factorization fails for a fitted gain when empirical
+state--noise cross terms are nonzero.
+The nonmonotone small-sample outcomes are not a sample-complexity law.
+These are surrogate spectra, not robot failure rates.
+See \url{ada/correlated-checks-002.log}, lines 2--10, and
+\url{ada/correlated-feedback-note.md}, lines 261--263.
+\ledger{46,48}
+
+\section{External sources and the novelty boundary}
+
+The source checks progressively narrowed the claims.
+The following papers were inspected through the shared source pool;
+the cited line ranges are those recorded by the peers.
+No new source retrieval is needed to consolidate their findings.
+\ledger{6,8,17,36,47,48}
+
+\begin{itemize}
+\item
+\emph{Generalized Task-Parameterized Skill Learning},
+\url{https://arxiv.org/abs/1707.01696},
+pooled source lines 154--208, already gives precision-weighted
+least-squares fusion and confidence-scaled experts.
+\ledger{6}
+
+\item
+\emph{Relaxed-Rigidity Constraints},
+\url{https://arxiv.org/abs/1806.00942},
+lines 130--170, already treats within-grasp motion and directional
+relaxation, using a fixed thumb--object transform and joint kinematics.
+Mink's relative-frame derivation at
+\url{https://kevinzakka.github.io/mink/background/derivations.html}
+documents the standard adjoint-correct Jacobian difference.
+\ledger{6}
+
+\item
+Pignat, Silv\'erio and Calinon,
+\emph{Learning from demonstration using products of experts},
+\url{https://arxiv.org/abs/2010.03505},
+lines 249--265 and 523--525, includes known or learned task
+transformations; lines 841--845 and 929--1037 discuss control and
+Jacobian linearization.
+Lines 200--223 warn about separately fitted experts, while
+269--287 discuss joint normalization and the linear-Gaussian special
+case.
+This is a required constructive and calibration baseline.
+\ledger{8,17,40,47}
+
+\item
+Silv\'erio et al.,
+\emph{Learning Task Priorities from Demonstrations},
+\url{https://arxiv.org/abs/1707.06791},
+lines 439--477, uses Jacobian task parameters for Gaussian fusion;
+line 1023 assumes known task Jacobians, and line 1288 retains
+dimension-wise variability.
+\ledger{17}
+
+\item
+Elastic-DS,
+\url{https://arxiv.org/abs/2309.01884},
+lines 166 and 388, provides Lyapunov-related stability context for
+adaptation to given task descriptors, with continuous online adaptation
+left open in the inspected discussion.
+This does not certify novelty of the present boundaries.
+\ledger{17,19}
+
+\item
+Perdomo et al., \emph{Performative Prediction},
+\url{https://arxiv.org/abs/2002.06673},
+lines 690--750, studies repeated minimization when the distribution
+responds to the preceding decision, including contraction conditions
+and divergence.
+The retained-frame update is its quadratic special case:
+\[
+ Z\sim\mathcal N(Jx+c,N_0),
+\]
+\[
+ \ell(Z;y)=
+ \tfrac12\|y-Z-r\|_F^2+\tfrac12\|y-v\|_L^2.
+\]
+Minimizing its expectation gives the previously derived update.
+The generic feedback mechanism is therefore not new.
+\ledger{36,38,47}
+
+\item
+\emph{Addressing Ambiguity in Imitation Learning through Product of
+Experts based Negative Feedback},
+\url{https://arxiv.org/abs/2603.26467},
+lines 94--140, concerns negative demonstrations and sequential failure
+avoidance, rather than the instantaneous frame-feedback calculation.
+Its inspection does not establish absence of closer prior work.
+\ledger{38}
+
+\item
+\emph{Correlated Product of Experts},
+\url{https://arxiv.org/abs/2112.09519},
+lines 364--372 and 430--491, addresses correlated expert prediction and
+covariance intersection in sparse Gaussian-process regression.
+It further limits novelty claims for covariance-aware fusion.
+\ledger{47}
+
+\item
+\emph{Causal Confusion in Imitation Learning},
+\url{https://arxiv.org/abs/1905.11979},
+lines 646--658 and 725, treats action-induced observations and
+observational ambiguity.
+\emph{Feedback in Imitation Learning},
+\url{https://arxiv.org/abs/2102.02872},
+lines 349--371, cautions against conflating feedback, model limitations,
+covariate shift and causal confounding.
+The hidden reference and restriction to per-phase pairs are explicit
+assumptions here.
+\ledger{47}
+\end{itemize}
+
+For the local model, existing response-aware factor evaluation uses
+\[
+ (I-J)x-Gu-c,
+\]
+with Hessian
+\[
+ L+(I-J)^\top F(I-J)\succ0.
+\]
+It avoids the particular frozen-frame iteration, but does not solve
+unknown contacts, execution dynamics or identification automatically.
+The earlier baseline implemented this quadratic idea, not Pignat's
+complete normalized learning procedure.
+The latest scalar comparisons distinguish these operations.
+\ledger{8,17,19,45,48}
+
+Repeated pool-helper requests for Silv\'erio 2015 and Jankowski 2021,
+including DOI
+\url{https://doi.org/10.1109/IROS.2015.7353413}
+and
+\url{https://doi.org/10.1109/LRA.2021.3061310},
+and author-hosted URLs, failed with Semantic Scholar HTTP 429.
+The Silv\'erio publication record at
+\url{https://publications.idiap.ch/publications/show/3219}
+confirms bimanual pose-dynamical-system work, but full-source overlap
+remains unresolved.
+Indexed Jankowski material concerning probabilistic feedback and
+dynamic context was not used to certify novelty.
+\ledger{28,36,47,48}
+
+Attempts are preserved in the continuation and round-four/five
+pool-fetch logs.
+The latest successful new paper requests obtained pooled LaTeX after
+an interpreter-related extraction failure.
+No separate paper copies or PDF-to-text extraction supplied missing
+evidence.
+The searches do not prove novelty of the narrower covariance or
+mechanical statements.
+See \url{ada/correlated-feedback-note.md}, lines 265--277.
+\ledger{36,47,48}
+
+\section{Objections resolved and still open}
+
+The original factor-pullback novelty claim is withdrawn.
+The encoder null direction illustrates Q's stated rank deficiency,
+not a new observability theorem.
+The phase-conditioned interpretation of P's covariance and the
+illustrative status of its threshold are retained.
+\ledger{2,5,6,8,11,48}
+
+The free-matrix demonstration-consistency objection was resolved by
+a different counterexample fitted and executed with the same response.
+The Jordan-block objection was answered by the diagonal-spring
+construction, while the two-dimensional, idempotent and reciprocal
+results identify benign restricted classes.
+Those calculations stand, but their physical significance and exact
+novelty remain uncertain.
+\ledger{21,23,25,30,32,34,35,38,40}
+
+The latest round resolves part of the independence objection.
+Under independent population frame noise, full joint conditioning
+eliminates the growing modes.
+It does not eliminate state read-back or finite-phase lag.
+With a hidden informative reference, correct observational regression
+can again yield unstable feedback.
+The observationally identical pair demonstrates why per-phase
+calibration is not, by itself, response identification.
+These are restricted statements, not a general diagnosis of P.
+\ledger{42,43,46,48}
+
+The deletion objection is now resolved within a synthetic informative
+task: retaining the frame improves tracking with five demonstrations.
+It remains unresolved for the proposed Q/P application.
+The successful retained controllers are standard conditioning,
+normalized fitting or context regression.
+Temporal identification exploits exact state sensing, constant
+demonstration references and an invariant response; its signed task
+model is richer than the original physical-feature product.
+\ledger{44,45,47,48}
+
+The material is still thin as a contribution about this pair.
+There is no actual P implementation comparison, Q-specific method,
+realistic contact-response identification, hardware transfer result or
+sample-efficiency gain.
+The Aero diagnostics neither tested the required anisotropic
+demonstration regime nor supplied a validated problematic response.
+Q motivates the question but is unnecessary for the surviving
+theorems and spring experiments.
+\ledger{33,38,40,48}
+
+The evidence supports a qualified account of distinct calibration,
+motion-generation and identification problems.
+It does not support treating all feedback failure as causal
+confounding, or claiming joint conditioning as a new remedy.
+The final peer recommendation is therefore PAUSE for the original
+combined robotics project.
+\ledger{47,48,49}
+
+\section{What remains open and the smallest next step}
+
+Open questions are exact novelty of the narrow mathematical statements;
+full Silv\'erio/Jankowski overlap; P's actual stream fitting,
+regularization and tracking behavior; empirical sensing and
+demonstration covariances; and whether a realistic partly controlled
+object permits useful response identification from the available
+trajectories.
+For Aero, object sensing and hidden contact state remain additional
+requirements rather than demonstrated advantages.
+\ledger{40,47,48}
+
+The previous smallest next step, an informative articulated or
+compliant surrogate, has now been completed.
+It establishes deletion cost but also shows that familiar statistical
+methods suffice under the constructed assumptions.
+Another synthetic unstable matrix would not settle the remaining
+question.
+\ledger{40,44,48}
+
+A continuation should be conditional on access to a concrete partially
+coupled task and the actual policy implementation.
+The smallest useful test would fit its streams from matched
+demonstrations, establish whether the reference contains necessary
+external information, and compare P's implemented masking and temporal
+checks with joint conditioning, deletion, and a clearly specified
+response-aware baseline.
+Any response estimate must predict repeated execution, not merely one
+probe horizon; additional sensing, temporal assumptions and
+calibration data must be counted.
+\ledger{19,28,33,40,48}
+
+That test would determine whether the restricted boundary matters for
+P rather than only for the surrogates.
+A focused novelty check should accompany it before hardware investment.
+Without those concrete inputs, the appropriate outcome is to preserve
+the checked analysis and pause the original connexion.
+\ledger{47,48,49}
+
+\end{document}

@@ -1,0 +1,111 @@
+{
+  "backend": "codex",
+  "model": "gpt-6.1-sol",
+  "peers": [
+    "ada"
+  ],
+  "rounds": 6,
+  "repairs": 2,
+  "peer_search": true,
+  "allowances": {
+    "peer_calls": 2,
+    "peer_seconds": 3600,
+    "consolidate_seconds": 3600,
+    "verify_seconds": 3600,
+    "edit_seconds": 900,
+    "paper_seconds": 1800,
+    "review_seconds": 900,
+    "peer_call_seconds": 3600
+  },
+  "billing": "subscription",
+  "same_corpus": false,
+  "seats": 4,
+  "inline_papers": true,
+  "prefetch_limit": 0,
+  "source_cache": "sources",
+  "novelty_stage": false,
+  "presentation": true,
+  "actionability": false,
+  "edit_scheme": "single",
+  "budget": {
+    "input_tokens": 1000000000,
+    "output_tokens": 14000000
+  },
+  "accounts": {
+    "codex": {
+      "name": "codex-subscription",
+      "seats": 6
+    },
+    "claude": {
+      "name": "claude-subscription",
+      "seats": 2
+    }
+  },
+  "codex": {
+    "reasoning_effort": "high",
+    "filesystem_profile": {
+      "read": [
+        "/Users/v/.local/share/uv/python",
+        "/opt/homebrew",
+        "/Users/v/Code_2026/nobel/pilot-question/runtime-codex-0.163.0-bazel"
+      ]
+    },
+    "config": [
+      "project_doc_max_bytes=0",
+      "features.skip_host_skill_discovery=true"
+    ]
+  },
+  "routes": {
+    "peer/ada": {
+      "backend": "codex",
+      "model": "gpt-6-astra",
+      "effort": "high"
+    },
+    "consolidate": {
+      "backend": "codex",
+      "model": "gpt-6-astra",
+      "effort": "high"
+    },
+    "verify": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "edit/notation-check": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "edit/notation-correct": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "review": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "present": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "present_check": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "present_lookup": {
+      "backend": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    }
+  },
+  "transient_backoff_seconds": [
+    60,
+    300
+  ],
+  "paper_rounds": 2,
+  "presentation_cycles": 2
+}

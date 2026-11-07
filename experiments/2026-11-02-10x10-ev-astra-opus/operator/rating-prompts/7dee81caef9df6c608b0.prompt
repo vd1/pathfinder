@@ -1,0 +1,1155 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Costly Deliberation in LLM Double Auctions}
+
+\begin{document}
+\maketitle
+
+\paragraph{The pair.}
+Q, \emph{Competitive Market Behavior of LLMs}, reports incomplete convergence and unrealized gains from trade in LLM double auctions, associating particularly low volume with repeated small quote improvements.
+P, \emph{The Energy Society}, makes generated tokens consume a simulated continuation budget and studies how objectives, communication, memory, and resource constraints affect behavior. \ledger{1, 3, 6}
+
+\paragraph{The connexion pursued.}
+The initial connection retained Q's controlled market and introduced P-style inference debits: can charging for deliberation reduce unproductive bargaining enough to improve allocation, or does it instead consume resources and remove valuable participants?
+This avoids importing an auction into P's job economy, which would additionally require specifying tradable rights, sellers, and stochastic net values.
+Neither paper establishes the proposed beneficial response. \ledger{1, 6, 8}
+
+The investigation distinguishes behavioral responses to inference prices from computation imposed by the institution.
+When should an agent receive another call, and can further calls repair the allocation already produced?
+Q supplies a known surplus benchmark and an unresolved horizon question; P supplies the reason not to treat additional inference as free.
+The original survival-and-urgency mechanism remains unsupported. \ledger{30, 36, 38, 50, 54, 55}
+
+\paragraph{Status and relation to the previous account.}
+The accounting, implementation audit, scripted controls, and local pilots from the previous account are retained below.
+The final appended investigation responds to the latest verifier review, entry 57, through reservation-quote audits, mechanical quote-support controls, and prospective longer-horizon margin and gating experiments.
+The review found the diagnostic package correct but insufficient for paper review: its ingredients have precedents, pricing estimates were imprecise, and the local models did not reproduce Q's motivating bargaining regime. \ledger{36, 57}
+
+The material remains thin.
+The final experiments completed only one Gemma factorial seed and one independent Qwen baseline/margin pair.
+Margins improved gross surplus in those observed pairs, but neither a population treatment effect nor allocative noninferiority is established.
+The best-supported connection is resource-aware diagnosis of unfinished gains versus committed matching loss.
+The final recommendation is to stop development of the generic survival-market transplant on this evidence, rather than introduce another target. \ledger{72, 73, 74}
+
+\paragraph{Established benchmark and welfare accounting.}
+
+\begin{claim}
+Q's reservation schedules imply maximum gross surplus \(7.5\), attained with either five or six trades.
+Six trades are therefore unnecessary for gross allocative efficiency.
+\end{claim}
+
+Sorting buyer values downward and seller costs upward gives marginal gains
+\[
+2.5,\quad 2,\quad 1.5,\quad 1,\quad 0.5,\quad
+0,\quad -0.5,\quad \ldots .
+\]
+Consequently,
+\[
+G^\star=2.5+2+1.5+1+0.5=7.5.
+\]
+The sixth ordered match contributes zero.
+An avoidable positive execution cost makes that additional sorted match undesirable in a static full-information comparison.
+This does not explain away Q's efficiencies below one; it prevents treating fewer than six trades as sufficient evidence of inefficiency. \ledger{5, 7}
+
+A later clarification matters: an efficient six-trade allocation need not contain a zero-joint-surplus trade.
+Re-pairing the same selected buyers and sellers can give all six pairs positive joint surplus.
+Five positive sorted matches plus a zero-surplus sixth is a sufficient construction, not a necessary description of every efficient allocation.
+The final strict ZI-C control supplied a six-trade efficient allocation with positive personal profit for both parties in every trade. \ledger{69}
+
+\begin{claim}
+Agent-facing inference charges must be distinguished from the common resource price used to evaluate welfare.
+\end{claim}
+
+For matching \(M\), buyer values \(v_i\), seller costs \(c_j\), and generated tokens \(K\), define
+\[
+G(M)=\sum_{(i,j)\in M}(v_i-c_j),
+\qquad
+W_\kappa(M,K)=G(M)-\kappa K.
+\]
+Transaction prices cancel:
+\[
+(v_i-p_{ij})+(p_{ij}-c_j)=v_i-c_j.
+\]
+Conditional on an unchanged allocation, further bargaining that changes only prices redistributes rents while consuming resources.
+Computation can nevertheless improve information or matching; the identity does not establish that deliberation is generally wasteful. \ledger{7}
+
+Let \(\lambda\) be the price faced by agents and \(\kappa\) the evaluator's resource price.
+Free-to-agent inference still consumes resources.
+Using different treatment prices as welfare weights would confound behavioral changes with changes in the evaluation standard.
+Instead,
+\[
+\Delta W_\kappa=\Delta G-\kappa\Delta K.
+\]
+Higher surplus with fewer tokens gives weak dominance for every \(\kappa\geq0\).
+When policy 1 sacrifices surplus to save tokens,
+\[
+\kappa^\dagger=\frac{G_0-G_1}{K_0-K_1},
+\qquad
+G_0>G_1,\quad K_0>K_1,
+\]
+and its net welfare exceeds policy 0 only above that threshold.
+These are accounting statements, not new economic theorems or measured behavioral responses. \ledger{7}
+
+\paragraph{Implementation audit and access limitations.}
+The audit inspected
+\url{https://github.com/jswistak/competitive-market-simulation}
+at commit
+\url{a8e3e8cbe712b3a26e331d781a5fddc50274281d}.
+Crossing executes at the resting price.
+Only the best quote on each side is retained; superseded quotes do not form a recoverable queue.
+Trading removes the participants' quotes but preserves an unaffected third party's quote.
+Both sides reset each round.
+Passes and rejected offers consume opportunities.
+Reservation-violating quotes are logged but not rejected on that ground, so quote noncompliance and realized losses must be distinguished. \ledger{12, 13, 19}
+
+The initial stopping-rule description required correction.
+Early termination for non-loss deadlock applies only when every remaining trader uses constrained zero intelligence, or ZI-C.
+With a live LLM or unconstrained random trader, that predicate is false.
+Homogeneous LLM runs therefore reach the cap unless fewer than two traders remain.
+The appendix prompt describes a broader stopping rule than the implementation supplies for LLMs.
+This is not evidence that Q's published runs stopped prematurely. \ledger{12, 13}
+
+No raw run CSV or JSONL files were found in the complete repository tree, and release and tag endpoints were empty.
+The README referred to supplementary data without locating its download.
+Consequently, Q's actual surplus paths, no-actions, and token expenditure could not be reanalyzed.
+This is an access failure, not a claim that the authors never released data.
+Correspondence between the audited revision and the published experiments remains unverified.
+See \url{ada/investigation_round2.md}, lines 13--22. \ledger{12, 20}
+
+\paragraph{Retained scripted controls.}
+The scripted investigation reused Q's order-processing functions, with 300 independent one-round seeds per setting.
+All policies used the LLM stopping convention rather than ZI-C's special deadlock stop.
+There was no across-round learning.
+Cent-improvers opened at reservation value minus a margin for buyers, or plus that margin for sellers, then improved their side by \(0.01\), subject to no loss.
+They crossed profitable spreads below a specified threshold.
+These were specified controls, not fitted models of Q's traders. \ledger{14}
+
+For opening margin \(1.00\), representative mean gross surpluses were
+\[
+\begin{array}{lrr}
+\text{Policy} & T=300 & T=1000\\
+\hline
+\text{ZI-C} & 7.0133 & 7.0133\\
+\text{Cent, threshold }0 & 0.9417 & 4.3933\\
+\text{Cent, threshold }0.25 & 1.2792 & 4.8392
+\end{array}
+\]
+ZI-C's cap-300 Monte Carlo standard error was \(0.0265\).
+Opening-margin sensitivity was substantial.
+These results establish policy and horizon sensitivity, not an explanation of Q's empirical shortfall.
+See \url{ada/investigation_round2.md}, lines 24--50. \ledger{14}
+
+A later parameter audit qualified the ZI label.
+These initial controls used the schema-default upper quote bound \(10\), whereas Q's released ZI-C configuration specifies \(4\).
+They used Python's random generator rather than the upstream NumPy generator.
+The initial ZI-U control always announced, whereas the schema-default announcement probability is \(0.5\).
+The results remain valid for those specifications, but are not exact reproductions of Q's configured baselines. \ledger{28}
+
+\paragraph{Loss decomposition and the restricted crossing calculation.}
+Let \(\mathcal R\) contain all unmatched original traders, including those who exited, and let \(\mathcal A\subseteq\mathcal R\) contain the active unmatched traders.
+Let \(V(S)\) be maximum nonnegative matching surplus within population \(S\).
+Then
+\[
+\begin{aligned}
+L_{\mathrm{match}}&=G^\star-G-V(\mathcal R),\\
+L_{\mathrm{exit}}&=V(\mathcal R)-V(\mathcal A),\\
+L_{\mathrm{open}}&=V(\mathcal A),\\
+G^\star-G&=L_{\mathrm{match}}+L_{\mathrm{exit}}
+                         +L_{\mathrm{open}}.
+\end{aligned}
+\]
+All terms are nonnegative.
+The executed matching plus an optimal residual matching is feasible in the original population, and set inclusion gives
+\(V(\mathcal R)\geq V(\mathcal A)\).
+This is an accounting decomposition, not causal attribution: interventions change matching histories. \ledger{14, 20}
+
+At cap 300, the initial ZI-C control's remaining shortfall was irreversible matching loss.
+The threshold-\(0.25\) cent policy instead left \(6.1842\) of residual profitable surplus and only \(0.0367\) of irreversible loss.
+See \url{ada/investigation_round2.md}, lines 48 and 71--84.
+
+A restricted calculation explains why a cap matters.
+Suppose both quotes exist with spread \(s>0\), no cancellation occurs, and each successful noncrossing update reduces the spread by \(\delta\).
+If crossing occurs at threshold \(h\), or when an ordinary increment crosses, the first trade requires at least
+\[
+1+\max\left\{
+0,\left\lceil
+\frac{s-\max(h,\delta)}{\delta}
+\right\rceil
+\right\}
+\]
+successful opportunities.
+Passes add opportunities.
+Cancellation can invalidate the argument by changing the book.
+This is a bound for the specified policy, not for Q's LLMs.
+See \url{ada/investigation_round2.md}, lines 86--94. \ledger{14, 20}
+
+\paragraph{The budget counterexample and its demotion.}
+The earlier finite-reserve control used policies that never observed fees or reserves.
+Every decision, including a pass, incurred a fixed fee; exhaustion cancelled resting quotes.
+At cap 300, opening margin \(1.00\), and threshold \(0.25\),
+\[
+\begin{array}{lrrr}
+\text{Condition} & G & \text{Decisions} & \text{Exits}\\
+\hline
+\text{No depletion} &1.2792&300.00&0.00\\
+\text{Fee }0.01,\ \text{reserve }0.10
+&1.8533&210.37&18.87
+\end{array}
+\]
+The paired surplus gain was \(0.5742\), with approximate 95\% interval
+\([0.3961,0.7522]\).
+This uncertainty concerns the scripted model, not LLM markets. \ledger{15}
+
+Without depletion, fees provably leave these fixed policies unchanged.
+The example therefore establishes that higher original-population surplus and fewer decisions do not alone identify fee-induced adaptation.
+However, verifier entry 22 identified a narrower explanation: cancellation permits large fresh opening quotes. \ledger{14, 15, 20, 22}
+
+Fee-free ablations separated exit, cancellation, and reopening.
+The retained-anchor variant remembered the cancelled same-side quote and used it for the next threshold check and increment.
+For threshold \(0.25\), quota ten, and 300 seeds,
+\[
+\begin{array}{lrr}
+\text{Intervention} & \text{Fresh opening}
+& \text{Retained anchor}\\
+\hline
+\text{None}&1.2792&1.2792\\
+\text{Exit and cancel}&1.8533&0.7458\\
+\text{Exit, keep quote}&0.8067&0.8067\\
+\text{Cancel, keep trader}&2.3050&1.2575
+\end{array}
+\]
+Existing quotes remained executable after exit in the third row.
+Cancellation without exit occurred once at the quota threshold.
+Trigger times differed across paths, so these are not additive causal components with identical cancellation events. \ledger{24}
+
+At quota two, exit and cancellation produced \(1.2217\) for threshold \(0.25\) and \(1.4483\) for threshold \(0.50\), below baselines \(1.2792\) and \(1.7067\).
+Applying the threshold to prospective new openings still gave \(1.9958\) for the threshold-\(0.25\) treatment.
+Thus fresh opening anchors, rather than merely skipping a threshold branch, explain the relevant policy dependence. \ledger{24}
+
+The numerical counterexample survives as a quote-reset effect.
+It does not establish a general benefit of survival-based selection.
+The first ablation trial had a stopping-convention mismatch affecting decision counts; the corrected trial restored the earlier convention and passed paired reproduction checks.
+See \url{ada/investigation_round3.md}, lines 15--32.
+
+Survivor-conditioned efficiency remains a separate problem.
+A post-selected illustrative seed achieved 100\% survivor efficiency but only one third of the original surplus bound.
+ZI-C with fee \(0.05\) and reserve \(0.10\) fell to mean surplus \(1.9292\), despite high efficiency conditional on positive survivor bounds.
+Zero survivor bounds must be reported separately.
+The retained-population bound includes completed traders and differs from
+\(G+V(\mathcal A)\).
+See \url{ada/investigation_round2.md}, lines 65--84. \ledger{15, 20}
+
+\paragraph{Price metrics and mechanism sweeps.}
+Q's notebook defines Smith's coefficient, for \(m>0\) trades, as
+\[
+\alpha=\frac{100}{2}
+\sqrt{\frac{1}{m}\sum_{j=1}^{m}(p_j-2)^2}.
+\]
+It measures deviation from equilibrium, not dispersion around the run's own mean.
+No-trade values remain undefined.
+Across 300 one-round seeds:
+\[
+\begin{array}{rrrrrr}
+\text{Upper bound}&T&G/7.5&\text{Trades}&\text{Price}&\alpha\\
+\hline
+10&50 &0.7043&4.2733&2.0828&25.2242\\
+10&300&0.9351&6.5500&2.0513&22.9959\\
+4 &50 &0.7792&4.8300&2.0029&22.6758\\
+4 &300&0.9330&6.5633&1.9938&21.1514
+\end{array}
+\]
+Cap 1000 leaves the cap-300 surplus and price metrics unchanged.
+The support-\(4\), cap-300 gross surplus is \(6.9975\).
+High allocative efficiency can therefore coexist with substantial price deviation. \ledger{26, 28, 29}
+
+The always-announcing ZI-U control on \([0,10]\) completed eleven trades at cap 300, yielding gross surplus zero and mean \(\alpha=202.9170\).
+When everyone trades, zero gross surplus follows from identical total buyer values and seller costs, independently of prices and pairing.
+It is not a general theorem about random markets. \ledger{26, 28}
+
+ZI-C's reported efficiencies exceed Q's best LLM mean \(0.91\), but this is a descriptive cross-source comparison.
+The published revision is unverified, Q has five rounds, and its raw observations are unavailable.
+It does not establish general LLM inferiority.
+See \url{ada/investigation_round3.md}, lines 34--57.
+
+For the threshold-\(0.25\) cent policy, increasing the cap from 300 to 1000 raised mean surplus from \(1.2792\) to \(4.8392\).
+At cap 300, changing the increment to \(0.10\) instead gave \(7.0983\).
+Expiring quotes after ten opportunities reduced the original result to \(0.3325\).
+The scripts mechanically follow the increment rule; this is not evidence that LLMs adapt similarly.
+See \url{ada/investigation_round3.md}, lines 59--63. \ledger{29}
+
+\paragraph{The retained one-step Qwen pilot.}
+Local access permitted a pilot with \url{qwen3.5:4b}.
+Four thinking-enabled calibration calls exhausted a 2048-token cap without final answers.
+These were execution failures, not strategic passes.
+Thinking was then disabled, and a short structured explanation and quote requested. \ledger{16}
+
+The frozen design used twelve constructed states from distinct scripted runs, six per role, with two sampling seeds per state.
+Every state offered a profitable crossing.
+Arms were zero fee, token fee \(0.00185185\), and fixed-call fee \(0.10\), in randomized order without depletion.
+The token price came from separate calibration.
+All 72 calls were retained:
+\[
+\begin{array}{lrrrr}
+\text{Arm}&\text{Calls}&\text{Crossings}&\text{Passes}
+&\text{Mean tokens}\\
+\hline
+\text{Zero fee}&24&11&11&76.625\\
+\text{Per token}&24&7&14&69.417\\
+\text{Per call}&24&10&12&77.958
+\end{array}
+\]
+Remaining calls improved quotes or were rejected.
+One fixed-call quote violated the reservation instruction but crossed profitably at the resting price; it counted as execution and separately as noncompliance. \ledger{16, 19}
+
+The token-minus-zero crossing-rate difference was \(-0.1667\), with state-cluster bootstrap 95\% interval \([-0.3333,0.0000]\).
+The token difference was \(-7.208\), with interval \([-14.792,0.750]\).
+These results do not support increased immediate crossing or establish a clear token reduction. \ledger{19}
+
+The states were constructed rather than sampled from Q's data.
+Private action histories were not reconstructed, no continuation rollout evaluated waiting, and hidden reasoning was disabled.
+Calibration did not equalize realized treatment costs.
+Neither crossing frequency nor visible-output length alone establishes market welfare.
+See \url{ada/investigation_round2.md}, lines 108--141. \ledger{16, 19, 20}
+
+\paragraph{The retained complete-market Qwen pilot.}
+Two further thinking-enabled calibrations exhausted a 4096-token cap without answers, taking approximately 85 and 80 seconds.
+Four isolated thinking-disabled accounting probes succeeded, but did not establish comprehension during trading. \ledger{25}
+
+The frozen experiment used three seeds, one 50-opportunity round, temperature 1, thinking disabled, and a 512-token response cap.
+Arms were zero charge, token charge \(0.00185185\) without depletion, and zero charge with minimum noncrossing improvement \(0.10\) rather than \(0.01\).
+The coarse rule was selected from scripted controls before LLM treatment outcomes.
+Undersized improvements were rejected rather than rounded; crossing remained allowed regardless of increment. \ledger{25, 29}
+
+Agents received Q-style instructions, full public and private action histories, current quotes, and their reservation values.
+Passes and rejections incurred charges.
+Balances could become negative and never removed agents.
+Truncations consumed opportunities and retained all tokens, without retries.
+Arm order rotated across paired seeds.
+The prespecified ZI-C comparator retained upper support \(10\). \ledger{25, 28, 32}
+
+All nine LLM markets completed within the 2400-second allowance, using approximately 1327 seconds in model calls.
+There were 450 LLM calls and 150 scripted decisions.
+Replay checked every transition, trade, surplus path, and token debit; integrity records retained metadata and hashes.
+This was a feasibility study, not a replication of Q's five-round proprietary-model experiment. \ledger{32, 34}
+
+Means across three markets per arm were
+\[
+\begin{array}{lrrrr}
+\text{Arm}&G&G/7.5&\text{Trades}&\alpha\\
+\hline
+\text{Zero}&4.7500&0.6333&5.3333&33.7257\\
+\text{Token}&4.7500&0.6333&4.3333&45.1293\\
+\text{Coarse}&4.2500&0.5667&6.0000&36.0903\\
+\text{ZI-C}&6.1667&0.8222&4.3333&19.4329
+\end{array}
+\]
+Mean generated tokens were \(4187\), \(4511.6667\), \(4503\), and zero respectively.
+Zero for ZI-C means no LLM generation, not zero physical computation.
+Failures numbered \(3\), \(5\), and \(3\) out of 150 LLM calls per arm, all visible-output truncations at 512 tokens. \ledger{32, 33}
+
+Paired differences relative to zero charge were
+\[
+\begin{aligned}
+\Delta G_{\mathrm{token}}&=(0.75,-0.25,-0.50),\\
+\Delta K_{\mathrm{token}}&=(1284,446,-756),\\
+\Delta G_{\mathrm{coarse}}&=(1.25,-0.50,-2.25),\\
+\Delta K_{\mathrm{coarse}}&=(873,-135,210).
+\end{aligned}
+\]
+Hence the sample mean welfare comparisons are
+\[
+\begin{aligned}
+\overline{\Delta W_\kappa^{\mathrm{token}}}
+&=-324.6667\kappa,\\
+\overline{\Delta W_\kappa^{\mathrm{coarse}}}
+&=-0.50-316\kappa.
+\end{aligned}
+\]
+Neither intervention improved the observed mean frontier.
+Three seeds cannot establish population dominance or general ineffectiveness. \ledger{32, 33}
+
+The coarse arm traded more but realized less surplus.
+Its mean irreversible matching loss was \(2.0833\), versus \(1.0833\) under zero charge; remaining attainable surplus was \(1.1667\), versus \(1.6667\).
+Less unfinished trade therefore need not mean a better allocation. \ledger{33}
+
+The token arm's two additional truncations consumed 1024 tokens, exceeding its total token excess of 974 over baseline.
+Valid-call output averages were \(75.00\), \(75.69\), and \(81.45\).
+Discarding failures would misstate expenditure; these observations do not establish that fees cause failures. \ledger{33}
+
+Reservation-violating quotes were processed under Q's rule.
+One coarse-arm transaction gave buyer profit \(-0.50\) and seller profit zero.
+Support-\(4\) ZI-C sensitivity gave gross surpluses
+\((7.50,6.75,7.50)\), versus
+\((5.50,7.50,5.50)\) for the prespecified support-\(10\) control.
+ZI-C mechanically respected reservation constraints; the LLM was instructed to respect them.
+See \url{ada/investigation_round3.md}, lines 71--114. \ledger{33}
+
+Review 36 identified a decisive scope limitation.
+This zero-charge baseline had only eleven accepted improvements, five at one cent, and 86 passes among 150 calls.
+It did not reproduce Q's persistent minimal-improvement regime.
+Its result therefore does not test whether charges discipline the specific behavior attributed to GPT Large in Q. \ledger{36, 37}
+
+\paragraph{Retained objections and their disposition.}
+
+\begin{objection}
+Higher surplus with fewer decisions identifies adaptation to costs.
+\end{objection}
+
+The fee-blind scripted counterexample disproves that inference.
+Its gain was narrowed to fresh opening anchors after cancellation, rather than generalized as beneficial selection.
+Original-population welfare is necessary but insufficient to identify adaptation.
+No-depletion price randomization removes the direct exhaustion channel, although it does not eliminate prompt or comprehension effects. \ledger{6, 15, 24, 32}
+
+\begin{objection}
+A single-round budget reproduces P's success-funded continuation.
+\end{objection}
+
+It does not.
+Q's trader exits immediately after its sole transaction, so profits cannot finance another within-round decision.
+With fixed charges and no other inflows, reserves impose decision quotas.
+Fee/reserve pairs \((0.01,0.10)\) and \((0.05,0.50)\) produced identical scripted paths.
+Success-funded continuation requires persistent balances across rounds or multiple units.
+See \url{ada/investigation_round2.md}, line 69. \ledger{17}
+
+\begin{objection}
+Faster efficient trading necessarily reduces aggregate paid decisions.
+\end{objection}
+
+An efficient allocation uses five or six trades and leaves at least ten unmatched traders.
+Under Q's audited LLM stopping convention, without depletion, that path still receives exactly \(T\) decisions.
+A fixed fee \(f\) therefore produces aggregate debit
+\[
+D=fT.
+\]
+Early execution shifts later compulsory calls to remaining traders without necessarily reducing the aggregate bill.
+Token pricing permits output-length changes, but does not remove those calls. \ledger{30}
+
+This statement is conditional on the efficient path.
+Trading all eleven pairs can stop earlier, but yields zero aggregate gross surplus for Q's identical schedules.
+Fewer calls can thus result from overtrading. \ledger{31}
+
+Compulsory future fees also change outside options.
+An immediate gross loss \(\varepsilon\) can be privately preferable to expected future compulsory fees exceeding \(\varepsilon\).
+Q's reservation-price instruction excludes that action.
+The charged Qwen pilot consequently tests constrained prompt response, not unrestricted net-profit optimality.
+See \url{ada/investigation_round3.md}, lines 67--69. \ledger{30, 31}
+
+\begin{objection}
+Q and P support a general claim that smaller models are economically superior.
+\end{objection}
+
+They do not.
+P's abstract says larger models spend more than they gain even without size-dependent pricing, whereas its no-size-penalty experiment reports efficiency ratios above one for all models.
+For the larger models these are \(1.74\) and \(1.51\) under competition, and \(1.96\) and \(1.03\) under cooperation.
+The supported claim concerns higher token expenditure and relative inefficiency in some conditions, not inevitable deficits.
+Q disclaims identification of a causal model-size effect. \ledger{3}
+
+\begin{objection}
+A gross-surplus bound or reasoning trace provides the missing optimality or causal benchmark.
+\end{objection}
+
+The full-information bound \(7.5\) is not an attainable net optimum for decentralized traders paying for information and decisions.
+A costly dynamic optimum remains unspecified.
+Q's urgency vocabulary is associative evidence; P's deactivation rule does not establish intrinsic survival preferences.
+Successful arithmetic probes likewise do not establish correct optimization in a full market. \ledger{1, 7, 8, 25, 33}
+
+\paragraph{Retained round-four investigation: screening and metering.}
+Round four screened six previously untried local models under a prespecified 900-second allowance, using both thinking modes.
+Each configuration received a six-part numeric probe and two independent profitable action states.
+Non-thinking and thinking response caps were respectively 384 and 1024 tokens.
+All 36 calls completed in approximately 760 seconds. \ledger{37, 41}
+
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+Model & Valid off & Numeric off & Valid on\\
+\hline
+Nemotron-3-Nano-4B & \(3/3\) & \(1/6\) & \(2/3\)\\
+Qwen3-8B          & \(3/3\) & \(5/6\) & \(1/3\)\\
+Qwen3.5-9B       & \(3/3\) & \(4/6\) & \(0/3\)\\
+Gemma4-E4B       & \(3/3\) & \(2/6\) & \(2/3\)\\
+Qwen3.8-27B      & \(3/3\) & \(4/6\) & \(3/3\)\\
+Gemma4-26B       & \(3/3\) & \(5/6\) & \(0/3\)
+\end{tabular}
+\end{center}
+
+Thinking-enabled Qwen3.8-27B answered all six numeric items correctly and crossed in both action states, but action calls took roughly a minute.
+Other thinking configurations produced ten truncations among fifteen calls.
+Only two of the 24 action probes produced cent improvements.
+These isolated decisions establish neither a bargaining regime nor a model ranking. \ledger{41}
+
+Follow-up probes used independent numbers, separate questions, and short explanations.
+All four faster non-thinking configurations answered all six correctly.
+The batched failures therefore did not establish stable inability to understand the rules. \ledger{42}
+
+Full-context action checks supplied a further filter.
+Nemotron and Qwen3-8B each made two non-improving offers in four checks.
+Qwen3.5-9B truncated once and supplied an incorrect zero-surplus explanation for a withdrawal.
+Gemma4-E4B made four admissible profitable crosses and was the only fast configuration passing both criteria.
+Selection occurred before treatment outcomes.
+See \url{ada/investigation_round4.md}, lines 15--34. \ledger{42, 43}
+
+A separate metering problem precluded reasoning-price claims.
+The local server reported Ollama 0.32.15.
+A successful thinking-plus-JSON-schema Qwen3-8B response contained 2659 thinking characters and 242 answer characters but reported only 67 generated tokens; prompt-token metadata also changed substantially.
+This matched a documented two-pass structured-output accounting issue.
+The reported counter could not be assumed to include reasoning and final output correctly. \ledger{40}
+
+All completed market experiments therefore retained thinking-disabled configurations with empty thinking fields.
+The observation does not establish an error in P, which used tool calls and an unknown server revision.
+It is a local measurement caveat, not a new scientific result.
+See \url{ada/investigation_round4.md}, lines 36--42. \ledger{40}
+
+\paragraph{Invocation costs and the right to withdraw.}
+In the retained Qwen zero-charge runs, 44 of 150 selected states had no reservation-respecting improving or crossing price.
+They consumed 3124 of 12561 generated tokens, or \(24.87\%\).
+Their outcomes were 35 passes and nine rejected quotes.
+This is smaller than the token fraction spent on all passes, since many passes occurred when an admissible price action existed. \ledger{38}
+
+Those tokens cannot simply be deleted from the logs while asserting unchanged behavior.
+Rejected quotes appear in Q's full histories and can affect subsequent prompts.
+With withdrawal available, a trader without a price action still has an economically substantive exit choice. \ledger{38, 44}
+
+For example, a buyer valued at \(2\) owns bid \(2\), while a seller costing \(1\) owns ask \(3\).
+The buyer cannot improve or cross without violating its reservation constraint, but can withdraw and cancel its bid.
+Suppressing the callback instead retains the bid, which the seller can later cross for surplus \(1\).
+Thus a gate can affect allocation by restricting exit.
+The example was checked through Q's matching code. \ledger{44, 45}
+
+Path preservation requires stronger conditions: pass is the only admissible action, histories append identical canonical events, generation creates no persistent hidden state, saved balances do not change prompts, and randomness is coupled by original decision index.
+Under those conditions, induction preserves subsequent states and inputs.
+The actual withdrawal-enabled gate did not satisfy that equivalence specification.
+See \url{ada/investigation_round4.md}, lines 44--52. \ledger{44}
+
+Withdrawal also repairs part of the compulsory-fee outside-option problem.
+Conditional on equal already-incurred call costs, both withdrawal and an immediate gross-loss trade terminate future fixed-fee obligations.
+Withdrawal has zero trading payoff and dominates the loss-making trade.
+Token pricing still requires accounting for action-dependent output lengths.
+This is an elementary argument, not a claim of unrestricted optimality. \ledger{45}
+
+\paragraph{Frozen round-four Gemma experiment.}
+The design used Gemma4-E4B with thinking disabled, eight seeded markets per condition, one round of 30 original opportunities, and a 384-token response cap.
+Arms were zero charge, per-token charge, fixed-call charge, and a fee-free feasibility gate.
+A same-harness ZI-C comparator used released quote support \(4\).
+Run order rotated across seeds; failures were to retain their costs and opportunities without retry. \ledger{43}
+
+All arms mechanically rejected reservation-violating quotes, unlike Q's original matching rule.
+Traders could withdraw permanently, cancelling quotes and future fees.
+There was no budget depletion.
+Markets stopped at the cap, with fewer than two participants, or when no positive-surplus match remained among participating traders.
+The last test used experimenter-held reservation data without revealing them to agents.
+These are explicit institutional changes, not an exact Q replication. \ledger{43}
+
+The fixed fee was \(0.025\), so thirty calls cost at most \(0.75\), or 10\% of \(G^\star\).
+Independent Gemma calibration gave median output length \(76.5\), setting
+\[
+\lambda=\frac{0.025}{76.5}.
+\]
+By contrast, the preceding Qwen token arm billed \(6.85\) to \(9.74\) per market against maximum surplus \(7.5\).
+Median calibration matches a typical calibration call, not expected or realized expenditure.
+Token-versus-call comparisons therefore do not isolate pricing format at an identical cost dose. \ledger{36, 43, 46}
+
+The gate suppressed a model call when the selected trader had no admissible improving or crossing price.
+It recorded an automatic pass, preserving the opportunity, trader, and standing quote.
+It did not reassign the opportunity, and suppressed withdrawal on that tick.
+It was consequently an institution package rather than a pure computation intervention. \ledger{43, 44}
+
+The previous paired gross differences implied standard deviation \(0.6614\).
+Normal-approximation planning for effect \(0.75\), 80\% power, and a two-sided 5\% test suggested approximately seven pairs, rounded to eight.
+That variance estimate had only two degrees of freedom and came from another model and horizon.
+The design therefore specified a variance-informed feasibility target, not guaranteed power, under a fixed 2100-second allowance.
+See \url{ada/investigation_round4.md}, lines 54--74. \ledger{38, 43}
+
+\paragraph{Round-four Gemma outcomes.}
+All 32 LLM markets and eight controls completed.
+There were 876 LLM calls, 62943 generated tokens, no malformed or truncated responses, and approximately 2058 seconds of summed step time.
+Replay checked transitions, prices, costs, balances, constraints, and loss decompositions. \ledger{48}
+
+\[
+\begin{array}{lrrr}
+\text{Arm}&G&K&\text{Trades}\\
+\hline
+\text{Zero}&4.18750&2173.750&5.500\\
+\text{Token}&4.56250&2046.375&5.500\\
+\text{Call}&3.84375&2171.500&4.875\\
+\text{Gate}&4.15625&1476.250&5.750\\
+\text{ZI-C}&3.46875&0&2.500
+\end{array}
+\]
+Zero LLM tokens for ZI-C does not mean zero physical computation.
+Whole markets are the replication units.
+Mean token-arm and call-arm debits were \(0.66875\) and \(0.734375\). \ledger{48, 49}
+
+The mean loss components were
+\[
+\begin{array}{lrrr}
+\text{Arm}&L_{\mathrm{match}}&L_{\mathrm{exit}}
+&L_{\mathrm{open}}\\
+\hline
+\text{Zero}&1.28125&0&2.03125\\
+\text{Token}&1.09375&0&1.84375\\
+\text{Call}&1.18750&0&2.46875\\
+\text{Gate}&1.71875&0&1.62500\\
+\text{ZI-C}&0.15625&0&3.87500
+\end{array}
+\]
+These are accounting descriptions, not causal mediation estimates.
+See \url{ada/investigation_round4.md}, lines 84--114. \ledger{48, 49}
+
+The token-arm point estimate improved both surplus and tokens.
+Its paired gross difference was \(0.375\), with exploratory market-bootstrap 95\% interval \([-0.46875,1.15625]\).
+Its token difference was \(-127.375\), with interval \([-290,5.375]\).
+Neither coordinate establishes a population benefit.
+Observed paired gross standard deviation was \(1.289\), substantially above the planning estimate.
+This is an imprecise estimate, not an established null effect. \ledger{48, 57}
+
+The fixed-call gross difference was \(-0.34375\), with interval \([-1.25,0.59375]\), and essentially unchanged tokens.
+These noisy comparisons do not establish a token-specific behavioral mechanism.
+See \url{ada/investigation_round4.md}, lines 98--100.
+
+The gate saved tokens in all eight pairs.
+Mean savings were \(697.5\), or \(32.09\%\), with interval \([596.875,778.125]\), from 66 suppressed calls.
+The gross difference was \(-0.03125\), with interval \([-0.6875,0.6875]\).
+A small mean difference is not evidence of allocative equivalence or noninferiority. \ledger{48}
+
+At the common illustrative resource price \(\kappa=0.025/76.5\), its mean welfare gain was \(0.19669\), with interval \([-0.43309,0.89559]\).
+Its sample-mean break-even price was
+\[
+\kappa^\dagger=\frac{0.03125}{697.5}
+\approx 0.00004480.
+\]
+This is an arithmetic summary of sample means, not an optimal price or population dominance result.
+The token-arm common-price welfare interval also included zero.
+See \url{ada/investigation_round4.md}, lines 102--108. \ledger{48}
+
+The baseline still did not reproduce Q's GPT Large regime.
+It made 41 accepted improvements, twelve at one cent, and crossed 32 of 34 strictly profitable standing offers.
+It also submitted 47 non-improving and three reservation-violating quotes.
+All violating quotes were rejected.
+Valid response format did not imply full rule compliance. \ledger{49}
+
+Only one withdrawal occurred across the entire experiment, in the token arm, with measured withdrawal loss zero.
+No baseline or gate trader withdrew.
+The gate's exit-confound counterexample is therefore a valid design concern, but not an observed explanation of this sample.
+Changed rejected-quote histories and subsequent decisions remain possible channels. \ledger{44, 49}
+
+\paragraph{Continuation certificates: what additional calls cannot repair.}
+An exploratory follow-up, recorded after an interim observation, extended only the cheap ZI-C trajectories.
+The motivation was a possible mismatch between early surplus and irreversible matching loss. \ledger{47}
+
+\begin{claim}
+For a fixed observed one-round path whose completed trades cannot be reversed, the gross surplus of any continuation is at most
+\[
+U_t=G_t+R_t=G^\star-L_{\mathrm{match},t},
+\]
+where \(R_t=V(\mathcal R_t)\) is maximum surplus among all remaining original traders, even allowing withdrawn traders to return.
+\end{claim}
+
+Any feasible future matching is a matching of those remaining traders, and therefore contributes at most \(R_t\).
+The bound assumes perfect future allocation and free future computation.
+It is an elementary assignment bound, not a new theorem.
+Its diagnostic role is to distinguish unfinished gains from gains already made unattainable by committed matches. \ledger{50, 52}
+
+The same-harness ZI-C controls were extended from 30 to at most 300 opportunities, preserving seeds, support, matching, and stopping rules.
+Every original prefix was checked identical.
+Positive residual gains were exhausted after 42--95 opportunities.
+No long-horizon LLM continuation was sampled in that round; the later prospective experiment is appended below. \ledger{50, 61}
+
+\[
+\begin{array}{rrrrr}
+\text{Seed}&G^{\mathrm{LLM}}_{30}&G^{\mathrm{ZI}}_{30}
+&U^{\mathrm{LLM}}_{30}&G^{\mathrm{ZI}}_{\mathrm{end}}\\
+\hline
+9101&4.25&4.00&5.25&7.25\\
+9102&4.25&0.00&6.25&7.00\\
+9103&4.25&3.25&5.25&6.50\\
+9104&3.75&5.00&6.75&7.50\\
+9105&2.25&4.50&6.75&7.50\\
+9106&4.25&3.75&6.75&7.00\\
+9107&4.25&3.50&6.50&7.25\\
+9108&6.25&3.75&6.25&6.25\\
+\hline
+\text{Mean}&4.18750&3.46875&6.21875&7.03125
+\end{array}
+\]
+
+Extended ZI-C exceeded the corresponding LLM continuation ceiling in seven seeds and equalled it in the eighth.
+Five seeds combined an early LLM advantage with later ZI-C surplus strictly above that LLM ceiling.
+For those observed paths, arbitrarily good additional LLM decisions could not reverse the later comparison. \ledger{50}
+
+The early mean LLM advantage was \(0.71875\), with wide interval \([-0.59375,2.03125]\).
+Extended ZI-C's mean excess over the LLM ceiling was \(0.8125\), with exploratory interval \([0.4375,1.21875]\).
+The pathwise ceilings are exact conditional on observed trades, whereas these intervals concern a small, exploratory sample.
+See \url{ada/investigation_round4.md}, lines 116--148. \ledger{50}
+
+This does not bound a fresh run prompted from the outset with a longer horizon, later rounds with renewed endowments, learning across rounds, or resale and reversal.
+It does not establish what happened in Q's unavailable logs.
+The extension followed an interim observation and is not a confirmatory population comparison. \ledger{47, 50}
+
+An independent audit used integer-quarter values and skip-or-match dynamic programming, without importing the market code or its sorted optimum routine.
+It checked 40 market paths, 2364 before/after states, unique participation, monotone ceilings, terminal decompositions, and original ZI-C prefixes.
+All checks passed.
+All eight baseline paths acquired irreversible loss, first occurring at mean tick ten.
+See \url{ada/continuation_audit_01.log}, lines 1--10. \ledger{51, 52}
+
+\paragraph{Break-even sensitivity and its implications.}
+For an executed trade with gross gain \(g_t\), its immediate ceiling decrement is
+\[
+\ell_t=R_{t-1}-g_t-R_t\geq0.
+\]
+The inequality holds because that trade followed by an optimal residual matching was already feasible before execution.
+These increments telescope to terminal matching loss.
+They are state-dependent accounting increments, not separate causal effects. \ledger{52, 53}
+
+The baseline executed ten zero-joint-surplus trades among 44 transactions.
+Nine reduced the ceiling, with sequential decrements summing to \(5.75\) of total matching loss \(10.25\).
+The short-horizon ZI-C paths had no zero-surplus trades among twenty transactions. \ledger{53}
+
+For example, seed 9103 matched a buyer valued at \(3.25\) with a seller costing \(3.25\) at tick 17.
+That trade generated zero surplus and reduced the continuation ceiling by \(1.5\).
+A zero-surplus match can consume a high-value buyer needed for another trade; its effect depends on the residual allocation.
+See \url{ada/continuation_audit_01.log}, line 3, and
+\url{ada/investigation_round4.md}, lines 162--170.
+
+An ex post oracle erased every zero-surplus trade, restored those traders, retained all positive-surplus trades, and optimally rematched the restored and unmatched population.
+The mean ceiling rose from \(6.21875\) to \(6.84375\).
+Extended ZI-C's excess fell from \(0.8125\) to \(0.1875\), and strict exceedances fell from seven seeds to three.
+See \url{ada/zero_surplus_audit_01.log}, lines 1--9 and 14. \ledger{53}
+
+The oracle restored \(5.0\) total surplus capacity, not the sequential decrement total \(5.75\).
+Later commitments interact with earlier trades, so these constructions are not interchangeable.
+Neither is a causal estimate of removing zero-surplus execution.
+See \url{ada/investigation_round4.md}, lines 172--182.
+
+The sensitivity leaves the observed continuation certificates valid but substantially limits their broader interpretation.
+The oracle uses both traders' private values and cannot be implemented by an individual agent with Q's information.
+Deleting trades also changes subsequent books, participants, and prompts.
+At the close of round four, a local strict-profit intervention had not been tested.
+A rule declining zero personal profit could also reject trades with positive joint surplus.
+The prospective test below addresses part of that open question without making the oracle deployable. \ledger{53, 54, 62}
+
+\paragraph{Outside sources retained from the previous account.}
+The closest identified fee precedent remains Noussair et al.,
+\emph{The effect of transaction costs on double auction markets} (1998),
+\url{https://doi.org/10.1016/S0167-2681(98)00063-8}.
+Publisher material describes per-offer charges, lower quantity and efficiency, and price convergence.
+Adding fees to Q is not itself novel. \ledger{2, 4, 8}
+
+Gil-Bazo, Moreno, and Tapia,
+\emph{Price Dynamics, Informational Efficiency, and Wealth Distribution in Continuous Double-Auction Markets} (2007),
+\url{https://doi.org/10.1111/j.1467-8640.2007.00301.x},
+provides related costly-trading evidence.
+Its positive cost--efficiency association concerns informational price efficiency in a risky-asset market, not Q's allocative surplus.
+Pool-helper retrieval failed at metadata lookup with HTTP 429; the account relies on publisher material rather than inspected full papers. \ledger{2, 4}
+
+The verifier introduced the Gode--Sunder comparison.
+Q's repository already contains ZI-C and ZI-U.
+The inspected abstract of Gode and Sunder (1993),
+\url{https://doi.org/10.1086/261868},
+describes high allocative efficiency among random non-loss traders.
+Pool retrieval did not provide usable full text.
+The controls here use Q's available implementation with the specified parameter qualifications, not a claimed exact reproduction of the 1993 experiment.
+See \url{ada/investigation_round2.md}, lines 96--104. \ledger{10, 12}
+
+The inspected README at
+\url{https://github.com/Adriano-7/msc-thesis-llm-negotiation}
+studies Self-Refine and team-deliberation costs in bilateral NegotiationArena games.
+It does not report randomized agent-facing inference charges.
+The pooled LaTeX for \emph{Protocol Compression Changes Which Party Pays},
+\url{https://arxiv.org/abs/2609.06129},
+measures procurement-negotiation bills and distinguishes cheaper sessions from successful outcomes.
+Its intervention changes communication format with reasoning disabled, rather than testing the proposed charge/depletion factorial. \ledger{18}
+
+Chupilkin's \emph{Artificial Institutions},
+\url{https://arxiv.org/abs/2608.04020},
+compares institutions with fixed induced values and model families, measuring surplus separately from price.
+Its CDA allows one arrival per agent per period and mechanically enforces non-loss constraints.
+The inspected pooled source does not report token-price, tick-size, or quote-expiry treatments.
+Institution-sensitive LLM efficiency is nevertheless already studied.
+Pool lookup for
+\url{https://doi.org/10.3386/w34468}
+failed with HTTP 429; only the primary abstract was consulted.
+See \url{ada/investigation_round3.md}, lines 118--122. \ledger{27}
+
+The later search corrected the earlier account's uncertainty about BAZAAR:
+\url{https://github.com/lechmazur/bazaar}
+explicitly includes LLMs and Random, ZIC Pure, and ZIC+ baselines in one benchmark.
+Its simultaneous sealed auctions, hidden current book, and individual conditional-surplus scoring differ from this visible-book CDA.
+Nevertheless, same-harness LLM-versus-ZI comparison is not itself new. \ledger{39}
+
+General invocation gating is also established outside auctions.
+Pooled LaTeX for
+\url{https://arxiv.org/abs/2607.13048}
+studies risk-triggered LLM calls.
+Pooled LaTeX for
+\url{https://arxiv.org/abs/2610.15224}
+describes event-triggered invocation and partial delegation in robot teams, reporting fewer tokens with improved outcomes.
+These are existence boundaries, not validation of their theory or evidence that this exact auction gate has been tested.
+See \url{ada/investigation_round4.md}, lines 76--82. \ledger{39}
+
+The local metering observation was compared with the documented issue at
+\url{https://github.com/ollama/ollama/issues/14957}.
+An upstream fix was reported, but its inclusion in the local server was not established.
+This limits local reasoning-token measurement without implicating P's measurements. \ledger{40}
+
+The searches were bounded.
+They do not establish absence of closer prior work.
+Generic offer fees, random-trader efficiency, cost-sensitive outcome accounting, institutional comparisons, and invocation gating cannot be presented as new contributions of this pair. \ledger{18, 27, 39, 50, 54}
+
+\paragraph{The previous open question and proposed next step.}
+The previous account identified recoverable delay versus committed allocation loss as the most concrete remaining line.
+Its accounting results stood, while the budget counterexample remained a policy-specific quote-reset effect.
+Neither Qwen pilot reproduced Q's motivating bargaining regime.
+Round four had screened additional models, implemented withdrawal and oracle stopping, included a fixed-call comparator, and completed eight markets per arm, but left price effects imprecise and allocation preservation unresolved. \ledger{24, 32, 33, 36, 43, 48, 49}
+
+The proposed next step was a prospective comparison separating invocation policy from break-even acceptance, with a frozen baseline, individual strict-profit rule, and call-suppression rule.
+It required original-population surplus, all tokens including failures, withdrawals, rejected-quote histories, zero-surplus executions, and post-trade ceilings.
+Whole markets were to remain the replication units, and noninferiority required a prespecified criterion rather than a nonsignificant difference. \ledger{44, 48, 53, 54}
+
+The latest review added specific objections: the gate increased matching loss despite similar tick-30 surplus; much of the token-arm saving coincided with early stopping on experimenter-held values; and only ZI-C had been extended to a long horizon.
+It requested a bounded final investigation rather than another search for favorable charge responses.
+The following work answers that request. \ledger{57, 58}
+
+\paragraph{Appended final-round audit: reservation quotes and omitted qualifications.}
+Before new model calls, the retained 32 Gemma markets were audited.
+All ten baseline zero-joint-surplus trades arose when both parties submitted their own reservation value.
+Thirty-four of 44 trades gave at least one participant zero personal profit.
+Among all 190 submitted baseline quotes, 131 equalled the submitter's reservation value and 150 lay on the quarter-unit grid.
+The initial denominator of 187 excluded three quotes rejected by the reservation guard; the corrected denominator includes every submission.
+Trade and loss counts are unchanged. \ledger{59, 67}
+
+The comparable ZI-C frequencies were five reservation quotes and fifteen quarter-grid quotes among 163 submissions.
+Its quote distribution places much less mass on those prices, so the comparison does not establish superior reasoning.
+Rationales repeatedly describe reservation quoting or immediate break-even execution as profit maximizing, but their text does not identify an internal causal process.
+See \url{ada/investigation_round5.md}, lines 15--19. \ledger{59}
+
+The review's gate qualification is confirmed.
+Its paired matching-loss increase is \(0.4375\), with exploratory bootstrap interval \([0.125,0.75]\).
+Its mean continuation ceiling is \(5.78125\), compared with baseline \(6.21875\).
+Similar realized surplus at tick 30 therefore masks a worse potential final allocation. \ledger{57, 59}
+
+Of the token arm's 1019 total saved tokens, 841 occur in seeds 9103 and 9108.
+Both token paths make five fewer calls.
+Seed 9103's token path and both paths for seed 9108 stop using experimenter-held values.
+That concentration cannot be attributed to more concise reasoning; token cost without those early stops is unobserved.
+See \url{ada/investigation_round5.md}, line 21. \ledger{59}
+
+\paragraph{Mechanical reservation-mass and price-grid controls.}
+A frozen scripted experiment used 1000 fresh seeds, horizons 100 and 300, quote grids \(0.01\) and \(0.25\), and point masses
+\(0,0.25,0.5,1\) at the trader's feasible reservation limit.
+The remaining probability sampled uniformly over improving, reservation-respecting grid quotes on support \([0,4]\).
+Ordinary and strict-margin variants were run without learning, fee response, withdrawal, or oracle stopping.
+Selected cap-300 means are:
+\[
+\begin{array}{rrlrr}
+\text{Grid}&\text{Mass}&\text{Strict}&G&L_{\mathrm{match}}\\
+\hline
+0.01&0   &\text{No}&6.98225&0.51775\\
+0.01&0.5 &\text{No}&6.11275&1.38725\\
+0.01&1   &\text{No}&5.03800&2.46200\\
+0.01&1   &\text{Yes}&5.97250&1.52750\\
+0.25&0   &\text{No}&6.50750&0.99250\\
+0.25&0   &\text{Yes}&7.18275&0.27200
+\end{array}
+\]
+Unfinished surplus is zero in the first five rows and \(0.04525\) in the last.
+Mean zero-joint-surplus trade counts are respectively
+\(0.196,0.867,1.870,0,0.763,0\).
+See \url{ada/investigation_round5.md}, lines 25--42. \ledger{60}
+
+These controls demonstrate a mechanical route to committed loss.
+They are not fitted explanations of Gemma or Q and do not identify how much of either model's loss comes from reservation quoting.
+The cent-margin surplus gain is \(0.9345\), with paired Monte Carlo standard error \(0.03071\), for the always-reservation policy.
+For uniform cent-grid ZI-C it is only \(0.0125\), with standard error \(0.01152\).
+The effect is policy-dependent, and those uncertainty estimates concern simulations rather than LLM behavior.
+See \url{ada/investigation_round5.md}, lines 38--42. \ledger{60}
+
+The quarter-grid strict treatment imposes an effective personal margin \(0.25\), because that is the next available grid price.
+It can exclude pairs with positive joint surplus \(0.25\).
+Its remaining-gain term includes opportunities outside that stricter support.
+It must not be described as a pure one-cent filter. \ledger{60, 62}
+
+\paragraph{What the live margin rule guarantees.}
+The live rule is both prompted and enforced:
+\[
+b_i\leq v_i-0.01,
+\qquad
+a_j\geq c_j+0.01.
+\]
+It applies to crossing quotes as well as standing quotes.
+Execution at the resting price then gives each participant at least \(0.01\) trading profit.
+For example, an incoming buyer executes at an ask no greater than its admissible bid, while that ask already satisfies the seller's margin. \ledger{62, 64}
+
+This is stronger than excluding zero-joint-surplus trades.
+A reservation-price aggressor can execute profitably at a favorable resting price.
+The strict rule rejects that submission even if another admissible crossing quote would execute the same beneficial trade.
+It combines an instruction and an action constraint, whose effects are not separately identified.
+Rejected profitable-cross opportunities were logged. \ledger{62}
+
+Every originally positive value-cost gap is at least \(0.25\), exceeding the combined required margin \(0.02\).
+Exact checks verified all 55 positive pairs have a feasible cent-grid price satisfying both margins.
+The initial maximum surplus therefore remains \(7.5\), but trajectories and successful model responses need not be preserved. \ledger{64}
+
+Positive private profits do not guarantee efficient matching.
+In Q's full schedule, a buyer valued at \(1.75\) and seller costing \(1.50\) can trade at \(1.60\), giving both positive profit while reducing the continuation ceiling by \(0.25\).
+The matching-code check passed.
+Its first run failed only in log formatting after successful assertions; the corrected log is
+\url{ada/round5_margin_checks_02.log}.
+See \url{ada/investigation_round5.md}, lines 46--52. \ledger{64}
+
+\paragraph{Frozen longer-horizon experiment and achievable precision.}
+A repeated independent-model screen used four full-context action cases with changed prices and sampling seeds.
+Qwen3.5-9B supplied four mechanically admissible profitable crosses.
+Nemotron-3-Nano-4B and Qwen3-8B again failed seller actions.
+Two Qwen explanations misdescribed the book despite correct crossing actions, so comprehension remained uncertain. \ledger{61}
+
+The screen was not behaviorally neutral.
+Requiring immediate profitable crossing selects opportunity-taking configurations; waiting alone would not establish incompetence.
+The rejected configurations also submitted non-improving offers while describing execution.
+Neither the screen nor the resulting model selection reproduces Q's reluctance-to-cross regime.
+See \url{ada/investigation_round5.md}, lines 56--58.
+
+The design was frozen before new market outcomes in
+\url{ada/round5_markets_01.design.json}.
+It specified fresh Gemma seeds 11001 and 11002, a 100-opportunity horizon announced from the outset, and four arms: baseline, individual cent margin, feasibility gate, and gate plus margin.
+A Qwen3.5-9B baseline/margin pair used fresh seed 12001.
+Matched ordinary and strict ZI-C controls used support \(4\), the same cap, and no oracle stopping. \ledger{61}
+
+All LLM configurations retained thinking disabled and a 384-token response cap.
+Explicit withdrawal remained available on actual calls.
+There were no inference charges or reserve depletion.
+The gate preserved opportunities and standing quotes while suppressing calls without a feasible price action, including the opportunity to withdraw.
+It continued to be an institution package rather than a path-preserving optimization. \ledger{61, 62}
+
+Private-value oracle stopping was removed.
+Runs ended only at the cap or with fewer than two participating traders.
+The evaluator logged when remaining positive gains vanished and how many tokens were generated afterwards, without altering execution.
+Every transition, rejection, failure, withdrawal, and post-trade ceiling was retained.
+See \url{ada/investigation_round5.md}, lines 60--66. \ledger{61}
+
+The primary allowance was 1500 seconds and the total allowance, including the independent-model pair, was 2700 seconds.
+Prior paired gross-surplus standard deviations of \(1.05\) to \(1.29\) implied approximately 16--24 pairs to detect an effect \(0.75\) with 80\% power at a two-sided 5\% level.
+The budget allowed far fewer.
+This was a bounded validity check, not a sufficiently replicated treatment study. \ledger{61}
+
+The prespecified allocation noninferiority margin was \(0.375\), or 5\% of maximum surplus.
+A claim required a one-sided 95\% paired Student lower bound above \(-0.375\).
+The achieved sample did not permit a within-model paired variance estimate, so noninferiority could not be assessed.
+This is lack of evidence for preservation, not a statistical demonstration of inferiority. \ledger{61, 70, 73}
+
+\paragraph{Live Gemma factorial: delay, committed loss, and token cost.}
+One complete factorial finished on seed 11001.
+These are individual markets, not means over replicated seeds:
+\[
+\begin{array}{lrrrr}
+\text{Arm}&G&K&\text{Calls}&L_{\mathrm{match}}\\
+\hline
+\text{Baseline}&5.75&7262&100&1.75\\
+\text{Margin}&6.00&8642&100&1.50\\
+\text{Gate}&5.50&2541&38&2.00\\
+\text{Gate+margin}&6.50&3325&42&1.00
+\end{array}
+\]
+All four completed 100 original opportunities, exhausted remaining gains, and had no withdrawals.
+Every final shortfall is therefore committed matching loss.
+Tokens generated after remaining gains vanished were respectively
+\(5038,3881,870,578\).
+See \url{ada/investigation_round5.md}, lines 78--95, and
+\url{ada/round5_market_analysis_01.log}, lines 7--10. \ledger{65, 66, 68}
+
+At tick 30 the baseline had \(G_{30}=5.0\) and \(U_{30}=5.75\).
+It realized the remaining \(0.75\) by tick 32, then spent 5038 tokens after no positive gains remained.
+The margin arm had \(G_{30}=4.25\) and \(U_{30}=6.0\), reaching its ceiling by tick 58.
+These are live paths told the longer horizon initially, not assumptions about continuing the old 30-opportunity paths unchanged. \ledger{65, 66}
+
+The baseline had no zero-joint-surplus trades.
+Its matching loss came from three trades with joint surplus \(0.25\), whose ceiling decrements were \(0.75,0.50,0.50\).
+Six of seven trades nevertheless gave one party zero personal profit.
+Zero-joint-surplus execution is therefore not necessary for committed loss even in this limited sample. \ledger{65}
+
+The margin arm eliminated zero-personal-profit trades, but still lost \(1.5\) of ceiling through trades giving both parties positive profit.
+Its two loss events each cost \(0.75\).
+Compared with baseline, it gained \(0.25\) gross surplus and used 1380 additional tokens.
+At the earlier illustrative common price,
+\[
+\Delta W_{0.025/76.5}=-0.20098.
+\]
+The five retained margin violations would not have crossed profitably at their submitted prices in their corresponding states.
+This single pair demonstrates a resource tradeoff, not population dominance. \ledger{66}
+
+The gate alone saved 4721 tokens but increased matching loss by \(0.25\).
+It destroyed another \(1.0\) of ceiling after tick 30; the other three paths preserved their tick-30 ceilings.
+Longer execution can therefore realize unfinished gains, commit further allocation losses, or continue consuming tokens after gains vanish. \ledger{68}
+
+Gate plus margin improved both gross surplus and tokens relative to this baseline.
+The gate's gross effect was \(-0.25\) without the margin and \(+0.50\) with it, an observed interaction \(+0.75\).
+One factorial realization cannot establish a population interaction, a general combined-rule advantage, or noninferiority. \ledger{68}
+
+Both matched ZI-C controls reached gross surplus \(7.5\) within 100 opportunities and exhausted residual gains at tick 90.
+The strict control executed six trades with positive personal profits on both sides.
+It uses no model-generated tokens, not zero physical computation.
+See \url{ada/investigation_round5.md}, line 99. \ledger{69}
+
+The primary budget expired after that factorial and 37 opportunities of seed 11002's margin arm.
+The incomplete path had gross surplus \(4.75\), matching loss \(1.25\), unfinished surplus \(1.5\), and 3242 tokens.
+It was retained and excluded from paired effects.
+The other three second-seed arms never started.
+Thus only one complete Gemma paired seed was achieved. \ledger{70}
+
+\paragraph{Independent Qwen pair.}
+Both Qwen3.5-9B markets completed 100 opportunities within the total allowance:
+\[
+\begin{array}{lrrrr}
+\text{Arm}&G&K&L_{\mathrm{match}}&\text{Failures}\\
+\hline
+\text{Baseline}&4.00&8637&3.50&5\\
+\text{Margin}&5.75&8259&1.75&1
+\end{array}
+\]
+Both had zero endpoint unfinished surplus and zero measured withdrawal loss.
+Baseline made nine trades and two withdrawals; margin made eight trades and three withdrawals.
+Zero endpoint selection loss does not rule out earlier effects of withdrawal on scheduling, quotes, or matching. \ledger{71, 72}
+
+Eight baseline trades gave one party zero personal profit.
+Its two zero-joint-surplus trades accounted for \(2.25\) of matching loss.
+At tick 30 baseline gross surplus was \(2.0\) and its ceiling \(5.5\).
+Subsequent execution realized another \(2.0\) of surplus but destroyed another \(1.5\) of ceiling.
+The margin arm's ceiling remained \(5.75\) after tick 30, and its remaining gains were exhausted at tick 34.
+Positive-profit trades still caused committed losses. \ledger{71, 72}
+
+The margin arm gained \(1.75\) gross surplus and saved 378 tokens in this pair, but the token difference does not demonstrate more economical successful reasoning.
+All six failures were truncations at the 384-token cap:
+\[
+\begin{aligned}
+\Delta K_{\mathrm{failed}}&=384-1920=-1536,\\
+\Delta K_{\mathrm{successful}}&=1158,\\
+\Delta K_{\mathrm{total}}&=-378.
+\end{aligned}
+\]
+Failures consumed scheduled opportunities and remained fully charged in token totals.
+Neither arm's constraint rejections would have crossed profitably at their submitted prices in the corresponding states.
+See \url{ada/investigation_round5.md}, lines 103--114, and
+\url{ada/round5_market_analysis_01.log}, lines 12--13. \ledger{72}
+
+Matched ZI-C reached \(6.5\) in both arms, above either observed LLM allocation.
+No Qwen gate arm was run.
+This is an independent-model observation of the same direction of margin response, but only one pair, not a population estimate or a general LLM-versus-ZI ranking. \ledger{72, 74}
+
+\paragraph{Final inventory and verification.}
+Six of ten planned LLM markets completed, one remained incomplete at 37 opportunities, and three never started.
+All six scripted controls completed.
+The retained inventory contains 517 model calls, 41908 generated tokens, six truncations, ten constraint rejections, and 1237 verified transitions.
+There were no orphan records.
+Summed step time was \(2580.06\) seconds within the total 2700-second allowance.
+See \url{ada/round5_inventory_01.log}, lines 1--2. \ledger{73}
+
+Replay and the independent assignment audit verified source hashes, scheduling, state transitions, margin and gate semantics, oracle diagnostics, and terminal accounting.
+See \url{ada/round5_market_analysis_01.log}, line 21.
+Verification supports the recorded pathwise results; it does not increase replication, remove selection from action screening, validate hidden reasoning-token counts, or identify Q's published behavior. \ledger{73, 74}
+
+\paragraph{Additional outside source and novelty boundary.}
+The final bounded search examined reservation and break-even quoting, zero-profit double-auction trades, ZIP margins, and minimum-profit strategies.
+Posada and Lopez-Paredes (2008),
+\emph{How to Choose the Bidding Strategy in Continuous Double Auctions},
+\url{https://jasss.soc.surrey.ac.uk/11/1/6.html},
+compares strategy populations and lists ZIP initial profit margins \(0.05\)--\(0.35\) and Kaplan minimum profit \(0.01\)--\(0.03\) in Table 5.
+These are strategy parameters rather than the present exchange-enforced constraint, but they establish that margins and strategy-dependent auction efficiency are existing ideas. \ledger{63}
+
+The shared-pool helper could not retrieve the JASSS page as a PDF.
+Title lookup for Cliff/Bruten, an HPL-97-91 mirror, and an IJCAI 2011 PDF encountered metadata HTTP 429 failures.
+The primary JASSS HTML was used directly, without a separate paper download or PDF-to-text extraction.
+See \url{ada/investigation_round5.md}, lines 70--74.
+The search was focused rather than exhaustive and does not establish originality of the particular margin/gate combination. \ledger{63}
+
+\paragraph{Final objections and their disposition.}
+
+\begin{objection}
+The continuation certificate substitutes for observing longer LLM markets.
+\end{objection}
+
+It does not.
+The certificate bounds continuations of particular commitments, not fresh longer-horizon policies.
+The final prospective runs repair that narrow validity gap: agents knew the 100-opportunity horizon from the outset, and actual later decisions were observed.
+Those paths realized some remaining gains and sometimes destroyed further ceiling.
+With one completed seed per model, they establish possibilities and accounting diagnoses rather than population prevalence. \ledger{50, 65, 68, 71, 72}
+
+\begin{objection}
+The LLM shortfall demonstrates distinctive cognitive failure rather than mechanical quote-support effects.
+\end{objection}
+
+That attribution is unresolved.
+Adding reservation mass or using a coarser grid worsens the specified ZI-C controls without any reasoning.
+The retained LLM quotes cluster strongly at reservation values, but the controls are not fitted causal explanations.
+Moreover, the fresh Gemma baseline loses surplus without any zero-joint-surplus trade, and both strict arms lose surplus through trades profitable to both participants.
+The phenomenon cannot be reduced either to zero-joint trades alone or to a general claim about LLM competence. \ledger{59, 60, 64, 65, 72}
+
+\begin{objection}
+A margin rule or invocation gate now has a demonstrated general efficiency benefit.
+\end{objection}
+
+No.
+The margin response has one complete pair per model, with different token-cost outcomes.
+The combined rule improves both coordinates in one Gemma path.
+Gate-only matching loss increases in the earlier eight-seed sample and in the new single long-horizon path, but a robust longer-horizon effect is not estimated.
+The prespecified noninferiority test lacks a paired variance estimate.
+Known margin and gating precedents further limit what those observations would establish even if replicated. \ledger{59, 63, 66, 68, 70, 72, 73}
+
+\paragraph{What remains open.}
+The accounting results, Q implementation audit, and independently checked continuation ceilings stand.
+The budget counterexample remains a quote-reset effect.
+The local price experiments neither establish a beneficial pricing law nor justify treating the Gemma estimate as proof of no effect.
+The final margin experiments provide exploratory positive gross-surplus observations, not sufficient evidence for a new behavioral or institutional law. \ledger{24, 48, 57, 74}
+
+Q's authentic logs and experimental revision remain unavailable.
+The local studies differ in model, horizon, output cap, reservation enforcement, withdrawal, and sometimes stopping rules.
+No study here reproduces Q's proprietary-model regime.
+Action screening also selects for immediate profitable execution, limiting behavioral generalization. \ledger{12, 36, 49, 61, 73}
+
+Other unresolved requirements are replicated treatment effects, prompt and output-cap sensitivity, quote-support and withdrawal sensitivity, valid reasoning-token metering, a justified resource valuation, and novelty beyond known margin and gating strategies.
+Persistent balances or multiple units would still be necessary to study P-style success-funded continuation.
+No literal-survival incentive response or causal scale law has been shown. \ledger{17, 40, 63, 74}
+
+The ceiling itself uses experimenter-held private values.
+It is an evaluation diagnostic, not a stopping rule available to an individual trader.
+Likewise, logging tokens after all positive gains vanish identifies expenditure retrospectively; it does not supply a decentralized way to recognize that state without further information or computation. \ledger{61, 74}
+
+\paragraph{The smallest next step that would settle the remaining question.}
+The peer phase ends with a recommendation to stop the generic transplant on the present material.
+The previously proposed prospective margin/gate comparison has now been attempted; the unresolved issue is replication and precision, not another untreated mechanism.
+No further outcome-dependent target is warranted by this pair. \ledger{57, 74}
+
+If the narrow empirical question is pursued separately, the smallest informative continuation is a prospectively powered replication of the already frozen baseline/margin comparison under the same announced horizon and stopping rule, with ordinary and strict ZI-C controls.
+The existing variance calculation suggests approximately 16--24 paired markets for a gross effect \(0.75\); the achieved single pairs cannot replace that requirement.
+The gate interaction would need its own replicated factorial before a combined-rule claim. \ledger{61, 68, 73, 74}
+
+That replication should retain the established diagnostics: original-population surplus, committed versus unfinished loss, all tokens including failures, zero-personal- and zero-joint-surplus trades, rejected opportunities, withdrawals, and costs after remaining gains vanish.
+A preservation claim must satisfy the prespecified noninferiority criterion.
+Any surplus/token tradeoff must use a common \(\kappa\), and any token saving must distinguish fewer calls, failures, and shorter successful responses. \ledger{7, 57, 61, 72}
+
+Such a study could settle whether the observed margin response survives replication in the tested configurations.
+It would not by itself establish survival-driven adaptation, reproduction of Q, or novelty beyond known margin strategies.
+On the current evidence, the complete research account is a verified diagnostic package with suggestive, under-replicated interventions, not a convincing publication result. \ledger{63, 73, 74}
+
+\end{document}

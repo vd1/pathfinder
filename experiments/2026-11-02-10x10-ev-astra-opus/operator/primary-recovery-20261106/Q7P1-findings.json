@@ -1,0 +1,26 @@
+{
+  "summary": "User explicitly authorized recovering primary sources through alternate routes. Read the files in /Users/v/Code_2026/pathfinder/experiments/2026-11-02-10x10-ev-astra-opus/sources/primary-recovery-20261106. Author, institutional, publisher and proceedings copies/metadata are acceptable evidence; do not exclude an authenticated source merely because a DOI landing page fails. Update search.md and references.bib, recording copies and theorem-level comparisons. Retain precise unresolved gaps, and never infer novelty from failed retrieval. Preserve research results unless a demonstrated overlap or error requires narrowing them. No PCE.",
+  "findings": [
+    {
+      "id": "REC-1",
+      "severity": "major",
+      "where": "Related work, novelty claims, search.md and references.bib",
+      "issue": "Agarwal, Dekel and Xiao 2010 COLT primary PDF recovered as agarwal2010.pdf/txt from https://alekhagarwal.net/bandits-colt.pdf. Microsoft authors publication page authenticates title/authors/venue.",
+      "fix": "Read theorem-level bounds; compare two evaluations of the same loss with independent noisy evaluations, strong convexity assumptions versus partial curvature, and regret versus the paper economic certificate. Add attribution without claiming equal oracle models."
+    },
+    {
+      "id": "REC-2",
+      "severity": "major",
+      "where": "Related work, novelty claims, search.md and references.bib",
+      "issue": "Koshal, Nedic and Shanbhag 2010 CDC precursor recovered as koshal2010.pdf/txt from https://zenodo.org/records/1265736/files/article.pdf. Their 2013 TAC article remains unread: author-linked https://www.ifp.illinois.edu/~angelia/sa_nash_IEEE_revised.pdf timed out. Hurwicz 1979 full text also remains unresolved.",
+      "fix": "Read and cite the 2010 precursor for what it actually proves, marking version precisely. Do not label it the 2013 journal full text. Compare regularization, oracle and convergence notions, keeping unresolved 2013 and Hurwicz gaps explicit."
+    },
+    {
+      "id": "REC-3",
+      "severity": "major",
+      "where": "Related work, novelty claims, search.md and references.bib",
+      "issue": "Prior presentation pass paused with wording issues: conditional can mean conditional expectation or conditional on assumptions; r_n radius collides with r(x) excess; Equal query exponents may overstate equality of optimal complexities.",
+      "fix": "Resolve these specific open issues in this author revision, defining radii distinctly and qualifying the comparison as proved upper bounds. Preserve affine-hull smoothing definitions and existing scientific scope."
+    }
+  ]
+}

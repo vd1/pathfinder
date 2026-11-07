@@ -1,0 +1,2108 @@
+You are an expert referee in mechanism design, algorithmic game theory and multi-agent learning. Below is the full
+LaTeX source of a research note written by two researchers at the end of their work. It is not a polished paper and
+its results have not all been accepted. Judge how
+significant the strongest result the note supports would be as a contribution, as an expert in the area would,
+using the note's own account of prior work and your knowledge of the field. Ignore presentation. Who wrote it does
+not matter.
+
+Return only one JSON object, no prose and no code fence:
+{"strongest_result": "the paper's strongest new result, in one sentence",
+  "nonobvious": "no" | "somewhat" | "yes",
+  "level": "note" | "journal" | "strong",
+  "score": 1 to 10,
+  "reason": "two or three sentences: what makes the contribution matter or not"}
+
+nonobvious: would an expert who knows the cited prior work have found the strongest result quickly?
+"no" means quickly, "somewhat" means with real work, "yes" means it needs an idea they would not readily have had.
+level: "note" = a workshop paper, short note or arXiv-only preprint; "journal" = a solid paper in a good specialist
+journal or conference (for example Games and Economic Behavior, AAMAS, JAIR, Autonomous Agents and Multi-Agent Systems); "strong" = a top venue (for example STOC, FOCS, QIP plenary,
+PRX Quantum, Nature Physics).
+score: 1 to 10, where 5 is a typical solid specialist-journal paper.
+
+NOTE:
+\documentclass{article}
+\usepackage{pathfinder-note}
+
+\title{Prediction Quality and Reward Accounting in Open-Team Learning}
+
+\begin{document}
+\maketitle
+
+\paragraph{The pair.}
+Q surveys learning-augmented guarantees and explains why component results require explicit interface, cost, and benchmark assumptions before they support system-level conclusions.
+P proposes MARS-RA, which converts multimodal pairwise comparisons into Bradley--Terry contribution scores and uses normalized scores for potential-based reward shaping in cooperative learning with changing agent participation.
+
+\paragraph{The connexion pursued.}
+The investigation initially considered a comparison-error-to-policy-return trade-off, but shifted to whether prediction-derived shaping preserves its objective through an open-team training interface.
+Statistical consistency of a score estimator is different from Q's algorithmic consistency under exact predictions.
+Moreover, coherent potential differences preserve payoff orderings independently of comparison accuracy.
+The substantive connection is therefore Q's interface discipline applied to P's path from comparisons through active-agent scores to training returns.
+This does not establish a learning-augmented performance classification for P.
+\ledger{1, 6}
+The original argument is recorded in
+\url{ada/open_team_shaping.md}, lines 9--43.
+
+This account preserves the preceding consolidation and appends the fifth-round response to the latest verifier review, entry 46.
+Reviews 8, 17, and 28 prompted the implementation audit, accounting experiments, neural exploration diagnostic, and approximate-critic analysis retained below.
+Entry 46 accepted their qualified findings but judged the publication case insufficient.
+The appended round tests transfer to an ordinary public MAPPO trainer and a standard cooperative environment.
+Earlier assessments and proposed next steps are retained as historical stages.
+Entries 59--60 report completion and self-assessment, not independent acceptance.
+The material remains thin for a publication-level claim.
+\ledger{8, 17, 28, 44, 46, 58, 59, 60}
+
+\paragraph{Objective invariance precedes prediction accuracy.}
+Fix permanent agent identities, a finite horizon \(T\), a discount factor \(\gamma\), and a prediction-generating protocol.
+Let \(\Phi_t^i\) be a bounded, pre-action potential, possibly random and history dependent.
+Require the same realized potential at the shared endpoint of adjacent transitions, terminal potential \(\Phi_T^i=0\), and an initial potential distribution independent of the policy being compared.
+If every global transition contributes to the return, then
+\[
+\begin{aligned}
+F_t^i &= \gamma\Phi_{t+1}^i-\Phi_t^i,\\
+\sum_{t=0}^{T-1}\gamma^t F_t^i
+&= -\Phi_0^i.
+\end{aligned}
+\]
+For fixed shaping weight \(\rho\), this gives
+\[
+J_i^{\mathrm{sh}}(\pi)
+=J_i(\pi)-\rho\,\mathbb E[\Phi_0^i].
+\]
+Payoff orderings, best responses, and Nash equilibria are unchanged; with shared original payoffs, team maximizers are unchanged as well.
+This is established potential-based reward-shaping theory, not a new result.
+It neither proves convergence of MAPPO nor explains finite-training improvements.
+Comparison quality can still affect learning dynamics and computational cost, but P's estimator theorem does not supply that bridge.
+\ledger{1, 4, 6}
+See \url{ada/open_team_shaping.md}, lines 21--43.
+
+\paragraph{The conditional open-team accounting defect.}
+P estimates an active-set score vector and subtracts successive softmax potentials without specifying permanent-coordinate alignment when participation changes.
+A fixed-population embedding resolves the dimensional problem, but does not by itself resolve reward masking.
+\ledger{2}
+See \url{ada/open_team_shaping.md}, lines 13--19 and 47--60.
+
+Let \(m_t^i\in\{0,1\}\) indicate whether the shaping reward on transition \(t\) is retained for agent \(i\).
+Reindexing the positive potential terms yields
+\[
+\begin{aligned}
+\sum_{t=0}^{T-1}\gamma^t m_t^i F_t^i
+={}&-m_0^i\Phi_0^i\\
+&+\sum_{t=1}^{T-1}
+  \gamma^t(m_{t-1}^i-m_t^i)\Phi_t^i\\
+&+\gamma^T m_{T-1}^i\Phi_T^i.
+\end{aligned}
+\]
+With terminal-zero potentials and zero inactive coordinates, an exit contributes zero to the interior sum.
+Each reentry contributes a negative discounted entry potential.
+If entry times or potentials depend on earlier actions, this residual can change policy preferences even when the intended potentials are supplied exactly.
+\ledger{2, 5}
+
+For the recorded counterexample, take \(T=4\), \(\gamma=9/10\), and \(\rho=1\).
+An initial choice selects Stay or Recharge:
+\[
+\begin{aligned}
+m_{\mathrm{S}}&=(1,1,1,1),\\
+\Phi_{\mathrm{S}}&=(1/2,1/2,1/2,1/2,0),\\
+m_{\mathrm{R}}&=(1,0,1,1),\\
+\Phi_{\mathrm{R}}&=(1/2,0,1/2,1/2,0).
+\end{aligned}
+\]
+Stay has base return zero; Recharge receives \(1/10\) on the initial transition and zero thereafter.
+Full-time shaping totals \(-1/2\) on both paths.
+Masked shaping instead totals
+\[
+S_{\mathrm{S}}=-\frac12,
+\qquad
+S_{\mathrm{R}}=-\frac{181}{200}.
+\]
+Consequently, the masked shaped returns are
+\[
+J_{\mathrm{S}}^{\mathrm{sh}}=-\frac12,
+\qquad
+J_{\mathrm{R}}^{\mathrm{sh}}=-\frac{161}{200},
+\]
+reversing the base preference for Recharge.
+The additional charge is \(-81/200\).
+Thus \(-181/200\) is the shaping return and \(-161/200\) includes the environmental reward.
+This is an accounting counterexample, not a failure observed in P's code.
+\ledger{5, 6, 8, 17}
+
+The rational-arithmetic checker verifies the identity on \(3{,}888\) mask/potential assignments and checks the counterexample and its repairs.
+The construction and verification record are in
+\url{ada/open_team_shaping.md}, lines 62--71 and 154--156;
+the executable and preserved output are
+\url{ada/check_shaping.py} and
+\url{ada/check_shaping_01.log}.
+This is a mathematical toy verification, not a MARS-RA replication.
+\ledger{5}
+
+\paragraph{A conditional return-loss bound and repairs.}
+Express the implemented scalar shaping term as
+\[
+\begin{aligned}
+\widehat F_t
+&=\gamma\Phi_{t+1}-\Phi_t+e_t,\\
+D_\pi
+&=\mathbb E_\pi\!\left[
+  \sum_{t=0}^{T-1}\gamma^t e_t
+  \right].
+\end{aligned}
+\]
+For a declared common objective or scalarization, fixed predictor protocol, policy-independent initial potential mean \(C\), terminal-zero potential, and \(\rho\geq0\),
+\[
+\widehat J(\pi)=J(\pi)-\rho C+\rho D_\pi.
+\]
+Suppose \(\widehat\pi\) is \(\xi\)-optimal for this implemented objective over a declared policy class, and \(\pi^\star\) maximizes its base objective.
+Substitution into shaped optimality gives
+\[
+\begin{aligned}
+J(\pi^\star)-J(\widehat\pi)
+&\leq \xi+\rho(D_{\widehat\pi}-D_{\pi^\star})\\
+&\leq \xi+\rho\left(
+  \sup_\pi D_\pi-\inf_\pi D_\pi
+  \right).
+\end{aligned}
+\]
+A uniform bound \(\lvert D_\pi\rvert\leq B\) therefore gives loss at most \(\xi+2\rho B\).
+This elementary perturbation argument separates optimization error from accounting error.
+It does not establish shaped optimization accuracy for neural MAPPO, and a logged trajectory does not establish a uniform policy bound.
+\ledger{5, 6}
+See \url{ada/open_team_shaping.md}, lines 73--98.
+
+The original note gives two accounting repairs.
+Full-time accounting retains all potential transitions for each permanent identity, including absences, while restricting action log-probabilities to actual decisions.
+Alternatively, an interface that splits active lives can reset potentials to zero at reentry and exit, retaining exit transitions.
+The latter deliberately modifies softmax normalization at those boundaries and preserves only that interface's base objective; it does not resolve a separate mismatch between per-life and team returns.
+Both require defined singleton/empty-coalition behavior and reuse of realized boundary potentials.
+\ledger{5, 6}
+See \url{ada/open_team_shaping.md}, lines 100--105.
+
+\paragraph{The original estimator objection.}
+\begin{objection}
+Connected comparisons do not suffice for the stated finite-error guarantee of P's unregularized Bradley--Terry MLE.
+For two agents with centered true scores \((0,0)\), two independent comparisons produce the same winner with probability \(1/2\).
+The undirected comparison graph is connected, but on this event the likelihood has no finite maximizer.
+This exceeds the proposition's stated failure probability \(2^{-2}=1/4\).
+\ledger{3}
+\end{objection}
+
+The method specifies neither a score bound nor a regularizer, although the proof invokes regularized estimation.
+The main proposition and appendix also disagree about normalized versus unnormalized error, and the final assembly loses dimension dependence.
+A repaired statement needs an identified estimator, translation convention, sampling assumptions, score-range control, and graph dependence.
+Model-correct comparison sampling does not establish robustness to arbitrary hallucinations or systematic observational bias.
+The Shapley interpretation additionally assumes that the latent comparator scores already equal Shapley values.
+Repairing these statements would still not prove a policy-return guarantee.
+\ledger{3, 6}
+See \url{ada/open_team_shaping.md}, lines 108--114.
+
+\paragraph{First-round objections and their disposition.}
+The investigation accepted that objective neutrality was established prior work.
+Grzes's terminal-boundary analysis also limits any novelty claim for the mask identity.
+The possible contribution became an audit of open-team interfaces rather than a new telescoping theorem.
+\ledger{4, 5, 6}
+
+Implementation attribution remained unresolved.
+P does not specify whether rewards, continuation returns, actor losses, or episode boundaries are masked.
+An actor-loss mask alone does not imply the counterexample: continuation returns might propagate correctly through absences.
+No MARS-RA implementation was obtained or executed.
+\ledger{2, 6}
+
+The first note therefore supplied an exact counterexample and an estimator objection, but no verified implementation defect or demonstrated training consequence.
+The verifier returned \emph{ITERATE}.
+Entry 8 requested a bounded public-code audit, an exact and actor-critic attribution experiment, and a finite-budget estimator analysis, explicitly allowing clean or null outcomes.
+The following second-round results answer that request.
+\ledger{6, 8, 9, 16}
+
+\paragraph{Round-two addition: clean return interfaces.}
+The audit inspected pinned public snapshots, with provenance and file manifests under
+\url{ada/audit/}.
+No inspected repository was edited or trained in this audit.
+\ledger{10, 15}
+The audit record is
+\url{ada/round2_attribution.md}, lines 15--41.
+
+In XuanCe,
+\url{xuance/common/memory_tools_marl.py}, lines 210--236,
+computes returns from stored rewards and terminal flags without multiplying by \texttt{agent\_mask}.
+MAPPO uses that mask in actor and critic losses instead.
+In the standard MAPPO implementation,
+\url{onpolicy/runner/shared/smac_runner.py}, lines 133--152,
+distinguishes environment-terminal return masks from individual-agent \texttt{active\_masks}.
+Its return buffer uses the former.
+These are clean against the specific hypothesis that an activity mask automatically discards shaping rewards.
+They do not establish how P's custom environment supplies rewards or terminal flags.
+\ledger{10, 15}
+
+Source-extracted return methods from both implementations were executed on the original absence/reentry trace.
+Both return initial shaping return \(-0.5\) when supplied full shaping, regardless of the activity mask.
+They return \(-0.905\) only when the caller first multiplies shaping rewards by the activity mask.
+Results are in
+\url{ada/probe_clean_interfaces_01.log}, lines 1--3.
+These are positive trace checks, not a complete audit of every truncation option or environment.
+\ledger{15}
+
+The inspected SAMA public snapshot contains prompts and documentation but no Python training implementation.
+It therefore does not support a reward/GAE audit.
+This does not establish that P lacked another implementation.
+Targeted searches did not locate MARS-RA or the embodied MARS-Bench training code.
+\ledger{10, 15}
+See \url{ada/round2_attribution.md}, lines 35--41 and 223--227.
+
+\paragraph{Round-two addition: a reproduced adjacent-code defect.}
+The V-GEPF public snapshot is different.
+Its shaping kernel flattens worker trajectories, shifts the potential array globally, and only then restores worker/time dimensions.
+It hardcodes discount \(0.995\) and does not consult \texttt{DONE}, while the return estimator cuts GAE continuation at \texttt{DONE}.
+The environment also uses scoring events as segment boundaries.
+The rollout audit establishes that the affected last shaping reward is consumed rather than discarded as a bootstrap element.
+\ledger{11, 12}
+
+The source locations, relative to the pinned repository, are
+\url{light_malib/algorithm/mappo/trainer.py}, lines 278--287;
+\url{light_malib/algorithm/return_compute.py}, lines 85--100;
+and \url{light_malib/rollout/rollout_func.py}, lines 127--145.
+The explanation and provenance are in
+\url{ada/round2_attribution.md}, lines 43--77.
+
+With matching discount, row length \(T\), and no internal boundary, the flattened shift produces, for every worker except the last,
+\[
+\sum_{t=0}^{T-1}\gamma^t F_{b,t}
+=-\Phi_{b,0}+\gamma^T\Phi_{b+1,0}.
+\]
+The next worker's first potential is not the current worker's terminal potential.
+The last worker instead receives a zero destination.
+Thus the kernel introduces dependence on an unrelated trajectory.
+\ledger{11, 12}
+
+The regression probe executes unedited extracted shaping and raw-GAE statements on supplied post-normalization potentials.
+It uses \emph{synthetic \(T=3\) trajectories}, not model inference, Ray, or football.
+Changing only worker 2's initial potential from \(0.8\) to \(0.1\) changes worker 1's last shaping reward and root raw GAE:
+\[
+\begin{array}{lrr}
+ & 0.8 & 0.1\\
+\hline
+\text{Last shaping reward} & 0.496 & -0.2005\\
+\text{Root raw GAE} & 0.63528192 & 0.01296086
+\end{array}
+\]
+For the same synthetic \(T=3\) probe, permuting trajectories and applying the actual batch-wide advantage-normalization formula changes a simple root Bernoulli surrogate ascent gradient from \(0.54852288\) to \(0.67915906\).
+This is the unclipped PPO surrogate derivative at the old policy on synthetic data, not a measured football training gradient.
+The test establishes dependence of consumed rewards and advantages on batch order.
+Its practical interpretation is downgraded by the third-round scale checks below.
+\ledger{12, 17, 19}
+See \url{ada/probe_vgepf_03.log}, lines 1--11.
+
+There is also a configuration-dependent discount mismatch.
+The academy configurations for
+\url{3_vs_1_with_keeper},
+\url{pass_and_shoot_with_keeper}, and
+\url{run_pass_and_shoot_with_keeper}
+use learner discount \(0.99\), whereas the kernel uses \(0.995\).
+The corrected record states that
+\url{academy/corner/mappo.yaml}
+uses \(0.995\), and
+\url{full_game/11_vs_11_easy/mappo_real.yaml}
+uses \(0.999\).
+The earlier inspected principal full-game configuration uses \(0.995\).
+For a unit potential over 100 transitions, the kernel evaluated at learner discount \(0.99\) gives discounted shaping return \(-0.68486482\) instead of \(-1\).
+The mismatch is real in the tested arithmetic but not universal across configurations.
+\ledger{11, 12, 17, 19}
+See \url{ada/round2_attribution.md}, line 73, and
+\url{ada/round3_attribution.md}, line 39.
+
+Shifting within each worker's time axis, matching discounts, and zeroing destinations at \emph{true} terminal boundaries removes the corresponding demonstrated defects.
+A truncation that should bootstrap requires the actual next potential instead of forced zero.
+The third-round correction is essential: a score-induced GAE cut need not terminate the game, so zeroing every scoring destination is not automatically a repair.
+The intended full-game or segment objective must first be specified.
+No benchmark performance effect has been measured, and the inspected revision has not been shown to match P's adapted V-GEPF baseline.
+Nothing here establishes a MARS-RA implementation defect.
+\ledger{12, 15, 23}
+
+\paragraph{Round-two addition: controlled attribution experiment.}
+The simulator contains a focal agent and a passive teammate.
+The focal agent makes a single nontrivial decision, Stay or Recharge, at the root.
+Success at an eight-transition horizon has probability \(0.50\) or \(0.55\), respectively; the only environmental reward is terminal \(+1\) or \(-1\).
+Recharge independently causes one-step absences at times \(2,4,6\), each with probability \(q\), followed by reentry.
+With \(\gamma=0.99\), its true return advantage is
+\[
+\Delta J=0.1\gamma^7=0.093206534790699.
+\]
+The schedule is represented in the subsequent tabular state.
+This is an exactly solvable diagnostic, not a realistic battery model or a MARS-Bench replication.
+\ledger{12, 14}
+See \url{ada/round2_attribution.md}, lines 79--105.
+
+The declared exact comparator assigns focal-agent potential \(0.75\) after Recharge and \(0.25\) after Stay, with common root potential \(0.5\).
+Reversed comparisons interchange the two values.
+A frozen random comparator uses the empirical share of two fair judgments per state; a uniform comparator assigns \(0.5\).
+Inactive focal-agent potential is zero.
+``Exact'' refers only to this declared target, not to verified Shapley values or an actual LMM.
+All accounting modes retain the same environmental rewards.
+
+Exact enumeration crosses these comparators with full-time, active-masked, and entry-reset accounting, four turnover settings, and six shaping weights: 288 cases.
+For constant recharge potential \(p\), active masking changes the policy gap to
+\[
+\Delta\widehat J
+=0.1\gamma^7-\rho q p
+  \left(\gamma^3+\gamma^5+\gamma^7\right).
+\]
+This follows directly by charging each possible reentry.
+A larger intended contribution can therefore worsen the incorrect objective by increasing entry penalties.
+Full-time and entry-reset accounting preserve the base objective in every enumerated case.
+\ledger{12, 14}
+
+The learning experiment uses a tabular root actor, a tabular critic, GAE with \(\lambda=0.95\), and batch updates.
+It retains all global-time critic transitions.
+There are 144 configurations, each with 32 seeds and 12,800 episodes, crossing comparator, accounting, turnover, shaping weight, and critic initialization.
+Random-number streams are shared across variants.
+It is not MAPPO.
+\ledger{14}
+The configuration and results are described in
+\url{ada/round2_attribution.md}, lines 103--123, with outputs under
+\url{ada/attribution_01/}.
+
+At \(q=0.75\), \(\rho=1\), exact comparisons, and ordinary zero critic initialization, the selected results are
+\[
+\begin{array}{lrr}
+\text{Accounting} & \text{Shaped gap} &
+  \Pr(\text{Recharge})\\
+\hline
+\text{Full time} & 0.09321 & 0.93202\pm0.00433\\
+\text{Active masked} & -1.51181 & 0.00340\pm0.00007\\
+\text{Entry reset} & 0.09321 & 0.93156\pm0.00428
+\end{array}
+\]
+Uncertainty is standard error across seeds.
+The logs preserve unrounded records:
+\url{ada/check_report_numbers_01.log}, lines 1--3.
+These outcomes demonstrate a learning consequence of the constructed objective distortion, not its prevalence in deployed systems.
+\ledger{14}
+
+Correct accounting also permits a small finite-training benefit.
+With zero turnover, \(\rho=1\), and zero critics, the mean Recharge probability across training updates is \(0.8213\) for exact comparisons, \(0.7984\) for reversed comparisons, and \(0.8079\) without shaping.
+The paired exact-minus-unshaped difference is \(0.01348\pm0.00208\) standard error.
+Thus the experiment does not support the claim that every ranking benefit is an accounting artifact.
+\ledger{14, 15}
+See \url{ada/round2_attribution.md}, lines 119--123.
+
+\paragraph{The argument behind the critic controls.}
+Let \(c_t\) be the continuation flag used by the return estimator, and write
+\[
+\begin{aligned}
+F_t^{\mathrm{used}}
+  &=\gamma c_t\Phi_{t+1}-\Phi_t+e_t,\\
+V_t^{\mathrm{sh}}
+  &=V_t-\rho\Phi_t+h_t.
+\end{aligned}
+\]
+Substitution into the two TD errors gives the exact identity
+\[
+\delta_t^{\mathrm{sh}}-\delta_t
+=\rho e_t+\gamma c_t h_{t+1}-h_t.
+\]
+For a finite rollout, define
+\[
+w_{t,\ell}
+=(\gamma\lambda)^\ell
+ \prod_{u=t}^{t+\ell-1}c_u.
+\]
+With compatible bootstrap values, the GAE difference is
+\[
+\begin{aligned}
+A_t^{\mathrm{sh}}-A_t
+={}&\sum_{\ell=0}^{H-t-1}w_{t,\ell}
+\Bigl(
+ \rho e_{t+\ell}\\
+&\hspace{24mm}
+ +\gamma c_{t+\ell}h_{t+\ell+1}
+ -h_{t+\ell}
+\Bigr).
+\end{aligned}
+\]
+This separates an interface residual \(e_t\) from critic mismatch \(h_t\).
+There is no automatic additional term translating comparison error into policy-return error.
+\ledger{14, 15}
+The derivation is in
+\url{ada/round2_attribution.md}, lines 125--160.
+
+With coherent accounting and a matched shifted critic, both residuals vanish and TD errors agree pathwise.
+In the tabular experiment, the representation
+\[
+V^{\mathrm{sh}}=W-\rho\Phi,
+\qquad W_{\mathrm{initial}}=0,
+\]
+makes every correct-accounting learning curve coincide with its unshaped counterpart to maximum absolute error \(1.21\times10^{-14}\).
+For ordinary zero critics, a terminal-zero trajectory without interior cuts has initial shaping contribution to root GAE
+\[
+\rho\left[
+-\Phi_0+\gamma(1-\lambda)
+\sum_{t=1}^{H-1}(\gamma\lambda)^{t-1}\Phi_t
+\right].
+\]
+This displays a bootstrap mechanism; the formula alone does not establish that its effect is transient.
+At \(\lambda=1\), only the common root baseline remains.
+The separate single-decision control run makes all full-accounting comparator curves coincide to \(2.61\times10^{-14}\).
+\ledger{14, 28, 30}
+
+These are attribution controls within an established equivalence between shaping and value initialization.
+They are not a new general convergence theorem.
+A neural critic need not realize the exact potential shift, particularly if the predictor changes or its realized output is unavailable to the critic.
+The single-decision \(\lambda=1\) result does not transfer automatically to general MARL.
+The third-round neural experiment explicitly checks this distinction.
+\ledger{14, 15, 25}
+
+\paragraph{Round-two addition: what two-agent aggregation estimates.}
+For two active agents, let \(W\) be the total wins plus half-ties among \(K\) judgments.
+Writing \(p=\sigma(c_1-c_2)\), the likelihood is proportional to
+\[
+L(p)=p^W(1-p)^{K-W}.
+\]
+For \(0<W<K\), maximizing it gives
+\[
+\operatorname{softmax}(\widehat{\boldsymbol c})
+=\left(\frac WK,1-\frac WK\right).
+\]
+At \(W=0\) or \(W=K\), the finite logit MLE does not exist, but the normalized potential has the corresponding finite limit.
+Thus P's default two-agent budget, one query for each ordering, yields only
+\[
+\{0,1/2,1\}
+\quad\text{or, with half-ties,}\quad
+\{0,1/4,1/2,3/4,1\}
+\]
+for the first potential.
+There is no transitivity information to aggregate in this case.
+A direct empirical-win-share control reproduces the stated potential, apart from numerical fitting or regularization conventions.
+\ledger{13, 15}
+See \url{ada/round2_attribution.md}, lines 162--173.
+
+Under independent fair binary comparisons, exhaustive enumeration at two judgments per unordered pair gives
+\[
+\begin{array}{crr}
+\text{Active agents} & K & \Pr(\text{no finite MLE})\\
+\hline
+2 & 2 & 1/2\\
+3 & 6 & 9/32\\
+4 & 12 & 61/512
+\end{array}
+\]
+The test uses strong connectivity of the directed observed-win graph, not connectivity of the undirected comparison design.
+If P intended the former condition, it must be stated and its probability addressed.
+These counts also assume that both ordered judgments are accumulated rather than overwritten.
+They do not assume actual LMM judgments are independent or fair.
+\ledger{13}
+See \url{ada/bt_budget_01.log}, lines 13--18, and
+\url{ada/round2_attribution.md}, lines 175--183.
+
+For independent binary judgments with preference probability \(p^\star\), the extended potential estimate satisfies
+\[
+\begin{aligned}
+\mathbb E[(\widehat p-p^\star)^2]
+  &=\frac{p^\star(1-p^\star)}K,\\
+\Pr(\text{no finite MLE})
+  &=(p^\star)^K+(1-p^\star)^K.
+\end{aligned}
+\]
+At \(K=2\), nonexistence probabilities are \(0.5\), \(0.625\), and \(0.82\) for \(p^\star=0.5,0.75,0.9\).
+More decisive comparisons can increase logit nonexistence while improving normalized-probability estimation.
+The consumed potential is therefore a more useful repair target than logit error alone.
+\ledger{13, 15}
+
+The notes also record ordinary smoothing:
+\[
+\widehat p_\alpha=\frac{W+\alpha}{K+2\alpha},
+\qquad \alpha>0,
+\]
+with exact binary-model risk
+\[
+\mathbb E[(\widehat p_\alpha-p^\star)^2]
+=
+\frac{Kp^\star(1-p^\star)
++\alpha^2(1-2p^\star)^2}
+{(K+2\alpha)^2}.
+\]
+If at most \(\epsilon K\) clean independent judgments are arbitrarily replaced, Hoeffding's inequality and the replacement bound give, with probability at least \(1-\delta\),
+\[
+\begin{aligned}
+|\widehat p_\alpha-p^\star|
+\leq{}&
+\frac{K}{K+2\alpha}
+\left(
+\epsilon+\sqrt{\frac{\log(2/\delta)}{2K}}
+\right)\\
+&+\frac{\alpha}{K+2\alpha}.
+\end{aligned}
+\]
+This is a standard estimation repair, not a new ranking method.
+Half-tie observations require interpreting their mean as a tie-adjusted preference probability.
+Perfectly correlated repeated judgments do not obtain the independent-sample variance reduction.
+None of these statements proves a learned-policy return bound or demonstrates a numerical failure in P's implementation.
+\ledger{13, 15}
+See \url{ada/round2_attribution.md}, lines 185--211.
+
+\paragraph{External sources used in the first two rounds.}
+The prior-work checks constrain the interpretation.
+\ledger{4, 5, 6, 15}
+\begin{itemize}
+\item Devlin and Kudenko, \emph{Dynamic Potential-Based Reward Shaping}, establishes dynamic-potential telescoping and objective/Nash invariance:
+\url{https://eprints.whiterose.ac.uk/id/eprint/75121/2/p433_devlin.pdf}.
+\item Gupta et al., \emph{Behavior Alignment via Reward Function Optimization}, Property 1, establishes unchanged expected policy gradients and potentially increased variance under potential-based shaping:
+\url{https://arxiv.org/abs/2310.19007}.
+\item Grzes, \emph{Reward Shaping in Episodic Reinforcement Learning}, analyzes terminal residuals and multi-agent consequences:
+\url{https://www.ifaamas.org/Proceedings/aamas2017/pdfs/p565.pdf}.
+\item Wiewiora, \emph{Potential-Based Shaping and Q-Value Initialization are Equivalent}, establishes tabular value-update equivalence:
+\url{https://arxiv.org/abs/1106.5267}.
+\item M\"uller and Kudenko discuss initial values, potential offsets, and sample efficiency:
+\url{https://arxiv.org/abs/2502.01307}.
+\item V-GEPF's own appendix assumes terminal-zero potentials and discusses shifted value initialization:
+\url{https://arxiv.org/abs/2502.13430}.
+Its inspected code mismatch is a theorem-to-implementation issue.
+\item Gao and Toni treat hierarchical and semi-Markov shaping:
+\url{https://ijcai.org/proceedings/2015/493}.
+A variable-duration discount correction alone is not a new direction.
+\item Turner and Firth's BradleyTerry2 work supports bias-reduced estimation:
+\url{https://www.jstatsoft.org/article/view/v048i09}.
+Rinaldo, Petrovi\'c, and Fienberg describe the observed-win connectivity criterion:
+\url{https://www.stat.cmu.edu/~arinaldo/papers/Rinaldo_Petrovic_Fienberg.pdf}.
+\end{itemize}
+
+Retrieval details are in
+\url{ada/open_team_shaping.md}, lines 128--152, and
+\url{ada/round2_attribution.md}, lines 213--227.
+The shared pool supplied LaTeX for Gupta et al., V-GEPF, and M\"uller--Kudenko.
+Devlin--Kudenko, Grzes, and Wiewiora were checked through pooled PDF text after LaTeX source was unavailable.
+Pool lookups for Gao--Toni, Turner--Firth, and Rinaldo et al.\ failed during metadata resolution.
+Their use was limited to primary-host excerpts or publisher pages; no full-source review or alternate PDF extraction is claimed.
+
+The public-code snapshots were:
+\begin{itemize}
+\item XuanCe:
+\url{https://github.com/agi-brain/xuance/tree/63eca3216bd87055de55ff89e94fe64f31a80e3d}.
+\item Standard MAPPO:
+\url{https://github.com/marlbenchmark/on-policy/tree/de66d7a4b23fac2513f56f96f73b3f5cb96695ac}.
+\item SAMA:
+\url{https://github.com/ewanlee/SAMA/tree/e1e21cd9358b40163e09a496584461a8331aee27}.
+\item V-GEPF:
+\url{https://github.com/Marroh/V-GEPF-official-code/tree/406a2c06fb836c8f1350a01e84d37b08900c699f}.
+\end{itemize}
+The searches, including inspection of
+\url{https://aclanthology.org/2026.acl-long.1349/},
+did not locate MARS-RA training code.
+This is a bounded search outcome, not evidence of nonavailability.
+No message or code request was sent to the authors.
+\ledger{6, 15}
+
+\paragraph{What the second round resolved and left open.}
+The second round supplied a public learned-shaping baseline with a reproduced batch-boundary defect that changes consumed advantages.
+It also supplied counterevidence to indiscriminate attribution: the tested XuanCe and standard MAPPO return paths preserve full shaping through activity masks.
+The controlled study established both masking-induced objective reversal and a finite-training benefit that survives correct accounting.
+Matched-critic controls separated the latter from an objective improvement.
+\ledger{10, 12, 14, 15}
+
+However, there was no measured football benchmark effect, no proof that the inspected revision matched published experiments or P's adaptation, and no access to P's wrapper or estimator.
+The algebra and estimator repairs did not warrant a standalone theory claim.
+The supported candidate was an attribution and reproducibility audit, not a new consistency--robustness frontier, a MARS-RA replication failure, or proof that semantic credit was unnecessary.
+\ledger{8, 15, 16}
+See \url{ada/round2_attribution.md}, lines 229--235.
+
+The previous note proposed a short paired football rerun and a P-specific exit/reentry trace.
+Verifier entry 17 judged the football rerun poor value before a scale check, and found the one-decision toy inadequate to address large gains in sparse cooperative learning.
+That objection was accepted.
+The third round replaced the immediate football priority with scale measurements, a neural exploration diagnostic, and a reusable conformance audit.
+The original P-specific trace remains useful if its code becomes available.
+\ledger{17, 18}
+
+\paragraph{Round-three addition: scale of the V-GEPF effect.}
+The longer-rollout probe executes the extracted shaping and GAE kernels with 32 worker rows, \(\gamma=0.995\), \(\lambda=0.95\), and lengths \(T\in\{3,400,3001\}\).
+It supplies smooth sinusoidal potentials with either common initial value \(0.5\) or initial values in \([0.1,0.9]\), and synthetic segment-end rewards of \(\pm1\).
+These stand in for post-normalization outputs; they are neither measured CLIP outputs nor a bound on deployed potentials.
+The source standardizes and scales its potentials.
+The tests include no interior cuts, two jittered interior cuts, and a stress schedule with a cut every 100 steps.
+None is claimed to reproduce football scoring statistics.
+\ledger{19, 23, 26}
+See \url{ada/round3_attribution.md}, lines 15--39, and
+\url{ada/scale_vgepf_results.json}.
+
+A row-end reward perturbation reaches the root raw GAE with multiplier
+\[
+(\gamma\lambda)^{T-1}.
+\]
+It is approximately
+\[
+\begin{aligned}
+T=400 &: \quad 1.75\times10^{-10},\\
+T=3001 &: \quad 4.37\times10^{-74}.
+\end{aligned}
+\]
+This sharply limits the practical reading of the earlier synthetic \(T=3\) root-gradient example.
+Nearby advantages still change, and batch-wide normalization can spread changes in mean or scale.
+Such spreading alone does not establish an expected policy-gradient effect; action-score correlations also matter.
+\ledger{17, 19, 26}
+
+With varying initial potentials and no interior cuts, the reported changes are
+\[
+\begin{array}{lrr}
+ & T=400 & T=3001\\
+\hline
+\text{Mean raw correction magnitude}
+ &0.01901&0.002534\\
+\Pr(|\text{raw change}|>0.01)
+ &0.1563&0.0208\\
+\text{Mean normalized permutation change}
+ &0.07725&0.02603
+\end{array}
+\]
+The permutation calculation undoes the row permutation before comparing advantages.
+With common initial potentials, the corresponding normalized permutation changes are \(0.008705\) and \(0.002936\), mainly because a different final row receives a zero successor.
+These are synthetic scale-dependent quantities, not benchmark effects.
+\ledger{19, 26}
+See \url{ada/round3_attribution.md}, lines 29--31.
+
+With two jittered interior cuts, mean absolute raw advantage differences relative to declaring the cut destinations terminal are \(0.04460\) and \(0.006108\) at the two longer lengths.
+With cuts every 100 steps, they are \(0.06862\) and \(0.09073\).
+The local discrepancy at a cut contains
+\[
+\gamma\Phi_{t+1}.
+\]
+Its interpretation depends on the intended return.
+\ledger{23, 26}
+See \url{ada/round3_attribution.md}, lines 33--37.
+
+In particular,
+\url{light_malib/rollout/rollout_func.py}, lines 368--389,
+resets only when \texttt{env.is\_terminated()} is true.
+A score-induced \texttt{DONE} can therefore cut GAE without terminating the game.
+The discrepancy is then with the return estimator's continuation convention, not automatically with full-game potential telescoping.
+Zeroing the potential at every score can itself change the full-game objective.
+This resolves the earlier ambiguity by separating true-terminal cross-worker leakage from interior return segmentation.
+\ledger{23}
+
+If successor initial potentials and row durations are policy independent, much of the row-end return residual is also policy independent and need not change policy ordering.
+Scoring times and destination states may instead be policy dependent, but their actual residual distribution was not measured.
+The source-level defect stands; its practical significance remains unresolved and is downgraded.
+No football rerun was undertaken.
+\ledger{19, 23, 26}
+
+\paragraph{Round-three addition: a neural exploration diagnostic.}
+The next experiment implements a MAPPO-style learner with shared decentralized neural actors, a centralized per-agent critic, clipped PPO updates, and GAE.
+It does not import the standard MAPPO repository, reproduce P's architecture, use an LMM, or implement an embodied simulator.
+\ledger{22, 24, 25}
+The task and implementation are described in
+\url{ada/round3_attribution.md}, lines 41--90, and
+\url{ada/neural_attribution.py}.
+
+Each of two agents receives an episode-specific binary cue identifying its correct action.
+A correct action increments its progress counter; an incorrect action resets the counter.
+Completion is retained once a target run length is reached.
+The team receives \(+1\) only if both agents finish by horizon 24, and \(-1\) otherwise, with no intermediate environmental reward.
+Thus random policies must discover consecutive correct actions for both agents.
+Cooperation is a shared AND objective, not physical interaction or strategic role division.
+The optimal cue-following local rule is simple once learning obtains a useful signal.
+\ledger{25, 26}
+
+Actors observe their own progress, cue, activity, identity, and time, but not the teammate's progress or cue.
+The full centralized critic can observe both agents' state.
+An active unfinished agent becomes absent for two decisions with probability \(0.1\) per step and then reenters; completed agents do not leave.
+All global-time rewards and critic transitions are retained.
+Only inactive and completed actors are excluded from action losses.
+This deliberately implements the clean full-time contract.
+\ledger{22, 25}
+
+The main task requires six consecutive correct actions.
+After interim results showed that its baseline was often learnable, a sensitivity task changed only the required run length to eight, without retuning hyperparameters.
+Both tasks and all outcomes were retained.
+Exact finite-state checks give initial random-policy success probabilities
+\[
+\begin{aligned}
+L=6 &: \quad 0.01529645,\\
+L=8 &: \quad 0.000766384.
+\end{aligned}
+\]
+Always following the cue succeeds with probability one in either task.
+Always choosing the same binary action succeeds on the one-quarter of episodes where both cues match it, explaining a simple suboptimal plateau.
+\ledger{22, 25, 26}
+See \url{ada/round3_attribution.md}, lines 47--53, and
+\url{ada/check_neural_task_01.log}.
+
+\paragraph{The neural prediction interface and controls.}
+For two active agents with progress counters \(x_t^1,x_t^2\), the declared comparison probability is
+\[
+p_t^\star=\sigma\!\left(0.8(x_t^1-x_t^2)\right),
+\qquad
+\Phi_t=(p_t,1-p_t).
+\]
+``Exact'' means \(p_t=p_t^\star\) for this declared progress comparator, not a true Shapley value or uniquely correct causal contribution.
+The two-query condition uses the empirical mean of two independent Bernoulli draws with parameter \(p_t^\star\), matching P's two-agent comparison count and the extended BT softmax estimate without ties.
+Reversed comparisons use \(1-p_t^\star\), random comparisons use two fair draws, and uniform potentials use \(1/2\).
+A 16-query condition reduces sampling variance around the same probability.
+\ledger{22, 25}
+See \url{ada/round3_attribution.md}, lines 55--74.
+
+Absent agents have potential zero; a sole active agent has potential one; both absent means both potentials are zero.
+All horizon potentials are zero.
+Each realized potential is sampled once and reused in both adjacent differences.
+Consequently, stochastic comparison noise and turnover do not break the pathwise return identity.
+
+Actors and critics are separate two-hidden-layer tanh networks of width 32 with zero-initialized output layers.
+Training uses 160 updates, 64 complete episodes per update, and three full-batch PPO/critic epochs.
+The actor and critic learning rates are \(3\times10^{-4}\) and \(10^{-3}\), PPO clipping is \(0.2\), entropy coefficient is \(0.01\), gradient clipping is \(0.5\), and \(\gamma=0.99\).
+Runs use CPU float64, eight seeds per condition, and 2,048 fresh stochastic-policy evaluation episodes.
+Action/environment streams are paired by seed and comparison draws use a separate stream; different policies need not visit identical states.
+\ledger{25}
+See \url{ada/round3_attribution.md}, lines 76--90.
+
+The matrix includes \(\lambda\in\{0.95,1\}\), \(\rho\in\{0,1,5\}\), full and blinded critics, potential-input controls, shifted-head controls, and additional query-budget and zero-turnover cases.
+It is not a complete Cartesian product.
+A blinded critic sees time, its own activity, and identity, but cannot observe progress, cues, or teammate activity.
+The shifted-head control uses
+\[
+V_\theta^{\mathrm{sh}}(s,i)
+=W_\theta(s,i)-\rho\Phi_t^i,
+\]
+with the same stored potential realization as the shaping reward and no gradient through the predictor.
+Matched inputs, initialization, and optimization allow a pathwise comparison with the unshaped learner.
+Every declared configuration is recorded in the run directories' \url{plan.json} files.
+The distinction between own activity and joint activity is required for interpreting the later random-comparator controls.
+\ledger{22, 25, 35}
+
+\paragraph{What the neural GAE check establishes.}
+A separately trained unshaped shadow critic is evaluated on the same collected trajectories.
+Define
+\[
+h_t=V_t^{\mathrm{sh}}-V_t^{\mathrm{ref}}+\rho\Phi_t,
+\qquad h_H=0.
+\]
+With exact accounting and no interior continuation cuts, summing the TD-error difference gives
+\[
+A_t^{\mathrm{sh}}-A_t^{\mathrm{ref}}
+=-h_t+\gamma(1-\lambda)
+\sum_{j=t+1}^{H-1}
+(\gamma\lambda)^{j-t-1}h_j.
+\]
+This is the earlier GAE identity specialized to complete episodes.
+The experiment checks it and the discounted return-offset identity on every collected episode, and logs RMS critic and advantage discrepancies.
+\ledger{24, 25}
+See \url{ada/round3_attribution.md}, lines 92--113.
+
+At \(\lambda=1\), the difference is the pre-action baseline \(-h_t\).
+Under the usual causal sampling assumptions its expected policy-score contribution is zero, but it can alter finite-sample variance, advantage normalization, and subsequent clipped PPO updates.
+Therefore ordinary neural learning curves need not coincide at \(\lambda=1\).
+The shifted-head control is stronger: it cancels the TD and GAE differences pathwise at every tested \(\lambda\).
+\ledger{25}
+
+An incapable critic can produce persistent optimization difficulties within its function class.
+It cannot make a correctly telescoping reward transformation change the trajectory-return objective.
+Likewise, RMS discrepancy alone does not determine whether learning improves; its direction and correlation with useful action scores matter.
+These qualifications prevent an algebraic identity from becoming an unsupported learning guarantee.
+The original interpretation of a failed finite run as merely transient was untested; the fourth round below investigates that issue.
+\ledger{25, 26, 28, 30}
+
+\paragraph{Neural results under correct accounting.}
+The selected final evaluation results below use the full critic and, for shaped runs, \(\rho=1\).
+Uncertainty is standard error across eight seeds.
+Let \(S_0\) denote unshaped success and \(S_{\mathrm{exact}}\) exact-comparator success:
+\[
+\begin{array}{ccrr}
+L&\lambda&S_0&S_{\mathrm{exact}}\\
+\hline
+6&0.95&0.7651\pm0.1205&0.9970\pm0.0021\\
+6&1&0.4343\pm0.1230&0.5317\pm0.1362\\
+8&0.95&0.2429\pm0.1122&0.7124\pm0.1377\\
+8&1&0.06262\pm0.03811&0.00122\pm0.00039
+\end{array}
+\]
+The corresponding sampled and reversed-comparator results are
+\[
+\begin{array}{ccrr}
+L&\lambda&S_{\mathrm{two\ queries}}&S_{\mathrm{reversed}}\\
+\hline
+6&0.95&0.8340\pm0.1099&0.2266\pm0.0324\\
+6&1&0.4371\pm0.1215&0.4362\pm0.1219\\
+8&0.95&0.4136\pm0.1278&0.0527\pm0.0356\\
+8&1&0.02716\pm0.02633&0.05658\pm0.03512
+\end{array}
+\]
+\ledger{24, 25}
+See \url{ada/round3_attribution.md}, lines 153--168, and
+\url{ada/neural_summary_final.json}.
+
+At length eight and \(\lambda=0.95\), the paired final exact-minus-unshaped difference is \(0.4695\pm0.1573\).
+During updates 71--80, mean training success is
+\[
+\begin{aligned}
+\text{Exact comparisons}:&\quad 0.17617\pm0.02111,\\
+\text{Two-query comparisons}:&\quad 0.03008\pm0.00992,\\
+\text{No shaping}:&\quad 0.000391\pm0.000256.
+\end{aligned}
+\]
+The paired exact-minus-unshaped difference at this intermediate budget is \(0.17578\pm0.02117\).
+Thus more-than-order-of-magnitude gains at an intermediate training budget are possible under correct accounting.
+The relative size partly reflects a near-zero baseline, and the final relative improvement is much smaller.
+This is neither a reproduction nor an explanation of P's particular gains.
+\ledger{25, 26}
+
+For length six, some baseline seeds solve the task.
+The final paired difference is \(0.2319\pm0.1195\), so an unqualified statistical-superiority claim from that estimate would be too strong.
+Mean training success over the first 80 updates improves by \(0.04104\pm0.01178\) paired standard error.
+All seeds are retained.
+\ledger{24, 25}
+See \url{ada/round3_attribution.md}, lines 164--166.
+
+At P's two-query budget, the final paired gains over the unshaped learner were not statistically distinguishable in this experiment: approximately \(0.069\pm0.044\) for length six and \(0.171\pm0.187\) for length eight.
+Verifier entry 28 explicitly required this qualification.
+\ledger{28}
+
+At \(\lambda=1\), exact shaping harms some cases rather than merely losing its benefit.
+For length six, its paired training-success difference during updates 71--80 is \(-0.084\pm0.029\).
+For length eight, final success is \(0.00122\) shaped versus \(0.06262\) unshaped.
+Ordinary neural curves therefore do not coincide, and raw expected-gradient invariance does not imply finite-training invariance.
+Exact coincidences occur in the matched shifted-head controls: all 48 matched pairs have identical stored training-success curves and evaluation success, including exact and noisy comparisons where tested, both GAE settings, and both difficulty levels.
+This validates an attribution control founded on established equivalence, not a new invariance theorem.
+\ledger{25, 28, 30}
+
+With a blinded critic on length six at \(\lambda=0.95\), mean success is \(0.6202\) without shaping and \(0.9910\) with exact comparisons, while reversed comparisons give zero success in all eight runs.
+All satisfy the return-offset check.
+Giving the realized potential to the critic reduces measured mismatch but does not uniformly improve learning: exact-comparator success is \(0.8948\) with potential input, compared with \(0.9970\) for the ordinary full critic and \(0.7841\) for the matched unshaped input-critic baseline.
+These small-seed, overlapping estimates are descriptive, not an architecture ranking.
+\ledger{25, 26}
+See \url{ada/round3_attribution.md}, lines 170--172.
+
+The harder task also shows why RMS mismatch is insufficient.
+At \(\lambda=0.95\), two-query and random comparators have similar final-window RMS mismatch, approximately \(0.294\) and \(0.300\), but final success is approximately \(0.414\) and \(0.00085\).
+The GAE identity locates the influence; it does not determine whether that influence is useful.
+\ledger{25}
+See \url{ada/round3_attribution.md}, line 172.
+
+All 60 configurations completed with eight seeds each: 480 runs and 4,915,200 training episodes.
+These counts exclude the pilot and evaluation episodes.
+The maximum GAE-identity error was \(8.66\times10^{-15}\), and the maximum discounted telescoping error was \(1.07\times10^{-14}\).
+Completeness, finiteness, and shifted-pair assertions passed.
+\ledger{25}
+See \url{ada/check_round3_results_01.log}, lines 1--14.
+Run outputs are under
+\url{ada/neural_main_01/},
+\url{ada/neural_controls_01/}, and
+\url{ada/neural_hard_01/};
+versions and script hashes are in
+\url{ada/round3_provenance.json}.
+
+\paragraph{Round-three addition: reusable conformance tests.}
+The expanded audit is a convenience sample, not a prevalence estimate.
+It begins with implementations named by P or its baselines and adds accessible Python implementations found by targeted searches for learned potential shaping.
+Implementations that merely replace rewards without an additive PBRS claim are outside this preservation contract.
+The inclusion rule and searches are recorded in
+\url{ada/round3_attribution.md}, lines 115--141.
+\ledger{21, 26}
+
+The suite
+\url{ada/conformance_suite.py}
+extracts relevant methods from syntax trees, removes annotations, and stubs external inference.
+It tests worker-row permutation, true terminal handling, artificial interior cuts, actual-next-potential bootstrap handling, discount agreement, full-time absence/reentry, and a realized-potential-reuse fixture.
+Passing one fixture is not repository certification.
+Artificial respawn or interior-terminal fixtures for text or time-series kernels do not imply that those applications contain agent turnover.
+\ledger{21, 26}
+
+The XuanCe and standard MAPPO return checks remain clean.
+V-GEPF has mixed results: row permutation and discount agreement fail, and the kernel lacks the actual next potential at row truncations; its single-worker terminal-zero and supplied full-time reentry traces pass.
+The single-worker pass occurs because the last flattened successor is zero.
+Interior \texttt{DONE} results require the full-game versus segment distinction already stated.
+\ledger{19, 21, 23, 26}
+
+\paragraph{PSPO: an additional consumed terminal residual.}
+The inspected snapshot is
+\url{https://github.com/wandugu/paper_pspo/tree/47cc5818fa161aea36105f67e55ae668430d1f27}.
+Its README claims a terminal-zero absorbing state.
+In
+\url{src/llamafactory/train/pspo/potential.py},
+the feature builder creates response-length-plus-one state features and marks them valid.
+The shaping method, lines 314--317, appends zero to shifted potentials but slices away that appended zero before computing differences.
+The final emitted reward therefore uses a learned completed-response potential instead of zero.
+\ledger{21}
+See \url{ada/round3_attribution.md}, lines 129--133.
+
+Both the actual feature builder and actual shaping method were executed on synthetic hidden states sharing the same prompt.
+At \(\gamma=1\), the required common shaping offset is \(-0.1\), while the observed sums are
+\[
+\begin{array}{crr}
+\text{Response length}&\text{Shaping sum}&\text{Terminal residual}\\
+\hline
+1&0.05&0.15\\
+3&0.15&0.25
+\end{array}
+\]
+These are reachable arithmetic values under the inference stubs, not measurements from trained PSPO weights.
+The source path consumes the shaped token rewards:
+\url{ppo/trainer.py}, lines 454--457, returns them, and lines 278--285 pass them to PPO.
+Row-permutation and supplied-discount tests pass.
+Neither published-model performance nor publication status was established by this audit.
+\ledger{21, 26}
+See \url{ada/conformance_suite_02.log}, lines 8--9.
+
+\paragraph{Clean and qualified additional cases.}
+Reward-Shaping-LLM was inspected at
+\url{https://github.com/baharehgl/Reward-Shaping-LLM/tree/2e009980398b797ae7acefc7497ab5e368673783}.
+Its kernel evaluates consecutive state potentials without a terminal argument.
+It passes row-permutation, supplied-discount, and actual-next-potential truncation checks but retains a finite terminal residual.
+However, the inspected time-series cursor advances independently of the chosen anomaly label.
+For a fixed series and fixed cached predictor, that endpoint residual is action independent and does not itself change policy ordering.
+A failed strict terminal-zero check is therefore insufficient evidence of behavioral harm.
+Stochastic provider behavior and cache eviction were not tested.
+\ledger{21, 26}
+See \url{ada/round3_attribution.md}, line 135.
+
+PRM4RL was inspected at
+\url{https://github.com/deng-ai-lab/PRM4RL/tree/f9727ed0d62aa7106b1dd8d76a52b5a6d6775079}.
+Its progress differences replace environmental reward, are clipped, and receive a success bonus.
+It is excluded from the additive PBRS conformance denominator.
+Clipped differences need not telescope, but this alone is not an implementation bug without matching the intended objective.
+\ledger{26}
+See \url{ada/round3_attribution.md}, line 137.
+
+SAMA still supplied no inspectable training implementation.
+Further searches for MARS-RA, MARS-Bench, and the primary paper page still did not locate the target trainer.
+The generic realized-potential-reuse fixture detects inconsistency when adjacent transitions resample a shared endpoint; source inspection found reused potential tensors in PSPO and V-GEPF and caching in Reward-Shaping-LLM.
+This does not certify provider determinism.
+The complete mixed outcomes are preserved in
+\url{ada/conformance_results.json} and
+\url{ada/conformance_suite_02.log}.
+\ledger{21, 26}
+See \url{ada/round3_attribution.md}, lines 139--141.
+
+\paragraph{Additional outside sources and novelty objections.}
+The third round adds two particularly relevant source checks.
+Schulman et al., \emph{High-Dimensional Continuous Control Using Generalized Advantage Estimation},
+\url{https://arxiv.org/abs/1506.02438},
+already interprets GAE as more steeply discounting a potential-shaped reward and explains the bias associated with \(\lambda<1\).
+The checked pooled LaTeX is
+\url{sources/1506.02438.tex}, lines 516--558.
+Thus the GAE identity and the generic observation that shaping changes bootstrapping are not new.
+\ledger{17, 26}
+
+M\"uller and Kudenko,
+\emph{Automating Potential-based Reward Shaping with Vision Language Model Guidance},
+\url{https://arxiv.org/abs/2606.27180},
+already learns bounded, terminal-zero potentials from pairwise VLM preferences and varies synthetic oracle-label accuracy.
+The pooled LaTeX at
+\url{sources/2606.27180.tex}, lines 340--380 and 590--625, supplies the construction and ablation.
+A generic comparison-accuracy-versus-learning-speed experiment is therefore already covered.
+Together with the previously checked work on initialization and potential offsets, this confines the possible contribution to a sharper attribution protocol and consequential implementation evidence.
+\ledger{20, 26}
+See \url{ada/round3_attribution.md}, lines 143--151.
+
+The additional novelty searches were bounded.
+Failure to locate a matching protocol does not establish its absence.
+All paper-source checks reported here use the shared-pool records described in the notes.
+
+\paragraph{Disposition of the third-round objections.}
+The verifier's scale objection was accepted: the striking V-GEPF root figures came from synthetic \(T=3\) traces, and propagation to the root is negligible at the supplied long rollout lengths.
+The source defect remains, but its practical significance is unmeasured and downgraded.
+The configuration error was corrected.
+Score-induced GAE cuts were separated from true terminal boundaries, preventing an unjustified recommendation to zero every score.
+\ledger{17, 19, 23, 26}
+
+The objection that the earlier toy had no exploration problem was addressed by a neural sparse-reward task with rare initial success.
+That task demonstrates large intermediate-budget gains under correct accounting and exact shifted-head controls, so large gains alone do not implicate objective distortion.
+It remains deliberately simple, with no physical coordination and no actual LMM.
+It cannot explain P's particular benchmark improvements.
+\ledger{17, 24, 25, 26}
+
+The expanded code audit supplies an additional consumed terminal-residual example in PSPO and retains clean and qualified cases.
+It does not provide a prevalence estimate, a benchmark consequence, or evidence that the inspected commits match reported experiments.
+No MARS-RA defect has been established.
+The verifier's concern about publication readiness remained unresolved.
+\ledger{17, 21, 26, 28}
+
+\paragraph{The preceding assessment and proposed next step.}
+At the end of the third round, the strongest supported package was an attribution and conformance study:
+a conditional mask defect and repair;
+a valid objection to P's stated unregularized estimator guarantee;
+a two-agent reduction to empirical win shares;
+clean return-interface tests;
+source-level mismatches in adjacent code;
+and neural controls separating objective neutrality from finite-training effects.
+The underlying mathematics was established or elementary, and comparison-accuracy ablations already existed.
+Benchmark consequences and target-trainer attribution were absent.
+\ledger{25, 26}
+
+Q's useful contribution remained the demand for a declared interface and benchmark at each stage.
+P's BT estimation error, normalized potential error, GAE discrepancy, and finite-training policy return were different quantities.
+Neither estimator consistency nor PBRS neutrality supplied a finite-training consistency--robustness frontier for MAPPO.
+There was also a benchmark mismatch: Q's multiplicative minimization convention needs a positive optimum, whereas P uses potentially negative returns; in the neural diagnostic, an optimal cue-following policy has zero failure cost.
+An additive performance or sample-complexity comparison required a separately declared model.
+\ledger{6, 15, 26}
+See \url{ada/round3_attribution.md}, lines 7--13 and 178--186.
+
+The proposed next step was fixed-comparison replay through an available target trainer, preferably MARS-RA:
+inspect one exit/reentry trace and one terminal or truncation boundary;
+record identities, potentials, rewards, discounts, continuation masks, actor masks, and bootstrap values;
+check the return-offset identity on the return propagated to the preceding decision;
+and compare two-agent BT potentials with empirical win shares.
+Then hold trajectories and comparisons fixed while changing only established accounting defects and matched critic parameterization, followed by a short paired continuation.
+A clean result was to be retained.
+The long-rollout checks made a football rerun a weaker immediate priority than a fixed-data attribution check.
+\ledger{5, 8, 13, 17, 19, 23, 26}
+
+That proposal remains useful, but MARS-RA code was still unlocated.
+Verifier entry 28 instead identified a question answerable with the existing diagnostic: whether the blinded-critic failure reflects a changed expected update rather than merely slow learning.
+The following additions answer that bounded request without upgrading the preceding implementation findings.
+\ledger{28, 29}
+
+\paragraph{Round-four addition: objective invariance versus learner invariance.}
+The new question is whether a correctly accounted, fixed potential can change the stationary policy selected by a specified approximate actor--critic update.
+The answer is yes in the exactly solvable model below.
+This is not a new general observation about function approximation.
+The relevant record is
+\url{ada/round4_algorithmic_invariance.md}, lines 5--13.
+Here \(\lambda\) denotes the GAE trace parameter, not Q's ex ante trust parameter.
+It changes the unshaped estimator as well as shaping's effect.
+Neither \(\lambda\) nor \(\rho\) automatically becomes a certified consistency--robustness control.
+\ledger{29, 31, 33, 44}
+
+\paragraph{The expected update and its residual.}
+Assume bounded causal potentials, coherent endpoint reuse, matching discounts, and zero terminal potential and value.
+For a fixed policy, use a Markov sufficient state or full history and let \(V^\pi\) be the true unshaped value.
+To avoid confusing critic error with the earlier accounting defect, denote the residual in original-value coordinates by
+\[
+u_t=\widehat V_t^\Phi+\rho\Phi_t-V_t^\pi.
+\]
+Substitution gives
+\[
+\delta_t^{\mathrm{sh}}
+=\delta_t^{V^\pi}+\gamma u_{t+1}-u_t.
+\]
+Define the future residual term
+\[
+B_u(s,a)
+=\gamma(1-\lambda)
+\sum_{\ell\geq0}(\gamma\lambda)^\ell
+\mathbb E[u_{t+\ell+1}\mid s_t=s,a_t=a],
+\]
+where finite episodes stop at their true terminal state.
+Then
+\[
+\mathbb E[\widehat A_t^{\mathrm{sh}}\mid s,a]
+=A^\pi(s,a)-u(s)+B_u(s,a).
+\]
+The current residual is a pre-action baseline.
+The future residual can correlate with the current action.
+Under the usual discounted state weighting, the raw expected local actor update is the true policy gradient plus
+\[
+\frac{1}{1-\gamma}
+\mathbb E_{s\sim d^\pi,\,a\sim\pi}
+\left[
+\nabla_\theta\log\pi_\theta(a\mid s)\,B_u(s,a)
+\right].
+\]
+This is the local PPO gradient at the old policy, where clipping is inactive, subject to the trainer's time weighting.
+It is not a convergence theorem for multiple clipped epochs, finite batches, normalization, or shared neural parameters.
+Uniform episodic time sampling need not equal the discounted weighting displayed here.
+\ledger{31, 33, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 15--50.
+
+To compare shaping with the same approximate unshaped learner, replace \(u\) in the update difference by
+\[
+h=\widehat V^\Phi+\rho\Phi-\widehat V^0.
+\]
+This subtracts approximation bias already present at \(\rho=0\).
+At \(\lambda=1\), the future residual vanishes from the raw expected update, but finite-sample variance and nonlinear normalization effects remain.
+\ledger{30, 31, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 52--68.
+
+\paragraph{A correction to the variance-only interpretation.}
+An exact shifted critic makes \(h=0\) pathwise.
+Representational capacity alone does not establish that optimization finds that shift.
+For fixed critics, fresh potential noise has no direct raw expected actor contribution under a sufficient condition: it has zero mean conditional on the full pre-action history or state, the actor does not consume the realization, and future innovations satisfy the corresponding conditional property.
+This does not establish invariance of finite-batch standardization or noisy critic fitting.
+
+Zero mean conditional only on the critic's restricted input is insufficient.
+A residual can be invisible to that critic but correlated with a preceding action.
+The aliased-branch example below has precisely this property.
+The earlier fair-random neural comparator also has an activity-dependent mean that the blind critic cannot necessarily represent, since it observes only its own activity.
+Uniform and informative two-query controls were therefore added.
+\ledger{32, 35, 40, 43}
+See \url{ada/round4_algorithmic_invariance.md}, lines 60--68 and 306--308.
+
+\paragraph{Projected-critic compatibility.}
+A narrower calculation makes the representation dependence explicit.
+Consider a finite discounted Markov model with transition matrix \(P\), expected reward vector \(r\), and \(0<\gamma<1\).
+Let \(\Pi\) average within fixed state groups using positive weights for the current policy.
+It is linear and nonexpansive in the sup norm.
+Assume the critic is at the expected stop-gradient lambda-return regression fixed point.
+These assumptions do not automatically hold for general neural regression.
+
+Define
+\[
+\begin{aligned}
+C_\lambda
+&=\gamma(1-\lambda)(I-\gamma\lambda P)^{-1}P,\\
+T_\lambda v
+&=(I-\gamma\lambda P)^{-1}r+C_\lambda v.
+\end{aligned}
+\]
+With shaped reward
+\[
+r_\Phi=r+\rho(\gamma P-I)\Phi,
+\]
+the Bellman shift identity is
+\[
+T_\lambda^\Phi v
+=T_\lambda(v+\rho\Phi)-\rho\Phi.
+\]
+Subtracting the projected fixed-point equations yields
+\[
+\begin{aligned}
+h&=v_\Phi+\rho\Phi-v_0\\
+ &=\rho(I-\Pi C_\lambda)^{-1}(I-\Pi)\Phi.
+\end{aligned}
+\]
+Writing
+\[
+\alpha_\lambda
+=\frac{\gamma(1-\lambda)}{1-\gamma\lambda}<1,
+\]
+the resolvent bound gives
+\[
+\|h\|_\infty
+\leq
+\rho\,\frac{1-\gamma\lambda}{1-\gamma}
+\|(I-\Pi)\Phi\|_\infty.
+\]
+Thus a representable potential has zero projected-coordinate discrepancy.
+An unrepresentable residual matters to the actor only through its action correlation.
+At \(\lambda=1\), \(h=\rho(I-\Pi)\Phi\) can remain nonzero although its future actor-bias coefficient is zero.
+This is elementary projected Bellman algebra, not a new general theorem.
+\ledger{33, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 70--109.
+
+The checks in
+\url{ada/round4_exact.py}
+cover 576 rational two-step cases and 720 random matrix instances.
+The maximum matrix-identity error is below \(7.1\times10^{-14}\).
+These checks test the implementation of the formulas, not their applicability to P.
+The record is
+\url{ada/round4_exact_01.log}.
+\ledger{44}
+
+\paragraph{An exactly solvable harmful update.}
+A root action \(a\in\{0,1\}\) selects a branch.
+At the next step the episode gives reward \(R_a\) and terminates; root environmental reward is zero.
+The actor chooses action one with probability \(p=\sigma(\theta)\).
+The critic sees time but cannot distinguish branch identity.
+Potentials are zero at root and terminal and equal \(\phi_a\) at the branch.
+The shaped rewards are
+\[
+\gamma\rho\phi_a,
+\qquad
+R_a-\rho\phi_a,
+\]
+whose discounted sum is exactly \(\gamma R_a\).
+
+Write
+\[
+\overline R=(1-p)R_0+pR_1,
+\qquad
+\overline\phi=(1-p)\phi_0+p\phi_1.
+\]
+At the projected critic fixed point,
+\[
+v_1=\overline R-\rho\overline\phi,
+\qquad
+v_0=\gamma\overline R.
+\]
+The root GAE is
+\[
+\widehat A_0(a)
+=\gamma\left[
+\lambda(R_a-\overline R)
++\rho(1-\lambda)(\phi_a-\overline\phi)
+\right].
+\]
+For
+\[
+\Delta R=R_1-R_0>0,
+\qquad
+\Delta\phi=\phi_1-\phi_0,
+\]
+define
+\[
+D=\lambda\Delta R+\rho(1-\lambda)\Delta\phi.
+\]
+The expected root logit update is
+\[
+\dot\theta=\gamma p(1-p)D.
+\]
+Both critic parameters contribute only action-independent terms, so this raw actor field also holds before critic convergence.
+The sign change is not caused by critic lag.
+\ledger{31, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 111--147.
+
+Without entropy, finite initial logits tend toward the better action if \(D>0\), the worse action if \(D<0\), and remain unchanged if \(D=0\).
+The deterministic limits are boundary policies, not finite softmax logits.
+The same unshaped aliased learner has \(D=\lambda\Delta R>0\) for every \(\lambda>0\).
+At \(\lambda=0\), its signal vanishes, so that degenerate baseline cannot be counted as a shaping-induced failure.
+
+Reversed potentials select the worse action when
+\[
+\rho(1-\lambda)|\Delta\phi|>\lambda\Delta R.
+\]
+The relevant relative coefficient is therefore
+\[
+\frac{\rho(1-\lambda)}{\lambda},
+\]
+together with reward and potential gaps, rather than a universal product \(\rho(1-\lambda)\).
+For \(\Delta R=0.04\), \(\Delta\phi=-1\), and \(\rho=1\), the threshold is \(\lambda=1/1.04\).
+Strict reversal also occurs with interior potentials:
+\[
+\Delta R=0.02,\quad
+\phi_0=0.9,\quad
+\phi_1=0.1,\quad
+\lambda=0.95,\quad
+\rho=1.
+\]
+Thus infinite BT logits are unnecessary.
+\ledger{31, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 149--158.
+
+A second forced-action agent with complementary potential embeds the example in a cooperative per-agent shaping model.
+It supplies no actor gradient that cancels the acting agent's bias.
+No turnover or accounting defect is needed.
+A branch-aware critic representing the true shaped value restores action gap \(\gamma\Delta R\).
+An analytic shifted head on the old aliased critic instead restores its original gap \(\gamma\lambda\Delta R\).
+Repairing task-value approximation and reproducing the baseline learner are different interventions.
+\ledger{31, 44}
+
+\paragraph{Joint equilibria, entropy, and normalization.}
+With Shannon entropy coefficient \(\tau>0\) and no normalization, the actor field becomes
+\[
+\dot\theta=p(1-p)(\gamma D-\tau\theta).
+\]
+Its stable finite-logit equilibrium is
+\[
+p_\Phi=\sigma(\gamma D/\tau),
+\qquad
+p_0=\sigma(\gamma\lambda\Delta R/\tau).
+\]
+The expected semi-gradient critic dynamics, omitting positive learning-rate factors, are
+\[
+\begin{aligned}
+\dot v_1
+&=\overline R-\rho\overline\phi-v_1,\\
+\dot v_0
+&=\gamma\left[
+\lambda\overline R+
+(1-\lambda)(\rho\overline\phi+v_1)
+\right]-v_0.
+\end{aligned}
+\]
+For a fixed actor these form stable triangular linear dynamics.
+The actor field is independent of critic parameters; at the finite entropy equilibrium its derivative is \(-\tau p(1-p)<0\).
+The joint Jacobian is therefore block triangular with negative eigenvalues.
+This establishes a locally stable joint equilibrium in the declared expected-dynamics model, not merely a field evaluated at an arbitrary critic.
+
+For
+\[
+\Delta R=0.04,\quad
+\Delta\phi=-1,\quad
+\gamma=0.99,\quad
+\lambda=0.95,\quad
+\rho=1,\quad
+\tau=0.02,
+\]
+the better-action probability falls from \(0.867726\) unshaped to \(0.355718\) shaped.
+The 224 expected-dynamics runs in
+\url{ada/round4_exact_results.json}
+check entropy and normalization variants.
+Finite integration endpoints are not labeled exact equilibria when their residual update has not vanished.
+\ledger{31, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 160--187.
+
+For population normalization over root action samples only,
+\[
+s(p)=\gamma|D|\sqrt{p(1-p)}.
+\]
+With stabilizer \(\varepsilon_n>0\),
+\[
+\dot\theta
+=p(1-p)
+\left[
+\frac{\gamma D}{s(p)+\varepsilon_n}
+-\tau\theta
+\right].
+\]
+Without entropy, normalization preserves the sign threshold.
+With fixed entropy coefficient, it changes the relative strength of the task update.
+In the formal zero-stabilizer limit, the magnitude of nonzero \(D\) cancels.
+Finite-batch normalization of noisy advantages can introduce further effects through its random denominator.
+These conclusions are specific to the stated normalization model.
+\ledger{37, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 189--197.
+
+\paragraph{Finite queries can change normalized equilibria.}
+At branch \(a\), draw \(K\) independent judgments with preference probability \(q_a\), use their empirical win share as the potential, and reuse it in both adjacent differences.
+Returns still telescope exactly.
+Let
+\[
+b=\rho(1-\lambda),
+\qquad
+D=\lambda\Delta R+b(q_1-q_0).
+\]
+The root advantage variance is
+\[
+\begin{aligned}
+\operatorname{Var}(\widehat A_0)
+=\gamma^2\Bigg[
+&D^2p(1-p)\\
+&+\frac{b^2}{K}
+\big\{(1-p)q_0(1-q_0)+pq_1(1-q_1)\big\}
+\Bigg].
+\end{aligned}
+\]
+Query count changes this variance but not the raw expected actor field.
+Population advantage normalization with a fixed entropy coefficient converts that variance change into a changed stationary policy.
+
+For the deliberately misaligned comparator
+\[
+q_0=0.9,\quad q_1=0.1,\quad
+\Delta R=0.04,\quad \gamma=0.99,
+\]
+with \(\lambda=0.95\), \(\rho=1\), and \(\tau=0.1\), the better-action equilibrium probabilities are approximately
+\[
+\begin{array}{c|rrrrr}
+K&1&2&4&8&16\\
+\hline
+p_\Phi&0.209&0.132&0.0653&0.0226&0.00482
+\end{array}
+\]
+The root and derivative checks establish unique stable roots for these parameter choices.
+This is increasingly precise estimation of the same wrong latent preference, not improving accuracy about the correct task target and not a result about P's experiments.
+\ledger{37, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 199--214, and
+\url{ada/round4_query_noise_01.log}.
+
+A population-level control divides both the raw reward gradient and an entropy term with fixed unnormalized coefficient by the same standard deviation.
+Equivalently, after standardizing advantages, use entropy coefficient
+\[
+\frac{\tau_0}{s+\varepsilon_n}.
+\]
+The field is then a positive scalar multiple of the unnormalized field, restoring its fixed points in this example.
+It removes the normalization/entropy confound, not the misaligned-comparator bias.
+It does not establish identical finite-batch PPO trajectories.
+\ledger{44}
+
+\paragraph{What conditional performance bounds follow.}
+A generic residual-to-value bound requires a policy-improvement premise.
+In a finite fully observed discounted MDP, suppose a policy satisfies, at every state,
+\[
+\max_a
+\left[
+A^\pi(s,a)+B_u(s,a)
+-\mathbb E_{a'\sim\pi}B_u(s,a')
+\right]
+\leq\epsilon_{\mathrm{opt}}.
+\]
+This statewise approximate-greediness condition does not follow from a small arbitrary neural gradient.
+If \(\|u\|_\infty\leq E\), the action oscillation of \(B_u\) is at most \(2\alpha_\lambda E\).
+The performance-difference lemma gives
+\[
+J^\star-J(\pi)
+\leq
+\frac{\epsilon_{\mathrm{opt}}+2\alpha_\lambda E}{1-\gamma}.
+\]
+The projection calculation bounds additional shaping discrepancy, but the unshaped critic's approximation error is still needed for this value bound.
+This argument overlaps established biased-advantage analysis.
+An oracle assumption \(\rho\Phi^\star=V^\pi\) would make the shaped true value zero and permit an error-sensitive specialization, but that policy-dependent value target is not P's relative-contribution or Shapley target.
+\ledger{33, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 216--240.
+
+The two-step family admits a more concrete additive envelope.
+Assume \(R_a,\widehat\phi_a\in[0,1]\), \(\lambda>0\), no entropy, and the exact expected-update limit.
+Declare the task-aligned target \(\phi_a^\star=R_a\) and
+\[
+\eta=\max_a|\widehat\phi_a-R_a|,
+\qquad b=\rho(1-\lambda).
+\]
+Then
+\[
+J^\star-J(\pi_\infty)
+\leq
+\gamma\min\left\{
+1,\frac b\lambda,\frac{2b\eta}{\lambda+b}
+\right\}.
+\]
+Indeed, a wrong limiting action requires \(D\leq0\).
+Arbitrary bounded predictions imply \(\lambda\Delta R\leq b\).
+Writing
+\[
+\Delta\widehat\phi
+=\Delta R+\delta_1-\delta_0,
+\qquad
+|\delta_1-\delta_0|\leq2\eta,
+\]
+gives \((\lambda+b)\Delta R\leq2b\eta\).
+Ties also satisfy the envelope.
+Exact predictions give zero loss; reversed extreme potentials approach the arbitrary-prediction threshold.
+The recorded random-parameter check covers 100,000 cases in
+\url{ada/round4_bound_check_01.log}.
+
+This is a restricted additive consistency/error/robustness statement, not a finite-sample or MARS-RA guarantee.
+The unshaped expected learner is already asymptotically optimal for every positive \(\lambda\), so shaping offers no asymptotic consistency improvement to trade for robustness in this family.
+\ledger{44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 242--257.
+
+\paragraph{Horizon prevents a universal trust coefficient.}
+Delay the same branch reward to transition \(H-1\), keep branch potential \(\phi_a\) at every intermediate state, and let the critic see time but not branch identity.
+The root GAE action gap at the projected fixed point is
+\[
+\begin{aligned}
+D_H={}&(\gamma\lambda)^{H-1}\Delta R\\
+&+\rho\gamma(1-\lambda)
+\sum_{\ell=0}^{H-2}(\gamma\lambda)^\ell\Delta\phi.
+\end{aligned}
+\]
+The true return gap remains \(\gamma^{H-1}\Delta R\).
+For finite-horizon \(\gamma=1\),
+\[
+D_H
+=\lambda^{H-1}\Delta R
++\rho(1-\lambda^{H-1})\Delta\phi.
+\]
+For every \(\rho>0\) and \(0<\lambda<1\), a sufficiently long finite delay makes reversed bounded guidance select the worse action even at \(\Delta R=1\).
+The identical unshaped expected learner retains positive drift toward the better action.
+Consequently, no nontrivial loss bound uniform over all finite horizons follows from a small product \(\rho(1-\lambda)\) alone.
+
+At \(H=24\), \(\gamma=0.99\), \(\lambda=0.95\), and \(\rho=1\), rewards \(-1,1\) and reversed unit-range potentials already reverse the GAE gap.
+This separate delayed-choice example shares the neural task's horizon and reward scale but is not that simulator.
+The rational checks cover 450 cases in
+\url{ada/round4_delayed_01.log}.
+The mechanism is an explicit application of established GAE horizon bias.
+\ledger{39, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 259--280.
+
+\paragraph{Longer neural controls.}
+The fourth round retains the run-of-six task, horizon 24, sparse rewards, turnover, networks, optimizers, and coherent global-time accounting.
+It adds normalization switches, potential inputs to the blind critic, and shifted-head controls.
+Long conditions use 1,600 updates and 32 seeds each.
+The sensitivity matrix uses 320 updates and 32 seeds per condition, with
+\[
+\lambda\in\{0,0.5,0.8,0.9,0.95,0.99,1\},
+\qquad
+\rho\in\{0.25,1,4\},
+\]
+plus matched unshaped baselines.
+The matrix is not a complete factorial design.
+Uniform and informative two-query long controls separate fresh sampling noise from the activity-dependent mean.
+This remains a custom diagnostic, not XuanCe, an established external MARL benchmark, or a MARS-RA replication.
+\ledger{34, 35, 38, 40, 43}
+See \url{ada/round4_algorithmic_invariance.md}, lines 298--308.
+
+The completed long results are as follows.
+All shaped conditions use unit strength.
+Uncertainty is standard error across seed-level evaluations; each evaluation uses 2,048 fresh episodes.
+\[
+\begin{array}{lcr}
+\text{Condition}&\lambda&\text{Final success}\\
+\hline
+\text{Unshaped, normalized}&0.95&0.999664\pm0.000156\\
+\text{Exact, normalized}&0.95&1.000000\pm0.000000\\
+\text{Reversed, normalized}&0.95&0.000000\pm0.000000\\
+\text{Fair random, normalized}&0.95&0.997711\pm0.000568\\
+\text{Unshaped, normalized}&1&0.998764\pm0.000288\\
+\text{Reversed, normalized}&1&0.997513\pm0.001256\\
+\text{Unshaped, unnormalized}&0.95&0.994781\pm0.000429\\
+\text{Reversed, unnormalized}&0.95&0.000000\pm0.000000\\
+\text{Reversed, shifted head}&0.95&0.999695\pm0.000075\\
+\text{Reversed, potential input}&0.95&0.813614\pm0.057986
+\end{array}
+\]
+All conditions other than the reversed blind conditions and potential-input condition have 32 of 32 seeds above \(0.9\) success.
+The reversed blind conditions have none.
+The potential-input condition has 24 of 32; its remaining eight seeds lie between \(0.24365\) and \(0.26953\), while its median is one.
+A mean alone conceals this split.
+An empirical zero is not a proof of exactly zero true success probability.
+\ledger{34, 38, 40, 43}
+See \url{ada/round4_algorithmic_invariance.md}, lines 328--349.
+
+During updates 81--160, mean training success is
+\[
+\begin{aligned}
+\text{Unshaped}:&\quad 0.43896\pm0.04843,\\
+\text{Exact}:&\quad 0.73863\pm0.04773,\\
+\text{Fair random}:&\quad 0.27057\pm0.02152.
+\end{aligned}
+\]
+All later reach near-perfect success, while reversed guidance remains unsuccessful at the long budget.
+Normalization is therefore not necessary for the reversed-guidance failure.
+These are persistent finite-budget observations, not a proof of neural asymptotic failure.
+\ledger{38, 41, 43}
+
+The uniform long control reaches \(0.9989\pm0.0004\), and informative two-query guidance reaches one in all 32 runs.
+Their paired differences from the unshaped long baseline are
+\[
+-0.000809\pm0.000381,
+\qquad
+0.000336\pm0.000156,
+\]
+respectively.
+Fair-random minus uniform final success is
+\[
+-0.001144\pm0.000625.
+\]
+The informative two-query versus exact early-window paired difference is \(0.00580\pm0.03288\).
+Thus this diagnostic does not establish a clear speed advantage of exact over two-query predictions.
+This is not an equivalence claim and does not contradict measurements on P's different benchmarks.
+\ledger{35, 43, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 351--378.
+
+\paragraph{Sensitivity and the limits of the long-run conclusion.}
+At 320 updates, the mean-success sensitivity matrix is
+\[
+\begin{array}{c|rrrr}
+&\text{Unshaped}&\rho=0.25&\rho=1&\rho=4\\
+\hline
+\lambda=0&0.0636&0&0&0\\
+0.5&0.5005&0&0&0\\
+0.8&0.6504&0&0&0\\
+0.9&0.8107&0.0214&0&0\\
+0.95&0.9108&0.2769&0&0\\
+0.99&0.9239&0.9031&0.6896&0.0556\\
+1&0.9500&0.9172&0.8593&0.6509
+\end{array}
+\]
+The shaped columns use reversed guidance.
+All standard errors, seed values, and success counts are retained in
+\url{ada/round4_summary_final_01.json}
+and
+\url{ada/round4_summary_final_01.csv}.
+For example, at \(\lambda=0.99\), the unit-strength result is \(0.6896\pm0.0630\), strength four gives \(0.0556\pm0.0153\), and the baseline is \(0.9239\pm0.0391\).
+This supports a graded interaction rather than a universal cutoff.
+
+At \(\lambda=1\), strength four still gives \(0.6509\pm0.0651\) versus \(0.9500\pm0.0325\) unshaped.
+That finite-training harm cannot be attributed to the future projected-GAE bias term, which vanishes at \(\lambda=1\).
+Unit-strength reversed guidance improves from about \(0.859\) at 320 updates to \(0.9975\) at 1,600.
+No corresponding long run was performed for strength four or every previously harmful exact-guidance condition.
+The evidence does not classify all harms as either transient or permanent.
+\ledger{30, 43, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 355--380.
+
+\paragraph{Exact frozen-policy checks in the neural task.}
+Finite-state dynamic programming separates sampling noise and critic lag from the information restriction.
+The analysis enumerates progress, cooldown, cue, and time, and computes occupancy, value, GAE moments, and actor score updates.
+A projected table critic has the same information as the blind neural critic: time, own activity, and identity.
+It removes fitting error within that information class.
+The calculation compares uniform actor-slot weighting with discounted-objective weighting and also computes population normalization and entropy.
+These are local expected fields, not the full multi-epoch PPO map.
+\ledger{36, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 310--316.
+
+The initial failed-policy calculation suffered catastrophic cancellation around a constant negative reward.
+Its gradient cosines are invalid and remain preserved as diagnostic history in
+\url{ada/round4_dp_reversed_01.json}.
+The corrected calculation removes the action-independent terminal baseline analytically.
+Final outputs are
+\url{ada/round4_dp_reversed_03.json}
+and
+\url{ada/round4_dp_unshaped_02.json}.
+Probability conservation, the random-policy success probability \(0.0152964502\), and directional finite differences pass.
+The worst relative finite-difference discrepancy is \(1.46\times10^{-5}\), on the extremely small failed-policy objective.
+\ledger{36, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 318--320, and
+\url{ada/check_round4_dp_01.log}.
+
+At the failed actor, exact success is \(1.1588\times10^{-20}\).
+The projected reversed-advice raw actor field has norm \(4.3260\times10^{-4}\) and cosine \(-0.5057\) with the discounted task gradient.
+The learned critic produces essentially the same field.
+The projected unshaped field instead has norm \(2.8731\times10^{-20}\) and positive alignment.
+Better fitting within the blind information class therefore does not remove the harmful raw direction.
+
+With population normalization and entropy coefficient \(0.01\), the remaining learned-critic field has norm \(1.9390\times10^{-4}\), about \(3.96\%\) of the sum of opposing reward and entropy gradient norms.
+It is near cancellation, not zero, and its remaining direction has positive task-gradient alignment.
+No neural stationary-point certificate follows.
+\ledger{36, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 322--324.
+
+At the successful frozen actor, exact success is \(0.99998846\).
+Introducing reversed advice with the projected blind critic produces raw field norm \(0.03894\) and cosine \(-0.9460\) against the discounted task gradient.
+Population normalization plus entropy keeps the direction harmful, with cosine about \(-0.9480\).
+The unshaped field remains aligned.
+This demonstrates an adverse local update away from a successful policy without relying on the failed policy's vanishing task signal.
+At \(\lambda=1\), the raw expected task-gradient contribution is invariant as the algebra predicts.
+\ledger{36, 44}
+See \url{ada/round4_algorithmic_invariance.md}, line 326.
+
+\paragraph{Numerical equivalence and verification.}
+The analytic shifted-head implementation rearranges algebraically canceling floating-point operations.
+Its traces agree through the original 160-update window, but some 1,600-update traces diverge after approximately 200--600 updates.
+This qualifies any claim of arbitrarily long bitwise agreement without changing the exact-arithmetic identity.
+
+The canonical control in
+\url{ada/round4_canonical.py}
+performs training directly in original-value coordinates.
+All eight additional canonical runs reproduce the corresponding unshaped success observations and final evaluations across 1,600 updates.
+The stronger recorded check also matches advantage standard deviation and value loss.
+These are equivalence checks, not new independent effect-estimation seeds.
+\ledger{38, 40, 43}
+See \url{ada/round4_algorithmic_invariance.md}, line 351, and
+\url{ada/round4_canonical_check_02.log}.
+
+The fourth round completed 1,216 main trials and 64 extra controls, all declared conditions at 32 seeds.
+The verification checks configuration, seed, horizon, update count, finite diagnostics, per-trial logs, and return/GAE identities.
+Maximum errors are
+\[
+\begin{aligned}
+\text{GAE identity}:&\quad 5.9952\times10^{-15},\\
+\text{Return telescoping}:&\quad 7.1054\times10^{-15}.
+\end{aligned}
+\]
+The record is
+\url{ada/round4_verify_01.log};
+versions and hashes are in
+\url{ada/round4_manifest_01.json}.
+Checkpoint reproductions and canonical checks are not counted as additional independent statistical seeds.
+Incomplete snapshots and invalid initial numerical outputs are retained with their qualifications; the complete summary supersedes interim summaries.
+\ledger{43, 44}
+See \url{ada/round4_algorithmic_invariance.md}, lines 398--402.
+
+\paragraph{Fourth-round outside sources and novelty limits.}
+The additional primary sources substantially narrow the contribution.
+\ledger{33, 44}
+\begin{itemize}
+\item Schulman et al.,
+\url{https://arxiv.org/abs/1506.02438},
+already gives the shaped-reward interpretation of GAE and its effective-horizon bias.
+The new residual derivation specializes that mechanism.
+\item Bertsekas,
+\url{https://arxiv.org/abs/1910.02426},
+explicitly distinguishes invariance of exact optimal policies from changes in suboptimal policies produced by approximate TD, SARSA, and aggregation.
+The checked pooled text is
+\url{sources/1910.02426.txt}, lines 180--200.
+\item Li, Xie, and Lu, \emph{Difference Advantage Estimation for Multi-Agent Policy Gradients},
+\url{https://proceedings.mlr.press/v162/li22w.html},
+Theorem A.6 and Corollary A.7, already connects credit assignment, biased advantages, stationary policies, and performance-difference bounds.
+\item Xiao, Ramasubramanian, and Poovendran,
+\url{https://arxiv.org/abs/2103.15941},
+bounds the original-game policy-gradient norm at a shaped equilibrium using critic approximation error and a score-function bound.
+The inspected source passage is lines 460--511.
+This is close prior art for approximation-dependent stationarity, not a theorem that shaped and unshaped equilibrium policies coincide.
+\item Lo et al.,
+\url{https://www.jmlr.org/papers/v25/24-0040.html},
+Appendix C.1, states linear-approximation invariance when the potential belongs to the same feature class.
+Earlier pooled versions
+\url{sources/2206.02902.tex}
+and
+\url{sources/2406.01562.tex}
+must not be described as containing that exact final appendix.
+\item M\"uller and Kudenko,
+\url{https://arxiv.org/abs/2502.01307}
+and
+\url{https://arxiv.org/abs/2606.27180},
+already study initialization, offsets, and noisy VLM preference potentials.
+A counterexample to an unrestricted claim about an approximate learner does not invalidate objective-invariance proofs.
+\item Bahrpeyma,
+\url{https://arxiv.org/abs/2608.08158},
+also discusses limits of applying invariance theorems to approximate deep-RL optimization.
+The inspected source locations are lines 353, 393, 478, and 1374--1376.
+\end{itemize}
+
+The source and search record is
+\url{ada/round4_algorithmic_invariance.md}, lines 282--296.
+Queries targeted PBRS, GAE, function approximation, projection, actor--critic bias, and suboptimal policies.
+Failed searches are not novelty evidence.
+Pool resolution for DAE and initially for \emph{Bootstrapped Reward Shaping} encountered Semantic Scholar HTTP 429 errors.
+DAE was checked through its publisher page and web-accessible text without saving a separate agent-folder paper copy.
+\emph{Bootstrapped Reward Shaping} was subsequently pooled as
+\url{sources/2501.00989.tex}; its main contraction argument concerns an evolving value-derived potential rather than this fixed-potential projection example.
+No new paper retrieval was needed for the present consolidation.
+\ledger{33, 44}
+
+\paragraph{Resolution of review 28.}
+Entry 28 asked whether the reversed blind-critic failure could be a changed update rather than a slow transient.
+The exact aliased-critic construction answers that question positively within its model, including joint actor/critic stability, entropy, normalization, and comparison with the identical unshaped learner.
+The horizon extension shows why a universal robustness coefficient based only on \(\rho(1-\lambda)\) is insufficient.
+The restricted additive envelope makes the benchmark explicit but offers no asymptotic improvement over its already optimal unshaped baseline.
+\ledger{28, 31, 37, 39, 44}
+
+The longer neural experiments show that reversed guidance remains harmful through ten times the original budget, with and without normalization.
+Fresh fair noise, uniform guidance, and informative two-query guidance recover near-perfect success.
+The projected finite-state calculation corroborates a harmful local field that persists after removing critic fitting error.
+However, the neural entropy-adjusted field is not certified stationary, and no infinite-time PPO failure is proved.
+The earlier claim that the failure was merely transient is withdrawn; the opposite unrestricted asymptotic claim is also unsupported.
+\ledger{30, 34, 35, 36, 38, 40, 43, 44}
+
+The review's request to distinguish mean-zero noise from hidden information required a correction: conditional mean zero given the critic input is too weak.
+The analysis now uses full pre-action conditioning for a variance-only sufficient condition and explicitly separates activity-dependent mean potentials from sampling innovations.
+The optional external MARL benchmark was not run in round four.
+No actual MARS-RA critic restriction, implementation defect, or benchmark consequence was established.
+\ledger{28, 32, 35, 44}
+
+\paragraph{What remained open after round four.}
+The original proposal to relabel P's estimator result as a Q-style algorithmic guarantee should be rejected as a publication claim.
+The supported replacement is an attribution study of learned potential shaping under approximate critics.
+Correct accounting, potential-estimation quality, critic compatibility, action correlation, horizon, query noise, advantage normalization, and entropy scale are distinct parts of that interface.
+A scalar comparator-accuracy rate does not characterize them.
+\ledger{42, 44}
+
+The broad objective-versus-approximation distinction and the principal analytical tools are already established.
+The projection identity, explicit threshold, delayed-choice example, and additive toy envelope are useful explanatory calculations, not sufficient evidence of a new theoretical contribution.
+The shifted-head control removes helpful shaping effects as well as harmful ones; it is a diagnostic that reproduces a baseline, not a new algorithm guaranteeing improvement.
+\ledger{33, 41, 44}
+
+P's permanent-coordinate alignment, singleton behavior, estimator regularization, potential reuse, reward and GAE masks, bootstrap handling, and critic access to comparison information remain unknown.
+At the end of round four, no MARS-RA training implementation had been located, no standard external MARL benchmark had been tested, and the inspected adjacent-code commits had not been linked conclusively to published experiments.
+The source audit remains a convenience sample with synthetic-input findings and no measured benchmark consequence.
+The full strength sweep was not extended to 1,600 updates, and the long lambda-one control does not resolve every earlier short-budget harm.
+These limitations left the publication case thin.
+\ledger{26, 28, 43, 44}
+
+\paragraph{The next step proposed after round four.}
+The next discriminating question was whether measured critic-coordinate mismatch explains predictor-quality or query-budget effects in an actual learned-shaping trainer after accounting and optimizer-scale controls.
+The proposed test uses an available target implementation, preferably MARS-RA if obtained, and begins with a frozen checkpoint and a small fixed set of trajectories and stored comparison outputs.
+First apply the existing boundary and return-offset checks, retaining clean outcomes.
+For two agents, verify whether the implemented potential agrees with empirical win shares under its stated tie and regularization conventions.
+\ledger{13, 26, 44}
+
+On those same data, compare raw and normalized actor updates under the original critic, a matched shifted critic, and an appropriately fitted critic with the necessary potential information.
+Keep entropy scaling explicit and reuse the same potential realizations.
+Where feasible, estimate task-gradient alignment or an independent task-return directional effect.
+Then perform a short paired continuation from the same checkpoint and evaluate the unshaped objective.
+This tests whether the diagnosed update difference predicts an actual training consequence without new LMM calls.
+\ledger{36, 37, 44}
+
+A consequential result on a target trainer or standard benchmark could support an empirical attribution paper.
+A clean or negligible result would leave the existing cautions and exact examples intact while weakening that publication route.
+Neither outcome would establish prevalence or a general consistency--robustness frontier.
+Entry 45 marked readiness to consolidate this limited result, not publication readiness.
+\ledger{44, 45}
+
+\paragraph{Round-five addition: the latest review and transfer question.}
+The latest verifier review is entry 46, not entry 28.
+It accepted the preceding qualified record but returned \emph{ITERATE}, rating the publication case \([rating withheld]\).
+The unresolved test was whether harm survived an ordinary critic restriction, graded label accuracy, and a standard trainer and task.
+It explicitly allowed a clean or small result and rejected repeating the same target merely to obtain stronger harm.
+Entries 47--60 report the bounded response.
+The preceding fourth-round assessments are historical: a standard external environment has now been tested, but MARS-RA itself has not.
+\ledger{46, 47, 58, 59, 60}
+The complete account is
+\url{ada/round5_standard_transfer.md}, lines 3--17 and 100--124.
+
+\paragraph{Standard trainer, task, and objective.}
+The experiment executes the unchanged
+\texttt{R\_MAPPO}, \texttt{R\_MAPPOPolicy}, actor, critic, and
+\texttt{SeparatedReplayBuffer} from the already audited public MAPPO commit.
+A rollout adapter supplies rewards and the explicitly named potential-input and shifted-critic controls.
+Downloaded-source hashes are checked; no native trainer implementation is replaced.
+The environment is MPE2 1.1.1
+\texttt{simple\_reference\_v3}, with native discrete actions, observations, dynamics, and distance rewards, using its supported shared-reward setting \texttt{local\_ratio=0}.
+Each agent observes its teammate's target, so its own target must be communicated.
+A joint-state comparator can use information absent directly from a local observation, although learned communication may reveal it.
+\ledger{48, 58}
+See \url{ada/round5_standard_transfer.md}, lines 11--15.
+
+Separate per-agent actors and critics use the implementation's supported non-sharing configuration.
+Local critics receive 21-dimensional native observations; centralized critics receive their 42-dimensional concatenation.
+This avoids requiring identical shared critic inputs to predict different per-agent shaped values.
+Neither critic receives time explicitly, and neither is certified to represent the exact finite-horizon value.
+The networks have two hidden layers of width 64; native clipping, advantage standardization, optimizer, and value-loss machinery remain.
+\ledger{48, 49, 58}
+See \url{ada/round5_standard_transfer.md}, lines 15 and 53.
+
+The declared objective is discounted return over 25 steps, with \(\gamma=0.99\).
+The native time-limit truncation is deliberately treated as the terminal boundary of that finite-horizon problem, with zero value and potential.
+This is not a continuing-task bootstrap test.
+The predeclared primary display metric is native undiscounted episode return; discounted return was also recorded from the start.
+PBRS invariance concerns the latter objective.
+There is no turnover, and rewards are dense.
+Thus this experiment isolates a standard learning interface; it does not reproduce P's sparse embodied benchmark.
+\ledger{48, 57, 59}
+See \url{ada/round5_standard_transfer.md}, lines 17 and 49--53.
+
+\paragraph{Graded labels and reward routing.}
+Let \(d_i(s)\) be agent \(i\)'s distance to its own true goal and
+\[
+g(s)=\mathbf 1\{d_0(s)<d_1(s)\}.
+\]
+Each independent label equals \(g(s)\) with probability \(a\) and is flipped otherwise.
+For \(K\) queries, the potential is
+\[
+\Phi(s)=(W/K,1-W/K).
+\]
+Exact distance ties receive \((1/2,1/2)\).
+This directly implements the two-agent BT normalized estimate or its boundary limit, without fitting divergent logits.
+Accuracy is agreement with the declared distance ordering, not Shapley accuracy or verified semantic contribution.
+Away from ties,
+\[
+\begin{aligned}
+\mathbb E[\Phi^0(s)]
+ &=\frac12+(2a-1)\left(g(s)-\frac12\right),\\
+\operatorname{Var}(\Phi^0(s))
+ &=\frac{a(1-a)}K.
+\end{aligned}
+\]
+Accuracy therefore changes the conditional mean's orientation and magnitude; query count changes sampling variance.
+This is not a policy-performance reduction.
+Independent simulated flips do not establish independence or absence of position bias in actual LMM queries.
+No LMM calls or inference-cost benefit are claimed.
+\ledger{49, 58, 59}
+See \url{ada/round5_standard_transfer.md}, lines 19--33.
+
+Every potential realization is stored and reused at both adjacent endpoints.
+All agents retain every shaping transition, and the terminal potential is zero.
+Initial states and comparison draws are policy independent, so
+\[
+\sum_{t=0}^{H-1}\gamma^t
+(r_t^{\mathrm{sh},i}-r_t)
+=-\rho\Phi_0^i
+\]
+holds trajectory by trajectory.
+The identity is checked in float64 before native float32 storage.
+\ledger{48, 58}
+See \url{ada/round5_standard_transfer.md}, lines 35--41.
+
+For this fixed team, the simplex normalization gives
+\[
+\sum_i\rho F_t^i=
+\begin{cases}
+\rho(\gamma-1),&t<H-1,\\
+-\rho,&t=H-1.
+\end{cases}
+\]
+Averaging the shaped rewards into a common team reward would therefore erase comparator information before return estimation.
+The experiment preserves per-agent rewards and separate buffers.
+This elementary routing diagnostic neither alleges that P averages its rewards nor supplies a new theorem.
+The notation includes \(\rho\) explicitly, correcting entry 53.
+\ledger{53, 54, 58}
+See \url{ada/round5_standard_transfer.md}, line 43.
+
+\paragraph{Declared matrix and attribution controls.}
+Before main outcomes, the declaration fixed 42 conditions, eight seeds each, and 160,000 environment steps per trial: 400 updates of 16 complete episodes.
+Eight selected long conditions use 800,000 steps, or 2,000 updates.
+The selected matrix crosses local and centralized critics with accuracy levels
+\[
+a\in\{0,0.25,0.5,0.75,1\},
+\]
+query counts \(K\in\{2,16\}\), GAE parameters \(\lambda\in\{0.95,1\}\), and weights \(\rho\in\{0,1,4\}\).
+It is not a complete factorial design.
+Controls add potential information, use an analytic shifted head, or remove entropy.
+A separately declared supplement adds matching unshaped potential-input critics, before inspecting the shaped input-control outcomes.
+This distinguishes additional critic information from a shaping-specific repair.
+\ledger{49, 51, 58}
+See \url{ada/round5_declaration.json} and
+\url{ada/round5_standard_transfer.md}, lines 45--55.
+
+Each final evaluation uses 256 newly seeded stochastic-policy episodes.
+Native and discounted returns are retained.
+Final distance and the fraction ending with both agents within \(0.25\) of their goals are secondary diagnostics; the latter is not a native success criterion.
+Comparisons pair training seeds against matching critic, lambda, and entropy baselines.
+Intervals across eight seeds are descriptive and unadjusted for multiple comparisons.
+Negative native returns are compared additively, not converted into competitive ratios.
+Three pilots remain separate from the main results.
+\ledger{49, 58, 59}
+See \url{ada/round5_standard_transfer.md}, lines 47--53.
+
+Initial, middle, and final checkpoints compare raw and standardized actor estimates with sampled discounted task-return gradients.
+Separate frozen-policy diagnostics collect 512 fresh episodes, fit on 384, and evaluate on 128 held-out episodes.
+They compare native critics, shaped refits, potential-input refits, and the analytic matched shift, checking the residual-to-GAE identity for
+\[
+h=\widehat V^{\mathrm{sh}}+\rho\Phi-\widehat V^0.
+\]
+These finite Monte Carlo fits are not certified projected fixed points.
+Missing time information, fitting error, and policy-dependent coverage remain.
+Native mismatch also exists without shaping, so its entire magnitude cannot be assigned to shaping.
+Sample cosines are not exact population gradients or causal mediation estimates.
+\ledger{58, 59}
+See \url{ada/round5_standard_transfer.md}, lines 57--67.
+
+\paragraph{Short-budget results.}
+At 160,000 steps, the local unshaped native return is \(-18.501\).
+With unit weight, the paired accuracy-sweep differences are
+\[
+\begin{array}{cr}
+a&\text{Native-return difference}\\
+\hline
+0&-0.176\pm0.094\\
+0.25&-0.032\pm0.070\\
+0.5&+0.029\pm0.110\\
+0.75&+0.113\pm0.097\\
+1&+0.093\pm0.076
+\end{array}
+\]
+Uncertainty is standard error across paired seeds.
+These small effects have overlapping uncertainty.
+The unit-weight centralized wrong-label difference is \(-0.042\pm0.162\).
+\ledger{50, 58}
+See \url{ada/round5_standard_transfer.md}, line 73, and
+\url{ada/round5_summary_final_01.json}.
+
+At weight four, always-wrong labels give native-return differences
+\[
+\begin{aligned}
+\text{Local}:&\quad -0.338\pm0.140,\\
+\text{Centralized}:&\quad -0.600\pm0.201.
+\end{aligned}
+\]
+Discounted differences are respectively \(-0.296\pm0.121\) and \(-0.525\pm0.174\).
+Exact labels at the same weight give \(-0.011\pm0.033\) and \(+0.009\pm0.195\).
+Removing entropy leaves wrong-label losses \(-0.529\pm0.137\) locally and \(-0.623\pm0.188\) centrally.
+Fixed entropy is therefore not their sole source.
+At \(\lambda=1\), weight-four wrong-label differences become \(+0.031\pm0.186\) and \(+0.080\pm0.135\), but the corresponding unshaped baselines themselves perform worse at this budget.
+This does not recommend lambda one as an overall improvement.
+\ledger{56, 58}
+See \url{ada/round5_standard_transfer.md}, lines 73--75.
+
+\paragraph{The complete long comparison.}
+At 800,000 steps, local and centralized unshaped native returns are respectively
+\[
+-17.792\pm0.077,\qquad -17.692\pm0.099.
+\]
+The full long shaped comparison is
+\[
+\begin{array}{llr}
+\text{Critic}&\text{Labels and weight}&\text{Native return}\\
+\hline
+\text{Local}&\text{Wrong},\ 1&-17.654\pm0.101\\
+\text{Local}&\text{Exact},\ 1&-17.731\pm0.114\\
+\text{Local}&\text{Wrong},\ 4&-17.836\pm0.105\\
+\text{Central}&\text{Wrong},\ 1&-17.824\pm0.120\\
+\text{Central}&\text{Exact},\ 1&-17.759\pm0.046\\
+\text{Central}&\text{Wrong},\ 4&-18.020\pm0.133
+\end{array}
+\]
+Paired differences against matching unshaped baselines are
+\[
+\begin{array}{llrr}
+&&\Delta J_{\rm native}&\Delta J_{\rm discounted}\\
+\hline
+\text{Local}&\text{Wrong},\ 1
+ &+0.138\pm0.082&+0.119\pm0.070\\
+\text{Local}&\text{Exact},\ 1
+ &+0.061\pm0.115&+0.053\pm0.100\\
+\text{Local}&\text{Wrong},\ 4
+ &-0.044\pm0.077&-0.042\pm0.066\\
+\text{Central}&\text{Wrong},\ 1
+ &-0.132\pm0.097&-0.116\pm0.084\\
+\text{Central}&\text{Exact},\ 1
+ &-0.067\pm0.073&-0.060\pm0.063\\
+\text{Central}&\text{Wrong},\ 4
+ &-0.327\pm0.067&-0.284\pm0.057
+\end{array}
+\]
+All entries retain eight seeds.
+The local short-budget loss largely disappears.
+The centralized weight-four loss remains modest, with approximate unadjusted paired 95\% intervals
+\[
+\begin{aligned}
+\Delta J_{\rm native}&\in[-0.485,-0.170],\\
+\Delta J_{\rm discounted}&\in[-0.419,-0.149].
+\end{aligned}
+\]
+This is a finite-budget loss, not a certified stationary failure.
+It does not reproduce the earlier catastrophic blind-critic result or support the simple explanation that local information is necessarily the damaging restriction.
+The long matrix does not cross every repair, lambda setting, or exact-label weight-four control.
+\ledger{52, 55, 58, 59}
+See \url{ada/round5_standard_transfer.md}, lines 77--90.
+
+\paragraph{What the controls explain and leave unidentified.}
+At the short budget, potential input improves the centralized wrong-label weight-four condition by \(+0.439\pm0.166\), but its difference from the matching unshaped input baseline remains \(-0.186\pm0.120\).
+The local input intervention gives \(-0.004\pm0.187\) relative to the shaped ordinary critic; it also changes the unshaped baseline by \(-0.220\pm0.119\).
+Potential input alone therefore does not identify a shaping-specific repair.
+Analytic shifted-head training differs from unshaped training by \(-0.067\pm0.124\) locally and \(-0.114\pm0.141\) centrally.
+The native per-buffer identity passes, but the float32 optimization traces are not bitwise identical.
+This is consistent with the preceding numerical qualification.
+\ledger{51, 56, 58}
+See \url{ada/round5_standard_transfer.md}, line 92.
+
+Increasing queries from two to sixteen gives paired differences
+\[
+\begin{array}{crr}
+a&\text{Local}&\text{Centralized}\\
+\hline
+0.25&+0.006\pm0.087&-0.036\pm0.101\\
+0.75&-0.067\pm0.068&+0.076\pm0.092
+\end{array}
+\]
+There is no clear benefit in these selected sweeps.
+This neither contradicts P's different experiment nor establishes query-budget invariance.
+\ledger{56, 58}
+See \url{ada/round5_standard_transfer.md}, line 94.
+
+Across the 16 selected frozen condition/budget groups, mean native-critic raw alignment with the held-out task-gradient estimate remains positive, approximately \(0.684\) to \(0.898\).
+At the long centralized weight-four condition, native alignment is \(0.684\), versus \(0.827\) for the potential-input refit.
+These are averages of per-agent sample cosines.
+Local held-out potential-regression MSE is approximately \(0.260\)--\(0.279\), worse than the near-\(0.25\) constant baseline; centralized MSE is approximately \(0.220\)--\(0.233\).
+The fits therefore do not certify irreducible information loss, a projected fixed point, or the cause of the surviving return gap.
+The strongly reversed toy field did not transfer to these sample diagnostics.
+\ledger{58, 59}
+See \url{ada/round5_standard_transfer.md}, lines 96--98.
+
+\paragraph{Completion, verification, and outside sources.}
+All 416 training trials completed: 336 main, 64 long, and 16 supplemental input baselines.
+All 128 frozen diagnostics completed, with no failed trials in these groups and every declared condition retained.
+The maximum errors are
+\[
+\begin{aligned}
+\text{Trajectory return offset}&<4.0\times10^{-15},\\
+\text{Native residual identity}&<6.9\times10^{-7},\\
+\text{Native matched shift}&<8.0\times10^{-6},\\
+\text{Frozen identities}&<2.2\times10^{-14}.
+\end{aligned}
+\]
+Native-buffer probes preserve row-permutation invariance exactly and detect an intentionally incorrect shaping discount.
+All eight long configurations reproduce their short-run 400-update training-return prefixes exactly across seeds.
+\ledger{58}
+See \url{ada/round5_verify_01.log}, line 1;
+\url{ada/round5_buffer_probe_01.log};
+\url{ada/round5_checks_01.log}; and
+\url{ada/round5_manifest_01.json}.
+Results and contrasts are in
+\url{ada/round5_summary_final_01.json},
+\url{ada/round5_summary_final_01.csv},
+\url{ada/round5_comparisons_final_01.json}, and
+\url{ada/round5_frozen_summary_final_01.json}.
+The note's verification account is at
+\url{ada/round5_standard_transfer.md}, lines 71 and 98.
+
+Round five reuses the pinned public trainer:
+\url{https://github.com/marlbenchmark/on-policy/tree/de66d7a4b23fac2513f56f96f73b3f5cb96695ac}.
+The new environment source is its official documentation,
+\url{https://mpe2.farama.org/environments/simple_reference/}.
+The flip-label construction follows the already pooled M\"uller--Kudenko source,
+\url{https://arxiv.org/abs/2606.27180},
+LaTeX lines 611--625.
+Its SAC evidence concerns a different learner and setting.
+The standard MAPPO results do not refute its objective-invariance claim.
+No new source retrieval or paper extraction was needed to consolidate this round.
+\ledger{46, 48, 58, 59}
+See \url{ada/round5_standard_transfer.md}, lines 11--13, 31, and 114.
+
+\paragraph{Final disposition and remaining question.}
+Entry 46's bounded transfer request is complete.
+The severe blind-critic failure did not transfer to the ordinary local critic on the selected task.
+Correctly accounted task-misaligned potentials nevertheless produced a modest finite-training loss under the centralized public trainer.
+These results strengthen the empirical attribution lead while limiting the earlier warning's practical scope.
+Neither the null local result nor the remaining centralized gap certifies convergence, optimality, or an asymptotic policy.
+\ledger{55, 58, 59, 60}
+
+The original Q-to-P consistency--robustness relabeling remains unsupported.
+Q's benchmark and interface requirements, at
+\url{inputs/Q.tex}, lines 260--265, 301--333, 1065--1109, and 1228--1230, explain why estimator consistency, potential estimation, payoff invariance, and finite-training performance cannot be substituted for one another.
+The standard experiment is adjacent empirical evidence, not a theorem-level guarantee or measured worst-case frontier.
+No MARS-RA implementation defect is established.
+\ledger{6, 44, 59}
+
+The material remains thin for a publication-level contribution.
+The broad approximation mechanism is prior work; the standard evidence concerns a short dense task with simulated labels; the surviving centralized gap has no certified stationary explanation; and the long experiment does not cross every repair.
+P's wrapper, estimator, boundary conventions, and critic access remain uninspected.
+The source-audit findings still have no measured benchmark consequence and no conclusive link to P's adapted baselines.
+Entries 59--60 record completion and a conservative assessment, not independent acceptance.
+\ledger{46, 58, 59, 60}
+
+\paragraph{The smallest next step after the bounded transfer test.}
+Do not repeat the same transfer target merely to search for a larger adverse result.
+The unresolved practical question is whether these controls explain predictor or query-budget effects in an actual learned-shaping implementation.
+If such an implementation becomes available, the previously specified fixed-checkpoint test remains the smallest discriminating step: reuse stored comparisons and trajectories, verify reward accounting, compare original, matched-shift, and adequately fitted potential-input critics on the same data, and test the diagnosed direction by a short paired continuation evaluated on the unshaped objective.
+Potential-input baselines and entropy scaling must remain matched; a clean or negligible result must be retained.
+\ledger{44, 46, 51, 59}
+
+That experiment could settle a concrete attribution claim for its target trainer.
+It would not by itself establish prevalence, a universal learning-augmented guarantee, or novelty of the protocol.
+Until such consequential evidence and a sharper novelty case exist, the defensible outcome is a qualified research account, not a publication-ready theorem or a MARS-RA replication claim.
+\ledger{58, 59, 60}
+
+\end{document}
