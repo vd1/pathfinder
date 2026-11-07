@@ -47,15 +47,18 @@ def toml(value) -> str:
     return json.dumps(value)
 
 
-def args(cwd, tools: bool, setting=True, network: bool = False, cache=None) -> list[str]:
+def args(cwd, tools: bool, setting=True, network: bool = False, cache=None, packages=None) -> list[str]:
     """The -c arguments of the campaign's profile setting (true, or {"read": [...], "deny": [...]}) for one request;
-    the shared source cache, when given, is writable with tools and readable without."""
+    the shared source cache, when given, is writable with tools and readable without; the package cache, when
+    given, is writable."""
     extra = setting if isinstance(setting, dict) else {}
     engine_root = Path(__file__).resolve().parent.parent
     out = []
     settings = profile(cwd, engine_root, tools, extra.get("read", ()), extra.get("deny", ()), network)
     if cache is not None:
         settings[f"permissions.{NAME}.filesystem"][str(Path(cache).resolve())] = "write" if tools else "read"
+    if packages is not None:
+        settings[f"permissions.{NAME}.filesystem"][str(Path(packages).resolve())] = "write"
     for key, value in settings.items():
         out += ["-c", f"{key}={toml(value)}"]
     return out

@@ -104,6 +104,7 @@ def _env(campaign, cwd=None):
         env[prov["env_key"]] = os.environ[prov["env_key"]]
     if campaign.backend == "codex" and prov.get("key_file"):
         env[prov["env_key"]] = _key_from_file(campaign.path(prov["key_file"]), prov["env_key"])
+    env["UV_CACHE_DIR"] = str(package_cache(campaign))
     if cwd is not None:                            # the agent's shell, here-documents and TeX write inside its workspace
         base = Path(cwd) / ".pathfinder"
         (base / "tmp").mkdir(parents=True, exist_ok=True)
@@ -145,6 +146,20 @@ def _source_cache(campaign) -> Path:
     return path
 
 
+def package_cache(campaign) -> Path:
+    """The one uv cache every agent with tools may write (campaign "package_cache", else PATHFINDER_PACKAGE_CACHE,
+    else ~/.cache/pathfinder/uv, shared by campaigns): its own folder is all a sandboxed agent may otherwise write,
+    so uv kept a cache per agent and downloaded the same packages again."""
+    configured = (campaign.raw or {}).get("package_cache") or os.environ.get("PATHFINDER_PACKAGE_CACHE")
+    return (campaign.path(configured) if configured else Path.home() / ".cache" / "pathfinder" / "uv").resolve()
+
+
+def _package_cache(campaign) -> Path:
+    path = package_cache(campaign)
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None):
     from . import collection
     restricted = collection.enabled(campaign)
@@ -160,7 +175,8 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
             cmd += ["--tools", "Read,Glob,Grep" + (",WebSearch,WebFetch" if search else ""), "--dangerously-skip-permissions"]
         elif tools:
             cmd += ["--tools", CLAUDE_TOOLS + (",WebSearch,WebFetch" if search else ""),
-                    "--dangerously-skip-permissions", "--add-dir", str(_source_cache(campaign))]
+                    "--dangerously-skip-permissions", "--add-dir", str(_source_cache(campaign)),
+                    "--add-dir", str(_package_cache(campaign))]
         else:
             cmd += ["--tools", ""]
         effort = ((campaign.raw or {}).get("claude") or {}).get("effort")     # set by a route (pathfinder.routing)
@@ -180,11 +196,12 @@ def _command(campaign, model, tools, search, cwd, reads=False, schema_path=None)
     elif prov.get("filesystem_profile"):             # a per-request permission profile in place of the sandbox mode
         from . import sandbox
         cmd += sandbox.args(cwd, tools and not reads, prov["filesystem_profile"], network=bool(tools and search and not reads),
-                            cache=_source_cache(campaign))
+                            cache=_source_cache(campaign),
+                            packages=_package_cache(campaign) if tools and not reads else None)
     else:
         cmd += ["--sandbox", "workspace-write" if tools and not reads else "read-only"]
-        if tools and not reads:                                  # the shared source cache (pathfinder.library)
-            cmd += ["--add-dir", str(_source_cache(campaign))]
+        if tools and not reads:                                  # the shared source and package caches
+            cmd += ["--add-dir", str(_source_cache(campaign)), "--add-dir", str(_package_cache(campaign))]
         if tools and search and not reads:                       # the workspace sandbox has no network unless asked
             cmd += ["-c", "sandbox_workspace_write.network_access=true"]
     if prov.get("persist_sessions"):

@@ -272,6 +272,10 @@ your own campaign directory and edit the models and the budget.
   across campaigns. Existing campaign `sources/` directories are also checked
   before downloading. `prefetch_limit`: papers fetched per thread beyond its
   two (default 60). See "Papers before research" below.
+- `package_cache`: the uv cache every agent with tools may write, set as
+  `UV_CACHE_DIR` in each call. Otherwise use `PATHFINDER_PACKAGE_CACHE`, or
+  `~/.cache/pathfinder/uv` by default, shared across campaigns, so agents
+  reuse downloaded packages instead of keeping a cache in their own folders.
 - `codex`: optional, for the Codex backend through a custom OpenAI-compatible
   provider such as a university proxy: `name`, `base_url`, `env_key` (the
   variable Codex reads the key from), `key_file` (a dotenv file holding

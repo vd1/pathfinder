@@ -36,6 +36,8 @@ def limit(campaign) -> int:
 def validate(raw: dict) -> None:
     if "source_cache" in raw and (not isinstance(raw["source_cache"], str) or not raw["source_cache"].strip()):
         raise ValueError(f"source_cache must be a directory path, got {raw['source_cache']!r}")
+    if "package_cache" in raw and (not isinstance(raw["package_cache"], str) or not raw["package_cache"].strip()):
+        raise ValueError(f"package_cache must be a directory path, got {raw['package_cache']!r}")
     v = raw.get("prefetch_limit", LIMIT)
     if type(v) is not int or v < 0:
         raise ValueError(f"prefetch_limit must be a non-negative integer, got {v!r}")
