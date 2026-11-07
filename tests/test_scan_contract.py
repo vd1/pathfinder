@@ -108,7 +108,8 @@ def test_a_replacement_prompt_places_the_context_where_it_names_it(tmp_path, mon
     seen = []
     _replies(monkeypatch, seen=seen)
     scan.run(c)
-    assert seen[0].prompt.startswith("STATE\n") and "the ledger" in seen[0].prompt.split("PAIR")[0]
+    prompt = seen[0].prompt                      # the transport puts the paper-pool rule first (pathfinder.library)
+    assert prompt.index("STATE\n") < prompt.index("the ledger") < prompt.index("PAIR")
 
 
 def test_a_rescan_appends_resumes_and_keeps_the_earlier_score(tmp_path, monkeypatch):
