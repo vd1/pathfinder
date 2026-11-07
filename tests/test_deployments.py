@@ -291,9 +291,9 @@ import contextlib, io, json, sys
 from pathlib import Path
 import pathfinder
 from pathfinder import composable, config, corpus, research, resources, transport
-from prooftree.cli import init, parse_metadata, sha
-from prooftree.state import Store, initialize
-from prooftree import workflow
+from repl.cli import init, parse_metadata, sha
+from repl.state import Store, initialize
+from repl import workflow
 
 root = Path(sys.argv[1])
 atom = lambda aid: (f'<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/{aid}</id>'
@@ -349,7 +349,7 @@ def test_prooftree_researches_a_link_on_the_candidate_engine(tmp_path):
     assert out["result"]["outcome"] == "ACCEPT" and out["verdict"] == {"status": "DRAFT", "scientific_verdict": "ACCEPT"}
     assert Path(out["result"]["pdf"]).is_file() and out["result"]["pdf"].endswith("joint/threads/Q1P1/edited/note.pdf")
     # stub receipts under one run, every branch's calls named; the candidate answered and no julien-2 code loaded
-    assert out["backends"] == ["prooftree-stub"] and len(out["runs"]) == 1
+    assert out["backends"] == ["repl-stub"] and len(out["runs"]) == 1
     assert out["branches"] == ["branch-1", "branch-2", "branch-3"]
     assert Path(out["engine"]).resolve().is_relative_to(ROOT / "pathfinder") and out["loaded"] == []
     assert out["overlays"] and all(out["overlays"].values()), out["overlays"]
@@ -358,7 +358,7 @@ def test_prooftree_researches_a_link_on_the_candidate_engine(tmp_path):
 PROOFTREE_REPLAY = r'''
 import contextlib, io, json, sys
 from pathlib import Path
-from prooftree import view, workflow
+from repl import view, workflow
 
 root = Path(sys.argv[1])
 state = view.snapshot(root)
