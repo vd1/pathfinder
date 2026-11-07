@@ -8,7 +8,9 @@ or note cites; working
 directories of model calls, and the prompt copied into every retained research response once that response
 holds its result. Receipts keep the commands an agent ran, its answer and the usage, but not the full output
 of each tool call: the first and last characters and the output's length, enough to see what was read and
-how much. Each garbage_collected event names the paths it removed. The runner collects each thread when it finishes; `pathfinder gc` collects every finished thread and
+how much. Installs (virtual environments, bytecode, package caches such as uv's, node_modules) go as soon as a
+thread's research has ended, editing or not: a research-only run keeps nothing a reinstall would restore.
+Each garbage_collected event names the paths it removed. The runner collects each thread when it finishes; `pathfinder gc` collects every finished thread and
 compacts receipts written before compaction existed. "gc": false in campaign.json turns collection off."""
 from __future__ import annotations
 import json, os, shutil, tempfile
@@ -65,10 +67,16 @@ def finished(campaign, pair_id) -> bool:
             and edit.status(campaign, pair_id).get("status") == "done")
 
 
-def _environment(path: Path) -> bool:
-    """A peer's virtual environment, bytecode cache or cloned repository's .git (see composable.environment)."""
+CACHES = {"uv-cache", ".uv-cache", "node_modules"}
+
+
+def _installed(path: Path, rel: Path) -> bool:
+    """A peer's virtual environment, bytecode cache or cloned repository's .git (composable.environment), or a
+    package cache: named so, or tagged by its tool (CACHEDIR.TAG). A frozen bundle's hash covers its caches, so
+    under branches/ only environments go."""
     from .composable import environment
-    return environment(path)
+    return environment(path) or (rel.parts[0] != "branches"
+                                 and (path.name in CACHES or (path / "CACHEDIR.TAG").is_file()))
 
 
 def _byproduct(name: str, names) -> bool:
@@ -130,8 +138,11 @@ def _size(path: Path) -> int:
 
 
 def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
-    """Collect one finished thread; None when it is not finished. Returns {"files", "bytes", "stripped"}."""
-    if not finished(campaign, pair_id):
+    """Collect one finished thread, or only the installs of one whose research has ended; None while research
+    runs. Returns {"files", "bytes", "stripped"}."""
+    from . import research
+    full = finished(campaign, pair_id)
+    if not full and research.status(campaign, pair_id).get("status") not in research.TERMINAL:
         return None
     d = campaign.thread_dir(pair_id)
     files = size = stripped = 0
@@ -141,12 +152,15 @@ def collect_thread(campaign, pair_id, *, dry_run: bool = False) -> dict | None:
         if not p.exists() or p.is_symlink():
             continue
         rel = p.relative_to(d)
-        if p.is_dir() and (p.name in WORKING_DIRS or _environment(p) or (p.name == "tmp" and p.parent.name == ".pathfinder")):
+        if p.is_dir() and (_installed(p, rel) or full and (p.name in WORKING_DIRS
+                                                            or (p.name == "tmp" and p.parent.name == ".pathfinder"))):
             if any(k == rel or rel in k.parents for k in keep):
                 continue
             files += sum(1 for q in p.rglob("*") if q.is_file()); size += _size(p); removed.append(rel.as_posix())
             if not dry_run:
                 shutil.rmtree(p)
+        elif not full:
+            continue
         elif p.is_file() and rel not in keep and downloaded(p, rel, campaign.peers):
             files += 1; size += p.stat().st_size; removed.append(rel.as_posix())
             if not dry_run:

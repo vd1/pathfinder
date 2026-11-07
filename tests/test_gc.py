@@ -151,3 +151,53 @@ def test_a_file_the_note_or_ledger_cites_is_never_collected(tmp_path):
     event = [e for e in events.read(c)[0] if e.get("kind") == "garbage_collected"][-1]
     assert "ada/build.log" in event["paths"] and "ada/proof.log" not in event["paths"]
     assert report["files"] == len(event["paths"])
+
+
+def _installs(d):
+    """What peers' tools install into a thread (EV rerun of the 10x10 pilot, 2 November 2026: 3.8 GB of
+    5.5 GB were uv caches and virtual environments)."""
+    made = {"tagged": d / "ada/tool-cache", "uv": d / "ada/uv-cache", "hidden": d / "ada/.uv-cache",
+            "node": d / "edited/node_modules", "venv": d / "ada/.venv"}
+    for path in made.values():
+        path.mkdir(parents=True, exist_ok=True); (path / "blob.bin").write_bytes(b"x" * 1000)
+    (made["tagged"] / "CACHEDIR.TAG").write_text("Signature: 8a477f597d28d172789f06886806bc55\n")
+    return made
+
+
+def test_package_caches_are_collected_and_peers_data_is_kept(tmp_path):
+    c, d = _finished(tmp_path)
+    made = _installs(d)
+    (d / "ada/rollout.npz").write_bytes(b"data")
+    (d / "branches/branch-1/ada/uv-cache").mkdir(parents=True)      # in a frozen bundle: its hash covers it
+    (d / "branches/branch-1/ada/uv-cache/blob.bin").write_bytes(b"x")
+    report = gc.collect_thread(c, "Q1P1")
+    assert not any(path.exists() for path in made.values())
+    assert (d / "ada/rollout.npz").exists() and (d / "branches/branch-1/ada/uv-cache/blob.bin").exists()
+    assert report["bytes"] >= 5000
+
+
+def test_a_thread_whose_research_ended_drops_its_installs_before_editing(tmp_path):
+    """Q1P1 of the EV rerun: research DRAFT, editing stopped; its caches stayed because the thread was not finished."""
+    c = make(tmp_path)
+    research.run_thread(c, "Q1P1")
+    d = c.thread_dir("Q1P1")
+    made = _installs(d)
+    (d / "Q1P1.aux").write_text("by-product")
+    report = gc.collect_thread(c, "Q1P1")
+    assert report and not any(path.exists() for path in made.values())
+    assert (d / "Q1P1.aux").exists()                     # the full collection still waits for editing
+
+
+def test_a_research_only_run_drops_each_thread_s_installs(tmp_path, monkeypatch):
+    from pathfinder import stub
+    c, real = make(tmp_path), stub.reply
+    def reply(campaign, request):
+        if request.stage == "peer":
+            _installs(campaign.thread_dir(request.thread))
+        return real(campaign, request)
+    monkeypatch.setattr(stub, "reply", reply)
+    runner.run(c, interval=0, research_only=True)
+    d = c.thread_dir("Q1P1")
+    assert research.status(c, "Q1P1")["status"] in research.TERMINAL
+    assert not (d / "ada/uv-cache").exists() and not (d / "ada/.venv").exists()
+    assert edit.status(c, "Q1P1").get("status") != "done"

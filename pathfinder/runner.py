@@ -167,6 +167,10 @@ def _work(campaign, pair_id):
                 from . import gc
                 if gc.enabled(campaign):                 # each finished cycle drops what the record does not need
                     gc.collect_thread(campaign, pair_id)
+            elif result in research.TERMINAL:            # research only (or stopping): its installs go
+                from . import gc
+                if gc.enabled(campaign):
+                    gc.collect_thread(campaign, pair_id)
         except Exception as error:
             error.stage = stage if stage in ("edit", "actionability") else research.status(campaign, pair_id).get("stage")
             raise
@@ -192,7 +196,7 @@ def run(campaign, interval: float = 5.0, pairs=None, accept_change: str | None =
     pairs: a bounded run over exactly these shortlisted pairs, through research and edit. Unlisted pairs are
     ignored, BLOCKED ones included; when no listed pair has research or edit work left, the run returns at
     once with status nothing-to-run. A listed BLOCKED pair is reported and does not stop the others.
-    research_only explicitly stops at terminal research, without editing, actionability or GC."""
+    research_only explicitly stops at terminal research, without editing or actionability; GC removes only installs."""
     # Execution scope is invocation-local, including failure/stop paths and nested coordination.
     campaign = copy.copy(campaign)
     campaign._research_only = bool(research_only)

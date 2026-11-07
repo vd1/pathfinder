@@ -495,10 +495,12 @@ undefined citation refuses the release and the paper stays CLEARED.
   digests. The `context_built` event records each projected section with its full size and sha256, and a
   review stays bound to the full ledger.
 - `gc`: `false` turns off the clean-up each finished cycle does (LaTeX by-products, call working directories,
-  peers' virtual environments, prompt copies in retained responses; receipts keep commands with shortened
-  outputs). A `.log` or `.out` is a by-product only beside its `.tex`, so a script's run log stays, and a file
+  prompt copies in retained responses; receipts keep commands with shortened outputs). Installs (peers'
+  virtual environments, bytecode, package caches such as `uv-cache` or any folder with a `CACHEDIR.TAG`,
+  `node_modules`) go as soon as research ends, also in a `--research-only` run; a frozen bundle keeps its caches. A `.log` or `.out` is a by-product only beside its `.tex`, so a script's run log stays, and a file
   a ledger or note in the thread cites is never removed. Each `garbage_collected` event names the paths it
-  removed. `pathfinder gc [--dry-run]` applies it to finished threads and older receipts.
+  removed. `pathfinder gc [--dry-run]` applies it to finished threads (installs only where research has ended
+  but editing has not) and older receipts.
 - `parent`, `extensions`, `deployment`, `stub`: see "One engine, many
   deployments" below.
 
