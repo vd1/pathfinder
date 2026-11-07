@@ -30,4 +30,4 @@ packages = ["pathfinder"]
 # The engine suite. Handoff proofs under operator-log/ and agents' files under experiments/ are not collected.
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-n auto"   # pytest-xdist: the suite runs on every core (21 minutes on one)
+addopts = "-n auto --dist worksteal"   # pytest-xdist on every core; idle workers take queued tests from busy ones
