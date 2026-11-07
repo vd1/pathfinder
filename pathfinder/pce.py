@@ -208,37 +208,6 @@ def visible(files: dict, contract: str) -> dict:
     return {n: t for n, t in sorted(files.items()) if any(fnmatch.fnmatchcase(n, p) for p in patterns)}
 
 
-def editor_alias_packet(head: str, shown: dict) -> tuple[str, dict]:
-    """Lossless whole-file aliases, only within the editor's already selected scope."""
-    canonical, contents, aliases = {}, {}, {}
-    for name, text in sorted(shown.items()):
-        # Key by the complete string, not just its hash; no normalization or partial dedup.
-        if text in canonical:
-            aliases[name] = canonical[text]
-        else:
-            canonical[text] = name
-            contents[name] = text
-    expanded = {**contents, **{name: contents[target] for name, target in aliases.items()}}
-    if expanded != shown:
-        raise Changed("editor alias packet does not reproduce complete scoped files")
-    instruction = (
-        "\nLossless file-alias transport v1: the following JSON has contents and aliases maps. "
-        "Every alias path has exactly the full content of its named contents path. Treat both "
-        "paths as present, with their original provenance and status; identical text is not "
-        "independent evidence. Read all contents and resolve all aliases in this packet. "
-        "No file is omitted, summarized or fetched; no tools are needed. "
-        "The role's read scope and required output are unchanged.\n")
-    prompt = instruction + head + _json({"contents": contents, "aliases": aliases})
-    return prompt, {
-        "encoding": "whole-file-alias-v1", "aliases": aliases,
-        "contents_sha256": {n: _sha(t) for n, t in contents.items()},
-        "expanded_files_sha256": {n: _sha(t) for n, t in sorted(expanded.items())},
-        "expanded_json_sha256": _sha(_json(expanded)),
-        "original_prompt_sha256": _sha(head + _json(shown)),
-        "original_prompt_chars": len(head + _json(shown)),
-    }
-
-
 def _files(text: str, permitted: list[str]) -> dict:
     try:
         envelope = extract_json(unfence(text or ""))
@@ -324,7 +293,7 @@ def fit(files: dict, room: int) -> dict:
     return out
 
 
-def _supplement(campaign, pair_id, limit: int, *, reviewers=False, excluded=()) -> str:
+def _supplement(campaign, pair_id, limit: int, *, reviewers=False) -> str:
     """The research record as external evidence: the joint thread's ledger first, then the ledgers of its frozen
     branch bundles, then the verifier's reasons, cut at the limit with the cut stated. Each entry carries its
     standing (superseded, corrected, objected to, an objection answered or not), so a superseded or contested
@@ -344,8 +313,6 @@ def _supplement(campaign, pair_id, limit: int, *, reviewers=False, excluded=()) 
                 row = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if ("ledger.jsonl", row.get("seq")) in excluded:
-                continue
             for label, n in BRANCH_REFERENCE.findall(str(row.get("text") or "")):
                 adopted.setdefault((f"branch-{label}", int(n)), []).append(row.get("seq"))
     for ledger, role in ledgers:
@@ -359,7 +326,6 @@ def _supplement(campaign, pair_id, limit: int, *, reviewers=False, excluded=()) 
             except json.JSONDecodeError:
                 continue
         rows = [r for r in rows if isinstance(r, dict) and isinstance(r.get("seq"), int)]
-        rows = [r for r in rows if (str(ledger.relative_to(d)), r["seq"]) not in excluded]
         notes = standing(rows)
         parts.append(f"\n## {ledger.relative_to(d)}\n\n({role})\n")
         for r in rows:
@@ -382,7 +348,7 @@ def _supplement(campaign, pair_id, limit: int, *, reviewers=False, excluded=()) 
     return text
 
 
-def sources(campaign, pair_id, *, excluded=()) -> dict:
+def sources(campaign, pair_id) -> dict:
     """The round's frozen inputs: the brief, the state, the bibliography, the internal sources (the baseline
     note and the research account, editorial context only) and the external sources (the papers as the
     thread read them and the research supplement), keyed by their workflow names.
@@ -412,7 +378,7 @@ def sources(campaign, pair_id, *, excluded=()) -> dict:
             files[f"sources/external/{p.name}"] = p.read_text(errors="replace")
     if not any(n.startswith("sources/external/") for n in files):
         raise Changed(f"{pair_id}: no external sources (inputs/Q and inputs/P) to check the draft against")
-    files[SUPPLEMENT] = _supplement(campaign, pair_id, s["supplement_chars"], reviewers=True, excluded=excluded)
+    files[SUPPLEMENT] = _supplement(campaign, pair_id, s["supplement_chars"], reviewers=True)
     files["sources/internal/research-review-record.md"] = _supplement(campaign, pair_id, s["supplement_chars"])
     return files
 
@@ -422,15 +388,10 @@ def _seconds(campaign) -> int:
     return int(a.get("pce_seconds", a.get("edit_seconds", 900)))
 
 
-def role_context(campaign, role, permitted, files, grant, **values):
+def role_context(campaign, role, permitted, files, **values):
     from types import SimpleNamespace
     from . import library
     contract = resources.prompt(campaign, f"pce-{role}", **values)
-    if grant and grant.get("fixed_candidate") and role == "author":
-        contract += ("\nThis is a fixed-candidate review. Do not revise or return LaTeX. "
-                     "Extract every material claim from sources/internal/baseline.tex, including "
-                     "each definition and numerical claim in sources/internal/changes.json. "
-                     "Return only claims/current.json; the host installs the exact candidate for review.\n")
     head = contract.rstrip() + TRANSPORT + "Permitted outputs: " + json.dumps(permitted) + "\n" + "Allowed input files:\n"
     head = library.request_rule(campaign, SimpleNamespace(prompt=head, tools=False, reads=False)) + head
     shown = visible(files, contract)
@@ -461,15 +422,6 @@ def _dispatch(campaign, pair_id, role, prompt, seconds=None) -> dict:
             "text": r.get("text") or ""}
 
 
-def _validate_wire(root, grant, files, cap, campaign):
-    from . import raw_literals, account_wire
-    repair = root / 'repair.json'
-    is_repair = repair.exists() and json.loads(repair.read_text()).get('policy') == 'whole-body-repair-v1'
-    if is_repair or grant.get('whole_body_repair') or (grant.get('review_wire') or {}).get('version') == 'whole-body-v1':
-        return account_wire.validate(root, grant, files, cap, campaign)
-    return raw_literals.validate(root, grant, files, cap, campaign)
-
-
 def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) -> dict:
     """The round over the edited note; result.json once it ends. Raises Stopped when stop() turns true before
     a new call, TransportFailed when a call fails in transport, Changed when retained work no longer matches.
@@ -484,10 +436,6 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     root = workflow(campaign, pair_id)
     done = root / "result.json"
     if done.exists():
-        if (root/'wire-declaration.json').exists():
-            from . import raw_literals
-            _validate_wire(root, json.loads((root/'grant.json').read_text()),
-                                  json.loads((root/'frozen-inputs.json').read_text()), transport.max_prompt_chars(campaign), campaign)
         return json.loads(done.read_text())
     grant_path = root / "grant.json"
     grant = json.loads(grant_path.read_text()) if grant_path.exists() else None
@@ -500,17 +448,8 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
     files = json.loads((root / "frozen-inputs.json").read_text()) if grant else sources(campaign, pair_id)
     if grant and _sha(_json(files)) != grant["inputs_sha256"]:
         raise Changed("the continuation frozen inputs changed")
-    from . import raw_literals
-    if grant:
-        _validate_wire(root, grant, files, transport.max_prompt_chars(campaign), campaign)
-    registered = None
-    if grant and grant.get("replacement_register"):
-        from . import account_register
-        registered = account_register.claims(root, grant, files[BASELINE])
     contracts = {role: resources.prompt_template(campaign, f"pce-{role}") for role in ROLES}
     fingerprint_inputs = {"files": files, "contracts": contracts, "settings": s}
-    if grant and grant.get('review_wire'):
-        fingerprint_inputs['review_wire'] = grant['review_wire']
     fingerprint = _sha(_json(fingerprint_inputs))
     manifest_path = root / "input-manifest.json"
     if manifest_path.exists():
@@ -541,32 +480,8 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
         return out
 
     def call(role, pass_id, permitted, **values):
-        head, shown = role_context(campaign, role, permitted, files, grant, **values)
-        if grant and grant.get("strict_evidence"):
-            if role in ("fact-checker", "critic") and any(
-                    n.startswith(("sources/internal/", "reviews/", "revisions/")) for n in shown):
-                raise Changed("fresh review scope exposes internal material or previous reviews")
-            prompt = head + _json(shown)
-            encoding = {}
-            if grant.get('review_wire'):
-                from . import whole_bodies
-                codec = whole_bodies if grant['review_wire'].get('version') == whole_bodies.VERSION else raw_literals
-                prompt, encoding = codec.packet(head, shown, role)
-            elif role == "editor" and len(prompt) > transport.max_prompt_chars(campaign):
-                prompt, encoding = editor_alias_packet(head, shown)
-                if len(prompt) > transport.max_prompt_chars(campaign):
-                    from . import editor_packet
-                    alias_chars = len(prompt)
-                    prompt, encoding = editor_packet.packet(head, shown, alias_chars)
-                    if len(prompt) > transport.max_prompt_chars(campaign):
-                        prompt, encoding = editor_packet.span_packet(head, shown, alias_chars, len(prompt))
-            if len(prompt) > transport.max_prompt_chars(campaign):
-                raise Changed("complete review context exceeds prompt allowance; no call or truncation")
-            _write(root, f"visibility/{pass_id}-{role}.json", _json({
-                "prompt_sha256": _sha(prompt), "prompt_chars": len(prompt), "truncated": False,
-                "files_sha256": {n: _sha(t) for n, t in shown.items()}, **encoding}), immutable=True)
-        else:
-            prompt = head + _json(fit(shown, transport.max_prompt_chars(campaign) - len(head)))
+        head, shown = role_context(campaign, role, permitted, files, **values)
+        prompt = head + _json(fit(shown, transport.max_prompt_chars(campaign) - len(head)))
         order[0] += 1
         record = f"dispatch/{pass_id}-{role}.json"
         if (root / record).exists():                  # a retained call is replayed, never paid for twice
@@ -602,23 +517,14 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
             del files[name]
             (root / name).unlink(missing_ok=True)
         try:
-            fixed = bool(grant and grant.get("fixed_candidate"))
-            authored = call("author", pass_id, [CLAIMS] if fixed else [DRAFT, CLAIMS],
-                            DRAFT=DRAFT, CLAIMS_SCHEMA=_json(CLAIMS_SCHEMA).strip())
-            draft = files[BASELINE] if fixed else unfence(authored[DRAFT])
+            authored = call("author", pass_id, [DRAFT, CLAIMS], DRAFT=DRAFT, CLAIMS_SCHEMA=_json(CLAIMS_SCHEMA).strip())
+            draft = unfence(authored[DRAFT])
             if not is_latex_document(draft) or re.search(r"[\x08\x0c\t]", draft):
                 raise InvalidOutput("the draft is not a whole LaTeX document, or a backslash escape was decoded")
             try:
                 claims = json.loads(authored[CLAIMS])
             except json.JSONDecodeError as error:
                 raise InvalidOutput(f"claims are not JSON: {error}") from None
-            _check_schema(claims, CLAIMS_SCHEMA, "claims")
-            if fixed:
-                changes = json.loads(files["sources/internal/changes.json"])["changes"]
-                claims += registered if registered is not None else [{"id": "amendment-" + str(i + 1), "text": change["after"],
-                            "kind": "definition", "location": "bounded replacement " + change["finding"],
-                            "status": "needs-review"} for i, change in enumerate(changes)]
-                authored[CLAIMS] = _json(claims)
             _check_schema(claims, CLAIMS_SCHEMA, "claims")
             ids = [c["id"] for c in claims]
             if not claims or len(set(ids)) != len(ids):
@@ -660,8 +566,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                     source = re.split(r"[:#]", evidence, maxsplit=1)[0]
                     if not source.startswith("sources/external/") or source not in files:
                         raise InvalidOutput(f"evidence {evidence!r} is outside the approved external sources")
-                    cited.add("research record" if source == SUPPLEMENT or source.startswith(
-                        ("sources/external/amendment-", "sources/external/selected-json-")) else "papers")
+                    cited.add("research record" if source == SUPPLEMENT else "papers")
                 expected = {"papers": {"papers"}, "research record": {"research record"},
                             "both": {"papers", "research record"}, "none": set()}[claim["basis"]]
                 if claim["status"] == "supported" and cited != expected:
@@ -675,7 +580,7 @@ def run(campaign, pair_id: str, stop=lambda: False, seconds: int | None = None) 
                 "baseline_diff": "".join(difflib.unified_diff(baseline.splitlines(keepends=True), draft.splitlines(keepends=True),
                                                               fromfile="frozen-baseline.tex", tofile=f"{pass_id}-draft.tex")),
                 "claims": claims, "fact_check": fact}), immutable=True)
-            if fact["verdict"] != "pass" or any(c["status"] == "unsupported" or (fixed and c["status"] != "supported") for c in fact["claims"]):
+            if fact["verdict"] != "pass" or any(c["status"] == "unsupported" for c in fact["claims"]):
                 continue
 
             critic_current = f"reviews/current/critic-{profile}.md"

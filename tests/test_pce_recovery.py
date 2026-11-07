@@ -1,7 +1,7 @@
 """Bounded recovery preserves the old editorial and scientific records."""
 import json
 import pytest
-from pathfinder import account_release, edit, paper, pce, pce_recovery, presentation, reconcile, research, stub
+from pathfinder import edit, pce, pce_recovery, reconcile, stub
 from test_pce import ready, script
 
 
@@ -76,71 +76,18 @@ def test_reviewers_get_science_without_previous_verdicts(tmp_path, monkeypatch):
     assert "SECRET_OLD_VERDICT" in calls[0]["prompt"]
 
 
-@pytest.mark.parametrize("bad", ["role", "fallback", "tail"])
+@pytest.mark.parametrize("bad", ["role", "fallback"])
 def test_excluded_routes_refused_before_writes(tmp_path, monkeypatch, bad):
     c = ready(tmp_path)
     c.backend = "codex"; c.model = "gpt-6-astra"
     if bad == "fallback":
         c.raw["refusal_fallback"] = {"backend": "claude", "model": "claude-opus-5"}
     else:
-        c.raw["routes"] = {"edit/pce-critic" if bad == "role" else "present_check/checker":
-                           {"backend": "claude", "model": "claude-opus-5"}}
+        c.raw["routes"] = {"edit/pce-critic": {"backend": "claude", "model": "claude-opus-5"}}
     before = pce_recovery.hashes(c.root)
     with pytest.raises(pce.Changed):
-        pce_recovery.preflight(c, presentation=True)
+        pce_recovery.preflight(c)
     assert before == pce_recovery.hashes(c.root)
-
-
-def accepted(tmp_path, monkeypatch):
-    c = ready(tmp_path)
-    script(monkeypatch, c)
-    assert pce.run(c, "Q1P1")["status"] == "accepted"
-    ed = c.thread_dir("Q1P1") / "edited"
-    (ed / "note.tex").write_text((pce.workflow(c, "Q1P1") / pce.DRAFT).read_text())
-    edit._set(c, "Q1P1", status="done", accepted_note=True, editorial_status="accepted")
-    return c
-
-
-def test_account_tail_has_separate_state_and_never_amends_science(tmp_path, monkeypatch):
-    c = accepted(tmp_path, monkeypatch)
-    original = (c.thread_dir("Q1P1") / "status.json").read_bytes()
-    v = account_release.view(c, "Q1P1", create=True)
-    assert paper.folder(v, "Q1P1").is_relative_to(c.thread_dir("Q1P1") / "edited")
-    assert paper.status(c, "Q1P1")["status"] == "none"
-    assert paper.status(v, "Q1P1")["acceptance_kind"] == "PCE editorial acceptance"
-    presentation.folder(v, "Q1P1").mkdir()
-    monkeypatch.setattr(paper, "amend", lambda *a, **k: pytest.fail("must not commission research"))
-    assert presentation._return(v, "Q1P1", [{"where": "intro", "issue": "meaning", "fix": "needs evidence"}]) == "RETURNED"
-    assert original == (c.thread_dir("Q1P1") / "status.json").read_bytes()
-
-
-def test_account_requires_completed_gates_and_unchanged_note(tmp_path, monkeypatch):
-    c, _ = prepare(tmp_path, monkeypatch, owner=True)
-    with pytest.raises(pce.Changed, match="completed PCE"):
-        account_release.view(c, "Q1P1", create=True)
-
-
-def test_account_tail_end_to_end_on_stub(tmp_path, monkeypatch):
-    from test_presentation import _script, edited, check
-    c = accepted(tmp_path, monkeypatch)
-    c.raw["release"] = {"disclosure": "disclosure.tex"}
-    (c.root / "disclosure.tex").write_text("Prepared with Pathfinder; the scientific limitations remain those of the account.")
-    monkeypatch.setattr(paper, "_arxiv_titles", lambda ids: {})
-    before = (c.thread_dir("Q1P1") / "status.json").read_bytes()
-    prior_edit = (c.thread_dir("Q1P1") / "edited" / "edit.json").read_bytes()
-    seen = _script(monkeypatch, {"present/editor": [edited()], "present_check/checker": [check()]})
-    assert account_release.present(c, "Q1P1") == "CLEARED"
-    assert {r.stage for r in seen} == {"present", "present_check"}
-    assert all("Acceptance in this task means PCE editorial approval only" in r.prompt for r in seen)
-    assert all("Referees have accepted its mathematics" not in r.prompt for r in seen)
-    assert account_release.present(c, "Q1P1") == "CLEARED"
-    out = account_release.release(c, "Q1P1")
-    assert out["status"] == "RELEASED"
-    v = account_release.view(c, "Q1P1")
-    assert (paper.folder(v, "Q1P1") / "release" / "paper.pdf").exists()
-    assert before == (c.thread_dir("Q1P1") / "status.json").read_bytes()
-    assert prior_edit == (c.thread_dir("Q1P1") / "edited" / "edit.json").read_bytes()
-    assert paper.status(c, "Q1P1")["status"] == "none"
 
 
 def test_reconcile_apply_uses_transport_and_keeps_old_charges(tmp_path, monkeypatch):

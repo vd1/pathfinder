@@ -8,7 +8,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from . import account_release, admission, exhaustion, health, library, paper, pce, provenance, runner, transport
+from . import admission, exhaustion, health, library, paper, pce, provenance, runner, transport
 from .significance_rubric import RUBRIC
 
 MODELS = {'sol': 'gpt-6.1-sol', 'astra': 'gpt-6-astra'}
@@ -34,12 +34,11 @@ def _file(root, name):
     return path
 
 
-def binding(campaign, pair, edited):
-    c = account_release.view(campaign, pair) if edited else campaign
-    pd = paper.folder(c, pair)
-    status = paper.status(c, pair)
+def binding(campaign, pair):
+    pd = paper.folder(campaign, pair)
+    status = paper.status(campaign, pair)
     if status.get('status') != 'RELEASED':
-        raise pce.Changed('significance requires a final RELEASED account or paper')
+        raise pce.Changed('significance requires a final RELEASED paper')
     manifest = _file(pd, status['release_manifest'])
     raw = manifest.read_bytes()
     record = json.loads(raw)
@@ -52,7 +51,7 @@ def binding(campaign, pair, edited):
     if _hash(source) != status.get('release_sha256') or record['sha256'].get(record['tex']) != _hash(source):
         raise pce.Changed('released source hash disagrees with release status')
     prompt = RUBRIC.format(paper=source.decode('utf-8'))
-    return {'version': 1, 'pair': pair, 'edited': edited,
+    return {'version': 1, 'pair': pair, 'edited': False,   # kept: bindings already written carry it
             'release_manifest': str(manifest.relative_to(campaign.thread_dir(pair))),
             'manifest_sha256': _hash(raw), 'source_sha256': _hash(source),
             'rubric_sha256': _hash(RUBRIC.encode()), 'prompt_sha256': _hash(prompt.encode()),
@@ -95,11 +94,11 @@ def parse(raw):
     return value
 
 
-def run(campaign, pair, *, edited=False, apply=False, accept_change=None):
+def run(campaign, pair, *, apply=False, accept_change=None):
     c = _campaign(campaign)
     with health.owner(campaign, nested=True), runner.Lock(campaign.thread_dir(pair)):
-        bound, prompt, source = binding(campaign, pair, edited)
-        # One fixed slot per account, not per release: a new release cannot silently
+        bound, prompt, source = binding(campaign, pair)
+        # One fixed slot per paper, not per release: a new release cannot silently
         # double the owner's two-call allowance. There is deliberately no reset flag.
         root = campaign.thread_dir(pair) / 'significance'
         pce._write(root, 'binding.json', pce._json(bound), immutable=True)

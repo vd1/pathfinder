@@ -81,76 +81,15 @@ def main(argv=None):
     w.add_argument("pair", nargs="?", help="default: every DRAFT thread without an accepted paper")
     w.add_argument("--review", action="store_true", help="one reviewer round on the paper as it stands, no author call (for a hand-edited paper)")
     w.add_argument("--amend", metavar="FINDINGS.json", help="an author round answering outside findings (review.json's findings schema), then a reviewer round")
-    am = sub.add_parser("account-amend", help="review a fixed bounded account candidate without changing historical acceptance")
-    am.add_argument("pair")
-    am.add_argument("--id", required=True, help="immutable amendment identity")
-    am.add_argument("--packet", type=Path, required=True, help="directory containing candidate, changes and evidence JSON")
-    am.add_argument("--evidence-root", type=Path, required=True, help="base for packet evidence paths")
-    am.add_argument("--reason", required=True, help="recorded owner authority and scope")
-    am.add_argument("--apply", action="store_true", help="run one fresh PCE review and install only if accepted; default prepares without calls")
-    av = sub.add_parser("account-amend-revise", help="review a bounded revised candidate under the existing amendment identity")
-    av.add_argument("pair")
-    av.add_argument("--id", required=True)
-    av.add_argument("--revision", required=True)
-    av.add_argument("--packet", type=Path, required=True)
-    av.add_argument("--reason", required=True)
-    av.add_argument("--apply", action="store_true")
-    av.add_argument("--approval", type=Path, help="owner approval for an exact pending-successor history exception")
-    successor = sub.add_parser("account-amend-successor", help="review an explicit successor to an accepted account returned by presentation")
-    successor.add_argument("pair")
-    successor.add_argument("--id", required=True)
-    successor.add_argument("--packet", type=Path, required=True)
-    successor.add_argument("--reason", required=True)
-    successor.add_argument("--apply", action="store_true")
-    successor.add_argument("--approval", type=Path,
-                           help="explicit owner approval artifact for an exact bound history exception")
-    ar = sub.add_parser("account-amend-review", help="grant one evidence-repaired review of an unchanged account amendment")
-    ar.add_argument("pair")
-    ar.add_argument("--id", required=True, help="existing amendment identity")
-    ar.add_argument("--grant", required=True, help="immutable bounded review grant ID")
-    ar.add_argument("--inputs", type=Path, required=True, help="retained historical scientific inputs JSON")
-    ar.add_argument("--inputs-sha256", required=True, help="explicitly approved packet SHA256")
-    ar.add_argument("--reason", required=True, help="authority and reason for this additional review")
-    ar.add_argument("--apply", action="store_true", help="run this same prepared review; default makes no calls")
-    ar.add_argument("--before-first-call", action="store_true", help="isolate approved evidence before any role has run")
-    br = sub.add_parser("account-bibliography", help="build and select a metadata-only bibliography revision without scientific review calls")
-    br.add_argument("pair")
-    br.add_argument("--id", required=True)
-    br.add_argument("--packet", type=Path, required=True)
-    br.add_argument("--reason", required=True)
-    br.add_argument("--apply", action="store_true")
-    wr = sub.add_parser("account-wire-review", help="one immutable whole-body readability repair of a failed raw-literal review")
-    wr.add_argument("pair")
-    wr.add_argument("--id", required=True)
-    wr.add_argument("--grant", required=True)
-    wr.add_argument("--failed-round-sha256", required=True)
-    wr.add_argument("--reason", required=True)
-    wr.add_argument("--apply", action="store_true")
-    rr = sub.add_parser("account-register-review", help="repair superseded mandatory claims in a fresh immutable round of the same candidate")
-    rr.add_argument("pair")
-    rr.add_argument("--id", required=True)
-    rr.add_argument("--revision", required=True)
-    rr.add_argument("--grant", default="final-candidate-register-v1")
-    rr.add_argument("--reason", required=True)
-    rr.add_argument("--apply", action="store_true")
-    pc = sub.add_parser("account-present-continue", help="grant one guarded clarity correction cycle on a paused account")
-    pc.add_argument("pair")
-    pc.add_argument("--id", required=True)
-    pc.add_argument("--context", type=Path, required=True, help="JSON with source, exact quote and finding location")
-    pc.add_argument("--reason", required=True)
-    pc.add_argument("--apply", action="store_true", help="run this continuation; default prepares without calls")
     pr = sub.add_parser("present", help="the presentation pass on an accepted paper: editor, lookup, fresh check, corrections; ends CLEARED")
     pr.add_argument("pair", nargs="?", help="default: every accepted paper whose pass has not ended")
-    pr.add_argument("--edited", action="store_true", help="finish a PCE-accepted account without commissioning a paper")
     pr.add_argument("--restart", action="store_true", help="start the pass afresh, discarding an earlier one")
     rt = sub.add_parser("rate-release", help="prepare or resume one Sol and one Astra significance rating of a dated release")
     rt.add_argument("pair")
-    rt.add_argument("--edited", action="store_true", help="rate the final released account")
     rt.add_argument("--apply", action="store_true", help="dispatch missing ratings once each; otherwise prepare only")
     rl = sub.add_parser("release", help="export a CLEARED paper as a clean article in paper/release/ with a leak check; ends RELEASED")
     rl.add_argument("pair")
     rl.add_argument("--timestamp", help="fixed release UTC timestamp, YYYYMMDDTHHMMSSZ; retries reuse it")
-    rl.add_argument("--edited", action="store_true", help="release the cleared PCE account")
     oc = sub.add_parser("recover-orphan", help="archive a proven reboot-interrupted peer and retain unknown accounting")
     oc.add_argument("call_id")
     oc.add_argument("--apply", action="store_true")
@@ -176,7 +115,6 @@ def main(argv=None):
     r.add_argument("pair", nargs="?"); r.add_argument("--apply", action="store_true")
     r.add_argument("--repair-only", action="store_true",
                    help="make the action's state repair and call no model; the deployment's own command resumes")
-    r.add_argument("--pce-evidence", help="approved hash-bound retained evidence projection JSON; requires --pce-grant")
     r.add_argument("--pce-grant", help="unique ID for an explicit bounded editorial continuation")
     r.add_argument("--passes", type=int)
     r.add_argument("--fact-checks", type=int)
@@ -280,11 +218,6 @@ def main(argv=None):
     if collection.enabled(c) and ns.cmd not in (
             "research", "state", "health", "stop", "playbook", "economy", "serve", "view"):
         raise collection.Refused("restricted collection permits research and read-only operational commands only")
-    if ns.cmd in ("present", "release") and ns.edited:
-        from . import pce_recovery
-        if not ns.pair:
-            raise SystemExit("--edited requires one explicit pair")
-        pce_recovery.preflight(c, presentation=True)
     if ns.cmd in DISPATCHING and ns.cmd != "research":       # research opens its own run inside runner.run
         from . import provenance
         try:
@@ -421,47 +354,7 @@ def _dispatch(ns, c):
                                            and paper_due(c, p["pair_id"])]
         for pid, result in paper.run_many(c, pairs, stop=lambda: runner.stopped(c)).items():
             print(f"{pid}: {result}")
-    elif ns.cmd == "account-bibliography":
-        from . import account_bibliography
-        print(account_bibliography.run(c, ns.pair, identity=ns.id, packet=ns.packet, reason=ns.reason, apply=ns.apply))
-    elif ns.cmd == "account-wire-review":
-        from . import account_wire
-        print(account_wire.repair(c, ns.pair, identity=ns.id, grant_id=ns.grant,
-              failed_round_sha256=ns.failed_round_sha256, reason=ns.reason,
-              apply=ns.apply, accept_change=ns.accept_change))
-    elif ns.cmd == "account-register-review":
-        from . import account_register
-        print(account_register.repair(c, ns.pair, identity=ns.id, revision=ns.revision,
-              grant_id=ns.grant, reason=ns.reason, apply=ns.apply, accept_change=ns.accept_change))
-    elif ns.cmd == "account-amend-successor":
-        from . import account_successor
-        print(account_successor.run(c, ns.pair, identity=ns.id, packet=ns.packet,
-                                    reason=ns.reason, approval=ns.approval,
-                                    apply=ns.apply, accept_change=ns.accept_change))
-    elif ns.cmd == "account-amend-revise":
-        from . import account_revision
-        print(account_revision.run(c, ns.pair, identity=ns.id, revision=ns.revision, packet=ns.packet,
-                                   reason=ns.reason, approval=ns.approval, apply=ns.apply, accept_change=ns.accept_change))
-    elif ns.cmd == "account-present-continue":
-        from . import account_present
-        print(account_present.apply(c, ns.pair, identity=ns.id, context_path=ns.context,
-                                    reason=ns.reason, resume=ns.apply, accept_change=ns.accept_change))
-    elif ns.cmd == "account-amend-review":
-        from . import account_review
-        print(account_review.apply(c, ns.pair, identity=ns.id, grant_id=ns.grant,
-                                   inputs=ns.inputs, inputs_sha256=ns.inputs_sha256, reason=ns.reason,
-                                   resume=ns.apply, accept_change=ns.accept_change,
-                                   before_first_call=ns.before_first_call))
-    elif ns.cmd == "account-amend":
-        from . import account_amend
-        print(account_amend.apply(c, ns.pair, identity=ns.id, packet=ns.packet,
-                                 evidence_root=ns.evidence_root, reason=ns.reason,
-                                 resume=ns.apply, accept_change=ns.accept_change))
     elif ns.cmd == "present":
-        if ns.edited:
-            from . import account_release
-            print(f"{ns.pair}: {account_release.present(c, ns.pair, restart=ns.restart)}")
-            return
         from . import presentation
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]
                                            if research.status(c, p["pair_id"]).get("status") == "DRAFT"
@@ -477,13 +370,9 @@ def _dispatch(ns, c):
                 print(f"  {reason}")
     elif ns.cmd == "rate-release":
         from . import significance
-        print(json.dumps(significance.run(c, ns.pair, edited=ns.edited, apply=ns.apply,
+        print(json.dumps(significance.run(c, ns.pair, apply=ns.apply,
                                          accept_change=ns.accept_change), indent=2))
     elif ns.cmd == "release":
-        if ns.edited:
-            from . import account_release
-            print(json.dumps(account_release.release(c, ns.pair, timestamp=ns.timestamp)))
-            return
         from . import release
         out = release.run(c, ns.pair, timestamp=ns.timestamp)
         print(f"{ns.pair}: {out['status']}: {out['path']} ({out['keys']} keys renamed, {out['pointers']} ledger pointers kept in paper/provenance.json)")
@@ -526,14 +415,12 @@ def _dispatch(ns, c):
         for name, tail in res["failed"]:
             print(f"--- {name}\n{tail[-800:]}")
     elif ns.cmd == "reconcile":
-        if ns.pce_evidence and not ns.pce_grant:
-            raise SystemExit("--pce-evidence requires --pce-grant")
         if ns.pce_grant:
             from . import pce_recovery
             if not ns.pair or not (ns.apply or ns.repair_only) or ns.retire_orphans:
                 raise SystemExit("PCE grant requires one pair and --apply or --repair-only")
             print(pce_recovery.apply(c, ns.pair, identity=ns.pce_grant, passes=ns.passes,
-                                    fact_checks=ns.fact_checks, reason=ns.reason, evidence=ns.pce_evidence, resume=not ns.repair_only, accept_change=ns.accept_change))
+                                    fact_checks=ns.fact_checks, reason=ns.reason, resume=not ns.repair_only, accept_change=ns.accept_change))
             return
         pairs = [ns.pair] if ns.pair else [p["pair_id"] for p in json.loads(c.path("shortlist.json").read_text())["pairs"]]
         for path, call in health.orphans(c, None if not ns.pair else set(pairs)):

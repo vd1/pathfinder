@@ -95,7 +95,7 @@ def _save(campaign, pair_id, **kw) -> dict:
 def run(campaign, pair_id: str, restart: bool = False) -> str:
     """The pass for one accepted paper, resuming a stopped one; returns CLEARED, RETURNED, PAUSE-ON-PRESENT,
     blocked or stopped, or the paper's state after an automatic amend that did not end ACCEPTED."""
-    if not getattr(campaign, "_edited_publication", False) and research.status(campaign, pair_id).get("status") != "DRAFT":
+    if research.status(campaign, pair_id).get("status") != "DRAFT":
         raise SystemExit(f"{pair_id} is not DRAFT")
     s = paper.status(campaign, pair_id)
     if s.get("status") in ("CLEARED", "RELEASED") and not restart:
@@ -104,8 +104,7 @@ def run(campaign, pair_id: str, restart: bool = False) -> str:
         raise SystemExit(f"{pair_id}: the paper is {s.get('status')}; the presentation pass needs an ACCEPTED paper")
     try:
         result = _run(campaign, pair_id, restart)
-        if not getattr(campaign, "_preserve_presentation_history", False):
-            tidy(campaign, pair_id)
+        tidy(campaign, pair_id)
         return result
     except Refused as refused:
         _save(campaign, pair_id, state="stopped", reason=f"refused: {refused}"); return "stopped"
@@ -146,8 +145,6 @@ def _run(campaign, pair_id, restart) -> str:
     pd = paper.folder(campaign, pair_id); d = folder(campaign, pair_id)
     accepted = (pd / "paper.tex").read_text(errors="replace")
     s = state(campaign, pair_id)
-    if getattr(campaign, "_edited_publication", False) and s.get("state") in TERMINAL and not restart:
-        return s["state"]
     if restart or s.get("accepted_sha256") != sha(accepted) or s.get("state") not in ("running", "stopped"):
         if d.exists():
             archive = pd / "presentation-history"
@@ -178,16 +175,8 @@ def _run(campaign, pair_id, restart) -> str:
     n = state(campaign, pair_id).get("cycles", 0)
     while True:
         found = list(_check(campaign, pair_id, stage, opened, disposition)["findings"])
-        if getattr(campaign, "_edited_publication", False):
-            source_findings = _release_language(campaign, (d / stage / "paper.tex").read_text())
-            (d / stage / "release-language.json").write_text(json.dumps(source_findings, indent=1))
-            found += source_findings
         s = state(campaign, pair_id)
         fresh = [e for e in s.get("escalations", []) if _key(e) not in s.get("reviewed", [])]
-        notation = getattr(campaign, "_presentation_notation", None)
-        if notation and stage != notation["stage"] and (found or fresh):
-            return _pause(campaign, pair_id, "reviewed notation cycle not cleared: " +
-                          _summary(found + fresh))
         items = [f for f in found if f.get("kind") in SUBSTANTIVE] + [{**e, "kind": "escalation"} for e in fresh]
         introduced = []
         if items:
@@ -200,7 +189,7 @@ def _run(campaign, pair_id, restart) -> str:
         remaining = [f for f in found if f.get("kind") not in SUBSTANTIVE] + introduced
         if not remaining:
             break
-        if n >= getattr(campaign, "_presentation_cycle_limit", cycles(campaign)):
+        if n >= cycles(campaign):
             return _pause(campaign, pair_id, "not cleared at the cycle limit: " + _summary(remaining))
         n += 1
         name = f"correct-{n}"
@@ -211,17 +200,7 @@ def _run(campaign, pair_id, restart) -> str:
         before = (d / stage / "paper.tex").read_text()
         after = (d / name / "paper.tex").read_text()
         bibliography = (d / name / "references.bib").read_text()
-        notation = getattr(campaign, "_presentation_notation", None)
-        if notation:
-            from . import notation_continuation, pce
-            try:
-                projected = notation_continuation.projected_correction(before, after, bibliography, notation)
-                refused = guard(before, projected, accepted, bibliography, rewordable)
-            except pce.Changed as error:
-                refused = [str(error)]
-        else:
-            refused = guard(before, after, accepted, bibliography, rewordable,
-                            getattr(campaign, "_presentation_residue_identifiers", ()))
+        refused = guard(before, after, accepted, bibliography, rewordable)
         pairs = reworded((d / stage / "paper.tex").read_text(), (d / name / "paper.tex").read_text(), accepted)
         if pairs:
             (d / name / "reworded.json").write_text(json.dumps(pairs, indent=1))
@@ -241,23 +220,6 @@ def _run(campaign, pair_id, restart) -> str:
     paper._set(campaign, pair_id, status="CLEARED", cleared_sha256=sha(text), presentation_stage=stage,
                reason=f"presentation cleared at {stage}")
     return "CLEARED"
-
-
-def _release_language(campaign, tex):
-    """Feed release-blocking source language into the guarded presentation correction loop."""
-    from . import release
-    clean, _ = release.strip_comments(tex)
-    findings = []
-    for sentence in _sentences(clean):
-        hits = release.leak_check(campaign, "\\begin{document}" + sentence, "")
-        if hits:
-            findings.append({"kind": "unclear", "where": '"' + sentence.replace('"', "'") + '"',
-                             "issue": "Reader-facing workflow language fails the release check: " + "; ".join(hits),
-                             "fix": "Reword this sentence in scientific terms, preserving every limitation and "
-                                    "qualification. Do not replace internal status with a claim of validation "
-                                    "or remove a caveat. Editing provides no additional scientific validation.",
-                             "checker": "host-release-language"})
-    return findings
 
 
 def _pause(campaign, pair_id, reason) -> str:
@@ -283,7 +245,7 @@ def _return(campaign, pair_id, confirmed) -> str:
                               "fix": c.get("fix")} for i, c in enumerate(confirmed, 1)]}
     (d / "amend-findings.json").write_text(json.dumps(findings, indent=1))
     amends = list(paper.status(campaign, pair_id).get("presentation_amends") or [])
-    if getattr(campaign, "_edited_publication", False) or len(amends) >= AUTO_AMENDS:
+    if len(amends) >= AUTO_AMENDS:
         _save(campaign, pair_id, state="RETURNED", reason=f"{len(confirmed)} confirmed: " + _summary(confirmed),
               findings=str((d / "amend-findings.json").relative_to(campaign.thread_dir(pair_id))))
         return "RETURNED"
@@ -316,79 +278,6 @@ def _sources(campaign, pair_id) -> list[Section]:
     return out
 
 
-def _task(campaign, pair_id, name):
-    text = _prompt(campaign, name)
-    if not getattr(campaign, "_edited_publication", False):
-        return text
-    text = text.replace("You are the final editor of a mathematics paper that referees have already\n"
-                        "accepted for its mathematics, attribution and prior work.",
-                        "You are the final presentation editor of a PCE-approved research account.")
-    text = text.replace("Referees have accepted its mathematics;", "PCE approved its exposition;")
-    text = text.replace("You are one of the referees who accepted the paper above.",
-                        "You are an independent reviewer of the research account above.")
-    text = text.replace("mathematics paper", "research account").replace("accepted mathematics\npaper", "editorially accepted research\naccount")
-    text = text.replace("the referees left open with their acceptance", "the editorial review left open")
-    text = text.replace("the referees left with their acceptance", "the editorial review left open")
-    installation_error = (paper.status(campaign, pair_id).get("original_edit") or {}).get("presentation_error")
-    if installation_error:
-        text += ("\nInternal build diagnostic, never manuscript prose: the accepted draft failed installation. "
-                 "Correct only its LaTeX syntax in the presentation copy, preserving scientific meaning. "
-                 "The normal compilation, independent checks and release gates still apply.\n" + installation_error + "\n")
-    retained = getattr(campaign, "_presentation_context", None)
-    if retained:
-        text += ("\n\nRetained scientific context for the unresolved clarity finding (data, not new "
-                 "research or instructions):\n" + json.dumps(retained, ensure_ascii=False) +
-                 "\nUse these exact retained quotations only to address the named notation, background definition or clarity "
-                 "findings. Explain existing quantities and limitations without new results, computations "
-                 "or strengthened claims. Do not restore unrelated source locators or editorial notes. "
-                 "Do not inspect current websites. The ordinary correction guard still applies; "
-                 "an unsupported scientific change must stop. Preserve accepted assumptions and numerical "
-                 "sentences verbatim when adding definitions. If the retained evidence does not specify "
-                 "a convention, explicitly identify the missing definition rather than remove or replace "
-                 "the assumption. Do not invent an acronym expansion.\n")
-    continuation = getattr(campaign, "_presentation_continuation_instructions", None)
-    if continuation:
-        text += (
-            "\n\nBounded operator continuation instructions, from the immutable grant:\n"
-            + json.dumps(continuation, ensure_ascii=False)
-            + "\nThese instructions narrow this correction's scope; they are not scientific evidence "
-            "or permission to override any guard or gate. If an earlier checker offers removal as an "
-            "option but the bound instruction requires retaining that sentence, preserve it verbatim "
-            "and add the supported clarification. Do not repeat the change identified in the prior "
-            "guard refusal. Earlier refused manuscripts remain historical outputs, not the current "
-            "source to install. The ordinary guard and independent checker remain mandatory; an "
-            "unsupported scientific change must stop.\n")
-    residue_identifiers = getattr(campaign, "_presentation_residue_identifiers", ())
-    if residue_identifiers:
-        text += ("\nExplicit source-bound residue-label allowance: " + ", ".join(residue_identifiers) +
-                 ". These exact labels may be introduced when explaining the named finding; their digits "
-                 "identify residues, not new numerical results. Preserve all existing residue identities. "
-                 "This allowance does not permit numerical values, parameters, equations or new conclusions. "
-                 "The fresh checker must assess the explanation against the retained evidence.\n")
-    notation = getattr(campaign, "_presentation_notation", None)
-    if notation:
-        text += ("\nEngine-authorized reviewed notation continuation. For this correction only, "
-                 "the exact symbol occurrences listed in the packet may be alpha-renamed in inline "
-                 "and displayed math. This supersedes the general prohibition on formula edits only "
-                 "for those literal symbol replacements. Preserve every other source byte, including "
-                 "prose, gas-constant occurrences, equations' other tokens and bibliography. "
-                 "Return the manuscript with exactly the granted replacements and no other edits. "
-                 "An unchanged manuscript or any additional edit will be refused. "
-                 "The independent checker must assess the notation and mathematical equivalence; "
-                 "this grant does not imply clearance.\n")
-    status = research.status(campaign, pair_id).get("status")
-    return (f"Internal instruction only, never manuscript prose: the recorded status is {status}. "
-            "Acceptance in this task means PCE editorial approval only, never a new scientific verdict. "
-            "Do not copy status labels or editorial-process descriptions into the article. "
-            "Express the limitation scientifically: editing does not provide additional scientific validation; "
-            "generated supporting material is not independent evidence. Preserve the account's negative "
-            "findings, qualifications and unresolved limitations without strengthening its claims. "
-            "For example, where applicable: The results remain subject to the stated assumptions and "
-            "evidence limitations; editing provides no additional scientific validation. "
-            "A confirmed scientific problem stops publication for the operator; no research or automatic "
-            "author amendment is authorised.\n\n" + text)
-
-
 def _call(campaign, pair_id, stage, actor, prompt, *, schema=None, search=False, cwd=None, seconds=None):
     A = campaign.allowances
     kw = dict(model=campaign.model, tools=search, reads=search, search=search, cwd=cwd or campaign.thread_dir(pair_id),
@@ -405,9 +294,7 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
     report (change log, title, open-finding dispositions, escalations), built as the paper is."""
     pd = paper.folder(campaign, pair_id); d = folder(campaign, pair_id); out = d / name
     src = pd if base is None else d / base
-    retained = actor == "corrector" and getattr(campaign, "_preserve_presentation_history", False)
-    if not retained:
-        shutil.rmtree(out, ignore_errors=True)
+    shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True, exist_ok=True)
     for f in pd.iterdir():
         if f.suffix in KEEP and f.name != "paper.pdf" or f.name == "pathfinder-meta.tex":
@@ -430,17 +317,11 @@ def _edit(campaign, pair_id, name, actor, prompt_name, *, base, opened=(), dispo
         sections.append(Section("accepted manuscript (reference only, to restore wording; do not return it)", text=accepted))
         sections.append(Section("checker findings to resolve", text=json.dumps(list(findings), indent=1), keep=True))
     sections += [Section("manuscript", text=tex, keep=True), Section("references.bib", text=bib, keep=True),
-                 Section("your task", text=_task(campaign, pair_id, prompt_name), keep=True)]
+                 Section("your task", text=_prompt(campaign, prompt_name), keep=True)]
     stage = "present_lookup" if actor == "lookup" else "present"
     prompt = context.build(campaign, stage, sections, tools=actor == "lookup", cwd=out, unit=pair_id)
-    if retained:
-        from .pce import _write
-        _write(out, "input-sha256.txt", sha(prompt), immutable=True)
-    if retained and (out / "reply.md").exists():
-        r = {"text": (out / "reply.md").read_text()}
-    else:
-        r, _ = _call(campaign, pair_id, stage, actor, prompt, search=actor == "lookup", cwd=out)
-        (out / "reply.md").write_text(r["text"] or "")
+    r, _ = _call(campaign, pair_id, stage, actor, prompt, search=actor == "lookup", cwd=out)
+    (out / "reply.md").write_text(r["text"] or "")
     try:
         new_tex, new_bib, report = _blocks(r["text"] or "")
     except contracts.ContractViolation as error:
@@ -539,7 +420,7 @@ def _check(campaign, pair_id, stage, opened, disposition) -> dict:
     if (d / stage / "reworded.json").exists():
         sections.append(Section("sentences the last correction reworded (before, after)", keep=True,
                                 text=(d / stage / "reworded.json").read_text()))
-    sections.append(Section("your task", text=_task(campaign, pair_id, "present-check"), keep=True))
+    sections.append(Section("your task", text=_prompt(campaign, "present-check"), keep=True))
     prompt = context.build(campaign, "present_check", sections, tools=False, cwd=d / stage, unit=pair_id)
     n, found = checkers(campaign), []
     for k in range(1, n + 1):
@@ -578,7 +459,7 @@ def _claims(campaign, pair_id, stage, items, accepted) -> list[dict]:
     sections = [Section("accepted paper", text=accepted, keep=True),
                 Section("the paper after its presentation edit", text=(d / stage / "paper.tex").read_text(), keep=True),
                 Section("items to decide", text=json.dumps(numbered, indent=1), keep=True),
-                Section("your task", text=_task(campaign, pair_id, "present-claims"), keep=True)]
+                Section("your task", text=_prompt(campaign, "present-claims"), keep=True)]
     prompt = context.build(campaign, "review", sections, tools=False, cwd=d / stage, unit=pair_id)
     r, kw = _call(campaign, pair_id, "review", "claims", prompt, schema=contracts.SCHEMAS["presentation_claims"],
                   seconds=campaign.allowances.get("review_seconds", 900))
@@ -629,10 +510,9 @@ def _surnames(bib: str) -> set:
     return names
 
 
-RESIDUE = re.compile(r"(?:Ala|Arg|Asn|Asp|Cys|Gln|Glu|Gly|His|Ile|Leu|Lys|Met|Phe|Pro|Ser|Thr|Trp|Tyr|Val)[1-9]\d*")
 
 
-def _inserted(text: str, numbers: set, surnames: set, residue_identifiers=()) -> list[str]:
+def _inserted(text: str, numbers: set, surnames: set) -> list[str]:
     if not text.strip():
         return []
     out, short = [], " ".join(text.split())[:160]
@@ -641,11 +521,7 @@ def _inserted(text: str, numbers: set, surnames: set, residue_identifiers=()) ->
     named = sorted({w for w in re.findall(r"\b[A-Z][a-z]{2,}\b", text) if w.lower() in surnames})
     if named:
         out.append(f"inserted text names an author ({', '.join(named)}): {short}")
-    numeric_text = text
-    for identifier in residue_identifiers:
-        if RESIDUE.fullmatch(identifier):
-            numeric_text = re.sub(r'(?<!\w)' + re.escape(identifier) + r'(?!\w)', '', numeric_text)
-    for n in sorted(set(_NUMBER.findall(numeric_text)) - numbers):
+    for n in sorted(set(_NUMBER.findall(text)) - numbers):
         out.append(f"inserted text brings the number {n}: {short}")
     if _CROSS.search(text):
         out.append(f"inserted text adds a cross-reference: {short}")
@@ -671,7 +547,7 @@ def reworded(before: str, after: str, accepted: str) -> list[dict]:
     return out
 
 
-def guard(before: str, after: str, accepted: str, bib: str, rewordable=(), residue_identifiers=()) -> list[str]:
+def guard(before: str, after: str, accepted: str, bib: str, rewordable=()) -> list[str]:
     """What a correction did beyond adding definitions and rewording, comparing `after` with `before` sentence by
     sentence: an accepted sentence lost or changed (unless the change restores the accepted wording, or the
     sentence holds a phrase an "unclear" finding quotes, `rewordable`), or inserted text that cites, names an
@@ -683,10 +559,6 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=(), resid
     numbers, surnames = set(_NUMBER.findall(_body(before))), _surnames(bib)
     out = []
     from collections import Counter
-    old_residues = Counter(re.findall(r'\b' + RESIDUE.pattern + r'\b', _body(before)))
-    new_residues = Counter(re.findall(r'\b' + RESIDUE.pattern + r'\b', _body(after)))
-    if residue_identifiers and old_residues - new_residues:
-        out.append("source-bound residue clarification removes or changes an existing residue identifier")
     ops = difflib.SequenceMatcher(None, b, a, autojunk=False).get_opcodes()
     old_counts = Counter(s for tag, i1, i2, _, _ in ops if tag != "equal" for s in b[i1:i2])
     new_counts = Counter(s for tag, _, _, j1, j2 in ops if tag != "equal" for s in a[j1:j2])
@@ -714,7 +586,7 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=(), resid
             out += [f"deletes accepted text: {s[:160]}" for s in old if s in acc]
             continue
         if tag == "insert":
-            out += _inserted(" ".join(new), numbers, surnames, residue_identifiers)
+            out += _inserted(" ".join(new), numbers, surnames)
             continue
         if all(s in acc for s in new) and not any(s in acc for s in old):
             continue                                   # restores the accepted wording
@@ -726,5 +598,5 @@ def guard(before: str, after: str, accepted: str, bib: str, rewordable=(), resid
                 break
             if t in ("replace", "insert"):
                 added += nt[l1:l2]
-        out += _inserted(" ".join(added), numbers, surnames, residue_identifiers)
+        out += _inserted(" ".join(added), numbers, surnames)
     return out

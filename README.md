@@ -1060,7 +1060,7 @@ Licence: MIT.
 
 This repository uses [Shipshape](https://github.com/dmytri/shipshape), a context-isolated spec-driven workflow for coding agents. Install with `npx skills add dmytri/shipshape --skill '*'`, or the experimental open-plugin build with `npx plugins add dmytri/shipshape`.
 
-### Continuing PCE and releasing an edited account
+### Continuing PCE
 
 `edit_scheme: pce` selects PCE after the ordinary editor supplies a baseline.
 Changing this setting or raising `pce.passes` does not reopen a completed
@@ -1070,8 +1070,6 @@ an explicit continuation grant. For example:
 ```sh
 pathfinder --root CAMPAIGN reconcile PAIR --pce-grant completion-1 --passes 3 --fact-checks 3 --reason 'Complete independent editorial gates' --repair-only
 pathfinder --root CAMPAIGN --accept-change 'Upgrade engine and OpenAI editorial routes' reconcile PAIR --apply
-pathfinder --root CAMPAIGN present PAIR --edited
-pathfinder --root CAMPAIGN release PAIR --edited
 ```
 
 The grant creates `edited/pce-rounds/completion-1`, leaving historical rounds
@@ -1085,21 +1083,11 @@ Independent reviewers receive scientific ledger entries without previous
 review decisions. The full record remains available to the author and in
 historical evidence.
 
-This recovery and the account presentation path require OpenAI routes for
-all their roles and no `refusal_fallback`. Resolve actor-specific overrides
+This recovery requires OpenAI routes for all its roles and no `refusal_fallback`. Resolve actor-specific overrides
 as well as stage defaults before granting. They do not clear stop markers,
 provider pauses or budget guards. A safety refusal stops the work. A changed
 engine or configuration still needs the ordinary recorded `--accept-change`
 reason. Recovery calls no consumer, research stage or paper author.
-
-`present --edited` requires PCE acceptance and the installed, unchanged
-accepted note. It applies the existing notation, definition, background and
-meaning checks, with bounded corrections, to the account. Its records live
-under `edited/publication/<content-hash>`; scientific status and paper-stage
-acceptance are unchanged. A confirmed scientific problem returns to the
-operator without automatic amendment. `--restart` archives the earlier
-account presentation attempt. The clean release removes comments and
-pipeline terminology and requires the configured `release.disclosure`.
 
 ### Dated release artifacts
 
@@ -1121,18 +1109,6 @@ but a locally rebuilt PDF is not covered by the published PDF hash; request
 a new timestamp to publish another build. Historical dated releases are
 never silently replaced. Internal provenance remains outside the exported
 artifact directory.
-
-Imported EVA2 accounts also use `present PAIR --edited` and
-`release PAIR --edited`. The engine verifies their existing `import.json`,
-accepted delivery and render hashes, then copies the exact retained
-`edited/eva2-pce/account.build.tex` into the publication workspace. The
-original body, PDF, edit record and imported PCE history stay untouched.
-`acceptance.json` identifies the imported acceptance and its evidence;
-no native PCE acceptance or `accepted_note` flag is manufactured. Accounts
-without citation commands can retain their prose references and use an
-empty publication bibliography. Missing bibliography dependencies block
-publication. Wrappers without `maketitle` receive a visible UTC release line
-in the exported copy.
 
 After an active reconciliation process exits, `reconcile --apply` without a
 pair processes the shortlist sequentially, including prepared PCE grants.
