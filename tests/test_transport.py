@@ -37,6 +37,19 @@ def test_claude_call_returns_text_and_receipt(tmp_path, monkeypatch):
     assert rows[0]["stage"] == "scan" and transport.spend(campaign(tmp_path)) == 0.5
 
 
+def test_a_cli_group_already_gone_when_frozen_is_not_a_failure(tmp_path, monkeypatch):
+    """macOS answers killpg on a group left with only a zombie with EPERM, not ESRCH (test_paper under load,
+    7 November 2026): a CLI that exits right after its final event must not fail the call."""
+    monkeypatch.setenv("FAKE_MODE", "claude"); monkeypatch.setenv("FAKE_REPLY", "hello")
+
+    def gone(pid, sig):
+        raise PermissionError(1, "Operation not permitted")
+    monkeypatch.setattr(transport.os, "killpg", gone)
+    r = transport.call("p", campaign=campaign(tmp_path), model="m", tools=False, search=False, cwd=tmp_path,
+                       timeout=10, thread="T", stage="scan", actor="judge")
+    assert r["text"] == "hello" and not r.get("transport_failed")
+
+
 def test_tool_free_claude_command_uses_supported_flags(tmp_path):
     cmd = transport._command(campaign(tmp_path), "m", tools=False, search=False, cwd=tmp_path)
     assert cmd[-2:] == ["--tools", ""]

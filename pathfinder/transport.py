@@ -730,7 +730,7 @@ def _execute(campaign, request: ModelRequest, activity_path, activity):
                     # Buffered trailing events are still drained and accounted as uncertain.
                     try:
                         os.killpg(proc.pid, signal.SIGSTOP)
-                    except ProcessLookupError:
+                    except (ProcessLookupError, PermissionError):   # gone; macOS says EPERM for a zombie-only group
                         pass
                 journal.append('events.jsonl', line)
                 lines.append(line)
@@ -880,7 +880,7 @@ def _kill_tree(proc, *, freeze=False):
         # spawn/setsid between the snapshot and termination and retain output pipes.
         try:
             os.killpg(proc.pid, signal.SIGSTOP)
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             pass
     below = _descendants(proc.pid)
     for pid in reversed(below):
@@ -891,7 +891,7 @@ def _kill_tree(proc, *, freeze=False):
     if freeze:
         try:
             os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             pass
         proc.wait(5)
     else:
@@ -901,10 +901,10 @@ def _kill_tree(proc, *, freeze=False):
 def _kill(proc):
     try:
         os.killpg(proc.pid, signal.SIGTERM); proc.wait(5)
-    except (ProcessLookupError, subprocess.TimeoutExpired):
+    except (ProcessLookupError, PermissionError, subprocess.TimeoutExpired):   # macOS: EPERM for a zombie-only group
         try:
             os.killpg(proc.pid, signal.SIGKILL)
-        except ProcessLookupError:
+        except (ProcessLookupError, PermissionError):
             pass
 
 
