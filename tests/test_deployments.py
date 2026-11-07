@@ -290,10 +290,11 @@ PROOFTREE_LINK = r'''
 import contextlib, io, json, sys
 from pathlib import Path
 import pathfinder
-from pathfinder import composable, config, corpus, research, resources, transport
+from pathfinder import config, corpus, research, resources, transport
 from repl.cli import init, parse_metadata, sha
 from repl.state import Store, initialize
 from repl import workflow
+from repl.workflow import engine_root
 
 root = Path(sys.argv[1])
 atom = lambda aid: (f'<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/{aid}</id>'
@@ -315,12 +316,12 @@ with Store(root) as store:
 with contextlib.redirect_stdout(io.StringIO()):
     workflow.scan_links(root)
     result = workflow.research_link(root, link)
-c = config.load(root / "adaptive" / f"S{link}" / "joint")
+c = config.load(engine_root(root / "adaptive" / f"S{link}"))
 d = c.thread_dir("Q1P1")
-composable.check_frozen(c, "Q1P1")
 receipts = transport.receipts(c)
-print(json.dumps({"result": result, "engine": pathfinder.__file__, "scheme": c.raw["research_scheme"],
-    "bundles": {label: sorted(composable.verify(d / "branches" / label)["files"]) for label in composable.labels(c)},
+print(json.dumps({"result": result, "engine": pathfinder.__file__, "scheme": c.raw.get("research_scheme"),
+    "folder": c.root.name, "peers": c.raw.get("peers"), "branched": (d / "branches").exists(),
+    "stages": sorted({r["stage"] for r in receipts}),
     "verdict": {k: research.export_outcome(c, "Q1P1")[k] for k in ("status", "scientific_verdict")},
     "backends": sorted({r["backend"] for r in receipts}), "runs": sorted({r["run_id"] for r in receipts}),
     "branches": sorted({r["branch"] for r in receipts if r.get("branch")}),
@@ -343,14 +344,13 @@ def _prooftree(script: str, checkout: Path, *args) -> dict:
 def test_prooftree_researches_a_link_on_the_candidate_engine(tmp_path):
     code = deployment_matrix.recorded("prooftree", tmp_path / "prooftree")   # its pinned commit, not the live tree
     out = _prooftree(PROOFTREE_LINK, code, tmp_path / "campaign")
-    # one composable campaign: three frozen branches that verify, an accepted joint verdict, an edited PDF
-    assert out["scheme"] == "composable" and sorted(out["bundles"]) == ["branch-1", "branch-2", "branch-3"]
-    assert all({"ledger.jsonl", "handoff.json"} <= set(files) for files in out["bundles"].values())
+    # proofTree's default since 5eaa0e9: one single-peer EV campaign (Ada, consolidation, an independent verifier)
+    assert out["folder"] == "ev" and out["scheme"] is None and out["peers"] == ["ada"] and not out["branched"]
+    assert {"peer", "consolidate", "verify", "edit"} <= set(out["stages"]) and out["branches"] == []
     assert out["result"]["outcome"] == "ACCEPT" and out["verdict"] == {"status": "DRAFT", "scientific_verdict": "ACCEPT"}
-    assert Path(out["result"]["pdf"]).is_file() and out["result"]["pdf"].endswith("joint/threads/Q1P1/edited/note.pdf")
-    # stub receipts under one run, every branch's calls named; the candidate answered and no julien-2 code loaded
+    assert Path(out["result"]["pdf"]).is_file() and out["result"]["pdf"].endswith("ev/threads/Q1P1/edited/note.pdf")
+    # stub receipts under one run; the candidate answered and no julien-2 code loaded
     assert out["backends"] == ["repl-stub"] and len(out["runs"]) == 1
-    assert out["branches"] == ["branch-1", "branch-2", "branch-3"]
     assert Path(out["engine"]).resolve().is_relative_to(ROOT / "pathfinder") and out["loaded"] == []
     assert out["overlays"] and all(out["overlays"].values()), out["overlays"]
 
