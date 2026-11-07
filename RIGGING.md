@@ -55,6 +55,7 @@ Procedure lives in the skills. Every role reads this on open.
 - dependency: behave
 - dependency: pytest
 - dependency: pytest-cov
+- dependency: pytest-xdist
 - dependency: ELM OpenAI-compatible request interface at `https://elm.edina.ac.uk/api/v1` with `Qwen/Qwen3.5-397B-A17B-FP8`; authenticate from operator-provisioned `ELM_API_KEY` in the environment
 
 ## Outbound

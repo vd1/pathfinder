@@ -19,6 +19,8 @@ from .review_evidence import (EvidenceUnavailable, _external_citations, _evidenc
                               _assessment_evidence, _review_material)
 from .composable_research import _request_file, retain_response, next_requests, export_outcome  # noqa: F401
 
+PARTNER_POLL = 15.0   # seconds a ready peer waits between looks at its partners' state
+
 
 def _outline(path) -> str:
     """A paper's headings by line, for a peer that reads it by reference: it jumps to the lines it needs."""
@@ -67,7 +69,7 @@ def _peers(campaign, pair_id, stop):
             if left <= 0 or L.ready(peers, after=review_seq):
                 return
             while L.ready([actor], after=review_seq) and not all(done[o] for o in others):   # my word stands; wait for my partners
-                time.sleep(15)
+                time.sleep(PARTNER_POLL)
                 if L.ready(peers, after=review_seq):
                     return
             if L.ready(peers, after=review_seq):
