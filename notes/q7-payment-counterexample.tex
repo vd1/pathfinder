@@ -6,7 +6,7 @@
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{definition}[theorem]{Definition}
 \newcommand{\R}{\mathbb R}
-\title{A participation counterexample and a payment repair\\
+\title{The Q7 game: claims, counterexamples and repair\\
 \large For the Q7 resource-allocation game}
 \author{}
 \date{4 November 2026}
@@ -14,20 +14,21 @@
 \maketitle
 \vspace{-2em}
 
-\paragraph{Scope.}
-Garjani, Shokri and Kebriaei~\cite{q7} propose a quadratic-payment
-mechanism and claim efficient Nash implementation, unique equilibrium,
-budget balance, individual rationality and stochastic learning convergence.
-This note gives separate counterexamples to participation and uniqueness
-for their explicit payment, and proves a static participation repair.
-It does not establish convergence of a learning algorithm
-or priority of the repaired mechanism.
+Garjani, Shokri and Kebriaei~\cite{q7} propose a resource-allocation
+game with quadratic payments. We define the game, restate its claimed
+guarantees, and disprove uniqueness and individual rationality by explicit
+examples. Removing an opponent-only payment term restores individual
+rationality; uniqueness must instead be weakened to uniqueness of the
+allocation.
 
 \section{The game and the payment}
 There are $N\ge2$ players and $K$ resources with capacity
 $c\in\R_+^K$. Player $n$ has a compact convex set
 $X_n\subset\R_+^K$ containing zero and a private valuation
-$V_n(x_n)=\mathbb E[\psi_n(x_n;\xi_n)]$, with $V_n(0)=0$.
+$V_n(x_n)=\mathbb E[\psi_n(x_n;\xi_n)]$, with $V_n(0)=0$. We use continuously differentiable, strongly concave
+valuations; both counterexamples below are smooth and $1$-strongly concave.
+All vector inequalities are coordinatewise, $\|\cdot\|$ is the Euclidean
+norm, and $a^\top b$ is the usual inner product.
 The planner's problem is
 \begin{equation}\label{planner}
  \max_{x_n\in X_n}\sum_{n=1}^N V_n(x_n)
@@ -36,6 +37,8 @@ The planner's problem is
 Player $n$ submits a quantity and a nonnegative price vector,
 $s_n=(x_n,p_n)\in X_n\times\R_+^K$. The allocation is exactly $x_n$;
 shared capacity is not a constraint on unilateral messages.
+Write $s=(s_1,\ldots,s_N)$ for the full message profile and $s_{-n}$
+for all messages except player $n$'s.
 Utility is $U_n(s)=V_n(x_n)-t_n(s)$: positive tax is paid by the player,
 and negative tax is a subsidy. A player submits neither its valuation
 function nor a report of its type.
@@ -46,22 +49,36 @@ $U_n(s_n^*,s_{-n}^*)\ge U_n(s_n,s_{-n}^*)$ for every player and every
 admissible joint quantity--price deviation $s_n$.
 Individual rationality means $U_n(s^*)\ge V_n(0)=0$ for every player.
 Budget balance means $\sum_nt_n(s^*)=0$.
+An equilibrium is efficient if its allocation solves~\eqref{planner}.
 \end{definition}
 
+Individual rationality here is an equilibrium participation guarantee
+relative to an outside option of zero. It does not guarantee that a
+learning process reaches equilibrium or that participation is worthwhile
+along the way. Randomness enters the static game only through the expected
+valuation $V_n$; deterministic valuations are admissible special cases.
+
 Write the paper's payment scale as $\gamma>0$ (its notation is
-$\alpha$). Its explicit payment, regrouped algebraically, is
+$\alpha$). Define four separate components, with the first subscript
+identifying the player and the second identifying the payment term:
 \begin{align}
-t_n^{\rm orig}(s)={}&
- \underbrace{\frac{\gamma}{2(N-1)}
- \sum_{m\ne n}\|p_n-p_m\|^2}_{\text{price disagreement}}\notag\\
-&\underbrace{{}-\frac{\gamma}{N-1}p_n^\top
- \left(\sum_mx_m-c\right)}_{\text{excess-demand signal}}
- +\underbrace{\frac{\gamma N}{(N-1)^2}
- \left(\sum_{m\ne n}p_m\right)^\top(x_n-c/N)}_{\text{quantity charge}}\notag\\
-&\underbrace{{}-\frac{\gamma}{(N-1)^2}
- \sum_{m\ne n}p_m^\top(x_m-c/N)}_{\text{opponent-only adjustment}}.
-\label{original}
+ t_{n,1}(s)&=\frac{\gamma}{2(N-1)}
+ \sum_{m\ne n}\|p_n-p_m\|^2,
+ &&\text{price disagreement},\label{term1}\\
+ t_{n,2}(s)&=-\frac{\gamma}{N-1}p_n^\top
+ \left(\sum_mx_m-c\right),
+ &&\text{excess-demand signal},\label{term2}\\
+ t_{n,3}(s)&=\frac{\gamma N}{(N-1)^2}
+ \left(\sum_{m\ne n}p_m\right)^\top(x_n-c/N),
+ &&\text{quantity charge},\label{term3}\\
+ t_{n,4}(s)&=-\frac{\gamma}{(N-1)^2}
+ \sum_{m\ne n}p_m^\top(x_m-c/N),
+ &&\text{opponent-only adjustment}.\label{term4}
 \end{align}
+The original payment is
+\begin{equation}\label{original}
+ t_n^{\rm orig}(s)=t_{n,1}(s)+t_{n,2}(s)+t_{n,3}(s)+t_{n,4}(s).
+\end{equation}
 The first term alone makes the best price the others' average.
 The first two together, holding quantities fixed, give
 \[
@@ -82,13 +99,14 @@ The reference $c/N$ changes transfer levels, not marginal quantity
 incentives. The last term affects the recipient's utility but not its
 best response, since it depends only on opponents' messages.
 
-\section{A three-player, one-resource counterexample}
-\paragraph{The original proposition.}
+\section{The Q7 theorem being claimed}
 In the subsection entitled ``A feasible solution to linear matrix
 inequalities'', the proposition introducing the explicit payment
 (source label \texttt{prop2}) asserts the following, restated in this
-note's notation:
+note's notation. This is the explicit-mechanism claim we test, rather
+than a claim that arbitrary quadratic payments work.
 \begin{quote}
+\textbf{Claim (Q7, explicit payment).}
 The payment $t_n^{\rm orig}$ in~\eqref{original} satisfies the paper's
 sufficient matrix conditions for P1--P4, and consequently the induced
 mechanism has: P1, an existing and unique Nash equilibrium; P2, an
@@ -100,6 +118,50 @@ These are claims of the original paper, not assumptions of the
 counterexample below. Stochastic learning convergence is the separate
 property P5, treated subsequently in the paper.
 
+\section{Why the claim is false}
+\subsection{Failure of uniqueness: a continuum of price equilibria}
+\begin{proposition}\label{nonunique}
+The original game can have infinitely many Nash equilibria, even with
+a unique efficient allocation and increasing, strongly concave valuations.
+\end{proposition}
+\begin{proof}
+Set $N=3$, $K=1$, $c=3$, $\gamma=1$, and, for every player,
+\[
+ X_n=[0,1],\qquad V_n(x)=2x-\tfrac12x^2.
+\]
+For every $q\in[0,1]$, consider the profile
+\[
+ x_1=x_2=x_3=1,\qquad p_1=p_2=p_3=q.
+\]
+At this profile, differentiation of the original utility gives
+\[
+ \partial_{x_n}U_n=1-q\ge0,\qquad
+ \partial_{p_n}U_n=0.
+\]
+Each quantity is at its upper boundary. The own utility Hessian,
+in $(x_n,p_n)$, is
+\[
+ \begin{pmatrix}-1&1/2\\1/2&-1\end{pmatrix}\prec0.
+\]
+Thus the boundary first-order conditions suffice for global best
+responses, including at $q=0$. Every displayed profile is a Nash
+equilibrium. All four payment terms vanish: prices agree, total
+demand equals capacity, and $x_n=c/N=1$. Each player has utility
+$V_n(1)=3/2$.
+\end{proof}
+
+This example directly disproves the uniqueness conclusion in
+\textbf{P1} for the explicit payment. It preserves existence,
+efficiency (P2), budget balance (P3), and participation (P4).
+All equilibria displayed have the same allocation but different price
+messages. Strict concavity in each player's own strategy ensures a
+unique best response to fixed opponents, not a unique joint equilibrium.
+Deleting the opponent-only term preserves this continuum, so the
+participation repair below does not repair full-equilibrium uniqueness.
+The corrected theorem below proves uniqueness only of the allocation.
+
+
+\subsection{Failure of individual rationality: negative equilibrium utility}
 \begin{proposition}\label{counterexample}
 The explicit original payment need not be individually rational, even
 with smooth strongly concave deterministic valuations and an efficient,
@@ -112,7 +174,7 @@ Set $N=3$, $K=1$, $c=\gamma=1$, $X_n=[0,2]$, and
  V_2(x)=V_3(x)=-x-\tfrac12x^2.
 \]
 These valuations are normalized and $1$-strongly concave. Deterministic
-losses satisfy the stochastic model as a special case. Consider
+valuations satisfy the stochastic model as a special case. Consider
 \[
  x^*=(1,0,0),\qquad p^*=(4,4,4).
 \]
@@ -132,7 +194,7 @@ increasing throughout $[0,1]$.
 Direct substitution in~\eqref{original} gives
 \[
 \begin{array}{c|rrrr|rrr}
- &t^{(1)}&t^{(2)}&t^{(3)}&t^{(4)}&t_n^{\rm orig}&V_n&U_n\\\hline
+ &t_{n,1}&t_{n,2}&t_{n,3}&t_{n,4}&t_n^{\rm orig}&V_n&U_n\\\hline
  1&0&0&4&2/3&14/3&9/2&-1/6\\
  2&0&0&-2&-1/3&-7/3&0&7/3\\
  3&0&0&-2&-1/3&-7/3&0&7/3
@@ -147,8 +209,8 @@ payment rule, whereas opting out is the external participation benchmark.
 \paragraph{Exactly what this disproves.}
 The example directly contradicts \textbf{P4}: player 1 receives $-1/6$
 at a Nash equilibrium. Thus the original proposition's combined
-P1--P4 conclusion is false. This counterexample does not contradict
-\textbf{P1}, the claim of equilibrium existence and uniqueness.
+P1--P4 conclusion is false. This example does not address the failure of uniqueness; that is
+established separately above.
 It satisfies \textbf{P2} and \textbf{P3}: allocation
 is optimal and transfers sum to zero. It therefore does not disprove
 either of those properties. Nor does a static example alone disprove
@@ -171,58 +233,32 @@ payment satisfies the sufficient participation conditions is false.
 This does not refute the separate conditional participation proposition
 for coefficients that actually satisfy those conditions.
 
-\section{A continuum of price equilibria}
-\begin{proposition}\label{nonunique}
-The original game can have infinitely many Nash equilibria, even with
-a unique efficient allocation and increasing, strongly concave valuations.
-\end{proposition}
-\begin{proof}
-Set $N=3$, $K=1$, $c=3$, $\gamma=1$, and, for every player,
-\[
- X_n=[0,1],\qquad V_n(x)=2x-\tfrac12x^2.
-\]
-For every $q\in[0,1]$, consider the profile
-\[
- x_1=x_2=x_3=1,\qquad p_1=p_2=p_3=q.
-\]
-At this profile, differentiation of the original utility gives
-\[
- \partial_{x_n}U_n=1-q\ge0,\qquad
- \partial_{p_n}U_n=0.
-\]
-Each quantity is at its upper boundary. The own utility Hessian,
-in $(x_n,p_n)$, is again
-\[
- \begin{pmatrix}-1&1/2\\1/2&-1\end{pmatrix}\prec0.
-\]
-Thus the boundary first-order conditions suffice for global best
-responses, including at $q=0$. Every displayed profile is a Nash
-equilibrium. All four payment terms vanish: prices agree, total
-demand equals capacity, and $x_n=c/N=1$. Each player has utility
-$V_n(1)=3/2$.
-\end{proof}
+\section{How to repair the mechanism and the theorem}
+The correction has two parts. Change the payment to restore individual
+rationality, and replace the claim of a unique message equilibrium by a
+claim of a unique equilibrium allocation. The payment change cannot
+select a unique price, because it leaves all best responses unchanged.
 
-This example directly disproves the uniqueness conclusion in
-\textbf{P1} for the explicit payment. It preserves existence,
-efficiency (P2), budget balance (P3), and participation (P4).
-All equilibria displayed have the same allocation but different price
-messages. Strict concavity in each player's own strategy ensures a
-unique best response to fixed opponents, not a unique joint equilibrium.
-Deleting the opponent-only term preserves this continuum, so the
-participation repair below does not repair full-equilibrium uniqueness.
-The theorem proves uniqueness only of the allocation.
-
-\section{Deleting the opponent-only adjustment}
+\subsection{Payment repair}
 Define the repaired payment by keeping just the first three terms:
 \begin{equation}\label{repair}
- t_n^c(s)=t_n^{\rm orig}(s)
- +\frac{\gamma}{(N-1)^2}
- \sum_{m\ne n}p_m^\top(x_m-c/N).
+ t_n^c(s)=t_{n,1}(s)+t_{n,2}(s)+t_{n,3}(s)
+ =t_n^{\rm orig}(s)-t_{n,4}(s).
 \end{equation}
 All unilateral utility differences are unchanged. Consequently the
 original and repaired games have exactly the same best responses and
 Nash equilibria; only utility levels and transfers change.
 
+\paragraph{Why was the fourth term included?}
+After presenting the payment, Q7 says that the additional components
+depending on opponents' messages are needed to satisfy the LMI conditions.
+It gives no separate economic justification for this particular adjustment.
+Such terms can redistribute utility without changing incentives. Here,
+however, the asserted conditions fail, and the first three terms already
+balance at equilibrium. The fourth term is therefore unnecessary for
+that balance and can destroy individual rationality, as the example shows.
+
+\subsection{Corrected theorem and proof}
 \begin{theorem}[Static implementation and participation]\label{repair-theorem}
 Assume each $V_n$ is continuously differentiable and $m$-strongly concave
 on $X_n$, with $V_n(0)=0$, and $\gamma\le m(N-1)^2$.
@@ -285,12 +321,113 @@ Its utility from that deviation is nonnegative. Equilibrium optimality
 therefore gives $U_n^c(s^*)\ge0$.
 \end{proof}
 
-In the counterexample, repaired taxes are $(4,-2,-2)$ and utilities
+In the individual-rationality counterexample, repaired taxes are $(4,-2,-2)$ and utilities
 are $(1/2,2,2)$. The equilibrium is unchanged, transfers balance, and
-all players benefit from participation. These static results do not
+all players benefit from participation. In the nonuniqueness example,
+the entire family indexed by $q\in[0,1]$ remains an equilibrium family.
+Thus P1 is corrected to existence and allocation uniqueness, P4 is
+restored by the payment change, and P2 and P3 hold under the corrected
+theorem's explicit hypotheses.
+
+These static results do not
 guarantee capacity feasibility away from equilibrium, truthful type
 revelation, incentives to follow a prescribed learning algorithm, or
 uniqueness of the complete quantity--price profile.
+
+\section{The learning procedure and its limits}
+Q7 proposes a variable sample-size proximal best-response algorithm with
+a relaxed update. The network manager coordinates communication; each
+player solves its own optimization problem using its private valuation
+samples and local constraints. At iteration $i$:
+\begin{enumerate}
+\item Players send their current messages $s_n^i$ to the manager, who
+computes and broadcasts the aggregate $\bar s^i=\sum_n s_n^i$.
+Player $n$ obtains the opponents' aggregate as $\bar s^i-s_n^i$.
+\item Player $n$ draws $Q_i$ independent valuation samples and computes
+\[
+ \widehat T_n(s^i)\in\arg\max_{z_n=(y_n,r_n)\in\mathcal S_n^P}
+ \left\{\frac1{Q_i}\sum_{q=1}^{Q_i}\psi_n(y_n;\xi_{n,i}^q)
+ -t_n(z_n,s_{-n}^i)-\frac\mu2\|z_n-s_n^i\|^2\right\}.
+\]
+Here $\mu>0$, and $\mathcal S_n^P=X_n\times[0,P_{\max}]$ includes
+the coordinatewise price cap imposed in the learning section.
+Opponent-only payment terms can be dropped from this optimization,
+so only aggregate opponents' quantities and prices are needed.
+\item All players update simultaneously, with $0<\tau<1$:
+\[
+ s_n^{i+1}=(1-\tau)s_n^i+\tau\widehat T_n(s^i).
+\]
+\end{enumerate}
+The proximal penalty discourages large moves; relaxation takes only a
+fraction of the computed move. Increasing $Q_i$ reduces sampling error.
+The paper's convergence theorem uses geometrically increasing sample
+sizes $Q_i=\lceil C_b/\eta^{2(i+1)}\rceil$, with $0<\eta<1$ and
+an error-bound constant $C_b>0$. It assumes bounded gradient noise,
+smoothness, a compact price domain and nonexpansiveness of the exact
+proximal best-response map. Nonexpansiveness is an additional assumption,
+not a consequence of the static repair theorem proved above.
+
+Deleting the fourth payment term leaves these optimization problems
+unchanged, hence leaves the intended learning updates unchanged for fixed
+samples and initialization. It does not repair the convergence proof.
+In particular, the paper's final convergence argument invokes uniqueness
+of the Nash equilibrium, which the price-continuum example disproves.
+Nonuniqueness alone does not prevent convergence to some equilibrium,
+but convergence to a uniquely determined message profile is unavailable.
+The algorithm also prescribes how players should update; equilibrium
+incentives alone do not prove that following this entire protocol is
+strategically optimal. These issues require a separate dynamic analysis.
+
+\section{Collusion and Sybil attacks}
+Nash equilibrium protects against unilateral deviations with the other
+players' messages fixed. It does not protect against coordinated changes
+by a coalition. Q7 uses ``strong Nash implementation'' to mean that every
+Nash equilibrium implements an efficient allocation; this does not assert
+that those equilibria resist coalition deviations.
+
+\paragraph{A profitable coalition deviation in the formal game.}
+Set $N=3$, $K=1$, $c=\gamma=1$, and, for every player,
+\[
+ X_n=[0,1],\qquad V_n(x)=2x-\tfrac12x^2.
+\]
+For both the original and repaired payment, the symmetric profile
+\[
+ x_n^*=\tfrac13,\qquad p_n^*=\tfrac53
+\]
+is a Nash equilibrium with zero payments. Indeed, each player's own
+quantity and price gradients vanish, and its own utility Hessian is
+\[
+ \begin{pmatrix}-1&1/2\\1/2&-1\end{pmatrix}\prec0,
+\]
+so these are global best responses. Each player receives
+$V_n(1/3)=11/18$.
+If all players jointly change their messages to $x_n=1$, $p_n=0$,
+every payment term vanishes and each player's utility becomes
+$V_n(1)=3/2>11/18$. Thus this equilibrium is not resistant to coalition
+deviations, for either payment rule; no side transfers are needed.
+
+This deviation demands three units when capacity is only one. It is
+admissible in the formal message game because aggregate capacity does
+not constrain messages and the allocation rule is $y_n(s)=x_n$.
+The example therefore exposes the importance of feasibility away from
+equilibrium. It does not establish a profitable deviation in a different
+game that enforces capacity for every message profile. An actual manager
+would need a rationing or rejection rule, and the resulting game would
+require a new equilibrium and coalition analysis.
+
+\paragraph{Sybil resistance is not established.}
+The model fixes $N$ and the players' identities; it does not allow a real
+participant to create additional identities. Such identities would alter
+$N$, the reference shares $c/N$, and the price aggregates in the payment
+rule. To analyze this attack, one must specify how the real participant's
+valuation and consumption constraints apply across identities and how
+its payments are combined. Resistance to profitable use of fictitious
+identities is usually called \emph{false-name-proofness}.
+Neither Q7's Nash guarantees nor the static repair theorem establish this
+property. This is an unmodeled attack, rather than a demonstrated
+profitable Sybil deviation. Deleting the fourth term supplies no identity
+control and does not resolve either the coalition counterexample or the
+missing Sybil analysis.
 
 \begin{thebibliography}{1}
 \bibitem{q7}
