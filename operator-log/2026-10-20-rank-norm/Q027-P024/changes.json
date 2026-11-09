@@ -1,0 +1,21 @@
+{
+  "baseline_sha256": "f5743caa69c1c6f84fa52dbc5ef486b877d7050dd03d5dd1897b6978c59a10a9",
+  "candidate_sha256": "8eba7fecdd8a29ab4d8d450b37fae92141540f382c5ef3fa2c56b9a687034bb6",
+  "changes": [
+    {
+      "finding": "P2",
+      "before": "Put the added positive quadratic restraint in the form \\(BB^{\\mathsf T}\\), with strength and weights included in \\(B\\).",
+      "after": "Put the added positive quadratic restraint in the form \\(BB^{\\mathsf T}\\), with strength and weights included in \\(B\\). Following the retained finite-rank comparator, choose \\(B\\in\\mathbb{R}^{n\\times p}\\) with \\(p=\\operatorname{rank}(BB^{\\mathsf T})\\) independent columns, where \\(n\\) is the dimension of the retained coordinate chart. This is a rank-sized factor of the restraint, rather than an arbitrary redundant factor."
+    },
+    {
+      "finding": "P1",
+      "before": "It computes both terms with restraint-rank-many selected right-hand sides, without whole-spectrum diagonalisation.",
+      "after": "The displayed solve uses one right-hand side per column of \\(B\\), hence \\(p\\) right-hand sides. This equals the restraint rank under the independent-column convention just specified; a redundant supplied factor would instead require its full column count in this construction. Both work terms are evaluated without whole-spectrum diagonalisation."
+    },
+    {
+      "finding": "P3",
+      "before": "For stiffness error \\(\\delta_K<g\\), this work bounds the logarithmic-component error by",
+      "after": "Let the perturbed stiffness \\(\\widehat K\\) be real symmetric and satisfy \\(\\|\\widehat K-K\\|_2\\leq\\delta_K<g\\), where \\(\\|\\cdot\\|_2\\) is the spectral operator norm induced by the Euclidean vector norm. This is the symmetric spectral-norm perturbation used in the retained check. Under this stiffness-error assumption, this work bounds the logarithmic-component error by"
+    }
+  ]
+}

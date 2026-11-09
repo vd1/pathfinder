@@ -1,0 +1,172 @@
+\documentclass{article}
+\usepackage{pathfinder-readable}
+
+\title{Can a harmonic quantum model explain a molecular-glue restraint work?}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+Q calculates molecular-glue binding free energies using restrained molecular dynamics; P develops quantum algorithms for harmonic protein models. This work examined whether a harmonic model could predict the mutation-dependent work of restraining a bromodomain together with the glue IBG1. It obtained conditional Gaussian work and quantum-query constructions, including displacement from the restraint reference, but checked them only on synthetic matrices. Classical selected solves already evaluate the same Gaussian work. The thread ended at PAUSE because the actual restraint specification, isolated stage values, molecular ensembles and independently calibrated stiffness were unavailable. Recovering the restraint definitions and signed stage values is the smallest useful next step, followed by a held-out classical test before quantum implementation.
+\end{abstract}
+
+\section{The molecular question and the observable}
+
+Q studies ternary complexes in which a molecular glue brings a target protein together with an E3 ubiquitin ligase. For the comparison here, BRD4 and BRD3 are the target proteins and DCAF16 is the recruited E3 ligase. BD1 and BD2 denote the first and second bromodomains of the target. The bivalent glue IBG1 engages both BRD4 bromodomains, bridging their interface. BRD4 residue G386 and the corresponding BRD3 residue E344 lie in a short BD2 loop close to the DCAF16 interface. Q reports that replacing BRD4's glycine with glutamate halts IBG1-induced degradation, whereas the reciprocal BRD3 mutation restores it~\cite{Q}. This makes the loop a plausible place to investigate selectivity, while the glue's engagement of both domains makes a loop-only calculation an incomplete description of the restrained system.
+
+Q calculates binding free energies with explicit-solvent molecular dynamics and umbrella sampling along a geometric cycle, using conformational and orientational restraints to control separation. Its calculated ranking captures the tested glycine/glutamate trend, but its absolute binding values are inaccurate and it identifies possible starting-structure bias. Binding stability also leaves other degradation determinants unresolved: lysine accessibility for ubiquitination is not treated~\cite{Q}.
+
+P develops quantum procedures for loading harmonic protein models, simulating dynamics and estimating displacement correlations, vibrational modes and spectral moments~\cite{P}. Those procedures supply computational ingredients. This comparison has no calibrated chemical and solvent model of Q's complexes to give them as input.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+The proposed connexion is therefore a specific restraint-work prediction. Q restrains DCAF16 first, then BD1, then BD2, including IBG1 in the ternary BD2 selection~\cite{Q}. Let \(W_{s,g}\) be positive application work for that full BD2-plus-IBG1 restraint, in the ensemble immediately before it is added and with the preceding restraints retained. Define
+\[
+ R_g=W_{u,g}-W_{b,g},\qquad D=R_E-R_G.
+\]
+Here \(b\) denotes the bound complex, \(u\) the bulk target--IBG1 system, and \(E\) and \(G\) denote glutamate and glycine at the relevant site. BRD4 compares G386E with wild type; BRD3 compares wild type with E344G. Each background needs four matched works. Positive \(D\) is the proposed destabilising restraint contribution, rather than a prediction of total binding free energy or degradation.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+Q's Eq.~4 and results narrative support this intended bulk-minus-bound application-work convention. Its introductory cycle labels remain awkward under that interpretation. Signed stage arrays or code are still needed to verify implementation and the isolated BD2 decomposition; no sign error in Q is established~\cite{Q}.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating \nolinkurl{branches/branch-1/ledger.jsonl:73}.}
+
+The research supplement is the campaign's generated evidence for this comparison, not original literature or independent molecular corroboration. The mathematical findings below are conditional constructions and synthetic checks from that record. The separate, limited literature audit is identified in the appendix.
+
+\section{What the available molecular evidence leaves open}
+
+Q reports total RMSD-cycle corrections of \(3.1\) kcal/mol for BRD4(G386E) and \(7.3\) kcal/mol for wild-type BRD3, with corrections close to zero for the glycine-containing systems. It attributes substantial differences to BD2 plus IBG1. These totals nevertheless include other conformational stages and cannot substitute for the isolated works defining \(D\)~\cite{Q}.
+
+Its loop root-mean-square fluctuation (RMSF) measurements come from umbrella windows nearest the respective potential-of-mean-force (PMF) minima. The bound-to-unbound increases are shown below; parentheses give replicate standard deviations, in Angstrom~\cite{Q}.
+\[
+\begin{array}{lcc}
+ &\text{Glycine system}&\text{Glutamate system}\\
+\text{BRD4}&0.10\ (0.02)&0.24\ (0.07)\\
+\text{BRD3}&0.76\ (0.32)&0.91\ (0.03)
+\end{array}
+\]
+These biased-window averages provide neither the full pre-stage covariance nor displacement from the actual restraint reference. The BRD3 mean separation, \(0.15\) \AA{}, is smaller than the E344G replicate scatter, and paired uncertainty is unavailable. The summaries alone establish neither the proposed work contrast nor an entropy mechanism.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating \nolinkurl{branches/branch-1/ledger.jsonl:73}.}
+
+Even the integrated restraint potential remains unresolved. Q specifies C-alpha-plus-glue RMSD sampling biases of \(5\) kcal/mol per square Angstrom, and backbone RMSD restraints of strength \(100\) during steered dynamics. It says that RMSD restraints remain during separation without restating their parameters~\cite{Q}. The supplied evidence does not settle the BD2-stage strength, centre, weights, reference or fitting conventions. A zero-centred RMSD restraint in a fixed or justified linearised fitted chart can be quadratic in Cartesian displacements; a nonzero-centred radial umbrella generally is not that same quadratic potential.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+This work's loop calculation consequently gives a necessary condition under explicit assumptions. Let \(G_{\rm loop}\) be an individual covariance-induced increase in application work, with zero reference mean, a common coordinate chart and a loop-confined positive-semidefinite covariance increment \(\Delta C\). For restraint stiffness \(k/N\), where \(N\) is the full RMSD atom normalisation, the checked result is
+\[
+ 0\leq G_{\rm loop}\leq\frac{k}{2N}\operatorname{tr}\Delta C.
+\]
+Supplying a declared fraction of a target work therefore requires a minimum loop trace increase. Q's biased-window average RMSFs do not supply that atomwise trace, and the actual restraint remains unknown. The inequality does not directly bound the mutation double difference \(D\): subtracting individual upper bounds is invalid without additional common-response assumptions. The illustrative numerical thresholds are in Appendix~\ref{app:loop}; they neither establish nor exclude a molecular loop mechanism. Diffuse covariance changes, reference displacement, other stages and a different actual restraint remain possible.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:9} and \nolinkurl{research-supplement.md#ledger.jsonl:11}.}
+
+There is also a population problem. Q reports largely preserved inter-domain contacts and no sampling of fully separated bromodomains in the relevant bulk trajectories, despite small release-stage errors~\cite{Q}. In this work's basin treatment, probabilities \(p_j\) belong to the pre-restraint ensemble and conditional works \(W_j\) combine as
+\[
+ W=-k_{\rm B}T\log\sum_jp_j e^{-W_j/(k_{\rm B}T)}.
+\]
+Precise work within visited basins cannot determine an unmeasured population contribution. A synthetic example reduces sampled work \(8k_{\rm B}T\) to \(4.57250k_{\rm B}T\) when one per cent of the ensemble occupies an omitted zero-work basin. That example identifies a sensitivity, not an omitted BRD4 basin or an uncertainty interval for Q.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13} and \nolinkurl{research-supplement.md#ledger.jsonl:30}, retaining \nolinkurl{branches/branch-2/ledger.jsonl:25}.}
+
+\section{The conditional model and its classical comparator}
+
+Within a fixed coordinate chart and a single Gaussian basin, this work retains both fluctuations and reference displacement. Let \(x\) be displacement from the restraint reference, \(\mu\) its parent mean, and \(K\) a positive-definite stiffness including permanent and preceding restraints. Put the added positive quadratic restraint in the form \(BB^{\mathsf T}\), with strength and weights included in \(B\). Following the retained finite-rank comparator, choose \(B\in\mathbb{R}^{n\times p}\) with \(p=\operatorname{rank}(BB^{\mathsf T})\) independent columns, where \(n\) is the dimension of the retained coordinate chart. This is a rank-sized factor of the restraint, rather than an arbitrary redundant factor. The recorded Gaussian identity is
+\[
+\begin{aligned}
+ V(x)&=\tfrac12(x-\mu)^{\mathsf T}K(x-\mu),&
+ U(x)&=\tfrac12x^{\mathsf T}BB^{\mathsf T}x,\\
+ S&=B^{\mathsf T}K^{-1}B,&r&=B^{\mathsf T}\mu,\\
+ W&=\tfrac{k_{\rm B}T}{2}\log\det(I+S)
+       +\tfrac12r^{\mathsf T}(I+S)^{-1}r.
+\end{aligned}
+\]
+Here \(T\) is temperature and \(k_{\rm B}\) is Boltzmann's constant. The second term would disappear if every ensemble were independently centred on its own mean. It must remain when work is defined relative to a fixed restraint reference. This formula is a conditional model, not a validated representation of Q's actual stage.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, \nolinkurl{research-supplement.md#ledger.jsonl:24} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+The classical comparator solves \(KY=B\), forms \(S=B^{\mathsf T}Y\), then evaluates the reduced determinant and quadratic form. The displayed solve uses one right-hand side per column of \(B\), hence \(p\) right-hand sides. This equals the restraint rank under the independent-column convention just specified; a redundant supplied factor would instead require its full column count in this construction. Both work terms are evaluated without whole-spectrum diagonalisation. Model construction, factorisation, fill, preconditioning and actual rank remain costs.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+Environmental relaxation belongs in that comparison. In the Gaussian block model, integrating out solvent or other coordinates gives a Schur-complement stiffness and corresponding effective force. A sparse parent may yield a dense marginal. Full-parent selected solves avoid explicitly constructing that marginal, but retain the larger model and its conditioning.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+P's inverse and expectation-estimation procedures~\cite{P} can conditionally evaluate selected inverse traces and reference-mean forms. This work combines them into a full within-basin Gaussian work construction, including noncommuting selection. Its query bounds, access promises and synthetic residuals appear in Appendix~\ref{app:quantum}. No protein model or quantum circuit was implemented. The construction still needs coherent matrix access, vector and norm preparation, certified retained low modes, matching thermal and coordinate conventions, and complete loading, arithmetic, synthesis and hardware costs. P itself discusses linear data-loading gate costs and width--depth trade-offs~\cite{P}. Small state registers alone do not establish a useful computational regime.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:6}, \nolinkurl{research-supplement.md#ledger.jsonl:28} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+Two limitations prevent an unchanged transfer from P. Its Langevin supplement changes lower-block damping in S7.32 to scalar damping in S7.34--S7.36~\cite{P}. This work's coordinate-corrected oscillator audit finds physical displacement variance \(k_{\rm B}T/\omega^2\) under velocity-only damping, but \(k_{\rm B}T/[2(\gamma^2+\omega^2)]\) under the scalar-damped construction with the same noise, for unit mass. The discrepancy prevents interpreting the latter output unchanged as canonical covariance. It does not refute P's formal simulation-complexity task or obstruct a separately calibrated static inverse route.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating \nolinkurl{branches/branch-1/ledger.jsonl:73}; \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+Separately, P's uniform-spring contact model~\cite{P} has no mutation-sensitive covariance when retained geometry, common spring scale, means, references and preceding restraints are identical. That conditional model null cannot falsify the biological mechanism. Chemistry-sensitive interactions or independently observed geometry must enter the model. The synthetic checks also show why RMSF alone omits correlations and reference means needed for full work.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating \nolinkurl{branches/branch-1/ledger.jsonl:73}.}
+
+\section{Why PAUSE, and the next decision}
+
+The supplied thread status is PAUSE. The scientific reason is that conditional algebra has been checked, while the molecular prediction and useful quantum regime remain unestablished. The missing inputs are the actual Q restraint specification and signed isolated stages, correct conditional molecular means and covariances, adequately sampled basin populations, independently calibrated solvent-aware stiffness and low-mode errors, and complete matched classical and quantum costs. Further synthetic agreement supplies none of those molecular inputs.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:28} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+The smallest useful action is to recover the BD2-plus-IBG1 stage specification and signed arrays or code: atom selection and weights, final strength and centre, reference, fitting, preceding restraints and release order. This fixes what is being predicted and its implementation-level sign before further simulations. If the matched PMF and actual potential are reliable, Q's Eq.~4 already gives that stage's application work~\cite{Q}; a stiffness model then adds attribution or prediction for other systems.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:28} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+The subsequent physical tests are proposed and unexecuted. First, test Gaussian closure for the four BRD4 states. Fit state-specific covariance and reference means on two independent replicas; withhold a third replica and independently initialised restraint paths for comparison with converged exact-potential thermodynamic-integration or umbrella work. This uses mutant data to test closure, so it is not prospective mutation prediction. Fix BRD3 and E344G in advance as a separate background test.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating the corrected gate in \nolinkurl{branches/branch-1/ledger.jsonl:73}, including its underlying specification at entry 36.}
+
+Second, test an independently sourced model. Fitting \(K=k_{\rm B}T C^{-1}\) and then inverting it only recovers the classical input covariance \(C\); a closure pass cannot motivate quantum inversion. The separate candidate is a chemically sensitive parent force-field Hessian and mean or linear-force model, retaining environmental coordinates or their conditional Schur complement. Freeze this model, its calibration choices and acceptance criteria without fitting target-state covariance or withheld work, before comparison with the independent reference works. A force-field Hessian is not automatically a finite-temperature free-energy stiffness. Both tests require basin coverage and correlated uncertainty to be assessed.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating \nolinkurl{branches/branch-1/ledger.jsonl:73} and its corrections at entries 58, 62 and 70; \nolinkurl{research-supplement.md#ledger.jsonl:28}.}
+
+The proposed tolerances are per-work reference standard error at most \(0.15\) kcal/mol and contrast standard error at most \(0.30\) kcal/mol; prediction errors must be at most \(0.30\) per work and \(0.60\) per contrast. Passing also requires resolved positive direction and robustness to declared model and basin choices. These are proposed thresholds, not measured Q uncertainties. A precise, stable opposite contrast falsifies the proposed directional restraint-work explanation. Failure of independently sourced stiffness to predict withheld work blocks that model's transfer to P even if covariance-fitted closure passes. Missing conventions, unresolved populations or inadequate precision leave the test undecided.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:13}, incorporating \nolinkurl{branches/branch-1/ledger.jsonl:73}; \nolinkurl{research-supplement.md#ledger.jsonl:28}.}
+
+Only after this physical validation is a complete quantum-versus-selected-classical comparison meaningful for the same model, observable and absolute work tolerance. The result available now is the conditional construction and a falsifiable physical test. Molecular mechanism, publication novelty and practical quantum benefit remain unestablished.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+\appendix
+\section{Conditional quantum evaluation and error budgets}\label{app:quantum}
+
+Specialise the restraint to \(q\Pi\), where \(q>0\), \(\Pi\) is an orthogonal projector of rank \(m\), \(K\succeq gI>0\), and \(A_s=K+s\Pi\). This work derives
+\[
+ L=\log\det A_q-\log\det K
+  =\int_0^q\operatorname{tr}(\Pi A_s^{-1})\,ds,
+ \qquad
+ |L-L_J|\leq\frac{mq^3}{12g^3J^2}
+\]
+for equal midpoint quadrature with \(J\) nodes, including noncommuting selection. Ten synthetic cases and a cross-check gave maximum determinant-identity residual \(8.20\times10^{-14}\). This is algebraic agreement, not molecular accuracy.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:6} and \nolinkurl{research-supplement.md#ledger.jsonl:10}.}
+
+A block-encoding places a scaled matrix inside a larger unitary~\cite{P}. Assume one for \(K\) at scale \(\alpha\), coherent selection, a purification of \(\Pi/m\), and uniform reversible arithmetic and shifted encodings for the midpoint strengths. With absolute log-determinant tolerance \(\epsilon_L\) and failure probability \(\zeta\), the recorded composition gives
+\[
+ Q_L=O\!\left(
+ \frac{(\alpha+q)mq}{g^2\epsilon_L}
+ \log\frac{3mq}{g\epsilon_L}\log\frac1\zeta\right).
+\]
+Logarithms are bounded below by a constant. The inverse normalisation is \(4/(3g)\), and expectation accuracy is \(\epsilon_L/(3mq)\). Allocating one third of the tolerance to quadrature requires \(J\geq\sqrt{mq^3/(4g^3\epsilon_L)}\). Coherent node averaging avoids a multiplicative \(J\) only under those uniform access promises; separate-node measurement retains it.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:7}, as completed by \nolinkurl{research-supplement.md#ledger.jsonl:24}; \nolinkurl{research-supplement.md#ledger.jsonl:10}.}
+
+For supplied reference mean, put \(v=\Pi\mu\), \(\nu=\|v\|^2\). Then
+\[
+ W=\tfrac{k_{\rm B}T}{2}L+M,\qquad
+ M=\tfrac q2\nu-\tfrac{q^2}{2}v^{\mathsf T}A_q^{-1}v.
+\]
+Given known norm and reversible preparation of \(v/\sqrt\nu\), endpoint inverse estimation has conditional query bound
+\[
+ Q_M=O\!\left(
+ \frac{(\alpha+q)q^2\nu}{g^2\epsilon_M}
+ \log\frac{3q^2\nu}{2g\epsilon_M}\log\frac1\zeta\right).
+\]
+The mean work vanishes at \(\nu=0\). The 36 synthetic cases and cross-check gave endpoint/selected residual at most \(1.82\times10^{-14}\). Vector, norm, encoding and synthesis precision remain inputs.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:24} and \nolinkurl{research-supplement.md#ledger.jsonl:27}.}
+
+Supplied full force \(h=K\mu\) is a different input promise:
+\[
+ M=\tfrac12h^{\mathsf T}(K^{-1}-A_q^{-1})h
+  =\tfrac12\int_0^q h^{\mathsf T}A_s^{-1}\Pi A_s^{-1}h\,ds.
+\]
+Endpoint subtraction and positive integration were checked in nine synthetic cases, agreeing within \(7.64\times10^{-14}\). An environmental-force example had \(\Pi h=0\) but positive work, so projecting force before parent relaxation fails in that example. Force-to-mean conversion and norm preparation are costs; fixed-force and fixed-mean sensitivities cannot be substituted for each other.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:25}, \nolinkurl{research-supplement.md#ledger.jsonl:26} and \nolinkurl{research-supplement.md#ledger.jsonl:27}.}
+
+Let the perturbed stiffness \(\widehat K\) be real symmetric and satisfy \(\|\widehat K-K\|_2\leq\delta_K<g\), where \(\|\cdot\|_2\) is the spectral operator norm induced by the Euclidean vector norm. This is the symmetric spectral-norm perturbation used in the retained check. Under this stiffness-error assumption, this work bounds the logarithmic-component error by
+\[
+ |\widehat L-L|\leq\frac{mq\delta_K}{g(g-\delta_K)}.
+\]
+Mean, force, reference, basin, sampling and implementation errors require additional budgets. These query counts presume the stated operations; they are not complete runtimes or circuit estimates.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:10}, \nolinkurl{research-supplement.md#ledger.jsonl:24} and \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+\section{Illustrative loop-trace thresholds}\label{app:loop}
+
+Under the main-text zero-mean Gaussian, common-chart and loop-confined positive-semidefinite assumptions, explaining at least fraction \(f\) of a positive target \(G_{\rm total}\) requires
+\[
+ \operatorname{tr}\Delta C\geq\frac{2NfG_{\rm total}}k.
+\]
+Here \(G_{\rm total}\) is an illustrative target for an individual work increase. The numerical examples use Q's \(3.1\) and \(7.3\) kcal/mol total RMSD-cycle corrections, not recovered BD2-stage works or measured values of \(D\). At \(f=1\), the recorded sensitivity candidates give
+\[
+\begin{array}{lcccc}
+ &k&N&\text{BRD4 trace}&\text{BRD3 trace}\\
+\text{C5}&5&170&210.8&496.4\\
+\text{B100}&100&530&32.86&77.38
+\end{array}
+\]
+Strengths are in kcal/mol per square Angstrom and traces in square Angstrom. C5 assumes a C-alpha-plus-glue selection; B100 is a backbone-plus-glue proxy that extrapolates C-alpha evidence to backbone atoms. Neither supplies Q's actual stage parameters. Thresholds scale linearly with \(f\), and all twelve candidate/fraction cases for \(f=1,0.5,0.25\) were checked. Exceeding a necessary threshold is not sufficient for the target work.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:9} and \nolinkurl{research-supplement.md#ledger.jsonl:11}.}
+
+The required atomwise traces are unavailable. Average biased-window RMSF changes and replicate standard deviations do not determine them. Homogeneous-baseline ceilings cannot be promoted to molecular limits. A direct contrast bound needs additional common-bound-covariance and positive-semidefinite ordering assumptions; subtracting separate work ceilings is invalid. Unknown glycine offsets and other cycle stages further prevent identifying these targets with \(D\).\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:9} and \nolinkurl{research-supplement.md#ledger.jsonl:11}.}
+
+\section{Spectral and literature audits}
+
+A separate finding of this work concerns sharp spectral bins. Its recorded inspection of Rall, cited by P~\cite{Rall,P}, found an interval premise requiring spectral mass bounded by a finite constant times every interval's width. A finite matrix's normalised spectral measure retains mass at least \(1/n\) in intervals shrinking around an eigenvalue. The recorded audit therefore rejects that premise as a gap-independent hard-bin guarantee for arbitrary finite matrices. It leaves smooth moments available. Rall's primary text is represented here through that audit, rather than independently supplied primary evidence.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:5} and \nolinkurl{research-supplement.md#ledger.jsonl:12}.}
+
+The work also costed a clipped, globally bounded Bernstein-polynomial alternative. At synthetic tolerance \(0.01\), its certified degrees were \(630375\) for the log ratio and \(946170065\) for inverse evaluation. These are conservative upper bounds, not lower bounds or implemented circuits. Selected inverse integration avoids the hard-bin premise.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:8}, \nolinkurl{research-supplement.md#ledger.jsonl:10} and \nolinkurl{research-supplement.md#ledger.jsonl:12}.}
+
+The comparison retains stochastic Lanczos quadrature (SLQ) with a dimension-normalised additive log-determinant tolerance~\cite{SLQ}. Classical matrix-vector costs and quantum coherent-query counts assume different access models; neither alone establishes an advantage at the same absolute work tolerance. Specific selected-inversion coverage~\cite{SelInv} comes from the separate limited audit in branch 3, not a jointly retained finding or independently supplied primary text.\footnote{Research supplement: \nolinkurl{research-supplement.md#ledger.jsonl:8} and \nolinkurl{research-supplement.md#ledger.jsonl:12}; separate coverage at \nolinkurl{research-supplement.md#branches/branch-3/ledger.jsonl:64}, marked not cited by the joint ledger.}
+
+That same limited literature audit reports inspected precedents for restraint conditioning and references~\cite{Woo,Gumbart,Ebrahimi}, fluctuation treatments and their limitations~\cite{Lee,Deng}, and classical normal modes~\cite{Lindahl}. These are the audit's passage-level findings, not independent primary verification in this account or joint adoption of every overlap claim. Some texts remained unavailable, and this coverage supplies no novelty conclusion.\footnote{Research supplement: \nolinkurl{research-supplement.md#branches/branch-3/ledger.jsonl:41}, marked not cited by the joint ledger; novelty remains unresolved at \nolinkurl{research-supplement.md#ledger.jsonl:30}.}
+
+\bibliographystyle{plainurl}
+\bibliography{references}
+\end{document}

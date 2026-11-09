@@ -1,0 +1,18 @@
+{
+  "parent_candidate_sha256": "775c394bea70891224a16f93e6a4f472f64df89553169fe41d169ecf6b3b2c6a",
+  "changes": [
+    {
+      "finding": "C091",
+      "before": "Useful discrimination already supplied by the constrained static comparator defeats the proposed incremental temporal benefit.",
+      "after": "Useful discrimination supplied by the constrained static comparator does not by itself establish or exclude an incremental temporal benefit. For the specified PYP parameters and width statistic, no usable temporal increment has been demonstrated; that limited result does not exclude other observables or parameter regimes (Branch-2 entry 72). Any proposed temporal increment must survive the uncertainty and nuisance comparison before it can support an additional benefit."
+    }
+  ],
+  "findings": [
+    {
+      "id": "C091",
+      "path": "reviews/current/fact-check.json",
+      "sha256": "1670f8865c58d454464570886d43c5aada7a1d73c3deb0f874566f8c665b833c",
+      "quote": "The registered claim is supported, but the draft's final paragraph strengthens it to 'Useful discrimination already supplied by the constrained static comparator defeats the proposed incremental temporal benefit.' Static usefulness alone does not exclude additional temporal discrimination. The record demotes the temporal-only WIDTH argument only for specified parameters/statistics and permits a temporal extension if an increment survives uncertainty. Preserve the registered claim's 'has not thereby been established' qualification. This acceptance-relevant overstatement fails the fixed draft."
+    }
+  ]
+}
