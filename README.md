@@ -272,6 +272,21 @@ your own campaign directory and edit the models and the budget.
   across campaigns. Existing campaign `sources/` directories are also checked
   before downloading. `prefetch_limit`: papers fetched per thread beyond its
   two (default 60). See "Papers before research" below.
+- `local_sources`: optional authority records keyed by exact canonical arXiv ID,
+  including its version when supplied. Each record contains `path` (relative to
+  the campaign or absolute), `sha256` (full lowercase digest of nonempty `.txt`
+  or `.tex` bytes), and a nonempty `reason`. For example, an admitted PDF-text
+  representation may be selected because its TeX exceeds a deployment limit.
+  This explicit policy overrides pooled TeX for that exact ID without claiming
+  that LaTeX is unavailable. Missing or changed selected files fail closed.
+  Bibliography discovery reads only the selected bytes, ignoring unbound
+  reference sidecars and never fetching that paper's source to discover references.
+  The installed helper carries a hash-bound authority manifest and honors exact
+  IDs, arXiv URLs, and aliases resolved to the same exact ID. It does not equate
+  different versions or infer a version from an unversioned reference. Other
+  papers retain the ordinary pool policy and `prefetch_limit`. Selected local
+  files are not promoted to the shared cache. The policy cannot be combined
+  with `restricted_collection`; that collection retains its own input contract.
 - `package_cache`: the uv cache every agent with tools may write, set as
   `UV_CACHE_DIR` in each call. Otherwise use `PATHFINDER_PACKAGE_CACHE`, or
   `~/.cache/pathfinder/uv` by default, shared across campaigns, so agents

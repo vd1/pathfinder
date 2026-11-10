@@ -46,6 +46,35 @@ def name(aid: str) -> str:
     return aid.replace("/", "_")
 
 
+def validate_local_sources(records):
+    """Explicit campaign-local authorities, never a claim that upstream LaTeX is unavailable."""
+    if not isinstance(records, dict):
+        raise ValueError("local_sources must be an object keyed by exact arXiv identifier")
+    for aid, record in records.items():
+        if parse(aid) != aid or not isinstance(record, dict) or set(record) != {"path", "sha256", "reason"}:
+            raise ValueError("local_sources requires canonical arXiv IDs and path/sha256/reason records")
+        if not isinstance(record["path"], str) or not record["path"].strip():
+            raise ValueError("local_sources path must be nonempty")
+        if not isinstance(record["sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", record["sha256"]):
+            raise ValueError("local_sources requires a full SHA256")
+        if not isinstance(record["reason"], str) or not record["reason"].strip():
+            raise ValueError("local_sources requires a selection reason")
+
+
+def local_source(aid, records):
+    validate_local_sources(records)
+    record = records.get(aid)
+    if record is None:
+        return None
+    path = Path(record["path"])
+    if not path.is_absolute() or path.suffix.lower() not in {".txt", ".tex"}:
+        raise ValueError("resolved local_sources paths must be absolute text or TeX files")
+    blob = path.read_bytes()
+    if not blob or hashlib.sha256(blob).hexdigest() != record["sha256"]:
+        raise ValueError(f"local source changed or empty: {aid}")
+    return path
+
+
 def lookup(aid: str, dirs) -> Path | None:
     """Check every local pool before downloading; prefer LaTeX, then a justified PDF extraction.
 
@@ -328,13 +357,19 @@ def _record_for(k: str, v: str, cache: Path, urlopen=None):
     return _s2(f"search/match?query={urllib.parse.quote(v)}&fields=externalIds,title,openAccessPdf", cache, urlopen)
 
 
-def resolve(ref: str, cache, also=(), urlopen=None) -> Path:
+def resolve(ref: str, cache, also=(), urlopen=None, local_sources=None) -> Path:
     """Local pool first, then LaTeX, then PDF extraction when no LaTeX source is available."""
     cache = Path(cache)
+    local_sources = {} if local_sources is None else local_sources
+    validate_local_sources(local_sources)
     k, v = kind(ref)
     if k == "arxiv":
-        return get(v, cache, also, urlopen)
+        return local_source(v, local_sources) or get(v, cache, also, urlopen)
     hit, known = _known(ref, [cache, *also])
+    if known and known.get("arxiv"):
+        selected = local_source(known["arxiv"], local_sources)
+        if selected:
+            return selected
     if hit:
         return hit
     if known and known.get("arxiv"):
@@ -345,9 +380,13 @@ def resolve(ref: str, cache, also=(), urlopen=None) -> Path:
         raise RuntimeError("not cached, and downloads are off (PATHFINDER_OFFLINE)")
     with _locked(cache, _alias_key(ref)):
         hit, known = _known(ref, [cache, *also])
+        if known and known.get("arxiv"):
+            selected = local_source(known["arxiv"], local_sources)
+            if selected:
+                return selected
         if hit:
             return hit
-        return _resolve(ref, cache, also, urlopen)
+        return _resolve(ref, cache, also, urlopen, local_sources)
 
 
 def _known(ref: str, dirs) -> tuple[Path | None, dict | None]:
@@ -370,11 +409,14 @@ def _known(ref: str, dirs) -> tuple[Path | None, dict | None]:
     return (min(hits, key=lambda p: p.suffix != ".tex") if hits else None), known
 
 
-def _resolve(ref: str, cache: Path, also, urlopen) -> Path:
+def _resolve(ref: str, cache: Path, also, urlopen, local_sources=None) -> Path:
     k, v = kind(ref)
     record = _record_for(k, v, cache, urlopen)
     arxiv = parse(((record or {}).get("externalIds") or {}).get("ArXiv") or "")
     if arxiv:
+        selected = local_source(arxiv, local_sources or {})
+        if selected:
+            return selected
         path = get(arxiv, cache, also, urlopen)
         _remember(cache, ref, path, record, arxiv=arxiv)
         return path
@@ -434,12 +476,23 @@ def _pdf_bytes(url: str, urlopen=None) -> bytes:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="paper_source", description=__doc__.split("\n\n")[0])
     ap.add_argument("--cache", required=True); ap.add_argument("--also", action="append", default=[])
+    ap.add_argument("--local-sources", help="campaign-local hash-bound authority manifest")
+    ap.add_argument("--local-sources-sha256", help="exact manifest SHA256")
     ap.add_argument("ids", nargs="+", metavar="REF", help="an arXiv id, a DOI, a URL or title:...")
     ns = ap.parse_args(argv)
+    authorities = {}
+    if bool(ns.local_sources) != bool(ns.local_sources_sha256):
+        ap.error("local source manifest and digest are required together")
+    if ns.local_sources:
+        blob = Path(ns.local_sources).read_bytes()
+        if hashlib.sha256(blob).hexdigest() != ns.local_sources_sha256:
+            ap.error("local source manifest changed")
+        authorities = json.loads(blob)
+        validate_local_sources(authorities)
     failed = False
     for raw in ns.ids:
         try:
-            print(f"{raw} {resolve(raw, ns.cache, ns.also)}")
+            print(f"{raw} {resolve(raw, ns.cache, ns.also, local_sources=authorities)}")
         except Exception as error:
             print(f"{raw} ERROR {error}"); failed = True
     return 1 if failed else 0

@@ -10,7 +10,7 @@ pathfinder.paper_source with an arXiv id, a DOI, a URL or a title: a hit is retu
 once and added to the cache for everyone; calls with tools may write that one directory. `pathfinder prefetch`
 fills the cache for every shortlisted pair at once, before research."""
 from __future__ import annotations
-import json, os, shlex, shutil, sys, time
+import hashlib, json, os, shlex, shutil, sys, time
 from pathlib import Path
 from . import paper_source, net
 
@@ -34,6 +34,9 @@ def limit(campaign) -> int:
 
 
 def validate(raw: dict) -> None:
+    paper_source.validate_local_sources(raw.get("local_sources", {}))
+    if raw.get("local_sources") and "restricted_collection" in raw:
+        raise ValueError("local_sources cannot override a restricted collection")
     if "source_cache" in raw and (not isinstance(raw["source_cache"], str) or not raw["source_cache"].strip()):
         raise ValueError(f"source_cache must be a directory path, got {raw['source_cache']!r}")
     if "package_cache" in raw and (not isinstance(raw["package_cache"], str) or not raw["package_cache"].strip()):
@@ -41,6 +44,13 @@ def validate(raw: dict) -> None:
     v = raw.get("prefetch_limit", LIMIT)
     if type(v) is not int or v < 0:
         raise ValueError(f"prefetch_limit must be a non-negative integer, got {v!r}")
+
+
+def local_sources(campaign):
+    records = (campaign.raw or {}).get("local_sources", {})
+    paper_source.validate_local_sources(records)
+    return {aid: {**record, "path": str(campaign.path(record["path"]).resolve())}
+            for aid, record in records.items()}
 
 
 def get(campaign, ref: str) -> Path:
@@ -55,7 +65,8 @@ def get(campaign, ref: str) -> Path:
         with path.open("a") as handle:
             handle.write(json.dumps({"reference": ref, "outcome": "restricted; not fetched"}) + "\n")
         raise collection.Refused("source is outside the fixed collection; request logged, no retrieval")
-    return paper_source.resolve(ref, cache(campaign), _also(campaign), urlopen=lambda r, timeout: net.urlopen(r, timeout))
+    return paper_source.resolve(ref, cache(campaign), _also(campaign),
+                                urlopen=lambda r, timeout: net.urlopen(r, timeout), local_sources=local_sources(campaign))
 
 
 def paper_text(campaign, row: dict) -> Path | None:
@@ -69,6 +80,9 @@ def paper_text(campaign, row: dict) -> Path | None:
                 return Path(admitted["path"])
         return get(campaign, row.get("id", ""))
     aid = paper_source.parse(row.get("id", ""))
+    selected = paper_source.local_source(aid, local_sources(campaign))
+    if selected:
+        return selected
     if aid:
         pooled = paper_source.lookup(aid, [cache(campaign), *_also(campaign)])
         if pooled and pooled.suffix == ".tex":
@@ -109,7 +123,11 @@ def wanted(campaign, pair_id, rows) -> list[dict]:
     for side, row in zip("QP", rows):
         text = paper_text(campaign, row)
         aid = paper_source.parse(row.get("id", ""))
-        for ref in paper_source.references(text, aid, cache(campaign), lambda r, timeout: net.urlopen(r, timeout)) if text else []:
+        # Authoritative input references come only from its exact bytes, not unbound sidecars or a refetch.
+        selected = paper_source.local_source(aid, local_sources(campaign))
+        refs = (paper_source._refs_in([selected.read_text(errors="replace")], aid or "") if selected else
+                paper_source.references(text, aid, cache(campaign), lambda r, timeout: net.urlopen(r, timeout)) if text else [])
+        for ref in refs:
             out.setdefault(ref, {"id": ref, "title": None, "why": []})["why"].append(f"cited by {side}")
     ranked = sorted((w for w in out.values() if w["id"] not in own),
                     key=lambda w: ("cites both papers" not in w["why"], -len(w["why"])))
@@ -155,6 +173,15 @@ def install(campaign, d: Path) -> str:
     args = [sys.executable, "-I", str(target.resolve()), "--cache", str(cache(campaign).resolve())]
     for p in _also(campaign):
         args += ["--also", str(p.resolve())]
+    authorities = local_sources(campaign)
+    if authorities:
+        for aid in authorities:
+            paper_source.local_source(aid, authorities)
+        manifest = d / HELPER_DIR / "local-sources.json"
+        blob = (json.dumps(authorities, sort_keys=True, indent=1) + "\n").encode()
+        if not manifest.is_file() or manifest.read_bytes() != blob:
+            _atomic_write(manifest, blob)
+        args += ["--local-sources", str(manifest.resolve()), "--local-sources-sha256", hashlib.sha256(blob).hexdigest()]
     return shlex.join(args)
 
 
@@ -166,14 +193,23 @@ POOL_RULE = ("Paper pool: check the shared pool first. On a miss, fetch LaTeX so
              "This rule takes precedence over older paper-download instructions.")
 
 
+def local_rule(campaign):
+    authorities = local_sources(campaign)
+    if not authorities:
+        return ""
+    return ("\nExplicit local_sources overrides the pool preference for these exact identifiers only: "
+            + ", ".join(authorities) + ". Use the campaign-selected hash-bound text, including for reference discovery; "
+            "do not replace it with pooled or downloaded TeX. The selection does not assert LaTeX is unavailable.\n")
+
+
 def request_rule(campaign, request) -> str:
     """Apply the same pool rule to every role without granting extra tools to restricted reviewers."""
     from . import collection
     if collection.enabled(campaign):
         return collection.rule(campaign, request.cwd)
     if POOL_RULE in request.prompt:
-        return ""
-    rule = "\n\n" + POOL_RULE + f"\nShared pool: {cache(campaign).resolve()}\n"
+        return "" if local_rule(campaign) in request.prompt else local_rule(campaign)
+    rule = "\n\n" + POOL_RULE + local_rule(campaign) + f"\nShared pool: {cache(campaign).resolve()}\n"
     if request.tools and not request.reads:
         rule += f"Run: {install(campaign, Path(request.cwd or campaign.root))} REF [REF ...]\n"
     else:
@@ -190,7 +226,7 @@ def reading(campaign, d: Path) -> str:
     entries = [json.loads(l) for l in lib.read_text().splitlines() if l.strip()] if lib.is_file() else []
     listed = "".join(f"- {e['id']}: {e.get('title') or 'untitled'} ({', '.join(e.get('why') or [])}) {e['path']}\n"
                      for e in entries if e.get("path"))
-    return ("\n\n" + POOL_RULE + " The two papers are in inputs/. " + (f"inputs/library.jsonl lists {len(entries)} more papers fetched for this thread "
+    return ("\n\n" + POOL_RULE + local_rule(campaign) + " The two papers are in inputs/. " + (f"inputs/library.jsonl lists {len(entries)} more papers fetched for this thread "
             "(papers citing both, and the papers their bibliographies name), each with the path of its source:\n"
             + listed if listed else "")
             + f"For any other paper run\n    {install(campaign, d)} REF [REF ...]\nwith an arXiv id, a DOI, a URL or "
