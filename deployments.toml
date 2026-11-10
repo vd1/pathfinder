@@ -6,10 +6,10 @@
 [deployments.statarb]
 status = "supported"
 checkout = "../statarb"
-revision = "3516732a371755c406eff842efd5bd2ff57c5d0b"
+revision = "0cc7a791c4f75d8b54ea6f79eb9eb2b7296fb721"
 clean_paths = ["arxiv_drip/research_protocol.py", "arxiv_drip/research-brief.md", "arxiv_drip/engine_calls.py"]   # what the contract runs
 contract = "tests/test_deployments.py::test_statarb_prepares_freezes_and_runs_the_candidate_engine"
-notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins engine-v1.19.2 for new investigations and host calls, preserves existing investigation freezes, and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
+notes = "The real statarb adapter freezes the candidate commit with pathfinder freeze, verifies it, and its worker runs research and edit on the stub backend; statarb pins tested commit a6580c2253fee03c5379dd2ed7ff7de9a7feb54a (local-source authority atop engine-v1.19.2) for new investigations and host calls, caps reference prefetch at 10 with a statarb runtime-local pool, preserves hash-bound admitted text and existing investigation freezes, and makes its own scan, implementation and review calls through the engine (arxiv_drip/engine_calls.py) on the shared codex-subscription seats; its watchboard content is available as panels of the engine's operator page (python -m arxiv_drip view)."
 
 [deployments.coordinated-pilot]
 status = "supported"

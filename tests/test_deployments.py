@@ -21,7 +21,7 @@ def test_statarb_prepares_freezes_and_runs_the_candidate_engine(tmp_path, monkey
     statarb = deployment_matrix.checkout("statarb")
     module = _statarb_module(statarb)
     monkeypatch.setattr(module, "frozen_inputs", lambda d: (
-        {"id": "test-paper", "title": "Fixture paper", "abstract": "Fixture abstract"}, {},
+        {"id": "2401.00001v1", "title": "Fixture paper", "abstract": "Fixture abstract"}, {},
         {"title": "Fixture dossier", "scope": "Fixture strategy catalogue"}))
 
     def source(aid, root):
@@ -30,6 +30,11 @@ def test_statarb_prepares_freezes_and_runs_the_candidate_engine(tmp_path, monkey
     monkeypatch.setattr(module, "paper_source", source)
     root, manifest = module.prepare({"pathfinder_root": str(ROOT), "pathfinder_ref": "HEAD", "model": "unused",
                                      "codex": "unused"}, tmp_path)
+    import hashlib
+    authority = manifest["local_sources"]["2401.00001v1"]
+    assert authority["sha256"] == hashlib.sha256((root / "sources/Q.tex").read_bytes()).hexdigest()
+    assert authority["reason"] and manifest["prefetch_limit"] == 10
+    assert Path(manifest["source_cache"]).is_relative_to(statarb / ".runtime")
     # statarb froze the candidate commit with the engine's own freeze, and the copy verifies against it
     from pathfinder import freeze
     head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
