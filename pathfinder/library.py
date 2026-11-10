@@ -197,6 +197,8 @@ def local_rule(campaign):
     authorities = local_sources(campaign)
     if not authorities:
         return ""
+    for aid in authorities:
+        paper_source.local_source(aid, authorities)
     return ("\nExplicit local_sources overrides the pool preference for these exact identifiers only: "
             + ", ".join(authorities) + ". Use the campaign-selected hash-bound text, including for reference discovery; "
             "do not replace it with pooled or downloaded TeX. The selection does not assert LaTeX is unavailable.\n")

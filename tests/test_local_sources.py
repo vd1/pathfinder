@@ -125,3 +125,17 @@ def test_local_policy_cannot_override_restricted_collection(tmp_path):
     c, _ = fixture(tmp_path)
     with pytest.raises(ValueError, match='restricted collection'):
         library.validate({**c.raw, 'restricted_collection': {}})
+
+
+def test_read_only_role_gets_authority_rule_and_refuses_changed_source(tmp_path):
+    from types import SimpleNamespace
+    c, source = fixture(tmp_path)
+    request = SimpleNamespace(prompt='Host review', tools=True, reads=True, cwd=tmp_path)
+    rule = library.request_rule(c, request)
+    assert AID in rule and 'Explicit local_sources overrides' in rule
+    assert 'Run:' not in rule
+    request.prompt += rule
+    assert library.request_rule(c, request) == ''
+    source.write_text('Changed before a read-only model call')
+    with pytest.raises(ValueError, match='local source changed'):
+        library.request_rule(c, request)
