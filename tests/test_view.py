@@ -202,3 +202,24 @@ def test_a_units_pdf_opens_in_the_system_viewer(server, monkeypatch):
     monkeypatch.setattr(view, "open_with_system", lambda path: opened.append(path))
     assert post(port, "/open", {"path": "threads/Q1P1/edited/note.pdf"}) == 204
     assert opened and opened[0].endswith("threads/Q1P1/edited/note.pdf")
+
+
+def _rule(css, selector):
+    """The declarations of the first rule whose selector is exactly `selector`."""
+    import re
+    m = re.search(r"(?m)^" + re.escape(selector) + r"\s*\{([^}]*)\}", css)
+    assert m, f"no rule for {selector}"
+    return {k.strip(): v.strip() for k, v in (d.split(":", 1) for d in m.group(1).split(";") if ":" in d)}
+
+
+def test_a_pipeline_states_dot_stays_on_the_first_line_of_a_wrapped_label():
+    """statarb PF-01 (28 November 2026): "735 Waiting for research" wrapped in the five-column pipeline and the dot,
+    centred on the whole two-line item, dropped below the count. The dot is placed from the top of the item, at
+    the middle of the first line: half the line's height less half the dot's."""
+    from pathlib import Path
+    css = (Path(view.__file__).parent / "view.css").read_text()
+    state, dot = _rule(css, ".stage-state"), _rule(css, ".stage-state::before")
+    assert dot["align-self"] == "flex-start"
+    size, leading = float(dot["height"].removesuffix("px")), float(state["line-height"])
+    assert dot["margin-top"] == f"calc({leading / 2:g}em - {size / 2:g}px)"
+    assert dot["flex"] == "none"                     # a narrow column must not squeeze the dot
