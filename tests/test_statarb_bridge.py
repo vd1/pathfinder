@@ -1,10 +1,10 @@
 """Check the real sibling adapter freezes the pinned engine release without mutating any statarb job."""
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
+import deployment_matrix
 
 
 def test_new_statarb_jobs_freeze_the_pinned_engine_release(tmp_path, monkeypatch):
@@ -12,9 +12,7 @@ def test_new_statarb_jobs_freeze_the_pinned_engine_release(tmp_path, monkeypatch
     adapter = checkout.parent / "statarb/arxiv_drip/research_protocol.py"
     if not adapter.exists():
         pytest.skip("Sibling statarb checkout is not installed")
-    spec = importlib.util.spec_from_file_location("statarb_protocol_contract", adapter)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = deployment_matrix.load_module(adapter, "statarb_bridge_contract")
     monkeypatch.setattr(module, "frozen_inputs", lambda d: (
         {"id": "test-paper", "title": "Fixture", "abstract": "Fixture"}, {},
         {"title": "Fixture dossier", "scope": "Fixture only"}))

@@ -9,11 +9,7 @@ needs_tex = pytest.mark.skipif(not shutil.which("latexmk") and not deployment_ma
 
 
 def _statarb_module(statarb: Path):
-    spec = importlib.util.spec_from_file_location("statarb_protocol_contract",
-                                                  statarb / "arxiv_drip/research_protocol.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return deployment_matrix.load_module(statarb / "arxiv_drip/research_protocol.py", "statarb_protocol_contract")
 
 
 @needs_tex

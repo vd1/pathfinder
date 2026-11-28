@@ -56,3 +56,24 @@ def recorded(name: str, target: Path) -> Path:
     with tarfile.open(fileobj=io.BytesIO(data)) as tar:
         tar.extractall(target, filter="tar")
     return target
+
+
+def load_module(path: Path, package: str):
+    """A deployment's module loaded from its file as a member of a stand-in package, so its relative imports
+    resolve against its own folder (statarb's research_protocol imports .identifiers) and its package's
+    __init__ does not run."""
+    import importlib.util, sys, types
+    path = Path(path)
+    parent = sys.modules.get(package)
+    if parent is None or list(getattr(parent, "__path__", [])) != [str(path.parent)]:
+        for name in [m for m in sys.modules if m == package or m.startswith(package + ".")]:
+            del sys.modules[name]                # another checkout's copy under the same name
+        parent = types.ModuleType(package)
+        parent.__path__ = [str(path.parent)]
+        sys.modules[package] = parent
+    name = f"{package}.{path.stem}"
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
